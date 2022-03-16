@@ -6,7 +6,7 @@ The framework adopts a data first approach and all artifacts recorded in the fra
 
 # Getting Started
 ### Pre-Requisite
-1. Python Version - Needs Python3.8 (Not comapatabile with Python3.9)<br>
+1. Python Version - Needs Python3.8 (Not compatible with Python3.9)<br>
 2. Set Environment variables.<br>
    Library uses DVC for artifact versioning and git for code versioning. It requires a set of environment variables to operate DVC and git. The list of environment           variables needed can be found in example-get-started/sample_env.<br>
    Copy sample_env from example-get-started directory to local directory.
