@@ -6,12 +6,12 @@ The framework adopts a data first approach and all artifacts recorded in the fra
 
 # Getting Started
 ### Pre-Requisite
-
-1. Set Environment variables.<br>
-   Library uses DVC for artifact versioning and git for code versioning. It requires a set of environment variables to operate DVC and git. The list of environment        variables needed can be found in example-get-started/sample_env.<br>
+1. Python Version - Needs Python3.8 (Not comapatabile with Python3.9)<br>
+2. Set Environment variables.<br>
+   Library uses DVC for artifact versioning and git for code versioning. It requires a set of environment variables to operate DVC and git. The list of environment           variables needed can be found in example-get-started/sample_env.<br>
    Copy sample_env from example-get-started directory to local directory.
    Modify sample_env and run 'source sample_env' to set the environment variables.<br>
-2. Copy initialize.sh from example-get-started folder to your local directory.<br>
+3. Copy initialize.sh from example-get-started folder to your local directory.<br>
    Run command - sh initialize.sh <br>
    Before running the script, please ensure that required environment variables are set.<br>
    This configures DVC and git with the provided variables in Step 1.<br> 
