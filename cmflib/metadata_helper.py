@@ -23,6 +23,7 @@ from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
 
+
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
     if value is None:
         return metadata_store_pb2.Value()
@@ -80,7 +81,6 @@ def put_artifact(store, artifact: metadata_store_pb2.Artifact):
         print('Failed to put artifact . Exception: "{}"'.format(str(e)), file=sys.stderr)
 
 
-
 def get_or_create_artifact_type(store, type_name, properties: dict = None) -> metadata_store_pb2.ArtifactType:
     try:
         artifact_type = store.get_artifact_type(type_name=type_name)
@@ -123,7 +123,7 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
 def create_artifact_with_type(
         store,
         uri: str,
-        name:str,
+        name: str,
         type_name: str,
         properties: dict = None,
         type_properties: dict = None,
@@ -342,7 +342,7 @@ def associate_child_to_parent_context(store, parent_context: metadata_store_pb2.
         associate = metadata_store_pb2.ParentContext(child_id=child_context.id, parent_id=parent_context.id)
         store.put_parent_contexts([associate])
     except Exception as e:
-        #print('Warning: Exception:{}'.format(str(e)), file=sys.stderr)
+        # print('Warning: Exception:{}'.format(str(e)), file=sys.stderr)
         sys.stderr.flush()
 
 
@@ -398,7 +398,7 @@ def create_new_artifact_event_and_attribution(
         execution_id: int,
         context_id: int,
         uri: str,
-        name:str,
+        name: str,
         type_name: str,
         event_type: metadata_store_pb2.Event.Type,
         properties: dict = None,
@@ -473,6 +473,7 @@ def link_execution_to_input_artifact(
 
     return artifact
 
+
 def link_execution_to_artifact(
         store,
         execution_id: int,
@@ -485,7 +486,7 @@ def link_execution_to_artifact(
         print('Error: Not found upstream artifact with URI={}.'.format(uri), file=sys.stderr)
         return None
     if len(artifacts) > 1:
-       # print('Warning: Found multiple artifacts with the same URI. {} Using the last one..'.format(artifacts),
+        # print('Warning: Found multiple artifacts with the same URI. {} Using the last one..'.format(artifacts),
         #      file=sys.stderr)
 
         print('Warning: Found multiple artifacts with the same URI.Using the last one..',
@@ -509,44 +510,6 @@ def link_execution_to_artifact(
     store.put_events([event])
 
     return artifact
-
-def create_new_output_artifact(
-        store,
-        execution_id: int,
-        context_id: int,
-        uri: str,
-        type_name: str,
-        output_name: str,
-        run_id: str = None,
-        argo_artifact: dict = None,
-) -> metadata_store_pb2.Artifact:
-    custom_properties = {
-        ARTIFACT_IO_NAME_PROPERTY_NAME: metadata_store_pb2.Value(string_value=output_name),
-    }
-    if run_id:
-        custom_properties[ARTIFACT_PIPELINE_NAME_PROPERTY_NAME] = metadata_store_pb2.Value(string_value=str(run_id))
-        custom_properties[ARTIFACT_RUN_ID_PROPERTY_NAME] = metadata_store_pb2.Value(string_value=str(run_id))
-    if argo_artifact:
-        custom_properties[ARTIFACT_ARGO_ARTIFACT_PROPERTY_NAME] = metadata_store_pb2.Value(
-            string_value=json.dumps(argo_artifact, sort_keys=True))
-    return create_new_artifact_event_and_attribution(
-        store=store,
-        execution_id=execution_id,
-        context_id=context_id,
-        uri=uri,
-        type_name=type_name,
-        event_type=metadata_store_pb2.Event.OUTPUT,
-        artifact_name_path=metadata_store_pb2.Event.Path(
-            steps=[
-                metadata_store_pb2.Event.Path.Step(
-                    key=output_name,
-                    # index=0,
-                ),
-            ]
-        ),
-        custom_properties=custom_properties,
-        # milliseconds_since_epoch=int(datetime.now(timezone.utc).timestamp() * 1000), # Happens automatically
-    )
 
 
 def isIPv6(ip: str) -> bool:

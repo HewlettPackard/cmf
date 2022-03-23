@@ -15,8 +15,22 @@ The framework adopts a data first approach and all artifacts recorded in the fra
    Run command - sh initialize.sh <br>
    Before running the script, please ensure that required environment variables are set.<br>
    This configures DVC and git with the provided variables in Step 1.<br> 
+   
+### Install the library
 
-### Import of the library to record the metadata
+#### Creating the wheel file
+
+```
+python setup.py bdist_wheel
+cd dist
+pip install cmf-0.0.1-py3-none-any.whl
+
+```
+or Install directly,
+pip install .
+
+## Logging metadata with CMF
+#### Import of the library to record the metadata
 ```python
 from cmflib import cmf
 
@@ -102,16 +116,3 @@ cmf =  cmf.Cmf(filename="mlmd",
                                   pipeline_name="Test-env", graph=True)
 
 ```
-### Install the library
-
-#### Creating the wheel file
-
-```
-python setup.py bdist_wheel
-cd dist
-pip install cmf-0.0.1-py3-none-any.whl
-
-```
-or Installing directly,
-pip install .
-

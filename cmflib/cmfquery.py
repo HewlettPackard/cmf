@@ -15,8 +15,6 @@
 ###
 
 import pandas as pd
-from datetime import datetime
-from uuid import uuid4
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
@@ -28,8 +26,7 @@ class CmfQuery(object):
         self.store = metadata_store.MetadataStore(config)
 
     def _transform_to_dataframe(self, node):
-        d = {}
-        d["id"] = node.id
+        d = {"id": node.id}
         for k, v in node.properties.items():
             d[k] = v.string_value if v.HasField('string_value') else v.int_value
         for k, v in node.custom_properties.items():
@@ -65,19 +62,15 @@ class CmfQuery(object):
                     executions = self.store.get_executions_by_context(cc.id)
                     for exe in executions:
                         d1 = self._transform_to_dataframe(exe)
-                        #df = df.append(d1, sort=True, ignore_index=True)
+                        # df = df.append(d1, sort=True, ignore_index=True)
                         df = pd.concat([df, d1], sort=True, ignore_index=True)
 
         return df
 
     def get_artifact_df(self, node):
-        d = {}
-        d["id"] = node.id
-        d["type"] = self.store.get_artifact_types_by_id([node.type_id])[0].name
-        d["uri"] = node.uri
-        d["name"] = node.name
-        d["create_time_since_epoch"] = node.create_time_since_epoch
-        d["last_update_time_since_epoch"] = node.last_update_time_since_epoch
+        d = {"id": node.id, "type": self.store.get_artifact_types_by_id([node.type_id])[0].name, "uri": node.uri,
+             "name": node.name, "create_time_since_epoch": node.create_time_since_epoch,
+             "last_update_time_since_epoch": node.last_update_time_since_epoch}
         for k, v in node.properties.items():
             d[k] = v.string_value if v.HasField('string_value') else v.double_value
         for k, v in node.custom_properties.items():
@@ -96,7 +89,6 @@ class CmfQuery(object):
 
     def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame:
         df = pd.DataFrame()
-        artifacts = []
         input_artifacts = []
         output_artifacts = []
         events = self.store.get_events_by_execution_ids([execution_id])
@@ -143,11 +135,11 @@ class CmfQuery(object):
 
     def get_one_hop_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
         df = pd.DataFrame()
-        
+
         artifact = None
         artifacts = self.store.get_artifacts()
         for art in artifacts:
-            if artifact_name.strip() == art.name :
+            if artifact_name.strip() == art.name:
                 artifact = art
                 break
         # Get a list of artifacts within a 1-hop of the artifacts of interest
