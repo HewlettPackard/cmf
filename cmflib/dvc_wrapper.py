@@ -62,6 +62,9 @@ def git_get_commit() -> str:
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)
         commit = output.strip()
+        print("Execution git commit " + output)
+        print("Execution git commit " + commit)
+
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()

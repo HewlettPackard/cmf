@@ -15,7 +15,7 @@ setup(
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
         install_requires=["ml-metadata",
-                          "dvc","pandas","retrying", "pyarrow", "neo4j", "sklearn", "tabulate"], # add any additional packages that 
+                          "dvc","pandas","retrying", "pyarrow", "neo4j", "sklearn", "tabulate", "click"], # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
         
         keywords=['python', 'first package'],
