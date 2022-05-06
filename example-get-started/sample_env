@@ -1,7 +1,7 @@
-export DVC_REMOTE_URL=/tmp/myremote
-export GIT_USER_NAME=annmary-roy@hpe.com
-export GIT_USER_EMAIL=annmary.roy@hpe.com
-export GIT_REMOTE_URL=git@github.hpe.com:annmary-roy/crop-dataset.git
+export DVC_REMOTE_URL=/tmp/cmf/example_get_started/dvc_remote
+export GIT_USER_NAME="First Second"
+export GIT_USER_EMAIL=first.second@corp.org
+export GIT_REMOTE_URL=/tmp/cmf/example_get_started/git_remote
 export NEO4J_USER_NAME=neo4j
 export NEO4J_PASSWD=neo4j
 export NEO4J_URI="bolt://10.93.244.219:7687"

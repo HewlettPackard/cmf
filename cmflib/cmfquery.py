@@ -42,6 +42,13 @@ class CmfQuery(object):
 
         return -1
 
+    def get_pipeline_names(self) -> []:
+        names = []
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        for ctx in contexts:
+            names.append(ctx.name)
+        return names
+
     def get_pipeline_stages(self, pipeline_name: str) -> []:
         stages = []
         contexts = self.store.get_contexts_by_type("Parent_Context")

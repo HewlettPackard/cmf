@@ -18,48 +18,40 @@ from cmflib import cmf
 import random
 import pandas as pd
 
-###
-"""
-Note  - All metadata is stored in a file called "mlmd". It is  a sqlite file
-To delete earlier metadata, delete the mlmd file.
-"""
-metawriter =  cmf.Cmf(filename="mlmd",
-                                  pipeline_name="dvc")
-context = metawriter.create_context(pipeline_stage="Prepare")
-execution = metawriter.create_execution(execution_type="Prepare")
+# Note - metadata is stored in a file called "mlmd". It is a sqlite file.
+# To delete earlier metadata, delete this mlmd file.
+metawriter = cmf.Cmf(filename="mlmd", pipeline_name="dvc")
+_ = metawriter.create_context(pipeline_stage="Prepare")
+_ = metawriter.create_execution(execution_type="Prepare")
 
-### This is needed as we  have to track the whole dataset
-## Not sure this is a feasibile step for mini epoch training
-metawriter.log_dataset("data/raw_data", "input")
+# This is needed as we have to track the whole dataset.
+# Not sure if this is a feasible step for mini epoch training.
+_ = metawriter.log_dataset("data/raw_data", "input")
 
-### creating the data slice - Today we have only path and hash.
-### Would need  to expand to take in more metadata
-for i in range(1,3,1):
-    dataslice = metawriter.create_dataslice("slice-" + str(i))
-    for i in range(1,20,1):
+# Creating the data slice - today we have only path and hash.
+# Would need to expand to take in more metadata.
+for i in range(1, 3, 1):
+    dataslice: cmf.Cmf.dataslice = metawriter.create_dataslice(name="slice-" + str(i))
+    for _ in range(1, 20, 1):
         j = random.randrange(100)
-        dataslice.add_data("data/raw_data/"+str(j)+".xml", {"key1":"value1", "key2":"value2"})
-
+        dataslice.add_data(path="data/raw_data/" + str(j) + ".xml", custom_props={"key1": "value1", "key2": "value2"})
     dataslice.commit()
 
-
-
-## reading the files in the slice
-df = metawriter.read_dataslice("slice-1")
+# Reading the files in the slice.
+df: pd.DataFrame = metawriter.read_dataslice(name="slice-1")
 record = ""
 row_content = None
-#data/raw_data/59.xml
 for label, content in df.iterrows():
     record = label
     row_content = content
 
 print("Before update")
-print(label)
+print(record)
 print(row_content)
-#Update the metadata for a record in the slice
-metawriter.update_dataslice("slice-1",record, {"key1":"1", "key2":"2"})
-df = metawriter.read_dataslice("slice-1")
 
+# Update the metadata for a record in the slice.
+metawriter.update_dataslice(name="slice-1", record=record, custom_props={"key1": "1", "key2": "2"})
+df = metawriter.read_dataslice(name="slice-1")
 
 print("After update")
 for label, content in df.iterrows():

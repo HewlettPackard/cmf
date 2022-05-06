@@ -53,7 +53,6 @@ class Cmf(object):
         self.parent_context = get_or_create_parent_context(store=self.store, pipeline=pipeline_name,
                                                            custom_properties=custom_properties)
         if graph:
-            # self.__read_env_variables()
             self.driver = graph_wrapper.GraphDriver(Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password)
             self.driver.create_pipeline_node(pipeline_name, self.parent_context.id, custom_properties)
 
@@ -69,11 +68,15 @@ class Cmf(object):
         associate_child_to_parent_context(store=self.store, parent_context=self.parent_context,
                                           child_context=ctx)
         if self.graph:
-            self.driver.create_stage_node(pipeline_stage, self.parent_context.id, ctx.id, custom_props)
+            self.driver.create_stage_node(pipeline_stage, self.parent_context, ctx.id, custom_props)
         return ctx
 
     def create_execution(self, execution_type: str,
                          custom_properties: {} = None) -> mlpb.Execution:
+        #Initializing the execution related fields
+        self.metrics = {}
+        self.input_artifacts = []
+        self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
@@ -89,17 +92,14 @@ class Cmf(object):
              custom_properties=custom_props
              )
         self.execution_name = str(self.execution.id) + "_" + execution_type
-        # temp_str = ''.join(sys.argv)
-        # self.execution_command = re.sub('\W+','_', temp_str)
         self.execution_command = str(sys.argv)
         for k, v in custom_props.items():
             k = re.sub('-', '_', k)
             self.execution_label_props[k] = v
-        # self.execution_label_props = custom_props
         self.execution_label_props["Execution_Name"] = execution_type + ":" + str(self.execution.id)
         self.execution_label_props["execution_command"] = str(sys.argv)
         if self.graph:
-            self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context.id,
+            self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
                                               str(sys.argv), self.execution.id, custom_props)
         return self.execution
 
@@ -154,19 +154,19 @@ class Cmf(object):
         self.execution_label_props["Commit"] = dataset_commit
 
         if self.graph:
-            self.driver.create_dataset_node(name, url, uri, event, self.execution.id, self.parent_context.id,
-                                            custom_props)
+            self.driver.create_dataset_node(name, url, uri, event, self.execution.id, self.parent_context, custom_props)
             if event.lower() == "input":
                 self.input_artifacts.append({"Name": name, "Path": url, "URI": uri, "Event": event.lower(),
                                              "Execution_Name": self.execution_name,
                                              "Type": "Dataset", "Execution_Command": self.execution_command,
-                                             "Pipeline_Id": self.parent_context.id})
-                self.driver.create_execution_links(uri, name, "Dataset", self.execution.id, self.parent_context.id)
+                                             "Pipeline_Id": self.parent_context.id,
+                                             "Pipeline_Name": self.parent_context.name})
+                self.driver.create_execution_links(uri, name, "Dataset")
             else:
                 child_artifact = {"Name": name, "Path": url, "URI": uri, "Event": event.lower(),
                                   "Execution_Name": self.execution_name,
                                   "Type": "Dataset", "Execution_Command": self.execution_command,
-                                  "Pipeline_Id": self.parent_context.id}
+                                  "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name}
                 self.driver.create_artifact_relationships(self.input_artifacts, child_artifact,
                                                           self.execution_label_props)
         return artifact
@@ -207,11 +207,6 @@ class Cmf(object):
 
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             model_uri = model_uri + ":" + str(self.execution.id)
-            # if((existing_artifact and len(existing_artifact )!= 0)):
-            #    model_uri = model_uri + ":" + str(uuid.uuid1())
-
-            # model_commit = commit_output(name, self.execution.id)
-            # c_hash = dvc_get_hash(name)
             artifact = create_new_artifact_event_and_attribution(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -235,21 +230,20 @@ class Cmf(object):
         # custom_properties["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
         if self.graph:
-            self.driver.create_model_node(model_uri, uri, event, self.execution.id, self.parent_context.id,
-                                          custom_props)
+            self.driver.create_model_node(model_uri, uri, event, self.execution.id, self.parent_context, custom_props)
             if event.lower() == "input":
 
                 self.input_artifacts.append(
                     {"Name": model_uri, "URI": uri, "Event": event.lower(), "Execution_Name": self.execution_name,
                      "Type": "Model", "Execution_Command": self.execution_command,
-                     "Pipeline_Id": self.parent_context.id})
-                self.driver.create_execution_links(uri, model_uri, "Model", self.execution.id, self.parent_context.id)
+                     "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name})
+                self.driver.create_execution_links(uri, model_uri, "Model")
             else:
 
                 child_artifact = {"Name": model_uri, "URI": uri, "Event": event.lower(),
                                   "Execution_Name": self.execution_name,
                                   "Type": "Model", "Execution_Command": self.execution_command,
-                                  "Pipeline_Id": self.parent_context.id}
+                                  "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name}
                 self.driver.create_artifact_relationships(self.input_artifacts, child_artifact,
                                                           self.execution_label_props)
 
@@ -275,12 +269,12 @@ class Cmf(object):
         )
         if self.graph:
             # To do create execution_links
-            self.driver.create_metrics_node(metrics_name, uri, "output", self.execution.id, self.parent_context.id,
+            self.driver.create_metrics_node(metrics_name, uri, "output", self.execution.id, self.parent_context,
                                             custom_props)
             child_artifact = {"Name": metrics_name, "URI": uri, "Event": "output",
                               "Execution_Name": self.execution_name,
                               "Type": "Metrics", "Execution_Command": self.execution_command,
-                              "Pipeline_Id": self.parent_context.id}
+                              "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name}
             self.driver.create_artifact_relationships(self.input_artifacts, child_artifact, self.execution_label_props)
         return metrics
 
@@ -316,7 +310,7 @@ class Cmf(object):
         )
         # print("Creating metrics")
         if self.graph:
-            self.driver.create_metrics_node(name, uri, "output", self.execution.id, self.parent_context.id,
+            self.driver.create_metrics_node(name, uri, "output", self.execution.id, self.parent_context,
                                             custom_props)
             child_artifact = {"Name": name, "URI": uri, "Event": "output", "Execution_Name": self.execution_name,
                               "Type": "Metrics", "Execution_Command": self.execution_command,

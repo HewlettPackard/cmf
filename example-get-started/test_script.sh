@@ -1,11 +1,16 @@
-#! /bin/bash
+#!/bin/bash
 
-python src/prepare.py data/data.xml
+printf "\n[1/5] [RUNNING PARSE STEP         ]\n"
+python src/parse.py artifacts/data.xml.gz artifacts/parsed
 
-python src/featurization.py data/prepared data/features
+printf "\n[2/5] [RUNNING FEATURIZE STEP     ]\n"
+python src/featurize.py artifacts/parsed artifacts/features
 
-python src/train.py data/features model.pkl
+printf "\n[3/5] [RUNNING TRAIN STEP         ]\n"
+python src/train.py artifacts/features artifacts/model
 
-python src/evaluate.py model.pkl data/features scores.json prc.json roc.json
+printf "\n[4/5] [RUNNING TEST STEP          ]\n"
+python src/test.py artifacts/model artifacts/features artifacts/test_results
 
+printf "\n[5/5] [RUNNING OPTIONAL QUERY STEP]\n"
 python src/query.py mlmd

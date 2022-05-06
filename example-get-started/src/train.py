@@ -15,59 +15,67 @@
 ###
 
 import os
-import pickle
 import sys
-
-import numpy as np
 import yaml
+import pickle
+import click
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from cmflib import cmf
 
-'''
-Input : train.pkl
-Output : Model.pkl
-'''
+__all__ = ['train']
 
 
-params = yaml.safe_load(open("params.yaml"))["train"]
+def train(input_dir: str, output_dir: str) -> None:
+    """Train Machine Learning model.
+    Args:
+        input_dir: Path to a directory containing train.pkl file.
+        output_dir: Path to a directory that will contain model.pkl file.
 
-metawriter =  cmf.Cmf(filename="mlmd",
-                                  pipeline_name="Test-env")
-context = metawriter.create_context(pipeline_stage="Train")
-execution = metawriter.create_execution(execution_type="Train-execution")
+    Machine Learning Artifacts:
+        Input: ${input_dir}/train.pkl
+        Output: ${output_dir}/model.pkl
+    """
+    params = yaml.safe_load(open("params.yaml"))["train"]
 
-if len(sys.argv) != 3:
-    sys.stderr.write("Arguments error. Usage:\n")
-    sys.stderr.write("\tpython train.py features model\n")
-    sys.exit(1)
+    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=True)
+    _ = metawriter.create_context(pipeline_stage="Train")
+    _ = metawriter.create_execution(execution_type="Train-execution", custom_properties=params)
 
-input = sys.argv[1]
-output = sys.argv[2]
-seed = params["seed"]
-n_est = params["n_est"]
-min_split = params["min_split"]
+    train_ds = os.path.join(input_dir, "train.pkl")
+    _ = metawriter.log_dataset(train_ds, "input")
+    with open(train_ds, "rb") as fd:
+        matrix = pickle.load(fd)
+
+    labels = np.squeeze(matrix[:, 1].toarray())
+    x = matrix[:, 2:]
+
+    sys.stderr.write("Input matrix size {}\n".format(matrix.shape))
+    sys.stderr.write("X matrix size {}\n".format(x.shape))
+    sys.stderr.write("Y matrix size {}\n".format(labels.shape))
+
+    clf = RandomForestClassifier(
+        n_estimators=params["n_est"], min_samples_split=params["min_split"], n_jobs=2, random_state=params["seed"]
+    )
+    clf.fit(x, labels)
+
+    os.makedirs(output_dir, exist_ok=True)
+    model_file = os.path.join(output_dir, 'model.pkl')
+    with open(model_file, "wb") as fd:
+        pickle.dump(clf, fd)
+
+    _ = metawriter.log_model(
+        path=model_file, event="output", model_framework="SKlearn", model_type="RandomForestClassifier",
+        model_name="RandomForestClassifier:default"
+    )
 
 
-metawriter.log_dataset(input+"/train.pkl", "input")
+@click.command()
+@click.argument('input_dir', required=True, type=str)
+@click.argument('output_dir', required=True, type=str)
+def train_cli(input_dir: str, output_dir: str) -> None:
+    train(input_dir, output_dir)
 
-with open(os.path.join(input, "train.pkl"), "rb") as fd:
-    matrix = pickle.load(fd)
 
-labels = np.squeeze(matrix[:, 1].toarray())
-x = matrix[:, 2:]
-
-sys.stderr.write("Input matrix size {}\n".format(matrix.shape))
-sys.stderr.write("X matrix size {}\n".format(x.shape))
-sys.stderr.write("Y matrix size {}\n".format(labels.shape))
-
-clf = RandomForestClassifier(
-    n_estimators=n_est, min_samples_split=min_split, n_jobs=2, random_state=seed
-)
-
-clf.fit(x, labels)
-
-with open(output, "wb") as fd:
-    pickle.dump(clf, fd)
-
-metawriter.log_model(path=output, event="output", model_framework="SKlearn", model_type="RandomForestClassifier", model_name="RandomForestClassifier:default" )
-
+if __name__ == '__main__':
+    train_cli()

@@ -5,8 +5,22 @@ The framework adopts a data first approach and all artifacts recorded in the fra
 [Detailed documentation of the API's](docs/API.md)
 
 # Getting Started
+### Install the library
+
+#### Creating the wheel file
+
+```
+python setup.py bdist_wheel
+cd dist
+pip install <cmflib-0.0.1-py2-none-any.whl>
+
+```
+or Install directly,
+pip install .
+
+[Quick start](example-get-started/README.md)
 ### Pre-Requisite
-1. Python Version - Needs Python3.8 (Not compatible with Python3.9)<br>
+1. Python Version - Needs Python version >=3.6 and <3.9 (Not compatible with Python3.9)<br>
 2. Set Environment variables.<br>
    Library uses DVC for artifact versioning and git for code versioning. It requires a set of environment variables to operate DVC and git. The list of environment           variables needed can be found in example-get-started/sample_env.<br>
    Copy sample_env from example-get-started directory to local directory.
@@ -16,18 +30,6 @@ The framework adopts a data first approach and all artifacts recorded in the fra
    Before running the script, please ensure that required environment variables are set.<br>
    This configures DVC and git with the provided variables in Step 1.<br> 
    
-### Install the library
-
-#### Creating the wheel file
-
-```
-python setup.py bdist_wheel
-cd dist
-pip install cmf-0.0.1-py3-none-any.whl
-
-```
-or Install directly,
-pip install .
 
 ## Logging metadata with CMF
 #### Import of the library to record the metadata
@@ -49,7 +51,7 @@ An ML pipeline can have multiple stages. This context abstraction tracks the sta
 A dictionary can be passed to hold the user given metadata. The custom properties is an optional argument
  ```python
 context = cmf.create_context(pipeline_stage="Prepare",
-                                    custom_props={"user-metadata1":"metadata_value"})
+                                    custom_properties={"user-metadata1":"metadata_value"})
 ```
 
 #### Create the execution
@@ -115,4 +117,18 @@ It also creates a pipeline abstraction, which helps to group individual stages a
 cmf =  cmf.Cmf(filename="mlmd",
                                   pipeline_name="Test-env", graph=True)
 
+```
+
+### Use a Jupyterlab environment with CMF pre-installed
+- CMF is preinstalled in a JupyterLab Notebook Environment.
+- Accessible at http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
+- Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`
+- `example-get-started` from this repo is bind mounted into `/home/jovyan/example-get-started`
+- Update `docker-compose.yml` as needed. For example to bind mount another volume on the host: `/lustre/data/dataspaces/dataspaces_testbed/:/home/jovyan/work`
+
+```
+#create .env file in current folder using env-example as a template. #These are used by docker-compose.yml
+docker-compose up --build -d
+#To Shutdown/Remove (Remove Volumes as well)
+docker-compose down -v
 ```
