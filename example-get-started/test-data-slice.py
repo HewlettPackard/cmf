@@ -17,6 +17,34 @@
 from cmflib import cmf
 import random
 import pandas as pd
+import gzip
+import shutil
+import os
+import string
+from shutil import rmtree
+
+folder_path = "artifacts/raw_data"
+
+
+def generate_dataset():
+    path = os.path.join(os.getcwd(), folder_path)
+    if os.path.exists(path):
+        rmtree(path)
+
+    os.mkdir(path)
+    msg = []
+    for _ in range(4):
+        msg.append(''.join([random.choice(
+            string.ascii_letters + string.digits)
+            for _ in range(100)]))
+
+    for i in range(1, 101):
+        with open(path + "/" + str(i) + ".txt", 'w') as f:
+            index = random.randint(0, 3)
+            f.write(msg[index])
+
+
+generate_dataset()
 
 # Note - metadata is stored in a file called "mlmd". It is a sqlite file.
 # To delete earlier metadata, delete this mlmd file.
@@ -26,15 +54,16 @@ _ = metawriter.create_execution(execution_type="Prepare")
 
 # This is needed as we have to track the whole dataset.
 # Not sure if this is a feasible step for mini epoch training.
-_ = metawriter.log_dataset("data/raw_data", "input")
+_ = metawriter.log_dataset(folder_path, "input")
 
 # Creating the data slice - today we have only path and hash.
 # Would need to expand to take in more metadata.
 for i in range(1, 3, 1):
     dataslice: cmf.Cmf.dataslice = metawriter.create_dataslice(name="slice-" + str(i))
     for _ in range(1, 20, 1):
-        j = random.randrange(100)
-        dataslice.add_data(path="data/raw_data/" + str(j) + ".xml", custom_props={"key1": "value1", "key2": "value2"})
+        j = random.randrange(1, 100)
+        print(folder_path + "/" + str(j) + ".txt")
+        dataslice.add_data(path=folder_path + "/" + str(j) + ".txt", custom_props={"key1": "value1", "key2": "value2"})
     dataslice.commit()
 
 # Reading the files in the slice.
@@ -57,3 +86,11 @@ print("After update")
 for label, content in df.iterrows():
     if label == record:
         print(content)
+# cleanup
+folder_path = os.path.join(os.getcwd(), folder_path)
+if os.path.exists(folder_path):
+    rmtree(folder_path)
+
+dvc_file = folder_path + ".dvc"
+if os.path.exists(dvc_file):
+    os.remove(dvc_file)
