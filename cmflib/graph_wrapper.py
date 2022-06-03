@@ -263,10 +263,10 @@ class GraphDriver:
     def _create_execution_artifacts_link_syntax(parent_label: str, child_label: str, parent_id: int, child_id: int,
                                                 relation: str):
         if relation.lower() == "input":
-            parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} CREATE (a)<-[r:{}]-(b) \
+            parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} MERGE (a)<-[r:{}]-(b) \
                               return type(r)".format(parent_label, child_label, parent_id, child_id, relation)
         else:
-            parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} CREATE (a)-[r:{}]->(b) \
+            parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} MERGE (a)-[r:{}]->(b) \
                               return type(r)".format(parent_label, child_label, parent_id, child_id, relation)
 
         return parent_child_syntax

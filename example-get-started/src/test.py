@@ -47,7 +47,7 @@ def test(model_dir: str, dataset_dir: str, output_dir: str) -> None:
         roc=os.path.join(output_dir, 'roc.json')
     )
 
-    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=True)
+    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
     _ = metawriter.create_context(pipeline_stage="Evaluate")
     _ = metawriter.create_execution(execution_type="Evaluate-execution")
 

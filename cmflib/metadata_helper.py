@@ -494,6 +494,12 @@ def link_execution_to_artifact(
 
     artifact = artifacts[-1]
 
+    #Check if event already exist
+    events = store.get_events_by_artifact_ids([artifact.id])
+    for evt in events:
+        if evt.execution_id == execution_id:
+            return artifact
+
     event = metadata_store_pb2.Event(
         execution_id=execution_id,
         artifact_id=artifact.id,

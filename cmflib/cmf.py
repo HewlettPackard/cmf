@@ -122,7 +122,11 @@ class Cmf(object):
 
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
+            existing_artifact = existing_artifact[0]
 
+            #Quick fix- Updating only the name
+            if custom_properties is not None:
+                self.update_existing_artifact(existing_artifact, custom_properties)
             uri = c_hash
             artifact = link_execution_to_artifact(store=self.store,
                                                   execution_id=self.execution.id,
@@ -334,6 +338,14 @@ class Cmf(object):
             custom_properties=custom_properties,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
+
+    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_props: {}):
+        for key, value in custom_props.items():
+            if isinstance(value,int):
+                artifact.custom_properties[key].int_value = value
+            else:
+                artifact.custom_properties[key].string_value = str(value)
+        put_artifact(self.store, artifact)
 
     def get_artifact(self, artifact_id: int) -> metadata_store_pb2.Artifact:
         return get_artifacts_by_id(self.store, [artifact_id])[0]

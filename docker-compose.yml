@@ -9,11 +9,8 @@ services:
     container_name: jupyter-cmf-notebook
     hostname: jupyter-cmf-notebook
     volumes:
-      - $PWD/cmflib/example-get-started:/home/jovyan/example-get-started
-      #- $PWD/../:/home/jovyan/work
-      #- /lustre/data/internal/cdc_replication_overhead:/home/jovyan/work
-      - /local/tripataa/recommender_testbed:/home/jovyan/work
-      - $HOME/recommender_testbed_dvc:/home/jovyan/dvc_remote
+      - $HOME/workspace:/home/jovyan/workspace
+      - $HOME/dvc_remote:/home/jovyan/dvc_remote
       - $HOME/.ssh:/home/jovyan/.ssh
     ports:
       - "8888:8888"

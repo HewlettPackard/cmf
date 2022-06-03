@@ -16,9 +16,6 @@ ARG NB_USER
 ARG NB_UID
 ARG NB_GID
 
-ENV http_proxy http://proxy.houston.hpecorp.net:8080
-ENV https_proxy http://proxy.houston.hpecorp.net:8080
-
 # name your environment and choose the python version
 ARG conda_env=python37
 ARG py_ver=3.7
@@ -61,3 +58,4 @@ RUN cd /home/${NB_USER}/cmflib && "${CONDA_DIR}/envs/${conda_env}/bin/pip" insta
 #ENV PYTHONPATH "${PYTHONPATH}:/home/${NB_USER}/cmflib"
 
 COPY --chown=${NB_UID}:${NB_GID} cmflib/example-get-started /home/${NB_USER}/example-get-started
+

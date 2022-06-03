@@ -60,7 +60,7 @@ def parse(input_file: str, output_dir: str) -> None:
     params = yaml.safe_load(open("params.yaml"))["parse"]
     random.seed(params["seed"])
 
-    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=True)
+    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
     _ = metawriter.create_context(pipeline_stage="Prepare", custom_properties={"user-metadata1": "metadata_value"})
     _ = metawriter.create_execution(execution_type="Prepare", custom_properties=params)
     _ = metawriter.log_dataset(input_file, "input", custom_properties={"user-metadata1": "metadata_value"})
