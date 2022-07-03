@@ -7,7 +7,7 @@
     1. dvc repro -v dvc.yaml:round_0
     2. dvc repro -v dvc.yaml:active_learning@0
     3. dvc repro -v dvc.yaml:active_learning@1
-    4. dvc repro -v dvc.yaml:active_learning@3
+    4. dvc repro -v dvc.yaml:active_learning@2
 
 
 =================================================
