@@ -1,3 +1,16 @@
+### Steps to reproduce this example with CMF.
+1. Clone this reposirory and install the cmflib 
+2. Copy this directory outside the cloned repository to a seperate folder.
+3. Update the variables in sample_env and run command `source sample_env`
+4. Run command sh initialize.sh
+5. Run the following commands 
+    1. dvc repro -v dvc.yaml:round_0
+    2. dvc repro -v dvc.yaml:active_learning@0
+    3. dvc repro -v dvc.yaml:active_learning@1
+    4. dvc repro -v dvc.yaml:active_learning@3
+
+
+=================================================
 # DeepAL: Deep Active Learning in Python
 
 Python implementations of the following active learning algorithms:
