@@ -8,9 +8,16 @@
     2. dvc repro -v dvc.yaml:active_learning@0
     3. dvc repro -v dvc.yaml:active_learning@1
     4. dvc repro -v dvc.yaml:active_learning@2
+6. To see the visualization <br>
+    run the command:<br>
+    MATCH (a:Execution{pipeline_name:'active-learning-dvc-withdeps'})-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r, b 
+    <br> Note - Pipeline name is one of the arguments to demo.py, demo_selection.py, demo_train.py and demo_eval.py
+     <br> Default value is active-learning-dvc-withdeps
+    
+    ![image](https://user-images.githubusercontent.com/82071576/177053003-0a5b5045-9108-40b5-9996-86f9ce5e8def.png)
+    <br> Uncheck the connect result nodes checkbox for this command
 
 
-=================================================
 # DeepAL: Deep Active Learning in Python
 
 Python implementations of the following active learning algorithms:
