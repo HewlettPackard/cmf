@@ -1,4 +1,13 @@
 stages:
+  round_0:
+    cmd: python3 demo.py --enable_df True
+
+    deps:
+            - data/MNIST
+
+    outs:
+            - data/model-0
+            - data/metrics-0
   active_learning_selection:
 
         foreach:
@@ -14,6 +23,7 @@ stages:
                         --round ${item.round}
                  deps:
                          - data/model-${item.prev_round}
+                         - data/metrics-${item.prev_round}
                          - data/MNIST
 
                  outs:
@@ -60,3 +70,6 @@ stages:
 
             deps:
             - data/model-${item.round}
+
+            outs:
+            - data/metrics-${item.round}
