@@ -123,7 +123,7 @@ class GraphDriver:
             parent_artifact_type = k["Type"]
             parent_artifact_uri = k["URI"]
             parent_name = k["Name"]
-            relation = re.sub('\W+', '', re.split("_", k["Execution_Name"])[-1])
+            relation = re.sub('\W+', '', re.split(",", k["Execution_Name"])[-1])
             pc_syntax = self._create_parent_child_artifacts_syntax(parent_artifact_type, child_artifact_type,
                                                                    parent_artifact_uri, child_artifact_uri, parent_name,
                                                                    child_name, pipeline_id, relation,

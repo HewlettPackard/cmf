@@ -7,7 +7,7 @@ from cmflib import cmf
 from linear_regression import LinearPredictor
 import matplotlib.pyplot as plt
 import matplotlib
-
+from dvc.repo.get_url import get_url
 #matplotlib.use('Agg')
 parser = argparse.ArgumentParser()
 parser.add_argument('--seed', type=int, default=1, help="random seed")
@@ -36,12 +36,6 @@ args = parser.parse_args()
 pprint(vars(args))
 print()
 
-
-###-- Preparation Stage --###
-metawriter = cmf.Cmf(filename="mlmd", pipeline_name=args.df_pipeline_name, graph=True)
-_ = metawriter.create_context(pipeline_stage="Prepare", custom_properties=vars(args))
-_ = metawriter.create_execution(execution_type="Prepare", custom_properties=vars(args))
-
 # fix random seed
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
@@ -55,7 +49,6 @@ dataset = get_dataset(args.dataset_name)                   # load dataset
 
 #--cmf--#
 original_folder_path = "data/"+args.dataset_name
-_ = metawriter.log_dataset(original_folder_path, "output", custom_properties={"Type": args.dataset_name})
 
 net = get_net(args.dataset_name, device)                   # load network
 strategy = get_strategy(args.strategy_name)(dataset, net)  # load strategy
@@ -67,13 +60,6 @@ print(f"number of unlabeled pool: {dataset.n_pool-args.n_init_labeled}")
 print(f"number of testing pool: {dataset.n_test}")
 print()
 
-###-- Selection Stage --###
-metawriter2 = cmf.Cmf(filename="mlmd", pipeline_name=args.df_pipeline_name, graph=True)
-_ = metawriter2.create_context(pipeline_stage="Selected-0")
-_ = metawriter2.create_execution(execution_type="Selected", custom_properties={"n_init_labeled":args.n_init_labeled,\
-                "n_pool-args-n_init_labeled":dataset.n_pool-args.n_init_labeled, "n_test":dataset.n_test})
-_ = metawriter2.log_dataset(original_folder_path, "input", custom_properties={"Type": args.dataset_name})
-
 
 # round 0 accuracy
 print("Round 0")
@@ -81,45 +67,20 @@ labeled_idxs, labeled_data = strategy.dataset.get_labeled_data()
 path = "data/round-0.txt"
 np.savetxt(path, torch.Tensor(labeled_idxs).numpy())
 
-#--cmf--#
-_ = metawriter2.log_dataset(path, "output", custom_properties={"Type": args.dataset_name})
-
-
-
-
-###-- Train Stage --###
-metawriter2 = cmf.Cmf(filename="mlmd", pipeline_name=args.df_pipeline_name, graph=True)
-_ = metawriter2.create_context(pipeline_stage="Train-0")
-_ = metawriter2.create_execution(execution_type="Train", custom_properties={"n_init_labeled":args.n_init_labeled,\
-                "n_pool-args-n_init_labeled":dataset.n_pool-args.n_init_labeled, "n_test":dataset.n_test})
-
-_ = metawriter2.log_dataset(path, "input", custom_properties={"Type": args.dataset_name})
 strategy.train()
 
 #saving the model
 model_path = "data/model-" + str(0)
 strategy.save_model(model_path)
 
-_ = metawriter2.log_model(model_path, "output", model_framework="Torch", model_type="CNN",
-        model_name=args.dataset_name
-    )
 print(model_path)
-###-- Evaluate Stage --###
-
-_ = metawriter2.create_context(pipeline_stage="Evaluate-"+str(0))
-_ = metawriter2.create_execution(execution_type="Evaluate", custom_properties={"n_init_labeled":args.n_init_labeled,\
-                "n_pool-args_n_init_labeled":dataset.n_pool-args.n_init_labeled, "n_test":dataset.n_test})
 
 preds = strategy.predict(dataset.get_test_data(), model_path)
 
-
-#--cmf--#
-
-_ = metawriter2.log_model(model_path, "input", model_framework="Torch", model_type="CNN",
-        model_name=args.dataset_name
-)
 print(f"Round 0 testing accuracy: {dataset.cal_test_acc(preds)}")
 accuracy = dataset.cal_test_acc(preds)
 
-_ = metawriter2.log_execution_metrics("Test", {"accuracy":accuracy})
 prev_model = model_path
+
+path = "data/metrics-0"
+np.savetxt(path, torch.Tensor([accuracy]).numpy())

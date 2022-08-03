@@ -69,20 +69,10 @@ print()
 
 model_path = prev_model
 
-###-- Evaluate Stage --###
-
-metawriter2 = cmf.Cmf(filename="mlmd", pipeline_name=args.df_pipeline_name, graph=True)
-_ = metawriter2.create_context(pipeline_stage="Evaluate-"+str(rd))
-_ = metawriter2.create_execution(execution_type="Evaluate", custom_properties={"n_init_labeled":args.n_init_labeled,\
-                "n_pool-args_n_init_labeled":dataset.n_pool-args.n_init_labeled, "n_test":dataset.n_test})
-
-_ = metawriter2.log_model(model_path, "input", model_framework="Torch", model_type="CNN",
-        model_name=args.dataset_name
-    )
-    # calculate accuracy
 preds = strategy.predict(dataset.get_test_data(), model_path)
 accuracy = dataset.cal_test_acc(preds)
-_ = metawriter2.log_execution_metrics("Test", {"accuracy":accuracy})
-prev_model = model_path
 
+prev_model = model_path
+path = "data/metrics-"+str(rd)
+np.savetxt(path, torch.Tensor([accuracy]).numpy())
 print(f"Round {rd} testing accuracy: {accuracy}")
