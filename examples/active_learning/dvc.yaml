@@ -28,8 +28,6 @@ stages:
 
                  outs:
                          - data/round-${item.round}.txt
-                           #- data/scores-round-${item.round}.txt
-                           #  - data/dfscores-round-${item.round}.txt
             
   active_learning_training:
       
@@ -42,7 +40,6 @@ stages:
             prev_round: 2
         do:
             cmd:          
-
               python demo_train.py --trained_model data/model-${item.prev_round}  --enable_df True --round ${item.round}
                  --query_idx data/round-${item.round}.txt
 
@@ -56,7 +53,6 @@ stages:
   active_learning_eval:
           
         foreach:
-
           - round: 1
             prev_round: 0
           - round: 2
@@ -65,7 +61,6 @@ stages:
             prev_round: 2
         do:
             cmd: 
-         
                 python demo_eval.py --trained_model data/model-${item.round}  --enable_df True --round ${item.round}
 
             deps:
