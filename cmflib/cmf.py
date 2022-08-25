@@ -106,7 +106,7 @@ class Cmf(object):
     def update_execution(self, execution_id: int):
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
-            print("Error no execution id")
+            print("****Error - no execution id ****")
             exit()
         execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
