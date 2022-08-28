@@ -48,7 +48,7 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
         c_hash = ''.join(url_list[len_list - 2:len_list])
 
     except dvc.exceptions.PathMissingError as err:
-        print(f"dvc.exceptions.PathMissingError Caught  Unexpected {err}, {type(err)}")
+        print(f"dvc.exceptions.PathMissingError Caught Unexpected {err}, {type(err)}")
     except Exception as err:
         print(f"Unexpected {err}, {type(err)}")
     return c_hash
