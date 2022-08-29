@@ -13,15 +13,15 @@
 # limitations under the License.
 ###
 
-import json
+
 import os
 import sys
-import ml_metadata
 from time import sleep
 from ml_metadata.proto import metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
+import functools
 
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
@@ -50,7 +50,8 @@ def connect_to_mlmd() -> metadata_store.MetadataStore:
         try:
             mlmd_store = metadata_store.MetadataStore(mlmd_connection_config)
             # All get requests fail when the DB is empty, so we have to use a put request.
-            # TODO: Replace with _ = mlmd_store.get_context_types() when https://github.com/google/ml-metadata/issues/28 is fixed
+            # TODO: Replace with _ = mlmd_store.get_context_types()
+            # when https://github.com/google/ml-metadata/issues/28 is fixed
             _ = mlmd_store.put_execution_type(
                 metadata_store_pb2.ExecutionType(
                     name="DummyExecutionType",
@@ -188,9 +189,6 @@ def create_context_with_type(
     )
     context.id = store.put_contexts([context])[0]
     return context
-
-
-import functools
 
 
 @functools.lru_cache(maxsize=128)
@@ -494,7 +492,7 @@ def link_execution_to_artifact(
 
     artifact = artifacts[-1]
 
-    #Check if event already exist
+    # Check if event already exist
     events = store.get_events_by_artifact_ids([artifact.id])
     for evt in events:
         if evt.execution_id == execution_id:
