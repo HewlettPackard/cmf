@@ -19,11 +19,11 @@ import pandas as pd
 import uuid
 import re
 import os
-import dvc
 import sys
 from ml_metadata.proto import metadata_store_pb2 as mlpb, metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
-from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, commit_output, git_get_repo, commit_dvc_lock_file
+from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
+    commit_output, git_get_repo, commit_dvc_lock_file
 import cmflib.graph_wrapper as graph_wrapper
 from cmflib.metadata_helper import get_or_create_parent_context, get_or_create_run_context, \
     associate_child_to_parent_context, create_new_execution_in_existing_run_context, link_execution_to_artifact, \
@@ -73,24 +73,24 @@ class Cmf(object):
 
     def create_execution(self, execution_type: str,
                          custom_properties: {} = None) -> mlpb.Execution:
-        #Initializing the execution related fields
+        # Initializing the execution related fields
         self.metrics = {}
         self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
-        self.execution = create_new_execution_in_existing_run_context \
-            (store=self.store,
-             execution_type_name=execution_type,
-             context_id=self.child_context.id,
-             execution=str(sys.argv),
-             pipeline_id=self.parent_context.id,
-             pipeline_type=self.parent_context.name,
-             git_repo=git_repo,
-             git_start_commit=git_start_commit,
-             custom_properties=custom_props
-             )
+        self.execution = create_new_execution_in_existing_run_context(
+         store=self.store,
+         execution_type_name=execution_type,
+         context_id=self.child_context.id,
+         execution=str(sys.argv),
+         pipeline_id=self.parent_context.id,
+         pipeline_type=self.parent_context.name,
+         git_repo=git_repo,
+         git_start_commit=git_start_commit,
+         custom_properties=custom_props
+         )
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = str(sys.argv)
         for k, v in custom_props.items():
@@ -106,7 +106,7 @@ class Cmf(object):
     def update_execution(self, execution_id: int):
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
-            print("****Error - no execution id ****")
+            print("Error - no execution id")
             exit()
         execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
@@ -116,10 +116,11 @@ class Cmf(object):
         self.execution_label_props["execution_command"] = self.execution.properties["Execution"].string_value
         if self.graph:
             self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
-                                              self.execution.properties["Execution"].string_value, self.execution.id, {})
+                                              self.execution.properties["Execution"].string_value,
+                                              self.execution.id, {})
         return self.execution
     
-    def log_dvc_lock(self, file_path:str):
+    def log_dvc_lock(self, file_path: str):
         return commit_dvc_lock_file(file_path, self.execution.id)
 
     def log_dataset(self, url: str, event: str, custom_properties: {} = None) -> mlpb.Artifact:
@@ -128,7 +129,6 @@ class Cmf(object):
         name = re.split('/', url)[-1]
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
-        c_hash = ""
         if event.lower() == "input":
             event_type = metadata_store_pb2.Event.Type.INPUT
 
@@ -143,7 +143,7 @@ class Cmf(object):
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
-            #Quick fix- Updating only the name
+            # Quick fix- Updating only the name
             if custom_properties is not None:
                 self.update_existing_artifact(existing_artifact, custom_properties)
             uri = c_hash
@@ -156,21 +156,21 @@ class Cmf(object):
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-            artifact = create_new_artifact_event_and_attribution \
-                (store=self.store,
-                 execution_id=self.execution.id,
-                 context_id=self.child_context.id,
-                 uri=uri,
-                 name=url,
-                 type_name="Dataset",
-                 event_type=event_type,
-                 properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
-                 artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
-                                           "Commit": metadata_store_pb2.STRING
-                                           },
-                 custom_properties=custom_props,
-                 milliseconds_since_epoch=int(time.time() * 1000),
-                 )
+            artifact = create_new_artifact_event_and_attribution(
+             store=self.store,
+             execution_id=self.execution.id,
+             context_id=self.child_context.id,
+             uri=uri,
+             name=url,
+             type_name="Dataset",
+             event_type=event_type,
+             properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
+             artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
+                                       "Commit": metadata_store_pb2.STRING
+                                       },
+             custom_properties=custom_props,
+             milliseconds_since_epoch=int(time.time() * 1000),
+             )
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = dataset_commit
         self.execution_label_props["git_repo"] = git_repo
@@ -194,7 +194,8 @@ class Cmf(object):
                                                           self.execution_label_props)
         return artifact
 
-    def log_dataset_with_version(self, url: str, version:str,  event: str, custom_properties: {} = None) -> mlpb.Artifact:
+    def log_dataset_with_version(self, url: str, version: str,  event: str,
+                                 custom_properties: {} = None) -> mlpb.Artifact:
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split('/', url)[-1]
@@ -204,7 +205,7 @@ class Cmf(object):
         if event.lower() == "input":
             event_type = metadata_store_pb2.Event.Type.INPUT
 
-        #dataset_commit = commit_output(url, self.execution.id)
+        # dataset_commit = commit_output(url, self.execution.id)
 
         dataset_commit = version
         url = url + ":" + c_hash
@@ -215,7 +216,7 @@ class Cmf(object):
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
-            #Quick fix- Updating only the name
+            # Quick fix- Updating only the name
             if custom_properties is not None:
                 self.update_existing_artifact(existing_artifact, custom_properties)
             uri = c_hash
@@ -228,21 +229,21 @@ class Cmf(object):
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-            artifact = create_new_artifact_event_and_attribution \
-                (store=self.store,
-                 execution_id=self.execution.id,
-                 context_id=self.child_context.id,
-                 uri=uri,
-                 name=url,
-                 type_name="Dataset",
-                 event_type=event_type,
-                 properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
-                 artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
-                                           "Commit": metadata_store_pb2.STRING
-                                           },
-                 custom_properties=custom_props,
-                 milliseconds_since_epoch=int(time.time() * 1000),
-                 )
+            artifact = create_new_artifact_event_and_attribution(
+             store=self.store,
+             execution_id=self.execution.id,
+             context_id=self.child_context.id,
+             uri=uri,
+             name=url,
+             type_name="Dataset",
+             event_type=event_type,
+             properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
+             artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
+                                       "Commit": metadata_store_pb2.STRING
+                                       },
+             custom_properties=custom_props,
+             milliseconds_since_epoch=int(time.time() * 1000),
+             )
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = dataset_commit
         self.execution_label_props["git_repo"] = git_repo
@@ -273,7 +274,7 @@ class Cmf(object):
         if custom_properties is None:
             custom_properties = {}
         custom_props = {} if custom_properties is None else custom_properties
-        name = re.split('/', path)[-1]
+        # name = re.split('/', path)[-1]
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
         if event.lower() == "input":
@@ -284,7 +285,7 @@ class Cmf(object):
 
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
-        uri = ""
+        # uri = ""
         if c_hash and c_hash.strip():
             uri = c_hash.strip()
             existing_artifact.extend(self.store.get_artifacts_by_uri(uri))
@@ -431,7 +432,7 @@ class Cmf(object):
 
     def update_existing_artifact(self, artifact: mlpb.Artifact, custom_props: {}):
         for key, value in custom_props.items():
-            if isinstance(value,int):
+            if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
