@@ -134,10 +134,11 @@ class GraphDriver:
     def create_execution_links(self, parent_artifact_uri, parent_artifact_name, parent_artifact_type):
 
         parent_execution_query = "MATCH (n:{}".format(
-            parent_artifact_type) + "{uri: '" + parent_artifact_uri + "'}) <-[:output]-(f:Execution) Return ID(f)as id, f.uri as uri"
+            parent_artifact_type) + "{uri: '" + parent_artifact_uri + "'}) " \
+            "<-[:output]-(f:Execution) Return ID(f)as id, f.uri as uri"
 
-        already_linked_execution_query = "MATCH (f)-[r:linked]->(e2:Execution) WHERE r.uri = '{}' RETURN ID(f)as id, f.uri as uri".format(
-            parent_artifact_uri)
+        already_linked_execution_query = "MATCH (f)-[r:linked]->(e2:Execution) " \
+            "WHERE r.uri = '{}' RETURN ID(f)as id, f.uri as uri".format(parent_artifact_uri)
 
         with self.driver.session() as session:
             execution_parent = session.read_transaction(self._run_transaction, parent_execution_query)
@@ -196,7 +197,7 @@ class GraphDriver:
         custom_properties["pipeline_id"] = str(pipeline_id)
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Dataset {uri:\"" + uri + "\"}) SET "
-        props_str = ""
+        # props_str = ""
         for k, v in custom_properties.items():
             k = re.sub('\W+', '', k)
             props_str = "a." + k + " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(
@@ -296,7 +297,7 @@ class GraphDriver:
         parent_child_syntax_3 = parent_child_syntax_3.rstrip(parent_child_syntax_3[-1])
         parent_child_syntax_4 = "}]->(b) RETURN type(r)"
         parent_child_syntax = parent_child_syntax_1 + parent_child_syntax_2 \
-                              + parent_child_syntax_3 + parent_child_syntax_4
+            + parent_child_syntax_3 + parent_child_syntax_4
         return parent_child_syntax
 
     @staticmethod
@@ -320,7 +321,7 @@ class GraphDriver:
         parent_child_syntax_3 = parent_child_syntax_3.rstrip(parent_child_syntax_3[-1])
         parent_child_syntax_4 = "}]->(b) RETURN type(r)"
         parent_child_syntax = parent_child_syntax_1 + parent_child_syntax_2 + parent_child_syntax_3 + \
-                              parent_child_syntax_4
+            parent_child_syntax_4
         return parent_child_syntax
 
     @staticmethod

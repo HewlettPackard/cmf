@@ -70,6 +70,7 @@ def git_get_commit() -> str:
         print(f"Unexpected {errs}")
     return commit
 
+
 def commit_dvc_lock_file(file_path: str, execution_id) -> str:
     commit = ""
     try:
