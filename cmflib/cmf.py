@@ -135,7 +135,10 @@ class Cmf(object):
         dataset_commit = commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
 
-        url = url + ":" + c_hash
+        unique_name = url + ":" + c_hash
+        dvc_url =  dvc_get_url(url)
+        print(dvc_url)
+
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
@@ -161,18 +164,20 @@ class Cmf(object):
                  execution_id=self.execution.id,
                  context_id=self.child_context.id,
                  uri=uri,
-                 name=url,
+                 name=unique_name,
                  type_name="Dataset",
                  event_type=event_type,
-                 properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
+                 properties={"git_repo": str(git_repo), "Commit": str(dataset_commit), "url":str(dvc_url)},
                  artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
-                                           "Commit": metadata_store_pb2.STRING
+                                           "Commit": metadata_store_pb2.STRING,
+                                           "url":metadata_store_pb2.STRING
                                            },
                  custom_properties=custom_props,
                  milliseconds_since_epoch=int(time.time() * 1000),
                  )
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = dataset_commit
+        custom_props["url"] = dvc_url
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
@@ -208,6 +213,7 @@ class Cmf(object):
 
         dataset_commit = version
         url = url + ":" + c_hash
+        #To do - dvc_url(s3_url)
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
@@ -284,6 +290,8 @@ class Cmf(object):
 
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
+        dvc_url = dvc_get_url(path, False)
+        url = dvc_url
         uri = ""
         if c_hash and c_hash.strip():
             uri = c_hash.strip()
@@ -313,16 +321,19 @@ class Cmf(object):
                 properties={"model_framework": str(model_framework),
                             "model_type": str(model_type),
                             "model_name": str(model_name),
-                            "Commit": str(model_commit)},
+                            "Commit": str(model_commit),
+                            "url": str(url)},
                 artifact_type_properties={"model_framework": metadata_store_pb2.STRING,
                                           "model_type": metadata_store_pb2.STRING,
                                           "model_name": metadata_store_pb2.STRING,
                                           "Commit": metadata_store_pb2.STRING,
+                                          "url":metadata_store_pb2.STRING,
                                           },
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
         # custom_properties["Commit"] = model_commit
+        custom_props["url"] = url
         self.execution_label_props["Commit"] = model_commit
         if self.graph:
             self.driver.create_model_node(model_uri, uri, event, self.execution.id, self.parent_context, custom_props)
@@ -390,8 +401,9 @@ class Cmf(object):
         metrics_df.to_parquet(metrics_name)
         metrics_commit = commit_output(metrics_name, self.execution.id)
         uri = dvc_get_hash(metrics_name)
+        url = dvc_get_url(metrics_name, False)
         name = metrics_name + ":" + uri + ":" + str(self.execution.id)
-        custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+        custom_props = {"Name": metrics_name, "Commit": metrics_commit, "url":url}
         metrics = create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
