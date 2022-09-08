@@ -2,7 +2,7 @@
 CMF library helps to collect and store information associated with  ML pipelines. 
 It provides  api's to record  and query the metadata associated with ML pipelines.
 The framework adopts a data first approach and all artifacts recorded in the framework are versioned and identified by the content hash.<br>
-[Detailed documentation of the API's](docs/API.md)
+[Detailed documentation of the API's](API.md)
 
 # Getting Started
 ### Install the library
@@ -18,7 +18,7 @@ pip install <cmflib-0.0.1-py2-none-any.whl>
 or Install directly,
 pip install .
 
-[Quick start](examples/example-get-started/README.md)
+[Quick start](../examples/example-get-started/README.md)
 ### Pre-Requisite
 1. Python Version - Needs Python version >=3.6 and <3.9 (Not compatible with Python3.9)<br>
 2. Set Environment variables.<br>

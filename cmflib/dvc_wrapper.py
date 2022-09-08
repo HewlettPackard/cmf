@@ -55,6 +55,8 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
 
 
 def git_get_commit() -> str:
+    process = ""
+    commit = ""
     try:
         process = subprocess.Popen(['git', 'rev-parse', 'HEAD'],
                                    stdout=subprocess.PIPE,
@@ -73,6 +75,7 @@ def git_get_commit() -> str:
 
 def commit_dvc_lock_file(file_path: str, execution_id) -> str:
     commit = ""
+    process = ""
     try:
         process = subprocess.Popen(['git', 'add', file_path],
                                    stdout=subprocess.PIPE,
@@ -102,6 +105,7 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
 
 def commit_output(folder: str, execution_id: str) -> str:
     commit = ""
+    process = ""
     try:
         process = subprocess.Popen(['dvc', 'add', folder],
                                    stdout=subprocess.PIPE,
@@ -140,6 +144,9 @@ def commit_output(folder: str, execution_id: str) -> str:
 # Get the remote repo
 def git_get_repo() -> str:
     commit = ""
+    process = ""
+    output = ""
+    errs = ""
     try:
         process = subprocess.Popen(['git', 'remote', '-v'],
                                    stdout=subprocess.PIPE,
