@@ -105,3 +105,6 @@ Git repository is used to track the code. Along with the code, the metadata file
 
 4. Provides collaboration across teams
 
+### Community
+
+<a href="https://commonmetadata.slack.com/.slack.com" target="_blank"> Slack: Common Metadata Framework</a>
