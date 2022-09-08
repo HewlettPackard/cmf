@@ -18,7 +18,7 @@ pip install <cmflib-0.0.1-py2-none-any.whl>
 or Install directly,
 pip install .
 
-[Quick start](examples/example-get-started/README.md)
+[Quick start](../examples/example-get-started/README.md)
 ### Pre-Requisite
 1. Python Version - Needs Python version >=3.6 and <3.9 (Not compatible with Python3.9)<br>
 2. Set Environment variables.<br>
