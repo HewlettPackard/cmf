@@ -391,7 +391,7 @@ class Cmf(object):
         metrics_df.to_parquet(metrics_name)
         metrics_commit = commit_output(metrics_name, self.execution.id)
         uri = dvc_get_hash(metrics_name)
-        name = metrics_name + ":" + uri + ":" + str(self.execution.id)
+        name = metrics_name + ":" + uri + ":" + str(self.execution.id)+":"+ str(uuid.uuid1())
         custom_props = {"Name": metrics_name, "Commit": metrics_commit}
         metrics = create_new_artifact_event_and_attribution(
             store=self.store,
