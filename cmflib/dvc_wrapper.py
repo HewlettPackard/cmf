@@ -54,6 +54,27 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
     return c_hash
 
 
+def git_checkout_new_branch(branch_name:str):
+
+    process = ""
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'checkout', '-q', '-B', branch_name],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        commit = output.strip()
+        print(f"*** Note: CMF will check out a new branch in git to commit the metadata files ***\n"
+        f"*** The checked out branch is {branch_name}. ***")
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+        print(f"Unexpected {err}, {type(err)}")
+        print(f"Unexpected {outs}")
+        print(f"Unexpected {errs}")
+        print(f"Checking out new branch for the execution failed, continuing in the default branch.")
 def git_get_commit() -> str:
     process = ""
     commit = ""
@@ -119,7 +140,7 @@ def commit_output(folder: str, execution_id: str) -> str:
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         _, _ = process.communicate(timeout=60)
-        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting ' + str(folder) + "-" + str(execution_id)],
+        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting dvc metadata file for ' + str(folder) + "-" + str(execution_id)],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
 

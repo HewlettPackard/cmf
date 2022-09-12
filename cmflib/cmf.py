@@ -23,7 +23,7 @@ import sys
 from ml_metadata.proto import metadata_store_pb2 as mlpb, metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
-    commit_output, git_get_repo, commit_dvc_lock_file
+    commit_output, git_get_repo, commit_dvc_lock_file, git_checkout_new_branch
 import cmflib.graph_wrapper as graph_wrapper
 from cmflib.metadata_helper import get_or_create_parent_context, get_or_create_run_context, \
     associate_child_to_parent_context, create_new_execution_in_existing_run_context, link_execution_to_artifact, \
@@ -42,6 +42,7 @@ class Cmf(object):
         config = metadata_store_pb2.ConnectionConfig()
         config.sqlite.filename_uri = filename
         self.store = metadata_store.MetadataStore(config)
+        self.filename = filename
         self.child_context = None
         self.execution = None
         self.execution_name = ""
@@ -50,6 +51,8 @@ class Cmf(object):
         self.input_artifacts = []
         self.execution_label_props = {}
         self.graph = graph
+
+        git_checkout_new_branch(filename)
         self.parent_context = get_or_create_parent_context(store=self.store, pipeline=pipeline_name,
                                                            custom_properties=custom_properties)
         if graph:
@@ -57,7 +60,9 @@ class Cmf(object):
             self.driver.create_pipeline_node(pipeline_name, self.parent_context.id, custom_properties)
 
     def __del__(self):
-        if self.graph:
+        #if self.execution is not None:
+        #    commit_output(self.filename, self.execution.id)
+        if self.graph and self.driver is not None:
             self.driver.close()
 
     def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
