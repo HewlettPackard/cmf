@@ -20,6 +20,44 @@ import dvc.api
 import dvc.exceptions
 
 
+def check_git_remote() -> bool:
+    process = ""
+    commit = ""
+    git_remote_configured = False
+    try:
+        process = subprocess.Popen(['git', 'remote', 'show'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        remote = output.strip()
+        if remote:
+            git_remote_configured = True
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+    return git_remote_configured
+
+def check_default_remote() -> bool:
+    process = ""
+    commit = ""
+    dvc_configured = False
+    try:
+        process = subprocess.Popen(['dvc', 'config', 'core.remote'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        remote = output.strip()
+        if remote:
+            dvc_configured = True
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+    return dvc_configured
+
 def dvc_get_url(folder: str, retry: bool = False, repo: str = "") -> str:
     url = ""
     try:
@@ -53,6 +91,23 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
         print(f"Unexpected {err}, {type(err)}")
     return c_hash
 
+def check_git_repo() -> bool:
+
+    process = ""
+    commit = ""
+    is_git_repo = False
+    try:
+        process = subprocess.Popen(['git', 'rev-parse', '--is-inside-work-tree'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        is_git_repo = output.strip()
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+    return is_git_repo
 
 def git_checkout_new_branch(branch_name:str):
 

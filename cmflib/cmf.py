@@ -23,7 +23,8 @@ import sys
 from ml_metadata.proto import metadata_store_pb2 as mlpb, metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
-    commit_output, git_get_repo, commit_dvc_lock_file, git_checkout_new_branch
+    commit_output, git_get_repo, commit_dvc_lock_file, git_checkout_new_branch, \
+    check_git_repo, check_default_remote, check_git_remote
 import cmflib.graph_wrapper as graph_wrapper
 from cmflib.metadata_helper import get_or_create_parent_context, get_or_create_run_context, \
     associate_child_to_parent_context, create_new_execution_in_existing_run_context, link_execution_to_artifact, \
@@ -37,6 +38,7 @@ class Cmf(object):
 
     def __init__(self, filename: str = "mlmd",
                  pipeline_name="", custom_properties=None, graph: bool = False):
+        self.__prechecks()
         if custom_properties is None:
             custom_properties = {}
         config = metadata_store_pb2.ConnectionConfig()
@@ -59,10 +61,44 @@ class Cmf(object):
             self.driver = graph_wrapper.GraphDriver(Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password)
             self.driver.create_pipeline_node(pipeline_name, self.parent_context.id, custom_properties)
 
+    def __prechecks(self):
+        self.__check_git_init()
+        self.__check_default_remote()
+        self.__check_git_remote()
+
+    def __check_git_remote(self):
+        if not check_git_remote():
+            print(f"*** Error git remote not set ***\n"
+                  f"*** Run the command `git remote add origin <GIT_REMOTE_URL>` ***\n"
+                  f" or \n"
+                  f" After Updating the sample_env file, run `source sample_env`\n"
+                  f" Then run 'sh initialize.sh'")
+            exit(1)
+
+    def __check_default_remote(self):
+        if not check_default_remote():
+            print(f"*** DVC not configured correctly***\n"
+                  f"Initialize dvc and add a default dvc remote\n"
+                  f"Run commands\n"
+                  f"dvc init\n"
+                  f"dvc remote add -d <remotename> <remotelocation>\n")
+            exit(1)
+
+    def __check_git_init(self):
+        if not check_git_repo():
+            print(f"*** Not a git repo, Please do the following ***\n"
+                  f" Initialize git\n"
+                  f" Initialize dvc and add a default dvc remote\n"
+                  f" or \n"
+                  f" After Updating the sample_env file, run `source sample_env`\n"
+                  f" Then run 'sh initialize.sh'")
+            exit(1)
+                  
+
     def __del__(self):
         #if self.execution is not None:
         #    commit_output(self.filename, self.execution.id)
-        if self.graph and self.driver is not None:
+        if hasattr(self, 'driver'):
             self.driver.close()
 
     def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
