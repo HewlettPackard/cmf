@@ -144,13 +144,31 @@ class Cmf(object):
                                               str(sys.argv), self.execution.id, custom_props)
         return self.execution
 
-    def update_execution(self, execution_id: int):
+    def update_execution(self, execution_id: int, custom_properties: {} = None):
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
             print("Error - no execution id")
             exit()
         execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
+        if custom_properties:
+            for key, value in custom_properties.items():
+                if isinstance(value, int):
+                   self.execution.custom_properties[key].int_value = value
+                else:
+                   self.execution.custom_properties[key].string_value = str(value)
+        self.store.put_executions([self.execution])
+        c_props = {}
+        for k, v in self.execution.custom_properties.items():
+            key = re.sub('-', '_', k)
+            val_type =  str(v).split(':')[0]
+            if val_type == "string_value":
+                val = self.execution.custom_properties[k].string_value
+            else:
+                val = str(v).split(':')[1]
+            # The properties value are stored in the format type:value hence, taking only value
+            self.execution_label_props[key] = val
+            c_props[key]= val
         self.execution_name = str(self.execution.id) + "," + execution_type.name
         self.execution_command = self.execution.properties["Execution"]
         self.execution_label_props["Execution_Name"] = execution_type.name + ":" + str(self.execution.id)
@@ -158,7 +176,7 @@ class Cmf(object):
         if self.graph:
             self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
                                               self.execution.properties["Execution"].string_value,
-                                              self.execution.id, {})
+                                              self.execution.id, c_props)
         return self.execution
     
     def log_dvc_lock(self, file_path: str):
