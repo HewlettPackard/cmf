@@ -39,6 +39,7 @@ def check_git_remote() -> bool:
         outs, errs = process.communicate()
     return git_remote_configured
 
+
 def check_default_remote() -> bool:
     process = ""
     commit = ""
@@ -57,6 +58,7 @@ def check_default_remote() -> bool:
         process.kill()
         outs, errs = process.communicate()
     return dvc_configured
+
 
 def dvc_get_url(folder: str, retry: bool = False, repo: str = "") -> str:
     url = ""
@@ -91,13 +93,16 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
         print(f"Unexpected {err}, {type(err)}")
     return c_hash
 
+
 def check_git_repo() -> bool:
 
     process = ""
     commit = ""
     is_git_repo = False
     try:
-        process = subprocess.Popen(['git', 'rev-parse', '--is-inside-work-tree'],
+        process = subprocess.Popen(['git',
+                                    'rev-parse',
+                                    '--is-inside-work-tree'],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
         # output = process.stdout.readline()
@@ -109,12 +114,17 @@ def check_git_repo() -> bool:
         outs, errs = process.communicate()
     return is_git_repo
 
-def git_checkout_new_branch(branch_name:str):
+
+def git_checkout_new_branch(branch_name: str):
 
     process = ""
     commit = ""
     try:
-        process = subprocess.Popen(['git', 'checkout', '-q', '-B', branch_name],
+        process = subprocess.Popen(['git',
+                                    'checkout',
+                                    '-q',
+                                    '-B',
+                                    branch_name],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
         # output = process.stdout.readline()
@@ -122,7 +132,7 @@ def git_checkout_new_branch(branch_name:str):
 
         commit = output.strip()
         print(f"*** Note: CMF will check out a new branch in git to commit the metadata files ***\n"
-        f"*** The checked out branch is {branch_name}. ***")
+              f"*** The checked out branch is {branch_name}. ***")
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
@@ -130,6 +140,8 @@ def git_checkout_new_branch(branch_name:str):
         print(f"Unexpected {outs}")
         print(f"Unexpected {errs}")
         print(f"Checking out new branch for the execution failed, continuing in the default branch.")
+
+
 def git_get_commit() -> str:
     process = ""
     commit = ""
@@ -158,9 +170,17 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         _, _ = process.communicate(timeout=60)
-        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting ' + str(file_path) + "-" + str(execution_id)],
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
+        process = subprocess.Popen(
+            [
+                'git',
+                'commit',
+                '-m ' +
+                'commiting ' +
+                str(file_path) +
+                "-" +
+                str(execution_id)],
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
 
         output, errs = process.communicate(timeout=60)
         commit = output.strip()
@@ -195,9 +215,17 @@ def commit_output(folder: str, execution_id: str) -> str:
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         _, _ = process.communicate(timeout=60)
-        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting dvc metadata file for ' + str(folder) + "-" + str(execution_id)],
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
+        process = subprocess.Popen(
+            [
+                'git',
+                'commit',
+                '-m ' +
+                'commiting dvc metadata file for ' +
+                str(folder) +
+                "-" +
+                str(execution_id)],
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
 
         output, errs = process.communicate(timeout=60)
         commit = output.strip()
