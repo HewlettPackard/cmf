@@ -105,6 +105,9 @@ Git repository is used to track the code. Along with the code, the metadata file
 
 4. Provides collaboration across teams
 
+### Talks and Papers
+1. <a href="https://drive.google.com/file/d/1Oqs0AN0RsAjt_y9ZjzYOmBxI8H0yqSpB/view" target="_blank">Monterey data conference 2022</a>
+
 ### Community
 
 <a href="https://commonmetadata.slack.com/" target="_blank"> Slack: Common Metadata Framework</a>
