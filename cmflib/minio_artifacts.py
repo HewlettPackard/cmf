@@ -3,10 +3,11 @@ from minio import Minio
 from minio.error import S3Error
 
 
-class Artifacts:
-    def get_dvc_config(self):
-        if os.path.exists(".dvc/config"):
-            file = open(".dvc/config", "r")
+class minio_artifacts:
+    def get_dvc_config(self, current_directory: str):
+        dvc_path = current_directory + "/.dvc/config"
+        if os.path.exists(dvc_path):
+            file = open(dvc_path, "r")
             while True:
                 line = file.readline()
                 if not line:
@@ -22,12 +23,12 @@ class Artifacts:
         else:
             pass
 
-    def download_artifacts(self, bucket_name: str, object_name: str, file_path: str):
+    def download_artifacts(self, current_directory: str, bucket_name: str, object_name: str, file_path: str):
         endpoint = ""
         access_key = ""
         secret_key = ""
         try:
-            endpoint, access_key, secret_key = self.get_dvc_config()
+            endpoint, access_key, secret_key = self.get_dvc_config(current_directory)
             client = Minio(
                 endpoint,
                 access_key=access_key,
