@@ -28,9 +28,21 @@ class CmfQuery(object):
     def _transform_to_dataframe(self, node):
         d = {"id": node.id}
         for k, v in node.properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.int_value
+            if v.HasField('string_value'):
+                d[k] = v.string_value
+            elif v.HasField('int_value'):
+                d[k] = v.int_value
+            else:
+                d[k] = v.double_value
+
         for k, v in node.custom_properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.int_value
+            if v.HasField('string_value'):
+                d[k] = v.string_value
+            elif v.HasField('int_value'):
+                d[k] = v.int_value
+            else:
+                d[k] = v.double_value
+
         df = pd.DataFrame(d, index=[0, ])
         return df
 
@@ -79,9 +91,19 @@ class CmfQuery(object):
              "name": node.name, "create_time_since_epoch": node.create_time_since_epoch,
              "last_update_time_since_epoch": node.last_update_time_since_epoch}
         for k, v in node.properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.double_value
+            if v.HasField('string_value'):
+                d[k] = v.string_value
+            elif v.HasField('int_value'):
+                d[k] = v.int_value
+            else:
+                d[k] = v.double_value
         for k, v in node.custom_properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.double_value
+            if v.HasField('string_value'):
+                d[k] = v.string_value
+            elif v.HasField('int_value'):
+                d[k] = v.int_value
+            else:
+                d[k] = v.double_value
         df = pd.DataFrame(d, index=[0, ])
         return df
 
@@ -209,6 +231,24 @@ class CmfQuery(object):
             df = df.append(d1, sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep='first', inplace=False)
         return df
+
+    def get_all_parent_executions(self, artifact_name:str)-> pd.DataFrame:
+        df = self.get_all_parent_artifacts(artifact_name)
+        artifact_ids = df.id.values.tolist()
+
+        executions_ids = set(
+            event.execution_id
+            for event in self.store.get_events_by_artifact_ids(artifact_ids)
+            if event.type == mlpb.Event.OUTPUT)
+        executions = self.store.get_executions_by_id(executions_ids)
+
+        df = pd.DataFrame()
+        for exe in executions:
+            d1 = self._transform_to_dataframe(exe)
+            # df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
+        
 
     def find_producer_execution(self, artifact_name: str) -> object:
         artifact = None
