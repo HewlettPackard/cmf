@@ -86,7 +86,7 @@ def get_or_create_artifact_type(store, type_name, properties: dict = None) -> me
     try:
         artifact_type = store.get_artifact_type(type_name=type_name)
         return artifact_type
-    except:
+    except BaseException:
         artifact_type = metadata_store_pb2.ArtifactType(
             name=type_name,
             properties=properties,
@@ -99,12 +99,13 @@ def get_or_create_execution_type(store, type_name, properties: dict = None) -> m
     try:
         execution_type = store.get_execution_type(type_name=type_name)
         return execution_type
-    except:
+    except BaseException:
         execution_type = metadata_store_pb2.ExecutionType(
             name=type_name,
             properties=properties,
         )
-        execution_type.id = store.put_execution_type(execution_type)  # Returns ID
+        execution_type.id = store.put_execution_type(
+            execution_type)  # Returns ID
         return execution_type
 
 
@@ -112,7 +113,7 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
     try:
         context_type = store.get_context_type(type_name=type_name)
         return context_type
-    except:
+    except BaseException:
         context_type = metadata_store_pb2.ContextType(
             name=type_name,
             properties=properties,
@@ -196,10 +197,12 @@ def get_context_by_name(
         store,
         context_name: str,
 ) -> metadata_store_pb2.Context:
-    matching_contexts = [context for context in store.get_contexts() if context.name == context_name]
+    matching_contexts = [
+        context for context in store.get_contexts() if context.name == context_name]
     assert len(matching_contexts) <= 1
     if len(matching_contexts) == 0:
-        raise ValueError('Context with name "{}" was not found'.format(context_name))
+        raise ValueError(
+            'Context with name "{}" was not found'.format(context_name))
     return matching_contexts[0]
 
 
@@ -213,7 +216,7 @@ def get_or_create_context_with_type(
 ) -> metadata_store_pb2.Context:
     try:
         context = get_context_by_name(store, context_name)
-    except:
+    except BaseException:
         context = create_context_with_type(
             store=store,
             context_name=context_name,
@@ -229,8 +232,8 @@ def get_or_create_context_with_type(
     assert len(context_types) == 1
     if context_types[0].name != type_name:
         raise RuntimeError(
-            'Context "{}" was found, but it has type "{}" instead of "{}"'.format(context_name, context_types[0].name,
-                                                                                  type_name))
+            'Context "{}" was found, but it has type "{}" instead of "{}"'.format(
+                context_name, context_types[0].name, type_name))
     return context
 
 
@@ -293,7 +296,8 @@ def get_or_create_parent_context(
 ) -> metadata_store_pb2.Context:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     context = get_or_create_context_with_type(
         store=store,
@@ -303,10 +307,9 @@ def get_or_create_parent_context(
             PARENT_CONTEXT_NAME: metadata_store_pb2.STRING,
         },
         properties={
-            PARENT_CONTEXT_NAME: metadata_store_pb2.Value(string_value=pipeline)
-        },
-        custom_properties=mlmd_custom_properties
-    )
+            PARENT_CONTEXT_NAME: metadata_store_pb2.Value(
+                string_value=pipeline)},
+        custom_properties=mlmd_custom_properties)
     return context
 
 
@@ -317,7 +320,8 @@ def get_or_create_run_context(
 ) -> metadata_store_pb2.Context:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     context = get_or_create_context_with_type(
         store=store,
@@ -327,20 +331,20 @@ def get_or_create_run_context(
             PIPELINE_STAGE: metadata_store_pb2.STRING,
         },
         properties={
-            PIPELINE_STAGE: metadata_store_pb2.Value(string_value=pipeline_stage)
-        },
-        custom_properties=mlmd_custom_properties
-    )
+            PIPELINE_STAGE: metadata_store_pb2.Value(
+                string_value=pipeline_stage)},
+        custom_properties=mlmd_custom_properties)
     return context
 
 
 def associate_child_to_parent_context(store, parent_context: metadata_store_pb2.Context,
                                       child_context: metadata_store_pb2.Context):
     try:
-        associate = metadata_store_pb2.ParentContext(child_id=child_context.id, parent_id=parent_context.id)
+        associate = metadata_store_pb2.ParentContext(
+            child_id=child_context.id, parent_id=parent_context.id)
         store.put_parent_contexts([associate])
     except Exception as e:
-        #print(e)
+        # print(e)
         # print('Warning: Exception:{}'.format(str(e)), file=sys.stderr)
         sys.stderr.flush()
 
@@ -359,7 +363,8 @@ def create_new_execution_in_existing_run_context(
 ) -> metadata_store_pb2.Execution:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     return create_new_execution_in_existing_context(
         store=store,
@@ -412,7 +417,8 @@ def create_new_artifact_event_and_attribution(
 
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     artifact = create_artifact_with_type(
         store=store,
