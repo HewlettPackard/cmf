@@ -9,6 +9,15 @@ class CmfParserError(Exception):
 
 
 def parse_args(argv=None):
+    """Parses CLI arguments
+
+    Args:
+        argv: optional list of arguments to parse. sys.argv is used by default.
+
+    Raises:
+        CmfParserError: raised for argument parsing errors
+
+    """
     from .parser import get_main_parser
 
     parser = get_main_parser()
@@ -18,8 +27,23 @@ def parse_args(argv=None):
 
 
 def main(argv=None):
+    """Main entry point for cmf CLI.
+
+    Args:
+        argv: argv: optional list of arguments to parse. sys.argv is used by default.
+
+    Returns:
+        int, string: command's return code and error
+    """
     args = None
-    args = parse_args(argv)
-    cmd = args.func(args)
-    msg = cmd.do_run()
-    print(msg)
+    try:
+        args = parse_args(argv)
+        cmd = args.func(args)
+        msg = cmd.do_run()
+        print(msg)
+    except CmfParserError:
+        print("Error while parsing arguments")
+    except KeyboardInterrupt:
+        print("Interrupted by the user")
+    except Exception as e:
+        print("Unknown Exception")

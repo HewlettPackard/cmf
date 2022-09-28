@@ -1,12 +1,14 @@
+"""Main parser for the cmf cli"""
 import argparse
 import logging
 import os
 import sys
 
-from cmflib.cli import CmfParserError
 from cmflib.command import (
     pull
 )
+
+from cmflib.cli import CmfParserError
 
 COMMANDS = [
     pull
@@ -31,15 +33,21 @@ def _find_parser(parser, cmd_cls):
 class CmfParser(argparse.ArgumentParser):
     """Custom parser class for cmf CLI"""
 
+    def error(self, message, cmd_cls=None):
+        _find_parser(self, cmd_cls)
+
     def parse_args(self, args=None, namespace=None):
         args, argv = self.parse_known_args(args, namespace)
         if argv:
             msg = "unrecognized arguments: %s"
-            print(msg % " ".join(argv), getattr(args, "func", None))
+            self.error(msg % " ".join(argv), getattr(args, "func", None))
         return args
 
 
 def get_parent_parser():
+    """Create instances of a parser containing common arguments shared among
+    all the commands.
+    """
     parent_parser = argparse.ArgumentParser(add_help=False)
     return parent_parser
 
@@ -57,14 +65,25 @@ def get_main_parser():
         add_help=False,
     )
 
+    parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        default=argparse.SUPPRESS,
+        help="Show this help message and exit.",
+    )
+
+    # Sub commands
     subparsers = parser.add_subparsers(
         title="Available Commands",
         metavar="COMMAND",
         dest="cmd",
-        help="Use `dvc COMMAND --help` for command-specific help.",
+        help="Use `cmf COMMAND --help` for command-specific help.",
     )
 
-    # fix_subparsers(subparsers)
+    from .utils import fix_subparsers
+
+    fix_subparsers(subparsers)
 
     for cmd in COMMANDS:
         cmd.add_parser(subparsers, parent_parser)
