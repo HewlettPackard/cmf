@@ -20,19 +20,18 @@ class CmdPull(CmdBase):
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
 
-
-        idendtifiers = []
+        identifiers = []
         for i in stages:
             executions = query.get_all_executions_in_stage(i)  # getting all executions for stages
             dict_executions = executions.to_dict("dict")  # converting it to dictionary
-            idendtifiers.append(dict_executions['id'][0])  # id's of execution
+            identifiers.append(dict_executions['id'][0])  # id's of execution
 
         name = []
         url = []
-        for idendtifier in idendtifiers:
-            artifactss = query.get_all_artifacts_for_execution(idendtifier)  # getting all artifacts
+        for identifier in identifiers:
+            get_artifacts = query.get_all_artifacts_for_execution(identifier)  # getting all artifacts
 
-            artifacts_dict = artifactss.to_dict('dict')  # converting it to dictionary
+            artifacts_dict = get_artifacts.to_dict('dict')  # converting it to dictionary
             name.append(list(artifacts_dict['name'].values()))
             url.append(list(artifacts_dict['url'].values()))
 
@@ -48,7 +47,7 @@ class CmdPull(CmdBase):
             if type(i[1]) == str and i[1].startswith('s3://'):
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
-        print(names_urls)
+        # print(names_urls)
         artifact_class_obj = minio_artifacts.minio_artifacts()
         for name_url in names_urls:
             temp = name_url[1].split("/")
@@ -73,6 +72,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-P",
         "--pipeline_name",
+        required=True,
         help="Specify Pipeline name",
         metavar="<pipeline_name>"
     )
@@ -85,4 +85,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdPull)
-
