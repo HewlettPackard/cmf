@@ -35,7 +35,7 @@ class minio_artifacts:
                 secret_key=secret_key,
                 secure=False
             )
-            found = client.bucket_exists("dvc-art")
+            found = client.bucket_exists(bucket_name)
             if not found:
                 return "Bucket doesn't exists"
 
