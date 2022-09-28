@@ -4,7 +4,7 @@ import os
 import sys
 
 from cmflib.cli import CmfParserError
-from cmflib.commands import (
+from cmflib.command import (
     pull
 )
 
