@@ -4,14 +4,16 @@ import logging
 import os
 import sys
 
-from cmflib.command import (
-    pull
+from cmflib.commands import (
+    pull,
+    push
 )
 
 from cmflib.cli import CmfParserError
 
 COMMANDS = [
-    pull
+    pull,
+    push
 ]
 
 
