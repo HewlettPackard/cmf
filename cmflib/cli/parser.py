@@ -5,15 +5,13 @@ import os
 import sys
 
 from cmflib.commands import (
-    pull,
-    push
+    pull
 )
 
 from cmflib.cli import CmfParserError
 
 COMMANDS = [
-    pull,
-    push
+    pull
 ]
 
 
