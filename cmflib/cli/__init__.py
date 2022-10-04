@@ -42,8 +42,8 @@ def main(argv=None):
         msg = cmd.do_run()
         print(msg)
     except CmfParserError:
-        print("Error while parsing arguments")
+        pass
     except KeyboardInterrupt:
         print("Interrupted by the user")
     except Exception as e:
-        print("Unknown Exception")
+        print(e)
