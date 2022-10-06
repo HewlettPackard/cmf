@@ -16,21 +16,20 @@ class CmdPull(CmdBase):
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
-            return -1, f"{mlmd_file_name} doesn't exists in current directory"
+            return f"{mlmd_file_name} doesn't exists in current directory"
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
 
-
-        idendtifiers = []
+        identifiers = []
         for i in stages:
             executions = query.get_all_executions_in_stage(i)  # getting all executions for stages
             dict_executions = executions.to_dict("dict")  # converting it to dictionary
-            idendtifiers.append(dict_executions['id'][0])  # id's of execution
+            identifiers.append(dict_executions['id'][0])  # id's of execution
 
         name = []
         url = []
-        for idendtifier in idendtifiers:
-            get_artifacts = query.get_all_artifacts_for_execution(idendtifier)  # getting all artifacts
+        for identifier in identifiers:
+            get_artifacts = query.get_all_artifacts_for_execution(identifier)  # getting all artifacts
 
             artifacts_dict = get_artifacts.to_dict('dict')  # converting it to dictionary
             name.append(list(artifacts_dict['name'].values()))
@@ -66,13 +65,17 @@ def add_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
         "pull",
         parents=[parent_parser],
-        description="This is Pull command",
+        description="This is Pull commands",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument(
+
+    required_arguments = parser.add_argument_group("required arguments")
+
+    required_arguments.add_argument(
         "-P",
         "--pipeline_name",
+        required=True,
         help="Specify Pipeline name",
         metavar="<pipeline_name>"
     )
