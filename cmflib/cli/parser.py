@@ -5,13 +5,13 @@ import os
 import sys
 
 from cmflib.commands import (
-    pull
+    artifact
 )
 
 from cmflib.cli import CmfParserError
 
 COMMANDS = [
-    pull
+    artifact
 ]
 
 
@@ -75,6 +75,7 @@ def get_main_parser():
 
     # Sub commands
     subparsers = parser.add_subparsers(
+        required= True,
         title="Available Commands",
         metavar="COMMAND",
         dest="cmd",
