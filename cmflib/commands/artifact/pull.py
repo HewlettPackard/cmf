@@ -7,7 +7,7 @@ from cmflib import minio_artifacts
 from cmflib.cli.command import CmdBase
 
 
-class CmdPull(CmdBase):
+class CmdArtifactPull(CmdBase):
     def run(self):
         # Put a check to see whether pipline exists or not
         current_directory = os.getcwd()
@@ -87,4 +87,4 @@ def add_parser(subparsers, parent_parser):
         metavar="<file_name>"
     )
 
-    parser.set_defaults(func=CmdPull)
+    parser.set_defaults(func=CmdArtifactPull)
