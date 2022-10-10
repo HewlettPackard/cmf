@@ -17,7 +17,8 @@
 import pandas as pd
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-
+from cmflib.mlmd_objects import CONTEXT_LIST
+import json
 
 class CmfQuery(object):
     def __init__(self, filepath: str = "mlmd"):
@@ -223,6 +224,79 @@ class CmfQuery(object):
             for event in self.store.get_events_by_artifact_ids([artifact.id])
             if event.type == mlpb.Event.OUTPUT)
         return self.store.get_executions_by_id(executions_ids)[0]
+
+
+    @staticmethod
+    def __get_node_properties(node) -> dict:
+        #print(type(node))
+        node_dict = {}
+        for attr in dir(node):
+            if attr in CONTEXT_LIST:
+                if attr == "properties":
+                    node_dict["properties"] = CmfQuery.__get_properties(node)
+                elif attr == "custom_properties":
+                    node_dict["custom_properties"] = CmfQuery.__get_customproperties(node)
+                else:
+                    node_dict[attr] = node.__getattribute__(attr)
+        return node_dict
+
+    @staticmethod
+    def __get_properties(node) -> dict:
+        prop_dict = {}
+        for k, v in node.properties.items():
+            if v.HasField('string_value'):
+                prop_dict[k] = v.string_value
+            elif v.HasField('int_value'):
+                prop_dict[k] = v.int_value
+            else:
+                prop_dict[k] = v.double_value
+        return prop_dict
+    
+    @staticmethod
+    def __get_customproperties(node)->dict:
+        prop_dict = {}
+        for k, v in node.custom_properties.items():
+            if v.HasField('string_value'):
+                prop_dict[k] = v.string_value
+            elif v.HasField('int_value'):
+                prop_dict[k] = v.int_value
+            else:
+                prop_dict[k] = v.double_value
+        return prop_dict
+
+    def dumptojson(self, pipeline_name:str):
+        mlmd_json = {}
+        mlmd_json["Pipeline"] = []
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        for ctx in contexts:
+            if ctx.name == pipeline_name:
+                ctx_dict = CmfQuery.__get_node_properties(ctx)
+                ctx_dict["stages"] = []
+                stages= self.store.get_children_contexts_by_context(ctx.id)
+                for stage in stages:
+                    stage_dict = CmfQuery.__get_node_properties(stage)
+                    #ctx["stages"].append(stage_dict)
+                    stage_dict["executions"] = []
+                    executions = self.store.get_executions_by_context(stage.id)
+                    for exe in executions:
+                        exe_dict = CmfQuery.__get_node_properties(exe)
+                        exe_dict["events"]  = []
+                        events = self.store.get_events_by_execution_ids([exe.id])
+                        for evt in events:
+                            evt_dict = CmfQuery.__get_node_properties(evt)                            
+                            artifact = self.store.get_artifacts_by_id([evt.artifact_id])
+                            if artifact is not None:
+                                artifact_dict = CmfQuery.__get_node_properties(artifact[0])
+                                evt_dict["artifact"] = artifact_dict
+                            exe_dict["events"].append(evt_dict)
+                        stage_dict["executions"].append(exe_dict)                       
+                    ctx_dict["stages"].append(stage_dict)                
+                mlmd_json["Pipeline"].append(ctx_dict)
+                json_str = json.dumps(mlmd_json)
+                #json_str = jsonpickle.encode(ctx_dict)
+                print(json_str)
+                
+
 
     '''def materialize(self, artifact_name:str):
        artifacts = self.store.get_artifacts()
