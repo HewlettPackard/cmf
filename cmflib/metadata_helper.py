@@ -485,12 +485,12 @@ def link_execution_to_artifact(
     if len(artifacts) == 0:
         print('Error: Not found upstream artifact with URI={}.'.format(uri), file=sys.stderr)
         return None
-    if len(artifacts) > 1:
+    #if len(artifacts) > 1:
         # print('Warning: Found multiple artifacts with the same URI. {} Using the last one..'.format(artifacts),
         #      file=sys.stderr)
 
-        print('Warning: Found multiple artifacts with the same URI.Using the last one..',
-              file=sys.stderr)
+        #print('Warning: Found multiple artifacts with the same URI.Using the last one..',
+         #     file=sys.stderr)
 
     artifact = artifacts[-1]
 

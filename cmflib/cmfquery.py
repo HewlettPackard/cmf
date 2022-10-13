@@ -228,7 +228,7 @@ class CmfQuery(object):
 
     @staticmethod
     def __get_node_properties(node) -> dict:
-        #print(type(node))
+        #print(node)
         node_dict = {}
         for attr in dir(node):
             if attr in CONTEXT_LIST:
@@ -238,6 +238,8 @@ class CmfQuery(object):
                     node_dict["custom_properties"] = CmfQuery.__get_customproperties(node)
                 else:
                     node_dict[attr] = node.__getattribute__(attr)
+
+        #print(node_dict)
         return node_dict
 
     @staticmethod
@@ -280,13 +282,17 @@ class CmfQuery(object):
                     executions = self.store.get_executions_by_context(stage.id)
                     for exe in executions:
                         exe_dict = CmfQuery.__get_node_properties(exe)
+                        exe_type = self.store.get_execution_types_by_id([exe.type_id])
+                        exe_dict["type"] = exe_type[0].name
                         exe_dict["events"]  = []
                         events = self.store.get_events_by_execution_ids([exe.id])
                         for evt in events:
                             evt_dict = CmfQuery.__get_node_properties(evt)                            
                             artifact = self.store.get_artifacts_by_id([evt.artifact_id])
                             if artifact is not None:
+                                artifact_type = self.store.get_artifact_types_by_id([artifact[0].type_id])                                
                                 artifact_dict = CmfQuery.__get_node_properties(artifact[0])
+                                artifact_dict["type"] = artifact_type[0].name
                                 evt_dict["artifact"] = artifact_dict
                             exe_dict["events"].append(evt_dict)
                         stage_dict["executions"].append(exe_dict)                       
@@ -294,7 +300,8 @@ class CmfQuery(object):
                 mlmd_json["Pipeline"].append(ctx_dict)
                 json_str = json.dumps(mlmd_json)
                 #json_str = jsonpickle.encode(ctx_dict)
-                print(json_str)
+                return json_str
+                #print(json_str)
                 
 
 
