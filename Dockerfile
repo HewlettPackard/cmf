@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #Change as necessary: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
 #FROM jupyter/datascience-notebook
 FROM jupyter/tensorflow-notebook
@@ -59,3 +60,11 @@ RUN cd /home/${NB_USER}/cmflib && "${CONDA_DIR}/envs/${conda_env}/bin/pip" insta
 
 COPY --chown=${NB_UID}:${NB_GID} cmflib/example-get-started /home/${NB_USER}/example-get-started
 
+=======
+FROM python:3.7
+WORKDIR /code
+COPY ./requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+COPY ./app /code/app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+>>>>>>> 00b92ea (adding metadata server code)
