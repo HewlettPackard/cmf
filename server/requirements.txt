@@ -1,3 +1,5 @@
 fastapi
 uvicorn
 pydantic
+minio
+dvc[s3]
