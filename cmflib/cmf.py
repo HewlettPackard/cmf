@@ -132,7 +132,7 @@ class Cmf(object):
             (store=self.store,
              execution_type_name=execution_type,
              context_id=self.child_context.id,
-             execution=str(sys.argv),
+             execution=execution_cmd,
              pipeline_id=self.parent_context.id,
              pipeline_type=self.parent_context.name,
              git_repo=git_repo,
@@ -140,7 +140,7 @@ class Cmf(object):
              custom_properties=custom_props
              )
         self.execution_name = str(self.execution.id) + "," + execution_type
-        self.execution_command = str(sys.argv)
+        self.execution_command = execution_cmd
         for k, v in custom_props.items():
             k = re.sub('-', '_', k)
             self.execution_label_props[k] = v
@@ -148,7 +148,7 @@ class Cmf(object):
         self.execution_label_props["execution_command"] = execution_cmd
         if self.graph:
             self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
-                                              str(sys.argv), self.execution.id, custom_props)
+                                              execution_cmd, self.execution.id, custom_props)
         return self.execution
     
     def log_dvc_lock(self, file_path:str):
