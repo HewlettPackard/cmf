@@ -1,7 +1,6 @@
 from cmflib import cmf
 import json
 
-
 def parse_json_to_mlmd(mlmd_json):
     mlmd_data = json.loads(mlmd_json)
     type(mlmd_data)
