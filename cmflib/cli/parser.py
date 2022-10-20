@@ -5,13 +5,15 @@ import os
 import sys
 
 from cmflib.commands import (
-    artifact
+    artifact,
+    metadata
 )
 
 from cmflib.cli import CmfParserError
 
 COMMANDS = [
-    artifact
+    artifact,
+    metadata
 ]
 
 
