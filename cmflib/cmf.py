@@ -118,6 +118,38 @@ class Cmf(object):
             self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
                                               self.execution.properties["Execution"].string_value, self.execution.id, {})
         return self.execution
+
+    def merge_created_execution(self, execution_type: str, execution_cmd: str,
+                         custom_properties: {} = None) -> mlpb.Execution:
+        #Initializing the execution related fields
+        self.metrics = {}
+        self.input_artifacts = []
+        self.execution_label_props = {}
+        custom_props = {} if custom_properties is None else custom_properties
+        git_repo = git_get_repo()
+        git_start_commit = git_get_commit()
+        self.execution = create_new_execution_in_existing_run_context \
+            (store=self.store,
+             execution_type_name=execution_type,
+             context_id=self.child_context.id,
+             execution=execution_cmd,
+             pipeline_id=self.parent_context.id,
+             pipeline_type=self.parent_context.name,
+             git_repo=git_repo,
+             git_start_commit=git_start_commit,
+             custom_properties=custom_props
+             )
+        self.execution_name = str(self.execution.id) + "," + execution_type
+        self.execution_command = execution_cmd
+        for k, v in custom_props.items():
+            k = re.sub('-', '_', k)
+            self.execution_label_props[k] = v
+        self.execution_label_props["Execution_Name"] = execution_type + ":" + str(self.execution.id)
+        self.execution_label_props["execution_command"] = execution_cmd
+        if self.graph:
+            self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
+                                              execution_cmd, self.execution.id, custom_props)
+        return self.execution
     
     def log_dvc_lock(self, file_path:str):
         return commit_dvc_lock_file(file_path, self.execution.id)
