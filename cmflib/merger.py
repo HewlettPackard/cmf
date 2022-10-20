@@ -17,7 +17,7 @@ def parse_json_to_mlmd(mlmd_json):
         print(stage['name'])
         for execution in stage['executions']:
             print(execution['type'])
-            _ = cmf_class.merge_created_execution(execution['type'], execution['Execution'], execution['custom_properties'])
+            _ = cmf_class.merge_created_execution(execution['type'], execution['properties']['Execution'], execution['custom_properties'])
             for event in execution['events']:
                 artifact_type = event['artifact']['type']
                 event_type = event['type']
