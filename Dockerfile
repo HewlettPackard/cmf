@@ -12,9 +12,11 @@ FROM jupyter/tensorflow-notebook
 #FROM nvcr.io/partners/chainer:4.0.0b1
 
 #Following: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/recipes.html#
-ARG NB_USER 
-ARG NB_UID
-ARG NB_GID
+ARG NB_USER=firt second
+ARG NB_UID=1111
+
+ARG NB_GID=2222
+
 
 # name your environment and choose the python version
 ARG conda_env=python37
@@ -44,18 +46,18 @@ RUN "${CONDA_DIR}/envs/${conda_env}/bin/pip" install --quiet --no-cache-dir 'fla
     fix-permissions "/home/${NB_USER}" && \
     mkdir /home/${NB_USER}/cmflib/
 
-COPY --chown=${NB_UID}:${NB_GID} cmflib/Requirements.txt /home/${NB_USER}/cmflib/
+COPY --chown=${NB_UID}:${NB_GID} Requirements.txt /home/${NB_USER}/cmflib/
 RUN "${CONDA_DIR}/envs/${conda_env}/bin/pip" install --no-cache-dir --requirement /home/${NB_USER}/cmflib/Requirements.txt && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
-COPY --chown=${NB_UID}:${NB_GID} cmflib/cmflib /home/${NB_USER}/cmflib/cmflib
-COPY --chown=${NB_UID}:${NB_GID} cmflib/setup.py /home/${NB_USER}/cmflib/setup.py
+COPY --chown=${NB_UID}:${NB_GID} cmflib /home/${NB_USER}/cmflib/cmflib
+COPY --chown=${NB_UID}:${NB_GID} setup.py /home/${NB_USER}/cmflib/setup.py
 RUN cd /home/${NB_USER}/cmflib && "${CONDA_DIR}/envs/${conda_env}/bin/pip" install --no-cache . && \
     fix-permissions "${CONDA_DIR}" && \
     fix-permissions "/home/${NB_USER}"
 
 #ENV PYTHONPATH "${PYTHONPATH}:/home/${NB_USER}/cmflib"
 
-COPY --chown=${NB_UID}:${NB_GID} cmflib/example-get-started /home/${NB_USER}/example-get-started
+COPY --chown=${NB_UID}:${NB_GID} examples/example-get-started /home/${NB_USER}/example-get-started
 
