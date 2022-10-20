@@ -3,16 +3,16 @@ import json
 
 
 def parse_json_to_mlmd(mlmd_json):
-    # mlmd_data = json.loads(mlmd_json)
-    # type(mlmd_data)
-    pipelines = mlmd_json["Pipeline"]
+    mlmd_data = json.loads(mlmd_json)
+    type(mlmd_data)
+    pipelines = mlmd_data["Pipeline"]
     print(type(pipelines))
     pipeline = pipelines[0]
     print(type(pipeline))
     pipeline_name = pipeline["name"]
     print(type(pipeline_name))
     cmf_class = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name)
-    for stage in mlmd_json['Pipeline'][0]['stages']:
+    for stage in mlmd_data['Pipeline'][0]['stages']:
         _ = cmf_class.create_context(pipeline_stage=stage['name'], custom_properties=stage['custom_properties'])
         print(stage['name'])
         for execution in stage['executions']:
