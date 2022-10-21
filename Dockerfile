@@ -12,10 +12,9 @@ FROM jupyter/tensorflow-notebook
 #FROM nvcr.io/partners/chainer:4.0.0b1
 
 #Following: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/recipes.html#
-ARG NB_USER=firt second
-ARG NB_UID=1111
-
-ARG NB_GID=2222
+ARG NB_USER
+ARG NB_UID
+ARG NB_GID
 
 
 # name your environment and choose the python version
