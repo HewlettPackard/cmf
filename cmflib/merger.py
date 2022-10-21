@@ -39,16 +39,16 @@ def parse_json_to_mlmd(mlmd_json):
                     cmf_class.log_dataset_with_version(artifact_full_path, uri,  "output",
                       custom_properties=custom_props)
                 elif artifact_type == "Model" and event_type == 3:
-                    # uri = event['artifact']['uri']
-                    # props["uri"] = uri
+                    uri = event['artifact']['uri']
+                    props["uri"] = uri
                     # model_framework = props['model_framework']
                     # model_type = props['model_type']
                     # model_name = props['model_name']
                     cmf_class.log_model_with_version(path=artifact_name, event="input",props=props,
                      custom_properties=props)
                 elif artifact_type == "Model" and event_type == 4:
-                    # uri = event['artifact']['uri']
-                    # props["uri"] = uri
+                    uri = event['artifact']['uri']
+                    props["uri"] = uri
                     # model_framework = props['model_framework']
                     # model_type = props['model_type']
                     # model_name = props['model_name']

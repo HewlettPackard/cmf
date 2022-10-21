@@ -126,8 +126,8 @@ class Cmf(object):
         self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = git_get_repo()
-        git_start_commit = git_get_commit()
+        git_repo = ""
+        git_start_commit = ""
         self.execution = create_new_execution_in_existing_run_context \
             (store=self.store,
              execution_type_name=execution_type,
@@ -233,7 +233,7 @@ class Cmf(object):
 
     def log_dataset_with_version(self, url: str, version:str,  event: str, custom_properties: {} = None) -> mlpb.Artifact:
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = git_get_repo()
+        git_repo = ""
         name = re.split('/', url)[-1]
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
@@ -318,7 +318,7 @@ class Cmf(object):
             event_type = metadata_store_pb2.Event.Type.INPUT
 
         props["commit"] = "" # To do get from incoming data 
-        c_hash = props["uri"]
+        c_hash = props.get("uri", " ")
         print(c_hash)
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
