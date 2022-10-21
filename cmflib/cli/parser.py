@@ -77,7 +77,7 @@ def get_main_parser():
 
     # Sub commands
     subparsers = parser.add_subparsers(
-        required= True,
+        #required= True,
         title="Available Commands",
         metavar="COMMAND",
         dest="cmd",

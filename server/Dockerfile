@@ -20,6 +20,7 @@ RUN pip install --no-cache-dir --upgrade -r /code/Requirements.txt
 #
 COPY ./setup.py  /code/setup.py
 
+COPY ./cmflib /code/cmflib
 # Install cmflib
 RUN python /code/setup.py bdist_wheel
 
@@ -30,7 +31,6 @@ RUN pip install /code/dist/*
 COPY ./server/app /code/server/app
 
 #
-COPY ./cmflib /code/cmflib
 
 #
 CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "80"]
