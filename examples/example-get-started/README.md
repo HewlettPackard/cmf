@@ -4,7 +4,7 @@
 
 1. Copy contents of `example-get-started` directory to a separate directory outside this repository.
 
-2. Create python virtual environment (version >= 3.6), install git, install python dependencies
+2. Create python virtual environment (version >= 3.6 and < 3.9), install git, install python dependencies
 
 3. Modify the [sample_env](./sample_env) file with appropriate values for the exports.
 
