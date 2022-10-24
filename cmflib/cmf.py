@@ -68,8 +68,9 @@ class Cmf():
         self.input_artifacts = []
         self.execution_label_props = {}
         self.graph = graph
+        self.branch_name = filename.rsplit('/',1)[-1]
 
-        git_checkout_new_branch(filename)
+        git_checkout_new_branch(self.branch_name)
         self.parent_context = get_or_create_parent_context(
             store=self.store, pipeline=pipeline_name, custom_properties=custom_properties)
         if graph:
