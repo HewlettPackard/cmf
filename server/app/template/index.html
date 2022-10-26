@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HP_server</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+          text-align: left;
+          padding: 8px;
+        }
+
+        tr:nth-child(even) {
+          background-color: #D6EEEE;
+        }
+    </style>
+</head>
+<body>
+    <table>
+  <tr>
+    {% for col in df.columns %}
+      <th>
+        {{col}}
+      </th>
+    {% endfor %}
+  </tr>
+    {% for index, row in df.iterrows %}
+      <tr>
+        {% for cell in row %}
+          <td>
+            {{cell}}
+          </td>
+        {% endfor %}
+      </tr>
+    {% endfor %}
+</table>
+
+</body>
+</html>
