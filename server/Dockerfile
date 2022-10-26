@@ -2,33 +2,35 @@
 FROM python:3.7
 
 #
-WORKDIR /code
+WORKDIR /cmf-server
+
+RUN mkdir -p /cmf-server/data
 
 #
-COPY ./server/requirements.txt /code/requirements.txt
+COPY ./server/requirements.txt /cmf-server/requirements.txt
 
 
 #
-COPY ./Requirements.txt /code/Requirements.txt
+COPY ./Requirements.txt /cmf-server/Requirements.txt
 
 #
-RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
 #
-RUN pip install --no-cache-dir --upgrade -r /code/Requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /cmf-server/Requirements.txt
 
 #
-COPY ./setup.py  /code/setup.py
+COPY ./setup.py  /cmf-server/setup.py
 
-COPY ./cmflib /code/cmflib
+COPY ./cmflib /cmf-server/cmflib
 # Install cmflib
-RUN python /code/setup.py bdist_wheel
+RUN python /cmf-server/setup.py bdist_wheel
 
 #
-RUN pip install /code/dist/*
+RUN pip install /cmf-server/dist/*
  
 #
-COPY ./server/app /code/server/app
+COPY ./server/app /cmf-server/server/app
 
 #
 

@@ -11,13 +11,14 @@ def parse_json_to_mlmd(mlmd_json):
     print(type(pipeline))
     pipeline_name = pipeline["name"]
     print(type(pipeline_name))
-    cmf_class = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name)
+    cmf_class = cmf.Cmf(filename="data/mlmd", pipeline_name=pipeline_name)
     for stage in mlmd_data['Pipeline'][0]['stages']:
         _ = cmf_class.create_context(pipeline_stage=stage['name'], custom_properties=stage['custom_properties'])
         print(stage['name'])
         for execution in stage['executions']:
             print(execution['type'])
-            _ = cmf_class.merge_created_execution(execution['type'], execution['properties']['Execution'], execution['custom_properties'])
+            _ = cmf_class.merge_created_execution(execution['type'], execution['properties']['Execution'],
+                    execution['properties'], execution['custom_properties'])
             for event in execution['events']:
                 artifact_type = event['artifact']['type']
                 event_type = event['type']

@@ -119,15 +119,16 @@ class Cmf(object):
                                               self.execution.properties["Execution"].string_value, self.execution.id, {})
         return self.execution
 
-    def merge_created_execution(self, execution_type: str, execution_cmd: str,
+    def merge_created_execution(self, execution_type: str, execution_cmd: str, properties:{} = None,
                          custom_properties: {} = None) -> mlpb.Execution:
         #Initializing the execution related fields
         self.metrics = {}
         self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = ""
-        git_start_commit = ""
+        print(custom_props)
+        git_repo = properties.get("Git_Repo", "")
+        git_start_commit = properties.get("Git_Start_Commit", "")
         self.execution = create_new_execution_in_existing_run_context \
             (store=self.store,
              execution_type_name=execution_type,
@@ -233,7 +234,7 @@ class Cmf(object):
 
     def log_dataset_with_version(self, url: str, version:str,  event: str, custom_properties: {} = None) -> mlpb.Artifact:
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = ""
+        git_repo = custom_properties.get("git_repo", "")
         name = re.split('/', url)[-1]
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
@@ -317,13 +318,13 @@ class Cmf(object):
         if event.lower() == "input":
             event_type = metadata_store_pb2.Event.Type.INPUT
 
-        props["commit"] = "" # To do get from incoming data 
+       # props["commit"] = "" # To do get from incoming data 
         c_hash = props.get("uri", " ")
         print(c_hash)
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
         #dvc_url = dvc_get_url(path, False)
-        url = props["url"]
+        url = props.get("url", "")
         #uri = ""
         if c_hash and c_hash.strip():
             uri = c_hash.strip()
@@ -350,10 +351,10 @@ class Cmf(object):
                 name=model_uri,
                 type_name="Model",
                 event_type=event_type,
-                properties={"model_framework": str("Default"),
-                            "model_type": str("Default"),
-                            "model_name": str("Default"),
-                            "Commit": str("Default"),
+                properties={"model_framework": props.get("model_framework", ""),
+                            "model_type": props.get("model_type", ""),
+                            "model_name": props.get("model_name", ""),
+                            "Commit": props.get("Commit", ""),
                             "url": str(url)},
                 artifact_type_properties={"model_framework": metadata_store_pb2.STRING,
                                           "model_type": metadata_store_pb2.STRING,
@@ -366,7 +367,7 @@ class Cmf(object):
             )
         # custom_properties["Commit"] = model_commit
         custom_props["url"] = url
-        self.execution_label_props["Commit"] = props["commit"]
+        self.execution_label_props["Commit"] = props.get("Commit", "")
         if self.graph:
             self.driver.create_model_node(model_uri, uri, event, self.execution.id, self.parent_context, custom_props)
             if event.lower() == "input":
