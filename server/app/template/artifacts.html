@@ -5,13 +5,19 @@
     <title>HP_server</title>
 
     <style>
+        body{
+            height : 100%;
+            width : 100% ;
+        }
         table {
+
             border-collapse: collapse;
             width: 100%;
         }
 
         th, td {
-          text-align: left;
+          text-align: center;
+
           padding: 8px;
         }
 
@@ -19,17 +25,18 @@
           background-color: #D6EEEE;
         }
     </style>
+
 </head>
 <body>
-    <table>
+<table>
   <tr>
-    {% for col in df.columns %}
+    {% for col in artifact_df.columns %}
       <th>
         {{col}}
       </th>
     {% endfor %}
   </tr>
-    {% for index, row in df.iterrows %}
+    {% for index, row in artifact_df.iterrows() %}
       <tr>
         {% for cell in row %}
           <td>
@@ -39,6 +46,7 @@
       </tr>
     {% endfor %}
 </table>
+
 
 </body>
 </html>
