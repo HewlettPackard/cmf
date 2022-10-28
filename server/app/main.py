@@ -2,7 +2,7 @@ from fastapi import FastAPI,Request
 from server.app.mlmd import merge_mlmd
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-from get_executions import index
+from get_data import index,artifact
 from pathlib import Path
 import json
 app = FastAPI()
@@ -26,10 +26,14 @@ async def mlmd_push(info: Request):
     }
 
 
-@app.get("/display_exec",response_class=HTMLResponse)
+@app.get("/display_executions",response_class=HTMLResponse)
 async def display_exec(request: Request):
-    # with open('execution.json','r') as f:
-    #     data=json.load(f)
-    #
-    df=index("/home/abhinavchobey/server_demo/cmf/pipeline_data/example_get_started/mlmd")
-    return templates.TemplateResponse('index.html',{'request':request,'df':df})
+
+    execution_df=index("/home/abhinavchobey/hp_server/cmf/pipeline/example-get-started/mlmd")
+    return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df})
+
+@app.get("/display_artifacts",response_class=HTMLResponse)
+async def display_exec(request: Request):
+
+    artifact_df=artifact("/home/abhinavchobey/hp_server/cmf/pipeline/example-get-started/mlmd")
+    return templates.TemplateResponse('artifacts.html',{'request':request,'artifact_df':artifact_df})
