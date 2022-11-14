@@ -7,11 +7,11 @@ Interactions in data pipelines can be complex. The Different stages in the pipel
 
 The tracking of metadata through these complex pipelines have multiple challenges, some of them being,  
 
-Each stage in the pipeline could be executed in a different datacenter or an edge site having intermittent connection to the core datacenter.   
+- Each stage in the pipeline could be executed in a different datacenter or an edge site having intermittent connection to the core datacenter.   
 
-Each stage in the pipeline could be possibly managed by different teams.  
+- Each stage in the pipeline could be possibly managed by different teams.  
 
-The artifacts (input or output) needs to be uniquely identified across different sites and across multiple pipelines. 
+- The artifacts (input or output) needs to be uniquely identified across different sites and across multiple pipelines. 
 
 
 Common metadata framework (CMF) addresses the problems associated with tracking of pipeline metadata from distributed sites and tracks code, data and metadata together for end-to-end traceability.   
