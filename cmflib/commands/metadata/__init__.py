@@ -1,10 +1,11 @@
 import argparse
 
-from cmflib.commands.metadata import push
+from cmflib.commands.metadata import push,pull
 from cmflib.cli.utils import *
 
 SUB_COMMANDS = [
-    push
+    push ,
+    pull
 ]
 
 

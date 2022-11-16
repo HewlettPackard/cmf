@@ -2,8 +2,9 @@ from cmflib import cmf
 import json
 
 
-def parse_json_to_mlmd(mlmd_json):
+def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
     mlmd_data = json.loads(mlmd_json)
+
     type(mlmd_data)
     pipelines = mlmd_data["Pipeline"]
     print(type(pipelines))
@@ -11,14 +12,18 @@ def parse_json_to_mlmd(mlmd_json):
     print(type(pipeline))
     pipeline_name = pipeline["name"]
     print(type(pipeline_name))
-    cmf_class = cmf.Cmf(filename="data/mlmd", pipeline_name=pipeline_name)
-    for stage in mlmd_data['Pipeline'][0]['stages']:
+    if cmd=='push':
+        data = create_original_time_since_epoch(mlmd_data)
+    else:
+        data=mlmd_data
+    cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name)
+    for stage in data['Pipeline'][0]['stages']:
         _ = cmf_class.create_context(pipeline_stage=stage['name'], custom_properties=stage['custom_properties'])
         print(stage['name'])
         for execution in stage['executions']:
             print(execution['type'])
             _ = cmf_class.merge_created_execution(execution['type'], execution['properties']['Execution'],
-                    execution['properties'], execution['custom_properties'])
+                                                  execution['properties'], execution['custom_properties'])
             for event in execution['events']:
                 artifact_type = event['artifact']['type']
                 event_type = event['type']
@@ -31,22 +36,22 @@ def parse_json_to_mlmd(mlmd_json):
                     git_repo_props = props['git_repo']
                     artifact_full_path = f"{git_repo_props}/{artifact_name}"
                     print(artifact_full_path)
-                    cmf_class.log_dataset_with_version(artifact_full_path, uri,  "input", custom_properties=custom_props)
+                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "input", custom_properties=custom_props)
                 elif artifact_type == "Dataset" and event_type == 4:
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']
                     artifact_full_path = f"{git_repo_props}/{artifact_name}"
                     print(artifact_full_path)
-                    cmf_class.log_dataset_with_version(artifact_full_path, uri,  "output",
-                      custom_properties=custom_props)
+                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
+                                                       custom_properties=custom_props)
                 elif artifact_type == "Model" and event_type == 3:
                     uri = event['artifact']['uri']
                     props["uri"] = uri
                     # model_framework = props['model_framework']
                     # model_type = props['model_type']
                     # model_name = props['model_name']
-                    cmf_class.log_model_with_version(path=artifact_name, event="input",props=props,
-                     custom_properties=props)
+                    cmf_class.log_model_with_version(path=artifact_name, event="input", props=props,
+                                                     custom_properties=props)
                 elif artifact_type == "Model" and event_type == 4:
                     uri = event['artifact']['uri']
                     props["uri"] = uri
@@ -61,12 +66,41 @@ def parse_json_to_mlmd(mlmd_json):
                     # print(artifact_name)
                     # print(type(artifact_name))
                     cmf_class.log_model_with_version(path=artifact_name, event="output", props=props,
-                     custom_properties=props)
+                                                     custom_properties=props)
                 elif artifact_type == "Metrics":
                     cmf_class.log_execution_metrics(artifact_name, custom_props)
                 else:
                     pass
 
+def create_original_time_since_epoch(mlmd_data):
+
+    stages = []
+    execution = []
+    artifact = []
+    original_stages = []
+    original_execution = []
+    original_artifact = []
+    print()
+    mlmd_data['Pipeline'][0]['original_create_time_since_epoch'] = mlmd_data['Pipeline'][0]['create_time_since_epoch']
+    # print(inside)
+    for i in mlmd_data['Pipeline'][0]['stages']:
+
+        i['custom_properties']['original_create_time_since_epoch'] = i['create_time_since_epoch']
+        original_stages.append(i['custom_properties']['original_create_time_since_epoch'])
+        stages.append(i['create_time_since_epoch'])
+        print(i['custom_properties']['original_create_time_since_epoch'])
+        for j in i['executions']:
+            j['custom_properties']['original_create_time_since_epoch'] = j['create_time_since_epoch']
+            original_execution.append(j['custom_properties']['original_create_time_since_epoch'])
+            execution.append(j['create_time_since_epoch'])
+            print(j['custom_properties']['original_create_time_since_epoch'])
+            for k in j['events']:
+                k['artifact']['custom_properties']['original_create_time_since_epoch'] = k['artifact']['create_time_since_epoch']
+                original_artifact.append(k['artifact']['custom_properties']['original_create_time_since_epoch'])
+                artifact.append(k['artifact']['create_time_since_epoch'])
+                print(k['artifact']['custom_properties']['original_create_time_since_epoch'])
+
+    return mlmd_data
 
 
 if __name__ == "__main__":

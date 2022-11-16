@@ -1,9 +1,11 @@
 from fastapi import FastAPI,Request
 from server.app.mlmd import merge_mlmd
+from cmflib import cmfquery
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-from get_data import index,artifact
+from server.app.get_data import artifact,index
 from pathlib import Path
+import os
 import json
 app = FastAPI()
 
@@ -25,15 +27,34 @@ async def mlmd_push(info: Request):
         'data':req_info
     }
 
+@app.get("/mlmd_pull",response_class=HTMLResponse)
+async def mlmd_pull(request: Request):
+    if os.path.exists("/cmf-server/data/mlmd"):
+        query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
+        json_payload = query.dumptojson("Test-env")
+        return json_payload
+    else:
+        print("No mlmd file submitted")
+        json_payload=""
+        return json_payload
+
 
 @app.get("/display_executions",response_class=HTMLResponse)
 async def display_exec(request: Request):
-
-    execution_df=index("/home/abhinavchobey/hp_server/cmf/pipeline/example-get-started/mlmd")
+    if os.path.exists("/cmf-server/data/mlmd"):
+        execution_df=index("/cmf-server/data/mlmd")
+        query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
+        json_payload = query.dumptojson("Test-env")
+    else:
+        print("No mlmd file submitted")
+        execution_df=None
+        json_payload=""
     return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df})
 
 @app.get("/display_artifacts",response_class=HTMLResponse)
-async def display_exec(request: Request):
-
-    artifact_df=artifact("/home/abhinavchobey/hp_server/cmf/pipeline/example-get-started/mlmd")
+async def display_artifact(request: Request):
+    if os.path.exists("/cmf-server/data/mlmd"):
+        artifact_df=artifact("/cmf-server/data/mlmd")
+    else:
+        artifact_df=None
     return templates.TemplateResponse('artifacts.html',{'request':request,'artifact_df':artifact_df})
