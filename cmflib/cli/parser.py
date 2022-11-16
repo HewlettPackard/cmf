@@ -4,17 +4,11 @@ import logging
 import os
 import sys
 
-from cmflib.commands import (
-    artifact,
-    metadata
-)
+from cmflib.commands import artifact, metadata, init
 
 from cmflib.cli import CmfParserError
 
-COMMANDS = [
-    artifact,
-    metadata
-]
+COMMANDS = [artifact, metadata, init]
 
 
 def _find_parser(parser, cmd_cls):
@@ -77,7 +71,7 @@ def get_main_parser():
 
     # Sub commands
     subparsers = parser.add_subparsers(
-        #required= True,
+        # required= True,
         title="Available Commands",
         metavar="COMMAND",
         dest="cmd",
