@@ -11,16 +11,15 @@ from cmflib.request_mlmdserver import server_interface
 
 class CmdInitMinioRemote(CmdBase):
     def run(self):
-        file = "dvc_script_module.sh"
+        file = "dvc_script_minio.sh"
         abs_path = None
         for root, dirs, files in os.walk(os.path.dirname(__file__)):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
-        print(abs_path)
         subprocess.call(
             shlex.split(
-                f"sh dvc_script_minio.sh {self.args.url} {self.args.endpoint_url} {self.args.access_key_id} {self.args.secret_key}"
+                f"sh {abs_path} {self.args.url} {self.args.endpoint_url} {self.args.access_key_id} {self.args.secret_key}"
             )
         )
         return 0

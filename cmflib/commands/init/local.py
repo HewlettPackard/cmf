@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import subprocess
+import shlex
+
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -9,6 +12,17 @@ from cmflib.request_mlmdserver import server_interface
 
 class CmdInitLocal(CmdBase):
     def run(self):
+        file = "dvc_script_local.sh"
+        abs_path = None
+        for root, dirs, files in os.walk(os.path.dirname(__file__)):
+            for name in files:
+                if name == file:
+                    abs_path = os.path.abspath(os.path.join(root, name))
+        subprocess.call(
+            shlex.split(
+                f"sh {abs_path} {self.args.url}"
+            )
+        )
         return 0
 
 
