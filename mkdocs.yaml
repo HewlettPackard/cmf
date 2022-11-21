@@ -1,0 +1,61 @@
+###
+# Copyright (2022) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
+
+site_name: CMF
+site_description: CMF - Common Metadata Framework
+site_author: AI Research & Development Lab (Hewlett-Packard Labs)
+
+
+repo_url: https://github.com/HewlettPackard/cmf
+repo_name: HewlettPackard/cmf
+edit_url: ""
+docs_dir: docs/
+
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.sections  # Sections are included in the navigation on the left.
+    - toc.integrate        # Table of contents is integrated on the left; does not appear separately on the right.
+    - header.autohide      # header disappears as you scroll
+  palette:
+    primary: 'blue'
+    accent: 'blue'
+  font:
+    text: 'Circular'
+    code: 'Inconsolata'
+
+
+markdown_extensions:
+  - pymdownx.arithmatex: # Render LaTeX via MathJax
+      generic: true
+  - admonition
+  - codehilite
+  - pymdownx.tasklist
+  - pymdownx.details       # Allowing hidden expandable regions denoted by ???
+  - pymdownx.superfences   # Seems to enable syntax highlighting when used with the Material theme.
+  - toc:
+      permalink: True
+
+
+nav:
+  - index.md
+  - Examples:
+      - Getting Started: examples/getting_started.md
+  - API:
+      - api.md
