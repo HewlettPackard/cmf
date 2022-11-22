@@ -3,3 +3,5 @@ uvicorn
 pydantic
 minio
 dvc[s3]
+Jinja2
+

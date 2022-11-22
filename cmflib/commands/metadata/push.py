@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-
+import json
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.request_mlmdserver import server_interface
@@ -22,7 +22,6 @@ class CmdMetadataPush(CmdBase):
         json_payload = query.dumptojson(self.args.pipeline_name)
         url = "http://127.0.0.1:80"
         # Get url from config
-        # print(json_payload)
         status_code = server_interface.call_mlmd_push(json_payload, url)
         return 0
 
