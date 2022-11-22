@@ -1,4 +1,4 @@
-# Logging APIs
+# Public
 
 ## Initializing CMF
 

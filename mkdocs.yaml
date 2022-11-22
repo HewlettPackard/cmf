@@ -44,13 +44,17 @@ theme:
 markdown_extensions:
   - pymdownx.arithmatex: # Render LaTeX via MathJax
       generic: true
-  - admonition
-  - codehilite
   - pymdownx.tasklist
   - pymdownx.details       # Allowing hidden expandable regions denoted by ???
   - pymdownx.superfences   # Seems to enable syntax highlighting when used with the Material theme.
   - toc:
       permalink: True
+
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
 
 
 nav:
@@ -61,5 +65,6 @@ nav:
       - Overview: architecture/overview.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
-  - API:
-      - api/api.md
+  - Public API:
+      - api/public/cmf.md
+      - api/public/dataslice.md
