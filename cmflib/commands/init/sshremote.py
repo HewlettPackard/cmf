@@ -1,19 +1,31 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import subprocess
+import shlex
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.request_mlmdserver import server_interface
 
 
 class CmdInitSSHRemote(CmdBase):
     def run(self):
+        file = "dvc_script_sshremote.sh"
+        abs_path = None
+        for root, dirs, files in os.walk(os.path.dirname(__file__)):
+            for name in files:
+                if name == file:
+                    abs_path = os.path.abspath(os.path.join(root, name))
+        subprocess.call(
+            shlex.split(
+                f"sh {abs_path} {self.args.url} {self.args.user} {self.args.port} {self.args.password}"
+            )
+        )
         return 0
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Used to initialise ssh remote bucket"
+    HELP = "Initialise ssh remote bucket"
 
     parser = subparsers.add_parser(
         "sshremote",

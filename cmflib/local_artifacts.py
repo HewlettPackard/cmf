@@ -8,6 +8,7 @@ class local_artifacts:
         self, current_directory: str, current_dvc_loc: str, download_loc: str
     ):
         remote_repo = dvc_config.get_dvc_config()
+        print(remote_repo)
         obj = True
         try:
             fs = DVCFileSystem(remote_repo)

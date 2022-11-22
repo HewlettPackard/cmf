@@ -1,15 +1,18 @@
 import os
 from dvc.api import DVCFileSystem
+from .dvc_config import dvc_config
 
 
-class local_artifacts:
+class sshremote_artifacts:
     def download_artifacts(
         self, current_directory: str, current_dvc_loc: str, download_loc: str
     ):
         obj = True
+        url, user, port, password = dvc_config.get_dvc_config()
+        print(remote_repo)
+        return 0
         try:
-            fs = DVCFileSystem("/tmp/cmf/example_get_started/dvc_remote")
-            # endpoint, access_key, secret_key = self.get_dvc_config(current_directory)
+            fs = DVCFileSystem(remote_repo)
             temp = download_loc.split("/")
             temp.pop()
             dir_path = "/".join(temp)

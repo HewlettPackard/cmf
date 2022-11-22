@@ -7,7 +7,6 @@ import shlex
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.request_mlmdserver import server_interface
 
 
 class CmdInitLocal(CmdBase):
@@ -18,23 +17,19 @@ class CmdInitLocal(CmdBase):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
-        subprocess.call(
-            shlex.split(
-                f"sh {abs_path} {self.args.url}"
-            )
-        )
+        subprocess.call(shlex.split(f"sh {abs_path} {self.args.url}"))
         return 0
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Used to initialise local bucket"
+    HELP = "Initialise local bucket"
 
     parser = subparsers.add_parser(
         "local",
         parents=[parent_parser],
-        description="This is command is used to initialise local bucket",
+        description="This command is used to initialise local bucket",
         help=HELP,
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     required_arguments = parser.add_argument_group("required arguments")
 

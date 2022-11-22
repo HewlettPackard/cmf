@@ -6,10 +6,9 @@ import shlex
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.request_mlmdserver import server_interface
 
 
-class CmdInitMinioRemote(CmdBase):
+class CmdInitMinioS3(CmdBase):
     def run(self):
         file = "dvc_script_minio.sh"
         abs_path = None
@@ -26,12 +25,12 @@ class CmdInitMinioRemote(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "This is command is to initialize minio S3 bucket"
+    HELP = "Initialize minio S3 bucket"
 
     parser = subparsers.add_parser(
-        "minioremote",
+        "minioS3",
         parents=[parent_parser],
-        description="This is command is to initialize minio S3 bucket",
+        description="This command is to initialize minio S3 bucket",
         help=HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -59,4 +58,4 @@ def add_parser(subparsers, parent_parser):
         "--secret-key", required=True, help="Specify Secret Key", metavar="<secret_key>"
     )
 
-    parser.set_defaults(func=CmdInitMinioRemote)
+    parser.set_defaults(func=CmdInitMinioS3)

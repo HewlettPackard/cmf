@@ -1,11 +1,9 @@
 import argparse
 
-from cmflib.commands.artifact import pull
+from cmflib.commands.artifact import pull, push
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [
-    pull
-]
+SUB_COMMANDS = [pull, push]
 
 
 def add_parser(subparsers, parent_parser):
@@ -16,7 +14,7 @@ def add_parser(subparsers, parent_parser):
         parents=[parent_parser],
         description="This command is used pull/push Artifact",
         help=ARTIFACT_HELP,
-        formatter_class=argparse.RawDescriptionHelpFormatter
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     artifact_subparsers = artifact_parser.add_subparsers(

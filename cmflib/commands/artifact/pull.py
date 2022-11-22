@@ -3,7 +3,12 @@ import argparse
 import os
 
 from cmflib import cmfquery
-from cmflib import minio_artifacts, local_artifacts
+from cmflib import (
+    minio_artifacts,
+    local_artifacts,
+    amazonS3_artifacts,
+    sshremote_artifacts,
+)
 from cmflib.cli.command import CmdBase
 
 
@@ -54,19 +59,24 @@ class CmdArtifactPull(CmdBase):
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
         # print(names_urls)
-        artifact_class_obj = minio_artifacts.minio_artifacts()
+        minio_class_obj = minio_artifacts.minio_artifacts()
+        amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
         local_class_obj = local_artifacts.local_artifacts()
+        sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
         for name_url in names_urls:
             if name_url[1].startswith("s3://"):
                 temp = name_url[1].split("/")
                 bucket_name = temp[2]
                 object_name = temp[3] + "/" + temp[4]
                 path_name = current_directory + "/" + name_url[0]
-                stmt = artifact_class_obj.download_artifacts(
+                stmt = amazonS3_class_obj.download_artifacts(
                     current_directory, bucket_name, object_name, path_name
                 )
                 print(stmt)
-            elif name_url[1].startswith("/tmp"):
+            elif name_url[1].startswith("ssh"):
+                print(name_url[1])
+            elif name_url[1].startswith("/"):
+                print("in here")
                 print(name_url[1])
                 temp = name_url[1].split("/")
                 temp_length = len(temp)

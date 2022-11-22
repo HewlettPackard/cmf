@@ -1,4 +1,4 @@
 #!/bin/bash
 
 dvc init -f
-dvc remote add -d -f myremote $1
+dvc remote add -d -f local-storage $1

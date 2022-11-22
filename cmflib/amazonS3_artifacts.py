@@ -3,18 +3,18 @@ from minio import Minio
 from minio.error import S3Error
 from .dvc_config import dvc_config
 
-class minio_artifacts:
+
+class amazonS3_artifacts:
     def download_artifacts(
         self, current_directory: str, bucket_name: str, object_name: str, file_path: str
     ):
-        endpoint = ""
+        endpoint = "s3.amazonaws.com"
         access_key = ""
         secret_key = ""
         try:
-            endpoint, access_key, secret_key = dvc_config.get_dvc_config()
-            client = Minio(
-                endpoint, access_key=access_key, secret_key=secret_key, secure=False
-            )
+            bucket_name, access_key, secret_key = dvc_config.get_dvc_config()
+            print(bucket_name, access_key, secret_key)
+            client = Minio(endpoint, access_key=access_key, secret_key=secret_key)
             found = client.bucket_exists(bucket_name)
             if not found:
                 return "Bucket doesn't exists"
@@ -27,6 +27,6 @@ class minio_artifacts:
                 return f"object {object_name} is not downloaded."
 
         except TypeError as exception:
-            return f"Check if 'config' file present in .dvc/config. {exception}"
+            return exception
         except S3Error as exception:
             return exception
