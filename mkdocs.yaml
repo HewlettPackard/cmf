@@ -57,5 +57,9 @@ nav:
   - index.md
   - Examples:
       - Getting Started: examples/getting_started.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - Components: architecture/components.md
+      - Advantages: architecture/advantages.md
   - API:
-      - api.md
+      - api/api.md

@@ -109,11 +109,11 @@ for i in range(1, 20, 1):
 dataslice.commit()
 ```
 
-## Graph Layer overview 
-CMF library has an optional Graph layer which stores the relationships in a Graph Database(NEO4J). To use the graph 
-layer, the "graph" parameter in the library init call should be set to true. This is set as false by default. The 
-library reads the configuration parameters of the Database from the environment variables. The  variables `NEO4J_URI`, 
-`NEO4J_USER_NAME`, `NEO4J_PASSWD` should be either set as environment variables.
+## Graph Layer Overview 
+CMF library has an optional `graph layer` which stores the relationships in a Neo4J graph database. To use the graph 
+layer, the `graph` parameter in the library init call must be set to true (it is set to false by default). The 
+library reads the configuration parameters of the graph database from the following environment variables: `NEO4J_URI`, 
+`NEO4J_USER_NAME` and `NEO4J_PASSWD`. They need to be made available in a user environment, e.g.:
 
 ```shell
 export NEO4J_URI="bolt://10.93.244.219:7687"
@@ -121,17 +121,18 @@ export NEO4J_USER_NAME=neo4j
 export NEO4J_PASSWD=neo4j 
 ```
 
-**Create the metadata writer**. The metadata writer is responsible to manage the backend to record the metadata. It also 
-creates a pipeline abstraction, which helps to group individual stages and execution.
+To use the graph layer, instantiate the CMF with `graph=True` parameter: 
 ```python
+from cmflib import cmf
+
 cmf =  cmf.Cmf(
    filename="mlmd",
-   pipeline_name="Test-env", 
+   pipeline_name="anomaly_detection_pipeline", 
    graph=True
 )
 ```
 
-## Jupyterlab environment with CMF pre-installed
+## Jupyter Lab environment with CMF
 - CMF is pre-installed in a JupyterLab Notebook Environment.
 - Accessible at `http://[HOST.IP.AD.DR]:8888` (default token: `docker`).
 - Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`.
@@ -147,7 +148,28 @@ docker-compose up --build -d
 docker-compose down -v
 ```
 
+## License
+CMF is an open source project hosted on [GitHub](https://github.com/HewlettPackard/cmf) and distributed according to
+the Apache 2.0 [licence](https://github.com/HewlettPackard/cmf/blob/master/LICENSE). We are welcome user contributions -
+send us a message on the Slack [channel](https://commonmetadata.slack.com/) or open a GitHub 
+[issue](https://github.com/HewlettPackard/cmf/issues) or a [pull request](https://github.com/HewlettPackard/cmf/pulls) 
+on GitHub.
+
+## Citation
+```bibtex
+@mist{foltin2022cmf,
+    title={Self-Learning Data Foundation for Scientific AI},
+    author={Martin Foltin, Annmary Justine, Sergey Serebryakov, Cong Xu, Aalap Tripathy, Suparna Bhattacharya, 
+            Paolo Faraboschi},
+    year={2022},
+    note = {Presented at the "Monterey Data Conference"},
+    URL={https://drive.google.com/file/d/1Oqs0AN0RsAjt_y9ZjzYOmBxI8H0yqSpB/view},
+}
+```
+
 ## Community
+[<img src="assets/slack_logo.png" width='150' hight='60'>](https://commonmetadata.slack.com/)
+
 !!! help
 
     Common Metadata Framework and its documentation are in active stage of development and are very new. If there is
