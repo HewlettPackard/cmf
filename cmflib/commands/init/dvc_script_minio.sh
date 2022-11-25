@@ -1,6 +1,6 @@
 #!/bin/bash
 
-dvc init -f
+dvc init -f -q
 dvc remote add -d -f minio $1
 dvc remote modify minio endpointurl $2
 dvc remote modify minio access_key_id $3
