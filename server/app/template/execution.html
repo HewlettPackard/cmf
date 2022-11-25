@@ -28,43 +28,29 @@
 </head>
 <body>
 <div style="overflow-x:auto;"></div>
-<table>
-  <tr>
-    {% for col in exec_df.columns %}
-      <th>
-        {{col}}
-      </th>
-    {% endfor %}
-  </tr>
-    {% for index, row in exec_df.iterrows() %}
-      <tr>
-        {% for cell in row %}
-          <td>
-            {{cell}}
-          </td>
-        {% endfor %}
-      </tr>
-    {% endfor %}
-</table>
 
-<table>
-  <tr>
-    {% for col in artifact_df.columns %}
-      <th>
-        {{col}}
-      </th>
-    {% endfor %}
-  </tr>
-    {% for index, row in artifact_df.iterrows() %}
+
+
+    <table>
+
       <tr>
-        {% for cell in row %}
-          <td>
-            {{cell}}
-          </td>
+        {% for col in exec_df.columns %}
+          <th>
+            {{col}}
+          </th>
         {% endfor %}
       </tr>
-    {% endfor %}
-</table>
+        {% for index, row in exec_df.iterrows() %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+    </table>
+
 
 </body>
 </html>

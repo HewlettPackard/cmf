@@ -11,14 +11,22 @@ from cmflib.request_mlmdserver import server_interface
 class CmdMetadataPull(CmdBase):
     def run(self):
         url = "http://127.0.0.1:80"
-        mlmd_json=server_interface.call_mlmd_pull(url)
-
+        directory_to_dump=""
+        data=''
+        cmd = 'pull'
+        mlmd_data=""
         if self.args.file_name:
-            directory_to_dump=self.args.file_name
+            directory_to_dump = self.args.file_name
         else:
             directory_to_dump = os.getcwd()
-        cmd='pull'
-        merger.parse_json_to_mlmd(mlmd_json.content,directory_to_dump+'/mlmd',cmd)
+        if self.args.execution:
+            mlmd_json = server_interface.call_mlmd_pull(url)
+            merger.pull_execution_to_mlmd(mlmd_json.content,directory_to_dump+'/mlmd',self.args.pipeline_name,self.args.execution)
+
+        else:
+            mlmd_json=server_interface.call_mlmd_pull(url)
+            mlmd_data=mlmd_json.content
+            merger.parse_json_to_mlmd(mlmd_data,directory_to_dump+'/mlmd',cmd)
         return 0
 
 def add_parser(subparsers, parent_parser):
@@ -34,7 +42,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments = parser.add_argument_group("required arguments")
 
     required_arguments.add_argument(
-        "-P",
+        "-p",
         "--pipeline_name",
         required=True,
         help="Specify Pipeline name",
@@ -42,10 +50,17 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-F",
+        "-f",
         "--file_name",
         help="Specify location to pull mlmd file",
         metavar="<file_name>"
+    )
+
+    parser.add_argument(
+        "-e",
+        "--execution",
+        help="Get execution from execution id",
+        metavar="<exec_name>",
     )
 
     parser.set_defaults(func=CmdMetadataPull)

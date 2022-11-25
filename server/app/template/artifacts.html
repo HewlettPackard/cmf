@@ -28,24 +28,26 @@
 
 </head>
 <body>
+
 <table>
-  <tr>
-    {% for col in artifact_df.columns %}
-      <th>
-        {{col}}
-      </th>
-    {% endfor %}
-  </tr>
-    {% for index, row in artifact_df.iterrows() %}
-      <tr>
-        {% for cell in row %}
-          <td>
-            {{cell}}
-          </td>
+    <tr>
+        {% for col in artifact_df.columns %}
+          <th>
+            {{col}}
+          </th>
         {% endfor %}
-      </tr>
-    {% endfor %}
+    </tr>
+        {% for index, row in artifact_df.iterrows() %}
+          <tr>
+            {% for cell in row %}
+              <td>
+                {{cell}}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
 </table>
+
 
 
 </body>

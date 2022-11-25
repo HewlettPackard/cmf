@@ -20,7 +20,7 @@ def read_root():
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     req_info=await info.json()
-    merge_mlmd(req_info)
+    merge_mlmd(req_info['json_payload'],req_info['id'])
 
     return{
         'status':'success',
@@ -38,6 +38,17 @@ async def mlmd_pull(request: Request):
         json_payload=""
         return json_payload
 
+@app.get("/mlmd_pull_exec_by_id",response_class=HTMLResponse)
+async def mlmd_pull(request: Request):
+    if os.path.exists("/cmf-server/data/mlmd"):
+        query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
+        json_payload = query.dumptojson("Test-env")
+        return json_payload
+    else:
+        print("No mlmd file submitted")
+        json_payload=""
+        return json_payload
+
 
 @app.get("/display_executions",response_class=HTMLResponse)
 async def display_exec(request: Request):
@@ -45,10 +56,10 @@ async def display_exec(request: Request):
         execution_df=index("/cmf-server/data/mlmd")
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
         json_payload = query.dumptojson("Test-env")
+
     else:
         print("No mlmd file submitted")
-        execution_df=None
-        json_payload=""
+        execution_df=''
     return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df})
 
 @app.get("/display_artifacts",response_class=HTMLResponse)
@@ -56,5 +67,5 @@ async def display_artifact(request: Request):
     if os.path.exists("/cmf-server/data/mlmd"):
         artifact_df=artifact("/cmf-server/data/mlmd")
     else:
-        artifact_df=None
+        artifact_df=""
     return templates.TemplateResponse('artifacts.html',{'request':request,'artifact_df':artifact_df})

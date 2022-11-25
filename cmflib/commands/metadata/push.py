@@ -17,12 +17,16 @@ class CmdMetadataPush(CmdBase):
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
             return f"{mlmd_file_name} doesn't exists in current directory"
-
         query = cmfquery.CmfQuery(mlmd_file_name)
         json_payload = query.dumptojson(self.args.pipeline_name)
+
         url = "http://127.0.0.1:80"
         # Get url from config
-        status_code = server_interface.call_mlmd_push(json_payload, url)
+        if self.args.execution:
+            exec_id=self.args.execution
+        else:
+            exec_id=None
+        status_code = server_interface.call_mlmd_push(json_payload, url,exec_id)
         return 0
 
 
@@ -39,7 +43,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments = parser.add_argument_group("required arguments")
 
     required_arguments.add_argument(
-        "-P",
+        "-p",
         "--pipeline_name",
         required=True,
         help="Specify Pipeline name",
@@ -47,10 +51,17 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-F",
+        "-f",
         "--file_name",
         help="Specify mlmd file name",
         metavar="<file_name>"
+    )
+
+    parser.add_argument(
+        "-e",
+        "--execution",
+        help="Get execution from execution id",
+        metavar="<exec_name>",
     )
 
     parser.set_defaults(func=CmdMetadataPush)
