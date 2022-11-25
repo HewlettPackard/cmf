@@ -1,10 +1,10 @@
 import requests
 import json
 
-
-def call_mlmd_push(json_payload, url):
+def call_mlmd_push(json_payload, url,exec_id):
     url_to_pass = f"{url}/mlmd_push"
-    x = requests.post(url_to_pass, json=json_payload)
+    json_data={'id':exec_id,'json_payload':json_payload}
+    x = requests.post(url_to_pass, json=json_data)
     # print(x.json())
     print("Status code -", x.status_code)
 
