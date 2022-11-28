@@ -14,10 +14,18 @@ services:
     #dvc_remote is the remote data store for dvc 
     #your .ssh folder is mounted inside the docker conatiner 
     #to enable you to push and pull code from git
-    #To-Do - Create these directories in your home folder
-    #or change the below lines to relect the appropriated directories
-    #eg - if your workspace is named "experiment" change the below line to
+    #To-Do 
+    # Create these directories in your home folder
+    #1. mkdir $HOME/workspace
+    #2. mkdir $HOME/dvc_remote
+    #or 
+    #Change the below lines to relect the appropriated directories
+    #1. If your workspace is named "experiment" change the below line
+    #$HOME/workspace:/home/jovyan/workspace to
     #$HOME/experiment:/home/jovyan/wokspace
+    #2. If your remote is /extmount/data change the line 
+    #$HOME/dvc_remote:/home/jovyan/dvc_remote to 
+    #/extmount/data:/home/jovyan/dvc_remote
     volumes:
       - $HOME/workspace:/home/jovyan/workspace  
       - $HOME/dvc_remote:/home/jovyan/dvc_remote
@@ -55,7 +63,7 @@ services:
       - neo4j
   neo4j:
     image: neo4j:4.4
-    container_name: neo4j
+    container_name: neo4j-ann
     hostname: neo4j
     ports:
       - 7475:7474

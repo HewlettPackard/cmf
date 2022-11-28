@@ -124,10 +124,28 @@ cmf =  cmf.Cmf(filename="mlmd",
 - Accessible at http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
 - Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`
 - `example-get-started` from this repo is bind mounted into `/home/jovyan/example-get-started`
-- Update `docker-compose.yml` as needed. For example to bind mount another volume on the host: `/lustre/data/dataspaces/dataspaces_testbed/:/home/jovyan/work`
+
+Step 1. 
+ `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml`
+Step 2.
+- Update `docker-compose.yml` as needed. 
+    your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git
+    To-Do
+    Create these directories in your home folder
+    1. mkdir $HOME/workspace #workspace is the directory (can be your code directory) from your home folder that will be mounted inside the cmf pre-installed docker conatiner
+    2. mkdir $HOME/dvc_remote #remote data store for dvc
+    or
+    Change the below lines in docker-compose to reflect the appropriate directories
+    1. If your workspace is named "experiment" change the below line
+    $HOME/workspace:/home/jovyan/workspace to
+    $HOME/experiment:/home/jovyan/wokspace
+    2. If your remote is /extmount/data change the line
+    $HOME/dvc_remote:/home/jovyan/dvc_remote to
+    /extmount/data:/home/jovyan/dvc_remote
+
+
 
 ```
-#create .env file in current folder using env-example as a template. #These are used by docker-compose.yml
 docker-compose up --build -d
 #To Shutdown/Remove (Remove Volumes as well)
 docker-compose down -v
