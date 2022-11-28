@@ -61,7 +61,6 @@ class CmdArtifactPull(CmdBase):
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
         # print(names_urls)
         dvc_config_op = dvc_config.get_dvc_config()
-        print(dvc_config_op)
         if dvc_config_op[0] == "minio":
             minio_class_obj = minio_artifacts.minio_artifacts()
             for name_url in names_urls:
@@ -70,13 +69,15 @@ class CmdArtifactPull(CmdBase):
                 object_name = temp[3] + "/" + temp[4]
                 path_name = current_directory + "/" + name_url[0]
                 stmt = minio_class_obj.download_artifacts(
-                    dvc_config_op, current_directory, bucket_name, object_name, path_name
+                    dvc_config_op,
+                    current_directory,
+                    bucket_name,
+                    object_name,
+                    path_name,
                 )
                 print(stmt)
         elif dvc_config_op[0] == "local-storage":
             local_class_obj = local_artifacts.local_artifacts()
-            print(names_urls)
-            print(dvc_config_op)
             for name_url in names_urls:
                 temp = name_url[1].split("/")
                 temp_length = len(temp)
@@ -84,11 +85,10 @@ class CmdArtifactPull(CmdBase):
                 current_dvc_loc = (
                     temp[(temp_length - 2)] + "/" + temp[(temp_length - 1)]
                 )
-                print(current_dvc_loc)
-                #stmt = local_class_obj.download_artifacts(
-                 #   dvc_config_op, current_directory, current_dvc_loc, name_url[0]
-                #)
-                #print(stmt)
+                stmt = local_class_obj.download_artifacts(
+                    dvc_config_op, current_directory, current_dvc_loc, name_url[0]
+                )
+                print(stmt)
         elif dvc_config_op[0] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
             print(name_url)
@@ -101,7 +101,11 @@ class CmdArtifactPull(CmdBase):
                 object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
                 path_name = current_directory + "/" + name_url[0]
                 stmt = amazonS3_class_obj.download_artifacts(
-                    dvc_config_op, current_directory, bucket_name, object_name, path_name
+                    dvc_config_op,
+                    current_directory,
+                    bucket_name,
+                    object_name,
+                    path_name,
                 )
                 print(stmt)
         else:

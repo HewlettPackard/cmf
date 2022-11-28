@@ -6,8 +6,6 @@ class local_artifacts:
     def download_artifacts(
         self, dvc_config_op, current_directory: str, current_dvc_loc: str, download_loc: str
     ):
-        print(dvc_config_op[0])
-        print(dvc_config_op[1])
         obj = True
         try:
             fs = DVCFileSystem(dvc_config_op[1])
