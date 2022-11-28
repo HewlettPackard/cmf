@@ -15,14 +15,26 @@ class CmdMetadataPull(CmdBase):
         data=''
         cmd = 'pull'
         mlmd_data=""
+        execution_flag=0
         if self.args.file_name:
             directory_to_dump = self.args.file_name
         else:
             directory_to_dump = os.getcwd()
         if self.args.execution:
             mlmd_json = server_interface.call_mlmd_pull(url)
-            merger.pull_execution_to_mlmd(mlmd_json.content,directory_to_dump+'/mlmd',self.args.pipeline_name,self.args.execution)
 
+            exec_id = self.args.execution
+            mlmd_data = json.loads(mlmd_json.content)['Pipeline']
+            for i in mlmd_data[0]['stages']:
+                for j in i['executions']:
+                    if j['id'] == int(exec_id):
+                        execution_flag = 1
+                        break
+            if execution_flag == 0:
+                print("Given execution not found in mlmd")
+            else:
+                merger.pull_execution_to_mlmd(mlmd_json.content, directory_to_dump + '/mlmd',
+                                                  self.args.pipeline_name, self.args.execution)
         else:
             mlmd_json=server_interface.call_mlmd_pull(url)
             mlmd_data=mlmd_json.content

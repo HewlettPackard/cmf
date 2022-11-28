@@ -19,14 +19,23 @@ class CmdMetadataPush(CmdBase):
             return f"{mlmd_file_name} doesn't exists in current directory"
         query = cmfquery.CmfQuery(mlmd_file_name)
         json_payload = query.dumptojson(self.args.pipeline_name)
-
+        execution_flag=0
         url = "http://127.0.0.1:80"
         # Get url from config
         if self.args.execution:
             exec_id=self.args.execution
+            mlmd_data = json.loads(json_payload)['Pipeline']
+            for i in mlmd_data[0]['stages']:
+                for j in i['executions']:
+                    if j['id'] == int(exec_id):
+                        execution_flag = 1
+                        status_code = server_interface.call_mlmd_push(json_payload, url, exec_id)
+                        break
+            if execution_flag==0:
+                print("Given execution not found in mlmd")
         else:
             exec_id=None
-        status_code = server_interface.call_mlmd_push(json_payload, url,exec_id)
+            status_code = server_interface.call_mlmd_push(json_payload, url,exec_id)
         return 0
 
 
