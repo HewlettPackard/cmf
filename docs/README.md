@@ -125,28 +125,52 @@ cmf =  cmf.Cmf(filename="mlmd",
 - Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`
 - `example-get-started` from this repo is bind mounted into `/home/jovyan/example-get-started`
 
-Step 1. 
- `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml`
-Step 2.
-- Update `docker-compose.yml` as needed. 
-    your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git
-    To-Do
-    Create these directories in your home folder
-    1. mkdir $HOME/workspace #workspace is the directory (can be your code directory) from your home folder that will be mounted inside the cmf pre-installed docker conatiner
-    2. mkdir $HOME/dvc_remote #remote data store for dvc
-    or
-    Change the below lines in docker-compose to reflect the appropriate directories
-    1. If your workspace is named "experiment" change the below line
-    $HOME/workspace:/home/jovyan/workspace to
-    $HOME/experiment:/home/jovyan/wokspace
-    2. If your remote is /extmount/data change the line
-    $HOME/dvc_remote:/home/jovyan/dvc_remote to
-    /extmount/data:/home/jovyan/dvc_remote
-
-
-
+#### Step 1. <br>
+ `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml` <br>
+#### Step 2. <br>
+**Update `docker-compose.yml` as needed.**<br><br>
+    your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git <br><br>
+    **To-Do** <br>
+    Create these directories in your home folder<br><br>
+```
+mkdir $HOME/workspace 
+mkdir $HOME/dvc_remote 
+``` 
+workspace will be mounted inside the cmf pre-installed docker conatiner (can be your code directory)  <br>
+remote data store for dvc <br>
+   
+***or***<br>
+Change the below lines in docker-compose to reflect the appropriate directories<br>
+```
+ If your workspace is named "experiment" change the below line
+$HOME/workspace:/home/jovyan/workspace to 
+$HOME/experiment:/home/jovyan/wokspace
+```
+```
+If your remote is /extmount/data change the line 
+$HOME/dvc_remote:/home/jovyan/dvc_remote to 
+/extmount/data:/home/jovyan/dvc_remote 
+```
+***Start the docker***
 ```
 docker-compose up --build -d
-#To Shutdown/Remove (Remove Volumes as well)
+```
+***Access the jupyter notebook***
+http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
+
+***Quick Start***
+```
+cd example-get-started
+sh initialize.sh
+sh test_script.sh
+dvc push
+```
+The above steps will run a pre coded example pipeline and the metadata is stored in a file named "mlmd"
+The stored metadata is displayed as 
+![image](https://user-images.githubusercontent.com/82071576/204392719-de72013c-3db1-4c88-9a99-67077d94cdf9.png)
+
+The artifacts created will be pushed to configured dvc remote (default: /home/dvc_remote)<br>
+***Shutdown/remove (Remove volumes as well)***
+```
 docker-compose down -v
 ```
