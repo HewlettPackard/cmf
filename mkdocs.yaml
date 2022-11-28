@@ -20,9 +20,9 @@ site_description: CMF - Common Metadata Framework
 site_author: AI Research & Development Lab (Hewlett-Packard Labs)
 
 
-repo_url: https://github.com/HewlettPackard/cmf
 repo_name: HewlettPackard/cmf
-edit_url: ""
+repo_url: https://github.com/HewlettPackard/cmf
+edit_uri: ""
 docs_dir: docs/
 
 
@@ -42,21 +42,39 @@ theme:
 
 
 markdown_extensions:
-  - pymdownx.arithmatex: # Render LaTeX via MathJax
+  - admonition
+  - pymdownx.arithmatex:   # Render LaTeX via MathJax
       generic: true
   - pymdownx.tasklist
   - pymdownx.details       # Allowing hidden expandable regions denoted by ???
   - pymdownx.superfences   # Seems to enable syntax highlighting when used with the Material theme.
+  - pymdownx.tabbed:
+      alternate_style: true
   - toc:
       permalink: True
+  - attr_list
+  - md_in_html             # Parse markdown inside HTML tags (default is not to parse).
+
+extra_css:
+  - extra.css         # This defines custom properties, in particular, enforces custom HTML tables to be 100% width.
 
 
 plugins:
+  - autorefs          # Need to reference mkdocstrings-generated content from documentation files ([][] thing).
   - search
-  - mkdocstrings:
+  - mkdocstrings:     # Automatically generate API documentation.
       default_handler: python
 
+extra:
+  social:
+    # Buttons at the bottom of every page.
+    - icon: fontawesome/brands/github
+      link: https://github.com/HewlettPackard/cmf
+    - icon: fontawesome/brands/slack
+      link: https://commonmetadata.slack.com/
 
+
+# This defines the structure of the CMF documentation portal (all must be in `docs/` directory).
 nav:
   - index.md
   - Examples:
@@ -66,5 +84,5 @@ nav:
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
   - Public API:
-      - api/public/cmf.md
-      - api/public/dataslice.md
+      - CMF: api/public/cmf.md
+      - DataSlice: api/public/dataslice.md

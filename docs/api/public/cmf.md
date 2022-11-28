@@ -1,7 +1,10 @@
-# CMF
+# cmflib.cmf.Cmf
 
 ::: cmflib.cmf.Cmf
     options:
+      show_root_toc_entry: false
+      merge_init_into_class: true
+      docstring_style: google
       members:
         - __init__
         - create_context

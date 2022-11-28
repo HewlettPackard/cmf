@@ -43,13 +43,14 @@ class Cmf:
     The class instance creates an ML metadata store to store the metadata. It creates a driver to store nodes and its
     relationships to neo4j. The user has to provide the name of the pipeline, that needs to be recorded with it.
 
-    Example:
-        ```python
-        from cmflib.cmf import Cmf
-        import ml_metadata as mlmd
-
-        cmf = Cmf(filename="mlmd", pipeline_name="test-pipeline")
-        ```
+    ```python
+    cmflib.cmf.Cmf(
+        filename="mlmd",
+        pipeline_name="test_pipeline",
+        custom_properties={"owner": "user_a"},
+        graph=False
+    )
+    ```
 
     Args:
         filename: Path  to the sqlite file to store the metadata
@@ -166,6 +167,14 @@ class Cmf:
 
         Example:
             ```python
+            # Import CMF
+            from cmflib.cmf import Cmf
+            from ml_metadata.proto import metadata_store_pb2 as mlpb
+
+            # Create CMF logger
+            cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+
+            # Create or reuse context for this stage
             context: mlmd.proto.Context = cmf.create_context(
                 pipeline_stage="prepare",
                 custom_properties ={"user-metadata1": "metadata_value"}
@@ -196,10 +205,25 @@ class Cmf:
                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
         """Create execution.
 
-        Every call creates a unique execution.
+        Every call creates a unique execution. Execution can only be created within a context, so
+        [create_context][cmflib.cmf.Cmf.create_context] must be called first.
 
         Example:
             ```python
+            # Import CMF
+            from cmflib.cmf import Cmf
+            from ml_metadata.proto import metadata_store_pb2 as mlpb
+
+            # Create CMF logger
+            cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+
+            # Create or reuse context for this stage
+            context: mlmd.proto.Context = cmf.create_context(
+                pipeline_stage="prepare",
+                custom_properties ={"user-metadata1": "metadata_value"}
+            )
+
+            # Create a new execution for this stage run
             execution: mlmd.proto.Execution = cmf.create_execution(
                 execution_type="Prepare",
                 custom_properties = {"split": split, "seed": seed}
@@ -855,8 +879,8 @@ class Cmf:
         It can be used to track performance of an ML model on different slices of the training or testing dataset
         splits. This can be useful from different perspectives, for instance, to mitigate model bias.
 
-        > Instances of data slices are not meant to be created manually by users. Instead, use Cmf's
-        [create_dataslice][cmflib.cmf.Cmf.create_dataslice] method.
+        > Instances of data slices are not meant to be created manually by users. Instead, use
+        [Cmf.create_dataslice][cmflib.cmf.Cmf.create_dataslice] method.
 
         """
         def __init__(self, name: str, writer, props: t.Optional[t.Dict] = None):
