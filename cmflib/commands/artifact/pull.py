@@ -96,16 +96,15 @@ class CmdArtifactPull(CmdBase):
             amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
-                print(temp)
                 bucket_name = temp[2]
                 object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
-                path_name = current_directory + "/" + name_url[0]
+                download_loc = current_directory + "/" + name_url[0]
                 stmt = amazonS3_class_obj.download_artifacts(
                     dvc_config_op,
                     current_directory,
                     bucket_name,
                     object_name,
-                    path_name,
+                    download_loc,
                 )
                 print(stmt)
         else:
