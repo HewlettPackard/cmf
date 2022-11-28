@@ -16,7 +16,10 @@ class CmdInitShow(CmdBase):
             stderr=subprocess.STDOUT,
             text=True,
         )
-        print(result.stdout)
+        if len(result.stdout) == 0:
+            return "'cmf' is not configured.\nExecute 'cmf init' command."
+        else: 
+            print(result.stdout)
         return 0
 
 

@@ -10,6 +10,7 @@ from cmflib import (
     sshremote_artifacts,
 )
 from cmflib.cli.command import CmdBase
+from cmflib.dvc_config import dvc_config
 
 
 class CmdArtifactPull(CmdBase):
@@ -59,38 +60,52 @@ class CmdArtifactPull(CmdBase):
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
         # print(names_urls)
-        minio_class_obj = minio_artifacts.minio_artifacts()
-        amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
-        local_class_obj = local_artifacts.local_artifacts()
-        sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
-        for name_url in names_urls:
-            if name_url[1].startswith("s3://"):
+        dvc_config_op = dvc_config.get_dvc_config()
+        print(dvc_config_op)
+        if dvc_config_op[0] == "minio":
+            minio_class_obj = minio_artifacts.minio_artifacts()
+            for name_url in names_urls:
                 temp = name_url[1].split("/")
-                print(temp)
                 bucket_name = temp[2]
-                object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
+                object_name = temp[3] + "/" + temp[4]
                 path_name = current_directory + "/" + name_url[0]
-                stmt = amazonS3_class_obj.download_artifacts(
-                    current_directory, bucket_name, object_name, path_name
+                stmt = minio_class_obj.download_artifacts(
+                    dvc_config_op, current_directory, bucket_name, object_name, path_name
                 )
                 print(stmt)
-            elif name_url[1].startswith("ssh"):
-                print(name_url[1])
-            elif name_url[1].startswith("/"):
-                print("in here")
-                print(name_url[1])
+        elif dvc_config_op[0] == "local-storage":
+            local_class_obj = local_artifacts.local_artifacts()
+            print(names_urls)
+            print(dvc_config_op)
+            for name_url in names_urls:
                 temp = name_url[1].split("/")
                 temp_length = len(temp)
                 download_loc = current_directory + "/" + name_url[0]
                 current_dvc_loc = (
                     temp[(temp_length - 2)] + "/" + temp[(temp_length - 1)]
                 )
-                stmt = local_class_obj.download_artifacts(
-                    current_directory, current_dvc_loc, name_url[0]
+                print(current_dvc_loc)
+                #stmt = local_class_obj.download_artifacts(
+                 #   dvc_config_op, current_directory, current_dvc_loc, name_url[0]
+                #)
+                #print(stmt)
+        elif dvc_config_op[0] == "ssh-storage":
+            sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
+            print(name_url)
+        elif dvc_config_op[0] == "amazons3":
+            amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
+            for name_url in names_urls:
+                temp = name_url[1].split("/")
+                print(temp)
+                bucket_name = temp[2]
+                object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
+                path_name = current_directory + "/" + name_url[0]
+                stmt = amazonS3_class_obj.download_artifacts(
+                    dvc_config_op, current_directory, bucket_name, object_name, path_name
                 )
                 print(stmt)
-            else:
-                pass
+        else:
+            pass
         return 0
 
 

@@ -1,17 +1,16 @@
 import os
 from dvc.api import DVCFileSystem
-from .dvc_config import dvc_config 
 
 
 class local_artifacts:
     def download_artifacts(
-        self, current_directory: str, current_dvc_loc: str, download_loc: str
+        self, dvc_config_op, current_directory: str, current_dvc_loc: str, download_loc: str
     ):
-        remote_repo = dvc_config.get_dvc_config()
-        print(remote_repo)
+        print(dvc_config_op[0])
+        print(dvc_config_op[1])
         obj = True
         try:
-            fs = DVCFileSystem(remote_repo)
+            fs = DVCFileSystem(dvc_config_op[1])
             temp = download_loc.split("/")
             temp.pop()
             dir_path = "/".join(temp)

@@ -59,7 +59,7 @@ def add_parser(subparsers, parent_parser):
         metavar="<pipeline_name>"
     )
 
-    parser.add_argument(
+    required_arguments.add_argument(
         "-f",
         "--file_name",
         help="Specify mlmd file name",
