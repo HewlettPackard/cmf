@@ -14,7 +14,7 @@ templates=Jinja2Templates(directory=str(BASE_PATH/'template'))
 
 @app.get("/")
 def read_root():
-    return {"Use this api for sending json payload":"http://127.0.0.1:8000/mlmd_push/"}
+    return {"Use this api for sending json payload":"http://127.0.0.1/mlmd_push/"}
 
 
 @app.post("/mlmd_push")
@@ -56,16 +56,19 @@ async def display_exec(request: Request):
         execution_df=index("/cmf-server/data/mlmd")
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
         json_payload = query.dumptojson("Test-env")
-
+        exec_val="true"
     else:
         print("No mlmd file submitted")
-        execution_df=''
-    return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df})
+        exec_val="false"
+        execution_df=" "
+    return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df,'exec_val':exec_val})
 
 @app.get("/display_artifacts",response_class=HTMLResponse)
 async def display_artifact(request: Request):
     if os.path.exists("/cmf-server/data/mlmd"):
         artifact_df=artifact("/cmf-server/data/mlmd")
+        artifact_val="true"
     else:
+        artifact_val="false"
         artifact_df=""
-    return templates.TemplateResponse('artifacts.html',{'request':request,'artifact_df':artifact_df})
+    return templates.TemplateResponse('artifacts.html',{'request':request,'artifact_df':artifact_df,'artifact_val':artifact_val})

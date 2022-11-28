@@ -28,18 +28,18 @@
 </head>
 <body>
 <div style="overflow-x:auto;"></div>
+{% if exec_val== "false" %}
+    <p>No mlmd found</p>
+{% else %}
 
-
-
-    <table>
-
-      <tr>
+<table>
+    <tr>
         {% for col in exec_df.columns %}
-          <th>
+        <th>
             {{col}}
-          </th>
+        </th>
         {% endfor %}
-      </tr>
+    </tr>
         {% for index, row in exec_df.iterrows() %}
           <tr>
             {% for cell in row %}
@@ -48,8 +48,12 @@
               </td>
             {% endfor %}
           </tr>
-        {% endfor %}
-    </table>
+    {% endfor %}
+</table>
+{% endif %}
+
+
+
 
 
 </body>

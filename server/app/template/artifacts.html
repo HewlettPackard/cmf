@@ -28,13 +28,16 @@
 
 </head>
 <body>
+{% if artifact_val== "false" %}
+    <p>No mlmd found</p>
+{% else %}
 
 <table>
     <tr>
         {% for col in artifact_df.columns %}
-          <th>
+        <th>
             {{col}}
-          </th>
+        </th>
         {% endfor %}
     </tr>
         {% for index, row in artifact_df.iterrows() %}
@@ -45,10 +48,9 @@
               </td>
             {% endfor %}
           </tr>
-        {% endfor %}
+    {% endfor %}
 </table>
-
-
+{% endif %}
 
 </body>
 </html>
