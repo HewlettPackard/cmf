@@ -13,13 +13,13 @@ class amazonS3_artifacts:
         secret_key = ""
         try:
             bucket_name, access_key, secret_key = dvc_config.get_dvc_config()
-            print(bucket_name, access_key, secret_key)
             client = Minio(endpoint, access_key=access_key, secret_key=secret_key)
-            found = client.bucket_exists(bucket_name)
+            found = client.bucket_exists("hpeairldf-1")
             if not found:
                 return "Bucket doesn't exists"
 
-            obj = client.fget_object(bucket_name, object_name, file_path)
+            obj = client.fget_object("hpeairldf-1", object_name, file_path)
+            print("on third breakpoint")
             if obj:
                 stmt = f"object {object_name} downloaded at {file_path}."
                 return stmt

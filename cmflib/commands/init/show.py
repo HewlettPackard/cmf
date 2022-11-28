@@ -10,7 +10,12 @@ from cmflib.cli.command import CmdBase
 
 class CmdInitShow(CmdBase):
     def run(self):
-        result = subprocess.run(['dvc', 'config', '-l'], capture_output=True, text=True)
+        result = subprocess.run(
+            ["dvc", "config", "-l"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
         print(result.stdout)
         return 0
 
@@ -27,5 +32,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdInitShow)
-
-

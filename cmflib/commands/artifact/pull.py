@@ -66,8 +66,9 @@ class CmdArtifactPull(CmdBase):
         for name_url in names_urls:
             if name_url[1].startswith("s3://"):
                 temp = name_url[1].split("/")
+                print(temp)
                 bucket_name = temp[2]
-                object_name = temp[3] + "/" + temp[4]
+                object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
                 path_name = current_directory + "/" + name_url[0]
                 stmt = amazonS3_class_obj.download_artifacts(
                     current_directory, bucket_name, object_name, path_name
