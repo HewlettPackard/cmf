@@ -287,7 +287,7 @@ dvc push
 The above steps will run a pre coded example pipeline and the metadata is stored in a file named "mlmd".<br>
 The artifacts created will be pushed to configured dvc remote (default: /home/dvc_remote)<br>
 The stored metadata is displayed as 
-![image](assets/metadata_output.png)
+![image](assets/Metadata_stored.png)
 
 Metadata lineage can be accessed in neo4j.<br>
 Open http://host:7475/browser/
