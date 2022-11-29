@@ -31,7 +31,7 @@ Install CMF
     # Work in progress: not available yet.
     # pip install cmflib
     ```
-
+### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
 each stage performs a particular task, such as data loading and pre-processing, ML model training and testing. Stages
@@ -234,7 +234,7 @@ cmf =  cmf.Cmf(
 )
 ```
 
-### Use a Jupyterlab Docker environment with CMF pre-installed
+## <a name="docker-section"></a> Use a Jupyterlab Docker environment with CMF pre-installed
 CMF has a docker-compose file which creates two docker containers,
 - JupyterLab Notebook Environment with CMF pre installed.
     - Accessible at http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
