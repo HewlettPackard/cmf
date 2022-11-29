@@ -16,19 +16,21 @@ on:
 
 jobs:
   deploy-docs-to-gh-pages:
+    # Do not run on forked repositories.
+    if: github.repository_owner == "HewlettPackard"
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Python
+      - name: Setup Python Environment
         uses: actions/setup-python@v3
         with:
           python-version: "3.8"
 
-      - name: Install Python dependencies
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r docs/requirements.txt
@@ -41,7 +43,7 @@ jobs:
           mkdocs build --theme material --site-dir ../site/
           rm -r ../site/_src
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy Docts To GitHub Pages
         # This step will deploy the generated documentation to `gh-pages` branch.
         uses: peaceiris/actions-gh-pages@v3.9.0
         with:
