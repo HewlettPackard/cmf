@@ -37,8 +37,8 @@ def train(input_dir: str, output_dir: str) -> None:
         Output: ${output_dir}/model.pkl
     """
     params = yaml.safe_load(open("params.yaml"))["train"]
-
-    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
+    graph = os.getenv("NEO4J","False")
+    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
     _ = metawriter.create_context(pipeline_stage="Train")
     _ = metawriter.create_execution(execution_type="Train-execution", custom_properties=params)
 

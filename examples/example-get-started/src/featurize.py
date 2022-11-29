@@ -72,8 +72,8 @@ def featurize(input_dir: str, output_dir: str) -> None:
 
     os.makedirs(output_dir, exist_ok=True)
     output_ds = Dataset(train=os.path.join(output_dir, "train.pkl"), test=os.path.join(output_dir, "test.pkl"))
-
-    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
+    graph = os.getenv("NEO4J","False")
+    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
 
     _ = metawriter.create_context(pipeline_stage="Featurize")
     _ = metawriter.create_execution(execution_type="Featurize-execution", custom_properties=params)

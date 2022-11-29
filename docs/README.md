@@ -9,4 +9,3 @@ mkdocs serve
 ```
 
 Then, open your browser and navigate to `http://127.0.0.1:8000`.
->>>>>>> ca87e940bdad13fc5cee6111b93c620a6f71f364

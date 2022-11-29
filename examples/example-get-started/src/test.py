@@ -46,8 +46,8 @@ def test(model_dir: str, dataset_dir: str, output_dir: str) -> None:
         prc=os.path.join(output_dir, 'prc.json'),
         roc=os.path.join(output_dir, 'roc.json')
     )
-
-    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
+    graph = os.getenv("NEO4J","False")
+    metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
     _ = metawriter.create_context(pipeline_stage="Evaluate")
     _ = metawriter.create_execution(execution_type="Evaluate-execution")
 

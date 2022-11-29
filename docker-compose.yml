@@ -19,7 +19,7 @@ services:
     #1. mkdir $HOME/workspace
     #2. mkdir $HOME/dvc_remote
     #or 
-    #Change the below lines to relect the appropriated directories
+    #Change the below lines to relect the appropriate directories
     #1. If your workspace is named "experiment" change the below line
     #$HOME/workspace:/home/jovyan/workspace to
     #$HOME/experiment:/home/jovyan/wokspace
@@ -63,7 +63,7 @@ services:
       - neo4j
   neo4j:
     image: neo4j:4.4
-    container_name: neo4j-ann
+    container_name: neo4j
     hostname: neo4j
     ports:
       - "7475:7474"
