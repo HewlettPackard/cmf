@@ -9,14 +9,23 @@ services:
     container_name: jupyter-cmf-notebook
     hostname: jupyter-cmf-notebook
 
-    # Workspace is the directory from your home folder that will be mounted inside the docker container with the
-    # pre-installed CMF. The `dvc_remote` is the remote data store for DVC. Your `.ssh` folder is mounted inside the
-    # docker container to enable you to push and pull code from git.
-
-    # TODO: Create these directories in your home folder or change the below lines to select the appropriated
-    #       directories, e.g. if your workspace is named "experiment" change the below line to
-    #       `$HOME/experiment:/home/jovyan/wokspace`.
-
+    #workspace is the directory from your home folder that
+    #will be mounted inside the docker conatiner with cmf pre-installed
+    #dvc_remote is the remote data store for dvc 
+    #your .ssh folder is mounted inside the docker conatiner 
+    #to enable you to push and pull code from git
+    #To-Do 
+    # Create these directories in your home folder
+    #1. mkdir $HOME/workspace
+    #2. mkdir $HOME/dvc_remote
+    #or 
+    #Change the below lines to relect the appropriate directories
+    #1. If your workspace is named "experiment" change the below line
+    #$HOME/workspace:/home/jovyan/workspace to
+    #$HOME/experiment:/home/jovyan/wokspace
+    #2. If your remote is /extmount/data change the line 
+    #$HOME/dvc_remote:/home/jovyan/dvc_remote to 
+    #/extmount/data:/home/jovyan/dvc_remote
     volumes:
       - $HOME/workspace:/home/jovyan/workspace  
       - $HOME/dvc_remote:/home/jovyan/dvc_remote

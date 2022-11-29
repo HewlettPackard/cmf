@@ -234,28 +234,74 @@ cmf =  cmf.Cmf(
 )
 ```
 
-## Jupyter Lab environment with CMF
-CMF is shipped with an example of how to use CMF in JupyterLab environments. CMF is pre-installed in a JupyterLab 
-Notebook Environment. This environment is accessible at `http://[HOST.IP.AD.DR]:8888` (default token: `docker`). Within 
-the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`. The example 
-project directory [example-get-started](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) 
-is mounted as `/home/jovyan/example-get-started` directory inside the running container.
+### Use a Jupyterlab Docker environment with CMF pre-installed
+CMF has a docker-compose file which creates two docker containers,
+- JupyterLab Notebook Environment with CMF pre installed.
+    - Accessible at http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
+    - Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`
+    - `example-get-started` from this repo is bind mounted into `/home/jovyan/example-get-started`
+- Neo4j Docker container to store and access lineages.
 
-> You might need to update the `docker-compose.yml`. For example to bind mount another volume on the host: 
->   `/lustre/data/dataspaces/dataspaces_testbed/:/home/jovyan/work`
-
-```shell
-# Crate a copy of the `env-example` file (this copy will automatically be used by `docker-compose up` command).
-# File name must be .env
-cp env-example .env
-
-# Open and edit the `.env` file to match your environment
-vi .env
-
-# Start a docker container.
+#### Step 1. <br>
+ `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml` <br>
+#### Step 2. <br>
+**Update `docker-compose.yml` as needed.**<br><br>
+    your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git <br><br>
+    **To-Do** <br>
+    Create these directories in your home folder<br><br>
+```
+mkdir $HOME/workspace 
+mkdir $HOME/dvc_remote 
+``` 
+workspace - workspace will be mounted inside the cmf pre-installed docker conatiner (can be your code directory)  <br>
+dvc_remote - remote data store for dvc <br>
+   
+***or***<br>
+Change the below lines in docker-compose to reflect the appropriate directories<br>
+```
+ If your workspace is named "experiment" change the below line
+$HOME/workspace:/home/jovyan/workspace to 
+$HOME/experiment:/home/jovyan/wokspace
+```
+```
+If your remote is /extmount/data change the line 
+$HOME/dvc_remote:/home/jovyan/dvc_remote to 
+/extmount/data:/home/jovyan/dvc_remote 
+```
+***Start the docker***
+```
 docker-compose up --build -d
+```
+***Access the jupyter notebook***
+http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
 
-# Shutdown / remove containers (removes volumes as well)
+Click the terminal icon<br>
+<img src= "assets/jupyter.png" width=400> <br>
+***Quick Start***
+```
+cd example-get-started
+sh initialize.sh
+sh test_script.sh
+dvc push
+```
+The above steps will run a pre coded example pipeline and the metadata is stored in a file named "mlmd".<br>
+The artifacts created will be pushed to configured dvc remote (default: /home/dvc_remote)<br>
+The stored metadata is displayed as 
+![image](assets/Metadata_stored.png)
+
+Metadata lineage can be accessed in neo4j.<br>
+Open http://host:7475/browser/
+Connect to server with default password neo4j123 (To change this modify .env file)<br>
+<img src="assets/neo4j_server.png" width=400> <br>
+Run the query <br>
+```
+MATCH (a:Execution)-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r, b 	
+```
+Expected output<br>
+<img src="assets/neo4j_output.PNG" width=400> <br>
+
+***Shutdown/remove (Remove volumes as well)***
+```
 docker-compose down -v
 ```
 

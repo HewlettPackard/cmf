@@ -19,7 +19,7 @@ echo "[3/5] [GIT REMOTE    ] setting git remote to ${GIT_REMOTE_URL}"
 git remote add origin "${GIT_REMOTE_URL:-/tmp/gitremote/url}"
 
 echo "[4/5] [DVC REMOTE    ] setting dvc remote to ${DVC_REMOTE_URL}"
-dvc remote add myremote "${DVC_REMOTE_URL:-/tmp/dvcremote}"
+dvc remote add myremote -f "${DVC_REMOTE_URL:-/tmp/dvcremote}"
 dvc remote default myremote
 
 echo "[5/5] [NEXT STEPS    ]"
