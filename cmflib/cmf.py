@@ -21,6 +21,7 @@ import re
 import os
 import sys
 import pandas as pd
+import typing as t
 
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from ml_metadata.metadata_store import metadata_store
@@ -36,12 +37,34 @@ from cmflib.metadata_helper import get_or_create_parent_context,   \
     put_artifact, link_execution_to_input_artifact
 
 
-class Cmf():
-    """This class provides methods to log the metadata- for distributed AI pipeline
+class Cmf:
+    """This class provides methods to log metadata for distributed AI pipelines.
 
-    The class instance createa a ml metadata store to store the metadata.
-    It creates a driver to store nodes and its relationships to neo4j.
-    The user has to provide the name of the pipeline, that needs to be recorded with it.
+    The class instance creates an ML metadata store to store the metadata. It creates a driver to store nodes and its
+    relationships to neo4j. The user has to provide the name of the pipeline, that needs to be recorded with it.
+
+    ```python
+    cmflib.cmf.Cmf(
+        filename="mlmd",
+        pipeline_name="test_pipeline",
+        custom_properties={"owner": "user_a"},
+        graph=False
+    )
+    ```
+
+    Args:
+        filename: Path  to the sqlite file to store the metadata
+        pipeline_name: Name to uniquely identify the pipeline. Note that name is the unique identification for a
+            pipeline.  If a pipeline already exist with the same name, the existing pipeline object is reused.
+        custom_properties: Additional properties of the pipeline that needs to be stored.
+        graph: If set to true, the libray also stores the relationships in the provided graph database. The following
+            environment variables should be set: `NEO4J_URI` (graph server URI), `NEO4J_USER_NAME` (user name) and
+            `NEO4J_PASSWD` (user password), e.g.:
+            ```bash
+            export NEO4J_URI="bolt://ip:port"
+            export NEO4J_USER_NAME=neo4j
+            export NEO4J_PASSWD=neo4j
+            ```
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -51,7 +74,7 @@ class Cmf():
     __neo4j_password = os.getenv('NEO4J_PASSWD', "")
 
     def __init__(self, filename: str = "mlmd",
-                 pipeline_name="", custom_properties=None,
+                 pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None,
                  graph: bool = False):
         Cmf.__prechecks()
         if custom_properties is None:
@@ -92,7 +115,6 @@ class Cmf():
         Cmf.__check_default_remote()
         Cmf.__check_git_remote()
 
-
     @staticmethod
     def __check_git_remote():
         """Executes precheck for git remote"""
@@ -130,7 +152,6 @@ class Cmf():
                   " Then run 'sh initialize.sh'")
             sys.exit(1)
 
-
     def __del__(self):
         """Destructor - Cleans up the connection to neo4j"""
         # if self.execution is not None:
@@ -138,13 +159,34 @@ class Cmf():
         if hasattr(self, 'driver'):
             self.driver.close()
 
-
     def create_context(self, pipeline_stage: str,
-                       custom_properties: {} = None) -> mlpb.Context:
+                       custom_properties: t.Optional[t.Dict] = None) -> mlpb.Context:
         """Creates a stage in the pipeline.
 
-        If it already exist, it is reused and not
-        created again.
+        If it already exists, it is reused and not created again.
+
+        Example:
+            ```python
+            # Import CMF
+            from cmflib.cmf import Cmf
+            from ml_metadata.proto import metadata_store_pb2 as mlpb
+
+            # Create CMF logger
+            cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+
+            # Create or reuse context for this stage
+            context: mlmd.proto.Context = cmf.create_context(
+                pipeline_stage="prepare",
+                custom_properties ={"user-metadata1": "metadata_value"}
+            )
+            ```
+
+        Args:
+            pipeline_stage: Name of the pipeline stage.
+            custom_properties: Developers can provide key value pairs with additional properties of the stage that
+                need to be stored.
+        Returns:
+            Context object from ML Metadata library associated with the new stage.
         """
         custom_props = {} if custom_properties is None else custom_properties
         ctx = get_or_create_run_context(
@@ -159,10 +201,43 @@ class Cmf():
                 pipeline_stage, self.parent_context, ctx.id, custom_props)
         return ctx
 
-
     def create_execution(self, execution_type: str,
-                         custom_properties: {} = None) -> mlpb.Execution:
-        """Creates execution- Every call creates a unique execution."""
+                         custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
+        """Create execution.
+
+        Every call creates a unique execution. Execution can only be created within a context, so
+        [create_context][cmflib.cmf.Cmf.create_context] must be called first.
+
+        Example:
+            ```python
+            # Import CMF
+            from cmflib.cmf import Cmf
+            from ml_metadata.proto import metadata_store_pb2 as mlpb
+
+            # Create CMF logger
+            cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+
+            # Create or reuse context for this stage
+            context: mlmd.proto.Context = cmf.create_context(
+                pipeline_stage="prepare",
+                custom_properties ={"user-metadata1": "metadata_value"}
+            )
+
+            # Create a new execution for this stage run
+            execution: mlmd.proto.Execution = cmf.create_execution(
+                execution_type="Prepare",
+                custom_properties = {"split": split, "seed": seed}
+            )
+            ```
+
+        Args:
+            execution_type: Name of the execution.
+            custom_properties: Developers can provide key value pairs with additional properties of the execution that
+                need to be stored.
+
+        Returns:
+            Execution object from ML Metadata library associated with the new execution for this stage.
+        """
         # Initializing the execution related fields
         self.metrics = {}
         self.input_artifacts = []
@@ -195,8 +270,7 @@ class Cmf():
                     sys.argv), self.execution.id, custom_props)
         return self.execution
 
-
-    def update_execution(self, execution_id: int, custom_properties: {} = None):
+    def update_execution(self, execution_id: int, custom_properties: t.Optional[t.Dict] = None):
         """Updates an existing execution.
 
         The custom properties can be updated after creation of the execution.
@@ -245,17 +319,32 @@ class Cmf():
                 c_props)
         return self.execution
 
-
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         return commit_dvc_lock_file(file_path, self.execution.id)
 
-
-    def log_dataset(self, url: str, event: str, custom_properties: {} = None) -> mlpb.Artifact:
+    def log_dataset(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset as artifact.
 
-        This call adds the dataset to dvc. The dvc metadata file created(.dvc)
-        will be added to git annd commited
+        This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
+        version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
+
+        Example:
+            ```python
+            artifact: mlmd.proto.Artifact = cmf.log_dataset(
+                url="/repo/data.xml",
+                event="input",
+                custom_properties={"source":"kaggle"}
+            )
+            ```
+
+        Args:
+             url: The path to the dataset.
+             event: Takes arguments `INPUT` OR `OUTPUT`.
+             custom_properties: Dataset properties (key/value pairs).
+
+        Returns:
+            Artifact object from ML Metadata library associated with the new dataset artifact.
         """
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
@@ -351,7 +440,7 @@ class Cmf():
 
 
     def log_dataset_with_version(self, url: str, version: str, event: str,
-                                 custom_properties: {} = None) -> mlpb.Artifact:
+                                 custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
 
         custom_props = {} if custom_properties is None else custom_properties
@@ -448,15 +537,35 @@ class Cmf():
                     self.execution_label_props)
         return artifact
 
-
     # Add the model to dvc do a git commit and store the commit id in MLMD
     def log_model(self, path: str, event: str, model_framework: str = "Default",
                   model_type: str = "Default", model_name: str = "Default",
-                  custom_properties=None) -> object:
-        """
-        Logs a model. The model is added to dvc and the metadata file(.dvc)
+                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        """Logs a model.
 
-        gets commited to git
+        The model is added to dvc and the metadata file (.dvc) gets committed to git.
+
+        Example:
+            ```python
+            artifact: mlmd.proto.Artifact= cmf.log_model(
+                path="path/to/model.pkl",
+                event="output",
+                model_framework="SKlearn",
+                model_type="RandomForestClassifier",
+                model_name="RandomForestClassifier:default"
+            )
+            ```
+
+        Args:
+            path: Path to the model file.
+            event: Takes arguments `INPUT` OR `OUTPUT`.
+            model_framework: Framework used to create the model.
+            model_type: Type of model algorithm used.
+            model_name: Name of the algorithm used.
+            custom_properties: The model properties.
+
+        Returns:
+            Artifact object from ML Metadata library associated with the new model artifact.
         """
 
         if custom_properties is None:
@@ -552,12 +661,26 @@ class Cmf():
 
         return artifact
 
+    def log_execution_metrics(self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        """Log the metadata associated with the execution (coarse-grained tracking).
 
-    def log_execution_metrics(self, metrics_name: str, custom_properties: {} = None) -> object:
-        """Log the metadata associated with the execution.
+        It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
+        have.
 
-        It is stored as a metrics artifact'''
-        This does not have a backing physical file, unlike other artifacts that we have.
+        Example:
+            ```python
+            exec_metrics: mlpb.Artifact = cmf.log_execution_metrics(
+                metrics_name="Training_Metrics",
+                {"auc": auc, "loss": loss}
+            )
+            ```
+
+        Args:
+            metrics_name: Name to identify the metrics.
+            custom_properties: Dictionary with metric values.
+
+        Returns:
+              Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
@@ -600,9 +723,27 @@ class Cmf():
                 self.input_artifacts, child_artifact, self.execution_label_props)
         return metrics
 
+    def log_metric(self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None) -> None:
+        """Stores the fine-grained (per step or per epoch) metrics to memory.
 
-    def log_metric(self, metrics_name: str, custom_properties: {} = None):
-        """Stores the fine per step or per epoc metrics to memory"""
+        The metrics provided are stored in a parquet file. The `commit_metrics` call add the parquet file in the version
+        control framework. The metrics written in the parquet file can be retrieved using the `read_metrics` call.
+
+        Example:
+            ```python
+            # Can be called at every epoch or every step in the training. This is logged to a parquet file and committed
+            # at the commit stage.
+
+            # Inside training loop
+            while True:
+                 cmf.log_metric("training_metrics", {"train_loss": train_loss})
+            cmf.commit_metrics("training_metrics")
+            ```
+
+        Args:
+            metrics_name: Name to identify the metrics.
+            custom_properties: Dictionary with metrics.
+        """
         if metrics_name in self.metrics:
             key = max((self.metrics[metrics_name]).keys()) + 1
             self.metrics[metrics_name][key] = custom_properties
@@ -658,7 +799,7 @@ class Cmf():
         return metrics
 
 
-    def log_validation_output(self, version: str, custom_properties: {} = None) -> object:
+    def log_validation_output(self, version: str, custom_properties: t.Optional[t.Dict] = None) -> object:
         uri = str(uuid.uuid1())
         return create_new_artifact_event_and_attribution(
             store=self.store,
@@ -676,7 +817,7 @@ class Cmf():
         )
 
 
-    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_props: {}):
+    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_props: t.Dict):
         """Updates an existing artifact and stores it back to mlmd"""
         for key, value in custom_props.items():
             if isinstance(value, int):
@@ -695,11 +836,23 @@ class Cmf():
         """updates an artifact"""
         put_artifact(self.store, artifact)
 
-
-    def create_dataslice(self, name: str) -> object:
+    def create_dataslice(self, name: str) -> "Cmf.DataSlice":
         """Creates a dataslice object.
 
-        This object is used to add data to dataslice using the call 'add_data'
+        Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]
+        method. Users are also responsible for committing data slices by calling the
+        [commit][cmflib.cmf.Cmf.DataSlice.commit] method.
+
+        Example:
+            ```python
+            dataslice = cmf.create_dataslice("slice-a")
+            ```
+
+        Args:
+            name: Name to identify the dataslice.
+
+        Returns:
+            Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].
         """
         return Cmf.DataSlice(name, self)
 
@@ -712,7 +865,7 @@ class Cmf():
 
     # To do - Once update the hash and the new version should be updated in
     # the mlmd
-    def update_dataslice(self, name: str, record: str, custom_props: {}):
+    def update_dataslice(self, name: str, record: str, custom_props: t.Dict):
         df = pd.read_parquet(name)
         temp_dict = df.to_dict('index')
         temp_dict[record].update(custom_props)
@@ -720,15 +873,35 @@ class Cmf():
         dataslice_df.index.names = ['Path']
         dataslice_df.to_parquet(name)
 
-    class DataSlice():
-        def __init__(self, name: str, writer, props: {} = None):
+    class DataSlice:
+        """A data slice represents a named subset of data.
+
+        It can be used to track performance of an ML model on different slices of the training or testing dataset
+        splits. This can be useful from different perspectives, for instance, to mitigate model bias.
+
+        > Instances of data slices are not meant to be created manually by users. Instead, use
+        [Cmf.create_dataslice][cmflib.cmf.Cmf.create_dataslice] method.
+
+        """
+        def __init__(self, name: str, writer, props: t.Optional[t.Dict] = None):
             self.props = {} if props is None else props
             self.name = name
             self.writer = writer
 
+        def add_data(self, path: str, custom_props: t.Optional[t.Dict] = None) -> None:
+            """Add data to create the dataslice.
 
-        def add_data(self, path, custom_props: {} = None):
-            """adds data to create the dataslice"""
+            Currently supported only for file abstractions. Pre-condition - the parent folder, containing the file
+                should already be versioned.
+
+            Example:
+                ```python
+                dataslice.add_data(f"data/raw_data/{j}.xml)
+                ```
+            Args:
+                path: Name to identify the file to be added to the dataslice.
+                custom_props: Properties associated with this datum.
+            """
 
             self.props[path] = {}
             self.props[path]['hash'] = dvc_get_hash(path)
@@ -744,9 +917,19 @@ class Cmf():
 #                self.props[path][k] = v
 #        """
 
+        def commit(self, custom_props: t.Optional[t.Dict] = None) -> None:
+            """Commit the dataslice.
 
-        def commit(self, custom_props: {} = None):
-            """"Commits the dataslice"""
+            The created dataslice is versioned and added to underneath data versioning software.
+
+            Example:
+                ```python
+                dataslice.commit()
+                ```
+
+            Args:
+                custom_props: Properties associated with this data slice.
+            """
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient='index')
             dataslice_df.index.names = ['Path']
