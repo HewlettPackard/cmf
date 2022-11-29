@@ -14,6 +14,7 @@
 # limitations under the License.
 ###
 from neo4j import GraphDatabase
+import typing as t
 import re
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
@@ -200,7 +201,7 @@ class GraphDriver:
         return values
 
     @staticmethod
-    def _create_pipeline_syntax(name: str, props: {}, uri: int) -> str:
+    def _create_pipeline_syntax(name: str, props: t.Dict, uri: int) -> str:
         props["Name"] = name
         props["uri"] = str(uri)
         props["pipeline_id"] = str(uri)
@@ -267,7 +268,7 @@ class GraphDriver:
         return syntax_str
 
     @staticmethod
-    def _create_stage_syntax(name: str, props: {}, uri: int, pipeline_id: int, pipeline_name: str) -> str:
+    def _create_stage_syntax(name: str, props: t.Dict, uri: int, pipeline_id: int, pipeline_name: str) -> str:
         props["Name"] = name
         props["uri"] = str(uri)
         props["pipeline_id"] = str(pipeline_id)
@@ -302,7 +303,7 @@ class GraphDriver:
     @staticmethod
     def _create_execution_link_syntax(parent_label: str, child_label: str, parent_uri: str, parent_id: str,
                                       child_id: int,
-                                      relation: str, relation_properties: {}):
+                                      relation: str, relation_properties: t.Dict):
         """
         MATCH
         (a:Person),
@@ -327,7 +328,7 @@ class GraphDriver:
     @staticmethod
     def _create_parent_child_artifacts_syntax(parent_label: str, child_label: str, parent_uri: str, child_uri: str,
                                               parent_name: str, child_name: str, pipeline_id: int, relation: str,
-                                              relation_properties: {}):
+                                              relation_properties: t.Dict):
         """
         MATCH
         (a:Person),
@@ -351,7 +352,7 @@ class GraphDriver:
         return parent_child_syntax
 
     @staticmethod
-    def _create_execution_syntax(name: str, command: str, props: {}, uri: int, pipeline_id: int,
+    def _create_execution_syntax(name: str, command: str, props: t.Dict, uri: int, pipeline_id: int,
                                  pipeline_name: str) -> str:
         props["Name"] = name
         props["Command"] = command

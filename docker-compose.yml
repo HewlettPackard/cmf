@@ -1,5 +1,5 @@
-#Following https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
-#And https://jupyter-docker-stacks.readthedocs.io/en/latest/using/common.html#docker-options
+# Following https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
+# And https://jupyter-docker-stacks.readthedocs.io/en/latest/using/common.html#docker-options
 version: '3.8'
 services:
   jupyter-cmf-notebook:
@@ -66,7 +66,7 @@ services:
     container_name: neo4j-ann
     hostname: neo4j
     ports:
-      - 7475:7474
-      - 7688:7687
+      - "7475:7474"
+      - "7688:7687"
     environment:
       - NEO4J_AUTH=${NEO4J_USER_NAME}/${NEO4J_PASSWD}        

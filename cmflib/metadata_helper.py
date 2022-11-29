@@ -16,6 +16,7 @@
 
 import os
 import sys
+import typing as t
 from time import sleep
 from ml_metadata.proto import metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
@@ -292,7 +293,7 @@ EXECUTION_PIPELINE_ID = "Pipeline_id"
 def get_or_create_parent_context(
         store,
         pipeline: str,
-        custom_properties: {} = None
+        custom_properties: t.Optional[t.Dict] = None
 ) -> metadata_store_pb2.Context:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
@@ -316,7 +317,7 @@ def get_or_create_parent_context(
 def get_or_create_run_context(
         store,
         pipeline_stage: str,
-        custom_properties: {} = None,
+        custom_properties: t.Optional[t.Dict] = None,
 ) -> metadata_store_pb2.Context:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
@@ -359,7 +360,7 @@ def create_new_execution_in_existing_run_context(
         git_repo: str = None,
         git_start_commit: str = None,
         git_end_commit: str = "",
-        custom_properties: {} = None,
+        custom_properties: t.Optional[t.Dict] = None,
 ) -> metadata_store_pb2.Execution:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():

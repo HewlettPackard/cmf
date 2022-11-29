@@ -24,7 +24,7 @@ On this backbone, we build the Git like experience for metadata, enabling users 
 
 The framework can be used to track various types of pipelines such as data pipelines or AI pipelines. 
 <p align="center">
- <img src="docs/Framework.png" height="400" align="center" />
+ <img src="docs/assets/framework.png" height="400" align="center" />
 </p>
  
 
@@ -40,7 +40,7 @@ CMF central server - Interacts with all the remote clients and is responsible to
 
  CMF central repositories - Host the code, data and metadata. 
 <p align="center">
-  <img src="docs/DistributedArchitecture.png" height="350" align="center" />
+  <img src="docs/assets/distributed_architecture.png" height="350" align="center" />
 </p>
 
 ### Metadata library
