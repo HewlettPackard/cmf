@@ -234,11 +234,13 @@ cmf =  cmf.Cmf(
 )
 ```
 
-### Use a Jupyterlab environment with CMF pre-installed
-- CMF is preinstalled in a JupyterLab Notebook Environment.
-- Accessible at http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
-- Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`
-- `example-get-started` from this repo is bind mounted into `/home/jovyan/example-get-started`
+### Use a Jupyterlab Docker environment with CMF pre-installed
+CMF has a docker-compose file which creates two docker containers,
+- JupyterLab Notebook Environment with CMF pre installed.
+    - Accessible at http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
+    - Within the Jupyterlab environment, a startup script switches context to `$USER:$GROUP` as specified in `.env`
+    - `example-get-started` from this repo is bind mounted into `/home/jovyan/example-get-started`
+- Neo4j Docker container to store and access lineages.
 
 #### Step 1. <br>
  `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml` <br>
@@ -251,8 +253,8 @@ cmf =  cmf.Cmf(
 mkdir $HOME/workspace 
 mkdir $HOME/dvc_remote 
 ``` 
-workspace will be mounted inside the cmf pre-installed docker conatiner (can be your code directory)  <br>
-remote data store for dvc <br>
+workspace - workspace will be mounted inside the cmf pre-installed docker conatiner (can be your code directory)  <br>
+dvc_remote - remote data store for dvc <br>
    
 ***or***<br>
 Change the below lines in docker-compose to reflect the appropriate directories<br>
@@ -273,6 +275,8 @@ docker-compose up --build -d
 ***Access the jupyter notebook***
 http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
 
+Click the terminal icon<br>
+<img src= "assets/jupyter.png" width=400> <br>
 ***Quick Start***
 ```
 cd example-get-started
@@ -281,23 +285,21 @@ sh test_script.sh
 dvc push
 ```
 The above steps will run a pre coded example pipeline and the metadata is stored in a file named "mlmd".<br>
-
+The artifacts created will be pushed to configured dvc remote (default: /home/dvc_remote)<br>
 The stored metadata is displayed as 
-![image](https://user-images.githubusercontent.com/82071576/204392719-de72013c-3db1-4c88-9a99-67077d94cdf9.png)
+![image](assets/metadata_output.png)
 
 Metadata lineage can be accessed in neo4j.<br>
 Open http://host:7475/browser/
 Connect to server with default password neo4j123 (To change this modify .env file)<br>
-
+<img src="assets/neo4j_server.png" width=400> <br>
 Run the query <br>
 ```
 MATCH (a:Execution)-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r, b 	
 ```
+Expected output<br>
+<img src="assets/neo4j_output.PNG" width=400> <br>
 
-Expected output
-
-
-The artifacts created will be pushed to configured dvc remote (default: /home/dvc_remote)<br>
 ***Shutdown/remove (Remove volumes as well)***
 ```
 docker-compose down -v
