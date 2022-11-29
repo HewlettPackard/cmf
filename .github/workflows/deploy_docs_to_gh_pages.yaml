@@ -1,0 +1,54 @@
+# Deploy CMF mkdocs-based documentation to GitHub pages. The CMF docs need to be built first (because we automatically
+# build API documentation pages).
+# https://github.com/peaceiris/actions-gh-pages
+
+name: Build CMF Docs & Deploy to GitHub pages
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/deploy_docs_to_gh_pages.yaml'    # The workflow file itself.
+      - 'docs/**'                                           # Documentation files
+      - '!docs/_src/**'                                     #   but exclude this one (raw resources for docs).
+      - 'cmflib/cmf.py'                                     # Public API documentation.
+
+jobs:
+  deploy-docs-to-gh-pages:
+    # Do not run on forked repositories.
+    if: github.repository_owner == 'HewlettPackard'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r docs/requirements.txt
+
+      - name: Build Docs
+        working-directory: './'
+        # First - build documentation, then remove a directory that contains raw files for documentation assets, and
+        # these raw files are not required for running the CMF documentation site.
+        run: |
+          mkdocs build --theme material --site-dir ../site/
+          rm -r ../site/_src
+
+      - name: Deploy Docts To GitHub Pages
+        # This step will deploy the generated documentation to `gh-pages` branch.
+        uses: peaceiris/actions-gh-pages@v3.9.0
+        with:
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ../site
+          allow_empty_commit: true
