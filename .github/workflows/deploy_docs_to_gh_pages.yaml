@@ -9,11 +9,13 @@ on:
     branches:
       - main
     paths:
-      - "docs/**"
-      - ".github/workflows/deploy_docs.yml"
+      - ".github/workflows/deploy_docs_to_gh_pages.yaml"    # The workflow file itself.
+      - "docs/**"                                           # Documentation files
+      - "!docs/_src/**"                                     #   but exclude this one (raw resources for docs).
+      - "cmflib/cmf.py"                                     # Public API documentation.
 
 jobs:
-  deploy-docs:
+  deploy-docs-to-gh-pages:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -33,6 +35,8 @@ jobs:
 
       - name: Build Docs
         working-directory: './'
+        # First - build documentation, then remove a directory that contains raw files for documentation assets, and
+        # these raw files are not required for running the CMF documentation site.
         run: |
           mkdocs build --theme material --site-dir ../site/
           rm -r ../site/_src
