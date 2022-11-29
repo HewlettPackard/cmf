@@ -1,5 +1,6 @@
 import os
-from dvc.api import DVCFileSystem
+from dvc.api import DvcFileSystem
+
 
 
 class local_artifacts:

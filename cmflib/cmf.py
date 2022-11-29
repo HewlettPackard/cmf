@@ -126,7 +126,7 @@ class Cmf(object):
         self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
-        print(custom_props)
+        # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
         self.execution = create_new_execution_in_existing_run_context \
@@ -170,7 +170,7 @@ class Cmf(object):
 
         unique_name = url + ":" + c_hash
         dvc_url =  dvc_get_url(url)
-        print(dvc_url)
+        # print(dvc_url)
 
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
@@ -320,7 +320,7 @@ class Cmf(object):
 
        # props["commit"] = "" # To do get from incoming data 
         c_hash = props.get("uri", " ")
-        print(c_hash)
+        # print(c_hash)
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
         #dvc_url = dvc_get_url(path, False)

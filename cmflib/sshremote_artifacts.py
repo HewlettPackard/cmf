@@ -1,6 +1,6 @@
 import os
-from dvc.api import DVCFileSystem
 import paramiko
+
 
 
 class sshremote_artifacts:
@@ -38,8 +38,9 @@ class sshremote_artifacts:
             # dir_to_create = os.path.join(current_directory, dir_path)
             # os.makedirs(dir_to_create, mode=0o777, exist_ok=True)
             # obj = fs.get_file(current_dvc_loc, download_loc)
+
             if obj == None:
-                stmt = f"object {current_dvc_loc} downloaded at {download_loc}."
+                stmt = f"object {current_loc} downloaded at {download_loc}."
                 return stmt
 
         except TypeError as exception:

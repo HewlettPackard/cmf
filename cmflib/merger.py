@@ -4,13 +4,13 @@ import json
 
 def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
     mlmd_data = json.loads(mlmd_json)
-    type(mlmd_data)
+    # type(mlmd_data)
     pipelines = mlmd_data["Pipeline"]
-    print(type(pipelines))
+    # print(type(pipelines))
     pipeline = pipelines[0]
-    print(type(pipeline))
+    # print(type(pipeline))
     pipeline_name = pipeline["name"]
-    print(type(pipeline_name))
+    # print(type(pipeline_name))
     if cmd=='push':
         data = create_original_time_since_epoch(mlmd_data)
     else:
@@ -32,13 +32,13 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']
                     artifact_full_path = f"{git_repo_props}/{artifact_name}"
-                    print(artifact_full_path)
+                    # print(artifact_full_path)
                     cmf_class.log_dataset_with_version(artifact_full_path, uri, "input", custom_properties=custom_props)
                 elif artifact_type == "Dataset" and event_type == 4:
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']
                     artifact_full_path = f"{git_repo_props}/{artifact_name}"
-                    print(artifact_full_path)
+                    # print(artifact_full_path)
                     cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
                                                        custom_properties=custom_props)
                 elif artifact_type == "Model" and event_type == 3:
@@ -72,17 +72,17 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
 def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
     mlmd_data = json.loads(mlmd_data)
     pipelines = mlmd_data["Pipeline"]
-    print(type(pipelines))
+    # print(type(pipelines))
     pipeline = pipelines[0]
-    print(type(pipeline))
+    # print(type(pipeline))
     pipeline_name = pipeline["name"]
-    print(type(pipeline_name))
+    # print(type(pipeline_name))
     execution={}
     _=None
     cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name)
     for stage in mlmd_data['Pipeline'][0]['stages']:
         _ = cmf_class.create_context(pipeline_stage=stage['name'], custom_properties=stage['custom_properties'])
-        print(stage['name'])
+        # print(stage['name'])
         for execution in stage['executions']:
             if execution['id'] == int(exec_id):
                 _ = cmf_class.merge_created_execution(execution['type'], execution['properties']['Execution'],
@@ -98,7 +98,7 @@ def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
-                        print(artifact_full_path)
+                        # print(artifact_full_path)
                         cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",
                                                            custom_properties=custom_props)
                         break
@@ -106,7 +106,7 @@ def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
-                        print(artifact_full_path)
+                        # print(artifact_full_path)
                         cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
                                                            custom_properties=custom_props)
                         break
@@ -145,18 +145,18 @@ def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
 def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
     mlmd_data = json.loads(mlmd_data)
     pipelines = mlmd_data["Pipeline"]
-    print(type(pipelines))
+    # print(type(pipelines))
     pipeline = pipelines[0]
-    print(type(pipeline))
+    # print(type(pipeline))
     pipeline_name = pipeline["name"]
-    print(type(pipeline_name))
+    # print(type(pipeline_name))
     execution={}
     _=None
     data = create_original_time_since_epoch(mlmd_data)
     cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name)
     for stage in data['Pipeline'][0]['stages']:
         _ = cmf_class.create_context(pipeline_stage=stage['name'], custom_properties=stage['custom_properties'])
-        print(stage['name'])
+        # print(stage['name'])
         for execution in stage['executions']:
             if execution['id'] == int(exec_id):
                 _ = cmf_class.merge_created_execution(execution['type'], execution['properties']['Execution'],
@@ -172,7 +172,7 @@ def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
-                        print(artifact_full_path)
+                        # print(artifact_full_path)
                         cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",
                                                            custom_properties=custom_props)
                         break
@@ -180,7 +180,7 @@ def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
-                        print(artifact_full_path)
+                        # print(artifact_full_path)
                         cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
                                                            custom_properties=custom_props)
                         break
@@ -215,9 +215,7 @@ def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                     else:
                         pass
                         break
-            else:
-                print("Given execution id is not present in mlmd")
-                break
+
 
 def create_original_time_since_epoch(mlmd_data):
 
@@ -234,7 +232,7 @@ def create_original_time_since_epoch(mlmd_data):
         i['custom_properties']['original_create_time_since_epoch'] = i['create_time_since_epoch']
         original_stages.append(i['custom_properties']['original_create_time_since_epoch'])
         stages.append(i['create_time_since_epoch'])
-        print(i['custom_properties']['original_create_time_since_epoch'])
+        # print(i['custom_properties']['original_create_time_since_epoch'])
         for j in i['executions']:
             j['custom_properties']['original_create_time_since_epoch'] = j['create_time_since_epoch']
             original_execution.append(j['custom_properties']['original_create_time_since_epoch'])
