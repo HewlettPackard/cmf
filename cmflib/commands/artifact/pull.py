@@ -91,7 +91,19 @@ class CmdArtifactPull(CmdBase):
                 print(stmt)
         elif dvc_config_op[0] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
-            print(name_url)
+            for name_url in names_urls:
+                temp = name_url[1].split("/")
+                temp_var = temp[2].split(":")
+                host = temp_var[0]
+                download_loc = current_directory + "/" + name_url[0]
+                temp.pop(0)
+                temp.pop(1)
+                temp.pop(2)
+                current_loc = "/".join(temp)
+                stmt = sshremote_class_obj.download_artifacts(
+                    dvc_config_op, host, current_directory, current_loc, name_url[0]
+                )
+                print(stmt)
         elif dvc_config_op[0] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
             for name_url in names_urls:

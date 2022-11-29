@@ -5,13 +5,12 @@ from .dvc_config import dvc_config
 
 class minio_artifacts:
     def download_artifacts(
-        self, current_directory: str, bucket_name: str, object_name: str, file_path: str
+        self, dvc_config_op, current_directory: str, bucket_name: str, object_name: str, file_path: str
     ):
-        endpoint = ""
-        access_key = ""
-        secret_key = ""
+        endpoint = dvc_config_op[1]
+        access_key = dvc_config_op[2]
+        secret_key = dvc_config_op[3]
         try:
-            endpoint, access_key, secret_key = dvc_config.get_dvc_config()
             client = Minio(
                 endpoint, access_key=access_key, secret_key=secret_key, secure=False
             )
