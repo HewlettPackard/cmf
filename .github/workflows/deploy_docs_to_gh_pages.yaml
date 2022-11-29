@@ -7,7 +7,7 @@ name: Build CMF Docs & Deploy to GitHub pages
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - ".github/workflows/deploy_docs_to_gh_pages.yaml"    # The workflow file itself.
       - "docs/**"                                           # Documentation files
