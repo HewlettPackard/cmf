@@ -96,7 +96,7 @@ class Cmf:
         git_checkout_new_branch(self.branch_name)
         self.parent_context = get_or_create_parent_context(
             store=self.store, pipeline=pipeline_name, custom_properties=custom_properties)
-        if graph:
+        if graph is True:
             self.driver = graph_wrapper.GraphDriver(
                 Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password)
             self.driver.create_pipeline_node(
