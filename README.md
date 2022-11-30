@@ -1,6 +1,6 @@
 # cmf
 ## Common Metadata Framework
-[Getting Started](docs/README.md)<br><br>
+[Getting Started](docs/index.md)<br><br>
 [Detailed documentation of the API's](docs/API.md) <br> 
 
 Interactions in data pipelines can be complex. The Different stages in the pipeline, (which may not be next to each other) may have to interact to produce or transform artifacts. As the artifacts navigates and undergo transformations through this pipeline, it can take a complicated path, which might also involve bidirectional movement across these stages.  Also there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the metrics at a subsequent stage.  It is important to track the metadata across a pipeline to provide features like, lineage tracking, provenance and reproducibility.  
