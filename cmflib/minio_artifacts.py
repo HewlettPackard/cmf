@@ -26,6 +26,6 @@ class minio_artifacts:
                 return f"object {object_name} is not downloaded."
 
         except TypeError as exception:
-            return f"Check if 'config' file present in .dvc/config. {exception}"
+            return exception
         except S3Error as exception:
             return exception

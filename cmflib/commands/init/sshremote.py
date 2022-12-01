@@ -58,4 +58,11 @@ def add_parser(subparsers, parent_parser):
         metavar="<password>",
     )
 
+    required_arguments.add_argument(
+        "--git-remote-url",
+        required=True,
+        help="Url to git repo",
+        metavar="<git_remote_url>",
+    )
+
     parser.set_defaults(func=CmdInitSSHRemote)

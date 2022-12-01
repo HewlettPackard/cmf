@@ -1,6 +1,5 @@
 #!/bin/bash
 
-git init
 dvc init -f -q
 dvc remote add -d -f amazons3 $1
 dvc remote modify amazons3 access_key_id $2

@@ -97,9 +97,10 @@ class CmdArtifactPull(CmdBase):
                 host = temp_var[0]
                 download_loc = current_directory + "/" + name_url[0]
                 temp.pop(0)
-                temp.pop(1)
-                temp.pop(2)
-                current_loc = "/".join(temp)
+                temp.pop(0)
+                temp.pop(0)
+                current_loc_1 = "/".join(temp)
+                current_loc = f"/{current_loc_1}"
                 stmt = sshremote_class_obj.download_artifacts(
                     dvc_config_op, host, current_directory, current_loc, name_url[0]
                 )
