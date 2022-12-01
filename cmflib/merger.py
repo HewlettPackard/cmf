@@ -32,14 +32,16 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']
                     artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                    props=[props['url'],event['artifact']['name']]
                     # print(artifact_full_path)
-                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "input", custom_properties=custom_props)
+                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",props, custom_properties=custom_props)
                 elif artifact_type == "Dataset" and event_type == 4:
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']
                     artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                    props=[props['url'],event['artifact']['name']]
                     # print(artifact_full_path)
-                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
+                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",props,
                                                        custom_properties=custom_props)
                 elif artifact_type == "Model" and event_type == 3:
                     uri = event['artifact']['uri']
@@ -98,16 +100,18 @@ def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                        props = props['url']
                         # print(artifact_full_path)
-                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",
+                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",props,
                                                            custom_properties=custom_props)
                         break
                     elif artifact_type == "Dataset" and event_type == 4:
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                        props = props['url']
                         # print(artifact_full_path)
-                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
+                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",props,
                                                            custom_properties=custom_props)
                         break
                     elif artifact_type == "Model" and event_type == 3:
@@ -167,21 +171,24 @@ def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                     artifact_name = (event['artifact']['name'].split(':'))[0]
                     custom_props = event['artifact']['custom_properties']
                     props = event['artifact']['properties']
+
                     uri = event['artifact']['uri']
                     if artifact_type == "Dataset" and event_type == 3:
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                        props = props['url']
                         # print(artifact_full_path)
-                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",
+                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",props,
                                                            custom_properties=custom_props)
                         break
                     elif artifact_type == "Dataset" and event_type == 4:
                         uri = event['artifact']['uri']
                         git_repo_props = props['git_repo']
                         artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                        props = props['url']
                         # print(artifact_full_path)
-                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",
+                        cmf_class.log_dataset_with_version(artifact_full_path, uri, "output",props,
                                                            custom_properties=custom_props)
                         break
                     elif artifact_type == "Model" and event_type == 3:

@@ -167,11 +167,8 @@ class Cmf(object):
 
         dataset_commit = commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
-
         unique_name = url + ":" + c_hash
         dvc_url =  dvc_get_url(url)
-        # print(dvc_url)
-
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
@@ -232,9 +229,10 @@ class Cmf(object):
                                                           self.execution_label_props)
         return artifact
 
-    def log_dataset_with_version(self, url: str, version:str,  event: str, custom_properties: {} = None) -> mlpb.Artifact:
+    def log_dataset_with_version(self, url: str, version:str,  event: str,props, custom_properties: {} = None) -> mlpb.Artifact:
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = custom_properties.get("git_repo", "")
+        git_repo = ""
+        # print(url.split('/artifacts')[0],'repo')
         name = re.split('/', url)[-1]
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
@@ -243,7 +241,8 @@ class Cmf(object):
             event_type = metadata_store_pb2.Event.Type.INPUT
 
         #dataset_commit = commit_output(url, self.execution.id)
-
+        props_name=props[1]
+        props_url=props[0]
         dataset_commit = version
         url = url + ":" + c_hash
         #To do - dvc_url(s3_url)
@@ -261,10 +260,10 @@ class Cmf(object):
             artifact = link_execution_to_artifact(store=self.store,
                                                   execution_id=self.execution.id,
                                                   uri=uri,
-                                                  input_name=url,
+                                                  input_name=props_name,
                                                   event_type=event_type)
         else:
-            # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
+            #AA if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             artifact = create_new_artifact_event_and_attribution \
@@ -272,21 +271,23 @@ class Cmf(object):
                  execution_id=self.execution.id,
                  context_id=self.child_context.id,
                  uri=uri,
-                 name=url,
+                 name=props_name,
                  type_name="Dataset",
                  event_type=event_type,
-                 properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
+                 properties={"git_repo": git_repo, "Commit": str(dataset_commit),"url":str(props_url)},
                  artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
-                                           "Commit": metadata_store_pb2.STRING
+                                           "Commit": metadata_store_pb2.STRING,
+                                           'url':metadata_store_pb2.STRING
                                            },
                  custom_properties=custom_props,
                  milliseconds_since_epoch=int(time.time() * 1000),
                  )
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = dataset_commit
+        custom_props["url"]=props_url
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
-
+        self.execution_label_props["url"]=props_url
         if self.graph:
             self.driver.create_dataset_node(name, url, uri, event, self.execution.id, self.parent_context, custom_props)
             if event.lower() == "input":
@@ -654,3 +655,4 @@ class Cmf(object):
                 first, middle, last = str(index).split("/")
                 print(last)
                 os.symlink(str(index), slicedir + "/ " + last)
+
