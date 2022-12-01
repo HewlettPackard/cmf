@@ -1,103 +1,223 @@
-## CMF Commands
+## Getting started with CMF Commands
 
-### 1. cmf artifact
-<pre>
-Usage: cmf artifact [-h] {pull,push}
-</pre>
-This command pulls and pushes artifacts to minio server.
-###     cmf artifact pull
-<pre>
-Usage: cmf artifact pull [-h] -p <pipeline_name> [-f <file_name>]
-</pre>
-This command pulls artifacts from minio s3 bucket to local
-
-Returns ?
-
-| Arguments     |                         |
-|---------------|-------------------------|
-| Filename      | Specify mlmd file name  | 
-| Pipeline name | Specify pipeline name   |
-| Help          | show this help and exit |
-
-###     cmf artifact push
-<pre>
-Usage: cmf artifact push [-h] -p pipeline_name [-f file_name]
-</pre>
-This command pushes artifacts from local to minio s3 bucket 
-
-### 2. cmf metadata
-<pre>
-Usage: cmf metadata [-h] {pull,push}
-</pre>
-This command pulls and pushes artifacts to minio server.
-###     cmf metadata pull
-<pre>
-Usage: cmf metadata pull [-h] -p pipeline_name [-f file_name]  [-e exec_name]
-</pre>
-This command pulls mlmd file from server to local
-
-Returns ?
-
-| Arguments     |                                                    |
-|---------------|----------------------------------------------------|
-| Filepath      | Specify path to pull mlmd file                     | 
-| Pipeline name | Specify pipeline name                              |
-| Execution ID  | Specify execution id to execution from mlmd server |
-| Help          | show this help and exit |
-
-###     cmf metadata push
-<pre>
-Usage: cmf metadata push [-h] -p pipeline_name [-f file_name]  [-e exec_name]
-</pre>
-This command pushes metadata mlmd name from local to minio s3 bucket 
-
-Returns ?
-
-| Arguments     |                                                    |
-|---------------|----------------------------------------------------|
-| Filepath      | Specify path to get mlmd file to push to server    | 
-| Pipeline name | Specify pipeline name                              |
-| Execution ID  | Specify execution id to execution from mlmd server |
-| Help          | show this help and exit |
-
-### 2. cmf init
+## 1. cmf init
 <pre>
 Usage: cmf init [-h] {pull,push}
 </pre>
-This command is used initialize CMF for multiple repos
+<font size=5> This command is used initialize CMF for multiple repos, such as Local, minioS3, amazon s3, SSH remote.</font>
+<font size=5> It is the first command to initiate CMF command line.</font>
 
-###     cmf init
+### a.    cmf init show
 <pre>
-usage: cmf init [-h] {minioremote,amazonS3,local,sshremote}
+Usage: cmf init show
 </pre>
-This command pulls mlmd file from server to local
+<font size=5> This command is used to show cmf config.</font>
 
-Returns ?
 
-| Arguments     |                                                    |
-|---------------|----------------------------------------------------|
-| Filepath      | Specify path to pull mlmd file                     | 
-| Pipeline name | Specify pipeline name                              |
-| Execution ID  | Specify execution id to execution from mlmd server |
-| Help          | show this help and exit |
-
-###     cmf init
+### b.    cmf init minioS3
 <pre>
-usage: cmf init minioremote [-h] --url <url> --endpoint-url <endpoint_url> --access-key-id <access_key_id> --secret-key <secret_key>
+Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
+                        --access-key-id [access_key_id] --secret-key [secret_key]
 </pre>
-This is command is to initialize minio S3 bucket
+<font size=5> This command configures minioS3 server.</font>
 
-Returns ?
+<pre>
+Example: cmf init minioS3 --url s3://dvc-art --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin
+</pre>
 
-| Arguments    |                                                     |
-|--------------|-----------------------------------------------------|
-| url          | Specify url to bucket                               | 
-| Endpoint url | Specify endpoint url which is used to access minio  locally/remotely running UI |
-| access_key_id | Specify Access Key Id  |
-|secret_key|Specify Secret Key|
-| Help         | show this help and exit                             |
+<font size=5> Required Arguments</font>
+
+<pre>
+  --url [url]                           Specify url to bucket
+  --endpoint-url [endpoint_url]         Specify endpoint url which is used to access minio locally/remotely running UI
+  --access-key-id [access_key_id]       Specify Access Key Id
+  --secret-key [secret_key]             Specify Secret Key
+
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+<pre>
+  -h, --help  show this help message and exit
+</pre>
 
 
+
+
+
+### c.    cmf init local
+<pre>
+Usage: cmf init local [-h] --url [url] --git-remote-url [git_remote_url]
+</pre>
+<font size=5> This command is used to initialise local bucket.  This commands sets server details. </font>
+
+<pre>
+Example: cmf init local --url example needed
+</pre>
+
+<font size=5> Required Arguments</font>
+
+<pre>
+  --url [url]                           Specify url to bucket.
+  --git-remote-url [git_remote_url]     Url to git repo
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+<pre>
+  -h, --help   show this help message and exit
+
+</pre>
+
+### d.    cmf init amazon S3
+<pre>
+usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
+                         --secret-key [secret_key]
+</pre>
+<font size=5> This command is used to initialise amazon S3 bucket. </font>
+ 
+<font size=5> Required Arguments</font>
+
+<pre>
+  --url [url]                           Specify url to bucket
+  --access-key-id [access_key_id]       Specify Access Key Id
+  --secret-key [secret_key]             Specify Secret Key
+
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+<pre>
+  -h, --help  show this help message and exit
+
+</pre>
+
+<pre>
+Example: cmf init amazonS3 --url 
+</pre>
+
+### e.    cmf init SSH remote
+<pre>
+usage: cmf init sshremote [-h] --url [url] --user [user] --port [port]
+                          --password  --git-remote-url
+</pre>
+<font size=5> This is command is used to initialise ssh remote bucket.</font>
+ 
+
+<pre>
+Example: cmf init sshremote --url 
+</pre>
+
+<font size=5> Required Arguments</font>
+
+<pre>
+  --url [url]                             Specify url to bucket
+  --user [user]                           Specify user
+  --port [port]                           Specify Port
+  --password [password]                   Specify password. This will be saved only on local
+  --git-remote-url [git_remote_url]       Url to git repo
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+<pre>
+  -h, --help  show this help message and exit
+</pre>
+
+## 2. cmf artifact
+<pre>
+Usage: cmf artifact [-h] {pull,push}
+</pre>
+<font size=5> This command pulls and pushes artifacts to various repos.</font>
+
+### a.    cmf artifact pull
+<pre>
+Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name]
+</pre>
+<font size=5> This command pulls artifacts from different repos to local</font>
+<pre>
+Example: cmf artifact pull -p 'Test-env'  
+</pre>
+
+<font size=5> Required Arguments</font>
+
+<pre>
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name
+
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+
+<pre>
+  -h, --help                                  show this help message and exit
+ 
+  -f [file_name],--file-name [file_name]      Specify mlmd file name
+</pre>
+
+### b.    cmf artifact push
+<pre>
+Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
+</pre>
+<font size=5> This command pushes artifacts from local to various buckets </font>
+<pre>
+Example: cmf artifact push -p 'Test-env' 
+</pre>
+
+## 3. cmf metadata
+<pre>
+Usage: cmf metadata [-h] {pull,push}
+</pre>
+<font size=5> This command pulls and pushes metadata file from HP server.</font>
+
+
+
+
+###  a.   cmf metadata pull
+<pre>
+Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
+</pre>
+<font size=5> This command pulls metadata file from server to local</font>
+
+<font size=5> Required Arguments</font>
+
+<pre>
+  -p [pipeline_name], --pipeline_name [pipeline_name]      Specify Pipeline name
+  -f [file_name], --file_name [file_name]                  Specify location to pull mlmd file
+
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+<pre>
+-h, --help                                      show this help message and exit
+-e [exec_name], --execution [exec_name]         Get execution from execution id
+
+</pre>
+
+### b.    cmf metadata push
+<pre>
+Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
+</pre>
+<font size=5> This command pushes metadata file from local to server </font>
+
+<pre>
+Example: cmf metadata push -p 'Test-env' -f "/home/user/example/name_of_file" 
+</pre>
+
+<font size=5> Required Arguments</font>
+
+<pre>
+-p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name
+</pre>
+
+<font size=5> Optional Arguments</font>
+
+<pre>
+  -h, --help                                    show this help message and exit
+  -f [file_name], --file_name [file_name]       Specify mlmd file name
+  -e [exec_name], --execution [exec_name]       Get execution from execution id
+</pre>
 
 
 
@@ -111,4 +231,3 @@ Returns ?
 
 
 
-#
