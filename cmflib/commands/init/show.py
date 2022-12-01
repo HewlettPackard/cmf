@@ -18,9 +18,8 @@ class CmdInitShow(CmdBase):
         )
         if len(result.stdout) == 0:
             return "'cmf' is not configured.\nExecute 'cmf init' command."
-        else: 
-            print(result.stdout)
-        return 0
+        else:
+            return result.stdout
 
 
 def add_parser(subparsers, parent_parser):

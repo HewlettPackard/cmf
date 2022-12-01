@@ -40,7 +40,7 @@ def main(argv=None):
         args = parse_args(argv)
         cmd = args.func(args)
         msg = cmd.do_run()
-        # print(msg)
+        print(msg)
     except CmfParserError:
         pass
     except KeyboardInterrupt:
