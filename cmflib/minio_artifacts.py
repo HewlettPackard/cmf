@@ -7,7 +7,7 @@ class minio_artifacts:
     def download_artifacts(
         self, dvc_config_op, current_directory: str, bucket_name: str, object_name: str, file_path: str
     ):
-        endpoint = dvc_config_op[1]
+        endpoint = dvc_config_op[1].split("http://")[1]
         access_key = dvc_config_op[2]
         secret_key = dvc_config_op[3]
         try:
@@ -17,7 +17,6 @@ class minio_artifacts:
             found = client.bucket_exists(bucket_name)
             if not found:
                 return "Bucket doesn't exists"
-
             obj = client.fget_object(bucket_name, object_name, file_path)
             if obj:
                 stmt = f"object {object_name} downloaded at {file_path}."
