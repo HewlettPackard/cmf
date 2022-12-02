@@ -10,18 +10,38 @@ from cmflib.cli.command import CmdBase
 
 class CmdInitMinioS3(CmdBase):
     def run(self):
-        file = "dvc_script_minio.sh"
         abs_path = None
+        file = "git_initialize.sh"
         for root, dirs, files in os.walk(os.path.dirname(__file__)):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
-        subprocess.call(
-            shlex.split(
-                f"sh {abs_path} {self.args.url} {self.args.endpoint_url} {self.args.access_key_id} {self.args.secret_key}"
-            )
+        result = subprocess.run(
+            ["sh", f"{abs_path}", f"{self.args.git_remote_url}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
-        return 0
+        print(result.stdout)
+        file = "dvc_script_minio.sh"
+        for root, dirs, files in os.walk(os.path.dirname(__file__)):
+            for name in files:
+                if name == file:
+                    abs_path = os.path.abspath(os.path.join(root, name))
+        result = subprocess.run(
+            [
+                "sh",
+                f"{abs_path}",
+                f"{self.args.url}",
+                f"{self.args.endpoint_url}",
+                f"{self.args.access_key_id}",
+                f"{self.args.secret_key}",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+        )
+        return result.stdout
 
 
 def add_parser(subparsers, parent_parser):
@@ -32,12 +52,16 @@ def add_parser(subparsers, parent_parser):
         parents=[parent_parser],
         description="This command is to initialize minio S3 bucket",
         help=HELP,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     required_arguments = parser.add_argument_group("required arguments")
 
     required_arguments.add_argument(
-        "--url", required=True, help="Specify url to bucket", metavar="<url>"
+        "--url",
+        required=True,
+        help="Specify url to bucket",
+        metavar="<url>",
+        default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
@@ -45,6 +69,7 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify endpoint url which is used to access minio locally/remotely running UI",
         metavar="<endpoint_url>",
+        default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
@@ -52,10 +77,30 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify Access Key Id",
         metavar="<access_key_id>",
+        default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
-        "--secret-key", required=True, help="Specify Secret Key", metavar="<secret_key>"
+        "--secret-key",
+        required=True,
+        help="Specify Secret Key",
+        metavar="<secret_key>",
+        default=argparse.SUPPRESS,
+    )
+
+    required_arguments.add_argument(
+        "--git-remote-url",
+        required=True,
+        help="Url to git repo",
+        metavar="<git_remote_url>",
+        default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--cmf-server-IP",
+        help="Specify Cmf Server IP",
+        metavar="<cmf_server_ip>",
+        default="http://127.0.0.1:80",
     )
 
     parser.set_defaults(func=CmdInitMinioS3)

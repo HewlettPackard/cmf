@@ -17,18 +17,29 @@ class CmdInitLocal(CmdBase):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
-        subprocess.call(
-            shlex.split(f"sh {abs_path} {self.args.git_remote_url}")
+        result = subprocess.run(
+            ["sh", f"{abs_path}", f"{self.args.git_remote_url}"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
+        print(result.stdout)
         file = "dvc_script_local.sh"
         for root, dirs, files in os.walk(os.path.dirname(__file__)):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
-        subprocess.call(
-            shlex.split(f"sh {abs_path} {self.args.url}")
+        result = subprocess.run(
+            [
+                "sh",
+                f"{abs_path}",
+                f"{self.args.url}",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
         )
-        return 0
+        return result.stdout
 
 
 def add_parser(subparsers, parent_parser):
@@ -39,12 +50,16 @@ def add_parser(subparsers, parent_parser):
         parents=[parent_parser],
         description="This command is used to initialise local bucket",
         help=HELP,
-        formatter_class=argparse.RawDescriptionHelpFormatter,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     required_arguments = parser.add_argument_group("required arguments")
 
     required_arguments.add_argument(
-        "--url", required=True, help="Specify url to bucket", metavar="<url>"
+        "--url",
+        required=True,
+        help="Specify url to bucket",
+        metavar="<url>",
+        default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
@@ -52,6 +67,14 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Url to git repo",
         metavar="<git_remote_url>",
+        default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--cmf-server-IP",
+        help="Specify Cmf Server IP",
+        metavar="<cmf_server_ip>",
+        default="http://127.0.0.1:80",
     )
 
     parser.set_defaults(func=CmdInitLocal)

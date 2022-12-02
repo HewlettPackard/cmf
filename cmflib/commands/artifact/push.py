@@ -8,10 +8,8 @@ from cmflib.cli.command import CmdBase
 
 class CmdArtifactPush(CmdBase):
     def run(self):
-        result = subprocess.run(["dvc", "push"], capture_output=True, text=True)
-        print(result.stdout)
-        print(result.stderr)
-        return 0
+        result = subprocess.run(["dvc", "push"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        return result.stdout
 
 
 def add_parser(subparsers, parent_parser):
