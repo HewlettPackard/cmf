@@ -1,0 +1,23 @@
+FROM python:3.9-slim
+
+RUN apt-get update && apt-get install -y git
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir jupyterlab matplotlib ipympl ipykernel 
+
+WORKDIR /usr/src
+
+ADD Requirements.txt .
+RUN pip install --no-cache-dir -r Requirements.txt
+
+COPY cmflib cmflib/ 
+COPY setup.py .
+RUN pip install --no-cache-dir -U .
+
+#ENV PYTHONPATH "${PYTHONPATH}:/usr/src/cmflib"
+
+COPY examples/ examples
+
+#Per: https://github.com/jupyterlab/jupyterlab/issues/2779
+ENV SHELL=/bin/bash
+EXPOSE 8888
+ENTRYPOINT [ "jupyter-lab", "--no-browser", "--allow-root", "--ip=*" , "--port=8888"]

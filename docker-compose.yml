@@ -64,10 +64,43 @@ services:
       - neo4j
   neo4j:
     image: neo4j:4.4
-    container_name: neo4j-ann
+    container_name: neo4j
     hostname: neo4j
     ports:
       - "7475:7474"
       - "7688:7687"
     environment:
-      - NEO4J_AUTH=${NEO4J_USER_NAME}/${NEO4J_PASSWD}        
+      - NEO4J_AUTH=${NEO4J_USER_NAME}/${NEO4J_PASSWD} 
+  jupyter-cmf-notebook-basic:
+    build:
+      dockerfile: Dockerfile.basic
+      context: ./
+    container_name: jupyter-cmf-notebook-basic
+    hostname: jupyter-cmf-notebook-basic
+    user: tripataa
+    volumes:
+      - $HOME/workspace:/usr/src/workspace  
+      - $HOME/dvc_remote:/usr/dvc_remote
+      - $HOME/.ssh:/root/.ssh
+    ports:
+      - "8889:8888"
+    environment:
+      - DOCKER_STACKS_JUPYTER_CMD=lab  
+      - JUPYTER_TOKEN=docker
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} # from .env file 
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} #from .env file
+      - DVC_REMOTE_URL=${DVC_REMOTE_URL} #from .env file
+      - GIT_USER_NAME=${GIT_USER_NAME} # from .env file 
+      - GIT_USER_EMAIL=${GIT_USER_EMAIL} #from .env file
+      - GIT_REMOTE_URL=${GIT_REMOTE_URL} #from .env file
+      - GIT_BRANCH=${GIT_BRANCH} #from .env file
+      - DB_URL=mysql://db:33060
+      - DB_PASSWORD=${MYSQL_ROOT_PASSWORD} #from .env file
+      - NEO4J=TRUE
+      - NEO4J_URI=bolt://neo4j:7687
+      - NEO4J_USER_NAME=${NEO4J_USER_NAME} #from .env file
+      - NEO4J_PASSWD=${NEO4J_PASSWD} #from .env file
+      - HTTP_PROXY=${HTTP_PROXY} #from .env file
+      - HTTPS_PROXY=${HTTPS_PROXY} #from .env file
+    depends_on:
+      - neo4j       
