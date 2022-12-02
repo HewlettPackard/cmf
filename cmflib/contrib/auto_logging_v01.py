@@ -13,15 +13,16 @@ from cmflib.cmf import Cmf
 
 
 class CMFError(Exception):
+    """Base exception for CMF."""
     ...
 
 
 class Artifact:
     """Base class for all artifacts.
     Args:
-        uri: Uniform resource identifier (URI) of the given artifact. Does not have to be a file system path. Rather,
+        uri: Uniform resource identifier (URI) of the given artifact. Does not have to be a file path. Rather,
             it's something that can be used to retrieve an artifact from one of backends.
-        params: Dictionary of parameters associated with this artifact.
+        params: Dictionary of parameters associated with this artifact. Should be serializable with ML metadata.
     """
     def __init__(self, uri: t.Union[str, Path], params: t.Optional[t.Dict] = None) -> None:
         self.uri = uri if isinstance(uri, str) else uri.as_posix()
@@ -29,7 +30,11 @@ class Artifact:
 
 
 class Dataset(Artifact):
-    """Artifact to represent datasets."""
+    """Artifact to represent datasets.
+
+    Note:
+        Various dataset splits, when represented as different files or directories, should have different artifacts.
+    """
     ...
 
 
@@ -39,7 +44,15 @@ class MLModel(Artifact):
 
 
 class ExecutionMetrics(Artifact):
-    """Artifact to represent execution metrics."""
+    """Artifact to represent execution metrics.
+
+    Args:
+        uri: Uniform resource identifier (URI) of the given artifact. Does not have to be a file path. Rather,
+            it's something that can be used to retrieve an artifact from one of backends.
+        name: Name of a metric group, e.g., `train_metrics` or `test_metrics`.
+        params: Dictionary of metrics. Keys do not have to specify the dataset split these metrics were computed with
+            (it's specified with the `name` parameter).
+    """
     def __init__(self, uri: t.Union[str, Path], name: str, params: t.Optional[t.Dict] = None) -> None:
         super().__init__(uri, params)
         self.name = name
@@ -48,19 +61,73 @@ class ExecutionMetrics(Artifact):
 class Context(dict):
     """Step context.
 
-    This is no the context as it is defined in MLMD. Rather, it contains runtime parameters for steps, such as, for
+    This is not the context as it is defined in MLMD. Rather, it contains runtime parameters for steps, such as, for
     instance, workspace directory or instance of the initialized Cmf.
     """
     ...
 
 
 class Parameters(dict):
-    """Step parameters."""
+    """Step parameters.
+
+    These parameters include, for instance, hyperparameters for training ML models (learning rate, batch size etc.)
+    """
     ...
 
 
 def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] = None) -> t.Callable:
-    """Function decorator that automatically logs input and output artifacts for Cmf steps."""
+    """Function decorator that automatically logs input and output artifacts for Cmf steps.
+
+    This function decorator adds automated Cmf-based logging of input and output artifacts to user functions. Users must
+    define their functions using specific rules. The most general API is the following:
+
+    ```python
+    import typing as t
+    from cmflib.contrib.auto_logging_v01 import (step, Context, MLModel, Dataset, cli_run)
+
+    @step()
+    def test(ctx: Context, params: Parameters, model: MLModel, test_dataset: Dataset) -> t.Optional[t.Dict]:
+        ...
+
+    if __name__ == '__main__':
+        cli_run(test)
+    ```
+
+    The following rules must be followed:
+        - All function input parameters must be annotated.
+        - A function can accept one or zero parameters of type `Context`, one or zero parameters of type `Parameters`,
+            zero or more parameters of type `Artifact` or its derived types, e.g., Dataset, MLModel etc.
+        - A function can optionally return a dictionary-like object with string keys and values of type `Artifact` or
+            its derived types (Dataset, MLModel) etc.
+        - No other parameter types are allowed.
+
+    Functions that satisfy the above rules can be annotated with the `step` decorator that adds automated logging of
+    input and output artifacts.
+
+    Note:
+        Best practices (mandatory requirement?) require that all input artifacts must already be present in the metadata
+        store. The current implementation does not enforce this for now. It means that in order to use some raw dataset
+        on a pipeline, a special `ingest` node should be used that, for instance, take a dataset name as a parameter
+        and outputs an artifact. This output dataset artifact will be added to metadata store, and is thus becomes
+        eligible to be used by other pipeline steps as input artifact.
+
+    This function performs the following steps:
+        - It creates an instance of Cmf.
+        - It creates a context for this step and then execution. If parameters are present, these parameters will be
+            associated with this execution.
+        - All input artifacts are logged (input artifacts are all input parameters of type `Artifact`) with CMF as input
+            artifacts. No parameters are associated with input artifacts.
+        - A step function is called.
+        - The return object is observed. If it's a dictionary containing values of type `Artifact`, these values are
+            logged as output artifacts.
+
+    If function accepts a parameter of type `Context`, the decorator will add a Cmf instance under the `cmf` key.
+
+    Args:
+        pipeline_name: Name of a pipeline. This name override name provided with environment variable `CMF_PIPELINE`.
+        pipeline_stage: Name of a pipeline stage (==context name in MLMD terms). If not specified, a function name is
+            used.
+    """
     def step_decorator(func: t.Callable) -> t.Callable:
         nonlocal pipeline_name, pipeline_stage
         options = {
@@ -111,15 +178,22 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
 
 
 def cli_run(step_fn: t.Callable) -> None:
-    """Parse command line and execute CMF step.
+    """Parse command line and run the CMF step.
 
-    Command line named arguments:
-        - Context parameters: --ctx name=value
-        - Execution parameters: --param name=value
-        - Other key-value parameters are input artifacts: name=value
+    The following syntax for command line arguments is supported.
+        - Context parameters: `--ctx name1=value1,name2=value2`.
+        - Execution parameters: `--params lr=0.07,batch_size=128`.
+        - Other key-value parameters are input artifacts (do not use `--`): `dataset=workspace/iris.pkl`. Names must
+            match function parameters.
 
     Environment variables:
-        - CMF_PIPELINE [mandatory]: pipeline name
+        Users can specify the following environment variables
+        - CMF_PIPELINE: Name of a pipeline.
+        - CMF_URI: MLMD file name, default is `mlmd`
+        - CMG_GRAPH: If set, Neo4J will be used, default is not to use. To enable, set it to `true`.
+
+    Args:
+        step_fn: Pipeline python function.
 
     """
     # Pase command line arguments
@@ -165,6 +239,12 @@ def prepare_workspace(ctx: Context) -> Path:
     """Ensure the workspace directory exists.
 
     Workspace is a place where we store various files.
+
+    Args:
+        ctx: Context for this step. If it does not contain `workspace` parameter, current working directory is used.
+
+    Returns:
+        Path to the workspace directory.
     """
     workspace = Path(ctx.get('workspace', Path.cwd() / 'workspace'))
     workspace.mkdir(parents=True, exist_ok=True)
@@ -172,7 +252,14 @@ def prepare_workspace(ctx: Context) -> Path:
 
 
 def _call_step_with_parameter_check(fn: t.Callable, ctx: Context, params: Parameters, inputs: t.Dict) -> None:
-    """The goal is to make sure the fn's API accept provided `context`, `params` and `inputs`."""
+    """The goal is to make sure the fn's API accept provided `context`, `params` and `inputs`.
+
+    Args:
+        fn: User function implementing the pipeline step.
+        ctx: Context to be passed to this function.
+        params: Parameters to be passed to this function.
+        inputs: Input artifacts to be passed to this function.
+    """
     # We will be modifying inputs, so need to make a copy.
     _unrecognized_artifacts = set(inputs.keys())
 
@@ -228,7 +315,16 @@ def _call_step_with_parameter_check(fn: t.Callable, ctx: Context, params: Parame
 
 
 def _uri_to_artifact(uri: str, annotation: t.Any) -> Artifact:
-    """Naive implementation to return instance of an artifact based upon function's parameter annotation."""
+    """Naive implementation to return instance of an artifact based upon function's parameter annotation.
+
+    Args:
+        uri: Artifact URI, e.g., file path.
+        annotation: Function annotation for this artifact. All valid Cmf steps within this automated logging framework
+            must have their parameters annotated.
+
+    Returns:
+        Artifact instance associated with this parameter.
+    """
     if issubclass(annotation, Dataset):
         return Dataset(uri)
     elif issubclass(annotation, MLModel):
@@ -239,7 +335,15 @@ def _uri_to_artifact(uri: str, annotation: t.Any) -> Artifact:
 def _validate_task_arguments(
     args: t.Tuple, kwargs: t.Dict
 ) -> t.Tuple[t.Optional[Context], t.Optional[Parameters], t.Dict]:
-    """Check parameters to be passed to a Cmf's step function."""
+    """Check parameters to be passed to a Cmf's step function.
+    Args:
+        args: Positional parameters to be passed. Can only be of the following two types: `Context`, `Parameter`.
+        kwargs: Keyed parameters to be passed. Can be of the following type: `Context`, `Parameter` and `Artifact`.
+
+    Returns:
+        A tuple with three elements containing `Context` parameter, `Parameters` parameter and dictionary with
+        artifacts. Some values can be None if not present in args and kwargs.
+    """
     context: t.Optional[Context] = None  # Task execution context.
     params: t.Optional[Parameters] = None  # Task parameters.
     inputs: t.Dict = {}  # Task input artifacts.
