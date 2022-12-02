@@ -16,7 +16,7 @@ CMF requires 3.7 >= Python <= 3.9. Create python virtual environment:
 === "VirtualEnv" 
     ```shell
     virtualenv --python=3.8 .cmf
-    source .cmf/bin/actiave
+    source .cmf/bin/activate
     ```
 
 Install CMF
