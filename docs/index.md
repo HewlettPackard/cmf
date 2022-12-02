@@ -5,7 +5,7 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.6 <= Python < 3.9. Create python virtual environment:
+CMF requires 3.7 >= Python <= 3.9. Create python virtual environment:
 
 === "Conda"
     ```shell
