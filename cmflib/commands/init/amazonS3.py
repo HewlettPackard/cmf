@@ -11,7 +11,7 @@ from cmflib.cli.utils import create_cmf_config
 class CmdInitAmazonS3(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig" 
-        if self.args.cmf_server_ip:
+        if self.args.cmf_server_ip in globals():
             create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
