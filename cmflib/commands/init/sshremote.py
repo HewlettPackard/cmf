@@ -10,6 +10,12 @@ from cmflib.cli.command import CmdBase
 
 class CmdInitSSHRemote(CmdBase):
     def run(self):
+        cmf_config = "./.cmfconfig" 
+        if self.args.cmf_server_ip:
+            create_cmf_config(cmf_config, self.args.cmf_server_ip)
+        else:
+            if not os.path.exists(cmf_config):
+                create_cmf_config(cmf_config, "http://127.0.0.1:80")
         abs_path = None
         file = "git_initialize.sh"
         for root, dirs, files in os.walk(os.path.dirname(__file__)):
