@@ -1,0 +1,5 @@
+[project]
+dependencies = [
+    'cmflib',
+    'scikit-learn'
+]
