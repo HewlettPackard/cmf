@@ -897,7 +897,8 @@ library reads the configuration parameters of the graph database from the follow
     - <code>example-get-started</code> from this repo is bind mounted into <code>/home/jovyan/example-get-started</code>
 - Neo4j Docker container to store and access lineages.</p>
 <h4 id="step-1">Step 1. <br><a class="headerlink" href="#step-1" title="Permanent link">&para;</a></h4>
-<p><code>create .env file in current folder using env-example as a template. #These are used by docker-compose.yml</code> <br></p>
+<p><code>create .env file in current folder using env-example as a template. Modify the .env file for the following variables
+USER,UID,GROUP,GID,GIT_USER_NAME,GIT_USER_EMAIL,GIT_REMOTE_URL #These are used by docker-compose.yml</code> <br></p>
 <h4 id="step-2">Step 2. <br><a class="headerlink" href="#step-2" title="Permanent link">&para;</a></h4>
 <p><strong>Update <code>docker-compose.yml</code> as needed.</strong><br><br>
     your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git <br><br>
