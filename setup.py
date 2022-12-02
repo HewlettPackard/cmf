@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1' 
+VERSION = '0.0.2' 
 DESCRIPTION = 'Metadata Python Package'
 LONG_DESCRIPTION = 'Metadata framework storing AI metadata into MLMD'
 
@@ -9,8 +9,7 @@ setup(
        # the name must match the folder name 'verysimplemodule'
         name="cmflib", 
         version=VERSION,
-        author="Annmary Justine",
-        author_email="annmary.roy@hpe.com",
+        author="Hewlett Packard Enterprise",
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
@@ -24,6 +23,6 @@ setup(
             "Development Status :: 3 - Alpha",
             "Intended Audience :: Education",
             "Programming Language :: Python :: 3",
-            "Operating System :: Linux :: Ubuntu",
+            "Operating System :: POSIX :: Linux",
         ]
 )
