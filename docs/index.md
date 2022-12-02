@@ -301,6 +301,10 @@ MATCH (a:Execution)-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r
 Expected output<br>
 <img src="assets/neo4j_output.PNG" width=400> <br>
 
+***Jupyter Lab Notebook***
+Select the kernel as Python[conda env:python37]
+<img src="assets/Python_kernel.png.PNG" width=400> <br>
+
 ***Shutdown/remove (Remove volumes as well)***
 ```
 docker-compose down -v
