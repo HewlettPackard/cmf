@@ -243,7 +243,8 @@ CMF has a docker-compose file which creates two docker containers,
 - Neo4j Docker container to store and access lineages.
 
 #### Step 1. <br>
- `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml` <br>
+ `create .env file in current folder using env-example as a template. Modify the .env file for the following variables
+USER,UID,GROUP,GID,GIT_USER_NAME,GIT_USER_EMAIL,GIT_REMOTE_URL #These are used by docker-compose.yml` <br>
 #### Step 2. <br>
 **Update `docker-compose.yml` as needed.**<br><br>
     your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git <br><br>
