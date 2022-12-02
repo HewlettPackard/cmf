@@ -64,7 +64,7 @@ services:
       - neo4j
   neo4j:
     image: neo4j:4.4
-    container_name: neo4j-ann
+    container_name: neo4j
     hostname: neo4j
     ports:
       - "7475:7474"

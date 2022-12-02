@@ -4,6 +4,6 @@ pandas
 retrying
 pyarrow
 neo4j
-sklearn
+scikit-learn
 tabulate
 click
