@@ -15,7 +15,7 @@ setup(
         packages=find_packages(),
         install_requires=["ml-metadata==1.11.0",
                           "dvc", "pandas", "retrying", "pyarrow", "neo4j", \
-                            "sklearn", "tabulate", "click"],  # add any additional packages that 
+                            "scikit-learn", "tabulate", "click"],  # add any additional packages that 
         # needs to be installed along with your package. Eg: 'caer'
         
         keywords=['python', 'first package'],
