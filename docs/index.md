@@ -303,7 +303,7 @@ Expected output<br>
 
 ***Jupyter Lab Notebook***
 Select the kernel as Python[conda env:python37]
-<img src="assets/Python_kernel.png.PNG" width=400> <br>
+<img src="assets/Python_kernel.png" width=400> <br>
 
 ***Shutdown/remove (Remove volumes as well)***
 ```
