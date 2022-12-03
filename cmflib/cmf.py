@@ -18,18 +18,19 @@
 import time
 import uuid
 import re
-import os
 import sys
 import pandas as pd
 import typing as t
 
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from ml_metadata.metadata_store import metadata_store
+
+from cmflib import callback as cb
+from cmflib.callback import Callback, ArtifactEvent
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
     commit_output, git_get_repo, commit_dvc_lock_file,  \
     git_checkout_new_branch, \
     check_git_repo, check_default_remote, check_git_remote
-from cmflib import graph_wrapper
 from cmflib.metadata_helper import get_or_create_parent_context,   \
     get_or_create_run_context, associate_child_to_parent_context,  \
     create_new_execution_in_existing_run_context, link_execution_to_artifact, \
@@ -67,15 +68,9 @@ class Cmf:
             ```
     """
 
-    # pylint: disable=too-many-instance-attributes
-
-    __neo4j_uri = os.getenv('NEO4J_URI', "")
-    __neo4j_user = os.getenv('NEO4J_USER_NAME', "")
-    __neo4j_password = os.getenv('NEO4J_PASSWD', "")
-
     def __init__(self, filename: str = "mlmd",
                  pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None,
-                 graph: bool = False):
+                 callbacks: t.Optional[t.List[Callback]] = None):
         Cmf.__prechecks()
         if custom_properties is None:
             custom_properties = {}
@@ -83,24 +78,27 @@ class Cmf:
         config.sqlite.filename_uri = filename
         self.store = metadata_store.MetadataStore(config)
         self.filename = filename
-        self.child_context = None
-        self.execution = None
+        self.child_context: t.Optional[mlpb.Context] = None
+        """The child context (metadata_store_pb2.Context) is the context for a stage."""
+        self.execution: t.Optional[mlpb.Execution] = None
+        """The execution (mlpb.Execution) is the metadata for a stage run."""
         self.execution_name = ""
         self.execution_command = ""
         self.metrics = {}
-        self.input_artifacts = []
         self.execution_label_props = {}
-        self.graph = graph
-        self.branch_name = filename.rsplit('/',1)[-1]
+        self.branch_name = filename.rsplit('/', 1)[-1]
 
         git_checkout_new_branch(self.branch_name)
-        self.parent_context = get_or_create_parent_context(
-            store=self.store, pipeline=pipeline_name, custom_properties=custom_properties)
-        if graph is True:
-            self.driver = graph_wrapper.GraphDriver(
-                Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password)
-            self.driver.create_pipeline_node(
-                pipeline_name, self.parent_context.id, custom_properties)
+        self.parent_context: mlpb.Context = get_or_create_parent_context(
+            store=self.store, pipeline=pipeline_name, custom_properties=custom_properties
+        )
+        """The parent context (metadata_store_pb2.Context) is the context for a pipeline."""
+
+        self.callbacks = callbacks or []
+        for callback in self.callbacks:
+            callback.on_pipeline_context(
+                name=pipeline_name, id_=self.parent_context.id, properties=custom_properties
+            )
 
     @staticmethod
     def __prechecks():
@@ -189,17 +187,20 @@ class Cmf:
             Context object from ML Metadata library associated with the new stage.
         """
         custom_props = {} if custom_properties is None else custom_properties
-        ctx = get_or_create_run_context(
-            self.store, pipeline_stage, custom_props)
-        self.child_context = ctx
+        self.child_context = get_or_create_run_context(
+            self.store, pipeline_stage, custom_props
+        )
         associate_child_to_parent_context(
             store=self.store,
             parent_context=self.parent_context,
-            child_context=ctx)
-        if self.graph:
-            self.driver.create_stage_node(
-                pipeline_stage, self.parent_context, ctx.id, custom_props)
-        return ctx
+            child_context=self.child_context
+        )
+        for callback in self.callbacks:
+            callback.on_stage_context(
+                name=pipeline_stage, id_=self.child_context.id, properties=custom_props,
+                pipeline_context=self.parent_context
+            )
+        return self.child_context
 
     def create_execution(self, execution_type: str,
                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
@@ -240,11 +241,8 @@ class Cmf:
         """
         # Initializing the execution related fields
         self.metrics = {}
-        self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = git_get_repo()
-        git_start_commit = git_get_commit()
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             execution_type_name=execution_type,
@@ -252,8 +250,8 @@ class Cmf:
             execution=str(sys.argv),
             pipeline_id=self.parent_context.id,
             pipeline_type=self.parent_context.name,
-            git_repo=git_repo,
-            git_start_commit=git_start_commit,
+            git_repo=git_get_repo(),
+            git_start_commit=git_get_commit(),
             custom_properties=custom_props
         )
         self.execution_name = str(self.execution.id) + "," + execution_type
@@ -264,10 +262,12 @@ class Cmf:
         self.execution_label_props["Execution_Name"] = execution_type + \
             ":" + str(self.execution.id)
         self.execution_label_props["execution_command"] = str(sys.argv)
-        if self.graph:
-            self.driver.create_execution_node(
-                self.execution_name, self.child_context.id, self.parent_context, str(
-                    sys.argv), self.execution.id, custom_props)
+        for callback in self.callbacks:
+            callback.on_stage_execution(
+                name=self.execution_name, id_=self.execution.id, properties=custom_props,
+                stage_context=self.child_context, pipeline_context=self.parent_context,
+                is_new=True
+            )
         return self.execution
 
     def update_execution(self, execution_id: int, custom_properties: t.Optional[t.Dict] = None):
@@ -303,20 +303,17 @@ class Cmf:
             # taking only value
             self.execution_label_props[key] = val
             c_props[key] = val
-        self.execution_name = str(
-            self.execution.id) + "," + execution_type.name
+        self.execution_name = str(self.execution.id) + "," + execution_type.name
         self.execution_command = self.execution.properties["Execution"]
         self.execution_label_props["Execution_Name"] = execution_type.name + \
             ":" + str(self.execution.id)
         self.execution_label_props["execution_command"] = self.execution.properties["Execution"].string_value
-        if self.graph:
-            self.driver.create_execution_node(
-                self.execution_name,
-                self.child_context.id,
-                self.parent_context,
-                self.execution.properties["Execution"].string_value,
-                self.execution.id,
-                c_props)
+        for callback in self.callbacks:
+            callback.on_stage_execution(
+                name=self.execution_name, id_=self.execution.id, properties=c_props,
+                stage_context=self.child_context, pipeline_context=self.parent_context,
+                is_new=False
+            )
         return self.execution
 
     def log_dvc_lock(self, file_path: str):
@@ -403,39 +400,14 @@ class Cmf:
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
-        if self.graph:
-            self.driver.create_dataset_node(
-                name,
-                url,
-                uri,
-                event,
-                self.execution.id,
-                self.parent_context,
-                custom_props)
-            if event.lower() == "input":
-                self.input_artifacts.append({"Name": name,
-                                             "Path": url,
-                                             "URI": uri,
-                                             "Event": event.lower(),
-                                             "Execution_Name": self.execution_name,
-                                             "Type": "Dataset",
-                                             "Execution_Command": self.execution_command,
-                                             "Pipeline_Id": self.parent_context.id,
-                                             "Pipeline_Name": self.parent_context.name})
-                self.driver.create_execution_links(uri, name, "Dataset")
-            else:
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": event.lower(),
-                    "Execution_Name": self.execution_name,
-                    "Type": "Dataset",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name}
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props)
+        if self.callbacks:
+            dataset_event = ArtifactEvent.from_string(event)
+            dataset = cb.Dataset(
+                name, url, uri, event, self.execution.id, self.parent_context, custom_props, self.execution_label_props
+            )
+            for callback in self.callbacks:
+                callback.on_artifact_event(dataset_event, dataset)
+
         return artifact
 
 
@@ -501,40 +473,15 @@ class Cmf:
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
-        if self.graph:
-            self.driver.create_dataset_node(
-                name,
-                url,
-                uri,
-                event,
-                self.execution.id,
-                self.parent_context,
-                custom_props)
-            if event.lower() == "input":
-                self.input_artifacts.append({"Name": name,
-                                             "Path": url,
-                                             "URI": uri,
-                                             "Event": event.lower(),
-                                             "Execution_Name": self.execution_name,
-                                             "Type": "Dataset",
-                                             "Execution_Command": self.execution_command,
-                                             "Pipeline_Id": self.parent_context.id,
-                                             "Pipeline_Name": self.parent_context.name})
-                self.driver.create_execution_links(uri, name, "Dataset")
-            else:
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": event.lower(),
-                    "Execution_Name": self.execution_name,
-                    "Type": "Dataset",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name}
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact,
-                    self.execution_label_props)
+        # TODO: Ann - looks the same as in `log_dataset`. Is this correct?
+        if self.callbacks:
+            dataset_event = ArtifactEvent.from_string(event)
+            dataset = cb.Dataset(
+                name, url, uri, event, self.execution.id, self.parent_context, custom_props, self.execution_label_props
+            )
+            for callback in self.callbacks:
+                callback.on_artifact_event(dataset_event, dataset)
+
         return artifact
 
     # Add the model to dvc do a git commit and store the commit id in MLMD
@@ -628,36 +575,14 @@ class Cmf:
             )
         # custom_properties["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
-        if self.graph:
-            self.driver.create_model_node(
-                model_uri,
-                uri,
-                event,
-                self.execution.id,
-                self.parent_context,
-                custom_props)
-            if event.lower() == "input":
 
-                self.input_artifacts.append(
-                    {"Name": model_uri, "URI": uri, "Event": event.lower(),
-                        "Execution_Name": self.execution_name,
-                     "Type": "Model", "Execution_Command": self.execution_command,
-                     "Pipeline_Id": self.parent_context.id,
-                     "Pipeline_Name": self.parent_context.name})
-                self.driver.create_execution_links(uri, model_uri, "Model")
-            else:
-
-                child_artifact = {
-                    "Name": model_uri,
-                    "URI": uri,
-                    "Event": event.lower(),
-                    "Execution_Name": self.execution_name,
-                    "Type": "Model",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name}
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props)
+        if self.callbacks:
+            model_event = ArtifactEvent.from_string(event)
+            model = cb.Model(
+                model_uri, uri, event, self.execution.id, self.parent_context, custom_props, self.execution_label_props
+            )
+            for callback in self.callbacks:
+                callback.on_artifact_event(model_event, model)
 
         return artifact
 
@@ -701,26 +626,15 @@ class Cmf:
             milliseconds_since_epoch=int(
                 time.time() * 1000),
         )
-        if self.graph:
-            # To do create execution_links
-            self.driver.create_metrics_node(
-                metrics_name,
-                uri,
-                "output",
-                self.execution.id,
-                self.parent_context,
-                custom_props)
-            child_artifact = {
-                "Name": metrics_name,
-                "URI": uri,
-                "Event": "output",
-                "Execution_Name": self.execution_name,
-                "Type": "Metrics",
-                "Execution_Command": self.execution_command,
-                "Pipeline_Id": self.parent_context.id,
-                "Pipeline_Name": self.parent_context.name}
-            self.driver.create_artifact_relationships(
-                self.input_artifacts, child_artifact, self.execution_label_props)
+
+        if self.callbacks:
+            exec_metrics = cb.ExecutionMetrics(
+                metrics_name, uri, 'output', self.execution.id, self.parent_context,
+                custom_props,  self.execution_label_props
+            )
+            for callback in self.callbacks:
+                callback.on_artifact_event(ArtifactEvent.PRODUCED, exec_metrics)
+
         return metrics
 
     def log_metric(self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None) -> None:
@@ -778,24 +692,15 @@ class Cmf:
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
-        if self.graph:
-            self.driver.create_metrics_node(
-                name,
-                uri,
-                "output",
-                self.execution.id,
-                self.parent_context,
-                custom_props)
-            child_artifact = {
-                "Name": name,
-                "URI": uri,
-                "Event": "output",
-                "Execution_Name": self.execution_name,
-                "Type": "Metrics",
-                "Execution_Command": self.execution_command,
-                "Pipeline_Id": self.parent_context.id}
-            self.driver.create_artifact_relationships(
-                self.input_artifacts, child_artifact, self.execution_label_props)
+        # TODO: Ann is this intended that child_artifact does not have Pipeline_Name field?
+        # TODO: Ann is this the same as log_execution_metrics?
+        if self.callbacks:
+            exec_metrics = cb.ExecutionMetrics(
+                name, uri, 'output', self.execution.id, self.parent_context, custom_props, self.execution_label_props
+            )
+            for callback in self.callbacks:
+                callback.on_artifact_event(ArtifactEvent.PRODUCED, exec_metrics)
+
         return metrics
 
 
