@@ -24,8 +24,28 @@ from ipaddress import ip_address, IPv4Address
 from typing import List
 import functools
 
+# TODO [sergey]: maybe it's better to catch `StatusError` instead of Exception of BaseException. The StatusError seems
+#      to be the base class for all mlmd errors (`ml_metadata.errors`).
 
-def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
+# TODO [sergey]: can this module be considered as a module implementing the API for working with metadata backends?
+
+
+"""
+### Artifact Methods:
+METHOD                                     VISIBILITY  DESCRIPTION
+link_execution_to_input_artifact           public      is called in DataSlice.commit
+link_execution_to_artifact                 public      is called in ~ log_dataset for existing artifacts
+create_new_artifact_event_and_attribution  public      create new artifact (called from ~ log_dataset). calls:
+                                                             `create_artifact_with_type`
+create_artifact_with_type                  private     create new artifact instance. calls:
+                                                             `get_or_create_artifact_type`
+get_or_create_artifact_type                private     create (if not exist) artifact type by name
+put_artifact                               public      put new artifact into a database  
+get_artifacts_by_id                        public      return artifacts with specified IDs.
+"""
+
+
+def value_to_mlmd_value(value: t.Any) -> metadata_store_pb2.Value:
     if value is None:
         return metadata_store_pb2.Value()
     if isinstance(value, int):
@@ -67,26 +87,33 @@ def connect_to_mlmd() -> metadata_store.MetadataStore:
     raise RuntimeError('Could not connect to the Metadata store.')
 
 
-def get_artifacts_by_id(store, artifact_id: [int]) -> List[metadata_store_pb2.Artifact]:
+def get_artifacts_by_id(store: metadata_store.MetadataStore,
+                        artifact_ids: t.List[int]) -> List[metadata_store_pb2.Artifact]:
+    # TODO: [sergey] Does the `store.get_artifacts_by_id` method raise any exceptions? Seems like it just returns
+    #       empty list when no artifacts found.
+    # TODO: [sergey] If an error is raised on the other hand, what it the right way to handle it?
+    # TODO: [sergey] In some parts of the code methods of store  are directly used instead, e.g.,
+    #       `store.get_artifacts_by_uri` (see cmf.py)
     try:
-        artifacts = store.get_artifacts_by_id(artifact_id)
-        return artifacts
-
+        return store.get_artifacts_by_id(artifact_ids)
     except Exception as e:
         print('Failed to get artifact. Exception: "{}"'.format(str(e)), file=sys.stderr)
 
 
-def put_artifact(store, artifact: metadata_store_pb2.Artifact):
+def put_artifact(store: metadata_store.MetadataStore, artifact: metadata_store_pb2.Artifact) -> None:
+    # TODO: [sergey] this method raises `AlreadyExistsError` error. How does Cmf handle it (silently ignore)?
     try:
         store.put_artifacts([artifact])
     except Exception as e:
         print('Failed to put artifact . Exception: "{}"'.format(str(e)), file=sys.stderr)
 
 
-def get_or_create_artifact_type(store, type_name, properties: dict = None) -> metadata_store_pb2.ArtifactType:
+def get_or_create_artifact_type(store: metadata_store.MetadataStore,
+                                type_name: str,
+                                properties: t.Optional[t.Dict] = None) -> metadata_store_pb2.ArtifactType:
+    # TODO: [sergey] docs say the method raises two errors - NotFoundError and InternalError
     try:
-        artifact_type = store.get_artifact_type(type_name=type_name)
-        return artifact_type
+        return store.get_artifact_type(type_name=type_name)
     except BaseException:
         artifact_type = metadata_store_pb2.ArtifactType(
             name=type_name,
@@ -124,14 +151,15 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
 
 
 def create_artifact_with_type(
-        store,
+        store: metadata_store.MetadataStore,
         uri: str,
         name: str,
         type_name: str,
-        properties: dict = None,
-        type_properties: dict = None,
-        custom_properties: dict = None,
+        properties: t.Optional[t.Dict] = None,
+        type_properties: t.Optional[t.Dict] = None,
+        custom_properties: t.Optional[t.Dict] = None,
 ) -> metadata_store_pb2.Artifact:
+    # TODO [sergey]: what's the difference between properties and custom_properties?
     artifact_type = get_or_create_artifact_type(
         store=store,
         type_name=type_name,
@@ -399,27 +427,35 @@ def create_new_execution_in_existing_run_context(
 
 
 def create_new_artifact_event_and_attribution(
-        store,
-        execution_id: int,
-        context_id: int,
+        store: metadata_store.MetadataStore,
+        execution_id: int,  # Stage execution ID
+        context_id: int,  # Stage context ID
         uri: str,
         name: str,
-        type_name: str,
-        event_type: metadata_store_pb2.Event.Type,
-        properties: dict = None,
-        artifact_type_properties: dict = None,
-        custom_properties: dict = None,
-        artifact_name_path: metadata_store_pb2.Event.Path = None,
-        milliseconds_since_epoch: int = None,
+        type_name: str,  # This seems to be the key: artifact type name (e.g., Dataset)
+        event_type: metadata_store_pb2.Event.Type,  # INPUT or OUTPUT
+        properties: t.Optional[t.Dict] = None,
+        artifact_type_properties: t.Optional[t.Dict] = None,
+        custom_properties: t.Optional[t.Dict] = None,
+        artifact_name_path: t.Optional[metadata_store_pb2.Event.Path] = None,
+        milliseconds_since_epoch: t.Optional[int] = None,
 ) -> metadata_store_pb2.Artifact:
+    """ Create new artifact.
+
+    This method is called from methods such as log_dataset. This method:
+        - Creates a new artifact instance.
+        - Creates a new event instance (input / output) associating this artifact with this stage execution
+        - Creates a new attribution associating artifact with this stage context.
+
+    TODO: [sergey] what's `artifact_name_path`?
+    """
     mlmd_properties = {}
     for property_name, property_value in (properties or {}).items():
         mlmd_properties[property_name] = value_to_mlmd_value(property_value)
 
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(
-            property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
 
     artifact = create_artifact_with_type(
         store=store,
@@ -448,11 +484,11 @@ def create_new_artifact_event_and_attribution(
 
 
 def link_execution_to_input_artifact(
-        store,
+        store: metadata_store.MetadataStore,
         execution_id: int,
         uri: str,
         input_name: str,
-) -> metadata_store_pb2.Artifact:
+) -> t.Optional[metadata_store_pb2.Artifact]:
     artifacts = store.get_artifacts_by_uri(uri)
     if len(artifacts) == 0:
         print('Error: Not found upstream artifact with URI={}.'.format(uri), file=sys.stderr)
@@ -481,13 +517,15 @@ def link_execution_to_input_artifact(
 
 
 def link_execution_to_artifact(
-        store,
+        store: metadata_store.MetadataStore,
         execution_id: int,
         uri: str,
         input_name: str,
         event_type: metadata_store_pb2.Event
 ) -> metadata_store_pb2.Artifact:
-    artifacts = store.get_artifacts_by_uri(uri)
+    # TODO: [sergey] the caller does not expect this function returns None.
+    # TODO: [sergey] what's input_name?
+    artifacts: t.List[metadata_store_pb2.Artifact] = store.get_artifacts_by_uri(uri)
     if len(artifacts) == 0:
         print('Error: Not found upstream artifact with URI={}.'.format(uri), file=sys.stderr)
         return None
@@ -515,7 +553,6 @@ def link_execution_to_artifact(
                 metadata_store_pb2.Event.Path.Step(
                     key=input_name,
                 ),
-
             ]
         ),
     )
