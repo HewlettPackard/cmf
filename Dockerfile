@@ -21,9 +21,15 @@ ARG NB_GID
 #ARG conda_env=python37
 #ARG py_ver=3.7
 
+#https://stackoverflow.com/questions/53004311/how-to-add-conda-environment-to-jupyter-lab
+#https://gist.github.com/James-Leslie/734babcbc1dd3f5fbc828af773922497
+RUN conda install -c conda-forge nb_conda_kernels
+
 # you can add additional libraries you want mamba to install by listing them below the first line and ending with "&& \"
 #RUN mamba create --quiet --yes -p "${CONDA_DIR}/envs/${conda_env}" python=${py_ver} ipython ipykernel && \
 #    mamba clean --all -f -y
+
+#RUN conda activate ${conda_env}
 
 # create Python kernel and link it to jupyter
 #RUN "${CONDA_DIR}/envs/${conda_env}/bin/python" -m ipykernel install --user --name="${conda_env}" && \
@@ -62,5 +68,5 @@ COPY --chown=${NB_UID}:${NB_GID} examples/example-get-started /home/${NB_USER}/e
 
 
 # if you want this environment to be the default one, uncomment the following line:
-#RUN echo "conda activate ${conda_env}" >> "${HOME}/.bashrc"
+RUN echo "conda activate ${conda_env}" >> "${HOME}/.bashrc"
 
