@@ -12,14 +12,14 @@ class CmdMetadataPush(CmdBase):
         # Put a check to see whether pipline exists or not
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        if self.args.file_name in globals():
+        if self.args.file_name:
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
             return f"{mlmd_file_name} doesn't exists in current directory"
         query = cmfquery.CmfQuery(mlmd_file_name)
         json_payload = query.dumptojson(self.args.pipeline_name)
-        print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
+        # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         execution_flag = 0
         url = "http://127.0.0.1:80"
         # Get url from config
