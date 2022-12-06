@@ -270,7 +270,7 @@ class Cmf(object):
                  execution_id=self.execution.id,
                  context_id=self.child_context.id,
                  uri=uri,
-                 name=props_name,
+                 name=url,
                  type_name="Dataset",
                  event_type=event_type,
                  properties={"git_repo": git_repo, "Commit": str(dataset_commit),"url":str(dvc_url)},

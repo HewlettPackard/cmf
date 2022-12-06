@@ -12,7 +12,7 @@ class CmdMetadataPush(CmdBase):
         # Put a check to see whether pipline exists or not
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        if self.args.file_name:
+        if self.args.file_name in globals():
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
@@ -56,13 +56,14 @@ def add_parser(subparsers, parent_parser):
 
     required_arguments.add_argument(
         "-p",
+        "--pipeline_name",
         required=True,
         help="Specify Pipeline name",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", help="Specify mlmd file name", metavar="<file_name>"
+        "-f", "--file_name" ,help="Specify mlmd file name", metavar="<file_name>"
     )
 
     parser.add_argument(
