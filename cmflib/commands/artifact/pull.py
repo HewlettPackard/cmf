@@ -140,14 +140,13 @@ def add_parser(subparsers, parent_parser):
 
     required_arguments.add_argument(
         "-p",
-        "--pipeline-name",
         required=True,
         help="Specify Pipeline name",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file-name", help="Specify mlmd file name", metavar="<file_name>"
+        "-f", help="Specify mlmd file name", metavar="<file_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPull)
