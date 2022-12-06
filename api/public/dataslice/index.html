@@ -559,7 +559,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 
 
 <h2 id="cmflib.cmf.Cmf.DataSlice.add_data" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">add_data</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">custom_props</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">add_data</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.DataSlice.add_data" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -597,7 +597,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
           </td>
         </tr>
         <tr>
-          <td><code>custom_props</code></td>
+          <td><code>custom_properties</code></td>
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
@@ -630,7 +630,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 <span class="normal">908</span>
 <span class="normal">909</span>
 <span class="normal">910</span>
-<span class="normal">911</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_props</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">911</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Add data to create the dataslice.</span>
 
 <span class="sd">    Currently supported only for file abstractions. Pre-condition - the parent folder, containing the file</span>
@@ -642,13 +642,13 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 <span class="sd">        ```</span>
 <span class="sd">    Args:</span>
 <span class="sd">        path: Name to identify the file to be added to the dataslice.</span>
-<span class="sd">        custom_props: Properties associated with this datum.</span>
+<span class="sd">        custom_properties: Properties associated with this datum.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="n">path</span><span class="p">][</span><span class="s1">&#39;hash&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dvc_get_hash</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">custom_props</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">custom_props</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="k">if</span> <span class="n">custom_properties</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">custom_properties</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">[</span><span class="n">path</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
 </code></pre></div></td></tr></table></div>
       </details>
@@ -661,7 +661,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 
 
 <h2 id="cmflib.cmf.Cmf.DataSlice.commit" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">commit</span><span class="p">(</span><span class="n">custom_props</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+<code class="highlight language-python"><span class="n">commit</span><span class="p">(</span><span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.DataSlice.commit" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -688,7 +688,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
     </thead>
     <tbody>
         <tr>
-          <td><code>custom_props</code></td>
+          <td><code>custom_properties</code></td>
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
@@ -752,7 +752,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 <span class="normal">968</span>
 <span class="normal">969</span>
 <span class="normal">970</span>
-<span class="normal">971</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_props</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">971</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Commit the dataslice.</span>
 
 <span class="sd">    The created dataslice is versioned and added to underneath data versioning software.</span>
@@ -763,7 +763,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 <span class="sd">        ```</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        custom_props: Properties associated with this data slice.</span>
+<span class="sd">        custom_properties: Properties associated with this data slice.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">git_repo</span> <span class="o">=</span> <span class="n">git_get_repo</span><span class="p">()</span>
     <span class="n">dataslice_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">,</span> <span class="n">orient</span><span class="o">=</span><span class="s1">&#39;index&#39;</span><span class="p">)</span>
@@ -791,7 +791,7 @@ splits. This can be useful from different perspectives, for instance, to mitigat
             <span class="s2">&quot;git_repo&quot;</span><span class="p">:</span> <span class="n">git_repo</span><span class="p">,</span>
             <span class="s2">&quot;Remote&quot;</span><span class="p">:</span> <span class="n">remote</span><span class="p">}</span>
         <span class="n">custom_properties</span> <span class="o">=</span> <span class="n">props</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="n">custom_props</span><span class="p">)</span> <span class="k">if</span> <span class="n">custom_props</span> <span class="k">else</span> <span class="n">props</span>
+            <span class="n">custom_properties</span><span class="p">)</span> <span class="k">if</span> <span class="n">custom_properties</span> <span class="k">else</span> <span class="n">props</span>
         <span class="n">create_new_artifact_event_and_attribution</span><span class="p">(</span>
             <span class="n">store</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
             <span class="n">execution_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
