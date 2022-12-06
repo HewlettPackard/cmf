@@ -25,16 +25,17 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
                 artifact_type = event['artifact']['type']
                 event_type = event['type']
                 artifact_name = (event['artifact']['name'].split(':'))[0]
+                print("artifact_name = ", artifact_name)
                 custom_props = event['artifact']['custom_properties']
                 props = event['artifact']['properties']
                 uri = event['artifact']['uri']
                 if artifact_type == "Dataset" and event_type == 3:
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']
-                    artifact_full_path = f"{git_repo_props}/{artifact_name}"
+                    # artifact_full_path = f"{git_repo_props}/{artifact_name}"
                     props=[props['url'],event['artifact']['name']]
                     # print(artifact_full_path)
-                    cmf_class.log_dataset_with_version(artifact_full_path, uri, "input",props, custom_properties=custom_props)
+                    cmf_class.log_dataset_with_version(artifact_name, uri, "input",props, custom_properties=custom_props)
                 elif artifact_type == "Dataset" and event_type == 4:
                     uri = event['artifact']['uri']
                     git_repo_props = props['git_repo']

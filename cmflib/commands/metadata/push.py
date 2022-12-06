@@ -19,6 +19,7 @@ class CmdMetadataPush(CmdBase):
             return f"{mlmd_file_name} doesn't exists in current directory"
         query = cmfquery.CmfQuery(mlmd_file_name)
         json_payload = query.dumptojson(self.args.pipeline_name)
+        print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         execution_flag = 0
         url = "http://127.0.0.1:80"
         # Get url from config
