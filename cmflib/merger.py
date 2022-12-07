@@ -29,37 +29,16 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
                 props = event['artifact']['properties']
                 uri = event['artifact']['uri']
                 if artifact_type == "Dataset" and event_type == 3:
-                    uri = event['artifact']['uri']
-                    git_repo_props = props['git_repo']
-                    props=[props['url'],event['artifact']['name']]
-                    cmf_class.log_dataset_with_version(artifact_name, uri, "input",props, custom_properties=custom_props)
+                    cmf_class.log_dataset_with_version(artifact_name, uri, "input", props['url'], custom_properties=custom_props)
                 elif artifact_type == "Dataset" and event_type == 4:
-                    uri = event['artifact']['uri']
-                    git_repo_props = props['git_repo']
-                    props=[props['url'],event['artifact']['name']]
-                    cmf_class.log_dataset_with_version(artifact_name, uri, "output",props,
+                    cmf_class.log_dataset_with_version(artifact_name, uri, "output", props['url'],
                                                        custom_properties=custom_props)
                 elif artifact_type == "Model" and event_type == 3:
-                    uri = event['artifact']['uri']
                     props["uri"] = uri
-                    # model_framework = props['model_framework']
-                    # model_type = props['model_type']
-                    # model_name = props['model_name']
                     cmf_class.log_model_with_version(path=artifact_name, event="input", props=props,
                                                      custom_properties=props)
                 elif artifact_type == "Model" and event_type == 4:
-                    uri = event['artifact']['uri']
                     props["uri"] = uri
-                    # model_framework = props['model_framework']
-                    # model_type = props['model_type']
-                    # model_name = props['model_name']
-                    # #print(props[""])
-                    # #props["uri"] = props
-                    # print(model_framework)
-                    # print(model_type)
-                    # print(model_name)
-                    # print(artifact_name)
-                    # print(type(artifact_name))
                     cmf_class.log_model_with_version(path=artifact_name, event="output", props=props,
                                                      custom_properties=props)
                 elif artifact_type == "Metrics":

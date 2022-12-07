@@ -229,10 +229,9 @@ class Cmf(object):
                                                           self.execution_label_props)
         return artifact
 
-    def log_dataset_with_version(self, url: str, version:str,  event: str,props, custom_properties: {} = None) -> mlpb.Artifact:
+    def log_dataset_with_version(self, url: str, version:str,  event: str, dvc_url: str, custom_properties: {} = None) -> mlpb.Artifact:
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = ""
-        # name = re.split('/', url)[-1]
         name = url
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
@@ -241,7 +240,6 @@ class Cmf(object):
             event_type = metadata_store_pb2.Event.Type.INPUT
 
         # dataset_commit = commit_output(url, self.execution.id)
-        dvc_url = props[0]
         dataset_commit = version
         url = url + ":" + c_hash
         #To do - dvc_url(s3_url)
@@ -308,7 +306,6 @@ class Cmf(object):
     # Add the model to dvc do a git commit and store the commit id in MLMD
     def log_model_with_version(self, path: str, event: str, props=None,
                   custom_properties=None) -> object:
-
         if custom_properties is None:
             custom_properties = {}
         custom_props = {} if custom_properties is None else custom_properties
@@ -320,7 +317,6 @@ class Cmf(object):
 
        # props["commit"] = "" # To do get from incoming data 
         c_hash = props.get("uri", " ")
-        # print(c_hash)
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
         #dvc_url = dvc_get_url(path, False)
