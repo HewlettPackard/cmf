@@ -1,0 +1,43 @@
+stages:
+    initial_selection:
+        do:
+            cmd:
+                python initial_select.py configs/MIAOD.py --work_directory work_dirs/test --labeled_next work_dirs/test/X_L_0.npy --unselected work_dirs/test/X_U_0.npy
+            deps:
+                - configs/MIAOD.py
+            outs:
+                - work_dirs/test/X_L_0.npy
+                - work_dirs/test/X_U_0.npy
+
+    active_learning_training:
+        foreach:
+            - cycle: 0
+            - cycle: 1
+            - cycle: 2
+        do:
+            cmd:
+                python cycle_train.py configs/MIAOD.py --work_directory work_dirs/test --cycle ${item.cycle} --labeled work_dirs/test/X_L_${item.cycle}.npy --unselected work_dirs/test/X_U_${item.cycle}.npy --model work_dirs/test/cycle_${item.cycle}.pth
+            deps:
+                - work_dirs/test/X_L_${item.cycle}.npy
+                - work_dirs/test/X_U_${item.cycle}.npy
+            outs:
+                - work_dirs/test/cycle_${item.cycle}.pth
+
+    active_learning_selection:
+        foreach:
+            - cycle: 0
+              next_cycle: 1
+            - cycle: 1
+              next_cycle: 2
+            - cycle: 2
+              next_cycle: 3
+        do:
+            cmd:
+                python cycle_select.py configs/MIAOD.py --work_directory work_dirs/test --cycle ${item.cycle} --model work_dirs/test/cycle_${item.cycle}.pth --labeled work_dirs/test/X_L_${item.cycle}.npy --labeled_next work_dirs/test/X_L_${next_cycle}.npy --unselected work_dirs/test/X_U_${next_cycle}.npy
+            deps:
+                - work_dirs/test/cycle_${item.cycle}.pth
+                - work_dirs/test/X_L_${item.cycle}.npy
+            outs:
+                - work_dirs/test/X_L_${next_cycle}.npy
+                - work_dirs/test/X_U_${next_cycle}.npy
+
