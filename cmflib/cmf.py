@@ -203,7 +203,7 @@ class Cmf:
         return ctx
 
     def create_execution(self, execution_type: str,
-                         custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
+            custom_properties: t.Optional[t.Dict] = None, cmd: str = None) -> mlpb.Execution:
         """Create execution.
 
         Every call creates a unique execution. Execution can only be created within a context, so
@@ -246,11 +246,12 @@ class Cmf:
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
+        cmd = str(sys.argv) if cmd is None else cmd
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             execution_type_name=execution_type,
             context_id=self.child_context.id,
-            execution=str(sys.argv),
+            execution=cmd,
             pipeline_id=self.parent_context.id,
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
@@ -258,17 +259,17 @@ class Cmf:
             custom_properties=custom_props
         )
         self.execution_name = str(self.execution.id) + "," + execution_type
-        self.execution_command = str(sys.argv)
+        self.execution_command = cmd
         for k, v in custom_props.items():
             k = re.sub('-', '_', k)
             self.execution_label_props[k] = v
         self.execution_label_props["Execution_Name"] = execution_type + \
             ":" + str(self.execution.id)
-        self.execution_label_props["execution_command"] = str(sys.argv)
+        self.execution_label_props["execution_command"] = cmd
         if self.graph:
             self.driver.create_execution_node(
-                self.execution_name, self.child_context.id, self.parent_context, str(
-                    sys.argv), self.execution.id, custom_props)
+                self.execution_name, self.child_context.id, self.parent_context, cmd
+                , self.execution.id, custom_props)
         return self.execution
 
     def update_execution(self, execution_id: int, custom_properties: t.Optional[t.Dict] = None):
