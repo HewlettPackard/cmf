@@ -24,7 +24,7 @@ import pandas as pd
 import typing as t
 #This import is needed for jupyterlab environment
 import dvc
-from ml_metadata.proto import metadata_store_pb2 as mlpb
+from ml_metadata.proto import metadata_store_pb2 as mlpb, metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
     commit_output, git_get_repo, commit_dvc_lock_file,  \
