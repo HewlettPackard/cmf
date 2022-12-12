@@ -1,0 +1,7 @@
+export DVC_REMOTE_URL=/tmp/cmf/example_get_started/dvc_remote
+export GIT_USER_NAME="First Second"
+export GIT_USER_EMAIL=first.second@corp.org
+export GIT_REMOTE_URL=git@github.com:first-second/experiment-repo.git
+export NEO4J_USER_NAME=neo4j
+export NEO4J_PASSWD=neo4j
+export NEO4J_URI="bolt://IP:PORT"
