@@ -818,9 +818,9 @@ class Cmf:
         )
 
 
-    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_props: t.Dict):
+    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_properties: t.Dict):
         """Updates an existing artifact and stores it back to mlmd"""
-        for key, value in custom_props.items():
+        for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
@@ -866,10 +866,10 @@ class Cmf:
 
     # To do - Once update the hash and the new version should be updated in
     # the mlmd
-    def update_dataslice(self, name: str, record: str, custom_props: t.Dict):
+    def update_dataslice(self, name: str, record: str, custom_properties: t.Dict):
         df = pd.read_parquet(name)
         temp_dict = df.to_dict('index')
-        temp_dict[record].update(custom_props)
+        temp_dict[record].update(custom_properties)
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient='index')
         dataslice_df.index.names = ['Path']
         dataslice_df.to_parquet(name)
@@ -889,7 +889,7 @@ class Cmf:
             self.name = name
             self.writer = writer
 
-        def add_data(self, path: str, custom_props: t.Optional[t.Dict] = None) -> None:
+        def add_data(self, path: str, custom_properties: t.Optional[t.Dict] = None) -> None:
             """Add data to create the dataslice.
 
             Currently supported only for file abstractions. Pre-condition - the parent folder, containing the file
@@ -901,13 +901,13 @@ class Cmf:
                 ```
             Args:
                 path: Name to identify the file to be added to the dataslice.
-                custom_props: Properties associated with this datum.
+                custom_properties: Properties associated with this datum.
             """
 
             self.props[path] = {}
             self.props[path]['hash'] = dvc_get_hash(path)
-            if custom_props:
-                for k, v in custom_props.items():
+            if custom_properties:
+                for k, v in custom_properties.items():
                     self.props[path][k] = v
 
 #        """
@@ -918,7 +918,7 @@ class Cmf:
 #                self.props[path][k] = v
 #        """
 
-        def commit(self, custom_props: t.Optional[t.Dict] = None) -> None:
+        def commit(self, custom_properties: t.Optional[t.Dict] = None) -> None:
             """Commit the dataslice.
 
             The created dataslice is versioned and added to underneath data versioning software.
@@ -929,7 +929,7 @@ class Cmf:
                 ```
 
             Args:
-                custom_props: Properties associated with this data slice.
+                custom_properties: Properties associated with this data slice.
             """
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient='index')
@@ -957,7 +957,7 @@ class Cmf:
                     "git_repo": git_repo,
                     "Remote": remote}
                 custom_properties = props.update(
-                    custom_props) if custom_props else props
+                    custom_properties) if custom_properties else props
                 create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
