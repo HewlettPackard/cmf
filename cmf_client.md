@@ -1,6 +1,6 @@
 ## Getting started with CMF Commands
 ***
-<font size=6>**cmf init**</font>
+## <font size=6>**cmf init**</font> 
 
 <pre>
 usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
@@ -83,7 +83,7 @@ usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
  
 <pre>
 Example:
-cmf init amazonS3 --url s3://hpeairldf-1/AKIAS2D5UKH2TA346KDK --access-key-id AKIAS2D5UKH2TA346KDK --secret-key o36ZSftrZ1NIebtdu+Sppe8hd4myJbYCaZjxhP/v --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
+cmf init amazonS3 --url s3://hpeairldf-1/AKIAS2D5LMN2OP346KDK --access-key-id AKIAS2D5LMN2OP346KDK --secret-key o36ABcdeF1GIebtdu+Sppe8hd4myJbYCaZjxhP/v --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
 </pre>
 
 <font size=5> Required Arguments</font>
@@ -192,6 +192,10 @@ Usage: cmf metadata [-h] {pull,push}
 Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
 </pre>
 <font size=5> This command pull metadata file from cmf server to local#PENDING</font>
+
+<pre>
+Example: cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
+</pre>
 
 <font size=5> Required Arguments</font>
 
