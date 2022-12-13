@@ -1,5 +1,6 @@
 ml-metadata==1.3.0
-dvc
+dvc[s3]
+dvc[ssh]
 pandas
 retrying
 pyarrow
@@ -7,3 +8,7 @@ neo4j
 sklearn
 tabulate
 click
+git
+minio
+paramiko
+

@@ -7,10 +7,11 @@ import shlex
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import create_cmf_config
 
+
 class CmdInitMinioS3(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig"
-        if 'self.args.cmf_server_ip' in globals():
+        if "self.args.cmf_server_ip" in globals():
             create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
