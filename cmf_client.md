@@ -83,7 +83,7 @@ usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
  
 <pre>
 Example:
-cmf init amazonS3 --url s3://hpeairldf-1/AKIAS2D5LMN2OP346KDK --access-key-id AKIAS2D5LMN2OP346KDK --secret-key o36ABcdeF1GIebtdu+Sppe8hd4myJbYCaZjxhP/v --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
+cmf init amazonS3 --url s3://hpeairldf-1/AKIAS2D5LMN2OP346KDK --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
 </pre>
 
 <font size=5> Required Arguments</font>
