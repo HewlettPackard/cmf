@@ -4,14 +4,14 @@
 <pre>
 usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
 </pre>
-<font size=5> This command is used initialize CMF for multiple repos, such as Local, Minio S3, Amazon S3, SSH.</font>
+<font size=5> Initializes different repos for CMF such as local directories, Minio S3 bucket, Amazon S3 bucket, SSH Remote directories. Additionally, User can provide cmf server ip. </font>
 <font size=5>Pending</font>
 
 ###     cmf init show
 <pre>
 Usage: cmf init show
 </pre>
-<font size=5> This command is used to show cmf config. PENDING</font>
+<font size=5> Shows current cmf configuration. PENDING</font>
 
 
 ### b.    cmf init minioS3 
