@@ -1,20 +1,22 @@
 ## Getting started with CMF Commands
+***
+<font size=6>**cmf init**</font>
 
-## 1. cmf init
 <pre>
 usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
 </pre>
 <font size=5> Initializes different repos for CMF such as local directories, Minio S3 bucket, Amazon S3 bucket, SSH Remote directories. Additionally, User can provide cmf server ip. </font>
 <font size=5>Pending</font>
-
-###     cmf init show
+***
+### 1.    cmf init show
 <pre>
 Usage: cmf init show
 </pre>
 <font size=5> Shows current cmf configuration. PENDING</font>
 
+***
 
-### b.    cmf init minioS3 
+### 2. cmf init minioS3 
 <pre>
 Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
                         --access-key-id [access_key_id] --secret-key [secret_key]
@@ -22,7 +24,9 @@ Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
 <font size=5> This command configures Minio S3 client machine #pending.</font>
 
 <pre>
-Example: cmf init minioS3 --url s3://dvc-art --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin
+
+Example:
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin
 </pre>
 
 <font size=5> Required Arguments</font>
@@ -44,15 +48,16 @@ Example: cmf init minioS3 --url s3://dvc-art --endpoint-url http://localhost:900
 
 
 
-
-### c.    cmf init local
+***
+### 3.    cmf init local
 <pre>
 Usage: cmf init local [-h] --url [url] --git-remote-url [git_remote_url]
 </pre>
 <font size=5> This command is used to initialise local bucket #Pending. </font>
 
 <pre>
-Example: cmf init local --url example needed
+Example: 
+cmf init local --url /home/abhinavchobey/local-storage --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
 </pre>
 
 <font size=5> Required Arguments</font>
@@ -68,16 +73,20 @@ Example: cmf init local --url example needed
   -h, --help   show this help message and exit
 
 </pre>
-
-### d.    cmf init amazonS3
+***
+### 4.    cmf init amazonS3
 <pre>
 usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
                          --secret-key [secret_key]
 </pre>
 <font size=5> This command is used to initialise Amazon S3 bucket. </font>
  
-<font size=5> Required Arguments</font>
+<pre>
+Example:
+cmf init amazonS3 --url s3://hpeairldf-1/AKIAS2D5UKH2TA346KDK --access-key-id AKIAS2D5UKH2TA346KDK --secret-key o36ZSftrZ1NIebtdu+Sppe8hd4myJbYCaZjxhP/v --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
+</pre>
 
+<font size=5> Required Arguments</font>
 <pre>
   --url [url]                           Specify url to bucket
   --access-key-id [access_key_id]       Specify Access Key Id
@@ -95,8 +104,8 @@ usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
 <pre>
 Example: cmf init amazonS3 --url 
 </pre>
-
-### e.    cmf init SSH remote
+***
+### 5.    cmf init sshremote
 <pre>
 usage: cmf init sshremote [-h] --url [url] --user [user] --port [port]
                           --password  --git-remote-url
@@ -105,7 +114,8 @@ usage: cmf init sshremote [-h] --url [url] --user [user] --port [port]
  
 
 <pre>
-Example: cmf init sshremote --url 
+Example: 
+cmf init sshremote --url ssh://127.0.0.1/home/varkha/ssh-storage --user varkha --port 22 --password example@123 --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
 </pre>
 
 <font size=5> Required Arguments</font>
@@ -124,13 +134,14 @@ Example: cmf init sshremote --url
   -h, --help  show this help message and exit
 </pre>
 
-## 2. cmf artifact
+## <font size=6>**cmf artifact**</font> 
+***
 <pre>
 Usage: cmf artifact [-h] {pull,push}
 </pre>
 <font size=5> This command pull and push artifact to various repos.</font>
-
-### a.    cmf artifact pull
+***
+### 1.    cmf artifact pull
 <pre>
 Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name]
 </pre>
@@ -154,8 +165,8 @@ Example: cmf artifact pull -p 'Test-env'
  
   -f [file_name],--file-name [file_name]      Specify mlmd file name
 </pre>
-
-### b.    cmf artifact push
+***
+### 2.    cmf artifact push
 <pre>
 Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 </pre>
@@ -164,16 +175,19 @@ Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 Example: cmf artifact push -p 'Test-env' 
 </pre>
 
-## 3. cmf metadata
+## <font size=6>**cmf metadata**</font> 
+***
+
 <pre>
 Usage: cmf metadata [-h] {pull,push}
 </pre>
+
 <font size=5> This command pull and push metadata file to and from cmf server respectively.</font>
 
 
 
-
-###  a.   cmf metadata pull
+***
+###  1.   cmf metadata pull
 <pre>
 Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
 </pre>
@@ -194,8 +208,8 @@ Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
 -e [exec_id], --execution [exec_id]         Get execution from execution id
 
 </pre>
-
-### b.    cmf metadata push
+***
+### 2.    cmf metadata push
 <pre>
 Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
 </pre>
