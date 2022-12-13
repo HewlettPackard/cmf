@@ -1,14 +1,12 @@
 ml-metadata==1.3.0
-dvc[s3]
-dvc[ssh]
+dvc[s3,ssh]
 pandas
 retrying
 pyarrow
 neo4j
-sklearn
 tabulate
 click
-git
 minio
 paramiko
+scikit_learn
 

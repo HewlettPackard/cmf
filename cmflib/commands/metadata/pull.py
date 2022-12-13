@@ -31,34 +31,53 @@ class CmdMetadataPull(CmdBase):
         data = ""
         cmd = "pull"
         mlmd_data = ""
+        status=0
         execution_flag = 0
-        if self.args.file_name:
-            directory_to_dump = self.args.file_name
+        if self.args.file_path:
+            directory_to_dump = self.args.file_path
         else:
             directory_to_dump = os.getcwd()
-        if self.args.execution:
-            output = server_interface.call_mlmd_pull(url)
-            exec_id = self.args.execution
-            mlmd_data = json.loads(output.content)["Pipeline"]
-            for i in mlmd_data[0]["stages"]:
-                for j in i["executions"]:
-                    if j["id"] == int(exec_id):
-                        execution_flag = 1
-                        break
-            if execution_flag == 0:
-                print("Given execution not found in mlmd")
+        output = server_interface.call_mlmd_pull(url)
+        status = output.status_code
+        if output.content:
+            if self.args.execution:
+                exec_id = self.args.execution
+                mlmd_data = json.loads(output.content)["Pipeline"]
+                for i in mlmd_data[0]["stages"]:
+                    for j in i["executions"]:
+                        if j["id"] == int(exec_id):
+                            execution_flag = 1
+                            break
+                if execution_flag == 0:
+                    print("Given execution id not found in mlmd.")
+                else:
+                    try:
+                        merger.pull_execution_to_mlmd(
+                            output.content,
+                            directory_to_dump + "/mlmd",
+                            self.args.pipeline_name,
+                            self.args.execution,
+                        )
+                    except Exception as e:
+                        return e
             else:
-                merger.pull_execution_to_mlmd(
-                    mlmd_json.content,
-                    directory_to_dump + "/mlmd",
-                    self.args.pipeline_name,
-                    self.args.execution,
-                )
+                mlmd_data = output.content
+                try:
+                    merger.parse_json_to_mlmd(mlmd_data, directory_to_dump + "/mlmd", cmd)
+                except Exception as e:
+                    return e
+
+            if status == 200:
+                return "mlmd is successfully pulled."
+            elif status == 404:
+                return "cmf server is not available."
+            elif status == 500:
+                return "Internal server error."
+            else :
+                return "ERROR: Unable to pull mlmd."
         else:
-            output = server_interface.call_mlmd_pull(url)
-            mlmd_data = output.content
-            merger.parse_json_to_mlmd(mlmd_data, directory_to_dump + "/mlmd", cmd)
-        return 0
+            return 'mlmd file not present.'
+
 
 
 def add_parser(subparsers, parent_parser):
@@ -83,9 +102,9 @@ def add_parser(subparsers, parent_parser):
 
     required_arguments.add_argument(
         "-f",
-        "--file_name",
+        "--file_path",
         help="Specify location to pull mlmd file",
-        metavar="<file_name>",
+        metavar="<file_path>",
     )
 
     parser.add_argument(

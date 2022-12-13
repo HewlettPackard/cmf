@@ -43,11 +43,13 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
                 artifact_name = (event['artifact']['name'].split(':'))[0]
                 custom_props = event['artifact']['custom_properties']
                 props = event['artifact']['properties']
+                # print(props,'props')
                 uri = event['artifact']['uri']
                 if artifact_type == "Dataset" and event_type == 3:
-                    cmf_class.log_dataset_with_version(artifact_name, uri, "input", props['url'], custom_properties=custom_props)
+                    cmf_class.log_dataset_with_version(artifact_name, uri, "input", props,
+                                                       custom_properties=custom_props)
                 elif artifact_type == "Dataset" and event_type == 4:
-                    cmf_class.log_dataset_with_version(artifact_name, uri, "output", props['url'],
+                    cmf_class.log_dataset_with_version(artifact_name, uri, "output", props,
                                                        custom_properties=custom_props)
                 elif artifact_type == "Model" and event_type == 3:
                     props["uri"] = uri
@@ -58,7 +60,9 @@ def parse_json_to_mlmd(mlmd_json,path_to_store,cmd):
                     cmf_class.log_model_with_version(path=artifact_name, event="output", props=props,
                                                      custom_properties=props)
                 elif artifact_type == "Metrics":
-                    cmf_class.log_execution_metrics(artifact_name, custom_props)
+                    # print(props,'parse')
+                    # cmf_class.log_execution_metrics_with_uuid(props, custom_props)
+                    cmf_class.log_execution_metrics(artifact_name,custom_props)
                 else:
                     pass
 
@@ -88,11 +92,11 @@ def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                     props = event['artifact']['properties']
                     uri = event['artifact']['uri']
                     if artifact_type == "Dataset" and event_type == 3:
-                        cmf_class.log_dataset_with_version(artifact_name, uri, "input",props['url'],
+                        cmf_class.log_dataset_with_version(artifact_name, uri, "input",props,
                                                            custom_properties=custom_props)
 
                     elif artifact_type == "Dataset" and event_type == 4:
-                        cmf_class.log_dataset_with_version(artifact_name, uri, "output",props['url'],
+                        cmf_class.log_dataset_with_version(artifact_name, uri, "output",props,
                                                            custom_properties=custom_props)
 
                     elif artifact_type == "Model" and event_type == 3:
@@ -106,8 +110,8 @@ def pull_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                                                          custom_properties=props)
 
                     elif artifact_type == "Metrics":
+                        # cmf_class.log_execution_metrics_with_uuid(props, custom_props)
                         cmf_class.log_execution_metrics(artifact_name, custom_props)
-
                     else:
                         pass
 
@@ -139,11 +143,11 @@ def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                     props = event['artifact']['properties']
                     uri = event['artifact']['uri']
                     if artifact_type == "Dataset" and event_type == 3:
-                        cmf_class.log_dataset_with_version(artifact_name, uri, "input",props['url'],
+                        cmf_class.log_dataset_with_version(artifact_name, uri, "input",props,
                                                            custom_properties=custom_props)
 
                     elif artifact_type == "Dataset" and event_type == 4:
-                        cmf_class.log_dataset_with_version(artifact_name, uri, "output",props['url'],
+                        cmf_class.log_dataset_with_version(artifact_name, uri, "output",props,
                                                            custom_properties=custom_props)
 
                     elif artifact_type == "Model" and event_type == 3:
@@ -157,8 +161,8 @@ def push_execution_to_mlmd(mlmd_data,path_to_store,pipeline_name,exec_id):
                                                          custom_properties=props)
 
                     elif artifact_type == "Metrics":
+                        # cmf_class.log_execution_metrics_with_uuid(props, custom_props)
                         cmf_class.log_execution_metrics(artifact_name, custom_props)
-
                     else:
                         pass
 

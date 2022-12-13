@@ -11,7 +11,7 @@ from cmflib.cli.utils import create_cmf_config
 class CmdInitMinioS3(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig"
-        if "self.args.cmf_server_ip" in globals():
+        if self.args.cmf_server_ip:
             create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
@@ -51,12 +51,12 @@ class CmdInitMinioS3(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Initialize minio S3 bucket"
+    HELP = "Initialises Minio S3 bucket as artifact repository."
 
     parser = subparsers.add_parser(
         "minioS3",
         parents=[parent_parser],
-        description="This command is to initialize minio S3 bucket",
+        description="This command initialises Minio S3 bucket as artifact repository for CMF.",
         help=HELP,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -65,7 +65,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--url",
         required=True,
-        help="Specify url to bucket",
+        help="Specify Minio S3 bucket url.",
         metavar="<url>",
         default=argparse.SUPPRESS,
     )
@@ -73,7 +73,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--endpoint-url",
         required=True,
-        help="Specify endpoint url which is used to access minio locally/remotely running UI",
+        help="Specify endpoint url which is used to access Minio's locally/remotely running UI.",
         metavar="<endpoint_url>",
         default=argparse.SUPPRESS,
     )
@@ -81,7 +81,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--access-key-id",
         required=True,
-        help="Specify Access Key Id",
+        help="Specify Access Key Id.",
         metavar="<access_key_id>",
         default=argparse.SUPPRESS,
     )
@@ -89,7 +89,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--secret-key",
         required=True,
-        help="Specify Secret Key",
+        help="Specify Secret Key.",
         metavar="<secret_key>",
         default=argparse.SUPPRESS,
     )
@@ -97,14 +97,14 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Url to git repo",
+        help="Specify git repo url.",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
 
     parser.add_argument(
-        "--cmf-server-IP",
-        help="Specify Cmf Server IP",
+        "--cmf-server-ip",
+        help="Specify cmf-server IP",
         metavar="<cmf_server_ip>",
         default="http://127.0.0.1:80",
     )

@@ -17,6 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+from minio import Minio
 import subprocess
 
 from cmflib.cli.command import CmdBase
@@ -24,10 +25,18 @@ from cmflib.cli.command import CmdBase
 
 class CmdArtifactPush(CmdBase):
     def run(self):
-        result = subprocess.run(
-            ["dvc", "push"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-        )
-        return result.stdout
+        minio_constructor=Minio(endpoint='127.0.0.1:9000', access_key='minioadmin', secret_key='minioadmin', secure=False)
+        try:
+            if minio_constructor.bucket_exists('dvc-art'):
+                result = subprocess.run(
+                    ["dvc", "push"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+                )
+                return result.stdout
+        except Exception as e:
+            return 'Minio server is not active.'
+
+
+
 
 
 def add_parser(subparsers, parent_parser):

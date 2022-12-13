@@ -28,7 +28,7 @@ from cmflib.cli.utils import create_cmf_config
 class CmdInitLocal(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig"
-        if "self.args.cmf_server_ip" in globals():
+        if self.args.cmf_server_ip:
             create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
@@ -52,7 +52,7 @@ class CmdInitLocal(CmdBase):
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
         result = subprocess.run(
-            ["sh", f"{abs_path}", f"{self.args.url}"],
+            ["sh", f"{abs_path}", f"{self.args.path}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
@@ -61,36 +61,36 @@ class CmdInitLocal(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Initialise local bucket"
+    HELP = "Initialises local directory as artifact repository."
 
     parser = subparsers.add_parser(
         "local",
         parents=[parent_parser],
-        description="This command is used to initialise local bucket",
+        description="This command initialises local directory as CMF artifact repository.",
         help=HELP,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     required_arguments = parser.add_argument_group("required arguments")
 
     required_arguments.add_argument(
-        "--url",
+        "--path",
         required=True,
-        help="Specify url to bucket",
-        metavar="<url>",
+        help="Specify local directory path.",
+        metavar="<path>",
         default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Url to git repo",
+        help="Specify git repo url.",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
 
     parser.add_argument(
-        "--cmf-server-IP",
-        help="Specify Cmf Server IP",
+        "--cmf-server-ip",
+        help="Specify cmf-server IP.",
         metavar="<cmf_server_ip>",
         default="http://127.0.0.1:80",
     )
