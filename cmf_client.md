@@ -25,7 +25,7 @@ Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
 <pre>
 
 Example:
-cmf init minioS3 --url s3://dvc-art --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+cmf init minioS3 --url s3://bucket --endpoint-url http://localhost:9000 --access-key-id xxxx --secret-key xxxxx --git-remote-url https://github.com/user/experiment-repo.git
 </pre>
 
 <font size=5> Required Arguments</font>
@@ -83,7 +83,7 @@ usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
  
 <pre>
 Example:
-cmf init amazonS3 --url s3://hpeairldf-1/AKIAS2D5LMN2OP346KDK --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/varkha-d-sharma/experiment-repo.git
+cmf init amazonS3 --url s3://bucket --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/name/experiment-repo.git
 </pre>
 
 <font size=5> Required Arguments</font>
