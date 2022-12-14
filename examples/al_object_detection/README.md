@@ -105,6 +105,10 @@ Use dvc to run the pipeline:
 dvc repro -f
 ```
 
+Optional - Change this line in dvc_cmf_ingest.py to capture the lineage in neo4j. Set graph=True
+```
+metawriter = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=True)
+```
 After running the pipeline, build CMF lineage. This is done separately because
 during the dvc run, stage inputs and outputs are locked by DVC:
 
