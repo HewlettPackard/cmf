@@ -228,8 +228,11 @@ Note that <conda_local_dir> is the conda local directory and <venv_name>
 is the virtual environment name:
 
 ```bash
+mkdir <run_directory>
 cd <cmf_installation>
 cd examples/al_object_detection
+cp -pr <cmf_installation>/examples/al_object_detection/* <run_directory>
+cd <run_directory>
 pip install -r requirements/build.txt
 pip install -v -e .  # or "python setup.py develop"
 pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
