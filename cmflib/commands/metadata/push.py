@@ -37,6 +37,7 @@ class CmdMetadataPush(CmdBase):
         json_payload = query.dumptojson(self.args.pipeline_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         execution_flag = 0
+        status_code=0
         url = "http://127.0.0.1:80"
         # Get url from config
         if self.args.execution:
@@ -62,7 +63,7 @@ class CmdMetadataPush(CmdBase):
         elif status_code == 500:
             return "Internal server error."
         else:
-            pass
+            return "ERROR: Unable to pudh mlmd"
 
 
 def add_parser(subparsers, parent_parser):

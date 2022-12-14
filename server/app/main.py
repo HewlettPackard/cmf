@@ -32,22 +32,21 @@ async def mlmd_pull(request: Request):
     if os.path.exists("/cmf-server/data/mlmd"):
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
         json_payload = query.dumptojson("Test-env")
-        return json_payload
     else:
-        print("No mlmd file submitted")
+        print("No mlmd file submitted.")
         json_payload=""
-        return json_payload
+    return json_payload
 
 @app.get("/mlmd_pull_exec_by_id",response_class=HTMLResponse)
 async def mlmd_pull(request: Request):
     if os.path.exists("/cmf-server/data/mlmd"):
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
         json_payload = query.dumptojson("Test-env")
-        return json_payload
+
     else:
-        print("No mlmd file submitted")
+        print("No mlmd file submitted.")
         json_payload=""
-        return json_payload
+    return json_payload
 
 
 @app.get("/display_executions",response_class=HTMLResponse)
@@ -58,7 +57,7 @@ async def display_exec(request: Request):
         json_payload = query.dumptojson("Test-env")
         exec_val="true"
     else:
-        print("No mlmd file submitted")
+        print("No mlmd file submitted.")
         exec_val="false"
         execution_df=" "
     return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df,'exec_val':exec_val})
