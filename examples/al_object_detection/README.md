@@ -48,7 +48,7 @@ conda activate <venv_name>
 
 Initialize CMF. First edit the "<run_directory>/sample_env" file to customize
 your git, DVC and Neo4J configuration. Note that the Neo4J URI is typically
-"bolt://<ip>:7687" or "bolt://localhost:7687". Neo4J is not needed by CMF
+"bolt://IP_ADDRESS:7687" or "bolt://localhost:7687". Neo4J is not needed by CMF
 to capture the lineage, it is only needed to visualize the lineage.
 Then, source this file and run "<run_directory>/initialize.sh" to initialize
 DVC and git repos. This will print "NEXT STEPS". Ignore the recommendation
@@ -64,7 +64,7 @@ source sample_env
 ### Run the pipeline
 
 If not already active (for example, when not running in the same terminal
-window used to Configure the pipeline), activate Conda virtual environment
+window that was used to [Configure](#configure-the-pipeline) the pipeline), activate Conda virtual environment
 containing CMF, PyTorch, MMCV, and MI-AOD dependences installed as per
 [Installation](#installation)
 
@@ -73,7 +73,7 @@ conda activate <venv_name>
 ```
 
 If not already set (for example, when not running in the same terminal
-window used to Configure the pipeline), source "<run_directory>/sample_env"
+window that was used to [Configure](#configure-the-pipeline) the pipeline), source "<run_directory>/sample_env"
 file to customize your Neo4J configuration:
 
 ```bash
