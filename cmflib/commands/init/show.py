@@ -39,7 +39,7 @@ class CmdInitShow(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Show current cmf configuration."
+    HELP = "Show current CMF configuration."
 
     parser = subparsers.add_parser(
         "show",

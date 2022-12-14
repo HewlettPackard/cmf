@@ -27,7 +27,7 @@ from cmflib.cli.utils import create_cmf_config
 class CmdInitAmazonS3(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig"
-        if "self.args.cmf_server_ip" in globals():
+        if self.args.cmf_server_ip:
             create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
@@ -66,12 +66,12 @@ class CmdInitAmazonS3(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Initialise amazon S3 bucket"
+    HELP = "Initialises Amazon S3 as artifact repository."
 
     parser = subparsers.add_parser(
         "amazonS3",
         parents=[parent_parser],
-        description="This command is used to initialise amazon S3 bucket",
+        description="This command initialises Amazon S3 bucket as artifact repository for CMF.",
         help=HELP,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
@@ -81,7 +81,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--url",
         required=True,
-        help="Specify url to bucket",
+        help="Specify Amazon S3 bucket url.",
         metavar="<url>",
         default=argparse.SUPPRESS,
     )
@@ -89,7 +89,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--access-key-id",
         required=True,
-        help="Specify Access Key Id",
+        help="Specify Access Key Id.",
         metavar="<access_key_id>",
         default=argparse.SUPPRESS,
     )
@@ -97,7 +97,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--secret-key",
         required=True,
-        help="Specify Secret Key",
+        help="Specify Secret Key.",
         metavar="<secret_key>",
         default=argparse.SUPPRESS,
     )
@@ -105,14 +105,14 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Url to git repo",
+        help="Specify git repo url.",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
 
     parser.add_argument(
-        "--cmf-server-IP",
-        help="Specify Cmf Server IP",
+        "--cmf-server-ip",
+        help="Specify cmf-server IP.",
         metavar="<cmf_server_ip>",
         default="http://127.0.0.1:80",
     )

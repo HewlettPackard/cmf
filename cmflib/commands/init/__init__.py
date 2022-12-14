@@ -23,12 +23,12 @@ SUB_COMMANDS = [minioS3, amazonS3, local, sshremote, show]
 
 
 def add_parser(subparsers, parent_parser):
-    METADATA_HELP = "Command for initializing different repos for CMF"
+    METADATA_HELP = "Command for initializing different artifact repositories for CMF."
 
     metadata_parser = subparsers.add_parser(
         "init",
         parents=[parent_parser],
-        description="This command initializes different repos for cmf",
+        description="This command initializes different artifact repositories for CMF.",
         help=METADATA_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

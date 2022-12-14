@@ -28,7 +28,7 @@ from cmflib.cli.utils import create_cmf_config
 class CmdInitSSHRemote(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig"
-        if "self.args.cmf_server_ip" in globals():
+        if self.args.cmf_server_ip:
             create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
@@ -55,7 +55,7 @@ class CmdInitSSHRemote(CmdBase):
             [
                 "sh",
                 f"{abs_path}",
-                f"{self.args.url}",
+                f"{self.args.path}",
                 f"{self.args.user}",
                 f"{self.args.port}",
                 f"{self.args.password}",
@@ -68,29 +68,29 @@ class CmdInitSSHRemote(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Initialise ssh remote bucket"
+    HELP = "Initialises remote SSH directory as artifact repository."
 
     parser = subparsers.add_parser(
         "sshremote",
         parents=[parent_parser],
-        description="This is command is used to initialise ssh remote bucket",
+        description="This command initialises remote SSH directory as artifact repository for CMF.",
         help=HELP,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     required_arguments = parser.add_argument_group("required arguments")
 
     required_arguments.add_argument(
-        "--url",
+        "--path",
         required=True,
-        help="Specify url to bucket",
-        metavar="<url>",
+        help="Specify remote ssh directory path.",
+        metavar="<path>",
         default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
         "--user",
         required=True,
-        help="Specify user",
+        help="Specify username.",
         metavar="<user>",
         default=argparse.SUPPRESS,
     )
@@ -98,7 +98,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--port",
         required=True,
-        help="Specify Port",
+        help="Specify port.",
         metavar="<port>",
         default=argparse.SUPPRESS,
     )
@@ -114,14 +114,14 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Url to git repo",
+        help="Specify git repo url.",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
 
     parser.add_argument(
-        "--cmf-server-IP",
-        help="Specify Cmf Server IP",
+        "--cmf-server-ip",
+        help="Specify cmf-server IP.",
         metavar="<cmf_server_ip>",
         default="http://127.0.0.1:80",
     )
