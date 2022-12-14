@@ -22,6 +22,17 @@ These stages are linked through their dependences in [dvc.yaml](<./dvc.yaml>) fi
 
 ### Configure the pipeline
 
+Optionally, start Neo4J server if it is not already running to help visualize
+CMF recorded lineage. The steps below assume that Neo4J local directory is
+"~/.neo4j", but a different directory can be used depending on how Neo4J
+is configured: 
+
+```bash
+export NEO4J_HOME=~/.neo4j
+export NEO4J_CONF=~/.neo4j/neo4j.conf
+neo4j start
+```
+
 After installing the code (see [Installation](#installation)), copy the code
 from "<cmf_installation>/examples/al_object_detection/" to run directory.
 This is to avoid conflicts between git repos for master source code and for
@@ -101,16 +112,6 @@ during the dvc run, stage inputs and outputs are locked by DVC:
 python dvc_cmf_ingest.py
 ```
 
-Optionally, start Neo4J server if it is not already running to help visualize
-CMF recorded lineage. The steps below assume that Neo4J local directory is
-"~/.neo4j", but a different directory can be used depending on how Neo4J
-is configured: 
-
-```bash
-export NEO4J_HOME=~/.neo4j
-export NEO4J_CONF=~/.neo4j/neo4j.conf
-neo4j start
-```
 
 Visualize CMF lineage in Neo4J. TODO: Note that mAP or other metrics recorded by CMF
 during pipeline execution are shown as ouputs from [cycle_select.py](<./cycle_select.py>) stage:
