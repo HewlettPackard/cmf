@@ -17,7 +17,7 @@ setup(
         install_requires=["ml-metadata==1.3.0",
                           "dvc[ssh]", "dvc[s3]", "pandas", "retrying", "pyarrow", "neo4j", "scikit-learn", "tabulate", "click", "minio", "paramiko"], # add any additional packages that
         # needs to be installed along with your package. Eg: 'caer'
-
+        package_data={'':['*.sh']},
         keywords=['python', 'first package'],
         classifiers= [
             "Development Status :: 3 - Alpha",

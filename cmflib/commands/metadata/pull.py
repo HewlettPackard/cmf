@@ -33,8 +33,8 @@ class CmdMetadataPull(CmdBase):
         mlmd_data = ""
         status=0
         execution_flag = 0
-        if self.args.file_name:
-            directory_to_dump = self.args.file_name
+        if self.args.file_path:
+            directory_to_dump = self.args.file_path
         else:
             directory_to_dump = os.getcwd()
         output = server_interface.call_mlmd_pull(url)
@@ -51,7 +51,7 @@ class CmdMetadataPull(CmdBase):
                 if execution_flag == 0:
                     print("Given execution id not found in mlmd.")
                 else:
-                    try :
+                    try:
                         merger.pull_execution_to_mlmd(
                             output.content,
                             directory_to_dump + "/mlmd",
@@ -102,9 +102,9 @@ def add_parser(subparsers, parent_parser):
 
     required_arguments.add_argument(
         "-f",
-        "--file_name",
+        "--file_path",
         help="Specify location to pull mlmd file",
-        metavar="<file_name>",
+        metavar="<file_path>",
     )
 
     parser.add_argument(
