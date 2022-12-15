@@ -37,9 +37,11 @@ class CmdMetadataPull(CmdBase):
             directory_to_dump = self.args.file_path
         else:
             directory_to_dump = os.getcwd()
-        output = server_interface.call_mlmd_pull(url)
+        output = server_interface.call_mlmd_pull(url,self.args.pipeline_name)
         status = output.status_code
-        if output.content:
+        if output.content.decode()=='NULL':
+            return "Pipeline name " +self.args.pipeline_name+" doesn't exist"
+        elif output.content:
             if self.args.execution:
                 exec_id = self.args.execution
                 mlmd_data = json.loads(output.content)["Pipeline"]
@@ -76,7 +78,7 @@ class CmdMetadataPull(CmdBase):
             else :
                 return "ERROR: Unable to pull mlmd."
         else:
-            return 'No mlmd file not available on cmf-server.'
+            return 'mlmd file not available on cmf-server.'
 
 
 

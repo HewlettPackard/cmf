@@ -11,7 +11,7 @@ def call_mlmd_push(json_payload, url, exec_id):
     return response
 
 
-def call_mlmd_pull(url):
-    url_to_pass = f"{url}/mlmd_pull"
+def call_mlmd_pull(url,pipeline_name):
+    url_to_pass = f"{url}/mlmd_pull/{pipeline_name}"
     response = requests.get(url_to_pass)
     return response

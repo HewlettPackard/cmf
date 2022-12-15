@@ -27,11 +27,14 @@ async def mlmd_push(info: Request):
         'data':req_info
     }
 
-@app.get("/mlmd_pull",response_class=HTMLResponse)
-async def mlmd_pull(request: Request):
+@app.get("/mlmd_pull/{pipeline_name}",response_class=HTMLResponse)
+async def mlmd_pull(request: Request,pipeline_name: str):
     if os.path.exists("/cmf-server/data/mlmd"):
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
-        json_payload = query.dumptojson("Test-env")
+        if pipeline_name in query.get_pipeline_names():
+            json_payload = query.dumptojson(pipeline_name)
+        else:
+            json_payload='NULL'
     else:
         print("No mlmd file submitted.")
         json_payload=""
