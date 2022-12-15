@@ -49,7 +49,7 @@ class CmdMetadataPull(CmdBase):
                             execution_flag = 1
                             break
                 if execution_flag == 0:
-                    print("Given execution id not found in mlmd.")
+                    print("Given execution id is not available in mlmd.")
                 else:
                     try:
                         merger.pull_execution_to_mlmd(
@@ -68,25 +68,25 @@ class CmdMetadataPull(CmdBase):
                     return e
 
             if status == 200:
-                return "mlmd is successfully pulled."
+                return "SUCCESS: mlmd is successfully pulled."
             elif status == 404:
-                return "cmf server is not available."
+                return "ERROR: cmf-server is not available."
             elif status == 500:
-                return "Internal server error."
+                return "ERROR: Internal server error."
             else :
                 return "ERROR: Unable to pull mlmd."
         else:
-            return 'mlmd file not present.'
+            return 'No mlmd file not available on cmf-server.'
 
 
 
 def add_parser(subparsers, parent_parser):
-    PULL_HELP = "Pull is user-generated to fetch mlmd from server to local "
+    PULL_HELP = "Pulls mlmd from cmf-server to users's machine."
 
     parser = subparsers.add_parser(
         "pull",
         parents=[parent_parser],
-        description="This is pull command",
+        description="Pulls mlmd from cmf-server to users's machine.",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -96,21 +96,21 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
-        help="Specify Pipeline name",
+        help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     required_arguments.add_argument(
         "-f",
         "--file_path",
-        help="Specify location to pull mlmd file",
+        help="Specify location to pull mlmd file.",
         metavar="<file_path>",
     )
 
     parser.add_argument(
         "-e",
         "--execution",
-        help="Get execution from execution id",
+        help="Specify Execution id",
         metavar="<exec_name>",
     )
 

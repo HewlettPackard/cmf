@@ -32,7 +32,7 @@ class CmdMetadataPush(CmdBase):
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"{mlmd_file_name} doesn't exists in current directory"
+            return f"ERROR: {mlmd_file_name} doesn't exists in current directory"
         query = cmfquery.CmfQuery(mlmd_file_name)
         json_payload = query.dumptojson(self.args.pipeline_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
@@ -47,32 +47,33 @@ class CmdMetadataPush(CmdBase):
                 for j in i["executions"]:
                     if j["id"] == int(exec_id):
                         execution_flag = 1
-                        status_code = server_interface.call_mlmd_push(
+                        response = server_interface.call_mlmd_push(
                             json_payload, url, exec_id
                         )
                         break
             if execution_flag == 0:
-                print("Given execution not found in mlmd")
+                print("Given execution is not found in mlmd.")
         else:
             exec_id = None
-            status_code = server_interface.call_mlmd_push(json_payload, url, exec_id)
+            response = server_interface.call_mlmd_push(json_payload, url, exec_id)
+        status_code = response.status_code
         if status_code == 200:
             return "mlmd is successfully pushed."
         elif status_code == 404:
-            return "cmf server is not available."
+            return "ERROR: cmf-server is not available."
         elif status_code == 500:
-            return "Internal server error."
+            return "ERROR: Internal server error."
         else:
-            return "ERROR: Unable to pudh mlmd"
+            return "ERROR: Status C0de = {status_code}. Unable to push mlmd."
 
 
 def add_parser(subparsers, parent_parser):
-    PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipeline"
+    PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipelines."
 
     parser = subparsers.add_parser(
         "push",
         parents=[parent_parser],
-        description="This is push command",
+        description="Push user's mlmd to cmf-server.",
         help=PUSH_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -82,18 +83,18 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
-        help="Specify Pipeline name",
+        help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name", metavar="<file_name>"
+        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
     )
 
     parser.add_argument(
         "-e",
         "--execution",
-        help="Get execution from execution id",
+        help="Specify Execution id.",
         metavar="<exec_name>",
     )
 

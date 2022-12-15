@@ -16,9 +16,7 @@
 
 import os
 
-# from dvc.fs.dvc import DvcFileSystem
-from dvc.fs.dvc import _DVCFileSystem as DVCFileSystem
-
+from dvc.api import DVCFileSystem
 
 class local_artifacts:
     def download_artifacts(

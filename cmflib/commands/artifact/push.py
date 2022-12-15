@@ -1,23 +1,6 @@
-###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-###
-
 #!/usr/bin/env python3
 import argparse
 import os
-from minio import Minio
 import subprocess
 
 from cmflib.cli.command import CmdBase
@@ -25,18 +8,8 @@ from cmflib.cli.command import CmdBase
 
 class CmdArtifactPush(CmdBase):
     def run(self):
-        minio_constructor=Minio(endpoint='127.0.0.1:9000', access_key='minioadmin', secret_key='minioadmin', secure=False)
-        try:
-            if minio_constructor.bucket_exists('dvc-art'):
-                result = subprocess.run(
-                    ["dvc", "push"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
-                )
-                return result.stdout
-        except Exception as e:
-            return 'Minio server is not active.'
-
-
-
+        result = subprocess.run(["dvc", "push"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+        return result.stdout
 
 
 def add_parser(subparsers, parent_parser):
