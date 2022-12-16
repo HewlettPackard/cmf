@@ -28,7 +28,7 @@ def add_parser(subparsers, parent_parser):
     metadata_parser = subparsers.add_parser(
         "metadata",
         parents=[parent_parser],
-        description="Command pulls or pushs metadata on to cmf-server.",
+        description="Command pulls or pushes metadata on to cmf-server.",
         help=METADATA_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

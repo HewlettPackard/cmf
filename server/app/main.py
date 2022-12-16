@@ -1,3 +1,5 @@
+#cmf-server api's
+
 from fastapi import FastAPI,Request
 from server.app.mlmd import merge_mlmd
 from cmflib import cmfquery
@@ -16,7 +18,7 @@ templates=Jinja2Templates(directory=str(BASE_PATH/'template'))
 def read_root():
     return {"Use this api for sending json payload":"http://127.0.0.1/mlmd_push/"}
 
-
+#api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     req_info=await info.json()
@@ -27,11 +29,13 @@ async def mlmd_push(info: Request):
         'data':req_info
     }
 
+#api to get mlmd file from cmf-server
 @app.get("/mlmd_pull/{pipeline_name}",response_class=HTMLResponse)
 async def mlmd_pull(request: Request,pipeline_name: str):
+    # checks if mlmd file exists on server
     if os.path.exists("/cmf-server/data/mlmd"):
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
-        if pipeline_name in query.get_pipeline_names():
+        if pipeline_name in query.get_pipeline_names():     #checks if pipeline name is available in mlmd
             json_payload = query.dumptojson(pipeline_name)
         else:
             json_payload='NULL'
@@ -40,20 +44,22 @@ async def mlmd_pull(request: Request,pipeline_name: str):
         json_payload=""
     return json_payload
 
-@app.get("/mlmd_pull_exec_by_id",response_class=HTMLResponse)
-async def mlmd_pull(request: Request):
-    if os.path.exists("/cmf-server/data/mlmd"):
-        query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
-        json_payload = query.dumptojson("Test-env")
+# @app.get("/mlmd_pull_exec_by_id",response_class=HTMLResponse)
+# async def mlmd_pull(request: Request):
+#     # checking if mlmd file exists on server
+#     if os.path.exists("/cmf-server/data/mlmd"):
+#         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
+#         json_payload = query.dumptojson("Test-env")
+#
+#     else:
+#         print("No mlmd file submitted.")
+#         json_payload=""
+#     return json_payload
 
-    else:
-        print("No mlmd file submitted.")
-        json_payload=""
-    return json_payload
-
-
+#api to display executions available in mlmd
 @app.get("/display_executions",response_class=HTMLResponse)
 async def display_exec(request: Request):
+    #checks if mlmd file exists on server
     if os.path.exists("/cmf-server/data/mlmd"):
         execution_df=index("/cmf-server/data/mlmd")
         query = cmfquery.CmfQuery("/cmf-server/data/mlmd")
@@ -65,8 +71,10 @@ async def display_exec(request: Request):
         execution_df=" "
     return templates.TemplateResponse('execution.html',{'request':request,'exec_df':execution_df,'exec_val':exec_val})
 
+#api to display artifacts available in mlmd
 @app.get("/display_artifacts",response_class=HTMLResponse)
 async def display_artifact(request: Request):
+    # checks if mlmd file exists on server
     if os.path.exists("/cmf-server/data/mlmd"):
         artifact_df=artifact("/cmf-server/data/mlmd")
         artifact_val="true"

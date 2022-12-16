@@ -106,7 +106,7 @@ cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-
 ### 5.    cmf init sshremote
 <pre>
 Usage: cmf init sshremote [-h] --path [path] --user [user] --port [port]
-                          --password  --git-remote-url [git_remote_url]
+                          --password [password]  --git-remote-url [git_remote_url]
 </pre>
 <font size=5> This command is used to initialise ssh remote bucket.</font>
  
