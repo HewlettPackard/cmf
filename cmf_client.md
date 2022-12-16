@@ -187,7 +187,7 @@ Usage: cmf metadata [-h] {pull,push}
 ***
 ###  1.   cmf metadata pull
 <pre>
-Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_path]  -e [exec_name]
+Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_path]  -e [exec_id]
 </pre>
 <font size=5> This command pulls a metadata file from cmf-server to local.</font>
 
@@ -207,13 +207,13 @@ Example: cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
 
 <pre>
 -h, --help                                  show this help message and exit
--e [exec_id], --execution [exec_id]         Get execution from execution id
+-e [exec_id], --execution [exec_name]         Specify execution id
 
 </pre>
 ***
 ### 2.    cmf metadata push
 <pre>
-Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
+Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 </pre>
 <font size=5> This command pushes the metadata file from local to cmf-server. </font>
 
@@ -232,7 +232,7 @@ Example: cmf metadata push -p 'Test-env' -f "/home/user/example/name_of_file"
 <pre>
   -h, --help                                    show this help message and exit
   -f [file_name], --file_name [file_name]       Specify mlmd file name
-  -e [exec_name], --execution [exec_name]       Get execution from execution id
+  -e [exec_name], --execution [exec_name]       Specify execution id
 </pre>
 
 
