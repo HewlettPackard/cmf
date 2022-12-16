@@ -2,9 +2,9 @@
 ## <font size=6>**cmf init**</font> 
 
 <pre>
-usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
+Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
 </pre>
-<font size=5> Initializes different repos for CMF such as local directories, Minio S3 bucket, Amazon S3 bucket, SSH Remote directories. Additionally, User can provide cmf server ip. </font>
+<font size=5> Initializes different repos for CMF such as local directories, Minio S3 bucket, Amazon S3 bucket, SSH Remote directories. Additionally, User can provide cmf-server IP. </font>
 
 ***
 ### 1.    cmf init show
@@ -31,8 +31,8 @@ cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --a
 <font size=5> Required Arguments</font>
 
 <pre>
-  --url [url]                           Specify url to bucket
-  --endpoint-url [endpoint_url]         Specify endpoint url which is used to access minio locally/remotely running UI
+  --url [url]                           Specify the url to bucket
+  --endpoint-url [endpoint_url]         Specify the endpoint url which is used to access minio locally/remotely running UI
   --access-key-id [access_key_id]       Specify Access Key Id
   --secret-key [secret_key]             Specify Secret Key
   --git-remote-url [git_remote_url]     Url to git repo
@@ -63,7 +63,7 @@ cmf init local --path /home/user/local-storage --git-remote-url https://github.c
 <font size=5> Required Arguments</font>
 
 <pre>
-  --path [path]                           Specify url to bucket.
+  --path [path]                         Specify the url to bucket.
   --git-remote-url [git_remote_url]     Url to git repo
 </pre>
 
@@ -76,8 +76,8 @@ cmf init local --path /home/user/local-storage --git-remote-url https://github.c
 ***
 ### 4.    cmf init amazonS3
 <pre>
-usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
-                         --secret-key [secret_key] --git-remote-url[git_remote_url]
+Usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
+                         --secret-key [secret_key] --git-remote-url [git_remote_url]
 </pre>
 <font size=5> This command is used to initialise Amazon S3 bucket. </font>
  
@@ -88,7 +88,7 @@ cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-
 
 <font size=5> Required Arguments</font>
 <pre>
-  --url [url]                           Specify url to bucket
+  --url [url]                           Specify the url to the bucket
   --access-key-id [access_key_id]       Specify Access Key Id
   --secret-key [secret_key]             Specify Secret Key
   --git-remote-url [git_remote_url]     Url to git repo
@@ -105,8 +105,8 @@ cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-
 ***
 ### 5.    cmf init sshremote
 <pre>
-usage: cmf init sshremote [-h] --path [path] --user [user] --port [port]
-                          --password  --git-remote-url[git_remote_url]
+Usage: cmf init sshremote [-h] --path [path] --user [user] --port [port]
+                          --password  --git-remote-url [git_remote_url]
 </pre>
 <font size=5> This command is used to initialise ssh remote bucket.</font>
  
@@ -119,10 +119,10 @@ cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --p
 <font size=5> Required Arguments</font>
 
 <pre>
-  --path [path]                           Specify url to bucket
+  --path [path]                           Specify to url to the bucket
   --user [user]                           Specify user
   --port [port]                           Specify Port
-  --password [password]                   Specify password. This will be saved only on local
+  --password [password]                   Specify a password. This will be saved only on local
   --git-remote-url [git_remote_url]       Url to git repo
 </pre>
 
@@ -138,13 +138,13 @@ cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --p
 <pre>
 Usage: cmf artifact [-h] {pull,push}
 </pre>
-<font size=5> This command pull and push artifact to various repos.</font>
+<font size=5> This command pulls and push artifact to various repos.</font>
 ***
 ### 1.    cmf artifact pull
 <pre>
 Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name]
 </pre>
-<font size=5> This command pulls artifacts from different repos to local</font>
+<font size=5> This command pulls artifacts from different repos to local.</font>
 <pre>
 Example: cmf artifact pull -p 'Test-env'  
 </pre>
@@ -168,7 +168,7 @@ Example: cmf artifact pull -p 'Test-env'
 <pre>
 Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 </pre>
-<font size=5> This command push artifacts from local to various buckets. </font>
+<font size=5> This command pushes artifacts from local to various buckets. </font>
 <pre>
 Example: cmf artifact push  
 </pre>
@@ -180,7 +180,7 @@ Example: cmf artifact push
 Usage: cmf metadata [-h] {pull,push}
 </pre>
 
-<font size=5> This command pull and push metadata file to and from cmf server respectively.</font>
+<font size=5> This command pulls and push the metadata file to and from cmf-server respectively.</font>
 
 
 
@@ -189,7 +189,7 @@ Usage: cmf metadata [-h] {pull,push}
 <pre>
 Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_path]  -e [exec_name]
 </pre>
-<font size=5> This command pull metadata file from cmf server to local</font>
+<font size=5> This command pulls a metadata file from cmf-server to local.</font>
 
 <pre>
 Example: cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
@@ -199,7 +199,7 @@ Example: cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
 
 <pre>
   -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name
-  -f [file_path], --file_path [file_path]                 Specify location to pull mlmd file
+  -f [file_path], --file_path [file_path]                 Specify a location to pull mlmd file
 
 </pre>
 
@@ -215,7 +215,7 @@ Example: cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
 <pre>
 Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_name]
 </pre>
-<font size=5> This command push metadata file from local to cmf server. </font>
+<font size=5> This command pushes the metadata file from local to cmf-server. </font>
 
 <pre>
 Example: cmf metadata push -p 'Test-env' -f "/home/user/example/name_of_file"
