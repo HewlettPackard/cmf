@@ -2,7 +2,7 @@
 data_root = '/home/royann/mod-dataset/VOCdevkit/'
 
 _base_ = [
-    './_base_/retinanet_r50_fpn.py', './_base_/voc0712.py',
+    './_base_/retinanet_r50_fpn.py', './_base_/gray.py',
     './_base_/default_runtime.py'
 ]
 # We use PASCAL VOC 2007+2012 trainval sets to train, so we also use them to select the informative samples.
