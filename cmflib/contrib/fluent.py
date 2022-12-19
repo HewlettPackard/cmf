@@ -1,4 +1,5 @@
 import abc
+import io
 import json
 import os
 from pathlib import Path
@@ -43,12 +44,12 @@ Methods can be categorized into three buckets:
   manager to automatically end steps.
 - Logging methods (`log_dataset`, `log_dataset_with_version`, `log_model`, `log_execution_metrics`, `log_metric` and 
   `log_validation_output`). These methods log input/output artifacts. When these methods accept artifact URL, users
-  can provide file system object instead (e.g., the one returned by `builtins.open` function). In this case,
-  the association (input/output) is identified automatically, e.g.:
+  can provide either a string or a Path object:
   ```python
-  with open(_workspace / 'iris.pkl', 'rb') as stream:
+  ds_path = _workspace / 'iris.pkl'
+  with open(ds_path, 'rb') as stream:
       dataset: t.Dict = pickle.load(stream)
-      cmf.log_dataset(stream)
+  cmf.log_dataset(ds_path, 'input')
   ```
   All these methods will create a new step of one does not present.
 """
@@ -57,6 +58,7 @@ logger = logging.getLogger('cmf.fluent')
 
 __all__ = [
     'Step',
+    'set_cmf_parameters', 'get_work_directory',
     'start_step', 'end_step',
     'log_dataset', 'log_dataset_with_version',
     'log_model',
@@ -96,7 +98,7 @@ _cmf: t.Optional[Cmf] = None
 _cmf_params: t.Optional[t.Dict] = None
 """CMF initialization parameters (such as filename and graph) excluding pipeline parameters."""
 
-_URL = t.Union[str, Path, t.IO]
+_URL = t.Union[str, Path]
 _Event = t.Optional[str]
 _Properties = t.Optional[t.Dict]
 
@@ -110,6 +112,12 @@ def set_cmf_parameters(filename: t.Optional[str] = None, graph: t.Optional[bool]
         _cmf_params['filename'] = filename
     if graph is not None:
         _cmf_params['graph'] = graph
+
+
+def get_work_directory() -> Path:
+    """Return artifact path."""
+    db_file_path = (_cmf_params or {}).get('filename', None)
+    return Path(db_file_path).parent if db_file_path else Path.cwd()
 
 
 def start_step(pipeline: t.Optional[str] = None, step: t.Optional[str] = None, properties: t.Dict = None) -> Step:
@@ -127,8 +135,10 @@ def start_step(pipeline: t.Optional[str] = None, step: t.Optional[str] = None, p
         logger.warning("[start_step] ending active CMF step")
         end_step()
 
+    init_method = os.environ.get('CMF_FLUENT_INIT_METHOD', None)
+
     params = DefaultParams()
-    if os.environ.get('CMF_FLUENT_INIT_METHOD', None) == 'env':
+    if init_method == 'env':
         params = EnvParams(params)
     params = UserParams(params, pipeline, step, properties)
 
@@ -169,7 +179,7 @@ def log_model(path: _URL, event: _Event = None, model_framework: str = "Default"
               model_name: str = "Default", properties: _Properties = None) -> None:
     """Log model artifact."""
     _maybe_initialize_step()
-    url, event = _check_artifact_io(path, event)
+    path, event = _check_artifact_io(path, event)
     _ = _cmf.log_model(path, event, model_framework, model_type, model_name, properties)
 
 
@@ -201,11 +211,26 @@ def _maybe_initialize_step() -> None:
 def _check_artifact_io(url: _URL, event: t.Optional[str] = None) -> t.Tuple[str, str]:
     """Convert artifact `url` to string and maybe identify its direction (input/output).
     """
-    if isinstance(url, t.IO):
-        event = 'input' if 'r' in url.mode else 'output'
-        url = Path(url.name).absolute()
+    if isinstance(url, (io.BufferedWriter, io.BufferedReader)):
+        raise RuntimeError(
+            f"This happens to be not a good idea. This file is still open at this point in time, and because of "
+            "buffering, parts of data can still be in memory. It's better to write and close the file, and then add it "
+            "to CMF.")
+        # _path = Path(url.name).absolute()
+        # _event = 'input' if 'r' in url.mode else 'output'
+        # if event and event != _event:
+        #     raise ValueError(f"Inconsistent parameters: url(value={url}, type={type(url)}, path={_path}) while "
+        #                      f"used-provided event is `{event}`.")
+        # url, event = _path, _event
+    else:
+        if not event:
+            raise ValueError(f"When url is not a file object, event must be specified.")
     if isinstance(url, Path):
         url = url.absolute().as_posix()
+    if not isinstance(url, str):
+        raise ValueError(f"Unrecognized URL: url={url}, type={type(url)}.")
+
+    assert isinstance(url, (str, Path)), f"BUG: url={url}, type={type(url)}, event={event}"
     return url, event
 
 
@@ -239,7 +264,10 @@ class Params(abc.ABC):
 
 
 class DefaultParams(Params):
-    """Default parameter provider."""
+    """Default parameter provider.
+
+    TODO: This does not work (probably, pipeline and step should not have the same names?)
+    """
 
     def __init__(self) -> None:
         super().__init__()
@@ -258,7 +286,23 @@ class DefaultParams(Params):
 
 
 class EnvParams(Params):
-    """Parameter provider that retrieves information from environment."""
+    """Parameter provider that retrieves information from environment.
+
+    To enable this, set the following environment variable `CMF_FLUENT_INIT_METHOD = 'env'`, e.g:
+    ```python
+    step_env = {
+        'CMF_FLUENT_INIT_METHOD': 'env',
+        'CMF_FLUENT_CMF_PARAMS': json.dumps({'filename': 'mlmd', 'graph': False}),
+        'CMF_FLUENT_PIPELINE': 'iris',
+        'CMF_FLUENT_STEP': 'fetch'
+    }
+    ```
+    The following environment variables are supported:
+    - `CMF_FLUENT_CMF_PARAMS`: JSON-string dictionary containing `filename` and `graph` keys.
+    - `CMF_FLUENT_PIPELINE`: string defining a pipeline name.
+    - `CMF_FLUENT_STEP`: string defining a step name.
+    - `CMF_FLUENT_STEP_PROPERTIES`: JSON-string dictionary containing execution properties.
+    """
 
     def __init__(self, parent: t.Optional[Params] = None) -> None:
         super().__init__(parent or DefaultParams())
