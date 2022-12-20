@@ -4,6 +4,9 @@ import ray
 from pipeline import (fetch as _fetch, preprocess as _preprocess, train as _train, test as _test)
 
 
+__all__ = ['ray']
+
+
 # Make pipeline step functions ray remotes.
 fetch = ray.remote(_fetch)
 preprocess = ray.remote(_preprocess)
@@ -37,7 +40,3 @@ def pipeline() -> None:
     # PS: The code can be refactored. If steps return variables, and other steps accept these variables as inputs, it's
     # possible to define a graph of steps, and just ask to run the last step. Ray will take care about distributing
     # steps across available ray workers, possibly, parallelizing computations.
-
-
-if __name__ == '__main__':
-    pipeline()

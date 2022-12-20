@@ -1,6 +1,8 @@
 import cmflib.contrib.fluent as cmf
 from pipeline import (fetch, preprocess, train, test)
 
+__all__ = ['pipeline']
+
 
 def pipeline():
     """Run IRIS ML pipeline."""
@@ -9,7 +11,3 @@ def pipeline():
     for step in (fetch, preprocess, train, test):
         with cmf.start_step(pipeline='iris', step=step.__name__):
             step()
-
-
-if __name__ == '__main__':
-    pipeline()
