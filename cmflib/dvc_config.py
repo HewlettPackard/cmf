@@ -38,6 +38,7 @@ class dvc_config:
                     config_dict["remote.minio.endpointurl"],
                     config_dict["remote.minio.access_key_id"],
                     config_dict["remote.minio.secret_access_key"],
+                    config_dict["remote.minio.url"],
                 )
             elif config_dict["core.remote"] == "local-storage":
                 return (

@@ -14,8 +14,8 @@ setup(
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
-        install_requires=["ml-metadata==1.3.0",
-                          "dvc[ssh]", "dvc[s3]", "pandas", "retrying", "pyarrow", "neo4j", "scikit-learn", "tabulate", "click", "minio", "paramiko"], # add any additional packages that
+        install_requires=["ml-metadata==1.11.0",
+                          "dvc[ssh]==2.27.0", "dvc[s3]==2.27.0", "pandas", "retrying", "pyarrow", "neo4j", "scikit-learn", "tabulate", "click", "minio", "paramiko"], # add any additional packages that
         # needs to be installed along with your package. Eg: 'caer'
         package_data={'':['*.sh']},
         keywords=['python', 'first package'],

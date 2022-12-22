@@ -22,10 +22,12 @@ import shlex
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
+from cmflib.cli.utils import read_cmf_config, find_root
 
 
 class CmdInitShow(CmdBase):
     def run(self):
+        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = subprocess.run(
             ["dvc", "config", "-l"],
             stdout=subprocess.PIPE,
@@ -33,9 +35,14 @@ class CmdInitShow(CmdBase):
             text=True,
         )
         if len(result.stdout) == 0:
-            return "'cmf' is not configured.\nExecute 'cmf init' command."
+            return msg
         else:
-            return result.stdout
+            cmf_config_root = find_root(".cmfconfig")
+            if not os.path.exists(cmf_config_root):
+                return cmf_config_root
+            config_file_path = os.path.join(cmf_config_root, ".cmfconfig")
+            server_ip = read_cmf_config(config_file_path)
+            return f"{result.stdout}{server_ip}"
 
 
 def add_parser(subparsers, parent_parser):

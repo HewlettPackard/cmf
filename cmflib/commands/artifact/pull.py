@@ -38,7 +38,7 @@ class CmdArtifactPull(CmdBase):
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"{mlmd_file_name} doesn't exists in current directory"
+            return f"\033[1;31mERROR:\033[1;m {mlmd_file_name} doesn't exists in current directory."
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
 
@@ -76,8 +76,8 @@ class CmdArtifactPull(CmdBase):
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
         # print(names_urls)
-        dvc_config_op = dvc_config.get_dvc_config()
-        if dvc_config_op[0] == "minio":
+        dvc_config_op = dvc_config.get_dvc_config()  # pulling dvc config
+        if dvc_config_op[0] == "minio":  # if core.remote = minio
             minio_class_obj = minio_artifacts.minio_artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -92,7 +92,7 @@ class CmdArtifactPull(CmdBase):
                     path_name,
                 )
                 print(stmt)
-        elif dvc_config_op[0] == "local-storage":
+        elif dvc_config_op[0] == "local-storage":  # if core.remote = local-storage
             local_class_obj = local_artifacts.local_artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -105,7 +105,7 @@ class CmdArtifactPull(CmdBase):
                     dvc_config_op, current_directory, current_dvc_loc, name_url[0]
                 )
                 print(stmt)
-        elif dvc_config_op[0] == "ssh-storage":
+        elif dvc_config_op[0] == "ssh-storage":  # if core.remote = ssh-storage
             sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -121,7 +121,7 @@ class CmdArtifactPull(CmdBase):
                     dvc_config_op, host, current_directory, current_loc, name_url[0]
                 )
                 print(stmt)
-        elif dvc_config_op[0] == "amazons3":
+        elif dvc_config_op[0] == "amazons3":  # if core.remote = amazons3
             amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -158,12 +158,12 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
-        help="Specify Pipeline name",
+        help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name", metavar="<file_name>"
+        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPull)

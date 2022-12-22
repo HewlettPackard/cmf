@@ -17,7 +17,6 @@
 import os
 from minio import Minio
 from minio.error import S3Error
-from .dvc_config import dvc_config
 
 
 class minio_artifacts:
@@ -29,9 +28,11 @@ class minio_artifacts:
         object_name: str,
         file_path: str,
     ):
-        endpoint = dvc_config_op[1].split("http://")[1]
-        access_key = dvc_config_op[2]
-        secret_key = dvc_config_op[3]
+        endpoint = dvc_config_op[1].split("http://")[
+            1
+        ]  # pulling endpoint from dvc config output
+        access_key = dvc_config_op[2]  # pulling access_key from dvc config output
+        secret_key = dvc_config_op[3]  # pulling secret_key from dvc config output
         try:
             client = Minio(
                 endpoint, access_key=access_key, secret_key=secret_key, secure=False

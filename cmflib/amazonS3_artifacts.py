@@ -29,8 +29,8 @@ class amazonS3_artifacts:
         object_name: str,
         download_loc: str,
     ):
-        access_key = dvc_config_op[2]
-        secret_key = dvc_config_op[3]
+        access_key = dvc_config_op[2]  # pulling access_key from dvc config output
+        secret_key = dvc_config_op[3]  # pulling secret_key from dvc config output
         try:
             client = Minio(
                 "s3.amazonaws.com", access_key=access_key, secret_key=secret_key

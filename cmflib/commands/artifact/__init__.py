@@ -21,7 +21,7 @@ from cmflib.cli.utils import *
 
 SUB_COMMANDS = [pull, push]
 
-
+# This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
     ARTIFACT_HELP = "Command for artifact pull/push."
 

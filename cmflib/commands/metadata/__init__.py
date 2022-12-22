@@ -21,7 +21,7 @@ from cmflib.cli.utils import *
 
 SUB_COMMANDS = [push, pull]
 
-
+# This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
     METADATA_HELP = "Command for metadata pull/push."
 

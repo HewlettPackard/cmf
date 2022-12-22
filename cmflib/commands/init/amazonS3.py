@@ -34,22 +34,27 @@ class CmdInitAmazonS3(CmdBase):
                 create_cmf_config(cmf_config, "http://127.0.0.1:80")
         abs_path = None
         file = "git_initialize.sh"
+        # find absolute path for git_initialize.sh
         for root, dirs, files in os.walk(os.path.dirname(__file__)):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
+        # executing git_initialize.sh
         result = subprocess.run(
             ["sh", f"{abs_path}", f"{self.args.git_remote_url}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
         )
-        print(result.stdout)
+        if result.stdout:
+            print(result.stdout)
         file = "dvc_script_amazonS3.sh"
+        # find absolute path for dvc_script_amazonS3.sh
         for root, dirs, files in os.walk(os.path.dirname(__file__)):
             for name in files:
                 if name == file:
                     abs_path = os.path.abspath(os.path.join(root, name))
+        # executing dvc_script_amazonS3.sh
         result = subprocess.run(
             [
                 "sh",

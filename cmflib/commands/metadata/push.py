@@ -20,14 +20,15 @@ import os
 import json
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
+from cmflib.cli.utils import read_cmf_config, find_root
 from cmflib.request_mlmdserver import server_interface
 
-#This class pushes mlmd file to cmf-server
+# This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
     def run(self):
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        if self.args.file_name:             #checks if mlmd filepath is given
+        if self.args.file_name:  # checks if mlmd filepath is given
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         # checks if mlmd file is present in current directory or given directory
@@ -36,19 +37,28 @@ class CmdMetadataPush(CmdBase):
         query = cmfquery.CmfQuery(mlmd_file_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         execution_flag = 0
-        status_code=0
-        url = "http://127.0.0.1:80"
+        status_code = 0
         # Get url from config
-        if self.args.pipeline_name in query.get_pipeline_names():           #Checks if pipeline name exists
-            json_payload = query.dumptojson(self.args.pipeline_name)        #converts mlmd file to json format
-            if self.args.execution:                                         #checks if execution_id given by user
+        config_file = ".cmfconfig"
+        url = "http://127.0.0.1:80"
+        if os.path.exists(find_root(config_file)):
+            url = read_cmf_config(os.path.join(find_root(config_file), config_file)).split("=")[1]
+        if (
+            self.args.pipeline_name in query.get_pipeline_names()
+        ):  # Checks if pipeline name exists
+            json_payload = query.dumptojson(
+                self.args.pipeline_name
+            )  # converts mlmd file to json format
+            if self.args.execution:  # checks if execution_id given by user
                 exec_id = self.args.execution
                 mlmd_data = json.loads(json_payload)["Pipeline"]
-                for i in mlmd_data[0]["stages"]:                            #checks if given execution_id present in mlmd
+                for i in mlmd_data[0][
+                    "stages"
+                ]:  # checks if given execution_id present in mlmd
                     for j in i["executions"]:
                         if j["id"] == int(exec_id):
                             execution_flag = 1
-                            #calling mlmd_push api to push mlmd file to cmf-server
+                            # calling mlmd_push api to push mlmd file to cmf-server
                             response = server_interface.call_mlmd_push(
                                 json_payload, url, exec_id
                             )
@@ -68,7 +78,8 @@ class CmdMetadataPush(CmdBase):
             else:
                 return "ERROR: Status Code = {status_code}. Unable to push mlmd."
         else:
-            return "Pipeline name "+self.args.pipeline_name+" doesn't exists."
+            return "Pipeline name " + self.args.pipeline_name + " doesn't exists."
+
 
 def add_parser(subparsers, parent_parser):
     PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipelines."

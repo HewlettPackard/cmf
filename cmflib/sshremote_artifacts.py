@@ -28,9 +28,9 @@ class sshremote_artifacts:
         local_path: str,
     ):
         output = ""
-        remote_repo = dvc_config_op[1]
-        user = dvc_config_op[2]
-        password = dvc_config_op[4]
+        remote_repo = dvc_config_op[1]  # pulling remote repo from dvc config output
+        user = dvc_config_op[2]  # pulling user from dvc config output
+        password = dvc_config_op[4]  # pulling password from dvc config output
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(
@@ -42,7 +42,9 @@ class sshremote_artifacts:
             temp.pop()
             dir_path = "/".join(temp)
             dir_to_create = os.path.join(current_directory, dir_path)
-            os.makedirs(dir_to_create, mode=0o777, exist_ok=True)
+            os.makedirs(
+                dir_to_create, mode=0o777, exist_ok=True
+            )  # creates subfolders needed as per artifacts folder structure
             local_file_path = os.path.join(current_directory, local_path)
             output = sftp.put(remote_file_path, local_file_path)
             sftp.close()
