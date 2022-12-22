@@ -8,13 +8,13 @@
 <font size=6>**Table of contents**</font>
 - API Reference
 - Steps to activate cmf-server
-***
-1. <font size=6>**API Reference**</font>  
+
+## 1. **API Reference**
 <font size=5>cmf-server APIs are organized around [FastAPI](https://fastapi.tiangolo.com/).
 They accept and return JSON-encoded request bodies and responses and return standard HTTP response codes.</font>
-1. <font size=5>**List of APIs**</font>
 
-    
+1. <font size=5>**List of APIs**</font>
+   
 | Method | URL                          | Description                                  | 
 |--------|------------------------------|----------------------------------------------|
 | `Post` | `/mlmd_push`                 | Used to push Json Encoded data to cmf-server |
@@ -24,19 +24,19 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 2. <font size=5>**HTTP Response Status codes**</font>
 
-
 | Code  | Title                     | Description                                                  |
 |-------| ------------------------- |--------------------------------------------------------------|
 | `200` | `OK`                      | mlmd is successfully pushed (e.g. when using `GET`, `POST`). |
-| `400` | `Bad request`             | When the cmf-server is not available.                        |
+| `400` | `Bad request`             | When the cmf[env](cmf%2Fenv)-server is not available.                        |
 | `500` | `Internal server error`   | When an internal error has happened                          |
 
-***
-2. <font size=5>**Steps to activate cmf-server**</font>
+
+## 2.  **Steps to activate cmf-server**
 
 
    <font size=5>cmf-server has been containerized with docker. Pre-requisite [Docker]()
-1. Install [cmflib](https://github.com/abhinavchobey/cmf/blob/federated_cmf/README.md) on your system.
+
+1.  Install [cmflib](https://github.com/abhinavchobey/cmf/blob/federated_cmf/README.md) on your system.
 
 
 2. Go to 'server' directory. 
