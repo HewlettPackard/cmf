@@ -4,26 +4,28 @@
 <pre>
 Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
 </pre>
-<font size=5> Initializes different repos for CMF such as local directories, Minio S3 bucket, Amazon S3 bucket, remote SSH directories. Additionally, User can provide cmf-server IP. </font>
+<font size=5> Initializes different repos for CMF such as local directories, Minio S3 bucket, Amazon S3 bucket, SSH Remote directories. Additionally, User can provide cmf-server IP. </font>
 
+***
 ### 1.    cmf init show
 <pre>
 Usage: cmf init show
 </pre>
 <font size=5> Shows current cmf configuration.</font>
 
+***
 
 ### 2. cmf init minioS3 
 <pre>
 Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
-                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]
+                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
 </pre>
 <font size=5> This command configures Minio S3 bucket as CMF artifact repository.</font>
 
 <pre>
 
 Example:
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
 </pre>
 
 <font size=5> Required Arguments</font>
@@ -43,9 +45,13 @@ cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --a
   --cmf-server-ip [cmf_server_ip]   Specify cmf-server IP. (default: http://127.0.0.1:80)
 </pre>
 
+
+
+
+***
 ### 3.    cmf init local
 <pre>
-Usage: cmf init local [-h] --path [path] --git-remote-url [git_remote_url]
+Usage: cmf init local [-h] --path [path] --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
 </pre>
 <font size=5> This command initialises local directory as CMF repository. </font>
 
@@ -67,11 +73,11 @@ cmf init local --path /home/user/local-storage --git-remote-url https://github.c
   -h, --help                        show this help message and exit
   --cmf-server-ip [cmf_server_ip]   Specify cmf-server IP. (default: http://127.0.0.1:80)
 </pre>
-
+***
 ### 4.    cmf init amazonS3
 <pre>
 Usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
-                         --secret-key [secret_key] --git-remote-url [git_remote_url]
+                         --secret-key [secret_key] --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
 </pre>
 <font size=5> This command initialises Amazon S3 bucket as CMF artifact repository. </font>
  
@@ -96,11 +102,11 @@ cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-
 
 </pre>
 
-
+***
 ### 5.    cmf init sshremote
 <pre>
 Usage: cmf init sshremote [-h] --path [path] --user [user] --port [port]
-                          --password [password]  --git-remote-url [git_remote_url]
+                          --password [password]  --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
 </pre>
 <font size=5> This command initialises remote ssh directory as artifact repository.</font>
  
@@ -157,7 +163,7 @@ Example: cmf artifact pull -p 'Test-env'
   -h, --help                                  show this help message and exit
   -f [file_name],--file-name [file_name]      Specify mlmd file name.
 </pre>
-
+***
 ### 2.    cmf artifact push
 <pre>
 Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
@@ -176,6 +182,8 @@ Usage: cmf metadata [-h] {pull,push}
 
 <font size=5> This command pushes and pulls the metadata file to and from the cmf-server, respectively.</font>
 
+
+***
 ###  1.   cmf metadata pull
 <pre>
 Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_path]  -e [exec_id]
@@ -201,7 +209,7 @@ Example: cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
 -e [exec_id], --execution [exec_name]         Specify execution id
 
 </pre>
-
+***
 ### 2.    cmf metadata push
 <pre>
 Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
@@ -235,6 +243,7 @@ Example: cmf metadata push -p 'Test-env' -f "/home/user/example/name_of_file"
 
 
             
+
 
 
 
