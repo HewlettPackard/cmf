@@ -6,14 +6,13 @@ It is compatible with S3, easy to deploy, manage locally, and upscale if needed.
 
 In this article, we will deploy a minio server.
 
-1. Copy contents of the `example-get-started` directory to a separate directory outside this repository.
+1. Copy contents of the `example-get-started` directory to a separate directory outside the cmf repository.
 
 
-2. First check whether the current directory is already initialized.
+2. Check whether cmf is initialized.
 <pre>cmf init show</pre>
 
-
-You should see something like this on your command line.
+In case cmf is not initialized, the following message will appear on the screen.
 
 <pre>
 'cmf' is not configured.
