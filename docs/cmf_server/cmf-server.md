@@ -1,13 +1,6 @@
 # cmf-server
-***
-<font size=6>**Overview**</font>
 
- <font size=5>__cmf-server__</font> <font size=5> is a key interface for the user to explore and track their ML training runs. It allows users to store and retrieve metadata files on and from the server, respectively, with the help of different APIs.
- It enables a UI to track various stages, executions, and artifacts.
-***
-<font size=6>**Table of contents**</font>
-- API Reference
-- Steps to activate cmf-server
+ <font size=5>__cmf-server__</font> <font size=5> is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
 
 ## 1. **API Reference**
 <font size=5>cmf-server APIs are organized around [FastAPI](https://fastapi.tiangolo.com/).
@@ -31,51 +24,58 @@ They accept and return JSON-encoded request bodies and responses and return stan
 | `500` | `Internal server error`   | When an internal error has happened                          |
 
 
-## 2.  **Steps to activate cmf-server**
+## 2.  **Setup a cmf-server**
 
+### Pre-requisite 
+1. [Docker]()
 
-   <font size=5>cmf-server has been containerized with docker. Pre-requisite [Docker]()
-
+ ### Following steps start a cmf-server in a docker conatainer:
 1.  Install [cmflib](https://github.com/abhinavchobey/cmf/blob/federated_cmf/README.md) on your system.
 
-
-2. Go to 'server' directory. 
+2. Go to **server** directory. 
 ```
-      user@uservm:~/cmf$ cd server
+user@uservm:~/cmf$ cd server
 ```
 
 3. To execute docker commands, the user needs root privileges. 
 ```
-      sudo su
+user@uservm:~/cmf$ sudo su
 ```
 4. List all docker images.
 ```
-      docker images
+user@uservm:~/cmf$ docker images
 ```
 
-5. Execute the below-mentioned command to create the 'cmf-server' docker image.
+5. Execute the below-mentioned command to create a **cmf-server** docker image.
+<pre>
+Usage:  docker build -t [image_name] -f ./Dockerfile ../
+</pre>
+Example:
 ```
-      docker build -t [image_name] -f ./Dockerfile ../
+user@uservm:~/cmf$ docker build -t myimage -f ./Dockerfile ../
 ```
-
 Note - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
 
-6. Launch a docker container using the image created in the previous step. We will name the container and run it with the command 
+6. Launch a new docker container using the image created in the previous step. 
+<pre>
+Usage: docker run --name [container_name] --port 80:80 [image_name]
+</pre>
+Example:
 ```
-      docker run --name [container_name] --port 80:80 [image_name]
+user@uservm:~/cmf$ docker run --name mycontainer --port 80:80 myimage
 ```
 
 7. To stop the docker container.
 ```
-      docker stop [container_name]
+user@uservm:~/cmf$docker stop [container_name]
 ```
 
 8. To delete the docker container.
 ```
-      docker rm [container_name] 
+user@uservm:~/cmf$docker rm [container_name] 
 ```
 
 9. To remove the docker image.
 ```
-      docker image rm [image_name] 
+user@uservm:~/cmf$docker image rm [image_name] 
 ```
