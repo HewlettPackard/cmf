@@ -71,7 +71,7 @@ cmf init local --path /home/user/local-storage --git-remote-url https://github.c
 Usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
                          --secret-key [secret_key] --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
 </pre>
-<font size=5> **cmf init amazonS3 ** initialises Amazon S3 bucket as a CMF artifact repository. </font>
+<font size=5> **cmf init amazonS3** initialises Amazon S3 bucket as a CMF artifact repository. </font>
 
 ```
 cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
@@ -98,7 +98,7 @@ cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-
 Usage: cmf init sshremote [-h] --path [path] --user [user] --port [port]
                           --password [password]  --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
 </pre>
-<font size=5> This command initialises remote ssh directory as artifact repository.</font>
+<font size=5> **cmf init sshremote** command initialises remote ssh directory as a CMF artifact repository.</font>
  
 ```
 cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
