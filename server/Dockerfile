@@ -1,13 +1,13 @@
 # Use python 3.8-slim-buster as base image.
 FROM python:3.8-slim-buster
 
-# Create cmf-server directory.
+# Create a cmf-server directory.
 WORKDIR /cmf-server
 
-# Execute mkdir command to create data folder inside cmf-server directory.
+# Execute the mkdir command to create a data folder inside the cmf-server directory.
 RUN mkdir -p /cmf-server/data
 
-# Copy the requirements.txt file from server to cmf-server.
+# Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 
 # Install requirements.txt
