@@ -31,6 +31,14 @@ Install CMF
     # Work in progress: not available yet.
     # pip install cmflib
     ```
+## Configuration
+1. clone the repo from https://github.com/HewlettPackard/cmf
+2. Copy sample_env from cmf/examples/example-get-started directory to the local directory.
+3. Copy initialize.sh from cmf/examples/example-get-started directory to the local directory
+4. Modify the sample_env file with appropriate values for the exports.
+5. Execute: source sample_env. This scrip will export several environment variables used in initialize.sh script.
+6. Execute: sh initialize.sh. This step will perform the initialization for the directory. This will init a git repo, dvc repo and add a git remote and dvc remote.
+
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
