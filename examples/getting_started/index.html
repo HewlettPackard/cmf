@@ -12,8 +12,14 @@
         <meta name="author" content="AI Research & Development Lab (Hewlett-Packard Labs)">
       
       
+      
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../../architecture/overview/">
+      
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-8.5.10">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.2">
     
     
       
@@ -21,11 +27,10 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.975780f9.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.f56500e0.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.2505c338.min.css">
-        
       
       
 
@@ -60,7 +65,7 @@
     
     
     
-    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="None" data-md-color-accent="None">
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
   
     
     
@@ -567,6 +572,7 @@
                   
 
 
+
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <blockquote>
 <p>This example depends on the following packages: <code>git</code>. We also recommend installing 
@@ -606,23 +612,23 @@ pipeline consisting of four steps:</p>
 <p>We start by creating (1) a workspace directory that will contain all files for this example and (2) a python virtual 
 environment. Then we will clone the CMF project that contains this example project.
 <div class="highlight"><pre><span></span><code><span class="c1"># Create workspace directory</span>
-mkdir cmf_getting_started_example
-<span class="nb">cd</span> cmf_getting_started_example
+mkdir<span class="w"> </span>cmf_getting_started_example
+<span class="nb">cd</span><span class="w"> </span>cmf_getting_started_example
 
 <span class="c1"># Create and activate Python virtual environment (the Python version may need to be adjusted depending on your system)</span>
-conda create -n cmf_getting_started_example <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8 
-conda activate cmf_getting_started_example
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>cmf_getting_started_example<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8<span class="w"> </span>
+conda<span class="w"> </span>activate<span class="w"> </span>cmf_getting_started_example
 
 <span class="c1"># Clone the CMF project from GitHub and install CMF</span>
-git clone https://github.com/HewlettPackard/cmf
-pip install ./cmf
+git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/cmf
+pip<span class="w"> </span>install<span class="w"> </span>./cmf
 </code></pre></div></p>
 <h2 id="project-initialization">Project initialization<a class="headerlink" href="#project-initialization" title="Permanent link">&para;</a></h2>
 <p>We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and
 initialize <code>git</code> and <code>dvc</code> for this project.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a separate copy of the example project</span>
-cp -r ./cmf/examples/example-get-started/ ./example-get-started
-<span class="nb">cd</span> ./example-get-started
+cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-started/<span class="w"> </span>./example-get-started
+<span class="nb">cd</span><span class="w"> </span>./example-get-started
 </code></pre></div>
 <p>Review the content of the 
 <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/sample_env">sample_env</a> file which is
@@ -631,9 +637,9 @@ file is reviewed, source that file and run
 <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/initialize.sh">initialize.sh</a> 
 to initialize <code>git</code> and <code>dvc</code> repositories.
 <div class="highlight"><pre><span></span><code><span class="c1"># Export environmental variables</span>
-<span class="nb">source</span> ./sample_env
+<span class="nb">source</span><span class="w"> </span>./sample_env
 <span class="c1"># Initialize the example project</span>
-sh ./initialize.sh
+sh<span class="w"> </span>./initialize.sh
 </code></pre></div></p>
 <h2 id="project-execution">Project execution<a class="headerlink" href="#project-execution" title="Permanent link">&para;</a></h2>
 <p>The <code>initialize.sh</code> script executed above has printed some details about the project. To execute the example 
@@ -643,7 +649,7 @@ file (before that, study the contents of that file). Basically, that script will
 common for a typical machine learning project - getting raw data, converting it into machine learning train/test splits,
 training and testing a model. The execution of these steps (and parent pipeline) will be recorded by the CMF.
 <div class="highlight"><pre><span></span><code><span class="c1"># Run the example pipeline</span>
-sh ./test_script.sh
+sh<span class="w"> </span>./test_script.sh
 </code></pre></div></p>
 <p>This script will run the pipeline and will store its metadata in a sqlite file named mlmd. Verify that all stages are 
 done using <code>git log</code> command. You should see commits corresponding to the artifacts that were created.</p>
@@ -672,42 +678,6 @@ can be found in this directory.</p>
       </main>
       
         <footer class="md-footer">
-  
-    
-    <nav class="md-footer__inner md-grid" aria-label="Footer" >
-      
-        
-        <a href="../.." class="md-footer__link md-footer__link--prev" aria-label="Previous: CMF in a nutshell" rel="prev">
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
-          </div>
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Previous
-              </span>
-              CMF in a nutshell
-            </div>
-          </div>
-        </a>
-      
-      
-        
-        <a href="../../architecture/overview/" class="md-footer__link md-footer__link--next" aria-label="Next: Overview" rel="next">
-          <div class="md-footer__title">
-            <div class="md-ellipsis">
-              <span class="md-footer__direction">
-                Next
-              </span>
-              Overview
-            </div>
-          </div>
-          <div class="md-footer__button md-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
-          </div>
-        </a>
-      
-    </nav>
   
   <div class="md-footer-meta md-typeset">
     <div class="md-footer-meta__inner md-grid">
@@ -752,12 +722,11 @@ can be found in this directory.</p>
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.16e2a7d4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.placeholder": "Search", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version.title": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.12658920.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.5a2dcb6a.min.js"></script>
+      <script src="../../assets/javascripts/bundle.5cf534bf.min.js"></script>
       
-    
     
   </body>
 </html>
