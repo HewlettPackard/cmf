@@ -1,5 +1,5 @@
 ###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
+# Copyright (2023) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@ import argparse
 import os
 
 from cmflib import cmfquery
-from cmflib import (
+from cmflib.storage_backends import (
     minio_artifacts,
     local_artifacts,
     amazonS3_artifacts,
     sshremote_artifacts,
 )
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_config import dvc_config
+from cmflib.utils.dvc_config import dvc_config
 
 
 class CmdArtifactPull(CmdBase):
@@ -38,7 +38,7 @@ class CmdArtifactPull(CmdBase):
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"\033[1;31mERROR:\033[1;m {mlmd_file_name} doesn't exists in current directory."
+            return f"ERROR: {mlmd_file_name} doesn't exists."
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []

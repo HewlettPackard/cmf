@@ -1,8 +1,25 @@
+###
+# Copyright (2023) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
 #!/usr/bin/env python3
 import argparse
 import os
 import subprocess
 import shlex
+import sys
 
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import create_cmf_config
@@ -16,33 +33,29 @@ class CmdInitMinioS3(CmdBase):
         else:
             if not os.path.exists(cmf_config):
                 create_cmf_config(cmf_config, "http://127.0.0.1:80")
-        abs_path = None
-        file = "git_initialize.sh"
-        # finding absolute path for git_initialize.sh
-        for root, dirs, files in os.walk(os.path.dirname(__file__)):
-            for name in files:
-                if name == file:
-                    abs_path = os.path.abspath(os.path.join(root, name))
+
+        # finding path of current python site_packages
+        site_packages_loc = next(p for p in sys.path if f"{sys.exec_prefix}/lib" in p)
+        # location of git_initialize.sh
+        file = f"{site_packages_loc}/cmflib/commands/init/git_initialize.sh"
+
         # executing git_initialize.sh
         result = subprocess.run(
-            ["sh", f"{abs_path}", f"{self.args.git_remote_url}"],
+            ["sh", f"{file}", f"{self.args.git_remote_url}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
         )
         if result.stdout:
             print(result.stdout)
-        file = "dvc_script_minio.sh"
-        # finding absolute path for dvc_script_minio.sh
-        for root, dirs, files in os.walk(os.path.dirname(__file__)):
-            for name in files:
-                if name == file:
-                    abs_path = os.path.abspath(os.path.join(root, name))
+
+        # location of dvc_script_minio.sh
+        file = f"{site_packages_loc}/cmflib/commands/init/dvc_script_minio.sh"
         # executing dvc_script_minio.sh
         result = subprocess.run(
             [
                 "sh",
-                f"{abs_path}",
+                f"{file}",
                 f"{self.args.url}",
                 f"{self.args.endpoint_url}",
                 f"{self.args.access_key_id}",

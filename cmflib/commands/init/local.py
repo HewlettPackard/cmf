@@ -1,5 +1,5 @@
 ###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
+# Copyright (2023) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import argparse
 import os
 import subprocess
 import shlex
+import sys
 
 
 from cmflib.cli.command import CmdBase
@@ -33,31 +34,26 @@ class CmdInitLocal(CmdBase):
         else:
             if not os.path.exists(cmf_config):
                 create_cmf_config(cmf_config, "http://127.0.0.1:80")
-        abs_path = None
-        file = "git_initialize.sh"
-        # finding absolute path for git_initialize.sh
-        for root, dirs, files in os.walk(os.path.dirname(__file__)):
-            for name in files:
-                if name == file:
-                    abs_path = os.path.abspath(os.path.join(root, name))
+
+        # finding path of current python site_packages
+        site_packages_loc = next(p for p in sys.path if f"{sys.exec_prefix}/lib" in p)
+
+        # location of git_initialize.sh
+        file = f"{site_packages_loc}/cmflib/commands/init/git_initialize.sh"
         # executing git_initialize.sh
         result = subprocess.run(
-            ["sh", f"{abs_path}", f"{self.args.git_remote_url}"],
+            ["sh", f"{file}", f"{self.args.git_remote_url}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,
         )
         if result.stdout:
             print(result.stdout)
-        file = "dvc_script_local.sh"
-        # finding absolute path for dvc_script_local.sh
-        for root, dirs, files in os.walk(os.path.dirname(__file__)):
-            for name in files:
-                if name == file:
-                    abs_path = os.path.abspath(os.path.join(root, name))
-        # # executing dvc_script_local.sh
+        # location of dvc_script_local.sh
+        file = f"{site_packages_loc}/cmflib/commands/init/dvc_script_local.sh"
+        # executing dvc_script_local.sh
         result = subprocess.run(
-            ["sh", f"{abs_path}", f"{self.args.path}"],
+            ["sh", f"{file}", f"{self.args.path}"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

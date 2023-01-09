@@ -1,5 +1,5 @@
 ###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
+# Copyright (2023) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 import os
 from minio import Minio
 from minio.error import S3Error
-from .dvc_config import dvc_config
 
 
 class amazonS3_artifacts:

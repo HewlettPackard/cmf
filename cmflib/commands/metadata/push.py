@@ -1,5 +1,5 @@
 ###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
+# Copyright (2023) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -42,7 +42,9 @@ class CmdMetadataPush(CmdBase):
         config_file = ".cmfconfig"
         url = "http://127.0.0.1:80"
         if os.path.exists(find_root(config_file)):
-            url = read_cmf_config(os.path.join(find_root(config_file), config_file)).split("=")[1]
+            url = read_cmf_config(
+                os.path.join(find_root(config_file), config_file)
+            ).split("=")[1]
         if (
             self.args.pipeline_name in query.get_pipeline_names()
         ):  # Checks if pipeline name exists
