@@ -2,7 +2,7 @@ from cmflib import cmfquery
 import pandas as pd
 
 #This function fetches all the executions available in given mlmd
-def index(mlmdfilepath):
+def get_executions(mlmdfilepath):
    query = cmfquery.CmfQuery(mlmdfilepath)
    names = query.get_pipeline_names()       #getting all pipeline names in mlmd
    for name in names:
@@ -14,7 +14,7 @@ def index(mlmdfilepath):
         return df
 
 #This function fetches all the artifacts available in given mlmd
-def artifact(mlmdfilepath):
+def get_artifacts(mlmdfilepath):
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()          #getting all pipeline names in mlmd
     identifiers = []
@@ -33,7 +33,9 @@ def artifact(mlmdfilepath):
         get_artifacts = query.get_all_artifacts_for_execution(identifier)  # getting all artifacts
         artifacts_dict = get_artifacts.to_dict('dict')  # converting it to dictionary
         df = pd.concat([df, get_artifacts], sort=True, ignore_index=True)
-    df.drop(['Commit','avg_prec','git_repo','last_update_time_since_epoch','metrics_name','model_framework','model_name','model_type','roc_auc','user-metadata1'],axis=1,inplace=True)
+    print(df.keys())
+    # df.drop(['Commit','avg_prec','git_repo','last_update_time_since_epoch','metrics_name','model_framework','model_name','model_type','roc_auc','user-metadata1'],axis=1,inplace=True)
     return df
+
 
 

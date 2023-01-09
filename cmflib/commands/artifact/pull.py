@@ -41,34 +41,32 @@ class CmdArtifactPull(CmdBase):
             return f"\033[1;31mERROR:\033[1;m {mlmd_file_name} doesn't exists in current directory."
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
-
+        executions = []
         identifiers = []
-        for i in stages:
+        for stage in stages:
             executions = query.get_all_executions_in_stage(
-                i
+                stage
             )  # getting all executions for stages
-            dict_executions = executions.to_dict("dict")  # converting it to dictionary
-            identifiers.append(dict_executions["id"][0])  # id's of execution
-
+            if len(executions) > 0:  # check if stage has executions
+                dict_executions = executions.to_dict("dict")  # converting it to dictionary
+                identifiers.append(dict_executions["id"][0])  # id's of execution
+            else:
+                print ("No Executions found for " + stage + ' stage.')
         name = []
         url = []
+        if len(identifiers) == 0: # check if there are no executions
+            return "No executions found."
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
-            )  # getting all artifacts
-
+            )  # getting all artifacts with id
             artifacts_dict = get_artifacts.to_dict(
                 "dict"
             )  # converting it to dictionary
             name.append(list(artifacts_dict["name"].values()))
             url.append(list(artifacts_dict["url"].values()))
-
-        name_list_updated = []
-        url_list_updated = []
-        for i in range(len(name)):  # getting all the names and urls together
-            name_list_updated = name_list_updated + name[i]
-            url_list_updated = url_list_updated + url[i]
-
+        name_list_updated = [name for l in name for name in l] # getting names and urls
+        url_list_updated = [url for l in url for url in l]
         final_list = []
         file_name = [(i.split(":"))[0] for i in name_list_updated]  # getting names
         for i in tuple(zip(file_name, url_list_updated)):
@@ -167,3 +165,4 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
+
