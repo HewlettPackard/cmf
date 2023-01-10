@@ -2,6 +2,21 @@ import subprocess
 import os
 import sys
 
+
+def execute_subprocess_command(commands):
+    try:
+        process = subprocess.Popen(
+            commands, stdout=subprocess.PIPE, universal_newlines=True
+        )
+        output, error = process.communicate(timeout=60)
+        result = output.strip()
+        return result
+    except Execption as err:
+        process.kill()
+        outs, errs = process.communicate()
+        return f"Exception occurred!!! {err}"
+
+
 def fix_subparsers(subparsers):
     subparsers.required = True
     subparsers.dest = "cmd"
@@ -11,22 +26,18 @@ def create_cmf_config(file_name: str, cmf_server_ip: str):
     try:
         with open(file_name, "w") as file:
             file.write(f"cmf.server.ip={cmf_server_ip}")
-    except IOError as e:
-        print("I/O error",e) 
-        sys.exit()
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
-        sys.exit()
+            return "SUCCESS"
+    except Exception as err:
+        return "Exception occurred!!! {err}"
 
 
 def read_cmf_config(file_name: str):
     try:
         with open(file_name, "r") as file:
             return file.read()
-    except IOError as e:
-        print("I/O error", e)
-    except:
-        print("Unexpected error:", sys.exc_info()[0])
+    except Exception as err:
+        return f"Exception occurred!!! {err}"
+
 
 def git_exists():
     try:
@@ -55,9 +66,7 @@ def find_root(file_name: str):
             return msg
         # assigning parent of root_dir
         parent = os.path.abspath(os.path.join(root_dir, os.pardir))
-        # if value of parent become root_dir, this condition
-        # if parent == root_dir:
-        #    return msg
+        # updating root_dir with its parent
         root_dir = parent
 
 
@@ -67,10 +76,18 @@ def check_minio_server(dvc_config_op):
 
     if dvc_config_op["core.remote"] == "minio":
         print(dvc_config_op["core.remote"])
-        endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]  # endpoint url from config
-        access_key = dvc_config_op["remote.minio.access_key_id"]  # access key from dvc config
-        secret_key = dvc_config_op["remote.minio.secret_access_key"]  # secret key from dvc config
-        bucket_name = dvc_config_op["remote.minio.url"].split("s3://")[1]  # url from dvc config
+        endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[
+            1
+        ]  # endpoint url from config
+        access_key = dvc_config_op[
+            "remote.minio.access_key_id"
+        ]  # access key from dvc config
+        secret_key = dvc_config_op[
+            "remote.minio.secret_access_key"
+        ]  # secret key from dvc config
+        bucket_name = dvc_config_op["remote.minio.url"].split("s3://")[
+            1
+        ]  # url from dvc config
         try:
             client = Minio(
                 endpoint, access_key=access_key, secret_key=secret_key, secure=False
@@ -87,10 +104,14 @@ def check_minio_server(dvc_config_op):
 def main():
     # create_cmf_config("./.cmfconfig", "http://127.0.0.1:80")
     # print(find_root(".cmfconfig"))
-    config = { "core.remote": "minio",
-               "remote.minio.endpointurl": "http://127.0.0.1:80"
-    }
-    print(check_minio_server(config))
+    # config = { "core.remote": "minio",
+    #           "remote.minio.endpointurl": "http://127.0.0.1:80"
+    # }
+    # print(check_minio_server(config))
+    # print(read_cmf_config("./cmfconfig"))
+    commands = ["dvc", "config", "-l"]
+    print(type(commands))
+    print(execute_subprocess_command(commands))
 
 
 if __name__ == "__main__":

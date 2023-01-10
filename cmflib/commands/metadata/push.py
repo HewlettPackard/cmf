@@ -1,5 +1,5 @@
 ###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
+# Copyright (2023) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -33,17 +33,27 @@ class CmdMetadataPush(CmdBase):
             current_directory = os.path.dirname(self.args.file_name)
         # checks if mlmd file is present in current directory or given directory
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in current directory"
+            return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
         query = cmfquery.CmfQuery(mlmd_file_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         execution_flag = 0
         status_code = 0
         # Get url from config
-        config_file = ".cmfconfig"
+        cmf_config = ".cmfconfig"
         url = "http://127.0.0.1:80"
-        if os.path.exists(find_root(config_file)):
-            url = read_cmf_config(os.path.join(find_root(config_file), config_file)).split("=")[1]
-        if self.args.pipeline_name in query.get_pipeline_names():  # Checks if pipeline name exists
+        # find root_dir of .cmfconfig
+        output = find_root(cmfconfig)
+        # in case, there is no .cmfconfig file
+        if output.find("'cmf' is  not configured") != -1:
+            return output
+        config_file_path = os.path.join(output, cmfconfig)
+        file_data = read_cmf_config(config_file_path)
+        if file_data.find("Exception") != -1:
+            return file_data
+        url = file_data.split("=")[1]
+        if (
+            self.args.pipeline_name in query.get_pipeline_names()
+        ):  # Checks if pipeline name exists
             json_payload = query.dumptojson(
                 self.args.pipeline_name
             )  # converts mlmd file to json format
@@ -111,4 +121,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdMetadataPush)
-

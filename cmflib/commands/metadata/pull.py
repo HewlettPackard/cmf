@@ -27,10 +27,18 @@ from cmflib.request_mlmdserver import server_interface
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
     def run(self):
-        config_file = ".cmfconfig"
+        cmfconfig = ".cmfconfig"
         url = "http://127.0.0.1:80"
-        if os.path.exists(find_root(config_file)):
-            url = read_cmf_config(os.path.join(find_root(config_file), config_file)).split("=")[1]
+        # find root_dir of .cmfconfig
+        output = find_root(cmfconfig)
+        # in case, there is no .cmfconfig file
+        if output.find("'cmf' is  not configured") != -1:
+            return output
+        config_file_path = os.path.join(output, cmfconfig)
+        file_data = read_cmf_config(config_file_path)
+        if file_data.find("Exception") != -1:
+            return file_data
+        url = file_data.split("=")[1]
         directory_to_dump = ""
         data = ""
         cmd = "pull"
@@ -66,8 +74,8 @@ class CmdMetadataPull(CmdBase):
                         merger.parse_json_to_mlmd(  # converts mlmd json data to mlmd file for given execution_id
                             output.content,
                             directory_to_dump + "/mlmd",
-                            'pull',
-                            self.args.execution
+                            "pull",
+                            self.args.execution,
                         )
                     except Exception as e:
                         return e
@@ -75,7 +83,7 @@ class CmdMetadataPull(CmdBase):
                 mlmd_data = output.content
                 try:
                     merger.parse_json_to_mlmd(
-                        mlmd_data, directory_to_dump + "/mlmd", cmd,None
+                        mlmd_data, directory_to_dump + "/mlmd", cmd, None
                     )  # converts mlmd json data to mlmd file
                 except Exception as e:
                     return e
@@ -127,4 +135,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdMetadataPull)
-

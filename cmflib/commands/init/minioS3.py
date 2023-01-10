@@ -18,41 +18,51 @@
 import argparse
 import os
 import subprocess
-import shlex
 import sys
 
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import create_cmf_config
+from cmflib.cli.utils import create_cmf_config, execute_subprocess_command
 
 
 class CmdInitMinioS3(CmdBase):
     def run(self):
         cmf_config = "./.cmfconfig"
+        output = ""
         if self.args.cmf_server_ip:
-            create_cmf_config(cmf_config, self.args.cmf_server_ip)
+            output = create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
-                create_cmf_config(cmf_config, "http://127.0.0.1:80")
+                output = create_cmf_config(cmf_config, "http://127.0.0.1:80")
+        if output.find("Exception") != -1:
+            return output
 
         # finding path of current python site_packages
         site_packages_loc = next(p for p in sys.path if f"{sys.exec_prefix}/lib" in p)
         # location of git_initialize.sh
         file = f"{site_packages_loc}/cmflib/commands/init/git_initialize.sh"
 
+        # check whether git_initialize.sh exists
+        if not os.path.exists(file):
+            return "Exception occurred: Unable to initialise git."
+
         # executing git_initialize.sh
-        result = subprocess.run(
-            ["sh", f"{file}", f"{self.args.git_remote_url}"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
+        result = execute_subprocess_command(
+            ["sh", f"{file}", f"{self.args.git_remote_url}"]
         )
-        if result.stdout:
-            print(result.stdout)
+        if result.find("Exception occurred") != -1:
+            return result
+        if len(result) != 0:
+            print(result)
 
         # location of dvc_script_minio.sh
         file = f"{site_packages_loc}/cmflib/commands/init/dvc_script_minio.sh"
+
+        # whether dvc_script_minio.sh exists or not
+        if not os.path.exists(file):
+            return "Exception occurred: Unable to initialise CMF."
+
         # executing dvc_script_minio.sh
-        result = subprocess.run(
+        result = execute_subprocess_command(
             [
                 "sh",
                 f"{file}",
@@ -60,12 +70,11 @@ class CmdInitMinioS3(CmdBase):
                 f"{self.args.endpoint_url}",
                 f"{self.args.access_key_id}",
                 f"{self.args.secret_key}",
-            ],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
+            ]
         )
-        return result.stdout
+        if result.find("Exception occurred") != -1:
+            return result
+        return result
 
 
 def add_parser(subparsers, parent_parser):

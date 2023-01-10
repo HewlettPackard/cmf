@@ -18,31 +18,30 @@
 import argparse
 import os
 import subprocess
-import shlex
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import read_cmf_config, find_root
+from cmflib.cli.utils import read_cmf_config, find_root, execute_subprocess_command
 
 
 class CmdInitShow(CmdBase):
     def run(self):
+        cmfconfig = ".cmfconfig"
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = subprocess.run(
-            ["dvc", "config", "-l"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-        )
-        if len(result.stdout) == 0:
+        result = execute_subprocess_command(["dvc", "config", "-l"])
+        if result.find("Exception occurred") != -1:
+            return result
+        if len(result) == 0:
             return msg
         else:
-            cmf_config_root = find_root(".cmfconfig")
-            if not os.path.exists(cmf_config_root):
-                return cmf_config_root
-            config_file_path = os.path.join(cmf_config_root, ".cmfconfig")
-            server_ip = read_cmf_config(config_file_path)
-            return f"{result.stdout}{server_ip}"
+            cmf_config_root = find_root(cmfconfig)
+            if cmf_config_root.find("'cmf' is  not configured") != -1:
+                return msg
+            config_file_path = os.path.join(cmf_config_root, cmfconfig)
+            output = read_cmf_config(config_file_path)
+            if output.find("Exception") != -1:
+                return output
+            return f"{result}\n{output}"
 
 
 def add_parser(subparsers, parent_parser):
