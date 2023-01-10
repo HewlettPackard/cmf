@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2022) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -30,9 +30,7 @@ class CmdMetadataPull(CmdBase):
         config_file = ".cmfconfig"
         url = "http://127.0.0.1:80"
         if os.path.exists(find_root(config_file)):
-            url = read_cmf_config(
-                os.path.join(find_root(config_file), config_file)
-            ).split("=")[1]
+            url = read_cmf_config(os.path.join(find_root(config_file), config_file)).split("=")[1]
         directory_to_dump = ""
         data = ""
         cmd = "pull"
@@ -51,25 +49,25 @@ class CmdMetadataPull(CmdBase):
         if output.content.decode() == "NULL":
             return "Pipeline name " + self.args.pipeline_name + " doesn't exist"
         elif output.content:
-            if self.args.execution:  # checks if execution_id given by user
+            if self.args.execution:  # checks if execution_id is given by user
                 exec_id = self.args.execution
                 mlmd_data = json.loads(output.content)["Pipeline"]
-                for i in mlmd_data[0][
+                for stage in mlmd_data[0][
                     "stages"
                 ]:  # checks if given execution_id present in mlmd
-                    for j in i["executions"]:
-                        if j["id"] == int(exec_id):
+                    for execution in stage["executions"]:
+                        if execution["id"] == int(exec_id):
                             execution_flag = 1
                             break
                 if execution_flag == 0:
-                    print("Given execution id is not available in mlmd.")
+                    return "Given execution id is not available in mlmd."
                 else:
                     try:
-                        merger.pull_execution_to_mlmd(  # converts mlmd json data to mlmd file for given execution_id
+                        merger.parse_json_to_mlmd(  # converts mlmd json data to mlmd file for given execution_id
                             output.content,
                             directory_to_dump + "/mlmd",
-                            self.args.pipeline_name,
-                            self.args.execution,
+                            'pull',
+                            self.args.execution
                         )
                     except Exception as e:
                         return e
@@ -77,7 +75,7 @@ class CmdMetadataPull(CmdBase):
                 mlmd_data = output.content
                 try:
                     merger.parse_json_to_mlmd(
-                        mlmd_data, directory_to_dump + "/mlmd", cmd
+                        mlmd_data, directory_to_dump + "/mlmd", cmd,None
                     )  # converts mlmd json data to mlmd file
                 except Exception as e:
                     return e
@@ -129,3 +127,4 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdMetadataPull)
+

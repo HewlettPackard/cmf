@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2022) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -42,16 +42,12 @@ class CmdMetadataPush(CmdBase):
         config_file = ".cmfconfig"
         url = "http://127.0.0.1:80"
         if os.path.exists(find_root(config_file)):
-            url = read_cmf_config(
-                os.path.join(find_root(config_file), config_file)
-            ).split("=")[1]
-        if (
-            self.args.pipeline_name in query.get_pipeline_names()
-        ):  # Checks if pipeline name exists
+            url = read_cmf_config(os.path.join(find_root(config_file), config_file)).split("=")[1]
+        if self.args.pipeline_name in query.get_pipeline_names():  # Checks if pipeline name exists
             json_payload = query.dumptojson(
                 self.args.pipeline_name
             )  # converts mlmd file to json format
-            if self.args.execution:  # checks if execution_id given by user
+            if self.args.execution:  # checks if execution_id is given by user
                 exec_id = self.args.execution
                 mlmd_data = json.loads(json_payload)["Pipeline"]
                 for i in mlmd_data[0][
@@ -66,7 +62,7 @@ class CmdMetadataPush(CmdBase):
                             )
                             break
                 if execution_flag == 0:
-                    print("Given execution is not found in mlmd.")
+                    return "Given execution is not found in mlmd."
             else:
                 exec_id = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_id)
@@ -115,3 +111,4 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdMetadataPush)
+
