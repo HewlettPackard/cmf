@@ -26,7 +26,7 @@ from cmflib.cli.utils import create_cmf_config, execute_subprocess_command
 
 class CmdInitAmazonS3(CmdBase):
     def run(self):
-        cmf_config = "./.cmfconfig"
+        cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
         output = ""
         if self.args.cmf_server_ip:
             output = create_cmf_config(cmf_config, self.args.cmf_server_ip)

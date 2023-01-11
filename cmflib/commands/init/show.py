@@ -26,7 +26,7 @@ from cmflib.cli.utils import read_cmf_config, find_root, execute_subprocess_comm
 
 class CmdInitShow(CmdBase):
     def run(self):
-        cmfconfig = ".cmfconfig"
+        cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = execute_subprocess_command(["dvc", "config", "-l"])
         if result.find("Exception occurred") != -1:
