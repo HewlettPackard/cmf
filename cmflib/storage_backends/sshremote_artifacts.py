@@ -28,9 +28,9 @@ class SSHremoteArtifacts:
         local_path: str,
     ):
         output = ""
-        remote_repo = dvc_config_op[1]  # pulling remote repo from dvc config output
-        user = dvc_config_op[2]  # pulling user from dvc config output
-        password = dvc_config_op[4]  # pulling password from dvc config output
+        remote_repo = dvc_config_op["remote.ssh-storage.url"]
+        user = dvc_config_op["remote.ssh-storage.user"]
+        password = dvc_config_op["remote.ssh-storage.password"]
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(

@@ -75,6 +75,7 @@ class CmdArtifactPull(CmdBase):
             if type(i[1]) == str:
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
+        # names_urls = ('artifacts/model/model.pkl', '/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034')
         print(names_urls)
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
@@ -101,8 +102,10 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts()
             for name_url in names_urls:
+                # name_url[1] = '/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034'
                 temp = name_url[1].split("/")
                 temp_length = len(temp)
+                # name_url[0] = artifacts/model/model.pkl
                 download_loc = current_directory + "/" + name_url[0]
                 current_dvc_loc = (
                     temp[(temp_length - 2)] + "/" + temp[(temp_length - 1)]
@@ -115,9 +118,11 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
             for name_url in names_urls:
+                # name_url[1] = ssh://127.0.0.1/home/user/ssh-storage/06/d100ff3e04e2c87bf20f0feacc9034
                 temp = name_url[1].split("/")
                 temp_var = temp[2].split(":")
                 host = temp_var[0]
+                # name_url[0] = artifacts/model/model.pkl
                 download_loc = current_directory + "/" + name_url[0]
                 temp.pop(0)
                 temp.pop(0)
@@ -132,9 +137,11 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
             for name_url in names_urls:
+                # name_url[1] = s3://XXXXXXX/dvc-art/6f/597d341ceb7d8fbbe88859a892ef81'
                 temp = name_url[1].split("/")
                 bucket_name = temp[2]
                 object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
+                # name_url[0] = artifacts/model/model.pkl
                 download_loc = current_directory + "/" + name_url[0]
                 stmt = amazonS3_class_obj.download_artifacts(
                     dvc_config_op,
