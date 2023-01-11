@@ -18,7 +18,7 @@ import os
 import paramiko
 
 
-class sshremote_artifacts:
+class SSHremoteArtifacts:
     def download_artifacts(
         self,
         dvc_config_op,

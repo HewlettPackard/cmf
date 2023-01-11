@@ -19,7 +19,7 @@ from minio import Minio
 from minio.error import S3Error
 
 
-class amazonS3_artifacts:
+class AmazonS3Artifacts:
     def download_artifacts(
         self,
         dvc_config_op,
@@ -28,8 +28,12 @@ class amazonS3_artifacts:
         object_name: str,
         download_loc: str,
     ):
-        access_key = dvc_config_op[2]  # pulling access_key from dvc config output
-        secret_key = dvc_config_op[3]  # pulling secret_key from dvc config output
+        access_key = dvc_config_op[
+            "remote.amazons3.access_key_id"
+        ]  # pulling access_key from dvc config output
+        secret_key = dvc_config_op[
+            "remote.amazons3.secret_access_key"
+        ]  # pulling secret_key from dvc config output
         try:
             client = Minio(
                 "s3.amazonaws.com", access_key=access_key, secret_key=secret_key

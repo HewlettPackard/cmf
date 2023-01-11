@@ -28,7 +28,7 @@ def add_parser(subparsers, parent_parser):
     artifact_parser = subparsers.add_parser(
         "artifact",
         parents=[parent_parser],
-        description="Pull or Push artifact as per current cmf configuration.",
+        description="Pull or Push artifacts as per current cmf configuration.",
         help=ARTIFACT_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

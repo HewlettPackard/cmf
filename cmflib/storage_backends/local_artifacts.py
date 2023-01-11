@@ -18,8 +18,7 @@ import os
 
 from dvc.api import DVCFileSystem
 
-
-class local_artifacts:
+class LocalArtifacts:
     def download_artifacts(
         self,
         dvc_config_op,
@@ -30,7 +29,7 @@ class local_artifacts:
         obj = True
         try:
             fs = DVCFileSystem(
-                dvc_config_op[1]
+                dvc_config_op["remote.local-storage.url"]
             )  # dvc_config_op[1] is file system path - "/path/to/local/repository"
             # get_file() only creates file, to put artifacts in proper directory, subfolders are required.
             temp = download_loc.split("/")

@@ -26,7 +26,7 @@ from cmflib.storage_backends import (
     sshremote_artifacts,
 )
 from cmflib.cli.command import CmdBase
-from cmflib.utils.dvc_config import dvc_config
+from cmflib.utils.dvc_config import DvcConfig
 
 
 class CmdArtifactPull(CmdBase):
@@ -38,7 +38,7 @@ class CmdArtifactPull(CmdBase):
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists."
+            return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
@@ -73,10 +73,13 @@ class CmdArtifactPull(CmdBase):
             if type(i[1]) == str:
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
-        # print(names_urls)
-        dvc_config_op = dvc_config.get_dvc_config()  # pulling dvc config
-        if dvc_config_op[0] == "minio":  # if core.remote = minio
-            minio_class_obj = minio_artifacts.minio_artifacts()
+        print(names_urls)
+        output = DvcConfig.get_dvc_config()  # pulling dvc config
+        if type(output) is not dict:
+            return output
+        dvc_config_op = output
+        if dc_config_op["core.remote"] == "minio":  # if core.remote = minio
+            minio_class_obj = minio_artifacts.MinioArtifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
                 bucket_name = temp[2]
@@ -91,7 +94,7 @@ class CmdArtifactPull(CmdBase):
                 )
                 print(stmt)
         elif dvc_config_op[0] == "local-storage":  # if core.remote = local-storage
-            local_class_obj = local_artifacts.local_artifacts()
+            local_class_obj = local_artifacts.LocalArtifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
                 temp_length = len(temp)
@@ -104,7 +107,7 @@ class CmdArtifactPull(CmdBase):
                 )
                 print(stmt)
         elif dvc_config_op[0] == "ssh-storage":  # if core.remote = ssh-storage
-            sshremote_class_obj = sshremote_artifacts.sshremote_artifacts()
+            sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
                 temp_var = temp[2].split(":")
@@ -120,7 +123,7 @@ class CmdArtifactPull(CmdBase):
                 )
                 print(stmt)
         elif dvc_config_op[0] == "amazons3":  # if core.remote = amazons3
-            amazonS3_class_obj = amazonS3_artifacts.amazonS3_artifacts()
+            amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
                 bucket_name = temp[2]

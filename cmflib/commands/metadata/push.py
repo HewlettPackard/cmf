@@ -39,7 +39,7 @@ class CmdMetadataPush(CmdBase):
         execution_flag = 0
         status_code = 0
         # Get url from config
-        cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
+        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
         url = "http://127.0.0.1:80"
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)

@@ -27,7 +27,7 @@ from cmflib.request_mlmdserver import server_interface
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
     def run(self):
-        cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
+        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
         url = "http://127.0.0.1:80"
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)

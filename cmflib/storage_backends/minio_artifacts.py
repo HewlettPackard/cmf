@@ -19,7 +19,7 @@ from minio import Minio
 from minio.error import S3Error
 
 
-class minio_artifacts:
+class MinioArtifacts:
     def download_artifacts(
         self,
         dvc_config_op,

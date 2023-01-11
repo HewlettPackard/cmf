@@ -21,32 +21,20 @@ import subprocess
 
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
-from cmflib.utils.dvc_config import dvc_config
+from cmflib.utils.dvc_config import DvcConfig
 
 
 class CmdArtifactPush(CmdBase):
     def run(self):
-        dvc_config_op = dvc_config.get_dvc_config()
-        if dvc_config_op["core.remote"] == "minio":
-            out_msg = check_minio_server(dvc_config_op)
-            if out_msg == "SUCCESS":
-                result = subprocess.run(
-                    ["dvc", "push"],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    text=True,
-                )
-                return result.stdout
-            else:
-                return out_msg
+        dvc_config_op = DvcConfig.get_dvc_config()
+        out_msg = check_minio_server(dvc_config_op)
+        if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
+            return out_msg
         else:
-            result = subprocess.run(
-                ["dvc", "push"],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-            )
-            return result.stdout
+            result = execute_subprocess_command(["dvc", "push"])
+            if result.find("Exception occurred") != -1:
+                return result
+            return result
 
 
 def add_parser(subparsers, parent_parser):
