@@ -28,11 +28,9 @@ class MinioArtifacts:
         object_name: str,
         file_path: str,
     ):
-        endpoint = dvc_config_op[1].split("http://")[
-            1
-        ]  # pulling endpoint from dvc config output
-        access_key = dvc_config_op[2]  # pulling access_key from dvc config output
-        secret_key = dvc_config_op[3]  # pulling secret_key from dvc config output
+        endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
+        access_key = dvc_config_op["remote.minio.access_key_id"]
+        secret_key = dvc_config_op["remote.minio.secret_access_key"]
         try:
             client = Minio(
                 endpoint, access_key=access_key, secret_key=secret_key, secure=False

@@ -38,7 +38,7 @@ class CmdArtifactPull(CmdBase):
             mlmd_file_name = self.args.file_name
             current_directory = os.path.dirname(self.args.file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
+            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
         query = cmfquery.CmfQuery(mlmd_file_name)
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
@@ -48,13 +48,15 @@ class CmdArtifactPull(CmdBase):
                 stage
             )  # getting all executions for stages
             if len(executions) > 0:  # check if stage has executions
-                dict_executions = executions.to_dict("dict")  # converting it to dictionary
+                dict_executions = executions.to_dict(
+                    "dict"
+                )  # converting it to dictionary
                 identifiers.append(dict_executions["id"][0])  # id's of execution
             else:
-                print ("No Executions found for " + stage + ' stage.')
+                print("No Executions found for " + stage + " stage.")
         name = []
         url = []
-        if len(identifiers) == 0: # check if there are no executions
+        if len(identifiers) == 0:  # check if there are no executions
             return "No executions found."
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
@@ -65,7 +67,7 @@ class CmdArtifactPull(CmdBase):
             )  # converting it to dictionary
             name.append(list(artifacts_dict["name"].values()))
             url.append(list(artifacts_dict["url"].values()))
-        name_list_updated = [name for l in name for name in l] # getting names and urls
+        name_list_updated = [name for l in name for name in l]  # getting names and urls
         url_list_updated = [url for l in url for url in l]
         final_list = []
         file_name = [(i.split(":"))[0] for i in name_list_updated]  # getting names
@@ -78,12 +80,14 @@ class CmdArtifactPull(CmdBase):
         if type(output) is not dict:
             return output
         dvc_config_op = output
-        if dc_config_op["core.remote"] == "minio":  # if core.remote = minio
+        if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts()
             for name_url in names_urls:
+                # name_url[1] = 's3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81')
                 temp = name_url[1].split("/")
                 bucket_name = temp[2]
                 object_name = temp[3] + "/" + temp[4]
+                # name_url[0] = 'artifacts/parsed/test.tsv'
                 path_name = current_directory + "/" + name_url[0]
                 stmt = minio_class_obj.download_artifacts(
                     dvc_config_op,
@@ -93,7 +97,8 @@ class CmdArtifactPull(CmdBase):
                     path_name,
                 )
                 print(stmt)
-        elif dvc_config_op[0] == "local-storage":  # if core.remote = local-storage
+            return "Done"
+        elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -106,7 +111,8 @@ class CmdArtifactPull(CmdBase):
                     dvc_config_op, current_directory, current_dvc_loc, name_url[0]
                 )
                 print(stmt)
-        elif dvc_config_op[0] == "ssh-storage":  # if core.remote = ssh-storage
+            return "Done"
+        elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -122,7 +128,8 @@ class CmdArtifactPull(CmdBase):
                     dvc_config_op, host, current_directory, current_loc, name_url[0]
                 )
                 print(stmt)
-        elif dvc_config_op[0] == "amazons3":  # if core.remote = amazons3
+            return "Done"
+        elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
             for name_url in names_urls:
                 temp = name_url[1].split("/")
@@ -137,9 +144,11 @@ class CmdArtifactPull(CmdBase):
                     download_loc,
                 )
                 print(stmt)
+            return "Done"
         else:
-            pass
-        return 0
+            remote = dvc_config_op["core.remote"]
+            msg = f"{remote} is not valid artifact repository for CMF.\n Reinitialize CMF."
+            return msg
 
 
 def add_parser(subparsers, parent_parser):
@@ -168,4 +177,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
-

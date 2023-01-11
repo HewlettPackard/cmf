@@ -20,7 +20,7 @@ import os
 import subprocess
 
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import check_minio_server
+from cmflib.cli.utils import check_minio_server, execute_subprocess_command
 from cmflib.utils.dvc_config import DvcConfig
 
 
@@ -32,8 +32,6 @@ class CmdArtifactPush(CmdBase):
             return out_msg
         else:
             result = execute_subprocess_command(["dvc", "push"])
-            if result.find("Exception occurred") != -1:
-                return result
             return result
 
 

@@ -28,43 +28,12 @@ class DvcConfig:
         if len(result) == 0:
             return "'cmf' is not configured.\nExecute 'cmf init' command."
         else:
-            config_list = result.stdout.split("\n")
-            config_list.pop(-1)
+            config_list = result.split("\n")
             config_dict = {}
             for item in config_list:
                 item_list = item.split("=")
                 config_dict[item_list[0]] = item_list[1]
-            remote = config_dict["core.remote"]
-            if remote == "minio":
-                return (
-                    config_dict["core.remote"],
-                    config_dict["remote.minio.endpointurl"],
-                    config_dict["remote.minio.access_key_id"],
-                    config_dict["remote.minio.secret_access_key"],
-                    config_dict["remote.minio.url"],
-                )
-            elif remote == "local-storage":
-                return (
-                    config_dict["core.remote"],
-                    config_dict["remote.local-storage.url"],
-                )
-            elif remote == "ssh-storage":
-                return (
-                    config_dict["core.remote"],
-                    config_dict["remote.ssh-storage.url"],
-                    config_dict["remote.ssh-storage.user"],
-                    config_dict["remote.ssh-storage.port"],
-                    config_dict["remote.ssh-storage.password"],
-                )
-            elif remote == "amazons3":
-                return (
-                    config_dict["core.remote"],
-                    config_dict["remote.amazons3.url"],
-                    config_dict["remote.amazons3.access_key_id"],
-                    config_dict["remote.amazons3.secret_access_key"],
-                )
-            else:
-                return f"{remote} doesn't exist."
+            return config_dict
 
 
 def main():
