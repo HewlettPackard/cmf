@@ -21,7 +21,7 @@ import json
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import read_cmf_config, find_root
-from cmflib.request_mlmdserver import server_interface
+from cmflib.server_interface import server_interface
 
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
@@ -51,11 +51,9 @@ class CmdMetadataPush(CmdBase):
         if file_data.find("Exception") != -1:
             return file_data
         url = file_data.split("=")[1]
-        if (
-            self.args.pipeline_name in query.get_pipeline_names()
-        ):  # Checks if pipeline name exists
+        if self.args.pipeline_name in query.get_pipeline_names():  # Checks if pipeline name exists
             json_payload = query.dumptojson(
-                self.args.pipeline_name
+                self.args.pipeline_name,None
             )  # converts mlmd file to json format
             if self.args.execution:  # checks if execution_id is given by user
                 exec_id = self.args.execution

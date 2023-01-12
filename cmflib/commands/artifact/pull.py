@@ -52,6 +52,7 @@ class CmdArtifactPull(CmdBase):
                     "dict"
                 )  # converting it to dictionary
                 identifiers.append(dict_executions["id"][0])  # id's of execution
+
             else:
                 print("No Executions found for " + stage + " stage.")
         name = []
@@ -76,7 +77,6 @@ class CmdArtifactPull(CmdBase):
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
         # names_urls = ('artifacts/model/model.pkl', '/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034')
-        print(names_urls)
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
             return output

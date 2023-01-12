@@ -27,13 +27,10 @@ from cmflib.utils.dvc_config import DvcConfig
 class CmdArtifactPush(CmdBase):
     def run(self):
         dvc_config_op = DvcConfig.get_dvc_config()
-        print(dvc_config_op)
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
-            print(out_msg)
             return out_msg
         else:
-            print("I am here")
             result = execute_subprocess_command(["dvc", "push"])
             return result
 

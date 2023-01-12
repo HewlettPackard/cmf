@@ -32,25 +32,30 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     else:
         data = mlmd_data
     cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name)
-    for stage in data["Pipeline"][0]["stages"]:             #Iterates over all the stages
-        _ = cmf_class.create_context(
-            pipeline_stage=stage["name"], custom_properties=stage["custom_properties"]
-        )
+    for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
         # check if exec_id exist or not, on that basis get executions
         if exec_id is None:
-            list_executions=[execution for execution in stage['executions'] ]
+            list_executions = [execution for execution in stage["executions"]]
         elif exec_id is not None:
-            list_executions = [execution for execution in stage['executions'] if execution["id"] == int(exec_id)]
+            list_executions = [
+                execution
+                for execution in stage["executions"]
+                if execution["id"] == int(exec_id)
+            ]
         else:
-            return 'Invalid execution id given.'
-        for execution in list_executions:               #Iterates over all the executions
+            return "Invalid execution id given."
+        for execution in list_executions:  # Iterates over all the executions
+            _ = cmf_class.create_context(
+                pipeline_stage=stage["name"],
+                custom_properties=stage["custom_properties"],
+            )
             _ = cmf_class.merge_created_execution(
                 execution["type"],
                 execution["properties"]["Execution"],
                 execution["properties"],
                 execution["custom_properties"],
             )
-            for event in execution["events"]:                #Iterates over all the events
+            for event in execution["events"]:  # Iterates over all the events
                 artifact_type = event["artifact"]["type"]
                 event_type = event["type"]
                 artifact_name = (event["artifact"]["name"].split(":"))[0]
@@ -500,4 +505,3 @@ if __name__ == "__main__":
         ]
     }
     parse_json_to_mlmd(data)
-

@@ -22,12 +22,12 @@ from cmflib import merger
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import read_cmf_config, find_root
-from cmflib.request_mlmdserver import server_interface
+from cmflib.server_interface import server_interface
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
     def run(self):
-        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
+        cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
         url = "http://127.0.0.1:80"
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
@@ -44,49 +44,30 @@ class CmdMetadataPull(CmdBase):
         cmd = "pull"
         mlmd_data = ""
         status = 0
+        exec_id = None
         execution_flag = 0
         if self.args.file_path:  # setting directory where mlmd file will be dumped
             directory_to_dump = self.args.file_path
         else:
             directory_to_dump = os.getcwd()
+        if self.args.execution:
+            exec_id = self.args.execution
         output = server_interface.call_mlmd_pull(
-            url, self.args.pipeline_name
+            url, self.args.pipeline_name, exec_id
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
         # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
         if output.content.decode() == "NULL":
-            return "Pipeline name " + self.args.pipeline_name + " doesn't exist"
+            return "Pipeline name " + self.args.pipeline_name + " doesn't exist."
+        elif output.content.decode() == "no_exec_id":
+            return "Error: Execution id is not present in mlmd."
         elif output.content:
-            if self.args.execution:  # checks if execution_id is given by user
-                exec_id = self.args.execution
-                mlmd_data = json.loads(output.content)["Pipeline"]
-                for stage in mlmd_data[0][
-                    "stages"
-                ]:  # checks if given execution_id present in mlmd
-                    for execution in stage["executions"]:
-                        if execution["id"] == int(exec_id):
-                            execution_flag = 1
-                            break
-                if execution_flag == 0:
-                    return "Given execution id is not available in mlmd."
-                else:
-                    try:
-                        merger.parse_json_to_mlmd(  # converts mlmd json data to mlmd file for given execution_id
-                            output.content,
-                            directory_to_dump + "/mlmd",
-                            "pull",
-                            self.args.execution,
-                        )
-                    except Exception as e:
-                        return e
-            else:
-                mlmd_data = output.content
-                try:
-                    merger.parse_json_to_mlmd(
-                        mlmd_data, directory_to_dump + "/mlmd", cmd, None
-                    )  # converts mlmd json data to mlmd file
-                except Exception as e:
-                    return e
+            try:
+                merger.parse_json_to_mlmd(
+                    output.content, directory_to_dump + "/mlmd", cmd, None
+                )  # converts mlmd json data to mlmd file
+            except Exception as e:
+                return e
             # verifying status codes
             if status == 200:
                 return "SUCCESS: mlmd is successfully pulled."
@@ -128,10 +109,7 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-e",
-        "--execution",
-        help="Specify Execution id",
-        metavar="<exec_id>",
+        "-e", "--execution", help="Specify Execution id", metavar="<exec_id>"
     )
 
     parser.set_defaults(func=CmdMetadataPull)
