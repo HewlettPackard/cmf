@@ -9,7 +9,7 @@ and relationships of metadata entities to recommend optimal AI pipeline to user 
 Besides, the proposed schema captures both semantic and statistical properties
 of the entities. The overall structure of the schema can be found below.
 
-![ML Schema](ml_schema_cmf.png)
+![ML Schema](ml-schema-dgm.png)
 
 ## Entity Properties
 ### Task
