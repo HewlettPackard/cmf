@@ -16,25 +16,25 @@
 
 import argparse
 
-from cmflib.commands.metadata import push, pull
+from cmflib.commands.init import minioS3, amazonS3, local, sshremote, show
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [push, pull]
+SUB_COMMANDS = [minioS3, amazonS3, local, sshremote, show]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
-    METADATA_HELP = "Command for metadata pull/push."
+    METADATA_HELP = "Command for initializing different artifact repositories for CMF."
 
     metadata_parser = subparsers.add_parser(
-        "metadata",
+        "init",
         parents=[parent_parser],
-        description="Command pulls or pushes metadata on to cmf-server.",
+        description="This command initializes different artifact repositories for CMF.",
         help=METADATA_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     metadata_subparsers = metadata_parser.add_subparsers(
-        dest="cmd", help="Use `cmf metadata CMD --help` for " "command-specific help."
+        dest="cmd", help="Use `cmf init CMD --help` for " "command-specific help."
     )
 
     fix_subparsers(metadata_subparsers)

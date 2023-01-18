@@ -20,6 +20,7 @@ from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.mlmd_objects import CONTEXT_LIST
 import json
 
+
 class CmfQuery(object):
     def __init__(self, filepath: str = "mlmd"):
         config = mlpb.ConnectionConfig()
@@ -29,10 +30,10 @@ class CmfQuery(object):
     def _transform_to_dataframe(self, node):
         d = {"id": node.id}
         for k, v in node.properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.int_value
+            d[k] = v.string_value if v.HasField("string_value") else v.int_value
         for k, v in node.custom_properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.int_value
-        df = pd.DataFrame(d, index=[0, ])
+            d[k] = v.string_value if v.HasField("string_value") else v.int_value
+        df = pd.DataFrame(d, index=[0])
         return df
 
     def get_pipeline_id(self, pipeline_name: str) -> int:
@@ -76,14 +77,19 @@ class CmfQuery(object):
         return df
 
     def get_artifact_df(self, node):
-        d = {"id": node.id, "type": self.store.get_artifact_types_by_id([node.type_id])[0].name, "uri": node.uri,
-             "name": node.name, "create_time_since_epoch": node.create_time_since_epoch,
-             "last_update_time_since_epoch": node.last_update_time_since_epoch}
+        d = {
+            "id": node.id,
+            "type": self.store.get_artifact_types_by_id([node.type_id])[0].name,
+            "uri": node.uri,
+            "name": node.name,
+            "create_time_since_epoch": node.create_time_since_epoch,
+            "last_update_time_since_epoch": node.last_update_time_since_epoch,
+        }
         for k, v in node.properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.double_value
+            d[k] = v.string_value if v.HasField("string_value") else v.double_value
         for k, v in node.custom_properties.items():
-            d[k] = v.string_value if v.HasField('string_value') else v.double_value
-        df = pd.DataFrame(d, index=[0, ])
+            d[k] = v.string_value if v.HasField("string_value") else v.double_value
+        df = pd.DataFrame(d, index=[0])
         return df
 
     def get_artifact(self, name: str):
@@ -102,9 +108,13 @@ class CmfQuery(object):
         events = self.store.get_events_by_execution_ids([execution_id])
         for event in events:
             if event.type == mlpb.Event.Type.INPUT:  # 3 - INPUT #4 - Output
-                input_artifacts.extend(self.store.get_artifacts_by_id([event.artifact_id]))
+                input_artifacts.extend(
+                    self.store.get_artifacts_by_id([event.artifact_id])
+                )
             else:
-                output_artifacts.extend(self.store.get_artifacts_by_id([event.artifact_id]))
+                output_artifacts.extend(
+                    self.store.get_artifacts_by_id([event.artifact_id])
+                )
         for art in input_artifacts:
             d1 = self.get_artifact_df(art)
             d1["event"] = "INPUT"
@@ -129,14 +139,22 @@ class CmfQuery(object):
             events = self.store.get_events_by_artifact_ids([selected_artifact.id])
 
         for evt in events:
-            linked_execution["Type"] = "INPUT" if evt.type == mlpb.Event.Type.INPUT else "OUTPUT"
+            linked_execution["Type"] = (
+                "INPUT" if evt.type == mlpb.Event.Type.INPUT else "OUTPUT"
+            )
             linked_execution["execution_id"] = evt.execution_id
-            linked_execution["execution_name"] = self.store.get_executions_by_id([evt.execution_id])[0].name
+            linked_execution["execution_name"] = self.store.get_executions_by_id(
+                [evt.execution_id]
+            )[0].name
             ctx = self.store.get_contexts_by_execution(evt.execution_id)[0]
-            linked_execution["stage"] = self.store.get_contexts_by_execution(evt.execution_id)[0].name
+            linked_execution["stage"] = self.store.get_contexts_by_execution(
+                evt.execution_id
+            )[0].name
 
-            linked_execution["pipeline"] = self.store.get_parent_contexts_by_context(ctx.id)[0].name
-            d1 = pd.DataFrame(linked_execution, index=[0, ])
+            linked_execution["pipeline"] = self.store.get_parent_contexts_by_context(
+                ctx.id
+            )[0].name
+            d1 = pd.DataFrame(linked_execution, index=[0])
             df = df.append(d1, sort=True, ignore_index=True)
 
         return df
@@ -155,11 +173,13 @@ class CmfQuery(object):
         executions_ids = set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids(artifact_ids)
-            if event.type == mlpb.Event.INPUT)
+            if event.type == mlpb.Event.INPUT
+        )
         artifacts_ids = set(
             event.artifact_id
             for event in self.store.get_events_by_execution_ids(executions_ids)
-            if event.type == mlpb.Event.OUTPUT)
+            if event.type == mlpb.Event.OUTPUT
+        )
         artifacts = self.store.get_artifacts_by_id(artifacts_ids)
         for art in artifacts:
             d1 = self.get_artifact_df(art)
@@ -173,7 +193,7 @@ class CmfQuery(object):
         for row in d1.itertuples():
             d1 = self.get_all_child_artifacts(row.name)
             df = df.append(d1, sort=True, ignore_index=True)
-        df = df.drop_duplicates(subset=None, keep='first', inplace=False)
+        df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
     def get_one_hop_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
@@ -190,11 +210,13 @@ class CmfQuery(object):
         executions_ids = set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids(artifact_ids)
-            if event.type == mlpb.Event.OUTPUT)
+            if event.type == mlpb.Event.OUTPUT
+        )
         artifacts_ids = set(
             event.artifact_id
             for event in self.store.get_events_by_execution_ids(executions_ids)
-            if event.type == mlpb.Event.INPUT)
+            if event.type == mlpb.Event.INPUT
+        )
         artifacts = self.store.get_artifacts_by_id(artifacts_ids)
         for art in artifacts:
             d1 = self.get_artifact_df(art)
@@ -208,7 +230,7 @@ class CmfQuery(object):
         for row in d1.itertuples():
             d1 = self.get_all_parent_artifacts(row.name)
             df = df.append(d1, sort=True, ignore_index=True)
-        df = df.drop_duplicates(subset=None, keep='first', inplace=False)
+        df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
     def find_producer_execution(self, artifact_name: str) -> object:
@@ -222,51 +244,53 @@ class CmfQuery(object):
         executions_ids = set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact.id])
-            if event.type == mlpb.Event.OUTPUT)
+            if event.type == mlpb.Event.OUTPUT
+        )
         return self.store.get_executions_by_id(executions_ids)[0]
-
 
     @staticmethod
     def __get_node_properties(node) -> dict:
-        #print(node)
+        # print(node)
         node_dict = {}
         for attr in dir(node):
             if attr in CONTEXT_LIST:
                 if attr == "properties":
                     node_dict["properties"] = CmfQuery.__get_properties(node)
                 elif attr == "custom_properties":
-                    node_dict["custom_properties"] = CmfQuery.__get_customproperties(node)
+                    node_dict["custom_properties"] = CmfQuery.__get_customproperties(
+                        node
+                    )
                 else:
                     node_dict[attr] = node.__getattribute__(attr)
 
-        #print(node_dict)
+        # print(node_dict)
         return node_dict
 
     @staticmethod
     def __get_properties(node) -> dict:
         prop_dict = {}
         for k, v in node.properties.items():
-            if v.HasField('string_value'):
+            if v.HasField("string_value"):
                 prop_dict[k] = v.string_value
-            elif v.HasField('int_value'):
-                prop_dict[k] = v.int_value
-            else:
-                prop_dict[k] = v.double_value
-        return prop_dict
-    
-    @staticmethod
-    def __get_customproperties(node)->dict:
-        prop_dict = {}
-        for k, v in node.custom_properties.items():
-            if v.HasField('string_value'):
-                prop_dict[k] = v.string_value
-            elif v.HasField('int_value'):
+            elif v.HasField("int_value"):
                 prop_dict[k] = v.int_value
             else:
                 prop_dict[k] = v.double_value
         return prop_dict
 
-    def dumptojson(self, pipeline_name:str):
+    @staticmethod
+    def __get_customproperties(node) -> dict:
+        prop_dict = {}
+        for k, v in node.custom_properties.items():
+            if v.HasField("string_value"):
+                prop_dict[k] = v.string_value
+            elif v.HasField("int_value"):
+                prop_dict[k] = v.int_value
+            else:
+                prop_dict[k] = v.double_value
+        return prop_dict
+
+    def dumptojson(self, pipeline_name: str, exec_id):
         mlmd_json = {}
         mlmd_json["Pipeline"] = []
         contexts = self.store.get_contexts_by_type("Parent_Context")
@@ -274,38 +298,48 @@ class CmfQuery(object):
             if ctx.name == pipeline_name:
                 ctx_dict = CmfQuery.__get_node_properties(ctx)
                 ctx_dict["stages"] = []
-                stages= self.store.get_children_contexts_by_context(ctx.id)
+                stages = self.store.get_children_contexts_by_context(ctx.id)
                 for stage in stages:
                     stage_dict = CmfQuery.__get_node_properties(stage)
-                    #ctx["stages"].append(stage_dict)
+                    # ctx["stages"].append(stage_dict)
                     stage_dict["executions"] = []
                     executions = self.store.get_executions_by_context(stage.id)
-                    for exe in executions:
+                    if exec_id is None:
+                        list_executions = [exe for exe in executions]
+                    elif exec_id is not None:
+                        list_executions = [
+                            exe for exe in executions if exe.id == int(exec_id)
+                        ]
+                    else:
+                        return "Invalid execution id given."
+                    for exe in list_executions:
                         exe_dict = CmfQuery.__get_node_properties(exe)
                         exe_type = self.store.get_execution_types_by_id([exe.type_id])
                         exe_dict["type"] = exe_type[0].name
-                        exe_dict["events"]  = []
+                        exe_dict["events"] = []
                         events = self.store.get_events_by_execution_ids([exe.id])
                         for evt in events:
-                            evt_dict = CmfQuery.__get_node_properties(evt)                            
+                            evt_dict = CmfQuery.__get_node_properties(evt)
                             artifact = self.store.get_artifacts_by_id([evt.artifact_id])
                             if artifact is not None:
-                                artifact_type = self.store.get_artifact_types_by_id([artifact[0].type_id])                                
-                                artifact_dict = CmfQuery.__get_node_properties(artifact[0])
+                                artifact_type = self.store.get_artifact_types_by_id(
+                                    [artifact[0].type_id]
+                                )
+                                artifact_dict = CmfQuery.__get_node_properties(
+                                    artifact[0]
+                                )
                                 artifact_dict["type"] = artifact_type[0].name
                                 evt_dict["artifact"] = artifact_dict
                             exe_dict["events"].append(evt_dict)
-                        stage_dict["executions"].append(exe_dict)                       
-                    ctx_dict["stages"].append(stage_dict)                
+                        stage_dict["executions"].append(exe_dict)
+                    ctx_dict["stages"].append(stage_dict)
                 mlmd_json["Pipeline"].append(ctx_dict)
                 json_str = json.dumps(mlmd_json)
-                #json_str = jsonpickle.encode(ctx_dict)
+                # json_str = jsonpickle.encode(ctx_dict)
                 return json_str
-                #print(json_str)
-                
+                # print(json_str)
 
-
-    '''def materialize(self, artifact_name:str):
+    """def materialize(self, artifact_name:str):
        artifacts = self.store.get_artifacts()
        for art in artifacts:
            if art.name == artifact_name:
@@ -321,4 +355,4 @@ class CmfQuery(object):
            elif (remote == "Remote"):
                remote = v
        
-       Cmf.materialize(path, git_repo, rev, remote)'''
+       Cmf.materialize(path, git_repo, rev, remote)"""
