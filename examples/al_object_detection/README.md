@@ -105,6 +105,10 @@ Use dvc to run the pipeline:
 dvc repro -f
 ```
 
+Optional - Change this line (Line Number:126)in dvc_cmf_ingest.py to capture the lineage in neo4j. Set graph=True
+```
+metawriter = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=True)
+```
 After running the pipeline, build CMF lineage. This is done separately because
 during the dvc run, stage inputs and outputs are locked by DVC:
 
@@ -252,6 +256,53 @@ tar -xf VOCtrainval_11-May-2012.tar
 
 Notice that dataset annotation XML files are in Annotations subdirectory while
 corresponding input images are in JPEGImages subdirectory.
+
+## Running on Custom Dataset.
+
+Please update the following files
+
+1. Preparing the dataset.
+    Dataset folder should have the following structure.
+    ```
+    BaseFolder
+    |
+    |___ Dataset
+    |    |
+    |    |---Annotations    
+    |    |    |---xml file
+    |    |---ImageSets
+    |    |    |
+    |    |    |---Main             
+    |    |    |    |---trainval.txt
+    |    |    |    |---test.txt
+    |    |    |
+    |    |---JPEGImages    
+    |    |    |   |---Image files in jpg format
+       ```       
+ 2. Preparing the dataset file.<br>
+    Create a file inside the folder mmdet/datasets.<br>
+    we can take voc.py in the same folder as a template and make necessary modifications.<br>
+    Newly added file hdc.py was created for the custom dataset.<br>
+    Please modify the class names in this file appropriately.<br>
+ 
+ 3. Prepare config file for the new dataset in the folder config/_base_ <br>
+     hdc.py was created for the custom dataset.<br>
+     Please modify it appropriately.<br>
+ 
+ 4. Config changes 
+    1. Dataset path <br>
+       - Modify *configs/MIAOD-GRAY* to reflect the dataset path<br>
+         sections - data_root, data<br>
+       - Modify *configs/_base_/hdc.py* to reflect the dataset path<br>
+         sections - data_root, data<br>
+    
+     2. Number of classes<br>
+         Modify the section model in MIAOD-GRAY.<br>
+         C=2, for two class dataset.<br>
+         
+     3. Number of images to train.<br>
+         Modify the section X_S_size AND X_L_0_size in *config/MIAOD-GRAY*<br>
+           
 
 # MI-AOD
 
