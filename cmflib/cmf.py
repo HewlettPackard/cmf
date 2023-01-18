@@ -126,7 +126,7 @@ class Cmf(object):
         self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
-        print(custom_props)
+        # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
         self.execution = create_new_execution_in_existing_run_context \
@@ -167,11 +167,8 @@ class Cmf(object):
 
         dataset_commit = commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
-
         unique_name = url + ":" + c_hash
         dvc_url =  dvc_get_url(url)
-        print(dvc_url)
-
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
@@ -179,7 +176,7 @@ class Cmf(object):
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
-            #Quick fix- Updating only the name
+            # Quick fix- Updating only the name
             if custom_properties is not None:
                 self.update_existing_artifact(existing_artifact, custom_properties)
             uri = c_hash
@@ -232,18 +229,17 @@ class Cmf(object):
                                                           self.execution_label_props)
         return artifact
 
-    def log_dataset_with_version(self, url: str, version:str,  event: str, custom_properties: {} = None) -> mlpb.Artifact:
+    def log_dataset_with_version(self, url: str, version:str,  event: str, props: dict, custom_properties: {} = None) -> mlpb.Artifact:
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = custom_properties.get("git_repo", "")
-        name = re.split('/', url)[-1]
+        git_repo = props['git_repo']
+        name = url
         event_type = metadata_store_pb2.Event.Type.OUTPUT
         existing_artifact = []
         c_hash = version
         if event.lower() == "input":
             event_type = metadata_store_pb2.Event.Type.INPUT
 
-        #dataset_commit = commit_output(url, self.execution.id)
-
+        # dataset_commit = commit_output(url, self.execution.id)
         dataset_commit = version
         url = url + ":" + c_hash
         #To do - dvc_url(s3_url)
@@ -254,7 +250,7 @@ class Cmf(object):
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
-            #Quick fix- Updating only the name
+            # Quick fix- Updating only the name
             if custom_properties is not None:
                 self.update_existing_artifact(existing_artifact, custom_properties)
             uri = c_hash
@@ -264,7 +260,7 @@ class Cmf(object):
                                                   input_name=url,
                                                   event_type=event_type)
         else:
-            # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
+            #AA if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             artifact = create_new_artifact_event_and_attribution \
@@ -275,15 +271,17 @@ class Cmf(object):
                  name=url,
                  type_name="Dataset",
                  event_type=event_type,
-                 properties={"git_repo": str(git_repo), "Commit": str(dataset_commit)},
+                 properties={"git_repo": git_repo, "Commit": str(dataset_commit),"url":str(props['url'])},
                  artifact_type_properties={"git_repo": metadata_store_pb2.STRING,
-                                           "Commit": metadata_store_pb2.STRING
+                                           "Commit": metadata_store_pb2.STRING,
+                                           'url':metadata_store_pb2.STRING
                                            },
                  custom_properties=custom_props,
                  milliseconds_since_epoch=int(time.time() * 1000),
                  )
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = dataset_commit
+        custom_props["url"]=props['url']
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
@@ -308,7 +306,6 @@ class Cmf(object):
     # Add the model to dvc do a git commit and store the commit id in MLMD
     def log_model_with_version(self, path: str, event: str, props=None,
                   custom_properties=None) -> object:
-
         if custom_properties is None:
             custom_properties = {}
         custom_props = {} if custom_properties is None else custom_properties
@@ -320,7 +317,6 @@ class Cmf(object):
 
        # props["commit"] = "" # To do get from incoming data 
         c_hash = props.get("uri", " ")
-        print(c_hash)
         # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
         model_uri = path + ":" + c_hash
         #dvc_url = dvc_get_url(path, False)
@@ -500,6 +496,38 @@ class Cmf(object):
             self.driver.create_artifact_relationships(self.input_artifacts, child_artifact, self.execution_label_props)
         return metrics
 
+    # def log_execution_metrics_with_uuid(self, props: dict, custom_properties: {} = None) -> object:
+    #
+    #     custom_props = {} if custom_properties is None else custom_properties
+    #     uri = props['metrics_name'].split(':')[1]
+    #     metrics_name = props['metrics_name']
+    #     print(uri,'uri')
+    #     print(metrics_name,'metric_name')
+    #     metrics = create_new_artifact_event_and_attribution(
+    #         store=self.store,
+    #         execution_id=self.execution.id,
+    #         context_id=self.child_context.id,
+    #         uri=uri,
+    #         name=metrics_name,
+    #         type_name="Metrics",
+    #         event_type=metadata_store_pb2.Event.Type.OUTPUT,
+    #         properties={"metrics_name": metrics_name},
+    #         artifact_type_properties={"metrics_name": metadata_store_pb2.STRING},
+    #         custom_properties=custom_props,
+    #         milliseconds_since_epoch=int(time.time() * 1000),
+    #     )
+    #     if self.graph:
+    #         # To do create execution_links
+    #         self.driver.create_metrics_node(metrics_name, uri, "output", self.execution.id, self.parent_context,
+    #                                         custom_props)
+    #         child_artifact = {"Name": metrics_name, "URI": uri, "Event": "output",
+    #                           "Execution_Name": self.execution_name,
+    #                           "Type": "Metrics", "Execution_Command": self.execution_command,
+    #                           "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name}
+    #         self.driver.create_artifact_relationships(self.input_artifacts, child_artifact, self.execution_label_props)
+    #     return metrics
+
+
     # Log to parquet file
     def log_metric(self, metrics_name: str, custom_properties: {} = None):
         if metrics_name in self.metrics.keys():
@@ -654,3 +682,4 @@ class Cmf(object):
                 first, middle, last = str(index).split("/")
                 print(last)
                 os.symlink(str(index), slicedir + "/ " + last)
+
