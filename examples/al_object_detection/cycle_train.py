@@ -41,7 +41,7 @@ def parse_args():
     group_gpus = parser.add_mutually_exclusive_group()
     group_gpus.add_argument('--gpus', type=int,
         help='number of gpus to use (only applicable to non-distributed run)')
-    group_gpus.add_argument('--gpu_ids', type=int, nargs='+',
+    group_gpus.add_argument('--gpu-ids', type=int, nargs='+',
         help='ids of gpus to use (only applicable to non-distributed run)')
     parser.add_argument('--seed', type=int, default=666, help='random seed')
     parser.add_argument('--deterministic', action='store_true',
