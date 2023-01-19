@@ -1,20 +1,19 @@
 # Please change the dataset directory to your actual directory
-data_root = '/home/royann/mod-dataset/VOCdevkit/'
+data_root = '/lustre/data/hdcdatasets/'
 
 _base_ = [
-    './_base_/retinanet_r50_fpn.py', './_base_/gray.py',
+    './_base_/retinanet_r50_fpn.py', './_base_/hdc.py',
     './_base_/default_runtime.py'
 ]
 # We use PASCAL VOC 2007+2012 trainval sets to train, so we also use them to select the informative samples.
 data = dict(
     test=dict(
         ann_file=[
-            data_root + 'VOC2007/ImageSets/Main/trainval.txt',
-            data_root + 'VOC2012/ImageSets/Main/trainval.txt',
+            data_root + 'hdc/ImageSets/Main/trainval.txt',
         ],
-        img_prefix=[data_root + 'VOC2007/', data_root + 'VOC2012/'])
+        img_prefix=[data_root + 'hdc/'])
 )
-model = dict(bbox_head=dict(C=1))
+model = dict(bbox_head=dict(C=2))
 # The initial learning rate, momentum, weight decay can be changed here.
 optimizer = dict(type='SGD', lr=1e-3, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
@@ -40,8 +39,8 @@ train_cfg = dict(param_lambda = 0.5)
 k = 10000
 # The size of the initial labeled set and the newly selected sets after each cycle can be set here.
 # Note that there are 16551 images in the PASCAL VOC 2007+2012 trainval sets.
-X_S_size = 16551//40
-X_L_0_size = 16551//20
+X_S_size = 9964//40
+X_L_0_size = 9964//20
 # The active learning cycles can be changed here.
 cycles = [0, 1, 2, 3, 4, 5, 6]
 # The work directory for saving logs and files can be changed here. Please refer to README.md for more information.

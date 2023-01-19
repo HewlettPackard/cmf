@@ -9,7 +9,8 @@ import mmcv
 import numpy as np
 from mmdet.apis import set_random_seed
 from mmdet.utils import collect_env, get_root_logger
-from mmdet.utils.active_datasets import *
+#from mmdet.utils.active_datasets import *
+from mmdet.utils.hdc.active_datasets import *
 
 
 def parse_args():

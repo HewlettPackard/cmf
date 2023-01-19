@@ -1,10 +1,12 @@
 import mmcv
 
-
 def wider_face_classes():
     return ['face']
 
-
+def hdc_classes():
+    return [
+        'Animal', 'Background'
+        ]
 def voc_classes():
     return [
         'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
@@ -91,6 +93,7 @@ def cityscapes_classes():
 
 dataset_aliases = {
     'voc': ['voc', 'pascal_voc', 'voc07', 'voc12'],
+    'hdc':['hdc'],
     'imagenet_det': ['det', 'imagenet_det', 'ilsvrc_det'],
     'imagenet_vid': ['vid', 'imagenet_vid', 'ilsvrc_vid'],
     'coco': ['coco', 'mscoco', 'ms_coco'],
@@ -100,7 +103,7 @@ dataset_aliases = {
 
 
 def get_classes(dataset):
-    """Get class names of a dataset."""
+    """Get class` names of a dataset."""
     alias2name = {}
     for name, aliases in dataset_aliases.items():
         for alias in aliases:
