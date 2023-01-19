@@ -19,8 +19,10 @@ from mmdet.apis import single_gpu_test, calculate_uncertainty
 from mmdet.datasets import build_dataloader, build_dataset
 from mmdet.models import build_detector
 from mmdet.utils import collect_env, get_root_logger
-from mmdet.utils.active_datasets import *
+#from mmdet.utils.active_datasets import *
+from mmdet.utils.hdc.active_datasets import *
 from tools.utils import losstype
+from torch import distributed as dist
 
 
 def parse_args():
@@ -39,7 +41,7 @@ def parse_args():
     group_gpus = parser.add_mutually_exclusive_group()
     group_gpus.add_argument('--gpus', type=int,
         help='number of gpus to use (only applicable to non-distributed run)')
-    group_gpus.add_argument('--gpu-ids', type=int, nargs='+',
+    group_gpus.add_argument('--gpu_ids', type=int, nargs='+',
         help='ids of gpus to use (only applicable to non-distributed run)')
     parser.add_argument('--seed', type=int, default=666, help='random seed')
     parser.add_argument('--deterministic', action='store_true',
@@ -131,6 +133,7 @@ def main():
 
     # load lists of all, labeled and unselected images
     all_anns = load_ann_list(cfg.data.train.dataset.ann_file)
+
     if len(all_anns[0]) == 1:
         X_all = np.arange(len(all_anns))
     else:
@@ -140,7 +143,6 @@ def main():
         X_all = np.arange(j)
     X_L = np.load(args.labeled)
     X_U = np.load(args.unselected)
-
     cycle = args.cycle
     cfg.cycles = list((args.cycle))
     initial_step = cfg.lr_config.step
@@ -163,6 +165,7 @@ def main():
     # load dataset
     datasets = [build_dataset(cfg.data.train)]
     if len(cfg.workflow) == 2:
+    
         val_dataset = copy.deepcopy(cfg.data.val)
         val_dataset.pipeline = cfg.data.train.dataset.pipeline
         datasets.append(build_dataset(val_dataset))
@@ -190,6 +193,9 @@ def main():
 
         if epoch == 0:
             cfg = create_X_L_file(cfg, X_L, all_anns, cycle)
+
+            if dist.is_initialized():
+                torch.distributed.barrier()
             datasets = [build_dataset(cfg.data.train)]
             losstype.update_vars(0)
             cfg.total_epochs = cfg.epoch_ratio[0]
@@ -207,6 +213,9 @@ def main():
 
         cfg_u = create_X_U_file(cfg.deepcopy(), X_U, all_anns, cycle)
         cfg = create_X_L_file(cfg, X_L, all_anns, cycle)
+        if dist.is_initialized():
+            torch.distributed.barrier()
+
         datasets_u = [build_dataset(cfg_u.data.train)]
         datasets = [build_dataset(cfg.data.train)]
         losstype.update_vars(1)
@@ -233,6 +242,9 @@ def main():
 
         cfg_u = create_X_U_file(cfg.deepcopy(), X_U, all_anns, cycle)
         cfg = create_X_L_file(cfg, X_L, all_anns, cycle)
+
+        if dist.is_initialized():
+            torch.distributed.barrier()
         datasets_u = [build_dataset(cfg_u.data.train)]
         datasets = [build_dataset(cfg.data.train)]
         losstype.update_vars(2)
@@ -258,6 +270,9 @@ def main():
         # ---------- Label Set Training ----------
 
         cfg = create_X_L_file(cfg, X_L, all_anns, cycle)
+
+        if dist.is_initialized():
+            torch.distributed.barrier()
         datasets = [build_dataset(cfg.data.train)]
         losstype.update_vars(0)
         cfg.total_epochs = cfg.epoch_ratio[0]
@@ -273,6 +288,7 @@ def main():
 
     # save the model to checkpoint
     save_checkpoint(model, args.model, meta=cfg.checkpoint_config.meta)
+
 
 if __name__ == '__main__':
     main()

@@ -1,10 +1,20 @@
 import mmcv
 
+def grey_classes():
+    return ['aeroplane']
 
 def wider_face_classes():
     return ['face']
 
 
+def voc_single_classes():
+    return [
+        'aeroplane']
+
+def hdc_classes():
+    return [
+        'Animal', 'Background'
+        ]
 def voc_classes():
     return [
         'aeroplane', 'bicycle', 'bird', 'boat', 'bottle', 'bus', 'car', 'cat',
@@ -91,6 +101,8 @@ def cityscapes_classes():
 
 dataset_aliases = {
     'voc': ['voc', 'pascal_voc', 'voc07', 'voc12'],
+    'greydataset':['grey'],
+    'hdc':['hdc'],
     'imagenet_det': ['det', 'imagenet_det', 'ilsvrc_det'],
     'imagenet_vid': ['vid', 'imagenet_vid', 'ilsvrc_vid'],
     'coco': ['coco', 'mscoco', 'ms_coco'],
@@ -100,13 +112,15 @@ dataset_aliases = {
 
 
 def get_classes(dataset):
-    """Get class names of a dataset."""
+    """Get class` names of a dataset."""
+
     alias2name = {}
     for name, aliases in dataset_aliases.items():
         for alias in aliases:
             alias2name[alias] = name
 
     if mmcv.is_str(dataset):
+        print(f"dataset is {dataset}")
         if dataset in alias2name:
             labels = eval(alias2name[dataset] + '_classes()')
         else:
