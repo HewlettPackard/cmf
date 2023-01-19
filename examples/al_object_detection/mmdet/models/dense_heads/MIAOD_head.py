@@ -79,7 +79,8 @@ class MIAODHead(BaseDenseHead):
         self.bbox_coder = build_bbox_coder(bbox_coder)
         self.FL = build_loss(FL)
         self.SmoothL1 = build_loss(SmoothL1)
-        self.l_imgcls = nn.BCELoss()
+        #self.l_imgcls = nn.BCELoss()
+        self.l_imgcls = nn.BCEWithLogitsLoss()
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
         if self.train_cfg:
