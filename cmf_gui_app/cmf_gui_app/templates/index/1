@@ -1,8 +1,0 @@
-{% load static %}
-<link rel="stylesheet" type="text/css" href="{% static 'blog/style.css' %}">
-<html>
-  <head><title>HTML Pandas Dataframe with CSS</title></head>
-  <body>
-    {{table|safe}}
-  </body>
-</html

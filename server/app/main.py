@@ -1,7 +1,6 @@
 # cmf-server api's
 
 from fastapi import FastAPI, Request
-from server.app.mlmd import merge_mlmd
 from cmflib import cmfquery, merger
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
