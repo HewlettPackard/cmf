@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 #!python
+=======
+#!/usr/bin/env python3
+>>>>>>> f8635ec5b11d2748375927fda56cb17035cb8e73
 # -*- coding: utf-8 -*-
 import re
 import sys
