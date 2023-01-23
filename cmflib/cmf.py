@@ -23,7 +23,8 @@ import dvc
 import sys
 from ml_metadata.proto import metadata_store_pb2 as mlpb, metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
-from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, commit_output, git_get_repo, commit_dvc_lock_file
+from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, commit_output, git_get_repo, commit_dvc_lock_file,\
+     git_commit
 import cmflib.graph_wrapper as graph_wrapper
 from cmflib.metadata_helper import get_or_create_parent_context, get_or_create_run_context, \
     associate_child_to_parent_context, create_new_execution_in_existing_run_context, link_execution_to_artifact, \
@@ -57,6 +58,7 @@ class Cmf(object):
             self.driver.create_pipeline_node(pipeline_name, self.parent_context.id, custom_properties)
 
     def __del__(self):
+        git_commit(self.execution.id)
         if self.graph:
             self.driver.close()
 
