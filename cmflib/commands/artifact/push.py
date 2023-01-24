@@ -20,18 +20,20 @@ import os
 import subprocess
 
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import check_minio_server, execute_subprocess_command
+from cmflib.cli.utils import check_minio_server
 from cmflib.utils.dvc_config import DvcConfig
+from cmflib.dvc_wrapper import dvc_push
 
 
 class CmdArtifactPush(CmdBase):
     def run(self):
+        result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             return out_msg
         else:
-            result = execute_subprocess_command(["dvc", "push"])
+            result = dvc_push()
             return result
 
 

@@ -21,16 +21,15 @@ import subprocess
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import read_cmf_config, find_root, execute_subprocess_command
+from cmflib.cli.utils import read_cmf_config, find_root
+from cmflib.dvc_wrapper import dvc_get_config
 
 
 class CmdInitShow(CmdBase):
     def run(self):
         cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = execute_subprocess_command(["dvc", "config", "-l"])
-        if result.find("Exception occurred") != -1:
-            return result
+        result = dvc_get_config()
         if len(result) == 0:
             return msg
         else:
