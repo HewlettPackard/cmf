@@ -21,7 +21,9 @@ import subprocess
 import sys
 
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import create_cmf_config, execute_subprocess_command
+from cmflib.dvc_wrapper import git_quiet_init, git_checkout, git_initial_commit, git_add_remote, git_status, dvc_quiet_init,\
+  dvc_add_remote_repo, dvc_add_attribute
+from cmflib.cli.utils import create_cmf_config
 
 
 class CmdInitAmazonS3(CmdBase):
@@ -36,45 +38,25 @@ class CmdInitAmazonS3(CmdBase):
         if output.find("Exception") != -1:
             return output
 
-        # finding path of current python site_packages
-        site_packages_loc = next(p for p in sys.path if f"{sys.exec_prefix}/lib" in p)
-        # location of git_initialize.sh
-        file = f"{site_packages_loc}/cmflib/commands/init/git_initialize.sh"
+        output = git_status()
+        if not output:
+            print("Starting git init.")
+            git_quiet_init()
+            git_checkout()
+            git_initial_commit()
+            git_add_remote(self.args.git_remote_url)
+            print("git init complete.")
 
-        # check whether git_initialize.sh exists
-        if not os.path.exists(file):
-            return "Exception occurred: Unable to initialise git."
-
-        # executing git_initialize.sh
-        result = execute_subprocess_command(
-            ["sh", f"{file}", f"{self.args.git_remote_url}"]
-        )
-        if result.find("Exception occurred") != -1:
-            return result
-        if len(result) != 0:
-            print(result)
-
-        # location of dvc_script_amazonS3.sh
-        file = f"{site_packages_loc}/cmflib/commands/init/dvc_script_amazonS3.sh"
-
-        #  check whether dvc_script_amazonS3.sh exists
-        if not os.path.exists(file):
-            return "Exception occurred: Unable to initialise CMF."
-
-        # executing dvc_script_amazonS3.sh
-        result = execute_subprocess_command(
-            [
-                "sh",
-                f"{file}",
-                f"{self.args.url}",
-                f"{self.args.access_key_id}",
-                f"{self.args.secret_key}",
-            ]
-        )
-        if result.find("Exception occurred") != -1:
-            return result
-        return result
-
+        print("Starting cmf init.")
+        dvc_quiet_init()
+        repo_type = 'amazons3'
+        output = dvc_add_remote_repo(repo_type, self.args.url)
+        if not output:
+            return "cmf init failed."
+        print(output)
+        dvc_add_attribute(repo_type, 'access_key_id', self.args.access_key_id)
+        dvc_add_attribute(repo_type, 'secret_access_key', self.args.secret_key)
+        return "cmf init complete."
 
 def add_parser(subparsers, parent_parser):
     HELP = "Initialises Amazon S3 as artifact repository."

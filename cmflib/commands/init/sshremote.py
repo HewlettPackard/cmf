@@ -22,7 +22,9 @@ import subprocess
 import sys
 
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import create_cmf_config, execute_subprocess_command
+from cmflib.dvc_wrapper import git_quiet_init, git_checkout, git_initial_commit, git_add_remote, git_status, dvc_quiet_init,\
+  dvc_add_remote_repo, dvc_add_attribute
+from cmflib.cli.utils import create_cmf_config
 
 
 class CmdInitSSHRemote(CmdBase):
@@ -36,47 +38,26 @@ class CmdInitSSHRemote(CmdBase):
                 output = create_cmf_config(cmf_config, "http://127.0.0.1:80")
         if output.find("Exception") != -1:
             return output
+        output = git_status()
+        if not output:
+            print("Starting git init.")
+            git_quiet_init()
+            git_checkout()
+            git_initial_commit()
+            git_add_remote(self.args.git_remote_url)
+            print("git init complete.")
 
-        # finding path of current python site_packages
-        site_packages_loc = next(p for p in sys.path if f"{sys.exec_prefix}/lib" in p)
-        # location of git_initialize.sh
-        file = f"{site_packages_loc}/cmflib/commands/init/git_initialize.sh"
-
-        # check whether git_initialize.sh exists
-        if not os.path.exists(file):
-            return "Exception occurred: Unable to initialise git."
-
-        # executing git_initialize.sh
-        result = execute_subprocess_command(
-            ["sh", f"{file}", f"{self.args.git_remote_url}"]
-        )
-        if result.find("Exception occurred") != -1:
-            return result
-        if len(result) != 0:
-            print(result)
-
-        # location of dvc_script_sshremote.sh
-        file = f"{site_packages_loc}/cmflib/commands/init/dvc_script_sshremote.sh"
-
-        # check whether dvc_script_ssheremote.sh exists
-        if not os.path.exists(file):
-            return "Exception occurred: Unable to initialise CMF."
-
-        # executing dvc_script_sshremote.sh
-        result = execute_subprocess_command(
-            [
-                "sh",
-                f"{file}",
-                f"{self.args.path}",
-                f"{self.args.user}",
-                f"{self.args.port}",
-                f"{self.args.password}",
-            ]
-        )
-        if result.find("Exception occurred") != -1:
-            return result
-        return result
-
+        print("Starting cmf init.")
+        repo_type = 'sshremote'
+        dvc_quiet_init()
+        output = dvc_add_remote_repo(repo_type, self.args.path)
+        if not output:
+            return "cmf init failed."
+        print(output)
+        dvc_add_attribute(repo_type, 'user', self.args.user)
+        dvc_add_attribute(repo_type, 'password', self.args.password)
+        dvc_add_attribute(repo_type, 'port', self.args.port)
+        return "cmf init complete."
 
 def add_parser(subparsers, parent_parser):
     HELP = "Initialises remote SSH directory as artifact repository."

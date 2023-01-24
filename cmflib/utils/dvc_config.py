@@ -16,17 +16,16 @@
 
 import os
 import subprocess
-from cmflib.cli.utils import execute_subprocess_command
+from cmflib.dvc_wrapper import dvc_get_config
 
 # This class handles pulls dvc configuration
 class DvcConfig:
     @staticmethod
     def get_dvc_config():
-        result = execute_subprocess_command(["dvc", "config", "-l"])
-        if result.find("Exception occurred") != -1:
-            return result
-        if len(result) == 0:
-            return "'cmf' is not configured.\nExecute 'cmf init' command."
+        message = "'cmf' is not configured.\nExecute 'cmf init' command."
+        result = dvc_get_config()
+        if not result:
+            return msg
         else:
             config_list = result.split("\n")
             config_dict = {}

@@ -3,20 +3,6 @@ import os
 import sys
 
 
-def execute_subprocess_command(commands):
-    try:
-        process = subprocess.Popen(
-            commands, stdout=subprocess.PIPE, universal_newlines=True
-        )
-        output, error = process.communicate(timeout=60)
-        result = output.strip()
-        return result
-    except Execption as err:
-        process.kill()
-        outs, errs = process.communicate()
-        return f"Exception occurred!!! {err}"
-
-
 def fix_subparsers(subparsers):
     subparsers.required = True
     subparsers.dest = "cmd"
@@ -92,18 +78,3 @@ def check_minio_server(dvc_config_op):
             return exception
 
 
-def main():
-    # create_cmf_config("./.cmfconfig", "http://127.0.0.1:80")
-    # print(find_root(".cmfconfig"))
-    # config = { "core.remote": "minio",
-    #           "remote.minio.endpointurl": "http://127.0.0.1:80"
-    # }
-    # print(check_minio_server(config))
-    # print(read_cmf_config("./cmfconfig"))
-    commands = ["dvc", "config", "-l"]
-    print(type(commands))
-    print(execute_subprocess_command(commands))
-
-
-if __name__ == "__main__":
-    main()
