@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+pydantic
+minio
+dvc[s3,ssh]==2.27.0
+Jinja2
+
