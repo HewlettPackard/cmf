@@ -507,7 +507,7 @@ class Cmf:
         return artifact
 
 
-    def log_dataset_with_version(self, url: str, version: str, event: str,
+    def log_dataset_with_version(self, url: str, version: str, event: str, props: dict,
                                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
 
@@ -557,7 +557,7 @@ class Cmf:
                 properties={
                     "git_repo": str(git_repo),
                     "Commit": str(dataset_commit),
-                    "url":str(props['url']},
+                    "url":str(props['url'])},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
                     "Commit": mlpb.STRING,

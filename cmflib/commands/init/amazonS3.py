@@ -21,7 +21,7 @@ import subprocess
 import sys
 
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import git_quiet_init, git_checkout, git_initial_commit, git_add_remote, git_status, dvc_quiet_init,\
+from cmflib.dvc_wrapper import git_quiet_init, git_checkout_new_branch, git_initial_commit, git_add_remote, check_git_repo, dvc_quiet_init,\
   dvc_add_remote_repo, dvc_add_attribute
 from cmflib.cli.utils import create_cmf_config
 
@@ -38,11 +38,12 @@ class CmdInitAmazonS3(CmdBase):
         if output.find("Exception") != -1:
             return output
 
-        output = git_status()
-        if not output:
+        output = check_git_repo()
+        if output != True:
+            branch_name = "cmf_master"
             print("Starting git init.")
             git_quiet_init()
-            git_checkout()
+            git_checkout_new_branch(branch_name)
             git_initial_commit()
             git_add_remote(self.args.git_remote_url)
             print("git init complete.")
