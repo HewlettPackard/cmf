@@ -104,6 +104,7 @@ def check_git_repo() -> bool:
                                     'rev-parse',
                                     '--is-inside-work-tree'],
                                    stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
                                    universal_newlines=True)
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)

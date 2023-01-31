@@ -76,8 +76,9 @@ class Cmf:
 
     def __init__(self, filename: str = "mlmd",
                  pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None,
-                 graph: bool = False):
-        Cmf.__prechecks()
+                 graph: bool = False, is_server: bool = False):
+        if is_server is False:
+            Cmf.__prechecks()
         if custom_properties is None:
             custom_properties = {}
         config = mlpb.ConnectionConfig()
@@ -94,7 +95,8 @@ class Cmf:
         self.graph = graph
         self.branch_name = filename.rsplit('/',1)[-1]
 
-        git_checkout_new_branch(self.branch_name)
+        if is_server is False:
+            git_checkout_new_branch(self.branch_name)
         self.parent_context = get_or_create_parent_context(
             store=self.store, pipeline=pipeline_name, custom_properties=custom_properties)
         if graph is True:
@@ -334,39 +336,6 @@ class Cmf:
             (store=self.store,
              execution_type_name=execution_type,
              context_id=self.child_context.id,
-             execution=str(sys.argv),
-             pipeline_id=self.parent_context.id,
-             pipeline_type=self.parent_context.name,
-             git_repo=git_repo,
-             git_start_commit=git_start_commit,
-             custom_properties=custom_props
-             )
-        self.execution_name = str(self.execution.id) + "," + execution_type
-        self.execution_command = str(sys.argv)
-        for k, v in custom_props.items():
-            k = re.sub('-', '_', k)
-            self.execution_label_props[k] = v
-        self.execution_label_props["Execution_Name"] = execution_type + ":" + str(self.execution.id)
-        self.execution_label_props["execution_command"] = execution_cmd
-        if self.graph:
-            self.driver.create_execution_node(self.execution_name, self.child_context.id, self.parent_context,
-                                              str(sys.argv), self.execution.id, custom_props)
-        return self.execution
-
-    def merge_created_execution(self, execution_type: str, execution_cmd: str, properties:{} = None,
-                         custom_properties: {} = None) -> mlpb.Execution:
-        #Initializing the execution related fields
-        self.metrics = {}
-        self.input_artifacts = []
-        self.execution_label_props = {}
-        custom_props = {} if custom_properties is None else custom_properties
-        # print(custom_props)
-        git_repo = properties.get("Git_Repo", "")
-        git_start_commit = properties.get("Git_Start_Commit", "")
-        self.execution = create_new_execution_in_existing_run_context \
-            (store=self.store,
-             execution_type_name=execution_type,
-             context_id=self.child_context.id,
              execution=execution_cmd,
              pipeline_id=self.parent_context.id,
              pipeline_type=self.parent_context.name,
@@ -424,7 +393,7 @@ class Cmf:
 
         dataset_commit = commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
-
+        dvc_url =  dvc_get_url(url)
         url = url + ":" + c_hash
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
@@ -458,10 +427,12 @@ class Cmf:
                 event_type=event_type,
                 properties={
                     "git_repo": str(git_repo),
-                    "Commit": str(dataset_commit)},
+                    "Commit": str(dataset_commit),
+                    "url":str(dvc_url)},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
-                    "Commit": mlpb.STRING},
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING},
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(
                     time.time() * 1000),
@@ -510,7 +481,6 @@ class Cmf:
     def log_dataset_with_version(self, url: str, version: str, event: str, props: dict,
                                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
-
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = props['git_repo']
         name = url
@@ -568,7 +538,6 @@ class Cmf:
             )
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = dataset_commit
-        custom_props["url"]=props['url']
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
