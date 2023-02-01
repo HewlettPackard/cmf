@@ -27,55 +27,51 @@ They accept and return JSON-encoded request bodies and responses and return stan
 ## 2.  **Setup a cmf-server**
 
 ### Pre-requisite 
-1. [Docker]()
+1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 
  ### Following steps start a cmf-server in a docker conatainer:
 1.  Install [cmflib](https://github.com/abhinavchobey/cmf/blob/federated_cmf/README.md) on your system.
 
 2. Go to **server** directory. 
 ```
-user@uservm:~/cmf$ cd server
+cd server
 ```
 
-3. To execute docker commands, the user needs root privileges. 
+3. List all docker images.
 ```
-user@uservm:~/cmf$ sudo su
-```
-4. List all docker images.
-```
-user@uservm:~/cmf$ docker images
+docker images
 ```
 
-5. Execute the below-mentioned command to create a **cmf-server** docker image.
+4. Execute the below-mentioned command to create a **cmf-server** docker image.
 <pre>
 Usage:  docker build -t [image_name] -f ./Dockerfile ../
 </pre>
 Example:
 ```
-user@uservm:~/cmf$ docker build -t myimage -f ./Dockerfile ../
+docker build -t myimage -f ./Dockerfile ../
 ```
 Note - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
 
-6. Launch a new docker container using the image created in the previous step. 
+5. Launch a new docker container using the image created in the previous step. 
 <pre>
-Usage: docker run --name [container_name] --port 80:80 [image_name]
+Usage: docker run --name [container_name] --port 8080:80 [image_name]
 </pre>
 Example:
 ```
-user@uservm:~/cmf$ docker run --name mycontainer --port 80:80 myimage
+docker run --name mycontainer --port 8080:80 myimage
+```
+ 
+6. To stop the docker container.
+```
+docker stop [container_name]
 ```
 
-7. To stop the docker container.
+7. To delete the docker container.
 ```
-user@uservm:~/cmf$docker stop [container_name]
-```
-
-8. To delete the docker container.
-```
-user@uservm:~/cmf$docker rm [container_name] 
+docker rm [container_name] 
 ```
 
-9. To remove the docker image.
-```
-user@uservm:~/cmf$docker image rm [image_name] 
+8. To remove the docker image.
+``` 
+docker image rm [image_name] 
 ```
