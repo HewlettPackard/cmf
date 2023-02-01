@@ -40,8 +40,8 @@ class CmdInitSSHRemote(CmdBase):
             return output
 
         output = check_git_repo()
-        if output != True:
-            branch_name = "cmf_master"
+        if not output:
+            branch_name = "master"
             print("Starting git init.")
             git_quiet_init()
             git_checkout_new_branch(branch_name)

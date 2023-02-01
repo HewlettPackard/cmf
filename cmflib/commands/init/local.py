@@ -29,10 +29,12 @@ from cmflib.cli.utils import create_cmf_config
 
 class CmdInitLocal(CmdBase):
     def run(self):
-        cmf_config = "./.cmfconfig"
+        cmf_config = ".cmfconfig"
         cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
+        print(cmf_config)
         output = ""
         if self.args.cmf_server_ip:
+            print("Gave cmf_server_ip")
             output = create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):
@@ -41,8 +43,8 @@ class CmdInitLocal(CmdBase):
             return output
 
         output = check_git_repo()
-        if output != True:
-            branch_name = "cmf_master"
+        if not output:
+            branch_name = "master"
             print("Starting git init.")
             git_quiet_init()
             git_checkout_new_branch(branch_name)

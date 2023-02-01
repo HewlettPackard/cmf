@@ -623,7 +623,9 @@ class Cmf:
         # If connecting to an existing artifact - The name of the artifact is
         # used as path/steps/key
         model_uri = path + ":" + c_hash
-        # uri = ""
+        dvc_url = dvc_get_url(path, False)
+        url = dvc_url
+        uri = ""
         if c_hash and c_hash.strip():
             uri = c_hash.strip()
             existing_artifact.extend(self.store.get_artifacts_by_uri(uri))
@@ -655,12 +657,14 @@ class Cmf:
                     "model_framework": str(model_framework),
                     "model_type": str(model_type),
                     "model_name": str(model_name),
-                    "Commit": str(model_commit)},
+                    "Commit": str(model_commit),
+                    "url": str(url)},
                 artifact_type_properties={
                     "model_framework": mlpb.STRING,
                     "model_type": mlpb.STRING,
                     "model_name": mlpb.STRING,
                     "Commit": mlpb.STRING,
+                    "url":mlpb.STRING,
                 },
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(
@@ -705,7 +709,7 @@ class Cmf:
     def log_model_with_version(self, path: str, event: str, props=None,
                   custom_properties=None) -> object:
         """Logs a model when the version(hash) is known"""
-       
+
         if custom_properties is None:
             custom_properties = {}
         custom_props = {} if custom_properties is None else custom_properties
@@ -728,7 +732,7 @@ class Cmf:
         else:
             raise RuntimeError("Model commit failed, Model uri empty")
 
-        if existing_artifact and len(existing_artifact) != 0 and event_type == metadata_store_pb2.Event.Type.INPUT:
+        if existing_artifact and len(existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
             artifact = link_execution_to_artifact(store=self.store,
                                                   execution_id=self.execution.id,
                                                   uri=c_hash,
@@ -762,7 +766,7 @@ class Cmf:
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
         # custom_properties["Commit"] = model_commit
-        custom_props["url"] = url
+        # custom_props["url"] = url
         self.execution_label_props["Commit"] = props.get("Commit", "")
         if self.graph:
             self.driver.create_model_node(model_uri, uri, event, self.execution.id, self.parent_context, custom_props)
