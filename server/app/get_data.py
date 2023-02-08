@@ -1,17 +1,39 @@
 from cmflib import cmfquery
 import pandas as pd
 
-#This function fetches all the executions available in given mlmd
-def get_executions(mlmdfilepath):
+def get_executions(mlmdfilepath,pipeline_name):
    query = cmfquery.CmfQuery(mlmdfilepath)
-   names = query.get_pipeline_names()       #getting all pipeline names in mlmd
-   for name in names:
-        stages = query.get_pipeline_stages(name)
-        df = pd.DataFrame()
-        for stage in stages:
-            executions = query.get_all_executions_in_stage(stage)
+   # names = query.get_pipeline_names()       #getting all pipeline names in mlmd
+   stages = query.get_pipeline_stages(pipeline_name)
+   # id=query.get_pipeline_id(pipeline_name)
+   print(id)
+   print(stages,'stages')
+   df = pd.DataFrame()
+   for stage in stages:
+        executions = query.get_all_executions_in_stage(stage)
+        print(executions.Pipeline_Type)
+        # print(executions.id[0],executions.Context_Type[0],executions.Pipeline_Type[0])
+        if str(executions.Pipeline_Type[0]) == pipeline_name:
+            print(type(executions),'executions')
             df = pd.concat([df, executions], sort=True, ignore_index=True)
-        return df
+   print(df,'df')
+   return df
+
+#get_executions('/home/abhinavchobey/new_code/cmf/local/mlmd','Test-env1')
+
+
+#
+# #This function fetches all the executions available in given mlmd
+# def get_executions(mlmdfilepath):
+#    query = cmfquery.CmfQuery(mlmdfilepath)
+#    names = query.get_pipeline_names()       #getting all pipeline names in mlmd
+#    for name in names:
+#         stages = query.get_pipeline_stages(name)
+#         df = pd.DataFrame()
+#         for stage in stages:
+#             executions = query.get_all_executions_in_stage(stage)
+#             df = pd.concat([df, executions], sort=True, ignore_index=True)
+#         return df
 
 #This function fetches all the artifacts available in given mlmd
 def get_artifacts(mlmdfilepath):

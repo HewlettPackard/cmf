@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>hp_server</title>
+</head>
+<body>
+
+{% if exec_val== "False" %}
+    <p>No mlmd found</p>
+{% else %}
+<h1>Pipelines available</h1>
+<ul>
+    {% for col in pipeline_names %}
+        <li><a target="_blank" style="font-size:30px;" class="fcc-btn" href="/display_executions/{{ col }}"  >{{ col }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+</body>
+</html>

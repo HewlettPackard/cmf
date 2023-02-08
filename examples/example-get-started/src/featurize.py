@@ -76,7 +76,7 @@ def featurize(input_dir: str, output_dir: str) -> None:
     graph = True if graph_env == "True" or graph_env == "TRUE" else False
     metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
 
-    _ = metawriter.create_context(pipeline_stage="Featurize")
+    _ = metawriter.create_context(pipeline_name="Test-env",pipeline_stage="Featurize")
     _ = metawriter.create_execution(execution_type="Featurize-execution", custom_properties=params)
 
     _ = metawriter.log_dataset(input_ds.train, "input")

@@ -17,6 +17,7 @@
 from cmflib import cmf
 import json
 
+
 # mlmd is created from metadata passed in Json format
 def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     mlmd_data = json.loads(mlmd_json)
@@ -27,13 +28,15 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     # print(type(pipeline))
     pipeline_name = pipeline["name"]
     # print(type(pipeline_name))
+    stage = {}
     if cmd == "push":
         data = create_original_time_since_epoch(mlmd_data)
     else:
         data = mlmd_data
     cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name, is_server=True)
     for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
-        # check if exec_id exist or not, on that basis get executions
+        
+
         if exec_id is None:
             list_executions = [execution for execution in stage["executions"]]
         elif exec_id is not None:
@@ -44,10 +47,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
             ]
         else:
             return "Invalid execution id given."
+
         for execution in list_executions:  # Iterates over all the executions
             _ = cmf_class.create_context(
-                pipeline_stage=stage["name"],
-                custom_properties=stage["custom_properties"],
+            pipeline_name="None",
+            pipeline_stage = stage['name'],
+            custom_properties = stage["custom_properties"],
             )
             _ = cmf_class.merge_created_execution(
                 execution["type"],

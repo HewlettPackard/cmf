@@ -49,7 +49,7 @@ generate_dataset()
 # Note - metadata is stored in a file called "mlmd". It is a sqlite file.
 # To delete earlier metadata, delete this mlmd file.
 metawriter = cmf.Cmf(filename="mlmd", pipeline_name="dvc")
-_ = metawriter.create_context(pipeline_stage="Prepare")
+_ = metawriter.create_context(pipeline_name="Test-env",pipeline_stage="Prepare")
 _ = metawriter.create_execution(execution_type="Prepare")
 
 # This is needed as we have to track the whole dataset.

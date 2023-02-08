@@ -49,7 +49,7 @@ def test(model_dir: str, dataset_dir: str, output_dir: str) -> None:
     graph_env = os.getenv("NEO4J","False")
     graph = True if graph_env == "True" or graph_env == "TRUE" else False
     metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
-    _ = metawriter.create_context(pipeline_stage="Evaluate")
+    _ = metawriter.create_context(pipeline_name="Test-env",pipeline_stage="Evaluate")
     _ = metawriter.create_execution(execution_type="Evaluate-execution")
 
     # TODO: Sergey - how do I know these custom properties here?

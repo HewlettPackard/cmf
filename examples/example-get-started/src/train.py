@@ -40,7 +40,7 @@ def train(input_dir: str, output_dir: str) -> None:
     graph_env = os.getenv("NEO4J","False")
     graph = True if graph_env == "True" or graph_env == "TRUE" else False
     metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
-    _ = metawriter.create_context(pipeline_stage="Train")
+    _ = metawriter.create_context(pipeline_name="Test-env",pipeline_stage="Train")
     _ = metawriter.create_execution(execution_type="Train-execution", custom_properties=params)
 
     train_ds = os.path.join(input_dir, "train.pkl")

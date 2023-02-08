@@ -17,10 +17,11 @@ server_store_path = "/cmf-server/data/mlmd"
 
 
 @app.get("/")
-def read_root():
-    return {
-        "Welcome to cmf-server, Use various APIs to interact with cmf-server eg: http://server_ip/mlmd_push/ "
-    }
+def read_root(request:Request):
+    return templates.TemplateResponse(
+        "home.html",{'request':request}
+    )
+
 
 
 # api to posAt mlmd file to cmf-server
@@ -72,21 +73,12 @@ async def mlmd_pull(info: Request, pipeline_name: str):
 @app.get("/display_executions/{pipeline_name}", response_class=HTMLResponse)
 async def display_exec(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
+
     if os.path.exists(server_store_path):
-        execution_df = get_executions(server_store_path)
-        query = cmfquery.CmfQuery(server_store_path)
-        if (
-            pipeline_name in query.get_pipeline_names()
-        ):  # checks if pipeline name is available in mlmd
-            json_payload = query.dumptojson(pipeline_name, None)
-            exec_val = "true"
-        else:
-            print("Pipeline name " + pipeline_name + " doesn't exist.")
-            exec_val = "nopipeline"
-    else:
-        print("No mlmd file submitted.")
-        exec_val = "false"
-        execution_df = " "
+        execution_df = get_executions(server_store_path,pipeline_name)
+        exec_val = "true"
+        print(execution_df)
+
     return templates.TemplateResponse(
         "execution.html",
         {"request": request, "exec_df": execution_df, "exec_val": exec_val},
@@ -107,3 +99,20 @@ async def display_artifact(request: Request):
         "artifacts.html",
         {"request": request, "artifact_df": artifact_df, "artifact_val": artifact_val},
     )
+    
+@app.get("/display_executions/", response_class=HTMLResponse)
+async def display_list_of_exec(request: Request):
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        pipeline_names=query.get_pipeline_names()
+        exec_val='True'
+    else:
+        print("No mlmd file submitted.")
+        pipeline_names=[]
+        exec_val = "False"
+    return templates.TemplateResponse(
+        "list_of_pipelines.html",
+        {"request": request, "exec_val": exec_val,'pipeline_names':pipeline_names},
+    )
+
