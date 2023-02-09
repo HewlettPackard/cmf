@@ -35,8 +35,6 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
         data = mlmd_data
     cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name, is_server=True)
     for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
-        
-
         if exec_id is None:
             list_executions = [execution for execution in stage["executions"]]
         elif exec_id is not None:
@@ -49,8 +47,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
             return "Invalid execution id given."
 
         for execution in list_executions:  # Iterates over all the executions
-            _ = cmf_class.create_context(
-            pipeline_name="None",
+            _ = cmf_class.merge_create_context(
             pipeline_stage = stage['name'],
             custom_properties = stage["custom_properties"],
             )

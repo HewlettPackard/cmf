@@ -158,10 +158,9 @@ class Cmf:
         if hasattr(self, 'driver'):
             self.driver.close()
 
-    def create_context(self,pipeline_name:str, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
+    def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
         custom_props = {} if custom_properties is None else custom_properties
-        if pipeline_name != 'None':
-            pipeline_stage = pipeline_name+'_'+pipeline_stage
+        pipeline_stage = self.parent_context.name+'/'+pipeline_stage
         ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
         self.child_context = ctx
         associate_child_to_parent_context(store=self.store, parent_context=self.parent_context,
@@ -170,6 +169,18 @@ class Cmf:
             self.driver.create_stage_node(
                 pipeline_stage, self.parent_context, ctx.id, custom_props)
         return ctx
+
+    def merge_created_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
+        custom_props = {} if custom_properties is None else custom_properties
+        ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
+        self.child_context = ctx
+        associate_child_to_parent_context(store=self.store, parent_context=self.parent_context,
+                                          child_context=ctx)
+        if self.graph:
+            self.driver.create_stage_node(
+                pipeline_stage, self.parent_context, ctx.id, custom_props)
+        return ctx
+
 
     def create_execution(self, execution_type: str,
                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
