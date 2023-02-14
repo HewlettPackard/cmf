@@ -3,14 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <title>hp-server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        ul {
+          list-style-type: none;
+          margin: 0;
+          padding: 0;
+          overflow: hidden;
+          background-color: #333;
+        }
+
+        li {
+          font-size: 30px;
+          float: right;
+          color: white;
+          padding: 14px 16px;
+          text-align: center;
+
+        }
+
+        li a {
+          font-size: 30px;
+          float: right;
+          display: block;
+          color: white;
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+        }
+
+        li a:hover {
+          background-color: #111;
+        }
+    </style>
 </head>
 <body>
-<font size="6">"Welcome to cmf-server, Use various APIs to interact with cmf-server eg: http://server_ip/mlmd_push/ "
-   </font>
-
 <ul>
-    <li><a target="_blank" style="font-size:30px;" class="fcc-btn" href="/display_executions/"  >Display Executions</a></li>
-    <li><a target="_blank" style="font-size:30px;" class="fcc-btn" href="/display_artifacts/"  >Display Artifacts</a></li>
+    <li style="float:left">Welcome to the server</li>
+    <li><a class="active" href="/">Home</a></li>
+    <li><a href="/display_executions/">Executions</a></li>
+    <li><a href="/display_artifacts/">Artifacts</a></li>
 </ul>
+
+
+
+{% block content %}
+{% endblock %}
 </body>
 </html>

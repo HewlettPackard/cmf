@@ -1,7 +1,7 @@
 # cmf-server api's
 
 from fastapi import FastAPI, Request
-from cmflib import cmfquery, merger
+from cmflib import cmfquery, cmf_merger
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from server.app.get_data import get_executions, get_artifacts
@@ -28,7 +28,7 @@ def read_root(request:Request):
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     req_info = await info.json()
-    merger.parse_json_to_mlmd(
+    cmf_merger.parse_json_to_mlmd(
         req_info["json_payload"], "data/mlmd", "push", req_info["id"]
     )
     return {"status": "success", "data": req_info}

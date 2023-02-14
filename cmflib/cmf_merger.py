@@ -47,7 +47,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
             return "Invalid execution id given."
 
         for execution in list_executions:  # Iterates over all the executions
-            _ = cmf_class.merge_create_context(
+            _ = cmf_class.merge_created_context(
             pipeline_stage = stage['name'],
             custom_properties = stage["custom_properties"],
             )

@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+{% extends 'home.html' %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>hp_server</title>
 </head>
 <body>
-
+{% block content %}
 {% if exec_val== "False" %}
     <p>No mlmd found</p>
 {% else %}
@@ -16,5 +16,6 @@
     {% endfor %}
 </ul>
 {% endif %}
+{% endblock %}
 </body>
 </html>

@@ -18,7 +18,7 @@
 import argparse
 import json
 import os
-from cmflib import merger
+from cmflib import cmf_merger
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import read_cmf_config, find_root
@@ -63,7 +63,7 @@ class CmdMetadataPull(CmdBase):
             return "Error: Execution id is not present in mlmd."
         elif output.content:
             try:
-                merger.parse_json_to_mlmd(
+                cmf_merger.parse_json_to_mlmd(
                     output.content, directory_to_dump + "/mlmd", cmd, None
                 )  # converts mlmd json data to mlmd file
             except Exception as e:
