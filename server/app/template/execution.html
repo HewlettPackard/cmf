@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <title>HP_server</title>
-
+{% block style %}
     <style>
         body{
             height : 100%;
             width : 100% ;
         }
         table {
-
+            font-family: arial, sans-serif;
             border-collapse: collapse;
             width: 100%;
-        }
+          }
 
-        th, td {
-          text-align: center;
-
-          padding: 8px;
-        }
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+          }
 
         tr:nth-child(even) {
-          background-color: #D6EEEE;
-        }
+            background-color: #dddddd;
+          }
     </style>
+{% endblock %}
 </head>
 <body>
 {% block content %}

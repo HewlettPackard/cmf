@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <style>
-        ul {
+        ul.nav {
           list-style-type: none;
           margin: 0;
           padding: 0;
@@ -16,7 +16,7 @@
           background-color: #333;
         }
 
-        li {
+        li.navli {
           font-size: 30px;
           float: right;
           color: white;
@@ -25,7 +25,7 @@
 
         }
 
-        li a {
+        li a.active {
           font-size: 30px;
           float: right;
           display: block;
@@ -35,17 +35,20 @@
           text-decoration: none;
         }
 
-        li a:hover {
+        li a.active:hover {
           background-color: #111;
         }
     </style>
+{% block style %}
+{% endblock %}    
 </head>
 <body>
-<ul>
-    <li style="float:left">Welcome to the server</li>
+<ul class='nav'>
+    <li class="navli" style="float:left">Welcome to the cmf-server</li>
     <li><a class="active" href="/">Home</a></li>
-    <li><a href="/display_executions/">Executions</a></li>
-    <li><a href="/display_artifacts/">Artifacts</a></li>
+    <li><a class="active" href="/display_pipelines/lineage">Lineage</a></li>
+    <li><a class="active" href="/display_pipelines/execution">Executions</a></li>
+    <li><a class="active" href="/display_artifacts/">Artifacts</a></li>
 </ul>
 
 

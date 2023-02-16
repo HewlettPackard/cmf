@@ -5,7 +5,9 @@ from cmflib import cmfquery, cmf_merger
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from server.app.get_data import get_executions, get_artifacts
+from server.app.query_visualization import query_visualization
 from pathlib import Path
+
 import os
 import json
 
@@ -17,11 +19,10 @@ server_store_path = "/cmf-server/data/mlmd"
 
 
 @app.get("/")
-def read_root(request:Request):
+def read_root(request: Request):
     return templates.TemplateResponse(
-        "home.html",{'request':request}
+        "home.html", {'request': request}
     )
-
 
 
 # api to posAt mlmd file to cmf-server
@@ -44,7 +45,7 @@ async def mlmd_pull(info: Request, pipeline_name: str):
         execution_flag = 0
         # checks if given execution_id present in mlmd
         if (
-            pipeline_name in query.get_pipeline_names()
+                pipeline_name in query.get_pipeline_names()
         ):  # checks if pipeline name is available in mlmd
             json_payload = query.dumptojson(pipeline_name, None)
             mlmd_data = json.loads(json_payload)["Pipeline"]
@@ -75,13 +76,33 @@ async def display_exec(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
 
     if os.path.exists(server_store_path):
-        execution_df = get_executions(server_store_path,pipeline_name)
+        execution_df = get_executions(server_store_path, pipeline_name)
         exec_val = "true"
         print(execution_df)
 
     return templates.TemplateResponse(
         "execution.html",
         {"request": request, "exec_df": execution_df, "exec_val": exec_val},
+    )
+
+
+@app.get("/display_lineage/{pipeline_name}", response_class=HTMLResponse)
+async def display_lineage(request: Request, pipeline_name: str):
+    # checks if mlmd file exists on server
+    print(os.getcwd())
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            query_visualization(server_store_path, pipeline_name)
+            print(pipeline_name)
+        else:
+            print("Pipeline name " + pipeline_name + " doesn't exist.")
+
+
+    else:
+        print('mlmd doesnt exist')
+    return templates.TemplateResponse(
+        "lineage.html", {"request": request},
     )
 
 
@@ -99,20 +120,21 @@ async def display_artifact(request: Request):
         "artifacts.html",
         {"request": request, "artifact_df": artifact_df, "artifact_val": artifact_val},
     )
-    
-@app.get("/display_executions/", response_class=HTMLResponse)
-async def display_list_of_exec(request: Request):
+
+
+@app.get("/display_pipelines/{disp_val}", response_class=HTMLResponse)
+async def display_list_of_pipelines(request: Request,disp_val:str):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
-        pipeline_names=query.get_pipeline_names()
-        exec_val='True'
+        pipeline_names = query.get_pipeline_names()
+        exec_val = 'True'
     else:
         print("No mlmd file submitted.")
-        pipeline_names=[]
+        pipeline_names = []
         exec_val = "False"
     return templates.TemplateResponse(
         "list_of_pipelines.html",
-        {"request": request, "exec_val": exec_val,'pipeline_names':pipeline_names},
+        {"request": request, "exec_val": exec_val, 'pipeline_names': pipeline_names,'disp_val':disp_val},
     )
 
