@@ -36,7 +36,7 @@ def query_visualization(mlmd_path, pipeline_name):
         with_labels=True,
     )
     plt.savefig(
-        "/cmf-server/data/lineage.png", dpi=899, pad_inches=10
+        "./lineage.png", dpi=899, pad_inches=10
     )
     return True
     # query_visualization("/home/abhinavchobey/hpserver/cmf/local/example-get-started/mlmd",'Test-env' )

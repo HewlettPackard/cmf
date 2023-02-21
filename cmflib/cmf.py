@@ -359,6 +359,7 @@ class Cmf:
         dataset_commit = commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
         dvc_url = dvc_get_url(url)
+        dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
@@ -372,6 +373,8 @@ class Cmf:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
             uri = c_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -393,7 +396,7 @@ class Cmf:
                 properties={
                     "git_repo": str(git_repo),
                     "Commit": str(dataset_commit),
-                    "url": str(dvc_url)},
+                    "url": str(dvc_url_with_pipeline)},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
                     "Commit": mlpb.STRING,
@@ -442,6 +445,27 @@ class Cmf:
                     self.input_artifacts, child_artifact, self.execution_label_props)
         return artifact
 
+    def update_dataset_url(self, artifact: mlpb.Artifact, updated_url: str):
+        for key, value in artifact.properties.items():
+            if key == "url":
+                old_url = value.string_value
+                if updated_url not in old_url:
+                    new_url = f"{old_url},{updated_url}"
+                    artifact.properties[key].string_value = new_url
+        put_artifact(self.store, artifact)
+
+    def update_model_url(self, dup_artifact: list, updated_url: str):
+        for art in dup_artifact:
+            dup_art = art
+            for key, value in dup_art.properties.items():
+                if key == "url":
+                    old_url = value.string_value
+                    if updated_url not in old_url:
+                        new_url = f"{old_url},{updated_url}"
+                        dup_art.properties[key].string_value = new_url
+            put_artifact(self.store, dup_art)
+        return dup_artifact
+
     def log_dataset_with_version(self, url: str, version: str, event: str, props: dict,
                                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
@@ -470,6 +494,8 @@ class Cmf:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
             uri = c_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, props['url'])
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -585,6 +611,7 @@ class Cmf:
         model_uri = path + ":" + c_hash
         dvc_url = dvc_get_url(path, False)
         url = dvc_url
+        url_with_pipeline = f"{self.parent_context.name}:{url}"
         uri = ""
         if c_hash and c_hash.strip():
             uri = c_hash.strip()
@@ -594,6 +621,9 @@ class Cmf:
 
         if existing_artifact and len(
                 existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
+            # update url for existing artifact
+            print(type(existing_artifact))
+            existing_artifact = self.update_model_url(existing_artifact, url_with_pipeline)
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -618,7 +648,7 @@ class Cmf:
                     "model_type": str(model_type),
                     "model_name": str(model_name),
                     "Commit": str(model_commit),
-                    "url": str(url)},
+                    "url": str(url_with_pipeline)},
                 artifact_type_properties={
                     "model_framework": mlpb.STRING,
                     "model_type": mlpb.STRING,
@@ -660,6 +690,7 @@ class Cmf:
                     "Execution_Command": self.execution_command,
                     "Pipeline_Id": self.parent_context.id,
                     "Pipeline_Name": self.parent_context.name}
+
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props)
 
@@ -693,6 +724,8 @@ class Cmf:
             raise RuntimeError("Model commit failed, Model uri empty")
 
         if existing_artifact and len(existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
+            # update url for existing artifact
+            existing_artifact = self.update_model_url(existing_artifact, url)
             artifact = link_execution_to_artifact(store=self.store,
                                                   execution_id=self.execution.id,
                                                   uri=c_hash,

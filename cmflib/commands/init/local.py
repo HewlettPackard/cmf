@@ -31,10 +31,8 @@ class CmdInitLocal(CmdBase):
     def run(self):
         cmf_config = ".cmfconfig"
         cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
-        print(cmf_config)
         output = ""
         if self.args.cmf_server_ip:
-            print("Gave cmf_server_ip")
             output = create_cmf_config(cmf_config, self.args.cmf_server_ip)
         else:
             if not os.path.exists(cmf_config):

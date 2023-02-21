@@ -118,7 +118,7 @@ class CmfQuery(object):
                 break
         return self.get_artifact_df(artifact)
 
-    def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame:
+    def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame: # change here
         df = pd.DataFrame()
         input_artifacts = []
         output_artifacts = []

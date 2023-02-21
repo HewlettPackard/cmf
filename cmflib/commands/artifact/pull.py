@@ -30,8 +30,25 @@ from cmflib.utils.dvc_config import DvcConfig
 
 
 class CmdArtifactPull(CmdBase):
+
+    def split_url_pipeline(self, url: str, pipeline_name: str): 
+        if pipeline_name in url:
+            if "," in url:
+                urls = url.split(",")
+                for u in urls:
+                    if pipeline_name in u:
+                        url = u
+            temp = url.split(":")
+            temp.pop(0)
+            if len(temp) > 1:
+                temp = ":".join(temp)
+                return temp
+            return "".join(temp)
+
     def run(self):
         # Put a check to see whether pipline exists or not
+        pipeline_name = self.args.pipeline_name
+        print(pipeline_name)
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
         if self.args.file_name:
@@ -67,16 +84,17 @@ class CmdArtifactPull(CmdBase):
                 "dict"
             )  # converting it to dictionary
             name.append(list(artifacts_dict["name"].values()))
-            url.append(list(artifacts_dict["url"].values()))
+            url.append(list(artifacts_dict["url"].values()))    # change here
         name_list_updated = [name for l in name for name in l]  # getting names and urls
-        url_list_updated = [url for l in url for url in l]
+        url_list_updated = [url for l in url for url in l]  # change here  - a big one
         final_list = []
         file_name = [(i.split(":"))[0] for i in name_list_updated]  # getting names
         for i in tuple(zip(file_name, url_list_updated)):
             if type(i[1]) == str:
                 final_list.append(i)
         names_urls = list(set(final_list))  # list of tuple consist of names and urls
-        # names_urls = ('artifacts/model/model.pkl', '/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034')
+        # names_urls = ('artifacts/parsed/test.tsv', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
+        # names_urls = ('artifacts/parsed/test.tsv', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
             return output
@@ -84,8 +102,10 @@ class CmdArtifactPull(CmdBase):
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts()
             for name_url in names_urls:
-                # name_url[1] = 's3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81')
-                temp = name_url[1].split("/")
+                # name_url[1] = 'Test-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81')
+                url = self.split_url_pipeline(name_url[1], pipeline_name)
+                # url = s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81
+                temp = url.split("/")
                 bucket_name = temp[2]
                 object_name = temp[3] + "/" + temp[4]
                 # name_url[0] = 'artifacts/parsed/test.tsv'
@@ -102,8 +122,9 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts()
             for name_url in names_urls:
-                # name_url[1] = '/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034'
-                temp = name_url[1].split("/")
+                # name_url[1] = 'Test-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034'
+                url = self.split_url_pipeline(name_url[1], pipeline_name)
+                temp = url.split("/")
                 temp_length = len(temp)
                 # name_url[0] = artifacts/model/model.pkl
                 download_loc = current_directory + "/" + name_url[0]
@@ -118,8 +139,9 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
             for name_url in names_urls:
-                # name_url[1] = ssh://127.0.0.1/home/user/ssh-storage/06/d100ff3e04e2c87bf20f0feacc9034
-                temp = name_url[1].split("/")
+                # name_url[1] = 'Test-env:ssh://127.0.0.1/home/user/ssh-storage/06/d100ff3e04e2c87bf20f0feacc9034'
+                url = self.split_url_pipeline(name_url[1], pipeline_name)
+                temp = url.split("/")
                 temp_var = temp[2].split(":")
                 host = temp_var[0]
                 # name_url[0] = artifacts/model/model.pkl
@@ -137,8 +159,9 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
             for name_url in names_urls:
-                # name_url[1] = s3://XXXXXXX/dvc-art/6f/597d341ceb7d8fbbe88859a892ef81'
-                temp = name_url[1].split("/")
+                # name_url[1] ='Test-env:s3://XXXXXXX/dvc-art/6f/597d341ceb7d8fbbe88859a892ef81'
+                url = self.split_url_pipeline(name_url[1], pipeline_name)
+                temp = url.split("/")
                 bucket_name = temp[2]
                 object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
                 # name_url[0] = artifacts/model/model.pkl

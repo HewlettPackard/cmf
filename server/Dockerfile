@@ -7,6 +7,9 @@ WORKDIR /cmf-server
 # Execute the mkdir command to create a data folder inside the cmf-server directory.
 RUN mkdir -p /cmf-server/data
 
+# folder for static files
+RUN mkdir -p /cmf-server/data/static
+
 # Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 

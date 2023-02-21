@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from cmflib import cmfquery, cmf_merger
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from server.app.get_data import get_executions, get_artifacts
 from server.app.query_visualization import query_visualization
 from pathlib import Path
@@ -15,6 +16,7 @@ app = FastAPI()
 
 BASE_PATH = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_PATH / "template"))
+app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
 
 
