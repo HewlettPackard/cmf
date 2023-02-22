@@ -29,7 +29,7 @@ from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
     commit_output, git_get_repo, commit_dvc_lock_file, \
     git_checkout_new_branch, \
-    check_git_repo, check_default_remote, check_git_remote
+    check_git_repo, check_default_remote, check_git_remote,git_commit
 from cmflib import graph_wrapper
 from cmflib.metadata_helper import get_or_create_parent_context, \
     get_or_create_run_context, associate_child_to_parent_context, \
@@ -152,10 +152,8 @@ class Cmf:
             sys.exit(1)
 
     def __del__(self):
-        """Destructor - Cleans up the connection to neo4j"""
-        # if self.execution is not None:
-        #    commit_output(self.filename, self.execution.id)
-        if hasattr(self, 'driver'):
+        git_commit(self.execution.id)
+        if self.graph:
             self.driver.close()
 
     def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
