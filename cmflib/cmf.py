@@ -353,9 +353,8 @@ class Cmf:
         existing_artifact = []
         if event.lower() == "input":
             event_type = mlpb.Event.Type.INPUT
-
-        dataset_commit = commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
+        dataset_commit = c_hash
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
@@ -600,9 +599,8 @@ class Cmf:
         existing_artifact = []
         if event.lower() == "input":
             event_type = mlpb.Event.Type.INPUT
-
-        model_commit = commit_output(path, self.execution.id)
         c_hash = dvc_get_hash(path)
+        model_commit = c_hash
 
         # If connecting to an existing artifact - The name of the artifact is
         # used as path/steps/key
@@ -870,8 +868,8 @@ class Cmf:
             self.metrics[metrics_name], orient='index')
         metrics_df.index.names = ['SequenceNumber']
         metrics_df.to_parquet(metrics_name)
-        metrics_commit = commit_output(metrics_name, self.execution.id)
         uri = dvc_get_hash(metrics_name)
+        metrics_commit = uri
         name = metrics_name + ":" + uri + ":" + \
                str(self.execution.id) + ":" + str(uuid.uuid1())
         custom_props = {"Name": metrics_name, "Commit": metrics_commit}
@@ -1027,10 +1025,8 @@ class Cmf:
             dataslice_df.index.names = ['Path']
             dataslice_df.to_parquet(self.name)
             existing_artifact = []
-
-            dataslice_commit = commit_output(
-                self.name, self.writer.execution.id)
             c_hash = dvc_get_hash(self.name)
+            dataslice_commit = c_hash
             remote = dvc_get_url(self.name)
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
