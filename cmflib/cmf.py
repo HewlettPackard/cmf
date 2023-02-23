@@ -392,7 +392,7 @@ class Cmf:
                 event_type=event_type,
                 properties={
                     "git_repo": str(git_repo),
-                    "Commit": str(dataset_commit),
+                    "Commit": str(dataset_commit),     #passing c_hash value to commit
                     "url": str(dvc_url_with_pipeline)},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
@@ -643,7 +643,7 @@ class Cmf:
                     "model_framework": str(model_framework),
                     "model_type": str(model_type),
                     "model_name": str(model_name),
-                    "Commit": str(model_commit),
+                    "Commit": str(model_commit),           #passing c_hash value to commit
                     "url": str(url_with_pipeline)},
                 artifact_type_properties={
                     "model_framework": mlpb.STRING,
@@ -872,7 +872,7 @@ class Cmf:
         metrics_commit = uri
         name = metrics_name + ":" + uri + ":" + \
                str(self.execution.id) + ":" + str(uuid.uuid1())
-        custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+        custom_props = {"Name": metrics_name, "Commit": metrics_commit}       #passing uri value to commit
         metrics = create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -1040,7 +1040,7 @@ class Cmf:
                     input_name=self.name + ":" + c_hash)
             else:
                 props = {
-                    "Commit": dataslice_commit,
+                    "Commit": dataslice_commit,			#passing c_hash value to commit
                     "git_repo": git_repo,
                     "Remote": remote}
                 custom_properties = props.update(
