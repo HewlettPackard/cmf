@@ -353,6 +353,8 @@ class Cmf:
         existing_artifact = []
         if event.lower() == "input":
             event_type = mlpb.Event.Type.INPUT
+
+        commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
         dataset_commit = c_hash
         dvc_url = dvc_get_url(url)
@@ -599,6 +601,8 @@ class Cmf:
         existing_artifact = []
         if event.lower() == "input":
             event_type = mlpb.Event.Type.INPUT
+
+        commit_output(path, self.execution.id)
         c_hash = dvc_get_hash(path)
         model_commit = c_hash
 
@@ -868,6 +872,7 @@ class Cmf:
             self.metrics[metrics_name], orient='index')
         metrics_df.index.names = ['SequenceNumber']
         metrics_df.to_parquet(metrics_name)
+        commit_output(metrics_name, self.execution.id)
         uri = dvc_get_hash(metrics_name)
         metrics_commit = uri
         name = metrics_name + ":" + uri + ":" + \
@@ -1025,6 +1030,8 @@ class Cmf:
             dataslice_df.index.names = ['Path']
             dataslice_df.to_parquet(self.name)
             existing_artifact = []
+
+            commit_output(self.name, self.writer.execution.id)
             c_hash = dvc_get_hash(self.name)
             dataslice_commit = c_hash
             remote = dvc_get_url(self.name)
