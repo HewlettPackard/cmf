@@ -29,18 +29,19 @@ The two most basic ways to use cmf-client are as follows:
 Detailed description of the following commands is available on [Getting started with cmf-client commands](https://github.com/varkha-d-sharma/cmf/blob/cmf_with_client_server/docs/cmf_client/cmf_client.md).
 
 ### Single User
-Assuming one single user is using a pipeline named "Test-env" with minio S3 bucket as the artifact repository and the same machine as the cmf-server.
-#### Initialize CMF artifact repository
-```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80
-```
-#### Check status of CMF artifact initialization (Optional)
-```
-cmf init show
-```
+Assuming one single user is tracking metadata for a pipeline named "Test-env" with minio S3 bucket as the artifact repository and the same machine as the cmf-server.
 #### Track metadata using cmflib
 Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
 More info is available on [HP cmf github examples](https://hewlettpackard.github.io/cmf/examples/getting_started/).
+#### Initialize CMF
+CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute **cmf init** in the root directory for the project created in the above step.
+```
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80
+```
+#### Check status of CMF initialization (Optional)
+```
+cmf init show
+```
 #### Push artifacts
 ```
 cmf artifact push 
@@ -50,43 +51,55 @@ cmf artifact push
 cmf metadata push -p 'Test-env'
 ```
 ### Two or more Users
-Assuming there are two users - User 1 and User 2. They are working on a common pipeline named "Test-env" with a common server and minio S3 bucket as the common artifact repository.
+Assuming there are two users - User 1 and User 2. They are working on a common ML pipeline named "Test-env" with a common server and minio S3 bucket as the common artifact repository.
 
 #### User 1 will follow the below mentioned steps
-##### Initialize CMF artifact repository
+##### Track metadata using cmflib
+Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
+More info is available on [HP cmf github examples](https://hewlettpackard.github.io/cmf/examples/getting_started/). User 1 can share the pipeline code using any version tracking tool (Example - Github) with User 2. 
+##### Initialize CMF 
+CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute **cmf init** in the root directory for the project created in the above step.
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080
 ```
-##### Check status of CMF artifact initialization (Optional)
+##### Check status of CMF initialization (Optional)
+Execute **cmf init show** in the root directory for the project created in the first step.
 ```
 cmf init show
 ```
-##### Track metadata using cmflib
-Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
-More info is available on [HP cmf github examples](https://hewlettpackard.github.io/cmf/examples/getting_started/).
 ##### Push artifacts
+Execute **cmf artifact** in the root directory for the project created in the first step.
 ```
 cmf artifact push 
 ```
 ##### Push metadata to cmf-server.
+Execute **cmf metadata** in the root directory for the project created in the first step.
 ```
 cmf metadata push -p 'Test-env'
 ```
-
 #### User 2 will follow the below mentioned steps
-##### Initialize CMF artifact repository
+In order to make process easier and smoother, User 2 do not need to have ML pipeline code (created by User 1) on the environment.
+#### Create a folder 
+```
+mkdir download_artifacts
+```
+##### Initialize CMF
+Execute **cmf init** command in the `download_artifacts` folder.
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080
 ```
 ##### Check status of CMF artifact initialization (Optional)
+Execute **cmf init show** command in the `download_artifacts` folder.
 ```
 cmf init show
 ```
 ##### Pull metadata from common CMF server
+Execute **cmf metadata** command in the `download_artifacts` folder.
 ```
 cmf metadata pull -p "Test-env"
 ```
 ##### Pull artifacts from common artifact repo. 
+Execute **cmf artifact** command in the `download_artifacts` folder.
 ```
 cmf artifact pull -p "Test-env"
 ```
