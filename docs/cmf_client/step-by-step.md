@@ -1,11 +1,16 @@
-# Getting started with cmf-client
+# Getting started with cmf
+Common metadata framework (cmf) has the following components:
+
+- **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
+- **cmf-client** interacts with the server to pull or push metadata from or to the cmf-server.
+- **cmf-server** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. 
+- **Central Artifact Repositories** hosts the code and data. 
 
 ## cmf-client 
-
-<font size=5>cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the CMF server.</font>
+cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
 
 ## Setup a cmf-client
-This section shows end-to-end setup of CMF Client.
+This section shows end-to-end setup of cmf-client.
 
 ### Pre-Requisites
 - <p>Python 3.8+</p>
@@ -15,91 +20,60 @@ This section shows end-to-end setup of CMF Client.
 ```
 pip install https://github.com/HewlettPackard/cmf
 ```
-Check [HP cmf github](https://hewlettpackard.github.io/cmf/) for more details.
+**OR**
+```
+pip install cmflib
+```
+Check [here](https://hewlettpackard.github.io/cmf/) for more details.
 
-### Install cmf-server
+## Install cmf-server
 cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
-Follow [cmf-server](https://github.com/varkha-d-sharma/cmf/blob/cmf_with_client_server/docs/cmf_server/cmf-server.md) for details on how to setup a cmf-server.</p>
+Follow [here](../cmf_server/cmf-server.md) for details on how to setup a cmf-server.</p>
 
 ## How to effectively use cmf-client?
-The two most basic ways to use cmf-client are as follows:
-- <p> Single User </p>
-- <p> Two or more users </p>
-
-Detailed description of the following commands is available on [Getting started with cmf-client commands](https://github.com/varkha-d-sharma/cmf/blob/cmf_with_client_server/docs/cmf_client/cmf_client.md).
-
-### Single User
-Assuming one single user is tracking metadata for a pipeline named "Test-env" with minio S3 bucket as the artifact repository and the same machine as the cmf-server.
-#### Track metadata using cmflib
-Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
-More info is available on [HP cmf github examples](https://hewlettpackard.github.io/cmf/examples/getting_started/).
-#### Initialize CMF
-CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute **cmf init** in the root directory for the project created in the above step.
+Let's assume we are tracking the metadata for a pipeline named "Test-env" with minio S3 bucket as the artifact repository and a cmf-server.
+### Create a folder 
 ```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80
+mkdir example-folder
 ```
-#### Check status of CMF initialization (Optional)
-```
-cmf init show
-```
-#### Push artifacts
-```
-cmf artifact push 
-```
-#### Push metadata to cmf-server.
-```
-cmf metadata push -p 'Test-env'
-```
-### Two or more Users
-Assuming there are two users - User 1 and User 2. They are working on a common ML pipeline named "Test-env" with a common server and minio S3 bucket as the common artifact repository.
-
-#### User 1 will follow the below mentioned steps
-##### Track metadata using cmflib
-Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
-More info is available on [HP cmf github examples](https://hewlettpackard.github.io/cmf/examples/getting_started/). User 1 can share the pipeline code using any version tracking tool (Example - Github) with User 2. 
-##### Initialize CMF 
-CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute **cmf init** in the root directory for the project created in the above step.
+### Initialize CMF
+CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute **cmf init** in the `example-folder` directory created in the [above](#create-a-folder) step.
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080
 ```
-##### Check status of CMF initialization (Optional)
-Execute **cmf init show** in the root directory for the project created in the first step.
+Check [here](./cmf_client.md) for more details.
+### Track metadata using cmflib
+Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
+More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
+### Check status of CMF initialization (Optional)
 ```
 cmf init show
 ```
-##### Push artifacts
-Execute **cmf artifact** in the root directory for the project created in the first step.
+Check [here](./cmf_client.md) for more details.
+### Push artifacts
+Push artifacts in the artifact repo initialised in the [Initialize cmf](#initialize-cmf) step.
 ```
 cmf artifact push 
 ```
-##### Push metadata to cmf-server.
-Execute **cmf metadata** in the root directory for the project created in the first step.
+Check [here](./cmf_client.md) for more details.
+### Push metadata to cmf-server
 ```
 cmf metadata push -p 'Test-env'
 ```
-#### User 2 will follow the below mentioned steps
-In order to make process easier and smoother, User 2 do not need to have ML pipeline code (created by User 1) on the environment.
-#### Create a folder 
+Check [here](./cmf_client.md) for more details.
+
+### cmf-client with collaborative development
+In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts.
+
+### Pull metadata from the server
+Execute **cmf metadata** command in the `example_folder`.
 ```
-mkdir download_artifacts
+cmf metadata pull -p 'Test-env'
 ```
-##### Initialize CMF
-Execute **cmf init** command in the `download_artifacts` folder.
-```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080
-```
-##### Check status of CMF artifact initialization (Optional)
-Execute **cmf init show** command in the `download_artifacts` folder.
-```
-cmf init show
-```
-##### Pull metadata from common CMF server
-Execute **cmf metadata** command in the `download_artifacts` folder.
-```
-cmf metadata pull -p "Test-env"
-```
-##### Pull artifacts from common artifact repo. 
-Execute **cmf artifact** command in the `download_artifacts` folder.
+Check [here](./cmf_client.md) for more details.
+### Pull artifacts from the central artifact repo 
+Execute **cmf artifact** command in the `example_folder`.
 ```
 cmf artifact pull -p "Test-env"
 ```
+Check [here](./cmf_client.md) for more details.
