@@ -36,14 +36,14 @@ CMF initialization is the first and foremost to use cmf-client commads. This com
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080
 ```
 Check [here](./cmf_client.md) for more details.
-### Track metadata using cmflib
-Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
-More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
 ### Check status of CMF initialization (Optional)
 ```
 cmf init show
 ```
 Check [here](./cmf_client.md) for more details.
+### Track metadata using cmflib
+Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
+More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
 ### Push artifacts
 Push artifacts in the artifact repo initialised in the [Initialize cmf](#initialize-cmf) step.
 ```
@@ -57,7 +57,7 @@ cmf metadata push -p 'Test-env'
 Check [here](./cmf_client.md) for more details.
 
 ### cmf-client with collaborative development
-In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts.
+In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
 #### Pull metadata from the server
 Execute **cmf metadata** command in the `example_folder`.
 ```
