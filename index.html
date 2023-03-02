@@ -504,12 +504,138 @@
       
       
         <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
-          Public API
+          Client
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
         <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Client
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cmf_client/cmf_client/" class="md-nav__link">
+        Overview
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cmf_client/step-by-step/" class="md-nav__link">
+        Getting started
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cmf_client/minio-server/" class="md-nav__link">
+        dvc minio backend
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          Server
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_5">
+          <span class="md-nav__icon md-icon"></span>
+          Server
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cmf_server/cmf-server/" class="md-nav__link">
+        Getting started
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+          Public API
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_6">
           <span class="md-nav__icon md-icon"></span>
           Public API
         </label>
@@ -698,7 +824,7 @@
 also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>CMF requires 3.7 &gt;= Python &lt;= 3.9. Create python virtual environment:</p>
+<p>CMF requires 3.8 &gt;= Python &lt;= 3.9. Create python virtual environment:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Conda</label><label for="__tabbed_1_2">VirtualEnv</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -729,12 +855,13 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf
 </div>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <ol>
-<li>clone the repo from https://github.com/HewlettPackard/cmf</li>
-<li>Copy sample_env from cmf/examples/example-get-started directory to the local directory.</li>
-<li>Copy initialize.sh from cmf/examples/example-get-started directory to the local directory</li>
-<li>Modify the sample_env file with appropriate values for the exports.</li>
-<li>Execute: source sample_env. This scrip will export several environment variables used in initialize.sh script.</li>
-<li>Execute: sh initialize.sh. This step will perform the initialization for the directory. This will init a git repo, dvc repo and add a git remote and dvc remote.</li>
+<li>create working directory <code>mkdir &lt;workdir&gt;</code></li>
+<li>Configure dvc remote directory, git remote url and cmf server by running <code>cmf init</code> with appropriate dvc backend.</li>
+<li>To configure neo4j backend with cmf export the following environment variables with appropriate values,
+   <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">NEO4J_URI</span><span class="o">=</span><span class="s2">&quot;bolt://ip:port&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NEO4J_USER_NAME</span><span class="o">=</span>&lt;user&gt;
+<span class="nb">export</span><span class="w"> </span><span class="nv">NEO4J_PASSWD</span><span class="o">=</span>&lt;passwd.
+</code></pre></div></li>
 </ol>
 <h3 id="jupyter-lab-docker-container-with-cmf-pre-installed"><a href="#docker-section">Jupyter Lab docker container with CMF pre-installed</a><a class="headerlink" href="#jupyter-lab-docker-container-with-cmf-pre-installed" title="Permanent link">&para;</a></h3>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
