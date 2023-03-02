@@ -17,7 +17,7 @@ Usage: cmf init show
 Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
                         --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
 </pre>
-**cmf init minioS3** configures Minio S3 bucket as a CMF artifact repository. Refer [minio-server.md](https://github.com/abhinavchobey/cmf/blob/federated_cmf/docs/cmf_client/minio-server.md#steps-to-set-up-a-minio-server) to set up a minio server.
+**cmf init minioS3** configures Minio S3 bucket as a CMF artifact repository. Refer [minio-server.md](./minio-server.md#steps-to-set-up-a-minio-server) to set up a minio server.
 
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
