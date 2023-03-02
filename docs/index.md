@@ -5,7 +5,7 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.7 >= Python <= 3.9. Create python virtual environment:
+CMF requires 3.8 >= Python <= 3.9. Create python virtual environment:
 
 === "Conda"
     ```shell
@@ -32,12 +32,14 @@ Install CMF
     # pip install cmflib
     ```
 ## Configuration
-1. clone the repo from https://github.com/HewlettPackard/cmf
-2. Copy sample_env from cmf/examples/example-get-started directory to the local directory.
-3. Copy initialize.sh from cmf/examples/example-get-started directory to the local directory
-4. Modify the sample_env file with appropriate values for the exports.
-5. Execute: source sample_env. This scrip will export several environment variables used in initialize.sh script.
-6. Execute: sh initialize.sh. This step will perform the initialization for the directory. This will init a git repo, dvc repo and add a git remote and dvc remote.
+1. create working directory `mkdir <workdir>`
+2. Configure dvc remote directory, git remote url and cmf server by running `cmf init` with appropriate dvc backend.
+3. To configure neo4j backend with cmf export the following environment variables with appropriate values,
+   ```shell
+   export NEO4J_URI="bolt://ip:port"
+   export NEO4J_USER_NAME=<user>
+   export NEO4J_PASSWD=<passwd.
+   ```
 
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
