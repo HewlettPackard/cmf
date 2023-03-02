@@ -37,7 +37,6 @@ from cmflib.metadata_helper import get_or_create_parent_context, \
     create_new_artifact_event_and_attribution, get_artifacts_by_id, \
     put_artifact, link_execution_to_input_artifact
 
-
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
     The class instance creates an ML metadata store to store the metadata. It creates a driver to store nodes and its
@@ -71,15 +70,34 @@ class Cmf:
     __neo4j_user = os.getenv('NEO4J_USER_NAME', "")
     __neo4j_password = os.getenv('NEO4J_PASSWD', "")
 
+    __DB_NAME__ = os.getenv('DB_NAME',"mlmd")
+    __DB_HOST__ = os.getenv('DB_HOST',"db")
+    __DB_PORT__ = os.getenv('DB_PORT',3306)
+    __DB_USERNAME__ = os.getenv('DB_USERNAME',"root")
+    __DB_PASSWORD__ = os.getenv('DB_PASSWORD',"password")
+
+    print("DB_NAME" + __DB_NAME__)
+
     def __init__(self, filename: str = "mlmd",
                  pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None,
-                 graph: bool = False, is_server: bool = False):
+                 graph: bool = False, is_server: bool = False, backend:str = "sqllite"):
         if is_server is False:
             Cmf.__prechecks()
         if custom_properties is None:
             custom_properties = {}
         config = mlpb.ConnectionConfig()
-        config.sqlite.filename_uri = filename
+        
+        if (backend == "sqllite") :
+            config.sqlite.filename_uri = filename
+        else:
+            #Expects MySQL Server to be presented 
+            config.mysql.database = Cmf.__DB_NAME__
+            config.mysql.host = Cmf.__DB_HOST__
+            config.mysql.password = Cmf.__DB_PASSWORD__ 
+            config.mysql.port = int(Cmf.__DB_PORT__)
+            config.mysql.skip_db_creation = False
+            config.mysql.user = Cmf.__DB_USERNAME__ 
+        
         self.store = metadata_store.MetadataStore(config)
         self.filename = filename
         self.child_context = None

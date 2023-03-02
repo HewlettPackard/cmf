@@ -19,6 +19,14 @@ templates = Jinja2Templates(directory=str(BASE_PATH / "template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
 
+#If DB_NAME is not set as an environment variable, assume this has to work with sqllite
+#IF DB_NAME is set, operate on a real mySQL db
+__DB_NAME__ = os.getenv('DB_NAME',"")
+
+if __DB_NAME__ != "" :
+    backend = "mysql"
+else:
+    backend = "sqllite"
 
 @app.get("/")
 def read_root(request: Request):
@@ -31,8 +39,9 @@ def read_root(request: Request):
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     req_info = await info.json()
+    print("Using Backend:" + backend)
     cmf_merger.parse_json_to_mlmd(
-        req_info["json_payload"], "data/mlmd", "push", req_info["id"]
+        req_info["json_payload"], "data/mlmd", "push", req_info["id"], backend = backend
     )
     return {"status": "success", "data": req_info}
 

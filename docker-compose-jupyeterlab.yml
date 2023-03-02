@@ -1,40 +1,10 @@
-version: '3'
+# Following https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
+# And https://jupyter-docker-stacks.readthedocs.io/en/latest/using/common.html#docker-options
+version: '3.8'
 services:
-  hub:
-    build: 
-      dockerfile: Dockerfile
-      context: ./
-    depends_on:
-      - db 
-    ports:
-      - "80:80"
-    environment:
-      DB_NAME: "mlmd"
-      DB_HOST: "db"
-      DB_PORT: 3306
-      DB_USERNAME: "root"
-      DB_PASSWORD: "password"
-      NEO4J: "True"
-      NEO4J_URI: "bolt://neo4j:7687"
-      NEO4J_USER_NAME: "${NEO4J_USER_NAME}" #from .env file
-      NEO4J_PASSWD: "${NEO4J_PASSWD}" #from .env file
-  db:
-    image: mysql
-    command: --default-authentication-plugin=mysql_native_password
-    cap_add:
-      - SYS_NICE
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    volumes:
-      - db-vol:/var/lib/mysql
-    ports: 
-      - "3306:3306"
   jupyter-cmf-notebook:
     build:
-      dockerfile: Dockerfile-jupyter
+      dockerfile: Dockerfile
       context: ./
     container_name: jupyter-cmf-notebook
     hostname: jupyter-cmf-notebook
@@ -97,14 +67,7 @@ services:
     container_name: neo4j
     hostname: neo4j
     ports:
-      - "7474:7474"
-      - "7687:7687"
-    volumes:
-      - graphdb-vol:/plugins
-      - graphdb-vol:/data
-      - graphdb-vol:/var/lib/neo4j/import
+      - "7475:7474"
+      - "7688:7687"
     environment:
       - NEO4J_AUTH=${NEO4J_USER_NAME}/${NEO4J_PASSWD}        
-volumes:
-    db-vol:
-    graphdb-vol:
