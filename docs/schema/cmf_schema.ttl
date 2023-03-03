@@ -1,0 +1,416 @@
+@prefix : <http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7> .
+
+<http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#builtBy
+:builtBy rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf owl:topObjectProperty ;
+         rdfs:domain :Deployment ,
+                     :Pipeline ;
+         rdfs:range :Framework ;
+         rdfs:comment """Relationship between Pipeline and Framework
+Relationship between Deployment and Framework""" ;
+         rdfs:label "builtBy" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#completesIn
+:completesIn rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf owl:topObjectProperty ;
+             rdfs:domain :Pipeline ;
+             rdfs:range :Time ;
+             rdfs:comment "Relationship between Pipeline and Time" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#deploys
+:deploys rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf owl:topObjectProperty ;
+         rdfs:domain :Model ;
+         rdfs:range :Deployment ;
+         rdfs:comment "Relationship between Model and Deployment" ;
+         rdfs:label "deploys" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#evaluatedBy
+:evaluatedBy rdf:type owl:ObjectProperty ;
+             rdfs:subPropertyOf owl:topObjectProperty ;
+             rdfs:domain :Task ;
+             rdfs:range :Evaluation ;
+             rdfs:comment "Relationship between Task and Evaluation" ;
+             rdfs:label "evaluatedBy" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#executes
+:executes rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Model ,
+                      :Pipeline ;
+          rdfs:range :Task ;
+          rdfs:comment """Relationship between Pipeline and Task
+Relationship between Model and Task""" ;
+          rdfs:label "executes" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#has
+:has rdf:type owl:ObjectProperty ;
+     rdfs:subPropertyOf owl:topObjectProperty ;
+     rdfs:domain :Model ;
+     rdfs:range :Hyperparameter ;
+     rdfs:comment "Relationship between Model and Hyperparameters" ;
+     rdfs:label "has" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#isInput
+:isInput rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf owl:topObjectProperty ;
+         rdfs:domain :Dataset ,
+                     :DatasetPreprocessing ;
+         rdfs:range :DatasetPreprocessing ,
+                    :Model ;
+         rdfs:comment """Relationship between Dataset and DataPreprocessing
+Relationship between DataPreprocessing and Model""" ;
+         rdfs:label "isInput" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#optimizes
+:optimizes rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf owl:topObjectProperty ;
+           rdfs:domain :Optimizer ;
+           rdfs:range :Model ;
+           rdfs:comment "Relationship between Optimiser and Model" ;
+           rdfs:label "optimizes" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#produced
+:produced rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Evaluation ;
+          rdfs:range :Result ;
+          rdfs:comment "Relationship between Evaluation and Result" ;
+          rdfs:label "produced" .
+
+
+#################################################################
+#    Data properties
+#################################################################
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#LR
+:LR rdf:type owl:DatatypeProperty ;
+    rdfs:subPropertyOf owl:topDataProperty ;
+    rdfs:domain :Optimizer ;
+    rdfs:comment "Learning Rate (LR) of the model set through the optimizer" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#LRDecay
+:LRDecay rdf:type owl:DatatypeProperty ;
+         rdfs:subPropertyOf owl:topDataProperty ;
+         rdfs:domain :Optimizer .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#LRSchedule
+:LRSchedule rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Optimizer ;
+            rdfs:comment "The rate of change of the learning rate (gamma parameter). For example: 0.01 for 30 epoch" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#architectureURL
+:architectureURL rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Model .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#batchSize
+:batchSize rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#dataPreprocessingTime
+:dataPreprocessingTime rdf:type owl:DatatypeProperty ;
+                       rdfs:subPropertyOf owl:topDataProperty ;
+                       rdfs:domain :DatasetPreprocessing ,
+                                   :Time .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#datasetID
+:datasetID rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#datasetModality
+:datasetModality rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#datasetName
+:datasetName rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#datasetURL
+:datasetURL rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#epoch
+:epoch rdf:type owl:DatatypeProperty ;
+       rdfs:subPropertyOf owl:topDataProperty ;
+       rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#evalMetricName
+:evalMetricName rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:domain :Deployment ,
+                            :Evaluation .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#evalMetricValue
+:evalMetricValue rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Deployment ,
+                             :Evaluation .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#frameworkName
+:frameworkName rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Framework .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#frameworkVersion
+:frameworkVersion rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf owl:topDataProperty ;
+                  rdfs:domain :Framework .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#inferenceTime
+:inferenceTime rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Time .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#labelTypes
+:labelTypes rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#lossFunction
+:lossFunction rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#modelClass
+:modelClass rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Model .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#modelDrift
+:modelDrift rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Deployment .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#modelModality
+:modelModality rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Model .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#modelName
+:modelName rdf:type owl:DatatypeProperty ;
+           rdfs:subPropertyOf owl:topDataProperty ;
+           rdfs:domain :Model .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#normalization
+:normalization rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#numOfClassLabels
+:numOfClassLabels rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf owl:topDataProperty ;
+                  rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#optimalEpoch
+:optimalEpoch rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#optimalLossValue
+:optimalLossValue rdf:type owl:DatatypeProperty ;
+                  rdfs:subPropertyOf owl:topDataProperty ;
+                  rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#optimizerName
+:optimizerName rdf:type owl:DatatypeProperty ;
+               rdfs:subPropertyOf owl:topDataProperty ;
+               rdfs:domain :Optimizer .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#paperURL
+:paperURL rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf owl:topDataProperty ;
+          rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#regularization
+:regularization rdf:type owl:DatatypeProperty ;
+                rdfs:subPropertyOf owl:topDataProperty ;
+                rdfs:domain :Hyperparameter .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#taskArea
+:taskArea rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf owl:topDataProperty ;
+          rdfs:domain :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#taskCategory
+:taskCategory rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#taskChildren
+:taskChildren rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#taskModality
+:taskModality rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#taskName
+:taskName rdf:type owl:DatatypeProperty ;
+          rdfs:subPropertyOf owl:topDataProperty ;
+          rdfs:domain :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#taskParent
+:taskParent rdf:type owl:DatatypeProperty ;
+            rdfs:subPropertyOf owl:topDataProperty ;
+            rdfs:domain :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#totalDatapoints
+:totalDatapoints rdf:type owl:DatatypeProperty ;
+                 rdfs:subPropertyOf owl:topDataProperty ;
+                 rdfs:domain :Dataset .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#totalExecutionTime
+:totalExecutionTime rdf:type owl:DatatypeProperty ;
+                    rdfs:subPropertyOf owl:topDataProperty ;
+                    rdfs:domain :Pipeline .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#trainingTime
+:trainingTime rdf:type owl:DatatypeProperty ;
+              rdfs:subPropertyOf owl:topDataProperty ;
+              rdfs:domain :Time .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#weightDecay
+:weightDecay rdf:type owl:DatatypeProperty ;
+             rdfs:subPropertyOf owl:topDataProperty ;
+             rdfs:domain :Optimizer .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Dataset
+:Dataset rdf:type owl:Class ;
+         rdfs:label "Dataset" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#DatasetPreprocessing
+:DatasetPreprocessing rdf:type owl:Class ;
+                      rdfs:label "DatasetPreprocessing" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Deployment
+:Deployment rdf:type owl:Class ;
+            rdfs:label "Deployment" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Evaluation
+:Evaluation rdf:type owl:Class ;
+            rdfs:label "Evaluation" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Framework
+:Framework rdf:type owl:Class ;
+           rdfs:label "Framework" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Hyperparameter
+:Hyperparameter rdf:type owl:Class ;
+                rdfs:label "Hyperparameter" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Model
+:Model rdf:type owl:Class ;
+       rdfs:label "Model" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Optimizer
+:Optimizer rdf:type owl:Class ;
+           rdfs:label "Optimizer" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Pipeline
+:Pipeline rdf:type owl:Class ;
+          rdfs:label "Pipeline" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Result
+:Result rdf:type owl:Class ;
+        rdfs:label "Result" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Task
+:Task rdf:type owl:Class ;
+      rdfs:label "Task" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#Time
+:Time rdf:type owl:Class ;
+      rdfs:label "Time" .
+
+
+#################################################################
+#    Annotations
+#################################################################
+
+owl:Thing rdfs:label "owl:Thing" .
+
+
+###  Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi
