@@ -59,11 +59,11 @@ _ = metawriter.log_dataset(folder_path, "input")
 # Creating the data slice - today we have only path and hash.
 # Would need to expand to take in more metadata.
 for i in range(1, 3, 1):
-    dataslice: cmf.Cmf.dataslice = metawriter.create_dataslice(name="slice-" + str(i))
+    dataslice: cmf.Cmf.DataSlice = metawriter.create_dataslice(name="slice-" + str(i))
     for _ in range(1, 20, 1):
         j = random.randrange(1, 100)
         print(folder_path + "/" + str(j) + ".txt")
-        dataslice.add_data(path=folder_path + "/" + str(j) + ".txt", custom_props={"key1": "value1", "key2": "value2"})
+        dataslice.add_data(path=folder_path + "/" + str(j) + ".txt", custom_properties={"key1": "value1", "key2": "value2"})
     dataslice.commit()
 
 # Reading the files in the slice.
@@ -73,13 +73,13 @@ row_content = None
 for label, content in df.iterrows():
     record = label
     row_content = content
-
+print("Updating the value from `value1` to `1` and from `value2` to `2`")
 print("Before update")
 print(record)
 print(row_content)
 
 # Update the metadata for a record in the slice.
-metawriter.update_dataslice(name="slice-1", record=record, custom_props={"key1": "1", "key2": "2"})
+metawriter.update_dataslice(name="slice-1", record=record, custom_properties={"key1": "1", "key2": "2"})
 df = metawriter.read_dataslice(name="slice-1")
 
 print("After update")

@@ -1,0 +1,23 @@
+{% extends 'home.html' %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HP_server</title>
+    {% block style %}
+    <style>
+     img {
+     	display:block;
+     	width:50%;
+     	margin-left:auto;
+     	margin-right:auto;
+     }
+    </style>
+{% endblock %}
+
+</head>
+<body>
+{% block content %}
+<img alt="lineage.png" src="{{ url_for('static', path='/lineage.png') }}"   >
+{% endblock %}
+</body>
+</html>

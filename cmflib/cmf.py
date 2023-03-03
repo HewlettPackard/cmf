@@ -21,29 +21,28 @@ import re
 import sys
 import pandas as pd
 import typing as t
-
+# This import is needed for jupyterlab environment
+import dvc
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from ml_metadata.metadata_store import metadata_store
 
 from cmflib import callback as cb
 from cmflib.callback import Callback, ArtifactEvent
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
-    commit_output, git_get_repo, commit_dvc_lock_file,  \
+    commit_output, git_get_repo, commit_dvc_lock_file, \
     git_checkout_new_branch, \
-    check_git_repo, check_default_remote, check_git_remote
+    check_git_repo, check_default_remote, check_git_remote, git_commit
 from cmflib.metadata_helper import get_or_create_parent_context,   \
     get_or_create_run_context, associate_child_to_parent_context,  \
     create_new_execution_in_existing_run_context, link_execution_to_artifact, \
-    create_new_artifact_event_and_attribution, get_artifacts_by_id,  \
+    create_new_artifact_event_and_attribution, get_artifacts_by_id, \
     put_artifact, link_execution_to_input_artifact
 
 
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
-
     The class instance creates an ML metadata store to store the metadata. It creates a driver to store nodes and its
     relationships to neo4j. The user has to provide the name of the pipeline, that needs to be recorded with it.
-
     ```python
     cmflib.cmf.Cmf(
         filename="mlmd",
@@ -52,26 +51,22 @@ class Cmf:
         graph=False
     )
     ```
-
     Args:
         filename: Path  to the sqlite file to store the metadata
         pipeline_name: Name to uniquely identify the pipeline. Note that name is the unique identification for a
             pipeline.  If a pipeline already exist with the same name, the existing pipeline object is reused.
         custom_properties: Additional properties of the pipeline that needs to be stored.
-        graph: If set to true, the libray also stores the relationships in the provided graph database. The following
-            environment variables should be set: `NEO4J_URI` (graph server URI), `NEO4J_USER_NAME` (user name) and
-            `NEO4J_PASSWD` (user password), e.g.:
-            ```bash
-            export NEO4J_URI="bolt://ip:port"
-            export NEO4J_USER_NAME=neo4j
-            export NEO4J_PASSWD=neo4j
-            ```
+        is_server: TBD
+        callbacks: List of callbacks that are used to report CMF metadata to some other (external) consumers, such as
+            Neo4j, MLflow and others.
     """
 
     def __init__(self, filename: str = "mlmd",
-                 pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None,
+                 pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None, is_server: bool = False,
                  callbacks: t.Optional[t.List[Callback]] = None):
-        Cmf.__prechecks()
+        if is_server is False:
+            Cmf.__prechecks()
+
         if custom_properties is None:
             custom_properties = {}
         config = mlpb.ConnectionConfig()
@@ -88,7 +83,8 @@ class Cmf:
         self.execution_label_props = {}
         self.branch_name = filename.rsplit('/', 1)[-1]
 
-        git_checkout_new_branch(self.branch_name)
+        if is_server is False:
+            git_checkout_new_branch(self.branch_name)
         self.parent_context: mlpb.Context = get_or_create_parent_context(
             store=self.store, pipeline=pipeline_name, custom_properties=custom_properties
         )
@@ -103,7 +99,6 @@ class Cmf:
     @staticmethod
     def __prechecks():
         """Pre checks for cmf
-
         1. Needs to be a git repository and
            git remote should be set
         2. Needs to be a dvc repository and
@@ -151,34 +146,24 @@ class Cmf:
             sys.exit(1)
 
     def __del__(self):
-        """Destructor - Cleans up the connection to neo4j"""
-        # if self.execution is not None:
-        #    commit_output(self.filename, self.execution.id)
-        if hasattr(self, 'driver'):
-            self.driver.close()
+        git_commit(self.execution.id)
 
-    def create_context(self, pipeline_stage: str,
-                       custom_properties: t.Optional[t.Dict] = None) -> mlpb.Context:
+    def create_context(self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Context:
         """Creates a stage in the pipeline.
-
         If it already exists, it is reused and not created again.
-
         Example:
             ```python
             # Import CMF
             from cmflib.cmf import Cmf
             from ml_metadata.proto import metadata_store_pb2 as mlpb
-
             # Create CMF logger
             cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
-
             # Create or reuse context for this stage
             context: mlmd.proto.Context = cmf.create_context(
                 pipeline_stage="prepare",
                 custom_properties ={"user-metadata1": "metadata_value"}
             )
             ```
-
         Args:
             pipeline_stage: Name of the pipeline stage.
             custom_properties: Developers can provide key value pairs with additional properties of the stage that
@@ -186,6 +171,24 @@ class Cmf:
         Returns:
             Context object from ML Metadata library associated with the new stage.
         """
+        custom_props = {} if custom_properties is None else custom_properties
+        pipeline_stage = self.parent_context.name + '/' + pipeline_stage
+        self.child_context = get_or_create_run_context(
+            self.store, pipeline_stage, custom_props
+        )
+        associate_child_to_parent_context(
+            store=self.store,
+            parent_context=self.parent_context,
+            child_context=self.child_context
+        )
+        for callback in self.callbacks:
+            callback.on_stage_context(
+                name=pipeline_stage, id_=self.child_context.id, properties=custom_props,
+                pipeline_context=self.parent_context
+            )
+        return self.child_context
+
+    def merge_created_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
         custom_props = {} if custom_properties is None else custom_properties
         self.child_context = get_or_create_run_context(
             self.store, pipeline_stage, custom_props
@@ -205,37 +208,30 @@ class Cmf:
     def create_execution(self, execution_type: str,
                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
         """Create execution.
-
         Every call creates a unique execution. Execution can only be created within a context, so
         [create_context][cmflib.cmf.Cmf.create_context] must be called first.
-
         Example:
             ```python
             # Import CMF
             from cmflib.cmf import Cmf
             from ml_metadata.proto import metadata_store_pb2 as mlpb
-
             # Create CMF logger
             cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
-
             # Create or reuse context for this stage
             context: mlmd.proto.Context = cmf.create_context(
                 pipeline_stage="prepare",
                 custom_properties ={"user-metadata1": "metadata_value"}
             )
-
             # Create a new execution for this stage run
             execution: mlmd.proto.Execution = cmf.create_execution(
                 execution_type="Prepare",
                 custom_properties = {"split": split, "seed": seed}
             )
             ```
-
         Args:
             execution_type: Name of the execution.
             custom_properties: Developers can provide key value pairs with additional properties of the execution that
                 need to be stored.
-
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
         """
@@ -260,7 +256,7 @@ class Cmf:
             k = re.sub('-', '_', k)
             self.execution_label_props[k] = v
         self.execution_label_props["Execution_Name"] = execution_type + \
-            ":" + str(self.execution.id)
+                                                       ":" + str(self.execution.id)
         self.execution_label_props["execution_command"] = str(sys.argv)
         for callback in self.callbacks:
             callback.on_stage_execution(
@@ -272,7 +268,6 @@ class Cmf:
 
     def update_execution(self, execution_id: int, custom_properties: t.Optional[t.Dict] = None):
         """Updates an existing execution.
-
         The custom properties can be updated after creation of the execution.
         The new custom properties is merged with earlier custom properties.
         """
@@ -306,7 +301,7 @@ class Cmf:
         self.execution_name = str(self.execution.id) + "," + execution_type.name
         self.execution_command = self.execution.properties["Execution"]
         self.execution_label_props["Execution_Name"] = execution_type.name + \
-            ":" + str(self.execution.id)
+                                                       ":" + str(self.execution.id)
         self.execution_label_props["execution_command"] = self.execution.properties["Execution"].string_value
         for callback in self.callbacks:
             callback.on_stage_execution(
@@ -316,16 +311,58 @@ class Cmf:
             )
         return self.execution
 
+    def merge_created_execution(self, execution_type: str, execution_cmd: str, properties: {} = None,
+                                custom_properties: {} = None) -> mlpb.Execution:
+        # Initializing the execution related fields
+        self.metrics = {}
+        self.input_artifacts = []
+        self.execution_label_props = {}
+        custom_props = {} if custom_properties is None else custom_properties
+        # print(custom_props)
+        git_repo = properties.get("Git_Repo", "")
+        git_start_commit = properties.get("Git_Start_Commit", "")
+        self.execution = create_new_execution_in_existing_run_context \
+            (store=self.store,
+             execution_type_name=execution_type,
+             context_id=self.child_context.id,
+             execution=execution_cmd,
+             pipeline_id=self.parent_context.id,
+             pipeline_type=self.parent_context.name,
+             git_repo=git_repo,
+             git_start_commit=git_start_commit,
+             custom_properties=custom_props
+             )
+        self.execution_name = str(self.execution.id) + "," + execution_type
+        self.execution_command = execution_cmd
+        for k, v in custom_props.items():
+            k = re.sub('-', '_', k)
+            self.execution_label_props[k] = v
+        self.execution_label_props["Execution_Name"] = execution_type + ":" + str(self.execution.id)
+        self.execution_label_props["execution_command"] = execution_cmd
+
+        for callback in self.callbacks:
+            callback.on_stage_execution(
+                name=self.execution_name, id_=self.execution.id, properties=custom_props,
+                stage_context=self.child_context, pipeline_context=self.parent_context,
+                is_new=False
+            )
+
+        # TODO: Sergey: check the above call to callbacks is correct.
+        # if self.graph:
+        #     self.driver.create_execution_node(
+        #         self.execution_name, self.child_context.id, self.parent_context,
+        #         execution_cmd, self.execution.id, custom_props
+        #     )
+        return self.execution
+
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         return commit_dvc_lock_file(file_path, self.execution.id)
 
     def log_dataset(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset as artifact.
-
         This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
-
         Example:
             ```python
             artifact: mlmd.proto.Artifact = cmf.log_dataset(
@@ -334,12 +371,10 @@ class Cmf:
                 custom_properties={"source":"kaggle"}
             )
             ```
-
         Args:
              url: The path to the dataset.
              event: Takes arguments `INPUT` OR `OUTPUT`.
              custom_properties: Dataset properties (key/value pairs).
-
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
@@ -351,9 +386,11 @@ class Cmf:
         if event.lower() == "input":
             event_type = mlpb.Event.Type.INPUT
 
-        dataset_commit = commit_output(url, self.execution.id)
+        commit_output(url, self.execution.id)
         c_hash = dvc_get_hash(url)
-
+        dataset_commit = c_hash
+        dvc_url = dvc_get_url(url)
+        dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
@@ -367,6 +404,8 @@ class Cmf:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
             uri = c_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -387,10 +426,12 @@ class Cmf:
                 event_type=event_type,
                 properties={
                     "git_repo": str(git_repo),
-                    "Commit": str(dataset_commit)},
+                    "Commit": str(dataset_commit),     #passing c_hash value to commit
+                    "url": str(dvc_url_with_pipeline)},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
-                    "Commit": mlpb.STRING},
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING},
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(
                     time.time() * 1000),
@@ -410,14 +451,33 @@ class Cmf:
 
         return artifact
 
+    def update_dataset_url(self, artifact: mlpb.Artifact, updated_url: str):
+        for key, value in artifact.properties.items():
+            if key == "url":
+                old_url = value.string_value
+                if updated_url not in old_url:
+                    new_url = f"{old_url},{updated_url}"
+                    artifact.properties[key].string_value = new_url
+        put_artifact(self.store, artifact)
 
-    def log_dataset_with_version(self, url: str, version: str, event: str,
+    def update_model_url(self, dup_artifact: list, updated_url: str):
+        for art in dup_artifact:
+            dup_art = art
+            for key, value in dup_art.properties.items():
+                if key == "url":
+                    old_url = value.string_value
+                    if updated_url not in old_url:
+                        new_url = f"{old_url},{updated_url}"
+                        dup_art.properties[key].string_value = new_url
+            put_artifact(self.store, dup_art)
+        return dup_artifact
+
+    def log_dataset_with_version(self, url: str, version: str, event: str, props: dict,
                                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
-
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = git_get_repo()
-        name = re.split('/', url)[-1]
+        git_repo = props['git_repo']
+        name = url
         event_type = mlpb.Event.Type.OUTPUT
         existing_artifact = []
         c_hash = version
@@ -440,6 +500,8 @@ class Cmf:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
             uri = c_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, props['url'])
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -460,10 +522,12 @@ class Cmf:
                 event_type=event_type,
                 properties={
                     "git_repo": str(git_repo),
-                    "Commit": str(dataset_commit)},
+                    "Commit": str(dataset_commit),
+                    "url": str(props['url'])},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
-                    "Commit": mlpb.STRING},
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING},
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(
                     time.time() * 1000),
@@ -489,9 +553,7 @@ class Cmf:
                   model_type: str = "Default", model_name: str = "Default",
                   custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a model.
-
         The model is added to dvc and the metadata file (.dvc) gets committed to git.
-
         Example:
             ```python
             artifact: mlmd.proto.Artifact= cmf.log_model(
@@ -502,7 +564,6 @@ class Cmf:
                 model_name="RandomForestClassifier:default"
             )
             ```
-
         Args:
             path: Path to the model file.
             event: Takes arguments `INPUT` OR `OUTPUT`.
@@ -510,7 +571,6 @@ class Cmf:
             model_type: Type of model algorithm used.
             model_name: Name of the algorithm used.
             custom_properties: The model properties.
-
         Returns:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
@@ -524,13 +584,17 @@ class Cmf:
         if event.lower() == "input":
             event_type = mlpb.Event.Type.INPUT
 
-        model_commit = commit_output(path, self.execution.id)
+        commit_output(path, self.execution.id)
         c_hash = dvc_get_hash(path)
+        model_commit = c_hash
 
         # If connecting to an existing artifact - The name of the artifact is
         # used as path/steps/key
         model_uri = path + ":" + c_hash
-        # uri = ""
+        dvc_url = dvc_get_url(path, False)
+        url = dvc_url
+        url_with_pipeline = f"{self.parent_context.name}:{url}"
+        uri = ""
         if c_hash and c_hash.strip():
             uri = c_hash.strip()
             existing_artifact.extend(self.store.get_artifacts_by_uri(uri))
@@ -539,6 +603,9 @@ class Cmf:
 
         if existing_artifact and len(
                 existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
+            # update url for existing artifact
+            print(type(existing_artifact))
+            existing_artifact = self.update_model_url(existing_artifact, url_with_pipeline)
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -562,12 +629,14 @@ class Cmf:
                     "model_framework": str(model_framework),
                     "model_type": str(model_type),
                     "model_name": str(model_name),
-                    "Commit": str(model_commit)},
+                    "Commit": str(model_commit),           #passing c_hash value to commit
+                    "url": str(url_with_pipeline)},
                 artifact_type_properties={
                     "model_framework": mlpb.STRING,
                     "model_type": mlpb.STRING,
                     "model_name": mlpb.STRING,
                     "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
                 },
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(
@@ -586,12 +655,105 @@ class Cmf:
 
         return artifact
 
+    # Add the model to dvc do a git commit and store the commit id in MLMD
+    def log_model_with_version(self, path: str, event: str, props=None,
+                               custom_properties=None) -> object:
+        """Logs a model when the version(hash) is known"""
+
+        if custom_properties is None:
+            custom_properties = {}
+        custom_props = {} if custom_properties is None else custom_properties
+        name = re.split('/', path)[-1]
+        event_type = mlpb.Event.Type.OUTPUT
+        existing_artifact = []
+        if event.lower() == "input":
+            event_type = mlpb.Event.Type.INPUT
+
+        # props["commit"] = "" # To do get from incoming data
+        c_hash = props.get("uri", " ")
+        # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
+        model_uri = path + ":" + c_hash
+        # dvc_url = dvc_get_url(path, False)
+        url = props.get("url", "")
+        # uri = ""
+        if c_hash and c_hash.strip():
+            uri = c_hash.strip()
+            existing_artifact.extend(self.store.get_artifacts_by_uri(uri))
+        else:
+            raise RuntimeError("Model commit failed, Model uri empty")
+
+        if existing_artifact and len(existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
+            # update url for existing artifact
+            existing_artifact = self.update_model_url(existing_artifact, url)
+            artifact = link_execution_to_artifact(store=self.store,
+                                                  execution_id=self.execution.id,
+                                                  uri=c_hash,
+                                                  input_name=model_uri,
+                                                  event_type=event_type)
+            model_uri = artifact.name
+        else:
+
+            uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
+            model_uri = model_uri + ":" + str(self.execution.id)
+            artifact = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=model_uri,
+                type_name="Model",
+                event_type=event_type,
+                properties={"model_framework": props.get("model_framework", ""),
+                            "model_type": props.get("model_type", ""),
+                            "model_name": props.get("model_name", ""),
+                            "Commit": props.get("Commit", ""),
+                            "url": str(url)},
+                artifact_type_properties={"model_framework": mlpb.STRING,
+                                          "model_type": mlpb.STRING,
+                                          "model_name": mlpb.STRING,
+                                          "Commit": mlpb.STRING,
+                                          "url": mlpb.STRING,
+                                          },
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
+        # custom_properties["Commit"] = model_commit
+        # custom_props["url"] = url
+        self.execution_label_props["Commit"] = props.get("Commit", "")
+
+        if self.callbacks:
+            model_event = ArtifactEvent.from_string(event)
+            model = cb.Model(
+                model_uri, uri, event, self.execution.id, self.parent_context, custom_props, self.execution_label_props
+            )
+            for callback in self.callbacks:
+                callback.on_artifact_event(model_event, model)
+
+        # TODO: Sergey: Check if I can just remove the code below. Also, how is it different from just `log_model`?
+        # if self.graph:
+        #     self.driver.create_model_node(model_uri, uri, event, self.execution.id, self.parent_context, custom_props)
+        #     if event.lower() == "input":
+        #
+        #         self.input_artifacts.append(
+        #             {"Name": model_uri, "URI": uri, "Event": event.lower(), "Execution_Name": self.execution_name,
+        #              "Type": "Model", "Execution_Command": self.execution_command,
+        #              "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name})
+        #         self.driver.create_execution_links(uri, model_uri, "Model")
+        #     else:
+        #
+        #         child_artifact = {"Name": model_uri, "URI": uri, "Event": event.lower(),
+        #                           "Execution_Name": self.execution_name,
+        #                           "Type": "Model", "Execution_Command": self.execution_command,
+        #                           "Pipeline_Id": self.parent_context.id, "Pipeline_Name": self.parent_context.name}
+        #         self.driver.create_artifact_relationships(self.input_artifacts, child_artifact,
+        #                                                   self.execution_label_props)
+
+        return artifact
+
     def log_execution_metrics(self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Log the metadata associated with the execution (coarse-grained tracking).
-
         It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
         have.
-
         Example:
             ```python
             exec_metrics: mlpb.Artifact = cmf.log_execution_metrics(
@@ -599,11 +761,9 @@ class Cmf:
                 {"auc": auc, "loss": loss}
             )
             ```
-
         Args:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metric values.
-
         Returns:
               Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
@@ -639,21 +799,17 @@ class Cmf:
 
     def log_metric(self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None) -> None:
         """Stores the fine-grained (per step or per epoch) metrics to memory.
-
         The metrics provided are stored in a parquet file. The `commit_metrics` call add the parquet file in the version
         control framework. The metrics written in the parquet file can be retrieved using the `read_metrics` call.
-
         Example:
             ```python
             # Can be called at every epoch or every step in the training. This is logged to a parquet file and committed
             # at the commit stage.
-
             # Inside training loop
             while True:
                  cmf.log_metric("training_metrics", {"train_loss": train_loss})
             cmf.commit_metrics("training_metrics")
             ```
-
         Args:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metrics.
@@ -665,10 +821,8 @@ class Cmf:
             self.metrics[metrics_name] = {}
             self.metrics[metrics_name][1] = custom_properties
 
-
     def commit_metrics(self, metrics_name: str):
         """Writes the inmemory metrics to parquet file
-
         Commit the metrics file associated with the metrics id to dvc and git and
         store the artifact in mlmd
         """
@@ -676,11 +830,12 @@ class Cmf:
             self.metrics[metrics_name], orient='index')
         metrics_df.index.names = ['SequenceNumber']
         metrics_df.to_parquet(metrics_name)
-        metrics_commit = commit_output(metrics_name, self.execution.id)
+        commit_output(metrics_name, self.execution.id)
         uri = dvc_get_hash(metrics_name)
+        metrics_commit = uri
         name = metrics_name + ":" + uri + ":" + \
-            str(self.execution.id) + ":" + str(uuid.uuid1())
-        custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+               str(self.execution.id) + ":" + str(uuid.uuid1())
+        custom_props = {"Name": metrics_name, "Commit": metrics_commit}       #passing uri value to commit
         metrics = create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -703,7 +858,6 @@ class Cmf:
 
         return metrics
 
-
     def log_validation_output(self, version: str, custom_properties: t.Optional[t.Dict] = None) -> object:
         uri = str(uuid.uuid1())
         return create_new_artifact_event_and_attribution(
@@ -721,21 +875,18 @@ class Cmf:
             milliseconds_since_epoch=int(time.time() * 1000),
         )
 
-
-    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_props: t.Dict):
+    def update_existing_artifact(self, artifact: mlpb.Artifact, custom_properties: t.Dict):
         """Updates an existing artifact and stores it back to mlmd"""
-        for key, value in custom_props.items():
+        for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
 
-
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
         return get_artifacts_by_id(self.store, [artifact_id])[0]
-
 
     def update_model_output(self, artifact: mlpb.Artifact):
         """updates an artifact"""
@@ -743,24 +894,19 @@ class Cmf:
 
     def create_dataslice(self, name: str) -> "Cmf.DataSlice":
         """Creates a dataslice object.
-
         Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]
         method. Users are also responsible for committing data slices by calling the
         [commit][cmflib.cmf.Cmf.DataSlice.commit] method.
-
         Example:
             ```python
             dataslice = cmf.create_dataslice("slice-a")
             ```
-
         Args:
             name: Name to identify the dataslice.
-
         Returns:
             Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].
         """
         return Cmf.DataSlice(name, self)
-
 
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
@@ -770,70 +916,63 @@ class Cmf:
 
     # To do - Once update the hash and the new version should be updated in
     # the mlmd
-    def update_dataslice(self, name: str, record: str, custom_props: t.Dict):
+    def update_dataslice(self, name: str, record: str, custom_properties: t.Dict):
         df = pd.read_parquet(name)
         temp_dict = df.to_dict('index')
-        temp_dict[record].update(custom_props)
+        temp_dict[record].update(custom_properties)
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient='index')
         dataslice_df.index.names = ['Path']
         dataslice_df.to_parquet(name)
 
     class DataSlice:
         """A data slice represents a named subset of data.
-
         It can be used to track performance of an ML model on different slices of the training or testing dataset
         splits. This can be useful from different perspectives, for instance, to mitigate model bias.
-
         > Instances of data slices are not meant to be created manually by users. Instead, use
         [Cmf.create_dataslice][cmflib.cmf.Cmf.create_dataslice] method.
-
         """
+
         def __init__(self, name: str, writer, props: t.Optional[t.Dict] = None):
             self.props = {} if props is None else props
             self.name = name
             self.writer = writer
 
-        def add_data(self, path: str, custom_props: t.Optional[t.Dict] = None) -> None:
+        def add_data(self, path: str, custom_properties: t.Optional[t.Dict] = None) -> None:
             """Add data to create the dataslice.
-
             Currently supported only for file abstractions. Pre-condition - the parent folder, containing the file
                 should already be versioned.
-
             Example:
                 ```python
                 dataslice.add_data(f"data/raw_data/{j}.xml)
                 ```
             Args:
                 path: Name to identify the file to be added to the dataslice.
-                custom_props: Properties associated with this datum.
+                custom_properties: Properties associated with this datum.
             """
 
             self.props[path] = {}
             self.props[path]['hash'] = dvc_get_hash(path)
-            if custom_props:
-                for k, v in custom_props.items():
+            if custom_properties:
+                for k, v in custom_properties.items():
                     self.props[path][k] = v
 
-#        """
-#        Place holder for updating back to mlmd
+        #        """
+        #        Place holder for updating back to mlmd
 
-#        def update_data(self, path, custom_props:{}):
-#            for k ,v in custom_props.items():
-#                self.props[path][k] = v
-#        """
+        #        def update_data(self, path, custom_props:{}):
+        #            for k ,v in custom_props.items():
+        #                self.props[path][k] = v
+        #        """
 
-        def commit(self, custom_props: t.Optional[t.Dict] = None) -> None:
+        def commit(self, custom_properties: t.Optional[t.Dict] = None) -> None:
             """Commit the dataslice.
-
             The created dataslice is versioned and added to underneath data versioning software.
-
             Example:
-                ```python
+
                 dataslice.commit()
                 ```
-
             Args:
-                custom_props: Properties associated with this data slice.
+                custom_properties: Properties associated with this data slice.
             """
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient='index')
@@ -841,9 +980,9 @@ class Cmf:
             dataslice_df.to_parquet(self.name)
             existing_artifact = []
 
-            dataslice_commit = commit_output(
-                self.name, self.writer.execution.id)
+            commit_output(self.name, self.writer.execution.id)
             c_hash = dvc_get_hash(self.name)
+            dataslice_commit = c_hash
             remote = dvc_get_url(self.name)
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
@@ -857,17 +996,18 @@ class Cmf:
                     input_name=self.name + ":" + c_hash)
             else:
                 props = {
-                    "Commit": dataslice_commit,
+                    "Commit": dataslice_commit,			#passing c_hash value to commit
                     "git_repo": git_repo,
                     "Remote": remote}
                 custom_properties = props.update(
-                    custom_props) if custom_props else props
+                    custom_properties) if custom_properties else props
                 create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     context_id=self.writer.child_context.id,
                     uri=c_hash,
                     name=self.name + ":" + c_hash,
+
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
                     custom_properties=custom_properties,
@@ -886,3 +1026,5 @@ class Cmf:
 #                first, middle, last = str(index).split("/")
 #                print(last)
 #                os.symlink(str(index), slicedir + "/ " + last)
+
+

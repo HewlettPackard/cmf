@@ -11,6 +11,9 @@ class Neo4JCallback(Callback):
     """Callback to report Cmf data to Neo4J framework."""
 
     def __init__(self, uri: t.Optional[str], user: t.Optional[str], password: t.Optional[str]) -> None:
+        # TODO: Does this need to be closed? This is from cmf.py:
+        # if self.graph:
+        #    self.driver.close()
         self.driver = GraphDriver(
             uri or os.getenv('NEO4J_URI', ''),
             user or os.getenv('NEO4J_USER_NAME', ''),
