@@ -5,7 +5,7 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.7 >= Python <= 3.9. Create python virtual environment:
+CMF requires 3.8 >= Python <= 3.9. Create python virtual environment:
 
 === "Conda"
     ```shell
@@ -16,7 +16,7 @@ CMF requires 3.7 >= Python <= 3.9. Create python virtual environment:
 === "VirtualEnv" 
     ```shell
     virtualenv --python=3.8 .cmf
-    source .cmf/bin/actiave
+    source .cmf/bin/activate
     ```
 
 Install CMF
@@ -31,6 +31,16 @@ Install CMF
     # Work in progress: not available yet.
     # pip install cmflib
     ```
+## Configuration
+1. create working directory `mkdir <workdir>`
+2. Configure dvc remote directory, git remote url and cmf server by running `cmf init` with appropriate dvc backend.
+3. To configure neo4j backend with cmf export the following environment variables with appropriate values,
+   ```shell
+   export NEO4J_URI="bolt://ip:port"
+   export NEO4J_USER_NAME=<user>
+   export NEO4J_PASSWD=<passwd.
+   ```
+
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
@@ -243,7 +253,8 @@ CMF has a docker-compose file which creates two docker containers,
 - Neo4j Docker container to store and access lineages.
 
 #### Step 1. <br>
- `create .env file in current folder using env-example as a template. #These are used by docker-compose.yml` <br>
+ `create .env file in current folder using env-example as a template. Modify the .env file for the following variables
+USER,UID,GROUP,GID,GIT_USER_NAME,GIT_USER_EMAIL,GIT_REMOTE_URL #These are used by docker-compose.yml` <br>
 #### Step 2. <br>
 **Update `docker-compose.yml` as needed.**<br><br>
     your .ssh folder is mounted inside the docker conatiner to enable you to push and pull code from git <br><br>
@@ -299,6 +310,10 @@ MATCH (a:Execution)-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r
 ```
 Expected output<br>
 <img src="assets/neo4j_output.PNG" width=400> <br>
+
+***Jupyter Lab Notebook*** <br><br>
+Select the kernel as Python[conda env:python37]<br><br>
+<img src="assets/python_kernel_broader.png" width=400> <br><img src="assets/Python_kernel.png" width=200> <br>
 
 ***Shutdown/remove (Remove volumes as well)***
 ```

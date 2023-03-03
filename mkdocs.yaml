@@ -83,6 +83,12 @@ nav:
       - Overview: architecture/overview.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
+  - Client:
+      - Overview: cmf_client/cmf_client.md
+      - Getting started: cmf_client/step-by-step.md
+      - dvc minio backend: cmf_client/minio-server.md
+  - Server:
+      - Getting started: cmf_server/cmf-server.md
   - Public API:
       - CMF: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
