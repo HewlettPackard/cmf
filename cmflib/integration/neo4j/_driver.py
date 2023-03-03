@@ -18,9 +18,10 @@ import typing as t
 import re
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
+__all__ = ['GraphDriver']
+
 
 class GraphDriver:
-
     def __init__(self, uri, user, password):
         self.driver = GraphDatabase.driver(uri, auth=(user, password))
         self.pipeline_id = None
