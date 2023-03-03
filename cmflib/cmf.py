@@ -156,7 +156,21 @@ class Cmf:
         if self.graph:
             self.driver.close()
 
-    def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
+    def create_context(self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Context:
+        """Create context.
+        Every call creates a unique pipeline stage. 
+        Example:
+            ```python
+            #Create context
+            get_or_create_run_context(self.store, pipeline_stage='Pipeline_name/Pipeline_stage', custom_props)
+            ```
+            Args:
+                Pipeline_stage: Name of the Stage.
+                custom_properties: Developers can provide key value pairs with additional properties of the execution that
+                    need to be stored.
+            Returns:
+                Context object from ML Metadata library associated with the new context for this stage.
+                """
         custom_props = {} if custom_properties is None else custom_properties
         pipeline_stage = self.parent_context.name+'/'+pipeline_stage
         ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
@@ -168,7 +182,22 @@ class Cmf:
                 pipeline_stage, self.parent_context, ctx.id, custom_props)
         return ctx
 
-    def merge_created_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
+    def merge_created_context(self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Context:
+        """Create context.
+        Every call creates a unique pipeline stage. 
+        Example:
+            ```python
+            #Create context
+            get_or_create_run_context(self.store, pipeline_stage='Pipeline_stage', custom_props)
+            ```
+            Args:
+                Pipeline_stage: Name of the Stage.
+                custom_properties: Developers can provide key value pairs with additional properties of the execution that
+                    need to be stored.
+            Returns:
+                Context object from ML Metadata library associated with the new context for this stage.
+                """
+
         custom_props = {} if custom_properties is None else custom_properties
         ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
         self.child_context = ctx
@@ -291,7 +320,7 @@ class Cmf:
         return self.execution
 
     def merge_created_execution(self, execution_type: str, execution_cmd: str, properties: {} = None,
-                                custom_properties: {} = None) -> mlpb.Execution:
+                                custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
         # Initializing the execution related fields
         self.metrics = {}
         self.input_artifacts = []
@@ -469,7 +498,7 @@ class Cmf:
                                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = props['git_repo']
+        git_repo = props.get('git_repo','')
         name = url
         event_type = mlpb.Event.Type.OUTPUT
         existing_artifact = []
@@ -494,7 +523,7 @@ class Cmf:
                     existing_artifact, custom_properties)
             uri = c_hash
             # update url for existing artifact
-            self.update_dataset_url(existing_artifact, props['url'])
+            self.update_dataset_url(existing_artifact, props.get('url',''))
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -622,7 +651,6 @@ class Cmf:
         if existing_artifact and len(
                 existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
             # update url for existing artifact
-            print(type(existing_artifact))
             existing_artifact = self.update_model_url(existing_artifact, url_with_pipeline)
             artifact = link_execution_to_artifact(
                 store=self.store,
@@ -698,8 +726,37 @@ class Cmf:
 
     # Add the model to dvc do a git commit and store the commit id in MLMD
     def log_model_with_version(self, path: str, event: str, props=None,
-                               custom_properties=None) -> object:
-        """Logs a model when the version(hash) is known"""
+                               custom_properties: t.Optional[t.Dict] = None) -> object:
+        """Logs a model when the version(hash) is known
+         The model is added to dvc and the metadata file (.dvc) gets committed to git.
+        Example:
+            ```python
+            artifact: mlmd.proto.Artifact= cmf.log_model_with_version(
+                path="path/to/model.pkl",
+                event="output",
+                props={
+                        "url": "/home/user/local-storage/bf/629ccd5cd008066b72c04f9a918737",
+                        "model_type": "RandomForestClassifier",
+                        "model_name": "RandomForestClassifier:default",
+                        "Commit": "commit 1146dad8b74cae205db6a3132ea403db1e4032e5",
+                        "model_framework": "SKlearn",
+                       },
+                custom_properties={
+                        "uri": "bf629ccd5cd008066b72c04f9a918737",
+                },
+
+            )
+            ```
+        Args:
+            path: Path to the model file.
+            event: Takes arguments `INPUT` OR `OUTPUT`.
+            model_framework: Framework used to create the model.
+            model_type: Type of model algorithm used.
+            model_name: Name of the algorithm used.
+            custom_properties: The model properties.
+        Returns:
+            Artifact object from ML Metadata library associated with the new model artifact.
+        """
 
         if custom_properties is None:
             custom_properties = {}
