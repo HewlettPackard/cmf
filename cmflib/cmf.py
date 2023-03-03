@@ -25,17 +25,13 @@ import typing as t
 # This import is needed for jupyterlab environment
 import dvc
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import dvc_get_url, dvc_get_hash, git_get_commit, \
     commit_output, git_get_repo, commit_dvc_lock_file, \
     git_checkout_new_branch, \
     check_git_repo, check_default_remote, check_git_remote,git_commit
 from cmflib import graph_wrapper
-from cmflib.metadata_helper import get_or_create_parent_context, \
-    get_or_create_run_context, associate_child_to_parent_context, \
-    create_new_execution_in_existing_run_context, link_execution_to_artifact, \
-    create_new_artifact_event_and_attribution, get_artifacts_by_id, \
-    put_artifact, link_execution_to_input_artifact
+from cmflib.metadata.store import MetadataStore
+from cmflib.metadata.mlmd_store import MlmdStore
 
 
 class Cmf:
@@ -78,10 +74,7 @@ class Cmf:
             Cmf.__prechecks()
         if custom_properties is None:
             custom_properties = {}
-        config = mlpb.ConnectionConfig()
-        config.sqlite.filename_uri = filename
-        self.store = metadata_store.MetadataStore(config)
-        self.filename = filename
+        self.store: MetadataStore = MlmdStore(backend='sqlite', config={'filename': filename})
         self.child_context = None
         self.execution = None
         self.execution_name = ""
@@ -94,8 +87,9 @@ class Cmf:
 
         if is_server is False:
             git_checkout_new_branch(self.branch_name)
-        self.parent_context = get_or_create_parent_context(
-            store=self.store, pipeline=pipeline_name, custom_properties=custom_properties)
+        self.parent_context = self.store.get_or_create_parent_context(
+            pipeline=pipeline_name, custom_properties=custom_properties
+        )
         if graph is True:
             self.driver = graph_wrapper.GraphDriver(
                 Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password)
@@ -159,10 +153,11 @@ class Cmf:
     def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
         custom_props = {} if custom_properties is None else custom_properties
         pipeline_stage = self.parent_context.name+'/'+pipeline_stage
-        ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
+
+        ctx = self.store.get_or_create_run_context(pipeline_stage, custom_props)
         self.child_context = ctx
-        associate_child_to_parent_context(store=self.store, parent_context=self.parent_context,
-                                          child_context=ctx)
+        self.store.associate_child_to_parent_context(parent_context=self.parent_context, child_context=ctx)
+
         if self.graph:
             self.driver.create_stage_node(
                 pipeline_stage, self.parent_context, ctx.id, custom_props)
@@ -170,15 +165,15 @@ class Cmf:
 
     def merge_created_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
         custom_props = {} if custom_properties is None else custom_properties
-        ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
+
+        ctx = self.store.get_or_create_run_context(pipeline_stage, custom_props)
         self.child_context = ctx
-        associate_child_to_parent_context(store=self.store, parent_context=self.parent_context,
-                                          child_context=ctx)
+        self.store.associate_child_to_parent_context(parent_context=self.parent_context, child_context=ctx)
+
         if self.graph:
             self.driver.create_stage_node(
                 pipeline_stage, self.parent_context, ctx.id, custom_props)
         return ctx
-
 
     def create_execution(self, execution_type: str,
                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
@@ -217,8 +212,7 @@ class Cmf:
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
-        self.execution = create_new_execution_in_existing_run_context(
-            store=self.store,
+        self.execution = self.store.create_new_execution_in_existing_run_context(
             execution_type_name=execution_type,
             context_id=self.child_context.id,
             execution=str(sys.argv),
@@ -251,8 +245,7 @@ class Cmf:
         if self.execution is None:
             print("Error - no execution id")
             sys.exit(1)
-        execution_type = self.store.get_execution_types_by_id(
-            [self.execution.type_id])[0]
+        execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
         if custom_properties:
             for key, value in custom_properties.items():
@@ -261,7 +254,7 @@ class Cmf:
                 else:
                     self.execution.custom_properties[key].string_value = str(
                         value)
-        self.store.put_executions([self.execution])
+        self.store.put_execution(self.execution)
         c_props = {}
         for k, v in self.execution.custom_properties.items():
             key = re.sub('-', '_', k)
@@ -300,17 +293,16 @@ class Cmf:
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
-        self.execution = create_new_execution_in_existing_run_context \
-            (store=self.store,
-             execution_type_name=execution_type,
-             context_id=self.child_context.id,
-             execution=execution_cmd,
-             pipeline_id=self.parent_context.id,
-             pipeline_type=self.parent_context.name,
-             git_repo=git_repo,
-             git_start_commit=git_start_commit,
-             custom_properties=custom_props
-             )
+        self.execution = self.store.create_new_execution_in_existing_run_context(
+            execution_type_name=execution_type,
+            context_id=self.child_context.id,
+            execution=execution_cmd,
+            pipeline_id=self.parent_context.id,
+            pipeline_type=self.parent_context.name,
+            git_repo=git_repo,
+            git_start_commit=git_start_commit,
+            custom_properties=custom_props
+        )
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = execution_cmd
         for k, v in custom_props.items():
@@ -372,20 +364,18 @@ class Cmf:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
             uri = c_hash
-            # update url for existing artifact
             self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
-            artifact = link_execution_to_artifact(
-                store=self.store,
+            artifact = self.store.link_execution_to_artifact(
                 execution_id=self.execution.id,
                 uri=uri,
                 input_name=url,
-                event_type=event_type)
+                event_type=event_type
+            )
         else:
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
+            artifact = self.store.create_new_artifact_event_and_attribution(
                 execution_id=self.execution.id,
                 context_id=self.child_context.id,
                 uri=uri,
@@ -451,7 +441,7 @@ class Cmf:
                 if updated_url not in old_url:
                     new_url = f"{old_url},{updated_url}"
                     artifact.properties[key].string_value = new_url
-        put_artifact(self.store, artifact)
+        self.store.put_artifact(artifact)
 
     def update_model_url(self, dup_artifact: list, updated_url: str):
         for art in dup_artifact:
@@ -462,7 +452,7 @@ class Cmf:
                     if updated_url not in old_url:
                         new_url = f"{old_url},{updated_url}"
                         dup_art.properties[key].string_value = new_url
-            put_artifact(self.store, dup_art)
+            self.store.put_artifact(dup_art)
         return dup_artifact
 
     def log_dataset_with_version(self, url: str, version: str, event: str, props: dict,
@@ -493,10 +483,8 @@ class Cmf:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
             uri = c_hash
-            # update url for existing artifact
             self.update_dataset_url(existing_artifact, props['url'])
-            artifact = link_execution_to_artifact(
-                store=self.store,
+            artifact = self.store.link_execution_to_artifact(
                 execution_id=self.execution.id,
                 uri=uri,
                 input_name=url,
@@ -505,8 +493,7 @@ class Cmf:
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
+            artifact = self.store.create_new_artifact_event_and_attribution(
                 execution_id=self.execution.id,
                 context_id=self.child_context.id,
                 uri=uri,
@@ -621,22 +608,21 @@ class Cmf:
 
         if existing_artifact and len(
                 existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
-            # update url for existing artifact
+
             print(type(existing_artifact))
             existing_artifact = self.update_model_url(existing_artifact, url_with_pipeline)
-            artifact = link_execution_to_artifact(
-                store=self.store,
+            artifact = self.store.link_execution_to_artifact(
                 execution_id=self.execution.id,
                 uri=c_hash,
                 input_name=model_uri,
-                event_type=event_type)
+                event_type=event_type
+            )
             model_uri = artifact.name
         else:
 
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             model_uri = model_uri + ":" + str(self.execution.id)
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
+            artifact = self.store.create_new_artifact_event_and_attribution(
                 execution_id=self.execution.id,
                 context_id=self.child_context.id,
                 uri=uri,
@@ -726,18 +712,18 @@ class Cmf:
         if existing_artifact and len(existing_artifact) != 0 and event_type == mlpb.Event.Type.INPUT:
             # update url for existing artifact
             existing_artifact = self.update_model_url(existing_artifact, url)
-            artifact = link_execution_to_artifact(store=self.store,
-                                                  execution_id=self.execution.id,
-                                                  uri=c_hash,
-                                                  input_name=model_uri,
-                                                  event_type=event_type)
+            artifact = self.store.link_execution_to_artifact(
+                execution_id=self.execution.id,
+                uri=c_hash,
+                input_name=model_uri,
+                event_type=event_type
+            )
             model_uri = artifact.name
         else:
 
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             model_uri = model_uri + ":" + str(self.execution.id)
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
+            artifact = self.store.create_new_artifact_event_and_attribution(
                 execution_id=self.execution.id,
                 context_id=self.child_context.id,
                 uri=uri,
@@ -801,8 +787,7 @@ class Cmf:
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
         metrics_name = metrics_name + ":" + uri + ":" + str(self.execution.id)
-        metrics = create_new_artifact_event_and_attribution(
-            store=self.store,
+        metrics = self.store.create_new_artifact_event_and_attribution(
             execution_id=self.execution.id,
             context_id=self.child_context.id,
             uri=uri,
@@ -876,10 +861,9 @@ class Cmf:
         uri = dvc_get_hash(metrics_name)
         metrics_commit = uri
         name = metrics_name + ":" + uri + ":" + \
-               str(self.execution.id) + ":" + str(uuid.uuid1())
+            str(self.execution.id) + ":" + str(uuid.uuid1())
         custom_props = {"Name": metrics_name, "Commit": metrics_commit}       #passing uri value to commit
-        metrics = create_new_artifact_event_and_attribution(
-            store=self.store,
+        metrics = self.store.create_new_artifact_event_and_attribution(
             execution_id=self.execution.id,
             context_id=self.child_context.id,
             uri=uri,
@@ -911,8 +895,7 @@ class Cmf:
 
     def log_validation_output(self, version: str, custom_properties: t.Optional[t.Dict] = None) -> object:
         uri = str(uuid.uuid1())
-        return create_new_artifact_event_and_attribution(
-            store=self.store,
+        return self.store.create_new_artifact_event_and_attribution(
             execution_id=self.execution.id,
             context_id=self.child_context.id,
             uri=uri,
@@ -933,15 +916,15 @@ class Cmf:
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
-        put_artifact(self.store, artifact)
+        self.store.put_artifact(artifact)
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
-        return get_artifacts_by_id(self.store, [artifact_id])[0]
+        return self.store.get_artifacts_by_id(artifact_id)[0]
 
     def update_model_output(self, artifact: mlpb.Artifact):
         """updates an artifact"""
-        put_artifact(self.store, artifact)
+        self.store.put_artifact(artifact)
 
     def create_dataslice(self, name: str) -> "Cmf.DataSlice":
         """Creates a dataslice object.
@@ -1040,8 +1023,7 @@ class Cmf:
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
                 print("Adding to existing data slice")
-                _ = link_execution_to_input_artifact(
-                    store=self.writer.store,
+                _ = self.writer.store.link_execution_to_input_artifact(
                     execution_id=self.writer.execution.id,
                     uri=c_hash,
                     input_name=self.name + ":" + c_hash)
@@ -1050,10 +1032,8 @@ class Cmf:
                     "Commit": dataslice_commit,			#passing c_hash value to commit
                     "git_repo": git_repo,
                     "Remote": remote}
-                custom_properties = props.update(
-                    custom_properties) if custom_properties else props
-                create_new_artifact_event_and_attribution(
-                    store=self.writer.store,
+                custom_properties = props.update(custom_properties) if custom_properties else props
+                self.writer.store.create_new_artifact_event_and_attribution(
                     execution_id=self.writer.execution.id,
                     context_id=self.writer.child_context.id,
                     uri=c_hash,
