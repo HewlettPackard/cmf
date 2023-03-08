@@ -29,7 +29,8 @@ Relationship between Deployment and Framework""" ;
              rdfs:subPropertyOf owl:topObjectProperty ;
              rdfs:domain :Pipeline ;
              rdfs:range :Time ;
-             rdfs:comment "Relationship between Pipeline and Time" .
+             rdfs:comment "Relationship between Pipeline and Time" ;
+             rdfs:label "completesIn" .
 
 
 ###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#deploys
