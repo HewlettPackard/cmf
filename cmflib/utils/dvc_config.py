@@ -25,7 +25,7 @@ class DvcConfig:
         message = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = dvc_get_config()
         if not result:
-            return msg
+            return message
         else:
             config_list = result.split("\n")
             config_dict = {}
