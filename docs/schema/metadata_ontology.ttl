@@ -74,12 +74,9 @@ Relationship between Model and Task""" ;
 ###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#isInput
 :isInput rdf:type owl:ObjectProperty ;
          rdfs:subPropertyOf owl:topObjectProperty ;
-         rdfs:domain :Dataset ,
-                     :DatasetPreprocessing ;
-         rdfs:range :DatasetPreprocessing ,
-                    :Model ;
-         rdfs:comment """Relationship between Dataset and DataPreprocessing
-Relationship between DataPreprocessing and Model""" ;
+         rdfs:domain :Dataset ;
+         rdfs:range :DatasetPreprocessing ;
+         rdfs:comment "Relationship between Dataset and DataPreprocessing. Example: Dataset is input to DataPreprocessing" ;
          rdfs:label "isInput" .
 
 
@@ -99,6 +96,15 @@ Relationship between DataPreprocessing and Model""" ;
           rdfs:range :Result ;
           rdfs:comment "Relationship between Evaluation and Result" ;
           rdfs:label "produced" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/2/untitled-ontology-7#takesInput
+:takesInput rdf:type owl:ObjectProperty ;
+            rdfs:subPropertyOf owl:topObjectProperty ;
+            rdfs:domain :Model ;
+            rdfs:range :DatasetPreprocessing ;
+            rdfs:comment "Relationship between Model and Datapreprocessing. Example: Model takes input from DataPreprocessing" ;
+            rdfs:label "takesInput" .
 
 
 #################################################################
