@@ -32,8 +32,8 @@ Install CMF
     # pip install cmflib
     ```
 ## Configuration
-1. create working directory `mkdir <workdir>`
-2. Configure dvc remote directory, git remote url and cmf server by running `cmf init` with appropriate dvc backend.
+1. Create working directory `mkdir <workdir>`
+2. Execute `cmf init` to configure dvc remote directory, git remote url and cmf server with appropriate dvc backend.
 3. To configure neo4j backend with cmf export the following environment variables with appropriate values,
    ```shell
    export NEO4J_URI="bolt://ip:port"

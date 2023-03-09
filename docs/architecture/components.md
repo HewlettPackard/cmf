@@ -8,7 +8,7 @@ Common metadata framework has the following components:
   transferred by the remote client and manage the consolidated metadata.  
 - [Central Repositories](#central-repositories) hosts the code, data and metadata.
 
-<img src="../../assets/distributed_architecture.png" alt="CMF Framework" style="display: block; margin: 0 auto" />
+<img src="./../assets/distributed_architecture.png" alt="CMF Framework" style="display: block; margin: 0 auto" />
 
 
 ## Metadata Library

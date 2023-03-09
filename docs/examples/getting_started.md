@@ -51,33 +51,34 @@ git clone https://github.com/HewlettPackard/cmf
 pip install ./cmf
 ```
 
+### Setup a cmf-server
+
+__cmf-server__ is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
+
+Follow [here](./../cmf_server/cmf-server.md) to setup a common cmf-server.
+
 ## Project initialization
-We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and
-initialize `git` and `dvc` for this project.
+We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and using `cmf init` command
+initialize dvc remote directory, git remote url and cmf server with appropriate dvc backend for this project .
 
 ```shell
 # Create a separate copy of the example project
 cp -r ./cmf/examples/example-get-started/ ./example-get-started
 cd ./example-get-started
 ```
-
-Review the content of the 
-[sample_env](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/sample_env) file which is
-located in the root directory of the example. For the demonstration purposes, you can leave all fields as is. Once this
-file is reviewed, source that file and run 
-[initialize.sh](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/initialize.sh) 
-to initialize `git` and `dvc` repositories.
+### cmf init
+<pre>
+Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
+                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
+</pre>
 ```shell
-# Export environmental variables
-source ./sample_env
-# Initialize the example project
-sh ./initialize.sh
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
 ```
+Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
 
 ## Project execution
-The `initialize.sh` script executed above has printed some details about the project. To execute the example 
-pipeline, run the 
-[test_script.sh](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/test_script.sh) 
+To execute the example pipeline, run the 
+[test_script.sh](../../examples/example-get-started/test_script.sh) 
 file (before that, study the contents of that file). Basically, that script will run a sequence of steps
 common for a typical machine learning project - getting raw data, converting it into machine learning train/test splits,
 training and testing a model. The execution of these steps (and parent pipeline) will be recorded by the CMF.
@@ -89,14 +90,14 @@ sh ./test_script.sh
 This script will run the pipeline and will store its metadata in a sqlite file named mlmd. Verify that all stages are 
 done using `git log` command. You should see commits corresponding to the artifacts that were created.
 
-Under normal conditions, the next steps would be to: (1) execute the `dvc push` command to push the artifacts to dvc
-remote and (2) execute the `git push origin` command to track the metadata of the generated artifacts.
+Under normal conditions, the next steps would be to: (1) execute the `cmf artifact push` command to push the artifacts to the central artifact repository and (2) execute the `cmf metadata push` command to track the metadata of the generated artifacts on a common [cmf server](./../cmf_server/cmf-server.md).
+
+Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
 
 
 ## Query 
 The stored metadata can be explored using the query layer. Example Jupyter notebook 
-[Query_Tester-base_mlmd.ipynb](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/Query_Tester-base_mlmd.ipynb) 
-can be found in this directory.
+[Query_Tester-base_mlmd.ipynb](../../examples/example-get-started/Query_Tester-base_mlmd.ipynb) can be found in this directory.
 
 ## Clean Up 
 Metadata is stored in sqlite file named "mlmd". To clean up, delete the "mlmd" file.
