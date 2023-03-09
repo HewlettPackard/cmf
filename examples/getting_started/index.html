@@ -19,7 +19,7 @@
         <link rel="next" href="../../architecture/overview/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.0.15">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.2">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.113286f1.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.7bf56d0a.min.css">
       
         
         <link rel="stylesheet" href="../../assets/stylesheets/palette.a0c5b2b5.min.css">
@@ -87,7 +87,9 @@
     
       
 
-<header class="md-header" data-md-component="header">
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
       
@@ -300,12 +302,38 @@
     Pre-requisites
   </a>
   
+    <nav class="md-nav" aria-label="Pre-requisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup-a-cmf-server" class="md-nav__link">
+    Setup a cmf-server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#project-initialization" class="md-nav__link">
     Project initialization
   </a>
+  
+    <nav class="md-nav" aria-label="Project initialization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmf-init" class="md-nav__link">
+    cmf init
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -649,12 +677,38 @@
     Pre-requisites
   </a>
   
+    <nav class="md-nav" aria-label="Pre-requisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#setup-a-cmf-server" class="md-nav__link">
+    Setup a cmf-server
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
   <a href="#project-initialization" class="md-nav__link">
     Project initialization
   </a>
+  
+    <nav class="md-nav" aria-label="Project initialization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmf-init" class="md-nav__link">
+    cmf init
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -751,28 +805,27 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf_getting_started
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/cmf
 pip<span class="w"> </span>install<span class="w"> </span>./cmf
 </code></pre></div></p>
+<h3 id="setup-a-cmf-server">Setup a cmf-server<a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">&para;</a></h3>
+<p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
+<p>Follow <a href="../../cmf_server/cmf-server/">here</a> to setup a common cmf-server.</p>
 <h2 id="project-initialization">Project initialization<a class="headerlink" href="#project-initialization" title="Permanent link">&para;</a></h2>
-<p>We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and
-initialize <code>git</code> and <code>dvc</code> for this project.</p>
+<p>We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and using <code>cmf init</code> command
+initialize dvc remote directory, git remote url and cmf server with appropriate dvc backend for this project .</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a separate copy of the example project</span>
 cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-started/<span class="w"> </span>./example-get-started
 <span class="nb">cd</span><span class="w"> </span>./example-get-started
 </code></pre></div>
-<p>Review the content of the 
-<a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/sample_env">sample_env</a> file which is
-located in the root directory of the example. For the demonstration purposes, you can leave all fields as is. Once this
-file is reviewed, source that file and run 
-<a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/initialize.sh">initialize.sh</a> 
-to initialize <code>git</code> and <code>dvc</code> repositories.
-<div class="highlight"><pre><span></span><code><span class="c1"># Export environmental variables</span>
-<span class="nb">source</span><span class="w"> </span>./sample_env
-<span class="c1"># Initialize the example project</span>
-sh<span class="w"> </span>./initialize.sh
-</code></pre></div></p>
+<h3 id="cmf-init">cmf init<a class="headerlink" href="#cmf-init" title="Permanent link">&para;</a></h3>
+<pre>
+Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
+                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
+</pre>
+<p><div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span>minioS3<span class="w"> </span>--url<span class="w"> </span>s3://bucket-name<span class="w"> </span>--endpoint-url<span class="w"> </span>http://localhost:9000<span class="w"> </span>--access-key-id<span class="w"> </span>minioadmin<span class="w"> </span>--secret-key<span class="w"> </span>minioadmin<span class="w"> </span>--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git<span class="w"> </span>--cmf-server-ip<span class="w"> </span>http://121.0.0.1:80
+</code></pre></div>
+Follow <a href="../../cmf_client/cmf_client/#cmf-init">here</a> for more details.</p>
 <h2 id="project-execution">Project execution<a class="headerlink" href="#project-execution" title="Permanent link">&para;</a></h2>
-<p>The <code>initialize.sh</code> script executed above has printed some details about the project. To execute the example 
-pipeline, run the 
-<a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/test_script.sh">test_script.sh</a> 
+<p>To execute the example pipeline, run the 
+<a href="../../examples/example-get-started/test_script.sh">test_script.sh</a> 
 file (before that, study the contents of that file). Basically, that script will run a sequence of steps
 common for a typical machine learning project - getting raw data, converting it into machine learning train/test splits,
 training and testing a model. The execution of these steps (and parent pipeline) will be recorded by the CMF.
@@ -781,12 +834,11 @@ sh<span class="w"> </span>./test_script.sh
 </code></pre></div></p>
 <p>This script will run the pipeline and will store its metadata in a sqlite file named mlmd. Verify that all stages are 
 done using <code>git log</code> command. You should see commits corresponding to the artifacts that were created.</p>
-<p>Under normal conditions, the next steps would be to: (1) execute the <code>dvc push</code> command to push the artifacts to dvc
-remote and (2) execute the <code>git push origin</code> command to track the metadata of the generated artifacts.</p>
+<p>Under normal conditions, the next steps would be to: (1) execute the <code>cmf artifact push</code> command to push the artifacts to the central artifact repository and (2) execute the <code>cmf metadata push</code> command to track the metadata of the generated artifacts on a common <a href="../../cmf_server/cmf-server/">cmf server</a>.</p>
+<p>Follow <a href="../../cmf_client/cmf_client/#cmf-init">here</a> for more details on <code>cmf artifact</code> and <code>cmf metadata</code> commands.</p>
 <h2 id="query">Query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h2>
 <p>The stored metadata can be explored using the query layer. Example Jupyter notebook 
-<a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/Query_Tester-base_mlmd.ipynb">Query_Tester-base_mlmd.ipynb</a> 
-can be found in this directory.</p>
+<a href="../../examples/example-get-started/Query_Tester-base_mlmd.ipynb">Query_Tester-base_mlmd.ipynb</a> can be found in this directory.</p>
 <h2 id="clean-up">Clean Up<a class="headerlink" href="#clean-up" title="Permanent link">&para;</a></h2>
 <p>Metadata is stored in sqlite file named "mlmd". To clean up, delete the "mlmd" file.</p>
 <h2 id="steps-to-test-dataslice">Steps to test dataslice<a class="headerlink" href="#steps-to-test-dataslice" title="Permanent link">&para;</a></h2>
@@ -857,7 +909,7 @@ can be found in this directory.</p>
     <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.2a6f1dda.min.js"></script>
+      <script src="../../assets/javascripts/bundle.fc8c2696.min.js"></script>
       
     
   </body>
