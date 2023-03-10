@@ -157,12 +157,22 @@ class Cmf:
             self.driver.close()
 
     def create_context(self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Context:
-        """Create context.
+        """Create's a  context(stage).
         Every call creates a unique pipeline stage. 
         Example:
             ```python
             #Create context
-            get_or_create_run_context(self.store, pipeline_stage='Pipeline_name/Pipeline_stage', custom_props)
+            # Import CMF
+            from cmflib.cmf import Cmf
+            from ml_metadata.proto import metadata_store_pb2 as mlpb
+            # Create CMF logger
+            cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+            # Create context
+            context: mlmd.proto.Context = cmf.create_context(
+                pipeline_stage="prepare",
+                custom_properties ={"user-metadata1": "metadata_value"}
+            )
+
             ```
             Args:
                 Pipeline_stage: Name of the Stage.
@@ -170,7 +180,7 @@ class Cmf:
                     need to be stored.
             Returns:
                 Context object from ML Metadata library associated with the new context for this stage.
-                """
+        """
         custom_props = {} if custom_properties is None else custom_properties
         pipeline_stage = self.parent_context.name+'/'+pipeline_stage
         ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
@@ -186,9 +196,18 @@ class Cmf:
         """Create context.
         Every call creates a unique pipeline stage. 
         Example:
+
             ```python
             #Create context
-            get_or_create_run_context(self.store, pipeline_stage='Pipeline_stage', custom_props)
+            # Import CMF
+            from cmflib.cmf import Cmf
+            from ml_metadata.proto import metadata_store_pb2 as mlpb
+            # Create CMF logger
+            cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+            # Create context
+            context: mlmd.proto.Context = cmf.create_context(
+                pipeline_stage="prepare",
+                custom_properties ={"user-metadata1": "metadata_value"}
             ```
             Args:
                 Pipeline_stage: Name of the Stage.
@@ -196,7 +215,7 @@ class Cmf:
                     need to be stored.
             Returns:
                 Context object from ML Metadata library associated with the new context for this stage.
-                """
+        """
 
         custom_props = {} if custom_properties is None else custom_properties
         ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)

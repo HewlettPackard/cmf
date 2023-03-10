@@ -5,7 +5,8 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.8 >= Python <= 3.9. Create python virtual environment:
+CMF requires 3.8 >= Python <= 3.9.<br>
+Create python virtual environment:
 
 === "Conda"
     ```shell
@@ -33,7 +34,7 @@ Install CMF
     ```
 ## Configuration
 1. Create working directory `mkdir <workdir>`
-2. Execute `cmf init` to configure dvc remote directory, git remote url and cmf server with appropriate dvc backend.
+2. Execute `cmf init` to configure dvc remote directory, git remote url and cmf server.
 3. To configure neo4j backend with cmf export the following environment variables with appropriate values,
    ```shell
    export NEO4J_URI="bolt://ip:port"
@@ -44,18 +45,23 @@ Install CMF
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
-each stage performs a particular task, such as data loading and pre-processing, ML model training and testing. Stages
+each stage performs a particular task, such as data loading,  pre-processing, ML model training and testing stages.
+Each stage can have multiple Executions. 
+Each Execution,
 
 - consume `inputs` and produce `outputs`.
 - are parametrized by parameters that guide the process of producing outputs.
 
 <img src="assets/ml_pipeline_def.png" alt="ML Pipeline Definition Example" style="display: block; margin: 0 auto" />
 
-CMF uses abstractions defined in [ML Metadata](https://www.tensorflow.org/tfx/guide/mlmd) (MLMD) library to represent
-CMF concepts.  Each pipeline has a name. Users provide it when they initialize the CMF. Each stage is characterized by 
-metadata represented as MLMD's `Context` object. When users actually run a stage, this is recorded by the MLMD's 
-`Execution` object. Inputs and outputs of stages are represented as MLMD's `Artifact` object, while parameters of stages
+CMF uses the abstractions of `Pipeline`,`Context` and `Executions` to store the metadata of complex ML pipelines.
+Each pipeline has a name. Users provide it when they initialize the CMF. Each stage is represented by a `Context` object.
+Metadata associated with each <u>run</u> of a <u>stage</u> is captured in the Execution object.
+Inputs and outputs of Executions can be logged as dataset, model or metrics. While parameters of executions
 are recorded as properties of executions.
+
+
+<img src="assets/cmf_concepts.png" alt="CMF abstractions" style="display: block; margin: 0 auto" />
 
 <table markdown="block" style="border: 0">
 <tbody markdown="block" style="width: 100%; display: table">
@@ -86,7 +92,7 @@ are recorded as properties of executions.
 
 === "3 New execution"
     Now we can create a new stage execution associated with the `train` stage. The CMF always creates a new execution,
-    and will adjust its name, so it's unique. This is also the place where we log stage `parameters`.
+    and will adjust its name, so it's unique. This is also the place where we can log execution `parameters` like seed, hyper-parameters etc .
     ```python
     execution: mlmd.proto.Execution = cmf.create_execution(
         execution_type="train",
@@ -126,7 +132,7 @@ Simple "getting started" example is described [here](examples/getting_started.md
 from cmflib import cmf
 ```
 
-**Create the metadata writer**. The [metadata writer][cmflibcmfcmf] is responsible for managing a CMF backend to record 
+**Initialize CMF**. The [CMF][cmflibcmfcmf] object is responsible for managing a CMF backend to record 
 the pipeline metadata. Internally, it creates a pipeline abstraction that groups individual stages and their executions. 
 All stages, their executions and produced artifacts will be associated with a pipeline with the given name.
 ```python
