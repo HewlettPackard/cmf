@@ -6,7 +6,7 @@ from .xml_style import XMLDataset
 @DATASETS.register_module()
 class HDCDataset(XMLDataset):
 
-    CLASSES = ['Animal', 'Background']
+    CLASSES = ['Defect', 'Background']
 
     def __init__(self, **kwargs):
         #print("came in VOCDataset")
