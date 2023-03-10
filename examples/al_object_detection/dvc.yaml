@@ -34,10 +34,10 @@ stages:
             outs:
                 - work_dirs/test/cycle_${item.cycle}.pth
 
-    active_learning_selection:
-        foreach:
-            - cycle: 0
-              next_cycle: 1
+#    active_learning_selection:
+#        foreach:
+#            - cycle: 0
+#              next_cycle: 1
            # - cycle: 1
            #   next_cycle: 2
            # - cycle: 2
