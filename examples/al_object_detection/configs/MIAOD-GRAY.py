@@ -30,7 +30,7 @@ epoch_ratio = [3, 1]
 # The frequency of evaluating the model can be changed here.
 evaluation = dict(interval=epoch_ratio[0], metric='mAP')
 # The number of outer loops (i.e., all 3 training steps except the first Label Set Training step) can be changed here.
-epoch = 4
+epoch = 3
 # The repeat time for the labeled sets and unlabeled sets can be changed here.
 # The number of repeat times can be equivalent to the number of actual training epochs.
 X_L_repeat = 2
