@@ -826,7 +826,8 @@
 also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>CMF requires 3.8 &gt;= Python &lt;= 3.9. Create python virtual environment:</p>
+<p>CMF requires 3.8 &gt;= Python &lt;= 3.9.<br>
+Create python virtual environment:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Conda</label><label for="__tabbed_1_2">VirtualEnv</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -858,7 +859,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Create working directory <code>mkdir &lt;workdir&gt;</code></li>
-<li>Execute <code>cmf init</code> to configure dvc remote directory, git remote url and cmf server with appropriate dvc backend.</li>
+<li>Execute <code>cmf init</code> to configure dvc remote directory, git remote url and cmf server.</li>
 <li>To configure neo4j backend with cmf export the following environment variables with appropriate values,
    <div class="highlight"><pre><span></span><code><span class="nb">export</span><span class="w"> </span><span class="nv">NEO4J_URI</span><span class="o">=</span><span class="s2">&quot;bolt://ip:port&quot;</span>
 <span class="nb">export</span><span class="w"> </span><span class="nv">NEO4J_USER_NAME</span><span class="o">=</span>&lt;user&gt;
@@ -868,17 +869,20 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf
 <h3 id="jupyter-lab-docker-container-with-cmf-pre-installed"><a href="#docker-section">Jupyter Lab docker container with CMF pre-installed</a><a class="headerlink" href="#jupyter-lab-docker-container-with-cmf-pre-installed" title="Permanent link">&para;</a></h3>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
 <p>Complex ML projects rely on <code>ML pipelines</code> to train and test ML models. An ML pipeline is a sequence of stages where
-each stage performs a particular task, such as data loading and pre-processing, ML model training and testing. Stages</p>
+each stage performs a particular task, such as data loading,  pre-processing, ML model training and testing stages.
+Each stage can have multiple Executions. 
+Each Execution,</p>
 <ul>
 <li>consume <code>inputs</code> and produce <code>outputs</code>.</li>
 <li>are parametrized by parameters that guide the process of producing outputs.</li>
 </ul>
 <p><img src="assets/ml_pipeline_def.png" alt="ML Pipeline Definition Example" style="display: block; margin: 0 auto" /></p>
-<p>CMF uses abstractions defined in <a href="https://www.tensorflow.org/tfx/guide/mlmd">ML Metadata</a> (MLMD) library to represent
-CMF concepts.  Each pipeline has a name. Users provide it when they initialize the CMF. Each stage is characterized by 
-metadata represented as MLMD's <code>Context</code> object. When users actually run a stage, this is recorded by the MLMD's 
-<code>Execution</code> object. Inputs and outputs of stages are represented as MLMD's <code>Artifact</code> object, while parameters of stages
+<p>CMF uses the abstractions of <code>Pipeline</code>,<code>Context</code> and <code>Executions</code> to store the metadata of complex ML pipelines.
+Each pipeline has a name. Users provide it when they initialize the CMF. Each stage is represented by a <code>Context</code> object.
+Metadata associated with each <u>run</u> of a <u>stage</u> is captured in the Execution object.
+Inputs and outputs of Executions can be logged as dataset, model or metrics. While parameters of executions
 are recorded as properties of executions.</p>
+<p><img src="assets/cmf_concepts.png" alt="CMF abstractions" style="display: block; margin: 0 auto" /></p>
 <table style="border: 0">
 <tbody style="width: 100%; display: table">
 <tr>
@@ -907,7 +911,7 @@ this particular execution.
 </div>
 <div class="tabbed-block">
 <p>Now we can create a new stage execution associated with the <code>train</code> stage. The CMF always creates a new execution,
-and will adjust its name, so it's unique. This is also the place where we log stage <code>parameters</code>.
+and will adjust its name, so it's unique. This is also the place where we can log execution <code>parameters</code> like seed, hyper-parameters etc .
 <div class="highlight"><pre><span></span><code><span class="n">execution</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Execution</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_execution</span><span class="p">(</span>
     <span class="n">execution_type</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span>
     <span class="n">custom_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;num_epochs&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span> <span class="s2">&quot;learning_rate&quot;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}</span>
@@ -941,7 +945,7 @@ and will adjust its name, so it's unique. This is also the place where we log st
 <p><strong>Import CMF</strong>.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmflib</span> <span class="kn">import</span> <span class="n">cmf</span>
 </code></pre></div></p>
-<p><strong>Create the metadata writer</strong>. The <a class="autorefs autorefs-internal" href="api/public/cmf/#cmflibcmfcmf">metadata writer</a> is responsible for managing a CMF backend to record 
+<p><strong>Initialize CMF</strong>. The <a class="autorefs autorefs-internal" href="api/public/cmf/#cmflibcmfcmf">CMF</a> object is responsible for managing a CMF backend to record 
 the pipeline metadata. Internally, it creates a pipeline abstraction that groups individual stages and their executions. 
 All stages, their executions and produced artifacts will be associated with a pipeline with the given name.
 <div class="highlight"><pre><span></span><code><span class="n">cmf</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">Cmf</span><span class="p">(</span>
