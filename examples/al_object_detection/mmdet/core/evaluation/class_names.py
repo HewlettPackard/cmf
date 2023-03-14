@@ -5,7 +5,7 @@ def wider_face_classes():
 
 def hdc_classes():
     return [
-        'Animal', 'Background'
+        'Defect', 'Background'
         ]
 def voc_classes():
     return [

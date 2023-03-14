@@ -1,5 +1,5 @@
 # Please change the dataset directory to your actual directory
-data_root = '$YOUR_DATASET_PATH/VOCdevkit/'
+data_root = '/mnt/beegfs/PAMS/data/tomography_data/tiled_annotations'
 
 _base_ = [
     './_base_/ssd300.py', './_base_/voc0712.py',
@@ -56,10 +56,8 @@ data = dict(
     test=dict(
         type='VOCDataset',
         ann_file=[
-            data_root + 'VOC2007/ImageSets/Main/trainval.txt',
-            data_root + 'VOC2012/ImageSets/Main/trainval.txt',
-        ],
-        img_prefix=[data_root + 'VOC2007/', data_root + 'VOC2012/'],
+            data_root + 'train_val.txt'],
+        img_prefix=[data_root ],
         pipeline=test_pipeline
     )
 )
