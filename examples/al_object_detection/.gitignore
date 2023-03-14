@@ -1,1 +1,3 @@
 **/__pyccache__
+/work_dirs
+*.pyc
