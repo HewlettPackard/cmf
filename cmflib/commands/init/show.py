@@ -21,9 +21,9 @@ import subprocess
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import read_cmf_config, find_root
+from cmflib.cli.utils import find_root
 from cmflib.dvc_wrapper import dvc_get_config
-
+from cmflib.utils.cmf_config import CmfConfig
 
 class CmdInitShow(CmdBase):
     def run(self):
@@ -37,10 +37,13 @@ class CmdInitShow(CmdBase):
             if cmf_config_root.find("'cmf' is  not configured") != -1:
                 return msg
             config_file_path = os.path.join(cmf_config_root, cmfconfig)
-            output = read_cmf_config(config_file_path)
-            if output.find("Exception") != -1:
-                return output
-            return f"{result}\n{output}"
+            attr_dict = CmfConfig.read_config(config_file_path)
+            attr_list = []
+            for key, value in attr_dict.items():
+                temp_str = f"{key} = {value}"
+                attr_list.append(temp_str)
+            attr_str = "\n".join(attr_list)
+            return f"{result}\n{attr_str}"
 
 
 def add_parser(subparsers, parent_parser):
