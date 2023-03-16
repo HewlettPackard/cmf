@@ -34,7 +34,7 @@ class CmdInitShow(CmdBase):
             return msg
         else:
             cmf_config_root = find_root(cmfconfig)
-            if cmf_config_root.find("'cmf' is  not configured") != -1:
+            if cmf_config_root.find("'cmf' is not configured") != -1:
                 return msg
             config_file_path = os.path.join(cmf_config_root, cmfconfig)
             attr_dict = CmfConfig.read_config(config_file_path)
