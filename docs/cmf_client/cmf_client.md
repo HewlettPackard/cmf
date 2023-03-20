@@ -12,12 +12,16 @@ Usage: cmf init show
 
 ### cmf init minioS3 
 ```
-Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
-                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
+Usage: cmf init minioS3 [-h] --url [url] 
+                             --endpoint-url [endpoint_url]
+                             --access-key-id [access_key_id] 
+                             --secret-key [secret_key] 
+                             --git-remote-url[git_remote_url]  
+                             --cmf-server-ip [cmf_server_ip]
 ```
 `cmf init minioS3` configures Minio S3 bucket as a cmf artifact repository. Refer [minio-server.md](./minio-server.md#steps-to-set-up-a-minio-server) to set up a minio server.
 ```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80
 ```
 Required Arguments
 ```
@@ -52,12 +56,15 @@ Optional Arguments
 ```
 ### cmf init amazonS3
 ```
-Usage: cmf init amazonS3 [-h] --url [url] --access-key-id [access_key_id]
-                         --secret-key [secret_key] --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
+Usage: cmf init amazonS3 [-h] --url [url] 
+                              --access-key-id [access_key_id]
+                              --secret-key [secret_key] 
+                              --git-remote-url [git_remote_url] 
+                              --cmf-server-ip [cmf_server_ip]
 ```
 `cmf init amazonS3` initialises Amazon S3 bucket as a CMF artifact repository.
 ```
-cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
+cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80
 ```
 
 Required Arguments
@@ -74,12 +81,15 @@ Optional Arguments
 ```
 ### cmf init sshremote
 ```
-Usage: cmf init sshremote [-h] --path [path] --user [user] --port [port]
-                          --password [password]  --git-remote-url [git_remote_url] --cmf-server-ip [cmf_server_ip]
+Usage: cmf init sshremote [-h] --path [path] 
+                               --user [user] --port [port]
+                               --password [password]  
+                               --git-remote-url [git_remote_url] 
+                               --cmf-server-ip [cmf_server_ip]
 ```
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 ```
-cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80
 ```
 Required Arguments
 ```
