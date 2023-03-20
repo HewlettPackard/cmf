@@ -16,10 +16,10 @@ cmf init show
 
 If cmf is not initialized, the following message will appear on the screen.
 
-<pre>
+```
 'cmf' is not configured.
 Execute the 'cmf init' command.
-</pre>
+```
 
 3.  Execute the following command to initialize the minio S3 bucket as a CMF artifact repository.
 ```
@@ -27,13 +27,13 @@ cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --a
 ```
 
 4. Execute `cmf init show` to check the CMF configuration. The sample output looks as follows:
-<pre>
+```
 remote.minio.url=s3://bucket-name
 remote.minio.endpointurl=http://localhost:9000
 remote.minio.access_key_id=minioadmin
 remote.minio.secret_access_key=minioadmin
 core.remote=minio
-</pre>
+```
 
 5. Build a minio server using a Docker container. `docker-compose.yml` available in `example-get-started` directory provides two services: `minio` and `aws-cli`.
    User will initialise the repository with bucket name, storage URL, and credentials to access minio.
