@@ -10,13 +10,15 @@ _base_ = [
 data = dict(
     test=dict(
         ann_file=[
-            data_root + '/train.txt',
+            data_root + 'train.txt'#TRAINING SET INDEXES?
         ],
-        img_prefix=[data_root ])
+        img_prefix=[data_root])
 )
 model = dict(bbox_head=dict(C=2))
 # The initial learning rate, momentum, weight decay can be changed here.
-optimizer = dict(type='SGD', lr=1e-6, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
+#optimizer = dict(type='Adam', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
+
 optimizer_config = dict(grad_clip=None)
 # The moment when the learning rate drops can be changed here.
 lr_config = dict(policy='step', step=[2])
@@ -40,8 +42,8 @@ train_cfg = dict(param_lambda = 0.5)
 k = 10000
 # The size of the initial labeled set and the newly selected sets after each cycle can be set here.
 # Note that there are 16551 images in the PASCAL VOC 2007+2012 trainval sets.
-X_S_size = 12150#9964//40
-X_L_0_size = 12150#9964//20
+X_S_size = 12150#9964//40 #should be percentage of all available images (set this to max)
+X_L_0_size = 12150#9964//20#(set to zero)?
 # The active learning cycles can be changed here.
 cycles = [0, 1, 2, 3, 4, 5, 6]
 # The work directory for saving logs and files can be changed here. Please refer to README.md for more information.

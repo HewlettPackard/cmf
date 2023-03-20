@@ -1,5 +1,5 @@
 # Please change the dataset directory to your actual directory
-data_root = '/home/mfoltin2/AI/al/object_detection/data/VOCdevkit/'
+data_root = '/mnt/beegfs/PAMS/data/tomography_data/tiled_annotations/'
 
 # dataset settings
 dataset_type = 'VOCDataset'
@@ -39,19 +39,17 @@ data = dict(
         dataset=dict(
             type=dataset_type,
             ann_file=[
-                data_root + 'VOC2007/ImageSets/Main/trainval.txt',
-                data_root + 'VOC2012/ImageSets/Main/trainval.txt'
-            ],
-            img_prefix=[data_root + 'VOC2007/', data_root + 'VOC2012/'],
+                data_root + 'train.txt'],#training set indexes
+            img_prefix=[data_root],
             pipeline=train_pipeline)),
     val=dict(
         type=dataset_type,
-        ann_file=data_root + 'VOC2007/ImageSets/Main/test.txt',
-        img_prefix=data_root + 'VOC2007/',
+        ann_file=data_root + 'train_val.txt',#VAL INDEXES
+        img_prefix=data_root ,
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
-        ann_file=data_root + 'VOC2007/ImageSets/Main/test.txt',
-        img_prefix=data_root + 'VOC2007/',
+        ann_file=data_root + 'train_val.txt',#USE VAL FOR TEST
+        img_prefix=data_root ,
         pipeline=test_pipeline))
 evaluation = dict(interval=1, metric='mAP')
