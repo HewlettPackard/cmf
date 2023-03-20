@@ -9,44 +9,44 @@ Follow the below mentioned steps to set up a minio server:
 
 
 2. Check whether cmf is initialized.
-
-```
-cmf init show
-```
-
-
-If cmf is not initialized, the following message will appear on the screen.
-
-```
-'cmf' is not configured.
-Execute the 'cmf init' command.
-```
+   ```
+   cmf init show
+   ```
+   If cmf is not initialized, the following message will appear on the screen.
+   ```
+   'cmf' is not configured.
+   Execute the 'cmf init' command.
+   ```
 
 3.  Execute the following command to initialize the minio S3 bucket as a CMF artifact repository.
-```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git
-```
+    ```
+    cmf init minioS3 --url s3://bucket-name 
+                     --endpoint-url http://localhost:9000
+                     --access-key-id minioadmin 
+                     --secret-key   minioadmin 
+                     --git-remote-url https://github.com/user/experiment-repo.git
+    ```
 
 4. Execute `cmf init show` to check the CMF configuration. The sample output looks as follows:
-```
-remote.minio.url=s3://bucket-name
-remote.minio.endpointurl=http://localhost:9000
-remote.minio.access_key_id=minioadmin
-remote.minio.secret_access_key=minioadmin
-core.remote=minio
-```
+   ```
+   remote.minio.url=s3://bucket-name
+   remote.minio.endpointurl=http://localhost:9000
+   remote.minio.access_key_id=minioadmin
+   remote.minio.secret_access_key=minioadmin
+   core.remote=minio
+   ```
 
 5. Build a minio server using a Docker container. `docker-compose.yml` available in `example-get-started` directory provides two services: `minio` and `aws-cli`.
    User will initialise the repository with bucket name, storage URL, and credentials to access minio.
 6. Execute the following command to start the docker container. Following command requires root privileges.
-```
-docker-compose up
-```
-or
-```
-docker compose up
-```
-After executing the above command, following messages confirm that minio is up and running.
+   ```
+   docker-compose up
+   ```
+   or
+   ```
+   docker compose up
+   ```
+   After executing the above command, following messages confirm that minio is up and running.
 
 7. Login into `remote.minio.endpointurl` (in the above example - http://localhost:9000) using access-key and secret-key mentioned in cmf configuration.
 
