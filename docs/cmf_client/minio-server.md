@@ -1,3 +1,4 @@
+# Minio S3 Artifact Repo Setup
 ## Steps to set up a minio server
 Object storage is an abstraction layer above the file system and helps to work with data using API.
 Minio is the fastest way to start working with object storage.
