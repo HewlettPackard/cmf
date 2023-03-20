@@ -1,5 +1,6 @@
 # Getting started with cmf
 Common metadata framework (cmf) has the following components:
+
 - **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
 - **cmf-client** interacts with the server to pull or push metadata from or to the cmf-server.
 - **cmf-server** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. 
@@ -72,4 +73,4 @@ cmf artifact pull -p "Test-env"
 Check [here](./cmf_client.md) for more details.
 
 ## Flow Chart for cmf
-<img src="../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
+<img src="assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
