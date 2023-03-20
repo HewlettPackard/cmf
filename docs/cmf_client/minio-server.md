@@ -4,6 +4,7 @@ Minio is the fastest way to start working with object storage.
 It is compatible with S3, easy to deploy, manage locally, and upscale if needed.
 
 Follow the below mentioned steps to set up a minio server:
+
 1. Copy contents of the `example-get-started` directory to a separate directory outside the cmf repository.
 
 
