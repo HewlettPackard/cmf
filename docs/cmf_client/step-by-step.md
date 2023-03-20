@@ -32,7 +32,7 @@ Let's assume we are tracking the metadata for a pipeline named `Test-env` with m
 mkdir example-folder
 ```
 ### Initialize cmf
-CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute **cmf init** in the `example-folder` directory created in the [above](#create-a-folder) step.
+CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly. Execute `cmf init` in the `example-folder` directory created in the [above](#create-a-folder) step.
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080
 ```
@@ -60,17 +60,17 @@ Check [here](./cmf_client.md) for more details.
 ### cmf-client with collaborative development
 In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
 #### Pull metadata from the server
-Execute **cmf metadata** command in the `example_folder`.
+Execute `cmf metadata` command in the `example_folder`.
 ```
 cmf metadata pull -p 'Test-env'
 ```
 Check [here](./cmf_client.md) for more details.
 #### Pull artifacts from the central artifact repo 
-Execute **cmf artifact** command in the `example_folder`.
+Execute `cmf artifact` command in the `example_folder`.
 ```
 cmf artifact pull -p "Test-env"
 ```
 Check [here](./cmf_client.md) for more details.
 
 ## Flow Chart for cmf
-<img src="assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
+<img src="../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
