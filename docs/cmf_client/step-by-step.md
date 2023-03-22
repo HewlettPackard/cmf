@@ -72,5 +72,5 @@ cmf artifact pull -p "Test-env"
 ```
 Check [here](./cmf_client.md) for more details.
 
-## Flow Chart for cmf
+## Flow Chart for cmf![flow_chart_cmf](https://user-images.githubusercontent.com/112053040/226778661-c88e418a-5d07-4d4b-8b1d-519fe35c01f6.jpg)
 <img src="./../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
