@@ -9,11 +9,15 @@ Common metadata framework (cmf) has the following components:
 ### cmf-client 
 cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
 
-**Setup a cmf-client**: Follow the below-mentioned steps for the end-to-end setup of cmf-client -
-1. Pre-Requisites
+**Setup a cmf-client**: 
+
+Follow the below-mentioned steps for the end-to-end setup of cmf-client -
+
+**Pre-Requisites**
    - Python 3.8+
    - Git latest version
-2. Install cmf library i.e. cmflib
+
+**Install cmf library i.e. cmflib**
 ```
 pip install https://github.com/HewlettPackard/cmf
 ```
@@ -32,12 +36,12 @@ Follow [here](../cmf_server/cmf-server.md) for details on how to setup a cmf-ser
 
 Let's assume we are tracking the metadata for a pipeline named `Test-env` with minio S3 bucket as the artifact repository and a cmf-server.
 
-1. **Create a folder**
-  ```
-  mkdir example-folder
-  ```
+**Create a folder**
+```
+mkdir example-folder
+```
   
-2. **Initialize cmf**
+**Initialize cmf**
 
 CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the [above](#create-a-folder) step.
 ```
@@ -45,18 +49,19 @@ cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --a
 ```
 Check [here](./cmf_client.md) for more details.
 
-3. **Check status of CMF initialization (Optional)**
+**Check status of CMF initialization (Optional)**
 ```
 cmf init show
 ```
 Check [here](./cmf_client.md) for more details.
 
-4. **Track metadata using cmflib**
+**Track metadata using cmflib**
+
 Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
 
 More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
 
-5. **Push artifacts**
+**Push artifacts**
   
 Push artifacts in the artifact repo initialised in the [Initialize cmf](#initialize-cmf) step.
 ```
@@ -64,7 +69,7 @@ cmf artifact push
 ```
 Check [here](./cmf_client.md) for more details.
 
-6. **Push metadata to cmf-server**
+**Push metadata to cmf-server**
 ```
 cmf metadata push -p 'Test-env'
 ```
@@ -73,7 +78,7 @@ Check [here](./cmf_client.md) for more details.
 ### cmf-client with collaborative development
 In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
 
-1. **Pull metadata from the server**
+**Pull metadata from the server**
 
 Execute `cmf metadata` command in the `example_folder`.
 ```
@@ -81,7 +86,7 @@ cmf metadata pull -p 'Test-env'
 ```
 Check [here](./cmf_client.md) for more details.
 
-2. **Pull artifacts from the central artifact repo**
+**Pull artifacts from the central artifact repo**
 
 Execute `cmf artifact` command in the `example_folder`.
 ```
