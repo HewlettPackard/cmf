@@ -82,6 +82,7 @@ cmf metadata pull -p 'Test-env'
 Check [here](./cmf_client.md) for more details.
 
 2. **Pull artifacts from the central artifact repo**
+
 Execute `cmf artifact` command in the `example_folder`.
 ```
 cmf artifact pull -p "Test-env"
