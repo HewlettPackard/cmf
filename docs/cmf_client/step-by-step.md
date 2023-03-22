@@ -6,12 +6,13 @@ Common metadata framework (cmf) has the following components:
 - **cmf-server** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. 
 - **Central Artifact Repositories** hosts the code and data. 
 
-### Setup a cmf-client 
+## Setup a cmf-client 
 cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
 
 Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
 **Pre-Requisites**
+
 - Python 3.8+
 - Git latest version
 
@@ -25,12 +26,12 @@ pip install cmflib
 ```
 Check [here](https://hewlettpackard.github.io/cmf/) for more details.
 
-### Install cmf-server
+## Install cmf-server
 cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
 
 Follow [here](../cmf_server/cmf-server.md) for details on how to setup a cmf-server.
 
-### How to effectively use cmf-client?
+## How to effectively use cmf-client?
 
 Let's assume we are tracking the metadata for a pipeline named `Test-env` with minio S3 bucket as the artifact repository and a cmf-server.
 
@@ -92,5 +93,5 @@ cmf artifact pull -p "Test-env"
 ```
 Check [here](./cmf_client.md) for more details.
 
-### Flow Chart for cmf
+## Flow Chart for cmf
 <img src="./../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
