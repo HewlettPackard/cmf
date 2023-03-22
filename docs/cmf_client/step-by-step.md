@@ -1,4 +1,4 @@
-## Getting started with cmf
+# Getting started with cmf
 Common metadata framework (cmf) has the following components:
 
 - **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
@@ -6,16 +6,14 @@ Common metadata framework (cmf) has the following components:
 - **cmf-server** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. 
 - **Central Artifact Repositories** hosts the code and data. 
 
-### cmf-client 
+### Setup a cmf-client 
 cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
 
-**Setup a cmf-client**: 
-
-Follow the below-mentioned steps for the end-to-end setup of cmf-client -
+Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
 **Pre-Requisites**
-   - Python 3.8+
-   - Git latest version
+- Python 3.8+
+- Git latest version
 
 **Install cmf library i.e. cmflib**
 ```
