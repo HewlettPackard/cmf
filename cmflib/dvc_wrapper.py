@@ -191,6 +191,7 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
         # To-Do : Parse the output and report if error
         output, errs = process.communicate(timeout=60)
         commit = output.splitlines()[0].strip()
+        print(commit)
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()

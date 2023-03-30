@@ -210,7 +210,7 @@ class Cmf:
 
 
     def create_execution(self, execution_type: str,
-                         custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
+                         custom_properties: t.Optional[t.Dict] = None, cmd:str = None) -> mlpb.Execution:
         """Create execution.
         Every call creates a unique execution. Execution can only be created within a context, so
         [create_context][cmflib.cmf.Cmf.create_context] must be called first.
@@ -236,6 +236,7 @@ class Cmf:
             execution_type: Name of the execution.
             custom_properties: Developers can provide key value pairs with additional properties of the execution that
                 need to be stored.
+            cmd: command used to run this execution.
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
         """
@@ -246,11 +247,12 @@ class Cmf:
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
+        cmd = str(sys.argv) if cmd is None else cmd
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             execution_type_name=execution_type,
             context_id=self.child_context.id,
-            execution=str(sys.argv),
+            execution=cmd,
             pipeline_id=self.parent_context.id,
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
@@ -258,7 +260,7 @@ class Cmf:
             custom_properties=custom_props
         )
         self.execution_name = str(self.execution.id) + "," + execution_type
-        self.execution_command = str(sys.argv)
+        self.execution_command = cmd
         for k, v in custom_props.items():
             k = re.sub('-', '_', k)
             self.execution_label_props[k] = v
@@ -319,9 +321,11 @@ class Cmf:
                 c_props)
         return self.execution
 
-    def merge_created_execution(self, execution_type: str, execution_cmd: str, properties: {} = None,
+    def merge_created_execution(self, execution_type: str, execution_cmd: str, properties: t.Optional[t.Dict] = None,
                                 custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
+        
         # Initializing the execution related fields
+        properties = {} if properties is None else properties
         self.metrics = {}
         self.input_artifacts = []
         self.execution_label_props = {}
@@ -354,6 +358,7 @@ class Cmf:
 
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
+        print("Entered dvc lock file commit")
         return commit_dvc_lock_file(file_path, self.execution.id)
 
     def log_dataset(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
@@ -494,9 +499,10 @@ class Cmf:
             put_artifact(self.store, dup_art)
         return dup_artifact
 
-    def log_dataset_with_version(self, url: str, version: str, event: str, props: dict,
+    def log_dataset_with_version(self, url: str, version: str, event: str, props: t.Optional[t.Dict] = None,
                                  custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """Logs a dataset when the version(hash) is known"""
+        props = {} if props is None else props
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = props.get('git_repo','')
         name = url
@@ -545,7 +551,7 @@ class Cmf:
                 properties={
                     "git_repo": str(git_repo),
                     "Commit": str(dataset_commit),
-                    "url": str(props['url'])},
+                    "url": props.get("url", " ")},
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
                     "Commit": mlpb.STRING,
