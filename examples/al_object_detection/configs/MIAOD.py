@@ -1,5 +1,6 @@
 # Please change the dataset directory to your actual directory
-data_root = '/home/mfoltin2/AI/al/object_detection/data/VOCdevkit/'
+#data_root = '/home/mfoltin2/AI/al/object_detection/data/VOCdevkit/'
+data_root = '/mnt/beegfs/PAMS/data/tomography_data/tiled_annotations/'
 
 _base_ = [
     './_base_/retinanet_r50_fpn.py', './_base_/voc0712.py',
@@ -9,14 +10,12 @@ _base_ = [
 data = dict(
     test=dict(
         ann_file=[
-            data_root + 'VOC2007/ImageSets/Main/trainval.txt',
-            data_root + 'VOC2012/ImageSets/Main/trainval.txt',
-        ],
-        img_prefix=[data_root + 'VOC2007/', data_root + 'VOC2012/'])
+            data_root + 'train_val.txt'],#TRAINING INDEXES? or VAL?
+        img_prefix=[data_root])
 )
 model = dict(bbox_head=dict(C=20))
 # The initial learning rate, momentum, weight decay can be changed here.
-optimizer = dict(type='SGD', lr=1e-3, momentum=0.9, weight_decay=0.0001)
+optimizer = dict(type='SGD', lr=1e-6, momentum=0.9, weight_decay=0.0001)#learning rate changed from 1e-3 
 optimizer_config = dict(grad_clip=None)
 # The moment when the learning rate drops can be changed here.
 lr_config = dict(policy='step', step=[2])
