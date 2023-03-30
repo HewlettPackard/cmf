@@ -19,7 +19,7 @@ model = dict(bbox_head=dict(C=2))
 optimizer = dict(type='SGD', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
 #optimizer = dict(type='Adam', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
 
-optimizer_config = dict(grad_clip=None)
+optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
 # The moment when the learning rate drops can be changed here.
 lr_config = dict(policy='step', step=[2])
 # The frequency of saving models can be changed here.

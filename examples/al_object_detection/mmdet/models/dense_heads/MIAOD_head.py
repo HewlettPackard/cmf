@@ -369,6 +369,7 @@ class MIAODHead(BaseDenseHead):
             x_i_single = x_i_single.reshape(-1, 4)
             y_head_f_r_single = self.bbox_coder.decode(x_i_single, y_head_f_r_single)
         l_det_loc = self.SmoothL1(y_head_f_r_single, y_loc_single, bbox_weights, avg_factor=num_total_samples)
+        l_det_loc = l_det_loc.clamp(None, 10)
         return l_det_cls, l_det_loc
 
     # Label Set Training
