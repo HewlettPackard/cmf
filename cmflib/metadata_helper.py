@@ -166,9 +166,7 @@ def create_execution_with_type(
             custom_properties=custom_properties,
         )
         execution.id = store.put_executions([execution])[0]
-        print(str(execution.id))
     else:
-        print("reusing execution")
         execution_type = get_or_create_execution_type(
         store=store,
         type_name=type_name,
