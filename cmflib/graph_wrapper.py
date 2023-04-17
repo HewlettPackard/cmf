@@ -88,6 +88,30 @@ class GraphDriver:
                 "Execution", "Dataset", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
+    def create_dataslice_node(self, name: str, path: str, uri: str, parent_name:str,
+                            custom_properties=None):
+        if custom_properties is None:
+            custom_properties = {}
+        dataslice_syntax = self._create_dataslice_syntax(
+            name, path, uri, custom_properties)
+        with self.driver.session() as session:
+            node = session.write_transaction(
+                self._run_transaction, dataslice_syntax)
+            node_id = node[0]["node_id"]
+        p_nid = self._get_node("Dataset", parent_name )
+        with self.driver.session() as session:
+            pc_syntax = self._create_parent_child_syntax(
+                "Dataset", "Dataslice", p_nid, node_id, "contains")
+            _ = session.write_transaction(self._run_transaction, pc_syntax)
+
+    def create_links(self, source_path:str, target_path:str, relation:str ):
+        source_node_id = self._get_node_with_path("Dataset", source_path)
+        target_node_id = self._get_node_with_path("Dataslice", target_path)
+        with self.driver.session() as session:
+            pc_syntax = self._create_parent_child_syntax("Dataset", "Dataslice", source_node_id, target_node_id, relation)
+            _ = session.write_transaction(self._run_transaction, pc_syntax)
+
+
     def create_model_node(self, name: str, uri: str, event: str, execution_id: str, pipeline_context: mlpb.Context,
                           custom_properties=None):
         if custom_properties is None:
@@ -192,6 +216,32 @@ class GraphDriver:
                     "Artifact_Name": parent_artifact_name, "uri": parent_artifact_uri})
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
+    def _get_node(self, node_label: str, node_name: str)->int:
+        #Match(n:Metrics) where n.Name contains 'metrics_1' return n
+        search_syntax = "MATCH (n:{}) where '{}' in n.Name  \
+                              return ID(n) as node_id".format(node_label, node_name)
+        print(search_syntax)
+        node_id = None
+        with self.driver.session() as session:
+            nodes = session.read_transaction(
+                self._run_transaction, search_syntax)
+
+            node_id = nodes[0]["node_id"]
+        return node_id
+
+    def _get_node_with_path(self, node_label: str, node_path: str)->int:
+        #Match(n:Metrics) where n.Path contains 'metrics_1' return n
+        search_syntax = "MATCH (n:{}) where '{}' in n.Path  \
+                              return ID(n) as node_id".format(node_label, node_path)
+        print(search_syntax)
+        node_id = None
+        with self.driver.session() as session:
+            nodes = session.read_transaction(
+                self._run_transaction, search_syntax)
+
+            node_id = nodes[0]["node_id"]
+        return node_id
+
     @staticmethod
     def _run_transaction(tx, message):
         result = tx.run(message)
@@ -225,6 +275,22 @@ class GraphDriver:
         custom_properties["pipeline_id"] = str(pipeline_id)
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Dataset {uri:\"" + uri + "\"}) SET "
+        # props_str = ""
+        for k, v in custom_properties.items():
+            k = re.sub('\W+', '', k)
+            props_str = "a." + k + \
+                " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
+            syntax_str = syntax_str + props_str
+        syntax_str = syntax_str.rstrip(",")
+        syntax_str = syntax_str + " RETURN ID(a) as node_id"
+        return syntax_str
+
+    @staticmethod
+    def _create_dataslice_syntax(name: str, path: str, uri: str,
+                               custom_properties):
+        custom_properties["Name"] = name
+        custom_properties["Path"] = path
+        syntax_str = "MERGE (a:Dataslice {uri:\"" + uri + "\"}) SET "
         # props_str = ""
         for k, v in custom_properties.items():
             k = re.sub('\W+', '', k)
@@ -281,6 +347,7 @@ class GraphDriver:
         syntax_str = syntax_str.rstrip(syntax_str[-1])
         syntax_str = syntax_str + "}) RETURN ID(a) as node_id"
         return syntax_str
+
 
     @staticmethod
     def _create_parent_child_syntax(parent_label: str, child_label: str, parent_id: int, child_id: int, relation: str):
