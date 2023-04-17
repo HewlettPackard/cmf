@@ -12,16 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###
-
-import json
+from typing import List
+from time import sleep
 import os
 import sys
 import ml_metadata
-from time import sleep
+
 from ml_metadata.proto import metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
-from typing import List
+
 
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
@@ -85,7 +85,7 @@ def get_or_create_artifact_type(store, type_name, properties: dict = None) -> me
     try:
         artifact_type = store.get_artifact_type(type_name=type_name)
         return artifact_type
-    except:
+    except BaseException:
         artifact_type = metadata_store_pb2.ArtifactType(
             name=type_name,
             properties=properties,
@@ -98,7 +98,7 @@ def get_or_create_execution_type(store, type_name, properties: dict = None) -> m
     try:
         execution_type = store.get_execution_type(type_name=type_name)
         return execution_type
-    except:
+    except BaseException:
         execution_type = metadata_store_pb2.ExecutionType(
             name=type_name,
             properties=properties,
@@ -111,7 +111,7 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
     try:
         context_type = store.get_context_type(type_name=type_name)
         return context_type
-    except:
+    except BaseException:
         context_type = metadata_store_pb2.ContextType(
             name=type_name,
             properties=properties,
@@ -235,7 +235,7 @@ def get_or_create_context_with_type(
 ) -> metadata_store_pb2.Context:
     try:
         context = get_context_by_name(store, context_name)
-    except:
+    except BaseException:
         context = create_context_with_type(
             store=store,
             context_name=context_name,
