@@ -1,0 +1,345 @@
+from google.protobuf import any_pb2 as _any_pb2
+from google.protobuf.internal import containers as _containers
+from google.protobuf.internal import enum_type_wrapper as _enum_type_wrapper
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import message as _message
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
+
+DESCRIPTOR: _descriptor.FileDescriptor
+FAKE_METADATA_SOURCE: MetadataSourceType
+MYSQL_METADATA_SOURCE: MetadataSourceType
+SQLITE_METADATA_SOURCE: MetadataSourceType
+UNKNOWN_METADATA_SOURCE: MetadataSourceType
+
+class MetadataSourceQueryConfig(_message.Message):
+    __slots__ = ["check_artifact_property_table", "check_artifact_table", "check_association_table", "check_attribution_table", "check_context_property_table", "check_context_table", "check_event_path_table", "check_event_table", "check_execution_property_table", "check_execution_table", "check_mlmd_env_table", "check_parent_context_table", "check_parent_type_table", "check_tables_in_v0_13_2", "check_type_property_table", "check_type_table", "create_artifact_property_table", "create_artifact_table", "create_association_table", "create_attribution_table", "create_context_property_table", "create_context_table", "create_event_path_table", "create_event_table", "create_execution_property_table", "create_execution_table", "create_mlmd_env_table", "create_parent_context_table", "create_parent_type_table", "create_type_property_table", "create_type_table", "delete_artifact_property", "delete_artifacts_by_id", "delete_artifacts_properties_by_artifacts_id", "delete_associations_by_contexts_id", "delete_associations_by_executions_id", "delete_attributions_by_artifacts_id", "delete_attributions_by_contexts_id", "delete_context_property", "delete_contexts_by_id", "delete_contexts_properties_by_contexts_id", "delete_event_paths", "delete_events_by_artifacts_id", "delete_events_by_executions_id", "delete_execution_property", "delete_executions_by_id", "delete_executions_properties_by_executions_id", "delete_parent_contexts_by_child_ids", "delete_parent_contexts_by_parent_id_and_child_ids", "delete_parent_contexts_by_parent_ids", "delete_parent_type", "drop_artifact_property_table", "drop_artifact_table", "drop_association_table", "drop_attribution_table", "drop_context_property_table", "drop_context_table", "drop_event_path_table", "drop_event_table", "drop_execution_property_table", "drop_execution_table", "drop_mlmd_env_table", "drop_parent_context_table", "drop_parent_type_table", "drop_type_property_table", "drop_type_table", "insert_artifact", "insert_artifact_property", "insert_artifact_type", "insert_association", "insert_attribution", "insert_context", "insert_context_property", "insert_context_type", "insert_event", "insert_event_path", "insert_execution", "insert_execution_property", "insert_execution_type", "insert_parent_context", "insert_parent_type", "insert_schema_version", "insert_type_property", "metadata_source_type", "metadata_source_type_specific_options", "migration_schemes", "schema_version", "secondary_indices", "select_all_types", "select_artifact_by_id", "select_artifact_by_type_id_and_name", "select_artifact_property_by_artifact_id", "select_artifacts_by_external_ids", "select_artifacts_by_type_id", "select_artifacts_by_uri", "select_association_by_context_id", "select_association_by_execution_id", "select_attribution_by_artifact_id", "select_attribution_by_context_id", "select_context_by_id", "select_context_by_type_id_and_name", "select_context_property_by_context_id", "select_contexts_by_external_ids", "select_contexts_by_type_id", "select_event_by_artifact_ids", "select_event_by_execution_ids", "select_event_path_by_event_ids", "select_execution_by_id", "select_execution_by_type_id_and_name", "select_execution_property_by_execution_id", "select_executions_by_external_ids", "select_executions_by_type_id", "select_last_insert_id", "select_parent_context_by_context_id", "select_parent_context_by_parent_context_id", "select_parent_type_by_type_id", "select_properties_by_type_id", "select_property_by_type_id", "select_type_by_id", "select_type_by_name", "select_type_by_name_and_version", "select_types_by_external_ids", "select_types_by_id", "select_types_by_names", "select_types_by_names_and_versions", "update_artifact", "update_artifact_property", "update_context", "update_context_property", "update_execution", "update_execution_property", "update_schema_version", "update_type"]
+    class DbVerification(_message.Message):
+        __slots__ = ["total_num_indexes", "total_num_tables"]
+        TOTAL_NUM_INDEXES_FIELD_NUMBER: _ClassVar[int]
+        TOTAL_NUM_TABLES_FIELD_NUMBER: _ClassVar[int]
+        total_num_indexes: int
+        total_num_tables: int
+        def __init__(self, total_num_tables: _Optional[int] = ..., total_num_indexes: _Optional[int] = ...) -> None: ...
+    class MigrationScheme(_message.Message):
+        __slots__ = ["db_verification", "downgrade_queries", "downgrade_verification", "upgrade_queries", "upgrade_verification"]
+        class VerificationScheme(_message.Message):
+            __slots__ = ["post_migration_verification_queries", "previous_version_setup_queries"]
+            POST_MIGRATION_VERIFICATION_QUERIES_FIELD_NUMBER: _ClassVar[int]
+            PREVIOUS_VERSION_SETUP_QUERIES_FIELD_NUMBER: _ClassVar[int]
+            post_migration_verification_queries: _containers.RepeatedCompositeFieldContainer[MetadataSourceQueryConfig.TemplateQuery]
+            previous_version_setup_queries: _containers.RepeatedCompositeFieldContainer[MetadataSourceQueryConfig.TemplateQuery]
+            def __init__(self, previous_version_setup_queries: _Optional[_Iterable[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]]] = ..., post_migration_verification_queries: _Optional[_Iterable[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]]] = ...) -> None: ...
+        DB_VERIFICATION_FIELD_NUMBER: _ClassVar[int]
+        DOWNGRADE_QUERIES_FIELD_NUMBER: _ClassVar[int]
+        DOWNGRADE_VERIFICATION_FIELD_NUMBER: _ClassVar[int]
+        UPGRADE_QUERIES_FIELD_NUMBER: _ClassVar[int]
+        UPGRADE_VERIFICATION_FIELD_NUMBER: _ClassVar[int]
+        db_verification: MetadataSourceQueryConfig.DbVerification
+        downgrade_queries: _containers.RepeatedCompositeFieldContainer[MetadataSourceQueryConfig.TemplateQuery]
+        downgrade_verification: MetadataSourceQueryConfig.MigrationScheme.VerificationScheme
+        upgrade_queries: _containers.RepeatedCompositeFieldContainer[MetadataSourceQueryConfig.TemplateQuery]
+        upgrade_verification: MetadataSourceQueryConfig.MigrationScheme.VerificationScheme
+        def __init__(self, upgrade_queries: _Optional[_Iterable[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]]] = ..., downgrade_queries: _Optional[_Iterable[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]]] = ..., upgrade_verification: _Optional[_Union[MetadataSourceQueryConfig.MigrationScheme.VerificationScheme, _Mapping]] = ..., downgrade_verification: _Optional[_Union[MetadataSourceQueryConfig.MigrationScheme.VerificationScheme, _Mapping]] = ..., db_verification: _Optional[_Union[MetadataSourceQueryConfig.DbVerification, _Mapping]] = ...) -> None: ...
+    class MigrationSchemesEntry(_message.Message):
+        __slots__ = ["key", "value"]
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: int
+        value: MetadataSourceQueryConfig.MigrationScheme
+        def __init__(self, key: _Optional[int] = ..., value: _Optional[_Union[MetadataSourceQueryConfig.MigrationScheme, _Mapping]] = ...) -> None: ...
+    class TemplateQuery(_message.Message):
+        __slots__ = ["parameter_num", "query"]
+        PARAMETER_NUM_FIELD_NUMBER: _ClassVar[int]
+        QUERY_FIELD_NUMBER: _ClassVar[int]
+        parameter_num: int
+        query: str
+        def __init__(self, query: _Optional[str] = ..., parameter_num: _Optional[int] = ...) -> None: ...
+    CHECK_ARTIFACT_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_ARTIFACT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_ASSOCIATION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_ATTRIBUTION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_CONTEXT_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_CONTEXT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_EVENT_PATH_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_EVENT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_EXECUTION_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_EXECUTION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_MLMD_ENV_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_PARENT_CONTEXT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_PARENT_TYPE_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_TABLES_IN_V0_13_2_FIELD_NUMBER: _ClassVar[int]
+    CHECK_TYPE_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CHECK_TYPE_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_ARTIFACT_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_ARTIFACT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_ASSOCIATION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_ATTRIBUTION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_CONTEXT_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_CONTEXT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_EVENT_PATH_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_EVENT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_EXECUTION_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_EXECUTION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_MLMD_ENV_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_PARENT_CONTEXT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_PARENT_TYPE_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_TYPE_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    CREATE_TYPE_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ARTIFACTS_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ARTIFACTS_PROPERTIES_BY_ARTIFACTS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ARTIFACT_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ASSOCIATIONS_BY_CONTEXTS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ASSOCIATIONS_BY_EXECUTIONS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ATTRIBUTIONS_BY_ARTIFACTS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_ATTRIBUTIONS_BY_CONTEXTS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_CONTEXTS_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_CONTEXTS_PROPERTIES_BY_CONTEXTS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_CONTEXT_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    DELETE_EVENTS_BY_ARTIFACTS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_EVENTS_BY_EXECUTIONS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_EVENT_PATHS_FIELD_NUMBER: _ClassVar[int]
+    DELETE_EXECUTIONS_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_EXECUTIONS_PROPERTIES_BY_EXECUTIONS_ID_FIELD_NUMBER: _ClassVar[int]
+    DELETE_EXECUTION_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    DELETE_PARENT_CONTEXTS_BY_CHILD_IDS_FIELD_NUMBER: _ClassVar[int]
+    DELETE_PARENT_CONTEXTS_BY_PARENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    DELETE_PARENT_CONTEXTS_BY_PARENT_ID_AND_CHILD_IDS_FIELD_NUMBER: _ClassVar[int]
+    DELETE_PARENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    DROP_ARTIFACT_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_ARTIFACT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_ASSOCIATION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_ATTRIBUTION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_CONTEXT_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_CONTEXT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_EVENT_PATH_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_EVENT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_EXECUTION_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_EXECUTION_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_MLMD_ENV_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_PARENT_CONTEXT_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_PARENT_TYPE_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_TYPE_PROPERTY_TABLE_FIELD_NUMBER: _ClassVar[int]
+    DROP_TYPE_TABLE_FIELD_NUMBER: _ClassVar[int]
+    INSERT_ARTIFACT_FIELD_NUMBER: _ClassVar[int]
+    INSERT_ARTIFACT_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    INSERT_ARTIFACT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    INSERT_ASSOCIATION_FIELD_NUMBER: _ClassVar[int]
+    INSERT_ATTRIBUTION_FIELD_NUMBER: _ClassVar[int]
+    INSERT_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    INSERT_CONTEXT_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    INSERT_CONTEXT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    INSERT_EVENT_FIELD_NUMBER: _ClassVar[int]
+    INSERT_EVENT_PATH_FIELD_NUMBER: _ClassVar[int]
+    INSERT_EXECUTION_FIELD_NUMBER: _ClassVar[int]
+    INSERT_EXECUTION_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    INSERT_EXECUTION_TYPE_FIELD_NUMBER: _ClassVar[int]
+    INSERT_PARENT_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    INSERT_PARENT_TYPE_FIELD_NUMBER: _ClassVar[int]
+    INSERT_SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    INSERT_TYPE_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    METADATA_SOURCE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    METADATA_SOURCE_TYPE_SPECIFIC_OPTIONS_FIELD_NUMBER: _ClassVar[int]
+    MIGRATION_SCHEMES_FIELD_NUMBER: _ClassVar[int]
+    SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    SECONDARY_INDICES_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ALL_TYPES_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ARTIFACTS_BY_EXTERNAL_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ARTIFACTS_BY_TYPE_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ARTIFACTS_BY_URI_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ARTIFACT_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ARTIFACT_BY_TYPE_ID_AND_NAME_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ARTIFACT_PROPERTY_BY_ARTIFACT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ASSOCIATION_BY_CONTEXT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ASSOCIATION_BY_EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ATTRIBUTION_BY_ARTIFACT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_ATTRIBUTION_BY_CONTEXT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_CONTEXTS_BY_EXTERNAL_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_CONTEXTS_BY_TYPE_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_CONTEXT_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_CONTEXT_BY_TYPE_ID_AND_NAME_FIELD_NUMBER: _ClassVar[int]
+    SELECT_CONTEXT_PROPERTY_BY_CONTEXT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EVENT_BY_ARTIFACT_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EVENT_BY_EXECUTION_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EVENT_PATH_BY_EVENT_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EXECUTIONS_BY_EXTERNAL_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EXECUTIONS_BY_TYPE_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EXECUTION_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EXECUTION_BY_TYPE_ID_AND_NAME_FIELD_NUMBER: _ClassVar[int]
+    SELECT_EXECUTION_PROPERTY_BY_EXECUTION_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_LAST_INSERT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_PARENT_CONTEXT_BY_CONTEXT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_PARENT_CONTEXT_BY_PARENT_CONTEXT_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_PARENT_TYPE_BY_TYPE_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_PROPERTIES_BY_TYPE_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_PROPERTY_BY_TYPE_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPES_BY_EXTERNAL_IDS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPES_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPES_BY_NAMES_AND_VERSIONS_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPES_BY_NAMES_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPE_BY_ID_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPE_BY_NAME_AND_VERSION_FIELD_NUMBER: _ClassVar[int]
+    SELECT_TYPE_BY_NAME_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_ARTIFACT_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_ARTIFACT_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_CONTEXT_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_CONTEXT_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_EXECUTION_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_EXECUTION_PROPERTY_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_SCHEMA_VERSION_FIELD_NUMBER: _ClassVar[int]
+    UPDATE_TYPE_FIELD_NUMBER: _ClassVar[int]
+    check_artifact_property_table: MetadataSourceQueryConfig.TemplateQuery
+    check_artifact_table: MetadataSourceQueryConfig.TemplateQuery
+    check_association_table: MetadataSourceQueryConfig.TemplateQuery
+    check_attribution_table: MetadataSourceQueryConfig.TemplateQuery
+    check_context_property_table: MetadataSourceQueryConfig.TemplateQuery
+    check_context_table: MetadataSourceQueryConfig.TemplateQuery
+    check_event_path_table: MetadataSourceQueryConfig.TemplateQuery
+    check_event_table: MetadataSourceQueryConfig.TemplateQuery
+    check_execution_property_table: MetadataSourceQueryConfig.TemplateQuery
+    check_execution_table: MetadataSourceQueryConfig.TemplateQuery
+    check_mlmd_env_table: MetadataSourceQueryConfig.TemplateQuery
+    check_parent_context_table: MetadataSourceQueryConfig.TemplateQuery
+    check_parent_type_table: MetadataSourceQueryConfig.TemplateQuery
+    check_tables_in_v0_13_2: MetadataSourceQueryConfig.TemplateQuery
+    check_type_property_table: MetadataSourceQueryConfig.TemplateQuery
+    check_type_table: MetadataSourceQueryConfig.TemplateQuery
+    create_artifact_property_table: MetadataSourceQueryConfig.TemplateQuery
+    create_artifact_table: MetadataSourceQueryConfig.TemplateQuery
+    create_association_table: MetadataSourceQueryConfig.TemplateQuery
+    create_attribution_table: MetadataSourceQueryConfig.TemplateQuery
+    create_context_property_table: MetadataSourceQueryConfig.TemplateQuery
+    create_context_table: MetadataSourceQueryConfig.TemplateQuery
+    create_event_path_table: MetadataSourceQueryConfig.TemplateQuery
+    create_event_table: MetadataSourceQueryConfig.TemplateQuery
+    create_execution_property_table: MetadataSourceQueryConfig.TemplateQuery
+    create_execution_table: MetadataSourceQueryConfig.TemplateQuery
+    create_mlmd_env_table: MetadataSourceQueryConfig.TemplateQuery
+    create_parent_context_table: MetadataSourceQueryConfig.TemplateQuery
+    create_parent_type_table: MetadataSourceQueryConfig.TemplateQuery
+    create_type_property_table: MetadataSourceQueryConfig.TemplateQuery
+    create_type_table: MetadataSourceQueryConfig.TemplateQuery
+    delete_artifact_property: MetadataSourceQueryConfig.TemplateQuery
+    delete_artifacts_by_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_artifacts_properties_by_artifacts_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_associations_by_contexts_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_associations_by_executions_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_attributions_by_artifacts_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_attributions_by_contexts_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_context_property: MetadataSourceQueryConfig.TemplateQuery
+    delete_contexts_by_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_contexts_properties_by_contexts_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_event_paths: MetadataSourceQueryConfig.TemplateQuery
+    delete_events_by_artifacts_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_events_by_executions_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_execution_property: MetadataSourceQueryConfig.TemplateQuery
+    delete_executions_by_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_executions_properties_by_executions_id: MetadataSourceQueryConfig.TemplateQuery
+    delete_parent_contexts_by_child_ids: MetadataSourceQueryConfig.TemplateQuery
+    delete_parent_contexts_by_parent_id_and_child_ids: MetadataSourceQueryConfig.TemplateQuery
+    delete_parent_contexts_by_parent_ids: MetadataSourceQueryConfig.TemplateQuery
+    delete_parent_type: MetadataSourceQueryConfig.TemplateQuery
+    drop_artifact_property_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_artifact_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_association_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_attribution_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_context_property_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_context_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_event_path_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_event_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_execution_property_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_execution_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_mlmd_env_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_parent_context_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_parent_type_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_type_property_table: MetadataSourceQueryConfig.TemplateQuery
+    drop_type_table: MetadataSourceQueryConfig.TemplateQuery
+    insert_artifact: MetadataSourceQueryConfig.TemplateQuery
+    insert_artifact_property: MetadataSourceQueryConfig.TemplateQuery
+    insert_artifact_type: MetadataSourceQueryConfig.TemplateQuery
+    insert_association: MetadataSourceQueryConfig.TemplateQuery
+    insert_attribution: MetadataSourceQueryConfig.TemplateQuery
+    insert_context: MetadataSourceQueryConfig.TemplateQuery
+    insert_context_property: MetadataSourceQueryConfig.TemplateQuery
+    insert_context_type: MetadataSourceQueryConfig.TemplateQuery
+    insert_event: MetadataSourceQueryConfig.TemplateQuery
+    insert_event_path: MetadataSourceQueryConfig.TemplateQuery
+    insert_execution: MetadataSourceQueryConfig.TemplateQuery
+    insert_execution_property: MetadataSourceQueryConfig.TemplateQuery
+    insert_execution_type: MetadataSourceQueryConfig.TemplateQuery
+    insert_parent_context: MetadataSourceQueryConfig.TemplateQuery
+    insert_parent_type: MetadataSourceQueryConfig.TemplateQuery
+    insert_schema_version: MetadataSourceQueryConfig.TemplateQuery
+    insert_type_property: MetadataSourceQueryConfig.TemplateQuery
+    metadata_source_type: MetadataSourceType
+    metadata_source_type_specific_options: _any_pb2.Any
+    migration_schemes: _containers.MessageMap[int, MetadataSourceQueryConfig.MigrationScheme]
+    schema_version: int
+    secondary_indices: _containers.RepeatedCompositeFieldContainer[MetadataSourceQueryConfig.TemplateQuery]
+    select_all_types: MetadataSourceQueryConfig.TemplateQuery
+    select_artifact_by_id: MetadataSourceQueryConfig.TemplateQuery
+    select_artifact_by_type_id_and_name: MetadataSourceQueryConfig.TemplateQuery
+    select_artifact_property_by_artifact_id: MetadataSourceQueryConfig.TemplateQuery
+    select_artifacts_by_external_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_artifacts_by_type_id: MetadataSourceQueryConfig.TemplateQuery
+    select_artifacts_by_uri: MetadataSourceQueryConfig.TemplateQuery
+    select_association_by_context_id: MetadataSourceQueryConfig.TemplateQuery
+    select_association_by_execution_id: MetadataSourceQueryConfig.TemplateQuery
+    select_attribution_by_artifact_id: MetadataSourceQueryConfig.TemplateQuery
+    select_attribution_by_context_id: MetadataSourceQueryConfig.TemplateQuery
+    select_context_by_id: MetadataSourceQueryConfig.TemplateQuery
+    select_context_by_type_id_and_name: MetadataSourceQueryConfig.TemplateQuery
+    select_context_property_by_context_id: MetadataSourceQueryConfig.TemplateQuery
+    select_contexts_by_external_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_contexts_by_type_id: MetadataSourceQueryConfig.TemplateQuery
+    select_event_by_artifact_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_event_by_execution_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_event_path_by_event_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_execution_by_id: MetadataSourceQueryConfig.TemplateQuery
+    select_execution_by_type_id_and_name: MetadataSourceQueryConfig.TemplateQuery
+    select_execution_property_by_execution_id: MetadataSourceQueryConfig.TemplateQuery
+    select_executions_by_external_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_executions_by_type_id: MetadataSourceQueryConfig.TemplateQuery
+    select_last_insert_id: MetadataSourceQueryConfig.TemplateQuery
+    select_parent_context_by_context_id: MetadataSourceQueryConfig.TemplateQuery
+    select_parent_context_by_parent_context_id: MetadataSourceQueryConfig.TemplateQuery
+    select_parent_type_by_type_id: MetadataSourceQueryConfig.TemplateQuery
+    select_properties_by_type_id: MetadataSourceQueryConfig.TemplateQuery
+    select_property_by_type_id: MetadataSourceQueryConfig.TemplateQuery
+    select_type_by_id: MetadataSourceQueryConfig.TemplateQuery
+    select_type_by_name: MetadataSourceQueryConfig.TemplateQuery
+    select_type_by_name_and_version: MetadataSourceQueryConfig.TemplateQuery
+    select_types_by_external_ids: MetadataSourceQueryConfig.TemplateQuery
+    select_types_by_id: MetadataSourceQueryConfig.TemplateQuery
+    select_types_by_names: MetadataSourceQueryConfig.TemplateQuery
+    select_types_by_names_and_versions: MetadataSourceQueryConfig.TemplateQuery
+    update_artifact: MetadataSourceQueryConfig.TemplateQuery
+    update_artifact_property: MetadataSourceQueryConfig.TemplateQuery
+    update_context: MetadataSourceQueryConfig.TemplateQuery
+    update_context_property: MetadataSourceQueryConfig.TemplateQuery
+    update_execution: MetadataSourceQueryConfig.TemplateQuery
+    update_execution_property: MetadataSourceQueryConfig.TemplateQuery
+    update_schema_version: MetadataSourceQueryConfig.TemplateQuery
+    update_type: MetadataSourceQueryConfig.TemplateQuery
+    def __init__(self, metadata_source_type: _Optional[_Union[MetadataSourceType, str]] = ..., drop_type_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_type_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_type_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_artifact_type: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_execution_type: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_context_type: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_types_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_types_by_external_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_type_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_type_by_name: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_type_by_name_and_version: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_types_by_names: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_types_by_names_and_versions: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_all_types: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_type: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_parent_type_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_parent_type_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_parent_type_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_parent_type: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_parent_type_by_type_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_type_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_type_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_type_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_type_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_property_by_type_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_last_insert_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_artifact_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_artifact_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_artifact_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_artifact: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_artifact_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_artifact_by_type_id_and_name: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_artifacts_by_type_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_artifacts_by_uri: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_artifacts_by_external_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_artifact: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_artifact_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_artifact_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_artifact_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_artifact_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_artifact_property_by_artifact_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_artifact_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_artifact_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_execution_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_execution_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_execution_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_execution: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_execution_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_execution_by_type_id_and_name: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_executions_by_type_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_executions_by_external_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_execution: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_execution_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_execution_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_execution_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_execution_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_execution_property_by_execution_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_execution_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_execution_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_context_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_context_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_context_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_context: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_context_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_contexts_by_type_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_context_by_type_id_and_name: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_contexts_by_external_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_context: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_context_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_context_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_context_property_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_context_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_context_property_by_context_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_context_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_context_property: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_parent_context_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_parent_context_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_parent_context_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_parent_context: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_parent_context_by_context_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_parent_context_by_parent_context_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_event_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_event_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_event_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_event: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_event_by_artifact_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_event_by_execution_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_event_path_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_event_path_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_event_path_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_event_path: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_event_path_by_event_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_association_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_association_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_association_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_association: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_association_by_context_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_association_by_execution_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_attribution_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_attribution_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_attribution_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_attribution: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_attribution_by_context_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_attribution_by_artifact_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., drop_mlmd_env_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., create_mlmd_env_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., schema_version: _Optional[int] = ..., check_mlmd_env_table: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., insert_schema_version: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., update_schema_version: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., check_tables_in_v0_13_2: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., secondary_indices: _Optional[_Iterable[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]]] = ..., migration_schemes: _Optional[_Mapping[int, MetadataSourceQueryConfig.MigrationScheme]] = ..., delete_contexts_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_contexts_properties_by_contexts_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_parent_contexts_by_parent_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_parent_contexts_by_child_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_parent_contexts_by_parent_id_and_child_ids: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_artifacts_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_artifacts_properties_by_artifacts_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_executions_by_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_executions_properties_by_executions_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_events_by_artifacts_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_events_by_executions_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_associations_by_contexts_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_associations_by_executions_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_attributions_by_contexts_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_attributions_by_artifacts_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_event_paths: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., delete_parent_type: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., select_properties_by_type_id: _Optional[_Union[MetadataSourceQueryConfig.TemplateQuery, _Mapping]] = ..., metadata_source_type_specific_options: _Optional[_Union[_any_pb2.Any, _Mapping]] = ...) -> None: ...
+
+class MySQLSourceErrorInfo(_message.Message):
+    __slots__ = ["mysql_error_code"]
+    MYSQL_ERROR_CODE_FIELD_NUMBER: _ClassVar[int]
+    mysql_error_code: int
+    def __init__(self, mysql_error_code: _Optional[int] = ...) -> None: ...
+
+class RecordSet(_message.Message):
+    __slots__ = ["column_names", "records"]
+    class Record(_message.Message):
+        __slots__ = ["values"]
+        VALUES_FIELD_NUMBER: _ClassVar[int]
+        values: _containers.RepeatedScalarFieldContainer[str]
+        def __init__(self, values: _Optional[_Iterable[str]] = ...) -> None: ...
+    COLUMN_NAMES_FIELD_NUMBER: _ClassVar[int]
+    RECORDS_FIELD_NUMBER: _ClassVar[int]
+    column_names: _containers.RepeatedScalarFieldContainer[str]
+    records: _containers.RepeatedCompositeFieldContainer[RecordSet.Record]
+    def __init__(self, column_names: _Optional[_Iterable[str]] = ..., records: _Optional[_Iterable[_Union[RecordSet.Record, _Mapping]]] = ...) -> None: ...
+
+class MetadataSourceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = []
