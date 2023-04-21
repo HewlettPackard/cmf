@@ -51,6 +51,9 @@ def parse_args():
                         choices=['none', 'pytorch', 'slurm', 'mpi'],
                         default='none', help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
+
+    parser.add_argument('--strategy', choices=['active_learning', 'random'], 
+                          default='active_learning')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -161,7 +164,10 @@ def main():
             j += len(all_anns[i])
         X_all = np.arange(j) 
     X_L = np.load(args.labeled)
-    X_L_next, X_U = update_X_L(uncertainty, X_all, X_L, cfg.X_S_size)
+    if args.strategy is 'active_learning':
+        X_L_next, X_U = update_X_L(uncertainty, X_all, X_L, cfg.X_S_size)
+    else:
+        X_L_next, X_U = update_X_L_random( X_all, X_L, cfg.X_S_size)
 
     # save next cycle labeled and unlesected lists
     np.save(args.labeled_next, X_L_next)
