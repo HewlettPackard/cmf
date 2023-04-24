@@ -131,11 +131,13 @@ class CmfQuery(object):
         for art in input_artifacts:
             d1 = self.get_artifact_df(art)
             d1["event"] = "INPUT"
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
         for art in output_artifacts:
             d1 = self.get_artifact_df(art)
             d1["event"] = "OUTPUT"
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
     def get_all_executions_for_artifact(self, artifact_name: str) -> pd.DataFrame:
@@ -160,7 +162,8 @@ class CmfQuery(object):
 
             linked_execution["pipeline"] = self.store.get_parent_contexts_by_context(ctx.id)[0].name
             d1 = pd.DataFrame(linked_execution, index=[0, ])
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
 
         return df
 
@@ -186,16 +189,19 @@ class CmfQuery(object):
         artifacts = self.store.get_artifacts_by_id(artifacts_ids)
         for art in artifacts:
             d1 = self.get_artifact_df(art)
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
     def get_all_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
         df = pd.DataFrame()
         d1 = self.get_one_hop_child_artifacts(artifact_name)
-        df = df.append(d1, sort=True, ignore_index=True)
+        #df = df.append(d1, sort=True, ignore_index=True)
+        df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
             d1 = self.get_all_child_artifacts(row.name)
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep='first', inplace=False)
         return df
 
@@ -221,16 +227,19 @@ class CmfQuery(object):
         artifacts = self.store.get_artifacts_by_id(artifacts_ids)
         for art in artifacts:
             d1 = self.get_artifact_df(art)
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
     def get_all_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
         df = pd.DataFrame()
         d1 = self.get_one_hop_parent_artifacts(artifact_name)
-        df = df.append(d1, sort=True, ignore_index=True)
+        #df = df.append(d1, sort=True, ignore_index=True)
+        df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
             d1 = self.get_all_parent_artifacts(row.name)
-            df = df.append(d1, sort=True, ignore_index=True)
+            #df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep='first', inplace=False)
         return df
 
@@ -264,6 +273,33 @@ class CmfQuery(object):
             for event in self.store.get_events_by_artifact_ids([artifact.id])
             if event.type == mlpb.Event.OUTPUT)
         return self.store.get_executions_by_id(executions_ids)[0]
+    
+    def get_metrics(self, metrics_name:str) ->pd.DataFrame:
+        metric = None
+        metrics = self.store.get_artifacts_by_type("Step_Metrics")
+        for m in metrics:
+            if m.name == metrics_name:
+                metric = m
+                break
+        if metric is None:
+            print("Error : The given metrics does not exist")
+            return None
+        name = ""
+        for k, v in metric.custom_properties.items():
+            if k == "Name":
+                name = v
+                break
+        df = pd.read_parquet(name)
+        return df
+    
+    def read_dataslice(self, name: str) -> pd.DataFrame:
+        """Reads the dataslice"""
+        # To do checkout if not there
+        df = pd.read_parquet(name)
+        return df
+        
+
+
 
     @staticmethod
     def __get_node_properties(node) -> dict:

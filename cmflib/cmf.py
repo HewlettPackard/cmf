@@ -21,7 +21,9 @@ import re
 import os
 import sys
 import pandas as pd
+import numpy as np
 import typing as t
+
 # This import is needed for jupyterlab environment
 import dvc
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -228,8 +230,13 @@ class Cmf:
         return ctx
 
 
-    def create_execution(self, execution_type: str,
-                         custom_properties: t.Optional[t.Dict] = None, cmd:str = None) -> mlpb.Execution:
+
+
+
+
+    def create_execution(self, execution_type: str, 
+                         custom_properties: t.Optional[t.Dict] = None, cmd:str = None, create_new_execution:bool = True) -> mlpb.Execution:
+
         """Create execution.
         Every call creates a unique execution. Execution can only be created within a context, so
         [create_context][cmflib.cmf.Cmf.create_context] must be called first.
@@ -252,10 +259,21 @@ class Cmf:
             )
             ```
         Args:
-            execution_type: Name of the execution.
+            execution_type: Type of the execution.(when create_new_execution is False, this is the name of execution)
             custom_properties: Developers can provide key value pairs with additional properties of the execution that
                 need to be stored.
+
             cmd: command used to run this execution.
+
+            create_new_execution:bool = True, This can be used by advanced users to re-use executions
+                This is applicable, when working with framework code like mmdet, pytorch lightning etc, where the 
+                custom call-backs are used to log metrics.
+                if create_new_execution is True(Default), execution_type parameter will be used as the name of the execution type.
+                if create_new_execution is False, if existing execution exist with the same name as execution_type. 
+                it will be reused.
+                Only executions created with  create_new_execution as False will have "name" as a property.
+
+
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
         """
@@ -269,14 +287,17 @@ class Cmf:
         cmd = str(sys.argv) if cmd is None else cmd
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
-            execution_type_name=execution_type,
+            execution_type_name=self.child_context.name, # Type field when re-using executions
+            execution_name=execution_type, #Name field if we are re-using executions
+                                           #Type field , if creating new executions always 
             context_id=self.child_context.id,
             execution=cmd,
             pipeline_id=self.parent_context.id,
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
-            custom_properties=custom_props
+            custom_properties=custom_props,
+            create_new_execution=create_new_execution
         )
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
@@ -291,6 +312,8 @@ class Cmf:
                 self.execution_name, self.child_context.id, self.parent_context, str(
                     sys.argv), self.execution.id, custom_props)
         return self.execution
+    
+
 
     def update_execution(self, execution_id: int, custom_properties: t.Optional[t.Dict] = None):
         """Updates an existing execution.
@@ -380,7 +403,7 @@ class Cmf:
         print("Entered dvc lock file commit")
         return commit_dvc_lock_file(file_path, self.execution.id)
 
-    def log_dataset(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+    def log_dataset(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None, external:bool= False) -> mlpb.Artifact:
         """Logs a dataset as artifact.
         This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
@@ -1020,6 +1043,13 @@ class Cmf:
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
         return get_artifacts_by_id(self.store, [artifact_id])[0]
+    
+    #To Do - The interface should be simplified.
+    # To Do - Links should be created in mlmd also.
+    # Todo - assumes source as Dataset and target as slice - should be generic and accomodate any types
+    def link_artifacts(self, artifact_source: mlpb.Artifact, artifact_target:mlpb.Artifact):
+        self.driver.create_links(artifact_source.name, artifact_target.name, "derived")
+
 
     def update_model_output(self, artifact: mlpb.Artifact):
         """updates an artifact"""
@@ -1036,6 +1066,7 @@ class Cmf:
             ```
         Args:
             name: Name to identify the dataslice.
+
         Returns:
             Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].
         """
@@ -1065,10 +1096,15 @@ class Cmf:
         [Cmf.create_dataslice][cmflib.cmf.Cmf.create_dataslice] method.
         """
 
-        def __init__(self, name: str, writer, props: t.Optional[t.Dict] = None):
-            self.props = {} if props is None else props
+        def __init__(self, name: str, writer):
+            self.props = {} 
             self.name = name
             self.writer = writer
+
+        #def add_files(self, list_of_files:np.array ):
+        #    for i in list_of_files:
+
+
 
         def add_data(self, path: str, custom_properties: t.Optional[t.Dict] = None) -> None:
             """Add data to create the dataslice.
@@ -1084,7 +1120,9 @@ class Cmf:
             """
 
             self.props[path] = {}
-            self.props[path]['hash'] = dvc_get_hash(path)
+            #self.props[path]['hash'] = dvc_get_hash(path)
+            parent_path = path.rsplit('/', 1)[0]
+            self.data_parent = parent_path.rsplit("/",1)[1]
             if custom_properties:
                 for k, v in custom_properties.items():
                     self.props[path][k] = v
@@ -1105,8 +1143,10 @@ class Cmf:
                 dataslice.commit()
                 ```
             Args:
-                custom_properties: Properties associated with this data slice.
+                custom_properties: Dictionary to store key value pairs associated with Dataslice
+                Example{"mean":2.5, "median":2.6}
             """
+            custom_props = {} if custom_properties is None else custom_properties
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient='index')
             dataslice_df.index.names = ['Path']
@@ -1122,7 +1162,7 @@ class Cmf:
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
                 print("Adding to existing data slice")
-                _ = link_execution_to_input_artifact(
+                slice = link_execution_to_input_artifact(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     uri=c_hash,
@@ -1132,20 +1172,26 @@ class Cmf:
                     "Commit": dataslice_commit,			#passing c_hash value to commit
                     "git_repo": git_repo,
                     "Remote": remote}
-                custom_properties = props.update(
-                    custom_properties) if custom_properties else props
-                create_new_artifact_event_and_attribution(
+                props.update(custom_props) 
+                slice = create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     context_id=self.writer.child_context.id,
                     uri=c_hash,
                     name=self.name + ":" + c_hash,
-
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
-                    custom_properties=custom_properties,
+                    custom_properties=props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
+            if self.writer.graph:
+                self.writer.driver.create_dataslice_node(
+                self.name,
+                self.name + ":" + c_hash,
+                c_hash,
+                self.data_parent,
+                props)
+            return slice
 
 
 #        """Temporary code"""

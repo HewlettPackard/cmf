@@ -17,8 +17,6 @@
 from cmflib import cmf
 import random
 import pandas as pd
-import gzip
-import shutil
 import os
 import string
 from shutil import rmtree
@@ -38,8 +36,8 @@ def generate_dataset():
             string.ascii_letters + string.digits)
             for _ in range(100)]))
 
-    for i in range(1, 101):
-        with open(path + "/" + str(i) + ".txt", 'w') as f:
+    for _i in range(1, 101):
+        with open(path + "/" + str(_i) + ".txt", 'w') as f:
             index = random.randint(0, 3)
             f.write(msg[index])
 
@@ -63,7 +61,10 @@ for i in range(1, 3, 1):
     for _ in range(1, 20, 1):
         j = random.randrange(1, 100)
         print(folder_path + "/" + str(j) + ".txt")
-        dataslice.add_data(path=folder_path + "/" + str(j) + ".txt", custom_properties={"key1": "value1", "key2": "value2"})
+        dataslice.add_data(
+            path=folder_path + "/" + str(j) + ".txt",
+            custom_properties={"key1": "value1", "key2": "value2"}
+        )
     dataslice.commit()
 
 # Reading the files in the slice.
