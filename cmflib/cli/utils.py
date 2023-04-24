@@ -7,24 +7,6 @@ def fix_subparsers(subparsers):
     subparsers.required = True
     subparsers.dest = "cmd"
 
-
-def create_cmf_config(file_name: str, cmf_server_ip: str):
-    try:
-        with open(file_name, "w") as file:
-            file.write(f"cmf.server.ip={cmf_server_ip}")
-            return "SUCCESS"
-    except Exception as err:
-        return "Exception occurred!!! {err}"
-
-
-def read_cmf_config(file_name: str):
-    try:
-        with open(file_name, "r") as file:
-            return file.read()
-    except Exception as err:
-        return f"Exception occurred!!! {err}"
-
-
 def git_exists():
     try:
         output = subprocess.check_output(["git", "version"]).decode("ascii")
