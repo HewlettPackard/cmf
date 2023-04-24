@@ -21,24 +21,28 @@ import os
 from cmflib import cmf_merger
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import read_cmf_config, find_root
+from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
+from cmflib.utils.cmf_config import CmfConfig
+
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
     def run(self):
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
-        url = "http://127.0.0.1:80"
+
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
+
         # in case, there is no .cmfconfig file
         if output.find("'cmf' is  not configured") != -1:
             return output
+
         config_file_path = os.path.join(output, cmfconfig)
-        file_data = read_cmf_config(config_file_path)
-        if file_data.find("Exception") != -1:
-            return file_data
-        url = file_data.split("=")[1]
+        attr_dict = CmfConfig.read_config(config_file_path)
+        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
+
+
         directory_to_dump = ""
         data = ""
         cmd = "pull"
