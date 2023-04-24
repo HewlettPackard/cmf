@@ -38,6 +38,7 @@ from cmflib.metadata_helper import get_or_create_parent_context, \
     create_new_execution_in_existing_run_context, link_execution_to_artifact, \
     create_new_artifact_event_and_attribution, get_artifacts_by_id, \
     put_artifact, link_execution_to_input_artifact
+from cmflib.utils.cmf_config import CmfConfig
 
 
 class Cmf:
@@ -58,20 +59,22 @@ class Cmf:
             pipeline.  If a pipeline already exist with the same name, the existing pipeline object is reused.
         custom_properties: Additional properties of the pipeline that needs to be stored.
         graph: If set to true, the libray also stores the relationships in the provided graph database. The following
-            environment variables should be set: `NEO4J_URI` (graph server URI), `NEO4J_USER_NAME` (user name) and
-            `NEO4J_PASSWD` (user password), e.g.:
-            ```bash
-            export NEO4J_URI="bolt://ip:port"
-            export NEO4J_USER_NAME=neo4j
-            export NEO4J_PASSWD=neo4j
+            variables should be set: `neo4j_uri` (graph server URI), `neo4j_user` (user name) and
+            `neo4j_password` (user password), e.g.:
+            ```
+               cmf init local --path /home/user/local-storage --git-remote-url https://github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j 
+                              --neo4j-uri bolt://localhost:7687
             ```
     """
 
     # pylint: disable=too-many-instance-attributes
-
-    __neo4j_uri = os.getenv('NEO4J_URI', "")
-    __neo4j_user = os.getenv('NEO4J_USER_NAME', "")
-    __neo4j_password = os.getenv('NEO4J_PASSWD', "")
+    # Reading CONFIG_FILE variable
+    cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
+    if os.path.exists(cmf_config):
+        attr_dict = CmfConfig.read_config(cmf_config)
+        __neo4j_uri = attr_dict.get("neo4j-uri", "")
+        __neo4j_password = attr_dict.get("neo4j-password", "")
+        __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(self, filename: str = "mlmd",
                  pipeline_name: str = "", custom_properties: t.Optional[t.Dict] = None,

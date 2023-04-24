@@ -21,23 +21,51 @@ import subprocess
 import sys
 
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import git_quiet_init, git_checkout_new_branch, git_initial_commit, git_add_remote, check_git_repo, dvc_quiet_init,\
-  dvc_add_remote_repo, dvc_add_attribute
-from cmflib.cli.utils import create_cmf_config
+from cmflib.dvc_wrapper import (
+    git_quiet_init,
+    git_checkout_new_branch,
+    git_initial_commit,
+    git_add_remote,
+    check_git_repo,
+    dvc_quiet_init,
+    dvc_add_remote_repo,
+    dvc_add_attribute,
+)
+from cmflib.utils.cmf_config import CmfConfig
 
 
 class CmdInitMinioS3(CmdBase):
     def run(self):
-        cmf_config = os.environ.get("CONFIG_FILE",".cmfconfig")
-        output = ""
-        if self.args.cmf_server_ip:
-            output = create_cmf_config(cmf_config, self.args.cmf_server_ip)
-        else:
-            if not os.path.exists(cmf_config):
-                output = create_cmf_config(cmf_config, "http://127.0.0.1:80")
-        if output.find("Exception") != -1:
-            return output
+        # Reading CONFIG_FILE variable
+        cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+        # checking if config file exists
+        if not os.path.exists(cmf_config):
+            # writing default value to config file
+            attr_dict = {}
+            attr_dict["server-ip"] = "http://127.0.0.1:80"
+            CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
+        # if user gave --cmf-server-ip, override the config file
+        if self.args.cmf_server_ip:
+            attr_dict = {}
+            attr_dict["server-ip"] = self.args.cmf_server_ip
+            CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
+
+        # read --neo4j details and add to the exsting file
+        if self.args.neo4j_user and self.args.neo4j_password and self.args.neo4j_uri:
+            attr_dict = {}
+            attr_dict["user"] = self.args.neo4j_user
+            attr_dict["password"] = self.args.neo4j_password
+            attr_dict["uri"] = self.args.neo4j_uri
+            CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
+        elif (
+            not self.args.neo4j_user
+            and not self.args.neo4j_password
+            and not self.args.neo4j_uri
+        ):
+            pass
+        else:
+            return "ERROR: Provide user, password and uri for neo4j initialization."
         output = check_git_repo()
         if not output:
             branch_name = "master"
@@ -50,16 +78,15 @@ class CmdInitMinioS3(CmdBase):
 
         print("Starting cmf init.")
         dvc_quiet_init()
-        repo_type = 'minio'
+        repo_type = "minio"
         output = dvc_add_remote_repo(repo_type, self.args.url)
         if not output:
             return "cmf init failed."
         print(output)
-        dvc_add_attribute(repo_type, 'endpointurl', self.args.endpoint_url)
-        dvc_add_attribute(repo_type, 'access_key_id', self.args.access_key_id)
-        dvc_add_attribute(repo_type, 'secret_access_key', self.args.secret_key)
+        dvc_add_attribute(repo_type, "endpointurl", self.args.endpoint_url)
+        dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
+        dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
         return "cmf init complete."
-
 
 
 def add_parser(subparsers, parent_parser):
@@ -119,6 +146,25 @@ def add_parser(subparsers, parent_parser):
         help="Specify cmf-server IP",
         metavar="<cmf_server_ip>",
         default="http://127.0.0.1:80",
+    )
+
+    parser.add_argument(
+        "--neo4j-user",
+        help="Specify neo4j user.",
+        metavar="<neo4j_user>",
+        # default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--neo4j-password",
+        help="Specify neo4j password.",
+        metavar="<neo4j_password>",
+        # default=argparse.SUPPRESS,
+    )
+    parser.add_argument(
+        "--neo4j-uri",
+        help="Specify neo4j uri.",
+        metavar="<neo4j_uri>",
+        # default=argparse.SUPPRESS,
     )
 
     parser.set_defaults(func=CmdInitMinioS3)
