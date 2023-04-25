@@ -370,6 +370,8 @@ class CmfQuery(object):
                         exe_type = self.store.get_execution_types_by_id([exe.type_id])
                         exe_dict["type"] = exe_type[0].name
                         exe_dict["events"] = []
+                        if exe.name != "":
+                            exe_dict["Name"] = exe.name
                         events = self.store.get_events_by_execution_ids([exe.id])
                         for evt in events:
                             evt_dict = CmfQuery.__get_node_properties(evt)

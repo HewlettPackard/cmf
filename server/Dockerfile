@@ -16,6 +16,10 @@ COPY ./server/requirements.txt /cmf-server/requirements.txt
 # Install requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
+RUN pip uninstall -y uvicorn
+
+RUN pip install uvicorn[standard]
+
 # Copy the setup.py file to cmf-server
 COPY ./setup.py  /cmf-server/setup.py
 
