@@ -21,7 +21,6 @@ import re
 import os
 import sys
 import pandas as pd
-
 import typing as t
 
 # This import is needed for jupyterlab environment
@@ -60,7 +59,7 @@ class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
     The class instance creates an ML metadata store to store the metadata.
     It creates a driver to store nodes and its relationships to neo4j.
-    The user has to provide the name of the pipeline, that needs to be recorded with it.
+    The user has to provide the name of the pipeline, that needs to be recorded with CMF.
     ```python
     cmflib.cmf.Cmf(
         filename="mlmd",
@@ -72,7 +71,7 @@ class Cmf:
     Args:
         filename: Path  to the sqlite file to store the metadata
         pipeline_name: Name to uniquely identify the pipeline.
-        Note that name is the unique identification for a pipeline.
+        Note that name is the unique identifier for a pipeline.
         If a pipeline already exist with the same name, the existing pipeline object is reused.
         custom_properties: Additional properties of the pipeline that needs to be stored.
         graph: If set to true, the libray also stores the relationships in the provided graph database.
@@ -162,12 +161,7 @@ class Cmf:
         if not check_git_remote():
             print(
                 "*** Error git remote not set ***\n"
-                "*** Run the command "
-                "`git remote add origin <GIT_REMOTE_URL>` ***\n"
-                " or \n"
-                " After Updating the sample_env file,"
-                " run `source sample_env`\n"
-                " Then run 'sh initialize.sh'"
+                "*** Run cmf init ***"
             )
             sys.exit(1)
 
@@ -176,11 +170,8 @@ class Cmf:
         """Executes precheck for default dvc remote"""
         if not check_default_remote():
             print(
-                "*** DVC not configured correctly***\n"
-                "Initialize dvc and add a default dvc remote\n"
-                "Run commands\n"
-                "dvc init\n"
-                "dvc remote add -d <remotename> <remotelocation>\n"
+                "*** DVC not configured correctly ***\n"
+                "*** Run command cmf init ***" 
             )
             sys.exit(1)
 
@@ -190,12 +181,7 @@ class Cmf:
         if not check_git_repo():
             print(
                 "*** Not a git repo, Please do the following ***\n"
-                " Initialize git\n"
-                " Initialize dvc and add a default dvc remote\n"
-                " or \n"
-                " After Updating the sample_env file,"
-                " run `source sample_env`\n"
-                " Then run 'sh initialize.sh'"
+                "*** Run Command cmf init ***"
             )
             sys.exit(1)
 
