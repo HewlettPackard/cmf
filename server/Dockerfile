@@ -38,3 +38,9 @@ COPY ./server/app /cmf-server/server/app
 # Run the server with uvicorn
 CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "80"]
 
+RUN cd /cmf-server/data/static
+
+ENV NEO4J_URI=""
+ENV NEO4J_USER_NAME=""
+ENV NEO4J_PASSWD=""
+

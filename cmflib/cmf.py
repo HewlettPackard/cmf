@@ -127,6 +127,8 @@ class Cmf:
             pipeline=pipeline_name,
             custom_properties=custom_properties,
         )
+        if is_server:
+            Cmf.__get_neo4j_server_config()
         if graph is True:
             self.driver = graph_wrapper.GraphDriver(
                 Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password
@@ -134,6 +136,13 @@ class Cmf:
             self.driver.create_pipeline_node(
                 pipeline_name, self.parent_context.id, custom_properties
             )
+
+    @staticmethod
+    def __get_neo4j_server_config():
+        Cmf.__neo4j_uri = os.getenv('NEO4J_URI', "")
+        Cmf.__neo4j_user = os.getenv('NEO4J_USER_NAME', "")
+        Cmf.__neo4j_password = os.getenv('NEO4J_PASSWD', "")
+
 
     @staticmethod
     def __prechecks():

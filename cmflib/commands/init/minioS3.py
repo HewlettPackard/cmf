@@ -136,7 +136,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Specify git repo url. eg: https://github.com/XXX/example.git"",
+        help="Specify git repo url. eg: https://github.com/XXX/example.git",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
