@@ -136,14 +136,14 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Specify git repo url.",
+        help="Specify git repo url. eg: https://github.com/XXX/example.git",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
 
     parser.add_argument(
-        "--cmf-server-ip",
-        help="Specify cmf-server IP",
+        "--cmf-server-url",
+        help="Specify cmf-server URL",
         metavar="<cmf_server_ip>",
         default="http://127.0.0.1:80",
     )
@@ -162,7 +162,7 @@ def add_parser(subparsers, parent_parser):
     )
     parser.add_argument(
         "--neo4j-uri",
-        help="Specify neo4j uri.",
+        help="Specify neo4j uri.eg bolt://localhost:7687",
         metavar="<neo4j_uri>",
         # default=argparse.SUPPRESS,
     )

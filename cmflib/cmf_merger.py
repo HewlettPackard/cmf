@@ -14,8 +14,9 @@
 # limitations under the License.
 ###
 
-from cmflib import cmf
 import json
+import os
+from cmflib import cmf
 
 
 # mlmd is created from metadata passed in Json format
@@ -33,7 +34,11 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
         data = create_original_time_since_epoch(mlmd_data)
     else:
         data = mlmd_data
-    cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name, is_server=True)
+    graph = False
+    if os.getenv('NEO4J_URI', "") != "":
+        graph = True
+    cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name,
+                        graph=graph, is_server=True)
     for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
         if exec_id is None:
             list_executions = [execution for execution in stage["executions"]]
