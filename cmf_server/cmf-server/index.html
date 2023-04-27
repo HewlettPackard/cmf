@@ -19,7 +19,7 @@
         <link rel="next" href="../../api/public/cmf/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.7">
+      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.8">
     
     
       
@@ -110,10 +110,6 @@
         </div>
       </div>
     </div>
-    
-      <form class="md-header__option" data-md-component="palette">
-        
-      </form>
     
     
     
@@ -805,13 +801,14 @@ Usage:  docker build -t [image_name] -f ./Dockerfile ../
 </code></pre></div>
 Note - <code>'../'</code>  represents the <a href="https://docs.docker.com/build/building/context/">Build context</a> for the docker image.</p>
 <ol>
-<li>Launch a new docker container using the image with volume created in the previous step </li>
+<li>Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
+pre-requisite - <code>mkdir /home/&lt;user&gt;/cmf-server/data/static</code></li>
 </ol>
 <pre>
-Usage: docker run --name [container_name] --port 8080:80 -v /home/user/cmf-server/data:/cmf-server/data [image_name]
+Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
 </pre>
 <p>Example:
-<div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 8080:80 -v /home/user/cmf-server/data:/cmf-server/data myimage
+<div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
 </code></pre></div>
 6. To stop the docker container.
 <div class="highlight"><pre><span></span><code>docker stop [container_name]
