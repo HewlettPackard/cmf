@@ -280,7 +280,7 @@ class Cmf:
         git_start_commit = git_get_commit()
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
-            execution_type_name=self.child_context.name, # Type field when re-using executions
+            execution_type_name=self.child_context.name+'_'+str(uuid.uuid1()), # Type field when re-using executions
             execution_name=execution_type, #Name field if we are re-using executions
                                            #Type field , if creating new executions always 
             context_id=self.child_context.id,
@@ -357,7 +357,7 @@ class Cmf:
         return self.execution
 
     def merge_created_execution(self, execution_type: str, execution_cmd: str, properties: {} = None,
-                                custom_properties: t.Optional[t.Dict] = None) -> mlpb.Execution:
+                                custom_properties: t.Optional[t.Dict] = None, create_new_execution:bool = True) -> mlpb.Execution:
         # Initializing the execution related fields
         self.metrics = {}
         self.input_artifacts = []
@@ -368,14 +368,17 @@ class Cmf:
         git_start_commit = properties.get("Git_Start_Commit", "")
         self.execution = create_new_execution_in_existing_run_context \
             (store=self.store,
-             execution_type_name=execution_type,
+             execution_type_name=execution_type, # Type field when re-using executions
+             execution_name=execution_type, #Name field if we are re-using executions
+                                           #Type field , if creating new executions always
              context_id=self.child_context.id,
              execution=execution_cmd,
              pipeline_id=self.parent_context.id,
              pipeline_type=self.parent_context.name,
              git_repo=git_repo,
              git_start_commit=git_start_commit,
-             custom_properties=custom_props
+             custom_properties=custom_props,
+             create_new_execution=create_new_execution
              )
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = execution_cmd
