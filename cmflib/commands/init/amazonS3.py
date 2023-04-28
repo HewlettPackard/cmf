@@ -46,9 +46,9 @@ class CmdInitAmazonS3(CmdBase):
             CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
         # if user gave --cmf-server-ip, override the config file
-        if self.args.cmf_server_ip:
+        if self.args.cmf_server_url:
             attr_dict = {}
-            attr_dict["server-ip"] = self.args.cmf_server_ip
+            attr_dict["server-ip"] = self.args.cmf_server_url
             CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
 
         # read --neo4j details and add to the exsting file
@@ -137,7 +137,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "--cmf-server-url",
         help="Specify cmf-server URL.",
-        metavar="<cmf_server_ip>",
+        metavar="<cmf_server_url>",
         default="http://127.0.0.1:80",
     )
     parser.add_argument(
