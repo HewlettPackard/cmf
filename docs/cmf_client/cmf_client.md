@@ -76,7 +76,7 @@ Usage: cmf init amazonS3 [-h] --url [url]
                               --access-key-id [access_key_id]
                               --secret-key [secret_key] 
                               --git-remote-url [git_remote_url] 
-                              --cmf-server-url [cmf_server_ip]
+                              --cmf-server-url [cmf_server_url]
                               --neo4j-user [neo4j_user]
                               --neo4j-password neo4j_password]
                               --neo4j-uri [neo4j_uri]
@@ -107,11 +107,14 @@ Usage: cmf init sshremote [-h] --path [path]
                                --user [user] --port [port]
                                --password [password]  
                                --git-remote-url [git_remote_url] 
-                               --cmf-server-ip [cmf_server_ip]
+                               --cmf-server-url [cmf_server_url]
+                               --neo4j-user [neo4j_user]
+                              --neo4j-password neo4j_password]
+                              --neo4j-uri [neo4j_uri]
 ```
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 ```
-cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 Required Arguments
 ```
