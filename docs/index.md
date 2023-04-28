@@ -34,13 +34,8 @@ Install CMF
     ```
 ## Configuration
 1. Create working directory `mkdir <workdir>`
-2. Execute `cmf init` to configure dvc remote directory, git remote url and cmf server.
-3. To configure neo4j backend with cmf export the following environment variables with appropriate values,
-   ```shell
-   export NEO4J_URI="bolt://ip:port"
-   export NEO4J_USER_NAME=<user>
-   export NEO4J_PASSWD=<passwd.
-   ```
+2. Execute `cmf init` to configure dvc remote directory, git remote url, cmf server and neo4j.
+
 
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
