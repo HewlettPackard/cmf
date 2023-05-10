@@ -500,7 +500,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/step-by-step/" class="md-nav__link">
+      <a href="../../cmf_client/step-by-step.md" class="md-nav__link">
         Getting started
       </a>
     </li>
@@ -804,17 +804,24 @@ pip<span class="w"> </span>install<span class="w"> </span>./cmf
 <p>Follow <a href="../../cmf_server/cmf-server/">here</a> to setup a common cmf-server.</p>
 <h2 id="project-initialization">Project initialization<a class="headerlink" href="#project-initialization" title="Permanent link">&para;</a></h2>
 <p>We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and using <code>cmf init</code> command
-initialize dvc remote directory, git remote url and cmf server with appropriate dvc backend for this project .</p>
+initialize dvc remote directory, git remote url, cmf server and neo4j with appropriate dvc backend for this project .</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a separate copy of the example project</span>
 cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-started/<span class="w"> </span>./example-get-started
 <span class="nb">cd</span><span class="w"> </span>./example-get-started
 </code></pre></div>
 <h3 id="cmf-init">cmf init<a class="headerlink" href="#cmf-init" title="Permanent link">&para;</a></h3>
 <pre>
-Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
-                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
+Usage: cmf init minioS3 [-h] --url [url] 
+                             --endpoint-url [endpoint_url]
+                             --access-key-id [access_key_id] 
+                             --secret-key [secret_key] 
+                             --git-remote-url[git_remote_url]  
+                             --cmf-server-url [cmf_server_url]
+                             --neo4j-user [neo4j_user]
+                             --neo4j-password [neo4j_password]
+                             --neo4j-uri [neo4j_uri]
 </pre>
-<p><div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span>minioS3<span class="w"> </span>--url<span class="w"> </span>s3://bucket-name<span class="w"> </span>--endpoint-url<span class="w"> </span>http://localhost:9000<span class="w"> </span>--access-key-id<span class="w"> </span>minioadmin<span class="w"> </span>--secret-key<span class="w"> </span>minioadmin<span class="w"> </span>--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git<span class="w"> </span>--cmf-server-ip<span class="w"> </span>http://121.0.0.1:80
+<p><div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span>minioS3<span class="w"> </span>--url<span class="w"> </span>s3://bucket-name<span class="w"> </span>--endpoint-url<span class="w"> </span>http://localhost:9000<span class="w"> </span>--access-key-id<span class="w"> </span>minioadmin<span class="w"> </span>--secret-key<span class="w"> </span>minioadmin<span class="w"> </span>--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git<span class="w"> </span>--cmf-server-url<span class="w"> </span>http://127.0.0.1:80<span class="w"> </span>--neo4j-user<span class="w"> </span>neo4j<span class="w"> </span>--neo4j-password<span class="w"> </span>password<span class="w"> </span>--neo4j-uri<span class="w"> </span>bolt://localhost:7687
 </code></pre></div>
 Follow <a href="../../cmf_client/cmf_client/#cmf-init">here</a> for more details.</p>
 <h2 id="project-execution">Project execution<a class="headerlink" href="#project-execution" title="Permanent link">&para;</a></h2>

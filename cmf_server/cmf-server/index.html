@@ -396,7 +396,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/step-by-step/" class="md-nav__link">
+      <a href="../../cmf_client/step-by-step.md" class="md-nav__link">
         Getting started
       </a>
     </li>
@@ -532,6 +532,13 @@
           <li class="md-nav__item">
   <a href="#pre-requisite" class="md-nav__link">
     Pre-requisite
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#following-steps-start-a-cmf-server-in-a-docker-conatainer" class="md-nav__link">
+    Following steps start a cmf-server in a docker conatainer:
   </a>
   
 </li>
@@ -687,6 +694,13 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#following-steps-start-a-cmf-server-in-a-docker-conatainer" class="md-nav__link">
+    Following steps start a cmf-server in a docker conatainer:
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -776,52 +790,56 @@ They accept and return JSON-encoded request bodies and responses and return stan
 <ol>
 <li>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</li>
 </ol>
-<p>### Following steps start a cmf-server in a docker conatainer:
-1.  Install <a href="../../#installation">cmflib</a> on your system.</p>
+<h3 id="following-steps-start-a-cmf-server-in-a-docker-conatainer">Following steps start a cmf-server in a docker conatainer:<a class="headerlink" href="#following-steps-start-a-cmf-server-in-a-docker-conatainer" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p>Go to <strong>server</strong> directory. 
-<div class="highlight"><pre><span></span><code>cd server
+<p>Install <a href="../../#installation">cmflib</a> on your system.</p>
+</li>
+<li>
+<p>Go to <code>server</code> directory. 
+   <div class="highlight"><pre><span></span><code>cd server
 </code></pre></div></p>
 </li>
 <li>
 <p>List all docker images.
-<div class="highlight"><pre><span></span><code>docker images
+   <div class="highlight"><pre><span></span><code>docker images
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute the below-mentioned command to create a <strong>cmf-server</strong> docker image.</p>
+<p>Execute the below-mentioned command to create a <code>cmf-server</code> docker image.
+   <div class="highlight"><pre><span></span><code>Usage:  docker build -t [image_name] -f ./Dockerfile ../
+</code></pre></div>
+   Example:
+   <div class="highlight"><pre><span></span><code>docker build -t myimage -f ./Dockerfile ../
+</code></pre></div>
+   <code>Note</code> - <code>'../'</code>  represents the <a href="https://docs.docker.com/build/building/context/">Build context</a> for the docker image.</p>
+</li>
+<li>
+<p>Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
+   pre-requisite - <code>mkdir /home/&lt;user&gt;/cmf-server/data/static</code>
+ <br />
+<pre>
+   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
+   </pre></p>
 </li>
 </ol>
-<pre>
-Usage:  docker build -t [image_name] -f ./Dockerfile ../
-</pre>
 <p>Example:
-<div class="highlight"><pre><span></span><code>docker build -t myimage -f ./Dockerfile ../
-</code></pre></div>
-Note - <code>'../'</code>  represents the <a href="https://docs.docker.com/build/building/context/">Build context</a> for the docker image.</p>
-<ol>
-<li>Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
-pre-requisite - <code>mkdir /home/&lt;user&gt;/cmf-server/data/static</code></li>
-</ol>
-<pre>
-Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
-</pre>
-<p>Example:
-<div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
-</code></pre></div>
-6. To stop the docker container.
-<div class="highlight"><pre><span></span><code>docker stop [container_name]
+   <div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
 </code></pre></div></p>
 <ol>
+<li>
+<p>To stop the docker container.
+   <div class="highlight"><pre><span></span><code>docker stop [container_name]
+</code></pre></div></p>
+</li>
 <li>
 <p>To delete the docker container.
-<div class="highlight"><pre><span></span><code>docker rm [container_name] 
+   <div class="highlight"><pre><span></span><code>docker rm [container_name] 
 </code></pre></div></p>
 </li>
 <li>
 <p>To remove the docker image.
-<div class="highlight"><pre><span></span><code>docker image rm [image_name] 
+   <div class="highlight"><pre><span></span><code>docker image rm [image_name] 
 </code></pre></div></p>
 </li>
 </ol>

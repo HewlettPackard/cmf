@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../step-by-step/">
+        <link rel="prev" href="../cmf_client/">
       
       
         <link rel="next" href="../../cmf_server/cmf-server/">
@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#steps-to-set-up-a-minio-server" class="md-skip">
+        <a href="#minio-s3-artifact-repo-setup" class="md-skip">
           Skip to content
         </a>
       
@@ -398,7 +398,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../step-by-step/" class="md-nav__link">
+      <a href="../step-by-step.md" class="md-nav__link">
         Getting started
       </a>
     </li>
@@ -418,6 +418,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           dvc minio backend
@@ -434,6 +436,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -443,7 +447,7 @@
       
         <li class="md-nav__item">
   <a href="#steps-to-set-up-a-minio-server" class="md-nav__link">
-    Steps to set up a minio server
+    Steps to set up a MinIO server
   </a>
   
 </li>
@@ -592,6 +596,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -601,7 +607,7 @@
       
         <li class="md-nav__item">
   <a href="#steps-to-set-up-a-minio-server" class="md-nav__link">
-    Steps to set up a minio server
+    Steps to set up a MinIO server
   </a>
   
 </li>
@@ -621,60 +627,57 @@
                   
 
 
-  <h1>dvc minio backend</h1>
-
-<h2 id="steps-to-set-up-a-minio-server">Steps to set up a minio server<a class="headerlink" href="#steps-to-set-up-a-minio-server" title="Permanent link">&para;</a></h2>
+<h1 id="minio-s3-artifact-repo-setup">MinIO S3 Artifact Repo Setup<a class="headerlink" href="#minio-s3-artifact-repo-setup" title="Permanent link">&para;</a></h1>
+<h2 id="steps-to-set-up-a-minio-server">Steps to set up a MinIO server<a class="headerlink" href="#steps-to-set-up-a-minio-server" title="Permanent link">&para;</a></h2>
 <p>Object storage is an abstraction layer above the file system and helps to work with data using API.
-Minio is the fastest way to start working with object storage.
+MinIO is the fastest way to start working with object storage.
 It is compatible with S3, easy to deploy, manage locally, and upscale if needed.</p>
-<p>Follow the below mentioned steps to set up a minio server:
-1. Copy contents of the <code>example-get-started</code> directory to a separate directory outside the cmf repository.</p>
-<ol>
-<li>Check whether cmf is initialized.</li>
-</ol>
-<div class="highlight"><pre><span></span><code>cmf init show
-</code></pre></div>
-<p>If cmf is not initialized, the following message will appear on the screen.</p>
-<pre>
-'cmf' is not configured.
-Execute the 'cmf init' command.
-</pre>
-
+<p>Follow the below mentioned steps to set up a MinIO server:</p>
 <ol>
 <li>
-<p>Execute the following command to initialize the minio S3 bucket as a CMF artifact repository.
-<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+<p>Copy contents of the <code>example-get-started</code> directory to a separate directory outside the cmf repository.</p>
+</li>
+<li>
+<p>Check whether cmf is initialized.
+   <div class="highlight"><pre><span></span><code>cmf init show
+</code></pre></div>
+   If cmf is not initialized, the following message will appear on the screen.
+   <div class="highlight"><pre><span></span><code>&#39;cmf&#39; is not configured.
+Execute the &#39;cmf init&#39; command.
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute <code>cmf init show</code> to check the CMF configuration. The sample output looks as follows:</p>
+<p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository.
+    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key   minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+</code></pre></div></p>
 </li>
-</ol>
-<pre>
-remote.minio.url=s3://bucket-name
+<li>
+<p>Execute <code>cmf init show</code> to check the CMF configuration. The sample output looks as follows:
+   <div class="highlight"><pre><span></span><code>remote.minio.url=s3://bucket-name
 remote.minio.endpointurl=http://localhost:9000
 remote.minio.access_key_id=minioadmin
 remote.minio.secret_access_key=minioadmin
 core.remote=minio
-</pre>
-
-<ol>
-<li>Build a minio server using a Docker container. <code>docker-compose.yml</code> available in <code>example-get-started</code> directory provides two services: <code>minio</code> and <code>aws-cli</code>.
-   User will initialise the repository with bucket name, storage URL, and credentials to access minio.</li>
+</code></pre></div></p>
+</li>
+<li>
+<p>Build a MinIO server using a Docker container. <code>docker-compose.yml</code> available in <code>example-get-started</code> directory provides two services: <code>minio</code> and <code>aws-cli</code>.
+   User will initialise the repository with bucket name, storage URL, and credentials to access MinIO.</p>
+</li>
 <li>
 <p>Execute the following command to start the docker container. Following command requires root privileges.
-<div class="highlight"><pre><span></span><code>docker-compose up
+   <div class="highlight"><pre><span></span><code>docker-compose up
 </code></pre></div>
-or
-<div class="highlight"><pre><span></span><code>docker compose up
+   or
+   <div class="highlight"><pre><span></span><code>docker compose up
 </code></pre></div>
-After executing the above command, following messages confirm that minio is up and running.</p>
+   After executing the above command, following messages confirm that MinIO is up and running.</p>
 </li>
 <li>
 <p>Login into <code>remote.minio.endpointurl</code> (in the above example - http://localhost:9000) using access-key and secret-key mentioned in cmf configuration.</p>
 </li>
 <li>
-<p>Following image is an example snapshot of the minio server with bucket named 'dvc-art'.</p>
+<p>Following image is an example snapshot of the MinIO server with bucket named 'dvc-art'.</p>
 </li>
 </ol>
 <p><img alt="image" src="https://miro.medium.com/max/1100/1*sIOUllU2O6YGdT7ARoY-xw.webp" /></p>
