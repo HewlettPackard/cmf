@@ -19,7 +19,7 @@
         <link rel="next" href="../dataslice/">
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.2, mkdocs-material-9.1.8">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.11">
     
     
       
@@ -27,7 +27,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.ded33207.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.85bb2934.min.css">
       
       
 
@@ -934,7 +934,7 @@ The user has to provide the name of the pipeline, that needs to be recorded with
       <p>Create's a  context(stage).
 Every call creates a unique pipeline stage.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <p><div class="highlight"><pre><span></span><code><span class="c1">#Create context</span>
 <span class="c1"># Import CMF</span>
@@ -1058,7 +1058,7 @@ Returns:
 Every call creates a unique execution. Execution can only be created within a context, so
 <a class="autorefs autorefs-internal" href="#cmflib.cmf.Cmf.create_context">create_context</a> must be called first.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="c1"># Import CMF</span>
 <span class="kn">from</span> <span class="nn">cmflib.cmf</span> <span class="kn">import</span> <span class="n">Cmf</span>
@@ -1357,7 +1357,7 @@ Only executions created with  create_new_execution as False will have "name" as 
 This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
 version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span>
     <span class="n">url</span><span class="o">=</span><span class="s2">&quot;/repo/data.xml&quot;</span><span class="p">,</span>
@@ -1714,7 +1714,7 @@ version of the  dataset is automatically obtained from the versioning software(D
       <p>Logs a model.
 The model is added to dvc and the metadata file (.dvc) gets committed to git.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Artifact</span><span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_model</span><span class="p">(</span>
     <span class="n">path</span><span class="o">=</span><span class="s2">&quot;path/to/model.pkl&quot;</span><span class="p">,</span>
@@ -2132,7 +2132,7 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
 It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
 have.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="n">exec_metrics</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_execution_metrics</span><span class="p">(</span>
     <span class="n">metrics_name</span><span class="o">=</span><span class="s2">&quot;Training_Metrics&quot;</span><span class="p">,</span>
@@ -2333,7 +2333,7 @@ have.</p>
 The metrics provided are stored in a parquet file. The <code>commit_metrics</code> call add the parquet file in the version
 control framework. The metrics written in the parquet file can be retrieved using the <code>read_metrics</code> call.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="c1"># Can be called at every epoch or every step in the training. This is logged to a parquet file and committed</span>
 <span class="c1"># at the commit stage.</span>
@@ -2451,7 +2451,7 @@ Once created, users can add data instances to this data slice with <a class="aut
 method. Users are also responsible for committing data slices by calling the
 <a class="autorefs autorefs-internal" href="../dataslice/#cmflib.cmf.Cmf.DataSlice.commit">commit</a> method.</p>
 
-<details class="example">
+<details class="example" open>
   <summary>Example</summary>
   <div class="highlight"><pre><span></span><code><span class="n">dataslice</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_dataslice</span><span class="p">(</span><span class="s2">&quot;slice-a&quot;</span><span class="p">)</span>
 </code></pre></div>
@@ -2610,7 +2610,7 @@ method. Users are also responsible for committing data slices by calling the
     <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.51198bba.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.fac441b0.min.js"></script>
       
     
   </body>
