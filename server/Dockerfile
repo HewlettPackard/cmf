@@ -16,6 +16,10 @@ COPY ./server/requirements.txt /cmf-server/requirements.txt
 # Install requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
+RUN pip uninstall -y uvicorn
+
+RUN pip install uvicorn[standard]
+
 # Copy the setup.py file to cmf-server
 COPY ./setup.py  /cmf-server/setup.py
 
@@ -33,4 +37,10 @@ COPY ./server/app /cmf-server/server/app
 
 # Run the server with uvicorn
 CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "80"]
+
+RUN cd /cmf-server/data/static
+
+ENV NEO4J_URI=""
+ENV NEO4J_USER_NAME=""
+ENV NEO4J_PASSWD=""
 

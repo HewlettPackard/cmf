@@ -52,14 +52,17 @@ They accept and return JSON-encoded request bodies and responses and return stan
    ```
    `Note` - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
 
-5. Launch a new docker container using the image with volume created in the previous step 
-   ```
-   Usage: docker run --name [container_name] --port 8080:80 -v /home/user/cmf-server/data:/cmf-server/data [image_name]
-   ```
+
+5. Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
+   pre-requisite - `mkdir /home/<user>/cmf-server/data/static`
+   <pre>
+   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
+   </pre>
    Example:
    ```
-   docker run --name mycontainer -p 8080:80 -v /home/user/cmf-server/data:/cmf-server/data myimage
+   docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
    ```
+
 6. To stop the docker container.
    ```
    docker stop [container_name]
