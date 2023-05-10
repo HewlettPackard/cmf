@@ -13,17 +13,17 @@
       
       
       
-        <link rel="prev" href="../step-by-step/">
+        <link rel="prev" href="../cmf_client/">
       
       
-        <link rel="next" href="../../cmf_server/cmf-server/">
+        <link rel="next" href="../minio-server/">
       
       <link rel="icon" href="../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.11">
     
     
       
-        <title>dvc minio backend - CMF</title>
+        <title>Getting started - CMF</title>
       
     
     
@@ -69,7 +69,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#minio-s3-artifact-repo-setup" class="md-skip">
+        <a href="#getting-started-with-cmf" class="md-skip">
           Skip to content
         </a>
       
@@ -104,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              dvc minio backend
+              Getting started
             
           </span>
         </div>
@@ -396,20 +396,6 @@
               
   
   
-  
-    <li class="md-nav__item">
-      <a href="../step-by-step/" class="md-nav__link">
-        Getting started
-      </a>
-    </li>
-  
-
-            
-          
-            
-              
-  
-  
     
   
   
@@ -422,12 +408,12 @@
       
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          dvc minio backend
+          Getting started
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
-        dvc minio backend
+        Getting started
       </a>
       
         
@@ -446,8 +432,42 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#steps-to-set-up-a-minio-server" class="md-nav__link">
-    Steps to set up a MinIO server
+  <a href="#setup-a-cmf-client" class="md-nav__link">
+    Setup a cmf-client
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-cmf-server" class="md-nav__link">
+    Install cmf-server
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-effectively-use-cmf-client" class="md-nav__link">
+    How to effectively use cmf-client?
+  </a>
+  
+    <nav class="md-nav" aria-label="How to effectively use cmf-client?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmf-client-with-collaborative-development" class="md-nav__link">
+    cmf-client with collaborative development
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flow-chart-for-cmf" class="md-nav__link">
+    Flow Chart for cmf
   </a>
   
 </li>
@@ -456,6 +476,20 @@
   
 </nav>
       
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../minio-server/" class="md-nav__link">
+        dvc minio backend
+      </a>
     </li>
   
 
@@ -606,8 +640,42 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#steps-to-set-up-a-minio-server" class="md-nav__link">
-    Steps to set up a MinIO server
+  <a href="#setup-a-cmf-client" class="md-nav__link">
+    Setup a cmf-client
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#install-cmf-server" class="md-nav__link">
+    Install cmf-server
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-to-effectively-use-cmf-client" class="md-nav__link">
+    How to effectively use cmf-client?
+  </a>
+  
+    <nav class="md-nav" aria-label="How to effectively use cmf-client?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmf-client-with-collaborative-development" class="md-nav__link">
+    cmf-client with collaborative development
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#flow-chart-for-cmf" class="md-nav__link">
+    Flow Chart for cmf
   </a>
   
 </li>
@@ -627,60 +695,72 @@
                   
 
 
-<h1 id="minio-s3-artifact-repo-setup">MinIO S3 Artifact Repo Setup<a class="headerlink" href="#minio-s3-artifact-repo-setup" title="Permanent link">&para;</a></h1>
-<h2 id="steps-to-set-up-a-minio-server">Steps to set up a MinIO server<a class="headerlink" href="#steps-to-set-up-a-minio-server" title="Permanent link">&para;</a></h2>
-<p>Object storage is an abstraction layer above the file system and helps to work with data using API.
-MinIO is the fastest way to start working with object storage.
-It is compatible with S3, easy to deploy, manage locally, and upscale if needed.</p>
-<p>Follow the below mentioned steps to set up a MinIO server:</p>
-<ol>
-<li>
-<p>Copy contents of the <code>example-get-started</code> directory to a separate directory outside the cmf repository.</p>
-</li>
-<li>
-<p>Check whether cmf is initialized.
-   <div class="highlight"><pre><span></span><code>cmf init show
+<h1 id="getting-started-with-cmf">Getting started with cmf<a class="headerlink" href="#getting-started-with-cmf" title="Permanent link">&para;</a></h1>
+<p>Common metadata framework (cmf) has the following components:</p>
+<ul>
+<li><strong>Metadata Library</strong> exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. </li>
+<li><strong>cmf-client</strong> interacts with the server to pull or push metadata from or to the cmf-server.</li>
+<li><strong>cmf-server</strong> interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. </li>
+<li><strong>Central Artifact Repositories</strong> hosts the code and data. </li>
+</ul>
+<h2 id="setup-a-cmf-client">Setup a cmf-client<a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">&para;</a></h2>
+<p>cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.</p>
+<p>Follow the below-mentioned steps for the end-to-end setup of cmf-client:-</p>
+<p><strong>Pre-Requisites</strong></p>
+<ul>
+<li>Python 3.8+</li>
+<li>Git latest version</li>
+</ul>
+<p><strong>Install cmf library i.e. cmflib</strong>
+<div class="highlight"><pre><span></span><code>pip install https://github.com/HewlettPackard/cmf
 </code></pre></div>
-   If cmf is not initialized, the following message will appear on the screen.
-   <div class="highlight"><pre><span></span><code>&#39;cmf&#39; is not configured.
-Execute the &#39;cmf init&#39; command.
-</code></pre></div></p>
-</li>
-<li>
-<p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository.
-    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key   minioadmin --git-remote-url https://github.com/user/experiment-repo.git
-</code></pre></div></p>
-</li>
-<li>
-<p>Execute <code>cmf init show</code> to check the CMF configuration. The sample output looks as follows:
-   <div class="highlight"><pre><span></span><code>remote.minio.url=s3://bucket-name
-remote.minio.endpointurl=http://localhost:9000
-remote.minio.access_key_id=minioadmin
-remote.minio.secret_access_key=minioadmin
-core.remote=minio
-</code></pre></div></p>
-</li>
-<li>
-<p>Build a MinIO server using a Docker container. <code>docker-compose.yml</code> available in <code>example-get-started</code> directory provides two services: <code>minio</code> and <code>aws-cli</code>.
-   User will initialise the repository with bucket name, storage URL, and credentials to access MinIO.</p>
-</li>
-<li>
-<p>Execute the following command to start the docker container. Following command requires root privileges.
-   <div class="highlight"><pre><span></span><code>docker-compose up
+<strong>OR</strong>
+<div class="highlight"><pre><span></span><code>pip install cmflib
 </code></pre></div>
-   or
-   <div class="highlight"><pre><span></span><code>docker compose up
+Check <a href="https://hewlettpackard.github.io/cmf/">here</a> for more details.</p>
+<h2 id="install-cmf-server">Install cmf-server<a class="headerlink" href="#install-cmf-server" title="Permanent link">&para;</a></h2>
+<p>cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
+<p>Follow <a href="../../cmf_server/cmf-server/">here</a> for details on how to setup a cmf-server.</p>
+<h2 id="how-to-effectively-use-cmf-client">How to effectively use cmf-client?<a class="headerlink" href="#how-to-effectively-use-cmf-client" title="Permanent link">&para;</a></h2>
+<p>Let's assume we are tracking the metadata for a pipeline named <code>Test-env</code> with minio S3 bucket as the artifact repository and a cmf-server.</p>
+<p><strong>Create a folder</strong>
+<div class="highlight"><pre><span></span><code>mkdir example-folder
+</code></pre></div></p>
+<p><strong>Initialize cmf</strong></p>
+<p>CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute <code>cmf init</code> in the <code>example-folder</code> directory created in the <a href="#create-a-folder">above</a> step.
+<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
 </code></pre></div>
-   After executing the above command, following messages confirm that MinIO is up and running.</p>
-</li>
-<li>
-<p>Login into <code>remote.minio.endpointurl</code> (in the above example - http://localhost:9000) using access-key and secret-key mentioned in cmf configuration.</p>
-</li>
-<li>
-<p>Following image is an example snapshot of the MinIO server with bucket named 'dvc-art'.</p>
-</li>
-</ol>
-<p><img alt="image" src="https://miro.medium.com/max/1100/1*sIOUllU2O6YGdT7ARoY-xw.webp" /></p>
+Check <a href="../cmf_client/">here</a> for more details.</p>
+<p><strong>Check status of CMF initialization (Optional)</strong>
+<div class="highlight"><pre><span></span><code>cmf init show
+</code></pre></div>
+Check <a href="../cmf_client/">here</a> for more details.</p>
+<p><strong>Track metadata using cmflib</strong></p>
+<p>Use <a href="https://github.com/HewlettPackard/cmf/tree/master/examples">Sample projects</a> as a reference to create a new project to track metadata for ML pipelines.</p>
+<p>More info is available <a href="https://hewlettpackard.github.io/cmf/examples/getting_started/">here</a>.</p>
+<p><strong>Push artifacts</strong></p>
+<p>Push artifacts in the artifact repo initialised in the <a href="#initialize-cmf">Initialize cmf</a> step.
+<div class="highlight"><pre><span></span><code>cmf artifact push 
+</code></pre></div>
+Check <a href="../cmf_client/">here</a> for more details.</p>
+<p><strong>Push metadata to cmf-server</strong>
+<div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;Test-env&#39;
+</code></pre></div>
+Check <a href="../cmf_client/">here</a> for more details.</p>
+<h3 id="cmf-client-with-collaborative-development">cmf-client with collaborative development<a class="headerlink" href="#cmf-client-with-collaborative-development" title="Permanent link">&para;</a></h3>
+<p>In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.</p>
+<p><strong>Pull metadata from the server</strong></p>
+<p>Execute <code>cmf metadata</code> command in the <code>example_folder</code>.
+<div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;Test-env&#39;
+</code></pre></div>
+Check <a href="../cmf_client/">here</a> for more details.</p>
+<p><strong>Pull artifacts from the central artifact repo</strong></p>
+<p>Execute <code>cmf artifact</code> command in the <code>example_folder</code>.
+<div class="highlight"><pre><span></span><code>cmf artifact pull -p &quot;Test-env&quot;
+</code></pre></div>
+Check <a href="../cmf_client/">here</a> for more details.</p>
+<h2 id="flow-chart-for-cmf">Flow Chart for cmf<a class="headerlink" href="#flow-chart-for-cmf" title="Permanent link">&para;</a></h2>
+<p><img src="./../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" /></p>
 
 
 
