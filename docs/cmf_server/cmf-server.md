@@ -29,49 +29,51 @@ They accept and return JSON-encoded request bodies and responses and return stan
 ### Pre-requisite 
 1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 
- ### Following steps start a cmf-server in a docker conatainer:
+### Following steps start a cmf-server in a docker conatainer:
+
 1.  Install [cmflib](../index.md#installation) on your system.
 
-2. Go to **server** directory. 
-```
-cd server
-```
-
+2. Go to `server` directory. 
+   ```
+   cd server
+   ```
 3. List all docker images.
-```
-docker images
-```
+   ```
+   docker images
+   ```
 
-4. Execute the below-mentioned command to create a **cmf-server** docker image.
-<pre>
-Usage:  docker build -t [image_name] -f ./Dockerfile ../
-</pre>
-Example:
-```
-docker build -t myimage -f ./Dockerfile ../
-```
-Note - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
+4. Execute the below-mentioned command to create a `cmf-server` docker image.
+   ```
+   Usage:  docker build -t [image_name] -f ./Dockerfile ../
+   ```
+   Example:
+   ```
+   docker build -t myimage -f ./Dockerfile ../
+   ```
+   `Note` - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
+
 
 5. Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
-pre-requisite - `mkdir /home/<user>/cmf-server/data/static`
-<pre>
-Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
-</pre>
-Example:
-```
-docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
-```
+   pre-requisite - `mkdir /home/<user>/cmf-server/data/static`
+   <pre>
+   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
+   </pre>
+   Example:
+   ```
+   docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
+   ```
+
 6. To stop the docker container.
-```
-docker stop [container_name]
-```
+   ```
+   docker stop [container_name]
+   ```
 
 7. To delete the docker container.
-```
-docker rm [container_name] 
-```
+   ```
+   docker rm [container_name] 
+   ```
 
 8. To remove the docker image.
-``` 
-docker image rm [image_name] 
-```
+   ``` 
+   docker image rm [image_name] 
+   ```

@@ -34,4 +34,6 @@ remote repository, where it is merged to create the global metadata and pull met
 local, to create a local view, which would contain only the metadata of interest. 
 
 The framework can be used to track various types of pipelines such as data pipelines or AI pipelines.
+
 <img src="./../../assets/framework.png" alt="CMF Framework" style="display: block; margin: 0 auto" />
+
