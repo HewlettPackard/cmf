@@ -77,7 +77,8 @@ extra:
 # This defines the structure of the CMF documentation portal (all must be in `docs/` directory).
 nav:
   - index.md
-  - Getting started: cmf_client/step-by-step.md
+  - Getting started:
+      - cmf_client/step-by-step.md
   - Examples:
       - Getting Started: examples/getting_started.md
   - Architecture:
