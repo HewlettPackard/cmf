@@ -94,4 +94,4 @@ cmf artifact pull -p "Test-env"
 Check [here](./cmf_client.md) for more details.
 
 ## Flow Chart for cmf
-<img src="./../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
+<img src="assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
