@@ -46,10 +46,10 @@ class CmdInitSSHRemote(CmdBase):
             attr_dict["server-ip"] = "http://127.0.0.1:80"
             CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
-        # if user gave --cmf-server-ip, override the config file
-        if self.args.cmf_server_ip:
+        # if user gave --cmf-server-url, override the config file
+        if self.args.cmf_server_url:
             attr_dict = {}
-            attr_dict["server-ip"] = self.args.cmf_server_ip
+            attr_dict["server-ip"] = self.args.cmf_server_url
             CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
 
         # read --neo4j details and add to the exsting file
@@ -137,15 +137,15 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "--git-remote-url",
         required=True,
-        help="Specify git repo url.",
+        help="Specify git repo url. eg: https://github.com/XXX/example.git",
         metavar="<git_remote_url>",
         default=argparse.SUPPRESS,
     )
 
     parser.add_argument(
-        "--cmf-server-ip",
-        help="Specify cmf-server IP.",
-        metavar="<cmf_server_ip>",
+        "--cmf-server-url",
+        help="Specify cmf-server URL.",
+        metavar="<cmf_server_url>",
         default="http://127.0.0.1:80",
     )
 
@@ -163,7 +163,7 @@ def add_parser(subparsers, parent_parser):
     )
     parser.add_argument(
         "--neo4j-uri",
-        help="Specify neo4j uri.",
+        help="Specify neo4j uri.eg bolt://localhost:7687",
         metavar="<neo4j_uri>",
         # default=argparse.SUPPRESS,
     )

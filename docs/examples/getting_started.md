@@ -59,7 +59,7 @@ Follow [here](./../cmf_server/cmf-server.md) to setup a common cmf-server.
 
 ## Project initialization
 We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and using `cmf init` command
-initialize dvc remote directory, git remote url and cmf server with appropriate dvc backend for this project .
+initialize dvc remote directory, git remote url, cmf server and neo4j with appropriate dvc backend for this project .
 
 ```shell
 # Create a separate copy of the example project
@@ -68,11 +68,18 @@ cd ./example-get-started
 ```
 ### cmf init
 <pre>
-Usage: cmf init minioS3 [-h] --url [url] --endpoint-url [endpoint_url]
-                        --access-key-id [access_key_id] --secret-key [secret_key] --git-remote-url[git_remote_url]  --cmf-server-ip [cmf_server_ip]
+Usage: cmf init minioS3 [-h] --url [url] 
+                             --endpoint-url [endpoint_url]
+                             --access-key-id [access_key_id] 
+                             --secret-key [secret_key] 
+                             --git-remote-url[git_remote_url]  
+                             --cmf-server-url [cmf_server_url]
+                             --neo4j-user [neo4j_user]
+                             --neo4j-password [neo4j_password]
+                             --neo4j-uri [neo4j_uri]
 </pre>
 ```shell
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://121.0.0.1:80
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
 
