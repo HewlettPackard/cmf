@@ -15,7 +15,7 @@ import json
 app = FastAPI()
 
 BASE_PATH = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(BASE_PATH / "template"))
+templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -31,9 +31,45 @@ def read_root(request: Request):
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     req_info = await info.json()
-    cmf_merger.parse_json_to_mlmd(
-        req_info["json_payload"], "data/mlmd", "push", req_info["id"]
-    )
+    mlmd_data = json.loads(req_info["json_payload"])
+    pipelines = mlmd_data["Pipeline"]
+    pipeline = pipelines[0]
+    pipeline_name = pipeline["name"]
+    executions_server = []
+    list_executions_exists = []
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        stages = query.get_pipeline_stages(pipeline_name)
+        for stage in stages:
+            executions = []
+            executions = query.get_all_executions_in_stage(stage)
+            for i in executions.index:
+                executions_server.append(executions['Context_Type'][i])
+
+            executions_client = []
+            for i in mlmd_data['Pipeline'][0][
+                "stages"
+            ]:  # checks if given execution_id present in mlmd
+                for j in i["executions"]:
+                    executions_client.append(j['properties']['Context_Type'])
+            if executions_server != []:
+                list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
+        for i in mlmd_data["Pipeline"]:
+            for stage in i['stages']:
+                for exec in stage['executions']:
+                    if exec["properties"]["Context_Type"] in list_executions_exists:
+                        stage['executions'].remove(exec)
+        for i in mlmd_data["Pipeline"]:
+            for stage in i['stages']:
+                if len(stage['executions']) == 0:
+                    i['stages'].remove(stage)
+    for i in mlmd_data["Pipeline"]:
+        if len(i['stages']) == 0:
+            print("Executions already exists")
+        else:
+            cmf_merger.parse_json_to_mlmd(
+                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+            )
     return {"status": "success", "data": req_info}
 
 
@@ -80,7 +116,6 @@ async def display_exec(request: Request, pipeline_name: str):
     if os.path.exists(server_store_path):
         execution_df = get_executions(server_store_path, pipeline_name)
         exec_val = "true"
-        print(execution_df)
 
     return templates.TemplateResponse(
         "execution.html",
@@ -91,12 +126,10 @@ async def display_exec(request: Request, pipeline_name: str):
 @app.get("/display_lineage/{pipeline_name}", response_class=HTMLResponse)
 async def display_lineage(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
-    print(os.getcwd())
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             query_visualization(server_store_path, pipeline_name)
-            print(pipeline_name)
         else:
             print("Pipeline name " + pipeline_name + " doesn't exist.")
 

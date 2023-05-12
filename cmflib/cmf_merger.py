@@ -57,7 +57,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
             custom_properties = stage["custom_properties"],
             )
             _ = cmf_class.merge_created_execution(
-                execution["type"],
+                execution["properties"]["Context_Type"],
                 execution["properties"]["Execution"],
                 execution["properties"],
                 execution["custom_properties"],
