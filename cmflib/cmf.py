@@ -328,10 +328,9 @@ class Cmf:
         cmd = str(sys.argv) if cmd is None else cmd
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
-            # Type field when re-using executions
-            execution_type_name=self.child_context.name,
-            execution_name=execution_type,  # Name field if we are re-using executions
-            # Type field , if creating new executions always
+            execution_type_name=self.child_context.name+'_'+str(uuid.uuid1()), # Type field when re-using executions
+            execution_name=execution_type, #Name field if we are re-using executions
+                                           #Type field , if creating new executions always 
             context_id=self.child_context.id,
             execution=cmd,
             pipeline_id=self.parent_context.id,
