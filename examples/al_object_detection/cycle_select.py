@@ -139,7 +139,7 @@ def main():
     dataset = build_dataset(cfg.data.test)
     data_loader = build_dataloader(dataset, samples_per_gpu=1,
                                    workers_per_gpu=cfg.data.workers_per_gpu,
-                                   dist=False, shuffle=False)
+                                   dist=distributed, shuffle=False)
 
     # build the model and load checkpoint
     model = build_detector(cfg.model, train_cfg=None, test_cfg=cfg.test_cfg)
