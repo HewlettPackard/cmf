@@ -16,7 +16,7 @@ data = dict(
 )
 model = dict(bbox_head=dict(C=2))
 # The initial learning rate, momentum, weight decay can be changed here.
-optimizer = dict(type='SGD', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
+optimizer = dict(type='SGD', lr=12e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
 #optimizer = dict(type='Adam', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
 
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
@@ -32,7 +32,7 @@ epoch_ratio = [3, 1]
 # The frequency of evaluating the model can be changed here.
 evaluation = dict(interval=epoch_ratio[0], metric='mAP')
 # The number of outer loops (i.e., all 3 training steps except the first Label Set Training step) can be changed here.
-epoch = 3
+epoch = 7
 # The repeat time for the labeled sets and unlabeled sets can be changed here.
 # The number of repeat times can be equivalent to the number of actual training epochs.
 X_L_repeat = 2
@@ -42,8 +42,8 @@ train_cfg = dict(param_lambda = 0.5)
 k = 10000
 # The size of the initial labeled set and the newly selected sets after each cycle can be set here.
 # Note that there are 16551 images in the PASCAL VOC 2007+2012 trainval sets.
-X_S_size = 12150#9964//40 #should be percentage of all available images (set this to max)
-X_L_0_size = 12150#9964//20#(set to zero)?
+X_S_size = 12150//40#9964//40 #should be percentage of all available images (set this to max)
+X_L_0_size = 12150//10#9964//20#(set to zero)?
 # The active learning cycles can be changed here.
 cycles = [0, 1, 2, 3, 4, 5, 6]
 # The work directory for saving logs and files can be changed here. Please refer to README.md for more information.

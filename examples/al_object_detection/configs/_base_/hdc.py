@@ -11,7 +11,9 @@ train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
     dict(type='Resize', img_scale=(960, 960), keep_ratio=True),
-    dict(type='RandomFlip', flip_ratio=0.66),#,direction=['horizontal','vertical','diagonal']),
+    dict(type='RandomFlip', flip_ratio=0.5),#,direction=['horizontal','vertical','diagonal']),
+    dict(type='RandomFlip', flip_ratio=0.5,direction='vertical'),
+
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
     dict(type='DefaultFormatBundle'),
@@ -27,7 +29,8 @@ test_pipeline = [
         flip=False,
         transforms=[
             dict(type='Resize', keep_ratio=True),
-            dict(type='RandomFlip', flip_ratio=0.66),#, direction=['horizontal','vertical','diagonal']),
+            dict(type='RandomFlip', flip_ratio=0.5),#,direction=['horizontal','vertical','diagonal']),
+            dict(type='RandomFlip', flip_ratio=0.5,direction='vertical'),
             dict(type='Normalize', **img_norm_cfg),
             dict(type='Pad', size_divisor=32),
             dict(type='ImageToTensor', keys=['img']),
@@ -39,7 +42,7 @@ data = dict(
     workers_per_gpu=8,
     train=dict(
         type='RepeatDataset',
-        times=1,#was 3
+        times=3,#was 3
         dataset=dict(
             type=dataset_type,
             ann_file=[
