@@ -369,7 +369,9 @@ class MIAODHead(BaseDenseHead):
             x_i_single = x_i_single.reshape(-1, 4)
             y_head_f_r_single = self.bbox_coder.decode(x_i_single, y_head_f_r_single)
         l_det_loc = self.SmoothL1(y_head_f_r_single, y_loc_single, bbox_weights, avg_factor=num_total_samples)
+        
         l_det_loc = l_det_loc.clamp(None, 10)
+        
         return l_det_cls, l_det_loc
 
     # Label Set Training
@@ -478,7 +480,7 @@ class MIAODHead(BaseDenseHead):
         l_det_cls2, l_det_loc2 = multi_apply(self.l_det, y_f[1], y_f_r, all_x_i,
                                              y_cls, label_weights_list, y_loc, bbox_weights_list,
                                              num_total_samples=num_total_samples)
-        if y_loc_img[0][0][0] < 0:
+        if img_metas[0]['is_unlabeled'] :
             l_det_cls = list(map(lambda m, n: (m + n) * 0, l_det_cls1, l_det_cls2))
             l_det_loc = list(map(lambda m, n: (m + n) * 0, l_det_loc1, l_det_loc2))
             for (i, value) in enumerate(l_det_loc):
@@ -563,8 +565,8 @@ class MIAODHead(BaseDenseHead):
                                              num_total_samples=num_total_samples)
         l_det_cls2, l_det_loc2 = multi_apply(self.l_det, y_f[1], y_f_r, all_x_i,
                                              y_cls, label_weights_list, y_loc, bbox_weights_list,
-                                             num_total_samples=num_total_samples)
-        if y_loc_img[0][0][0] < 0:
+                                    num_total_samples=num_total_samples)
+        if img_metas[0]['is_unlabeled']:
             l_det_cls = list(map(lambda m, n: (m + n) * 0, l_det_cls1, l_det_cls2))
             l_det_loc = list(map(lambda m, n: (m + n) * 0, l_det_loc1, l_det_loc2))
             for (i, value) in enumerate(l_det_loc):
