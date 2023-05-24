@@ -17,6 +17,12 @@
         <li class="pipeline_list"><a target="_blank" style="font-size:30px;" class="fcc-btn" href="/display_executions/{{ col }}"  >{{ col }}</a></li>
     {% endfor %}
 </ul>
+{% elif disp_val== "artifact" %}
+<ul class="pipeline_list">
+    {% for col in pipeline_names %}
+        <li class="pipeline_list"><a target="_blank" style="font-size:30px;" class="fcc-btn" href="/display_artifact_type/{{ col }}/artifact_type"  >{{ col }}</a></li>
+    {% endfor %}
+</ul>
 {% else %}
 <ul class="pipeline_list">
     {% for col in pipeline_names %}

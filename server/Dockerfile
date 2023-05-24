@@ -10,15 +10,26 @@ RUN mkdir -p /cmf-server/data
 # folder for static files
 RUN mkdir -p /cmf-server/data/static
 
-# Copy the requirements.txt file from the server to the cmf-server.
+RUN mkdir -p /cmf-server/data/mlmd_for_img
+
+RUN mkdir -p /cmf-server/data/mlmd_for_artifact
+
+RUN apt-get update -y && apt-get install -y libzbar-dev 
+
+RUN apt-get install -y build-essential
+
+RUN apt-get install -y python3-dev
+
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 
-# Install requirements.txt
+RUN apt-get install -y graphviz graphviz-dev 
+
 RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
-RUN pip uninstall -y uvicorn
 
-RUN pip install uvicorn[standard]
+# Copy the requirements.txt file from the server to the cmf-server.
+
+# Install requirements.txt
 
 # Copy the setup.py file to cmf-server
 COPY ./setup.py  /cmf-server/setup.py
