@@ -24,7 +24,7 @@ Install CMF
 
 === "Latest version form GitHub"
     ```shell
-    pip install https://github.com/HewlettPackard/cmf
+    pip install git+https://github.com/HewlettPackard/cmf
     ```
 
 === "Stable version form PyPI"

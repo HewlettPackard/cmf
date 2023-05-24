@@ -18,7 +18,7 @@ Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
 **Install cmf library i.e. cmflib**
 ```
-pip install https://github.com/HewlettPackard/cmf
+pip install git+https://github.com/HewlettPackard/cmf
 ```
 **OR**
 ```
