@@ -10,10 +10,6 @@ RUN mkdir -p /cmf-server/data
 # folder for static files
 RUN mkdir -p /cmf-server/data/static
 
-RUN mkdir -p /cmf-server/data/mlmd_for_img
-
-RUN mkdir -p /cmf-server/data/mlmd_for_artifact
-
 RUN apt-get update -y && apt-get install -y libzbar-dev 
 
 RUN apt-get install -y build-essential
