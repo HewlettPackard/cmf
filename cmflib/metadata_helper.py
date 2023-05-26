@@ -23,6 +23,7 @@ from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
 import functools
+import uuid
 
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
@@ -160,7 +161,7 @@ def create_execution_with_type(
     if create_new_execution:
         execution_type = get_or_create_execution_type(
         store=store,
-        type_name=name,
+        type_name=name +'_'+str(uuid.uuid1()),
         properties=type_properties,
         )
         execution = metadata_store_pb2.Execution(

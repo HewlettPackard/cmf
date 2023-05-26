@@ -241,7 +241,7 @@ def commit_output(folder: str, execution_id: str) -> str:
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
-        # _, _ = process.communicate(timeout=60)
+        _, _ = process.communicate(timeout=60)
         # process = subprocess.Popen(
         #     [
         #         'git',
