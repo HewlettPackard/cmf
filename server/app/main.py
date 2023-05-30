@@ -1,5 +1,4 @@
 # cmf-server api's
-
 from fastapi import FastAPI, Request
 from cmflib import cmfquery, cmf_merger
 from fastapi.templating import Jinja2Templates
@@ -8,14 +7,14 @@ from fastapi.staticfiles import StaticFiles
 from server.app.get_data import get_executions, get_artifacts
 from server.app.query_visualization import query_visualization
 from pathlib import Path
-
+import glob
 import os
 import json
 
 app = FastAPI()
 
 BASE_PATH = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
+templates = Jinja2Templates(directory=str(BASE_PATH / "template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -45,11 +44,8 @@ async def mlmd_push(info: Request):
             executions = query.get_all_executions_in_stage(stage)
             for i in executions.index:
                 executions_server.append(executions['Context_Type'][i])
-
             executions_client = []
-            for i in mlmd_data['Pipeline'][0][
-                "stages"
-            ]:  # checks if given execution_id present in mlmd
+            for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
                 for j in i["executions"]:
                     executions_client.append(j['properties']['Context_Type'])
             if executions_server != []:
@@ -60,17 +56,16 @@ async def mlmd_push(info: Request):
                     if exec["properties"]["Context_Type"] in list_executions_exists:
                         stage['executions'].remove(exec)
         for i in mlmd_data["Pipeline"]:
-            for stage in i['stages']:
-                if len(stage['executions']) == 0:
-                    i['stages'].remove(stage)
+            i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
     for i in mlmd_data["Pipeline"]:
-        if len(i['stages']) == 0:
-            print("Executions already exists")
+        if len(i['stages']) == 0 :
+            status="exists"
         else:
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+                json.dumps(mlmd_data), server_store_path, "push", req_info["id"]
             )
-    return {"status": "success", "data": req_info}
+            status='success'
+    return {"status": status, "data": req_info}
 
 
 # api to get mlmd file from cmf-server
@@ -126,10 +121,14 @@ async def display_exec(request: Request, pipeline_name: str):
 @app.get("/display_lineage/{pipeline_name}", response_class=HTMLResponse)
 async def display_lineage(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
+    img_path=""
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            query_visualization(server_store_path, pipeline_name)
+            del_img = glob.glob("./data/static/*.jpg")
+            for img in del_img:
+                os.remove(img)
+            img_path = query_visualization(server_store_path, pipeline_name)
         else:
             print("Pipeline name " + pipeline_name + " doesn't exist.")
 
@@ -137,23 +136,29 @@ async def display_lineage(request: Request, pipeline_name: str):
     else:
         print('mlmd doesnt exist')
     return templates.TemplateResponse(
-        "lineage.html", {"request": request},
+        "lineage.html", {"request": request, "img_path": img_path},
     )
 
 
 # api to display artifacts available in mlmd
-@app.get("/display_artifacts", response_class=HTMLResponse)
-async def display_artifact(request: Request):
+@app.get("/display_artifact_type/{pipeline_name}/{data}", response_class=HTMLResponse)
+async def display_artifact(request: Request, pipeline_name: str,data: str):
     # checks if mlmd file exists on server
+    if data=="artifact_type":
+        html_to_render="artifact_by_type.html"
+    else:
+        html_to_render="artifacts.html"
     if os.path.exists(server_store_path):
-        artifact_df = get_artifacts(server_store_path)
-        artifact_val = "true"
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            artifact_df = get_artifacts(server_store_path, pipeline_name,data)
+            artifact_val = "true"
     else:
         artifact_val = "false"
         artifact_df = ""
     return templates.TemplateResponse(
-        "artifacts.html",
-        {"request": request, "artifact_df": artifact_df, "artifact_val": artifact_val},
+        html_to_render,
+        {"request": request, "artifact_df": artifact_df, "artifact_val": artifact_val,"pipeline_name": pipeline_name},
     )
 
 
