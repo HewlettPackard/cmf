@@ -84,8 +84,10 @@ class CmdMetadataPush(CmdBase):
                 exec_id = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_id)
             status_code = response.status_code
-            if status_code == 200:
+            if status_code == 200 and response.json()['status']=="success":
                 return "mlmd is successfully pushed."
+            elif status_code==200 and response.json()["status"]=="exists":
+                return "Executions already exists."
             elif status_code == 404:
                 return "ERROR: cmf-server is not available."
             elif status_code == 500:

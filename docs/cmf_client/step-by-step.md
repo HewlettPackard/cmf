@@ -18,7 +18,7 @@ Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
 **Install cmf library i.e. cmflib**
 ```
-pip install https://github.com/HewlettPackard/cmf
+pip install git+https://github.com/HewlettPackard/cmf
 ```
 **OR**
 ```
@@ -94,4 +94,4 @@ cmf artifact pull -p "Test-env"
 Check [here](./cmf_client.md) for more details.
 
 ## Flow Chart for cmf
-<img src="assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
+<img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
