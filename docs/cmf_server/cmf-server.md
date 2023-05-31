@@ -65,7 +65,7 @@ There were are two ways to start cmf server -
    docker compose -f docker-compose-server.yml stop
    ```
 
-### Using docker run
+## Using docker run
 
 1.  Install [cmflib](../index.md#installation) on your system.
 
