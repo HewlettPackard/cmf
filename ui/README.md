@@ -1,70 +1,89 @@
-# Getting Started with Create React App
+# Set up a UI Server
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+There were are two ways to start UI server - 
+- Using docker compose file
+- Using docker run
 
-## Available Scripts
+## Pre-Requisites
+1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 
-In the project directory, you can run:
+## Using docker compose file 
+> This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
 
-### `npm start`
+1. Go to root `cmf` directory.
+2. Create a directory which will be used as volume mount for docker containers.
+   ```
+   mkdir /home/<user>/cmf-server/data/static
+   ```
+   
+3.  Edit `docker-compose-server.yml` with above directory.
+  ```
+  ......
+  services:
+  server:
+    image: server:latest
+    volumes:
+      - /home/<user>/cmf-server/data:/cmf-server/data
+    container_name: cmf-server
+    build:
+    ....
+  ```
+  
+ 4. Execute following command to start both the containers. `IP` variable is the IP address of the machine on which you are executing the following command.
+    ```
+    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
+    ```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+5. Stop the containers. 
+   ```
+   docker compose -f docker-compose-server.yml stop
+   ```
+   
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Using docker run 
+> Following steps will start UI server only. It is recommended to start `cmf-server` before starting UI server. Follow [here](../docs/cmf_server/cmf-server.md) for details on how to setup a cmf-server.
+1.  Install [cmflib](../index.md#installation) on your system.
 
-### `npm test`
+2. Go to `ui` directory. 
+   ```
+   cd ui
+   ```
+3. List all docker images.
+   ```
+   docker images
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+4. Execute the below-mentioned command to create a `cmf-server` docker image.
+   ```
+   Usage:  docker build -t [image_name] -f ./Dockerfile . 
+   ```
+   Example:
+   ```
+   docker build -t ui-image -f ./Dockerfile .
+   ```
+   `Note` - `'.'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+5. Launch a new docker container using the image.
+   <pre>
+   Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 [image_name]
+   </pre>
+   Example:
+   ```
+   docker run --name ui-container -p 0.0.0.0:3000:3000 ui-image
+   ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+6. To stop the docker container.
+   ```
+   docker stop [container_name]
+   ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+7. To delete the docker container.
+   ```
+   docker rm [container_name] 
+   ```
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+8. To remove the docker image.
+   ``` 
+   docker image rm [image_name] 
+   ```
