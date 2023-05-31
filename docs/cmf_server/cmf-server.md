@@ -26,10 +26,46 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 ## Setup a cmf-server
 
+There were are two ways to start cmf server - 
+- Using docker compose file
+- Using docker run
+
 ### Pre-requisite 
 1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 
-### Following steps start a cmf-server in a docker conatainer:
+## Using docker compose file 
+> This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
+
+1. Go to root `cmf` directory.
+2. Create a directory which will be used as volume mount for docker containers.
+   ```
+   mkdir /home/<user>/cmf-server/data/static
+   ```
+   
+3.  Edit `docker-compose-server.yml` with above directory.
+  ```
+  ......
+  services:
+  server:
+    image: server:latest
+    volumes:
+      - /home/<user>/cmf-server/data:/cmf-server/data
+    container_name: cmf-server
+    build:
+    ....
+  ```
+  
+ 4. Execute following command to start both the containers. `IP` variable is the IP address of the machine on which you are executing the following command.
+    ```
+    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
+    ```
+
+5. Stop the containers. 
+   ```
+   docker compose -f docker-compose-server.yml stop
+   ```
+
+### Using docker run
 
 1.  Install [cmflib](../index.md#installation) on your system.
 
