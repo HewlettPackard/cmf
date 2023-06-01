@@ -19,6 +19,8 @@ from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.mlmd_objects import CONTEXT_LIST
 import json
+import typing as t
+
 
 
 class CmfQuery(object):
@@ -53,10 +55,10 @@ class CmfQuery(object):
         for ctx in contexts:
             if ctx.name == pipeline_name:
                 return ctx.id
-
         return -1
 
-    def get_pipeline_names(self) -> []:
+
+    def get_pipeline_names(self) -> t.List:
         names = []
         contexts = self.store.get_contexts_by_type("Parent_Context")
         for ctx in contexts:
@@ -108,6 +110,14 @@ class CmfQuery(object):
                 d[k] = v.double_value
         df = pd.DataFrame(d, index=[0, ])
         return df
+
+    def get_all_artifacts(self) -> t.List:
+        artifact_list = []
+        artifacts = self.store.get_artifacts()
+        for art in artifacts:
+            name = art.name
+            artifact_list.append(name)
+        return artifact_list
 
     def get_artifact(self, name: str):
         artifact = None
@@ -410,3 +420,4 @@ class CmfQuery(object):
                remote = v
        
        Cmf.materialize(path, git_repo, rev, remote)'''
+    

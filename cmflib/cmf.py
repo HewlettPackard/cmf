@@ -190,11 +190,6 @@ class Cmf:
         if self.graph:
             self.driver.close()
 
-    def __del__(self):
-        git_commit(self.execution.id)
-        if self.graph:
-            self.driver.close()
-
     def create_context(
         self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None
     ) -> mlpb.Context:

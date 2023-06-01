@@ -235,7 +235,7 @@ def commit_output(folder: str, execution_id: str) -> str:
                                    universal_newlines=True)
 
         # To-Do : Parse the output and report if error
-        output, errs = process.communicate(timeout=60)
+        output, errs = process.communicate()
         commit = output.strip()
         process = subprocess.Popen(['git', 'add', folder + '.dvc'],
                                    stdout=subprocess.PIPE,
