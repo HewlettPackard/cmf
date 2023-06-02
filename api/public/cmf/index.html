@@ -1447,9 +1447,7 @@ version of the  dataset is automatically obtained from the versioning software(D
 
       <details class="quote">
         <summary>Source code in <code>cmflib/cmf.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">481</span>
-<span class="normal">482</span>
-<span class="normal">483</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
 <span class="normal">486</span>
@@ -1578,7 +1576,9 @@ version of the  dataset is automatically obtained from the versioning software(D
 <span class="normal">609</span>
 <span class="normal">610</span>
 <span class="normal">611</span>
-<span class="normal">612</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset</span><span class="p">(</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -1836,9 +1836,7 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
 
       <details class="quote">
         <summary>Source code in <code>cmflib/cmf.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">752</span>
-<span class="normal">753</span>
-<span class="normal">754</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">754</span>
 <span class="normal">755</span>
 <span class="normal">756</span>
 <span class="normal">757</span>
@@ -1981,7 +1979,9 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
 <span class="normal">894</span>
 <span class="normal">895</span>
 <span class="normal">896</span>
-<span class="normal">897</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model</span><span class="p">(</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2211,9 +2211,7 @@ have.</p>
 
       <details class="quote">
         <summary>Source code in <code>cmflib/cmf.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1046</span>
-<span class="normal">1047</span>
-<span class="normal">1048</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1048</span>
 <span class="normal">1049</span>
 <span class="normal">1050</span>
 <span class="normal">1051</span>
@@ -2269,7 +2267,9 @@ have.</p>
 <span class="normal">1101</span>
 <span class="normal">1102</span>
 <span class="normal">1103</span>
-<span class="normal">1104</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics</span><span class="p">(</span>
+<span class="normal">1104</span>
+<span class="normal">1105</span>
+<span class="normal">1106</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Log the metadata associated with the execution (coarse-grained tracking).</span>
@@ -2396,9 +2396,7 @@ control framework. The metrics written in the parquet file can be retrieved usin
 
       <details class="quote">
         <summary>Source code in <code>cmflib/cmf.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1106</span>
-<span class="normal">1107</span>
-<span class="normal">1108</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1108</span>
 <span class="normal">1109</span>
 <span class="normal">1110</span>
 <span class="normal">1111</span>
@@ -2420,7 +2418,9 @@ control framework. The metrics written in the parquet file can be retrieved usin
 <span class="normal">1127</span>
 <span class="normal">1128</span>
 <span class="normal">1129</span>
-<span class="normal">1130</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span>
+<span class="normal">1130</span>
+<span class="normal">1131</span>
+<span class="normal">1132</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores the fine-grained (per step or per epoch) metrics to memory.</span>
@@ -2517,9 +2517,7 @@ method. Users are also responsible for committing data slices by calling the
 
       <details class="quote">
         <summary>Source code in <code>cmflib/cmf.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1235</span>
-<span class="normal">1236</span>
-<span class="normal">1237</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1237</span>
 <span class="normal">1238</span>
 <span class="normal">1239</span>
 <span class="normal">1240</span>
@@ -2532,7 +2530,9 @@ method. Users are also responsible for committing data slices by calling the
 <span class="normal">1247</span>
 <span class="normal">1248</span>
 <span class="normal">1249</span>
-<span class="normal">1250</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
+<span class="normal">1250</span>
+<span class="normal">1251</span>
+<span class="normal">1252</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a dataslice object.</span>
 <span class="sd">    Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]</span>
 <span class="sd">    method. Users are also responsible for committing data slices by calling the</span>

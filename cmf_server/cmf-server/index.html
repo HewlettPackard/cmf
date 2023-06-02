@@ -551,15 +551,22 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#following-steps-start-a-cmf-server-in-a-docker-conatainer" class="md-nav__link">
-    Following steps start a cmf-server in a docker conatainer:
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-docker-compose-file" class="md-nav__link">
+    Using docker compose file
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#using-docker-run" class="md-nav__link">
+    Using docker run
+  </a>
   
 </li>
       
@@ -709,15 +716,22 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#following-steps-start-a-cmf-server-in-a-docker-conatainer" class="md-nav__link">
-    Following steps start a cmf-server in a docker conatainer:
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-docker-compose-file" class="md-nav__link">
+    Using docker compose file
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#using-docker-run" class="md-nav__link">
+    Using docker run
+  </a>
   
 </li>
       
@@ -801,11 +815,49 @@ They accept and return JSON-encoded request bodies and responses and return stan
 </tbody>
 </table>
 <h2 id="setup-a-cmf-server">Setup a cmf-server<a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">&para;</a></h2>
+<p>There were are two ways to start cmf server - 
+- Using docker compose file
+- Using docker run</p>
 <h3 id="pre-requisite">Pre-requisite<a class="headerlink" href="#pre-requisite" title="Permanent link">&para;</a></h3>
 <ol>
 <li>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</li>
 </ol>
-<h3 id="following-steps-start-a-cmf-server-in-a-docker-conatainer">Following steps start a cmf-server in a docker conatainer:<a class="headerlink" href="#following-steps-start-a-cmf-server-in-a-docker-conatainer" title="Permanent link">&para;</a></h3>
+<h2 id="using-docker-compose-file">Using docker compose file<a class="headerlink" href="#using-docker-compose-file" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>This is the recommended way as docker compose starts both ui-server and cmf-server in one go.</p>
+</blockquote>
+<ol>
+<li>Go to root <code>cmf</code> directory.</li>
+<li>
+<p>Create a directory which will be used as volume mount for docker containers.
+   <div class="highlight"><pre><span></span><code>mkdir /home/&lt;user&gt;/cmf-server/data/static
+</code></pre></div></p>
+</li>
+<li>
+<p>Edit <code>docker-compose-server.yml</code> with above directory.
+  <div class="highlight"><pre><span></span><code>......
+services:
+server:
+  image: server:latest
+  volumes:
+    - /home/&lt;user&gt;/cmf-server/data:/cmf-server/data
+  container_name: cmf-server
+  build:
+  ....
+</code></pre></div></p>
+</li>
+<li>
+<p>Execute following command to start both the containers. <code>IP</code> variable is the IP address of the machine on which you are executing the following command.
+    <div class="highlight"><pre><span></span><code>IP=200.200.200.200 docker compose -f docker-compose-server.yml up
+</code></pre></div></p>
+</li>
+<li>
+<p>Stop the containers. 
+   <div class="highlight"><pre><span></span><code>docker compose -f docker-compose-server.yml stop
+</code></pre></div></p>
+</li>
+</ol>
+<h2 id="using-docker-run">Using docker run<a class="headerlink" href="#using-docker-run" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
 <p>Install <a href="../../#installation">cmflib</a> on your system.</p>
