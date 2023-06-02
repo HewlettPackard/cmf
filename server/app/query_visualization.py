@@ -2,7 +2,6 @@ import networkx as nx
 from networkx.drawing.nx_agraph import graphviz_layout
 import pandas as pd
 from cmflib import cmfquery
-import networkx
 import matplotlib.pyplot as plt
 import dvc
 import json
@@ -13,7 +12,7 @@ warnings.filterwarnings("ignore")
 
 
 def query_visualization(mlmd_path, pipeline_name):
-    g = networkx.DiGraph()
+    g = nx.DiGraph()
     query = cmfquery.CmfQuery(mlmd_path)
     stages = query.get_pipeline_stages(pipeline_name)
     list_all_artifacts = []
@@ -22,6 +21,7 @@ def query_visualization(mlmd_path, pipeline_name):
     temp1 = []
     list_all_artifacts_with_chash = []
     artifact_name_type_dict = {}
+    static_path= "/cmf-server/data/static/"
     for stage in stages:
         executions = query.get_all_executions_in_stage(stage)
         artifacts = query.get_all_artifacts_for_execution(executions.iloc[0]["id"])
@@ -79,9 +79,10 @@ def query_visualization(mlmd_path, pipeline_name):
         with_labels=True,
     )
 
-    img_path = "lineage" + str(random.randint(1, 20)) + ".jpg"
+    img_path = "lineage" + str(random.randint(1, 20)) + ".png"
+    img_path = static_path + img_path
     plt.savefig(
-        "./data/static/" + img_path,
+        img_path,
         bbox_inches="tight",
         pad_inches=1,
         orientation="landscape",

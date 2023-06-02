@@ -423,6 +423,7 @@ class Cmf:
         execution_cmd: str,
         properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None,
+        create_new_execution:bool = True
     ) -> mlpb.Execution:
         # Initializing the execution related fields
         properties = {} if properties is None else properties
@@ -442,8 +443,9 @@ class Cmf:
 
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
-            execution_type_name=execution_type,
-            execution_name=execution_name,
+            execution_type_name=execution_type, # Type field when re-using executions
+            execution_name=execution_type, #Name field if we are re-using executions
+                                           #Type field , if creating new executions always
             context_id=self.child_context.id,
             execution=execution_cmd,
             pipeline_id=self.parent_context.id,

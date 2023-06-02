@@ -10,22 +10,21 @@ RUN mkdir -p /cmf-server/data
 # folder for static files
 RUN mkdir -p /cmf-server/data/static
 
+# libraries required for lineage
 RUN apt-get update -y && apt-get install -y libzbar-dev 
 
 RUN apt-get install -y build-essential
 
 RUN apt-get install -y python3-dev
 
+# Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 
+# library required for lineage
 RUN apt-get install -y graphviz graphviz-dev 
 
-RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
-
-
-# Copy the requirements.txt file from the server to the cmf-server.
-
 # Install requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
 # Copy the setup.py file to cmf-server
 COPY ./setup.py  /cmf-server/setup.py
@@ -36,7 +35,7 @@ COPY ./cmflib /cmf-server/cmflib
 # Install cmflib
 RUN python /cmf-server/setup.py bdist_wheel
 
-#
+# installing cmf on server
 RUN pip install /cmf-server/dist/*
  
 # Copy the app file from server to cmf-server/server
