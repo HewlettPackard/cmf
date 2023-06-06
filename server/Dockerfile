@@ -35,7 +35,7 @@ COPY ./cmflib /cmf-server/cmflib
 # Install cmflib
 RUN python /cmf-server/setup.py bdist_wheel
 
-# installing cmf on server
+# Installing cmf on server
 RUN pip install /cmf-server/dist/*
  
 # Copy the app file from server to cmf-server/server
@@ -49,4 +49,3 @@ RUN cd /cmf-server/data/static
 ENV NEO4J_URI=""
 ENV NEO4J_USER_NAME=""
 ENV NEO4J_PASSWD=""
-

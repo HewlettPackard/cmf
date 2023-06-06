@@ -22,11 +22,12 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     identifiers = []
     for name in names:
-        stages = query.get_pipeline_stages(name)
-        for stage in stages:
-            executions = query.get_all_executions_in_stage(stage)
-            dict_executions = executions.to_dict("dict")  # converting it to dictionary
-            identifiers.append(dict_executions["id"][0])
+        if name==pipeline_name:
+            stages = query.get_pipeline_stages(name)
+            for stage in stages:
+                executions = query.get_all_executions_in_stage(stage)
+                dict_executions = executions.to_dict("dict")  # converting it to dictionary
+                identifiers.append(dict_executions["id"][0])
     name = []
     url = []
     df = pd.DataFrame()
@@ -110,25 +111,13 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_img_path(server_store_path,mlmd_path_for_img,pipeline_name):
+def get_lineage_img_path(server_store_path,pipeline_name):
     query = cmfquery.CmfQuery(server_store_path)
-    if os.path.exists(mlmd_path_for_img):
-        os.remove(mlmd_path_for_img)
-    json_payload = query.dumptojson(pipeline_name, None)
-    cmf_merger.parse_json_to_mlmd(json_payload, mlmd_path_for_img, "pull", None)
     del_img = glob.glob("./data/static/*.png")
     for img in del_img:
         os.remove(img)
-    img_path = query_visualization(mlmd_path_for_img, pipeline_name)
+    img_path = query_visualization(server_store_path, pipeline_name)
     response = FileResponse(img_path,
     media_type="image/png",)
     return response
 
-def create_mlmd_for_artifact(server_store_path,pipeline_name,mlmd_path_for_artifact):
-    query = cmfquery.CmfQuery(server_store_path)
-    if (pipeline_name in query.get_pipeline_names()):
-        if os.path.exists(mlmd_path_for_artifact):
-            os.remove(mlmd_path_for_artifact)
-        json_payload = query.dumptojson(pipeline_name, None)
-        cmf_merger.parse_json_to_mlmd(json_payload, mlmd_path_for_artifact, "pull", None)
-    return True
