@@ -1,13 +1,15 @@
 # Set up a UI Server
 
-There were are two ways to start UI server - 
+There are two ways to set up a UI server - 
 - Using docker compose file
 - Using docker run
 
 ## Pre-Requisites
-1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
+> In earlier versions of docker compose, `docker compose` was independent of docker. Hence, `docker-compose` was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
 
-## Using docker compose file 
+## Using `docker compose` file 
 > This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
 
 1. Go to root `cmf` directory.
@@ -16,23 +18,24 @@ There were are two ways to start UI server -
    mkdir /home/<user>/cmf-server/data/static
    ```
    
-3.  Edit `docker-compose-server.yml` with above directory.
-  ```
-  ......
-  services:
-  server:
-    image: server:latest
-    volumes:
-      - /home/<user>/cmf-server/data:/cmf-server/data
-    container_name: cmf-server
-    build:
+3. Edit `docker-compose-server.yml` with above directory.
+    ```
+    ......
+    services:
+    server:
+      image: server:latest
+      volumes:
+         - /home/<user>/cmf-server/data:/cmf-server/data
+      container_name: cmf-server
+      build:
     ....
-  ```
+    ```
   
  4. Execute following command to start both the containers. `IP` variable is the IP address of the machine on which you are executing the following command.
     ```
     IP=200.200.200.200 docker compose -f docker-compose-server.yml up
     ```
+    > Replace `docker compose` with `docker-compose` for older versions.
 
 5. Stop the containers. 
    ```
@@ -40,7 +43,7 @@ There were are two ways to start UI server -
    ```
    
 
-## Using docker run 
+## Using `docker run` command 
 > Following steps will start UI server only. It is recommended to start `cmf-server` before starting UI server. Follow [here](../docs/cmf_server/cmf-server.md) for details on how to setup a cmf-server.
 1.  Install [cmflib](../index.md#installation) on your system.
 
