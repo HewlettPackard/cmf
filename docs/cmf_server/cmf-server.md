@@ -26,14 +26,16 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 ## Setup a cmf-server
 
-There were are two ways to start cmf server - 
+There are two ways to start cmf server - 
 - Using docker compose file
 - Using docker run
 
-### Pre-requisite 
-1. Install [Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+### Pre-requisites
+1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
+> In earlier versions of docker compose, `docker compose` was independent of docker. Hence, `docker-compose` was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
 
-## Using docker compose file 
+## Using `docker compose` file 
 > This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
 
 1. Go to root `cmf` directory.
@@ -43,29 +45,30 @@ There were are two ways to start cmf server -
    ```
    
 3.  Edit `docker-compose-server.yml` with above directory.
-  ```
-  ......
-  services:
-  server:
-    image: server:latest
-    volumes:
-      - /home/<user>/cmf-server/data:/cmf-server/data
-    container_name: cmf-server
-    build:
+    ```
+    ......
+    services:
+    server:
+      image: server:latest
+      volumes:
+         - /home/<user>/cmf-server/data:/cmf-server/data
+      container_name: cmf-server
+      build:
     ....
-  ```
+    ```
   
  4. Execute following command to start both the containers. `IP` variable is the IP address of the machine on which you are executing the following command.
     ```
     IP=200.200.200.200 docker compose -f docker-compose-server.yml up
     ```
-
+    > Replace `docker compose` with `docker-compose` for older versions.
+    
 5. Stop the containers. 
    ```
    docker compose -f docker-compose-server.yml stop
    ```
 
-## Using docker run
+## Using `docker run` command
 
 1.  Install [cmflib](../index.md#installation) on your system.
 
