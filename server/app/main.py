@@ -8,7 +8,6 @@ from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from server.app.get_data import get_executions, get_artifacts,get_lineage_img_path,create_unique_executions,get_mlmd_from_server
-from server.app.get_data import create_mlmd_for_artifact
 from server.app.query_visualization import query_visualization
 from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
@@ -21,8 +20,6 @@ BASE_PATH = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
-mlmd_path_for_img = "/cmf-server/data/mlmd_for_img/mlmd"
-mlmd_path_for_artifact = "/cmf-server/data/mlmd_for_artifact/mlmd"
 
 origins = [
     "http://localhost:3000",
@@ -83,7 +80,7 @@ async def display_lineage(request: Request, pipeline_name: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=get_lineage_img_path(server_store_path,mlmd_path_for_img,pipeline_name)
+            response=get_lineage_img_path(server_store_path,pipeline_name)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -96,8 +93,7 @@ async def display_lineage(request: Request, pipeline_name: str):
 async def display_artifact(request: Request, pipeline_name: str,data: str):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        create_mlmd_for_artifact(server_store_path,pipeline_name,mlmd_path_for_artifact)
-        artifact_df = get_artifacts(mlmd_path_for_artifact, pipeline_name,data)
+        artifact_df = get_artifacts(server_store_path, pipeline_name,data)
         return artifact_df
     else:
         artifact_df = ""
