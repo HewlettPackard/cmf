@@ -329,7 +329,7 @@ class Cmf:
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
-            execution_type_name=self.child_context.name+'_'+str(uuid.uuid1()),
+            execution_type_name=self.child_context.name,
             execution_name=execution_type, 
             #Name field if we are re-using executions
             #Type field , if creating new executions always 
