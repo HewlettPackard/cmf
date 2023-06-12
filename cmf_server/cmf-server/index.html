@@ -545,8 +545,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pre-requisite" class="md-nav__link">
-    Pre-requisite
+  <a href="#pre-requisites" class="md-nav__link">
+    Pre-requisites
   </a>
   
 </li>
@@ -564,8 +564,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-docker-run" class="md-nav__link">
-    Using docker run
+  <a href="#using-docker-run-command" class="md-nav__link">
+    Using docker run command
   </a>
   
 </li>
@@ -710,8 +710,8 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pre-requisite" class="md-nav__link">
-    Pre-requisite
+  <a href="#pre-requisites" class="md-nav__link">
+    Pre-requisites
   </a>
   
 </li>
@@ -729,8 +729,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#using-docker-run" class="md-nav__link">
-    Using docker run
+  <a href="#using-docker-run-command" class="md-nav__link">
+    Using docker run command
   </a>
   
 </li>
@@ -815,14 +815,18 @@ They accept and return JSON-encoded request bodies and responses and return stan
 </tbody>
 </table>
 <h2 id="setup-a-cmf-server">Setup a cmf-server<a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">&para;</a></h2>
-<p>There were are two ways to start cmf server - 
+<p>There are two ways to start cmf server - 
 - Using docker compose file
 - Using docker run</p>
-<h3 id="pre-requisite">Pre-requisite<a class="headerlink" href="#pre-requisite" title="Permanent link">&para;</a></h3>
+<h3 id="pre-requisites">Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</li>
+<li>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker Engine</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</li>
+<li>Install <a href="https://docs.docker.com/compose/install/linux/">Docker Compose Plugin</a>.<blockquote>
+<p>In earlier versions of docker compose, <code>docker compose</code> was independent of docker. Hence, <code>docker-compose</code> was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - <a href="https://docs.docker.com/compose/reference/">Docker Compose Reference</a>.</p>
+</blockquote>
+</li>
 </ol>
-<h2 id="using-docker-compose-file">Using docker compose file<a class="headerlink" href="#using-docker-compose-file" title="Permanent link">&para;</a></h2>
+<h2 id="using-docker-compose-file">Using <code>docker compose</code> file<a class="headerlink" href="#using-docker-compose-file" title="Permanent link">&para;</a></h2>
 <blockquote>
 <p>This is the recommended way as docker compose starts both ui-server and cmf-server in one go.</p>
 </blockquote>
@@ -835,21 +839,22 @@ They accept and return JSON-encoded request bodies and responses and return stan
 </li>
 <li>
 <p>Edit <code>docker-compose-server.yml</code> with above directory.
-  <div class="highlight"><pre><span></span><code>......
+    <div class="highlight"><pre><span></span><code>......
 services:
 server:
   image: server:latest
   volumes:
-    - /home/&lt;user&gt;/cmf-server/data:/cmf-server/data
+     - /home/&lt;user&gt;/cmf-server/data:/cmf-server/data
   container_name: cmf-server
   build:
-  ....
+....
 </code></pre></div></p>
 </li>
 <li>
 <p>Execute following command to start both the containers. <code>IP</code> variable is the IP address of the machine on which you are executing the following command.
     <div class="highlight"><pre><span></span><code>IP=200.200.200.200 docker compose -f docker-compose-server.yml up
-</code></pre></div></p>
+</code></pre></div>
+    &gt; Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.</p>
 </li>
 <li>
 <p>Stop the containers. 
@@ -857,7 +862,7 @@ server:
 </code></pre></div></p>
 </li>
 </ol>
-<h2 id="using-docker-run">Using docker run<a class="headerlink" href="#using-docker-run" title="Permanent link">&para;</a></h2>
+<h2 id="using-docker-run-command">Using <code>docker run</code> command<a class="headerlink" href="#using-docker-run-command" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
 <p>Install <a href="../../#installation">cmflib</a> on your system.</p>

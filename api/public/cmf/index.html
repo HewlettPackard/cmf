@@ -764,7 +764,11 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code>str</code>
           </td>
-          <td><p>Path  to the sqlite file to store the metadata</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Path  to the sqlite file to store the metadata</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;mlmd&#39;</code>
           </td>
@@ -774,7 +778,11 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name to uniquely identify the pipeline.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name to uniquely identify the pipeline.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;&#39;</code>
           </td>
@@ -784,7 +792,11 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
-          <td><p>Additional properties of the pipeline that needs to be stored.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Additional properties of the pipeline that needs to be stored.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -794,7 +806,11 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code>bool</code>
           </td>
-          <td><p>If set to true, the libray also stores the relationships in the provided graph database.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>If set to true, the libray also stores the relationships in the provided graph database.</p>
+            </div>
+          </td>
           <td>
                 <code>False</code>
           </td>
@@ -804,7 +820,11 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code>should be set</code>
           </td>
-          <td><p><code>neo4j_uri</code> (graph server URI), <code>neo4j_user</code> (user name) and</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p><code>neo4j_uri</code> (graph server URI), <code>neo4j_user</code> (user name) and</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -814,7 +834,11 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code>user password), e.g.</code>
           </td>
-          <td></td>
+          <td>
+            <div class="doc-md-description">
+              
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -824,8 +848,12 @@ The user has to provide the name of the pipeline, that needs to be recorded with
           <td>
                 <code>init local --path /home/user/local-storage --git-remote-url https</code>
           </td>
-          <td><p>//github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j
-                  --neo4j-uri bolt://localhost:7687</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>//github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j
+                  --neo4j-uri bolt://localhost:7687</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1108,7 +1136,11 @@ Every call creates a unique execution. Execution can only be created within a co
           <td>
                 <code>str</code>
           </td>
-          <td><p>Type of the execution.(when create_new_execution is False, this is the name of execution)</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Type of the execution.(when create_new_execution is False, this is the name of execution)</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1118,8 +1150,12 @@ Every call creates a unique execution. Execution can only be created within a co
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
-          <td><p>Developers can provide key value pairs with additional properties of the execution that
-need to be stored.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Developers can provide key value pairs with additional properties of the execution that
+need to be stored.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -1129,7 +1165,11 @@ need to be stored.</p></td>
           <td>
                 <code>str</code>
           </td>
-          <td><p>command used to run this execution.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>command used to run this execution.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -1139,13 +1179,17 @@ need to be stored.</p></td>
           <td>
                 <code>bool</code>
           </td>
-          <td><p>bool = True, This can be used by advanced users to re-use executions
+          <td>
+            <div class="doc-md-description">
+              <p>bool = True, This can be used by advanced users to re-use executions
 This is applicable, when working with framework code like mmdet, pytorch lightning etc, where the
 custom call-backs are used to log metrics.
 if create_new_execution is True(Default), execution_type parameter will be used as the name of the execution type.
 if create_new_execution is False, if existing execution exist with the same name as execution_type.
 it will be reused.
-Only executions created with  create_new_execution as False will have "name" as a property.</p></td>
+Only executions created with  create_new_execution as False will have "name" as a property.</p>
+            </div>
+          </td>
           <td>
                 <code>True</code>
           </td>
@@ -1166,7 +1210,11 @@ Only executions created with  create_new_execution as False will have "name" as 
           <td>
                 <code><span title="ml_metadata.proto.metadata_store_pb2">mlpb</span>.<span title="ml_metadata.proto.metadata_store_pb2.Execution">Execution</span></code>
           </td>
-          <td><p>Execution object from ML Metadata library associated with the new execution for this stage.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Execution object from ML Metadata library associated with the new execution for this stage.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -1399,7 +1447,11 @@ version of the  dataset is automatically obtained from the versioning software(D
           <td>
                 <code>str</code>
           </td>
-          <td><p>The path to the dataset.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The path to the dataset.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1409,7 +1461,11 @@ version of the  dataset is automatically obtained from the versioning software(D
           <td>
                 <code>str</code>
           </td>
-          <td><p>Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1419,7 +1475,11 @@ version of the  dataset is automatically obtained from the versioning software(D
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
-          <td><p>Dataset properties (key/value pairs).</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Dataset properties (key/value pairs).</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -1440,7 +1500,11 @@ version of the  dataset is automatically obtained from the versioning software(D
           <td>
                 <code><span title="ml_metadata.proto.metadata_store_pb2">mlpb</span>.<span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
           </td>
-          <td><p>Artifact object from ML Metadata library associated with the new dataset artifact.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Artifact object from ML Metadata library associated with the new dataset artifact.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -1758,7 +1822,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code>str</code>
           </td>
-          <td><p>Path to the model file.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Path to the model file.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1768,7 +1836,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code>str</code>
           </td>
-          <td><p>Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -1778,7 +1850,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code>str</code>
           </td>
-          <td><p>Framework used to create the model.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Framework used to create the model.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;Default&#39;</code>
           </td>
@@ -1788,7 +1864,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code>str</code>
           </td>
-          <td><p>Type of model algorithm used.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Type of model algorithm used.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;Default&#39;</code>
           </td>
@@ -1798,7 +1878,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name of the algorithm used.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of the algorithm used.</p>
+            </div>
+          </td>
           <td>
                 <code>&#39;Default&#39;</code>
           </td>
@@ -1808,7 +1892,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
-          <td><p>The model properties.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>The model properties.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -1829,7 +1917,11 @@ The model is added to dvc and the metadata file (.dvc) gets committed to git.</p
           <td>
                 <code><span title="ml_metadata.proto.metadata_store_pb2">mlpb</span>.<span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
           </td>
-          <td><p>Artifact object from ML Metadata library associated with the new model artifact.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Artifact object from ML Metadata library associated with the new model artifact.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -2173,7 +2265,11 @@ have.</p>
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name to identify the metrics.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name to identify the metrics.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2183,7 +2279,11 @@ have.</p>
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
-          <td><p>Dictionary with metric values.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Dictionary with metric values.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2204,7 +2304,11 @@ have.</p>
           <td>
                 <code><span title="ml_metadata.proto.metadata_store_pb2">mlpb</span>.<span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
           </td>
-          <td><p>Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
@@ -2376,7 +2480,11 @@ control framework. The metrics written in the parquet file can be retrieved usin
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name to identify the metrics.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name to identify the metrics.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2386,7 +2494,11 @@ control framework. The metrics written in the parquet file can be retrieved usin
           <td>
                 <code><span title="typing">t</span>.<span title="typing.Optional">Optional</span>[<span title="typing">t</span>.<span title="typing.Dict">Dict</span>]</code>
           </td>
-          <td><p>Dictionary with metrics.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Dictionary with metrics.</p>
+            </div>
+          </td>
           <td>
                 <code>None</code>
           </td>
@@ -2489,7 +2601,11 @@ method. Users are also responsible for committing data slices by calling the
           <td>
                 <code>str</code>
           </td>
-          <td><p>Name to identify the dataslice.</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name to identify the dataslice.</p>
+            </div>
+          </td>
           <td>
               <em>required</em>
           </td>
@@ -2510,7 +2626,11 @@ method. Users are also responsible for committing data slices by calling the
           <td>
                 <code><span title="cmflib.cmf.Cmf">Cmf</span>.<span title="cmflib.cmf.Cmf.DataSlice">DataSlice</span></code>
           </td>
-          <td><p>Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].</p></td>
+          <td>
+            <div class="doc-md-description">
+              <p>Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].</p>
+            </div>
+          </td>
         </tr>
     </tbody>
   </table>
