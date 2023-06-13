@@ -37,9 +37,7 @@ app.add_middleware(
 
 @app.get("/")
 def read_root(request: Request):
-    return templates.TemplateResponse(
-        "home.html", {'request': request}
-    )
+    return {"cmf-server"}
 
 
 # api to post mlmd file to cmf-server

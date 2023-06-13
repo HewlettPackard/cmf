@@ -17,7 +17,8 @@ def get_executions(mlmdfilepath, pipeline_name):
 
 
 # This function fetches all the artifacts available in given mlmd
-def get_artifacts(mlmdfilepath, pipeline_name, data):
+def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return value (artifact_type or artifact_df) is 
+  # determined by a data variable().
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     identifiers = []
