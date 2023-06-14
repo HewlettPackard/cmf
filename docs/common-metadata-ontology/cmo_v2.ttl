@@ -1,0 +1,160 @@
+@prefix : <http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology> .
+
+<http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology> rdf:type owl:Ontology .
+
+#################################################################
+#    Object Properties
+#################################################################
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#contains
+:contains rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Pipeline ;
+          rdfs:range :Stages .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#executes
+:executes rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Pipeline ;
+          rdfs:range :Task .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#generates
+:generates rdf:type owl:ObjectProperty ;
+           rdfs:subPropertyOf owl:topObjectProperty ;
+           rdfs:domain :Execution ;
+           rdfs:range :Metrics .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#has
+:has rdf:type owl:ObjectProperty ;
+     rdfs:subPropertyOf owl:topObjectProperty ;
+     rdfs:domain :Pipeline ;
+     rdfs:range :Framework ,
+                :Report .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#isInput
+:isInput rdf:type owl:ObjectProperty ;
+         rdfs:subPropertyOf owl:topObjectProperty ;
+         rdfs:domain :Artifacts ;
+         rdfs:range :Execution .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#isOutput
+:isOutput rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Execution ;
+          rdfs:range :Artifacts .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#run
+:run rdf:type owl:ObjectProperty ;
+     rdfs:subPropertyOf owl:topObjectProperty ;
+     rdfs:domain :Stages ;
+     rdfs:range :Execution .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#subCatof
+:subCatof rdf:type owl:ObjectProperty ;
+          rdfs:subPropertyOf owl:topObjectProperty ;
+          rdfs:domain :Dataset ,
+                      :Metrics ,
+                      :Model ;
+          rdfs:range :Artifacts .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#uses
+:uses rdf:type owl:ObjectProperty ;
+      rdfs:subPropertyOf owl:topObjectProperty ;
+      rdfs:domain :Hyperparameters ;
+      rdfs:range :Model .
+
+
+#################################################################
+#    Classes
+#################################################################
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Artifacts
+:Artifacts rdf:type owl:Class ;
+           rdfs:comment "A list of artifacts that are produced as an output of execution or given as an input for an execution" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Dataset
+:Dataset rdf:type owl:Class ;
+         rdfs:comment "The dataset used for to execute a given task of a pipeline." .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Execution
+:Execution rdf:type owl:Class ;
+           rdfs:comment "Various executions produced for a given stage. The stages could be feature engineering, training, evaluation and so on. Various executions can be produced for a given stage by executing the stage with different parameters" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Framework
+:Framework rdf:type owl:Class ;
+           rdfs:comment "Specifications of the framework with which the pipeline was implemented." .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Hyperparameters
+:Hyperparameters rdf:type owl:Class ;
+                 rdfs:comment "The hyperparameters used for Model training" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Metrics
+:Metrics rdf:type owl:Class ;
+         rdfs:comment "Metrics is a subClassOf artifacts. Metrics are produced as an output of each execution" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Model
+:Model rdf:type owl:Class ;
+       rdfs:comment "Models used to train the pipeline. Also, the models produced as an output of an execution of a pipeline" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Pipeline
+:Pipeline rdf:type owl:Class ;
+          rdfs:comment "The AI pipeline that is being executed using the dataset, model and hyperparameters for a given task" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Report
+:Report rdf:type owl:Class ;
+        rdfs:comment "A report can be any documentation related to the pipeline. It can be published papers or readme" .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Stages
+:Stages rdf:type owl:Class ;
+        rdfs:comment "The various stages of an AI pipeline such as data preprocessing, feature engineering, training, testing and so on." .
+
+
+###  http://www.semanticweb.org/venkatre/ontologies/2023/5/common_metadata_ontology#Task
+:Task rdf:type owl:Class ;
+      rdfs:comment "The task for which the pipeline is being executed. For example, 3d object detection, 3d object segmentation and so on" .
+
+
+#################################################################
+#    General axioms
+#################################################################
+
+[ rdf:type owl:AllDisjointClasses ;
+  owl:members ( :Artifacts
+                :Dataset
+                :Execution
+                :Framework
+                :Hyperparameters
+                :Metrics
+                :Model
+                :Pipeline
+                :Report
+                :Stages
+                :Task
+              )
+] .
+
+
+###  Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi
