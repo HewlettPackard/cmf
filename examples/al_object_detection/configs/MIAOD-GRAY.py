@@ -10,7 +10,7 @@ _base_ = [
 data = dict(
     test=dict(
         ann_file=[
-            data_root + '/train.txt',
+            data_root + 'train.txt',
         ],
         img_prefix=[data_root ])
 )

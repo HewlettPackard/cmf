@@ -8,6 +8,7 @@ from PIL import Image
 from .builder import DATASETS
 from .custom import CustomDataset
 
+ANNOTATIONS_FOLDER = 'Annotations_no_dummy'
 
 @DATASETS.register_module()
 class XMLDataset(CustomDataset):
@@ -38,7 +39,7 @@ class XMLDataset(CustomDataset):
         img_ids = mmcv.list_from_file(ann_file)
         for img_id in img_ids:
             filename = f'JPEGImages/{img_id}.jpg'
-            xml_path = osp.join(self.img_prefix, 'Annotations',
+            xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER,
                                 f'{img_id}.xml')
             tree = ET.parse(xml_path)
             root = tree.getroot()
@@ -63,7 +64,7 @@ class XMLDataset(CustomDataset):
         subset_data_infos = []
         for data_info in self.data_infos:
             img_id = data_info['id']
-            xml_path = osp.join(self.img_prefix, 'Annotations',
+            xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER,
                                 f'{img_id}.xml')
             tree = ET.parse(xml_path)
             root = tree.getroot()
@@ -86,7 +87,7 @@ class XMLDataset(CustomDataset):
         """
 
         img_id = self.data_infos[idx]['id']
-        xml_path = osp.join(self.img_prefix, 'Annotations', f'{img_id}.xml')
+        xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER, f'{img_id}.xml')
         tree = ET.parse(xml_path)
         root = tree.getroot()
         bboxes = []
@@ -152,7 +153,7 @@ class XMLDataset(CustomDataset):
 
         cat_ids = []
         img_id = self.data_infos[idx]['id']
-        xml_path = osp.join(self.img_prefix, 'Annotations', f'{img_id}.xml')
+        xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER, f'{img_id}.xml')
         tree = ET.parse(xml_path)
         root = tree.getroot()
         for obj in root.findall('object'):
