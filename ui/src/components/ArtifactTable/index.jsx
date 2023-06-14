@@ -29,9 +29,7 @@ const handleSort = (property) => {
     }
   };
 
-const consistentColumns = ['Commit','event','git_repo','id',
-                           'name','uri','url',
-                           'type'];
+const consistentColumns = [];
 
 const filteredData = artifacts.filter((item) =>
        (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase()))
