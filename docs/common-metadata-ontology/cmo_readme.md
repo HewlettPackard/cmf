@@ -1,14 +1,14 @@
 ## Common Metadata Ontology
 Common Metadata Ontology (CMO) is proposed to integrate and aggregate the pipeline metadata from various sources such as Papers-with-code, OpenML and Huggingface. CMF's data model is a manifestation of CMO which is specifically designed to capture the pipeline-centric metadata of AI pipelines. It consists of nodes to represent a pipeline, components of a pipeline (stages), relationships to capture interaction among pipeline entities and properties. CMO offers interoperability of diverse metadata, search and recommendation with reasoning capabilities. CMO offers flexibility to incorporate various executions implemented for each stage such as dataset preprocessing, feature engineering, training (including HPO), testing and evaluation. This enables robust search capabilities to identify the best execution path for a given pipeline. Additionally, CMO also facilitates the inclusion of additional semantic and statistical properties to enhance the richness and comprehensiveness of the metadata associated with them. The overview of CMO can be found below.
 
-![Common Metadata Ontology](CMO_v2_properties.svg)
+![Common Metadata Ontology](../assets/CMO_v2_properties.svg)
 
 
 The external link to arrows.app can be found [here](https://drive.google.com/file/d/1h4tcOnQpHC3Jx2lWh8ecXW7BcM5yH3XK/view?usp=sharing)
 
 
 ### Sample pipeline represented using CMO
-![Sample Pipeline](example-pipeline-cmo.svg)
+![Sample Pipeline](../assets/example-pipeline-cmo.svg)
 
 The sample figure shows a pipeline titled "Robust outlier detection by de-biasing VAE likelihoods" executed for "Outlier Detection" task for the stage train/test. The model used in the pipeline was "Variational Autoencoder". Several datasets were used in the pipeline implementation which are as follows (i) German Traffic Sign, (ii) Street View House Numbers and (iii) CelebFaces Arrtibutes dataset. The corresponding hyperparameters used and the metrics generated as a result of execution are included in the figure. The external link to source figure created using arrows.app can be found [here](https://drive.google.com/file/d/1oa3tKMKZlmDFI0sBcIkWZdW4LS4P6WMs/view?usp=sharing)
 
