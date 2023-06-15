@@ -23,6 +23,7 @@ from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
 import functools
+import uuid
 
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
@@ -151,21 +152,40 @@ def create_artifact_with_type(
 def create_execution_with_type(
         store,
         type_name: str,
+        name:str,
         properties: dict = None,
         type_properties: dict = None,
-        custom_properties: dict = None,
+        custom_properties: t.Optional[t.Dict] = None,
+        create_new_execution:bool = True
 ) -> metadata_store_pb2.Execution:
-    execution_type = get_or_create_execution_type(
+    if create_new_execution:
+        execution_type = get_or_create_execution_type(
+        store=store,
+        type_name=name +'_'+str(uuid.uuid1()),
+        properties=type_properties,
+        )
+        execution = metadata_store_pb2.Execution(
+            type_id=execution_type.id,
+            properties=properties,
+            custom_properties=custom_properties,
+        )
+        execution.id = store.put_executions([execution])[0]
+    else:
+        execution_type = get_or_create_execution_type(
         store=store,
         type_name=type_name,
         properties=type_properties,
-    )
-    execution = metadata_store_pb2.Execution(
-        type_id=execution_type.id,
-        properties=properties,
-        custom_properties=custom_properties,
-    )
-    execution.id = store.put_executions([execution])[0]
+        )
+        execution = store.get_execution_by_type_and_name(type_name, name)
+        if not execution:
+
+            execution = metadata_store_pb2.Execution(
+                type_id=execution_type.id,
+                name=name,
+                properties=properties,
+                custom_properties=custom_properties,
+             )
+            execution.id = store.put_executions([execution])[0]
     return execution
 
 
@@ -226,7 +246,7 @@ def get_or_create_context_with_type(
             type_properties=type_properties,
             custom_properties=custom_properties,
         )
-        return context
+    return context
 
     # Verifying that the context has the expected type name
     context_types = store.get_context_types_by_id([context.type_id])
@@ -241,17 +261,21 @@ def get_or_create_context_with_type(
 def create_new_execution_in_existing_context(
         store,
         execution_type_name: str,
+        execution_name:str,
         context_id: int,
         properties: dict = None,
         execution_type_properties: dict = None,
         custom_properties: dict = None,
+        create_new_execution:bool = True
 ) -> metadata_store_pb2.Execution:
     execution = create_execution_with_type(
         store=store,
         properties=properties,
         custom_properties=custom_properties,
         type_name=execution_type_name,
+        name=execution_name,
         type_properties=execution_type_properties,
+        create_new_execution=create_new_execution
     )
     association = metadata_store_pb2.Association(
         execution_id=execution.id,
@@ -353,6 +377,7 @@ def associate_child_to_parent_context(store, parent_context: metadata_store_pb2.
 def create_new_execution_in_existing_run_context(
         store,
         execution_type_name: str = None,  # TRAINING EXECUTION
+        execution_name:str = None,
         context_id: int = 0,  # TRAINING CONTEXT ASSOCIATED WITH THIS EXECUTION
         execution: str = None,
         pipeline_id: int = 0,  # THE PARENT CONTEXT
@@ -360,7 +385,8 @@ def create_new_execution_in_existing_run_context(
         git_repo: str = None,
         git_start_commit: str = None,
         git_end_commit: str = "",
-        custom_properties: t.Optional[t.Dict] = None,
+        custom_properties: {} = None,
+        create_new_execution:bool = True
 ) -> metadata_store_pb2.Execution:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
@@ -370,6 +396,7 @@ def create_new_execution_in_existing_run_context(
     return create_new_execution_in_existing_context(
         store=store,
         execution_type_name=execution_type_name,
+        execution_name = execution_name,
         context_id=context_id,
         execution_type_properties={
             EXECUTION_CONTEXT_NAME_PROPERTY_NAME: metadata_store_pb2.STRING,
@@ -395,6 +422,7 @@ def create_new_execution_in_existing_run_context(
             # should set to task ID, not component ID
         },
         custom_properties=mlmd_custom_properties,
+        create_new_execution=create_new_execution
     )
 
 

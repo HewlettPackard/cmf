@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+minio
+dvc[s3,ssh]==2.27.0
+Jinja2
+matplotlib
+pandas
+pygraphviz==1.10

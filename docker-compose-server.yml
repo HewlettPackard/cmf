@@ -1,0 +1,32 @@
+version: '3.8'
+services:
+  server:
+    image: server:latest
+    volumes:
+      - /home/user/cmf-server/data:/cmf-server/data
+    container_name: cmf-server
+    build:
+     
+      context: ./
+      dockerfile: ./server/Dockerfile
+    restart: always
+    environment:
+     MYIP: ${IP}
+    ports:
+      - "8080:80"
+    expose:
+      - 8000
+
+  ui:
+    image: ui:latest
+    container_name: ui-server
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      REACT_APP_MY_IP: ${IP}
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000

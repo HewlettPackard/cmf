@@ -20,8 +20,8 @@ def query(mlmd_path: str) -> None:
     stages: t.List[str] = cmf_query.get_pipeline_stages("Test-env")
     print(stages)
 
-    for name in ['Prepare', 'Featurize', 'Train', 'Evaluate']:
-        _print_executions_in_stage(cmf_query, name)
+    for stage in stages:
+        _print_executions_in_stage(cmf_query, stage)
 
 
 @click.command()

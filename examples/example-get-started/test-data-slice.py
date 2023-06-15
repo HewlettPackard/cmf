@@ -17,8 +17,6 @@
 from cmflib import cmf
 import random
 import pandas as pd
-import gzip
-import shutil
 import os
 import string
 from shutil import rmtree
@@ -38,8 +36,8 @@ def generate_dataset():
             string.ascii_letters + string.digits)
             for _ in range(100)]))
 
-    for i in range(1, 101):
-        with open(path + "/" + str(i) + ".txt", 'w') as f:
+    for _i in range(1, 101):
+        with open(path + "/" + str(_i) + ".txt", 'w') as f:
             index = random.randint(0, 3)
             f.write(msg[index])
 
@@ -59,11 +57,14 @@ _ = metawriter.log_dataset(folder_path, "input")
 # Creating the data slice - today we have only path and hash.
 # Would need to expand to take in more metadata.
 for i in range(1, 3, 1):
-    dataslice: cmf.Cmf.dataslice = metawriter.create_dataslice(name="slice-" + str(i))
+    dataslice: cmf.Cmf.DataSlice = metawriter.create_dataslice(name="slice-" + str(i))
     for _ in range(1, 20, 1):
         j = random.randrange(1, 100)
         print(folder_path + "/" + str(j) + ".txt")
-        dataslice.add_data(path=folder_path + "/" + str(j) + ".txt", custom_props={"key1": "value1", "key2": "value2"})
+        dataslice.add_data(
+            path=folder_path + "/" + str(j) + ".txt",
+            custom_properties={"key1": "value1", "key2": "value2"}
+        )
     dataslice.commit()
 
 # Reading the files in the slice.
@@ -73,13 +74,13 @@ row_content = None
 for label, content in df.iterrows():
     record = label
     row_content = content
-
+print("Updating the value from `value1` to `1` and from `value2` to `2`")
 print("Before update")
 print(record)
 print(row_content)
 
 # Update the metadata for a record in the slice.
-metawriter.update_dataslice(name="slice-1", record=record, custom_props={"key1": "1", "key2": "2"})
+metawriter.update_dataslice(name="slice-1", record=record, custom_properties={"key1": "1", "key2": "2"})
 df = metawriter.read_dataslice(name="slice-1")
 
 print("After update")

@@ -1,0 +1,12 @@
+dvc
+click
+pandas
+PyYAML
+cmflib
+ibm-cos-sdk
+requests
+numpy
+Pillow
+torch
+torchsummary
+aif360
