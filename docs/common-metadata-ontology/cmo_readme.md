@@ -4,8 +4,13 @@ Common Metadata Ontology (CMO) is proposed to integrate and aggregate the pipeli
 ![Common Metadata Ontology](CMO_v2_properties.svg)
 
 
+The external link to arrows.app can be found [here](https://drive.google.com/file/d/1h4tcOnQpHC3Jx2lWh8ecXW7BcM5yH3XK/view?usp=sharing)
+
+
 ### Sample pipeline represented using CMO
 ![Sample Pipeline](example-pipeline-cmo.svg)
+
+The sample figure shows a pipeline titled "Robust outlier detection by de-biasing VAE likelihoods" executed for "Outlier Detection" task for the stage train/test. The model used in the pipeline was "Variational Autoencoder". Several datasets were used in the pipeline implementation which are as follows (i) German Traffic Sign, (ii) Street View House Numbers and (iii) CelebFaces Arrtibutes dataset. The corresponding hyperparameters used and the metrics generated as a result of execution are included in the figure. The external link to source figure created using arrows.app can be found [here](https://drive.google.com/file/d/1oa3tKMKZlmDFI0sBcIkWZdW4LS4P6WMs/view?usp=sharing)
 
 
 #### Turtle Syntax
