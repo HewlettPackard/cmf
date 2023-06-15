@@ -104,6 +104,7 @@ def check_git_repo() -> bool:
                                     'rev-parse',
                                     '--is-inside-work-tree'],
                                    stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
                                    universal_newlines=True)
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)
@@ -198,6 +199,32 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
         print(f"Unexpected {errs}")
     return commit
 
+def git_commit(execution_id: str) -> str:
+    commit = ""
+    process = None
+    try:
+        # To-Do : Parse the output and report if error
+        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting ' + str(execution_id)],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+        process = subprocess.Popen(['git', 'log'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # To-Do : Parse the output and report if error
+        output, errs = process.communicate(timeout=60)
+        commit = output.splitlines()[0].strip()
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
 
 def commit_output(folder: str, execution_id: str) -> str:
     commit = ""
@@ -208,34 +235,34 @@ def commit_output(folder: str, execution_id: str) -> str:
                                    universal_newlines=True)
 
         # To-Do : Parse the output and report if error
-        output, errs = process.communicate(timeout=60)
+        output, errs = process.communicate()
         commit = output.strip()
         process = subprocess.Popen(['git', 'add', folder + '.dvc'],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         _, _ = process.communicate(timeout=60)
-        process = subprocess.Popen(
-            [
-                'git',
-                'commit',
-                '-m ' +
-                'commiting dvc metadata file for ' +
-                str(folder) +
-                "-" +
-                str(execution_id)],
-            stdout=subprocess.PIPE,
-            universal_newlines=True)
-
-        output, errs = process.communicate(timeout=60)
-        commit = output.strip()
-
-        process = subprocess.Popen(['git', 'log', folder + '.dvc'],
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
+        # process = subprocess.Popen(
+        #     [
+        #         'git',
+        #         'commit',
+        #         '-m ' +
+        #         'commiting dvc metadata file for ' +
+        #         str(folder) +
+        #         "-" +
+        #         str(execution_id)],
+        #     stdout=subprocess.PIPE,
+        #     universal_newlines=True)
+        # 
+        # output, errs = process.communicate(timeout=60)
+        # commit = output.strip()
+        # 
+        # process = subprocess.Popen(['git', 'log', folder + '.dvc'],
+        #                            stdout=subprocess.PIPE,
+        #                            universal_newlines=True)
         # To-Do : Parse the output and report if error
-        output, errs = process.communicate(timeout=60)
-        commit = output.splitlines()[0].strip()
+        # output, errs = process.communicate(timeout=60)
+        # commit = output.splitlines()[0].strip()
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
@@ -264,3 +291,158 @@ def git_get_repo() -> str:
         print(f"Unexpected {output}")
         print(f"Unexpected {errs}")
     return commit.split()[1]
+
+#Initialise git with quiet option
+def git_quiet_init() -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'init', '-q'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+
+# Initial git commit
+def git_initial_commit() -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'commit', '-q', '--allow-empty', '-n', '-m', "Initial code commit"],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+# Add a remote repo url
+def git_add_remote(git_url) -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'remote', 'add', 'cmf_origin', f"{git_url}"],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+# dvc init with quiet option
+def dvc_quiet_init() -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['dvc', 'init', '-q'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+# add repo in dvc
+def dvc_add_remote_repo(repo_type, repo_path) -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['dvc', 'remote', 'add', '-d', '-f', f"{repo_type}", f"{repo_path}"],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+# add repo related attributes in dvc
+def dvc_add_attribute(repo_type, attribute_type, attribute_value) -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['dvc', 'remote', 'modify', f"{repo_type}", f"{attribute_type}", f"{attribute_value}"],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+
+# get dvc config
+def dvc_get_config() -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['dvc','config', '-l'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
+
+
+# dvc push
+def dvc_push() -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['dvc', 'push'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit
