@@ -1,6 +1,5 @@
 //ExecutionTable.jsx
 import React, { useState, useEffect } from 'react';
-import "./index.css";
 const ExecutionTable = ({ executions }) => {
 
 const [searchQuery, setSearchQuery] = useState('');
@@ -63,7 +62,7 @@ const toggleRow = (rowId) => {
 
 
 return (
-    <div className="flex flex-col object-cover h-80 w-240 h-screen ">
+    <div className="flex flex-col">
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
       <input
         type="text"
@@ -73,7 +72,7 @@ return (
         style={{ marginRight: '1rem', padding: '0.5rem',border: '1px solid #ccc' }}
       />
       </div>
-      <div className="overflow-scroll">
+      <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200" id="mytable">
             <thead className="bg-gray-100">
