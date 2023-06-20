@@ -67,9 +67,9 @@ def create_unique_executions(server_store_path, req_info):
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
-                print(j['name'])
-                if j['name'] != "":
-                    continue
+                if j['name'] != "":#If executions have name , they are reusable executions                        
+                    continue       #which needs to be merged in irrespective of whether already 
+                                   #present or not so that new artifacts associated with it gets in.
                 executions_client.append(j['properties']['Context_Type'])
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
