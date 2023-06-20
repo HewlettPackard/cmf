@@ -904,6 +904,15 @@ server:
     <div class="highlight"><pre><span></span><code>IP=200.200.200.200 docker compose -f docker-compose-server.yml up
 </code></pre></div>
     &gt; Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.</p>
+<blockquote>
+<p>Also you can adjust <code>$IP</code> in <code>docker-compose-server.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying 
+  IP=200.200.200.200.
+  <div class="highlight"><pre><span></span><code>.......
+environment:
+REACT_APP_MY_IP: ${IP}
+......
+</code></pre></div></p>
+</blockquote>
 </li>
 <li>
 <p>Stop the containers. 
