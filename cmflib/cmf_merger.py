@@ -61,6 +61,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                 execution["properties"]["Execution"],
                 execution["properties"],
                 execution["custom_properties"],
+                execution["name"]
             )
             for event in execution["events"]:  # Iterates over all the events
                 artifact_type = event["artifact"]["type"]

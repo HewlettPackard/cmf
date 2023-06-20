@@ -3,7 +3,7 @@ services:
   server:
     image: server:latest
     volumes:
-      - /home/user/cmf-server/data:/cmf-server/data
+      - /home/royann/cmf-server/data:/cmf-server/data
     container_name: cmf-server
     build:
      
@@ -25,7 +25,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      REACT_APP_MY_IP: ${IP}
+      REACT_APP_MY_IP: 10.93.232.85
     ports:
       - "3000:3000"
     expose:

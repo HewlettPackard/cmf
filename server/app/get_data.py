@@ -10,7 +10,7 @@ def get_executions(mlmdfilepath, pipeline_name):
     stages = query.get_pipeline_stages(pipeline_name)
     df = pd.DataFrame()
     for stage in stages:
-        executions = query.get_all_executions_in_stage(stage)
+        executions = query.get_all_executions_in_stage(stage.name)
         if str(executions.Pipeline_Type[0]) == pipeline_name:
             df = pd.concat([df, executions], sort=True, ignore_index=True)
     return df
@@ -26,7 +26,7 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return va
         if name==pipeline_name:
             stages = query.get_pipeline_stages(name)
             for stage in stages:
-                executions = query.get_all_executions_in_stage(stage)
+                executions = query.get_all_executions_in_stage(stage.name)
                 dict_executions = executions.to_dict("dict")  # converting it to dictionary
                 print(stage, dict_executions["id"])
                 print(type(dict_executions["id"]))
@@ -66,12 +66,15 @@ def create_unique_executions(server_store_path, req_info):
         stages = query.get_pipeline_stages(pipeline_name)
         for stage in stages:
             executions = []
-            executions = query.get_all_executions_in_stage(stage)
+            executions = query.get_all_executions_in_stage(stage.name)
             for i in executions.index:
                 executions_server.append(executions['Context_Type'][i])
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
+                print(j['name'])
+                if j['name'] != "":
+                    continue
                 executions_client.append(j['properties']['Context_Type'])
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
