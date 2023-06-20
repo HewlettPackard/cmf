@@ -36,8 +36,10 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return va
         get_artifacts = query.get_all_artifacts_for_execution(
             identifier
         )  # getting all artifacts
-        artifacts_dict = get_artifacts.to_dict("dict")  # converting it to dictionary
         df = pd.concat([df, get_artifacts], sort=True, ignore_index=True)
+    df['event'] = df.groupby('id')['event'].transform(lambda x: ', '.join(x))
+    df['name'] = df['name'].str.split(':').str[0]
+    df=df.drop_duplicates()
     if data == "artifact_type":
         tempout = list(set(df["type"]))
     else:

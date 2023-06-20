@@ -63,7 +63,7 @@ const toggleRow = (rowId) => {
 
 
 return (
-    <div className="flex flex-col object-cover h-80 w-240 h-screen">
+    <div className="flex flex-col">
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
       <input
         type="text"
@@ -73,7 +73,7 @@ return (
         style={{ marginRight: '1rem', padding: '0.5rem',border: '1px solid #ccc' }}
       />
       </div>
-      <div className="overflow-scroll">
+      <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-100">
@@ -84,7 +84,6 @@ return (
                  {sortBy === 'name' && sortOrder === 'asc' && '▲'}
                  {sortBy === 'name' && sortOrder === 'desc' && '▼'}</th>
                 <th scope="col" className="type px-6 py-3">Type</th>
-                <th scope="col" className="Event px-6 py-3">Event</th>
                 <th scope="col" className="url px-6 py-3">Url</th>
                 <th scope="col" className="uri px-6 py-3">Uri</th>
                 <th scope="col" className="git_repo px-6 py-3">Git_Repo</th>
@@ -99,7 +98,6 @@ return (
                   <td className="px-6 py-4">{data.id}</td>
                   <td className="px-6 py-4">{data.name}</td>
                   <td className="px-6 py-4">{data.type}</td>
-                  <td className="px-6 py-4">{data.event}</td>
                   <td className="px-6 py-4">{data.url}</td>
                   <td className="px-6 py-4">{data.uri}</td>
                   <td className="px-6 py-4">{data.git_repo}</td>
@@ -111,7 +109,7 @@ return (
                     <table className="expanded-table">
              <tbody>
             {Object.entries(data).map(([key, value]) => {
-               if (!consistentColumns.includes(key)) {
+               if (!consistentColumns.includes(key) && value != null) {
                   return (  
                     <React.Fragment key={key}>
                       <tr>
