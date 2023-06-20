@@ -72,8 +72,20 @@ class CmfQuery(object):
             if ctx.name == pipeline_name:
                 child_contexts = self.store.get_children_contexts_by_context(ctx.id)
                 for cc in child_contexts:
-                    stages.append(cc.name)
+                    stages.append(cc)
         return stages
+
+    def get_all_exe_in_stage(self, stage_name: str) -> []:
+        df = pd.DataFrame()
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        executions = None
+        for ctx in contexts:
+            child_contexts = self.store.get_children_contexts_by_context(ctx.id)
+            for cc in child_contexts:
+                if cc.name == stage_name:
+                    executions = self.store.get_executions_by_context(cc.id)
+        return executions
+
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         df = pd.DataFrame()
@@ -376,12 +388,12 @@ class CmfQuery(object):
                     else:
                         return "Invalid execution id given."
                     for exe in list_executions:
+                        print(exe)
                         exe_dict = CmfQuery.__get_node_properties(exe)
                         exe_type = self.store.get_execution_types_by_id([exe.type_id])
                         exe_dict["type"] = exe_type[0].name
                         exe_dict["events"] = []
-                        if exe.name != "":
-                            exe_dict["Name"] = exe.name
+                        exe_dict["name"] = exe.name if exe.name != "" else ""
                         events = self.store.get_events_by_execution_ids([exe.id])
                         for evt in events:
                             evt_dict = CmfQuery.__get_node_properties(evt)

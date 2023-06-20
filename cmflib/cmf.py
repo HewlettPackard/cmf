@@ -423,6 +423,7 @@ class Cmf:
         execution_cmd: str,
         properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None,
+        orig_execution_name:str = "",
         create_new_execution:bool = True
     ) -> mlpb.Execution:
         # Initializing the execution related fields
@@ -434,17 +435,17 @@ class Cmf:
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
-        name = properties.get("Name", "")
+        #name = properties.get("Name", "")
         create_new_execution = True
         execution_name = execution_type
-        if name != "":
+        if orig_execution_name != "":
             create_new_execution = False
-            execution_name = name
+            execution_name = orig_execution_name
 
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             execution_type_name=execution_type, # Type field when re-using executions
-            execution_name=execution_type, #Name field if we are re-using executions
+            execution_name=execution_name, #Name field if we are re-using executionsname
                                            #Type field , if creating new executions always
             context_id=self.child_context.id,
             execution=execution_cmd,
