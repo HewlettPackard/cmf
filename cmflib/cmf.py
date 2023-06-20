@@ -423,8 +423,8 @@ class Cmf:
         execution_cmd: str,
         properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None,
-        orig_execution_name:str = "",
-        create_new_execution:bool = True
+        orig_execution_name: str = "",
+        create_new_execution: bool = True
     ) -> mlpb.Execution:
         # Initializing the execution related fields
         properties = {} if properties is None else properties
@@ -438,6 +438,8 @@ class Cmf:
         #name = properties.get("Name", "")
         create_new_execution = True
         execution_name = execution_type
+        #exe.name property is passed as the orig_execution_name.
+        #if name is not an empty string then we are re-using executions
         if orig_execution_name != "":
             create_new_execution = False
             execution_name = orig_execution_name
