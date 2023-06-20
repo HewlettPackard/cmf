@@ -10,7 +10,7 @@ def get_executions(mlmdfilepath, pipeline_name):
     stages = query.get_pipeline_stages(pipeline_name)
     df = pd.DataFrame()
     for stage in stages:
-        executions = query.get_all_executions_in_stage(stage.name)
+        executions = query.get_all_executions_in_stage(stage)
         if str(executions.Pipeline_Type[0]) == pipeline_name:
             df = pd.concat([df, executions], sort=True, ignore_index=True)
     return df
@@ -26,7 +26,7 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return va
         if name==pipeline_name:
             stages = query.get_pipeline_stages(name)
             for stage in stages:
-                executions = query.get_all_executions_in_stage(stage.name)
+                executions = query.get_all_executions_in_stage(stage)
                 dict_executions = executions.to_dict("dict")  # converting it to dictionary
                 identifiers.append(dict_executions["id"][0])
     name = []
@@ -61,7 +61,7 @@ def create_unique_executions(server_store_path, req_info):
         stages = query.get_pipeline_stages(pipeline_name)
         for stage in stages:
             executions = []
-            executions = query.get_all_executions_in_stage(stage.name)
+            executions = query.get_all_executions_in_stage(stage)
             for i in executions.index:
                 executions_server.append(executions['Context_Type'][i])
         executions_client = []

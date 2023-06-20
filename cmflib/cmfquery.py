@@ -72,7 +72,7 @@ class CmfQuery(object):
             if ctx.name == pipeline_name:
                 child_contexts = self.store.get_children_contexts_by_context(ctx.id)
                 for cc in child_contexts:
-                    stages.append(cc)
+                    stages.append(cc.name)
         return stages
 
     def get_all_exe_in_stage(self, stage_name: str) -> []:
@@ -388,11 +388,14 @@ class CmfQuery(object):
                     else:
                         return "Invalid execution id given."
                     for exe in list_executions:
-                        print(exe)
                         exe_dict = CmfQuery.__get_node_properties(exe)
                         exe_type = self.store.get_execution_types_by_id([exe.type_id])
                         exe_dict["type"] = exe_type[0].name
                         exe_dict["events"] = []
+                        # name will be an empty string for executions that are created with 
+                        # create new execution as true(default)
+                        # In other words name property will there only for execution 
+                        # that are created with create new execution flag set to false(special case)
                         exe_dict["name"] = exe.name if exe.name != "" else ""
                         events = self.store.get_events_by_execution_ids([exe.id])
                         for evt in events:

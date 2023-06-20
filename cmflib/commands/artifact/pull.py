@@ -62,7 +62,7 @@ class CmdArtifactPull(CmdBase):
         identifiers = []
         for stage in stages:
             executions = query.get_all_executions_in_stage(
-                stage.name
+                stage
             )  # getting all executions for stages
             if len(executions) > 0:  # check if stage has executions
                 dict_executions = executions.to_dict(
