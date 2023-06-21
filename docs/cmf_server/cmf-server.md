@@ -63,6 +63,15 @@ There are two ways to start cmf server -
     ```
     > Replace `docker compose` with `docker-compose` for older versions.
     
+    > Also you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying 
+      IP=200.200.200.200.
+      ```
+      .......
+      environment:
+      REACT_APP_MY_IP: ${IP}
+      ......
+      ```
+    
 5. Stop the containers. 
    ```
    docker compose -f docker-compose-server.yml stop
