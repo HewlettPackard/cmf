@@ -19,3 +19,7 @@ print(exe)
 
 metawriter.update_execution(exe.id, {"new_new_1":"value_value_1"})
 
+metawriter.finalize()
+
+print("Test executed successfully")
+
