@@ -106,7 +106,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                 elif artifact_type == "Metrics":
                     # print(props,'parse')
                     # cmf_class.log_execution_metrics_with_uuid(props, custom_props)
-                    cmf_class.log_execution_metrics(artifact_name, custom_props)
+                    cmf_class.log_execution_metrics_from_client(event["artifact"]["name"], custom_props)
                 elif artifact_type == "Dataslice":
                     dataslice = cmf_class.create_dataslice(event["artifact"]["name"])
                     dataslice.commit_existing(uri, custom_props)

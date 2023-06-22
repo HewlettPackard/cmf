@@ -32,6 +32,7 @@ class CmfQuery(object):
     def _transform_to_dataframe(self, node):
         #d = CmfQuery.__get_node_properties(node)
         d = {"id": node.id}
+        d["name"] = getattr(node, "name", "")
         for k, v in node.properties.items():
              if v.HasField('string_value'):
                  d[k] = v.string_value
@@ -339,7 +340,6 @@ class CmfQuery(object):
                 else:
                     node_dict[attr] = getattr(node, attr, "")
 
-        print(node_dict)
         return node_dict
 
     @staticmethod
