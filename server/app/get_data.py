@@ -28,10 +28,15 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return va
             for stage in stages:
                 executions = query.get_all_executions_in_stage(stage)
                 dict_executions = executions.to_dict("dict")  # converting it to dictionary
+                print(stage, dict_executions["id"])
+                print(type(dict_executions["id"]))
+                for id in dict_executions["id"].values():
+                    identifiers.append(id)
                 identifiers.append(dict_executions["id"][0])
     name = []
     url = []
     df = pd.DataFrame()
+    print("identifier", identifiers)
     for identifier in identifiers:
         get_artifacts = query.get_all_artifacts_for_execution(
             identifier

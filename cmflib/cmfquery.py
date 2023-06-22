@@ -358,6 +358,8 @@ class CmfQuery(object):
     def __get_customproperties(node) -> dict:
         prop_dict = {}
         for k, v in node.custom_properties.items():
+            if k == "type":
+                k = "user_type"
             if v.HasField("string_value"):
                 prop_dict[k] = v.string_value
             elif v.HasField("int_value"):
