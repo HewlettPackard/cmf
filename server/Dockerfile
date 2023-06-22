@@ -1,7 +1,8 @@
 # Use python 3.8-slim-buster as base image.
 FROM python:3.8-slim-buster
 
-ENV http_proxy http://web-proxy.corp.hpecorp.net:8080
+#Update the proxy if needed
+#ENV http_proxy http://web-proxy.corp.hpecorp.net:8080
 # Create a cmf-server directory.
 WORKDIR /cmf-server
 

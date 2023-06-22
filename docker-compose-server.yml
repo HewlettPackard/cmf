@@ -2,8 +2,9 @@ version: '3.8'
 services:
   server:
     image: server:latest
+    #This directory path should be updated 
     volumes:
-      - /home/royann/cmf-server/data:/cmf-server/data
+      - /home/user/cmf-server/data:/cmf-server/data
     container_name: cmf-server
     build:
      
@@ -25,7 +26,7 @@ services:
       dockerfile: Dockerfile
     restart: always
     environment:
-      REACT_APP_MY_IP: 10.93.232.85
+      REACT_APP_MY_IP: ${IP}
     ports:
       - "3000:3000"
     expose:
