@@ -11,7 +11,6 @@ Some important points regarding metadata update of executions(adding additional 
 3. if an existing execution is pulled from the server and its metadata is updated using the update_execution call and pushed again, the new metadata will NOT be updated in the server side. In otherwords you cannot update metadata of existing executions in the server. 
 
 
-
-
+<b>Note - Before running test_execution_update_method_1.py or test_execution_update_method_2.py run "test_execution_update.py.</b>
 
 
