@@ -1188,6 +1188,43 @@ class Cmf:
             )
         return metrics
 
+    def commit_existing_metrics(self, metrics_name: str, uri: str, custom_properties: t.Optional[t.Dict] = None):
+        custom_props =  {} if custom_properties is None else custom_properties
+        metrics = create_new_artifact_event_and_attribution(
+            store=self.store,
+            execution_id=self.execution.id,
+            context_id=self.child_context.id,
+            uri=uri,
+            name=metrics_name,
+            type_name="Step_Metrics",
+            event_type=mlpb.Event.Type.OUTPUT,
+            custom_properties=custom_props,
+            milliseconds_since_epoch=int(time.time() * 1000),
+        )
+        if self.graph:
+            self.driver.create_metrics_node(
+                metrics_name,
+                uri,
+                "output",
+                self.execution.id,
+                self.parent_context,
+                custom_props,
+            )
+            child_artifact = {
+                "Name": metrics_name,
+                "URI": uri,
+                "Event": "output",
+                "Execution_Name": self.execution_name,
+                "Type": "Metrics",
+                "Execution_Command": self.execution_command,
+                "Pipeline_Id": self.parent_context.id,
+            }
+            self.driver.create_artifact_relationships(
+                self.input_artifacts, child_artifact, self.execution_label_props
+            )
+        return metrics
+
+
     def log_validation_output(
         self, version: str, custom_properties: t.Optional[t.Dict] = None
     ) -> object:
@@ -1368,6 +1405,40 @@ class Cmf:
             if self.writer.graph:
                 self.writer.driver.create_dataslice_node(
                     self.name, self.name + ":" + c_hash, c_hash, self.data_parent, props
+                )
+            return slice
+
+        def commit_existing(self, uri: str, custom_properties: t.Optional[t.Dict] = None) -> None:
+            custom_props = {} if custom_properties is None else custom_properties
+            c_hash = uri
+            dataslice_commit = c_hash
+            existing_artifact = []
+            if c_hash and c_hash.strip():
+                existing_artifact.extend(
+                    self.writer.store.get_artifacts_by_uri(c_hash))
+            if existing_artifact and len(existing_artifact) != 0:
+                print("Adding to existing data slice")
+                slice = link_execution_to_input_artifact(
+                    store=self.writer.store,
+                    execution_id=self.writer.execution.id,
+                    uri=c_hash,
+                    input_name=self.name
+                )
+            else:
+                slice = create_new_artifact_event_and_attribution(
+                    store=self.writer.store,
+                    execution_id=self.writer.execution.id,
+                    context_id=self.writer.child_context.id,
+                    uri=c_hash,
+                    name=self.name,
+                    type_name="Dataslice",
+                    event_type=mlpb.Event.Type.OUTPUT,
+                    custom_properties=custom_properties,
+                    milliseconds_since_epoch=int(time.time() * 1000),
+                )
+            if self.writer.graph:
+                self.writer.driver.create_dataslice_node(
+                    self.name, self.name, c_hash, self.data_parent, custom_properties
                 )
             return slice
 
