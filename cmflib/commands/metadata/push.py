@@ -64,7 +64,6 @@ class CmdMetadataPush(CmdBase):
             json_payload = query.dumptojson(
                 self.args.pipeline_name,None
             )  # converts mlmd file to json format
-            print(json_payload)
             if self.args.execution:  # checks if execution_id is given by user
                 exec_id = self.args.execution
                 mlmd_data = json.loads(json_payload)["Pipeline"]

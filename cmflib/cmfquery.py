@@ -30,22 +30,23 @@ class CmfQuery(object):
         self.store = metadata_store.MetadataStore(config)
 
     def _transform_to_dataframe(self, node):
+        #d = CmfQuery.__get_node_properties(node)
         d = {"id": node.id}
         for k, v in node.properties.items():
-            if v.HasField('string_value'):
-                d[k] = v.string_value
-            elif v.HasField('int_value'):
-                d[k] = v.int_value
-            else:
-                d[k] = v.double_value
+             if v.HasField('string_value'):
+                 d[k] = v.string_value
+             elif v.HasField('int_value'):
+                 d[k] = v.int_value
+             else:
+                 d[k] = v.double_value
 
         for k, v in node.custom_properties.items():
-            if v.HasField('string_value'):
-                d[k] = v.string_value
-            elif v.HasField('int_value'):
-                d[k] = v.int_value
-            else:
-                d[k] = v.double_value
+             if v.HasField('string_value'):
+                 d[k] = v.string_value
+             elif v.HasField('int_value'):
+                 d[k] = v.int_value
+             else:
+                 d[k] = v.double_value
 
         df = pd.DataFrame(d, index=[0, ])
         return df
@@ -336,9 +337,9 @@ class CmfQuery(object):
                         node
                     )
                 else:
-                    node_dict[attr] = node.__getattribute__(attr)
+                    node_dict[attr] = getattr(node, attr, "")
 
-        # print(node_dict)
+        print(node_dict)
         return node_dict
 
     @staticmethod
