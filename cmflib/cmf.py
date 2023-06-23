@@ -508,6 +508,11 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+                ### To Do : Technical Debt. 
+        # If the dataset already exist , then we just link the existing dataset to the execution
+        # We do not update the dataset properties . 
+        # We need to append the new properties to the existing dataset properties
+
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -785,6 +790,10 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
+        # To Do : Technical Debt. 
+        # If the model already exist , then we just link the existing model to the execution
+        # We do not update the model properties . 
+        # We need to append the new properties to the existing model properties
 
         if custom_properties is None:
             custom_properties = {}
@@ -815,7 +824,6 @@ class Cmf:
         if (
             existing_artifact
             and len(existing_artifact) != 0
-            and event_type == mlpb.Event.Type.INPUT
         ):
             # update url for existing artifact
             existing_artifact = self.update_model_url(
@@ -965,7 +973,6 @@ class Cmf:
         if (
             existing_artifact
             and len(existing_artifact) != 0
-            and event_type == mlpb.Event.Type.INPUT
         ):
             # update url for existing artifact
             existing_artifact = self.update_model_url(existing_artifact, url)
