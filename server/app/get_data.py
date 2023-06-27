@@ -79,8 +79,6 @@ def create_unique_executions(server_store_path, req_info):
                                    #present or not so that new artifacts associated with it gets in.
                 for uuid in j['properties']['Execution_uuid'].split(","):
                     executions_client.append(uuid)
-        print(executions_client)
-        print(executions_server)
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
         print(list_executions_exists)

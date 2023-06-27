@@ -1071,6 +1071,67 @@ class Cmf:
                 )
 
         return artifact
+    
+    def log_execution_metrics_from_client(self, metrics_name: str,
+                                         custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        metrics = None
+        custom_props = {} if custom_properties is None else custom_properties
+        existing_artifact = []
+        name_tokens = metrics_name.split(":")
+        if name_tokens and len(name_tokens) > 2:
+            name = name_tokens[0]
+            uri = name_tokens[1]
+            execution_id = name_tokens[2]
+        else:
+            print(f"Error : metrics name {metrics_name} is not in the correct format")
+            return 
+
+        #we need to add the execution id to the metrics name
+        new_metrics_name = f"{name}:{uri}:{str(self.execution.id)}"
+        existing_artifacts = self.store.get_artifacts_by_uri(uri)
+
+        existing_artifact = existing_artifacts[0] if existing_artifacts else None
+        if not existing_artifact or \
+           ((existing_artifact) and not
+            (existing_artifact.name == new_metrics_name)):  #we need to add the artifact otherwise its already there 
+            metrics = create_new_artifact_event_and_attribution(
+            store=self.store,
+            execution_id=self.execution.id,
+            context_id=self.child_context.id,
+            uri=uri,
+            name=new_metrics_name,
+            type_name="Metrics",
+            event_type=mlpb.Event.Type.OUTPUT,
+            properties={"metrics_name": metrics_name},
+            artifact_type_properties={"metrics_name": mlpb.STRING},
+            custom_properties=custom_props,
+            milliseconds_since_epoch=int(time.time() * 1000),
+        )
+            if self.graph:
+                # To do create execution_links
+                self.driver.create_metrics_node(
+                    metrics_name,
+                    uri,
+                    "output",
+                    self.execution.id,
+                    self.parent_context,
+                    custom_props,
+                )
+                child_artifact = {
+                    "Name": metrics_name,
+                    "URI": uri,
+                    "Event": "output",
+                    "Execution_Name": self.execution_name,
+                    "Type": "Metrics",
+                    "Execution_Command": self.execution_command,
+                    "Pipeline_Id": self.parent_context.id,
+                    "Pipeline_Name": self.parent_context.name,
+                }
+                self.driver.create_artifact_relationships(
+                    self.input_artifacts, child_artifact, self.execution_label_props
+                )
+        return metrics
+
 
     def log_execution_metrics_from_client(self, metrics_name: str,
                                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
