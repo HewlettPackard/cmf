@@ -1,6 +1,7 @@
 import abc
 import typing as t
 from enum import Enum
+
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
 
@@ -79,7 +80,10 @@ class ExecutionMetrics(Artifact):
 
 
 class Callback:
-    """Base class for Cmf callbacks."""
+    """Base class for Cmf callbacks.
+
+    TODO: (sergey) no support for real-time metric logging. All metrics are logged at the end in `on_artifact_event`.
+    """
 
     @abc.abstractmethod
     def on_pipeline_context(self, name: str, id_, properties: t.Optional[t.Dict]) -> None:
