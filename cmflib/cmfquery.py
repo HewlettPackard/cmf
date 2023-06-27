@@ -419,7 +419,6 @@ class CmfQuery(object):
                 mlmd_json["Pipeline"].append(ctx_dict)
                 json_str = json.dumps(mlmd_json)
                 # json_str = jsonpickle.encode(ctx_dict)
-                print(json_str)
                 return json_str
 
     '''def materialize(self, artifact_name:str):
