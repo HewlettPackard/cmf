@@ -29,33 +29,6 @@ const Artifacts = () => {
      fetchPipelines();
    }, []);
 
-
-  useEffect(() => {
-    if(selectedPipeline) {
-      fetchArtifactTypes(selectedPipeline);
-    }
-    // eslint-disable-next-line  
-  }, [selectedPipeline]);
-
-
-  useEffect(() => {
-    if(selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType);
-      console.log(selectedPipeline, selectedArtifactType);
-    }
-
-  }, [selectedPipeline, selectedArtifactType]);
-
-
-  const fetchArtifactTypes = (pipelineName) => {
-    client.getArtifacts(pipelineName, "artifact_type").then((types) => {
-      setArtifactTypes(types);
-      if(selectedArtifactType === null)
-        setSelectedArtifactType(types[0]);
-    });
-  };
-
-
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline)
   };
@@ -65,12 +38,38 @@ const Artifacts = () => {
   };
 
 
+  const fetchArtifactTypes = (pipelineName) => {
+    client.getArtifacts(pipelineName, "artifact_type").then((types) => {
+      setArtifactTypes(types);
+      handleArtifactTypeClick(types[0])
+    });
+  };
+
+
+   useEffect(() => {
+    if(selectedPipeline) {
+      fetchArtifactTypes(selectedPipeline);
+    }
+    // eslint-disable-next-line
+  }, [selectedPipeline]);
+
+
+
   const fetchArtifacts = (pipelineName, type) => {
     client.getArtifacts(pipelineName, type).then((data) => {
-      console.log(data);
       setArtifacts(data);
     });
   };
+
+  
+
+
+  useEffect(() => {
+    if(selectedPipeline && selectedArtifactType) {
+      fetchArtifacts(selectedPipeline, selectedArtifactType);
+    }
+
+  }, [selectedPipeline, selectedArtifactType]);
 
 
 return (
@@ -89,6 +88,7 @@ return (
               )}
             </div>
             <div className="container">
+              
               {selectedPipeline !== null && selectedArtifactType !== null && (
                   <ArtifactTable artifacts={artifacts} />
               )}

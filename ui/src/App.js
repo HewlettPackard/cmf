@@ -8,7 +8,7 @@ import "./App.css";
 
 function App() {
   return (
-    <div className="App bg-white max-w-screen overflow-x-hidden">
+    <div className="App bg-white max-w-screen ">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
