@@ -67,22 +67,34 @@ def create_unique_executions(server_store_path, req_info):
         for stage in stages:
             executions = []
             executions = query.get_all_executions_in_stage(stage)
-            for i in executions.index:
-                executions_server.append(executions['Context_Type'][i])
+            #print(executions)
+            for i in executions.index:                
+                for uuid in executions['Execution_uuid'][i].split(","):
+                    executions_server.append(uuid)
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
                 if j['name'] != "":#If executions have name , they are reusable executions                        
                     continue       #which needs to be merged in irrespective of whether already 
                                    #present or not so that new artifacts associated with it gets in.
-                executions_client.append(j['properties']['Context_Type'])
+                for uuid in j['properties']['Execution_uuid'].split(","):
+                    executions_client.append(uuid)
+        print(executions_client)
+        print(executions_server)
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
+        print(list_executions_exists)
         for i in mlmd_data["Pipeline"]:
             for stage in i['stages']:
-                for exec in stage['executions']:
-                    if exec["properties"]["Context_Type"] in list_executions_exists:
-                        stage['executions'].remove(exec)
+                for cmf_exec in stage['executions'][:]:
+                    print("entered loop")
+                    uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+                    for uuid in uuids:
+                        print(uuid)
+                        if uuid in list_executions_exists:
+                            stage['executions'].remove(cmf_exec)
+                            print("removed")
+
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
     for i in mlmd_data["Pipeline"]:

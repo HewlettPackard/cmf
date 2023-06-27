@@ -32,7 +32,7 @@ class CmfQuery(object):
     def _transform_to_dataframe(self, node):
         #d = CmfQuery.__get_node_properties(node)
         d = {"id": node.id}
-        d["name"] = getattr(node, "name", "")
+        d["name"] = getattr(node, "name", "")        
         for k, v in node.properties.items():
              if v.HasField('string_value'):
                  d[k] = v.string_value
@@ -419,6 +419,7 @@ class CmfQuery(object):
                 mlmd_json["Pipeline"].append(ctx_dict)
                 json_str = json.dumps(mlmd_json)
                 # json_str = jsonpickle.encode(ctx_dict)
+                print(json_str)
                 return json_str
 
     '''def materialize(self, artifact_name:str):

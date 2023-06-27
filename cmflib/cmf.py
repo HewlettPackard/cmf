@@ -342,6 +342,12 @@ class Cmf:
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
+        uuids = self.execution.properties["Execution_uuid"].string_value
+        if uuids:
+            self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
+        else:
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())            
+        self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
         for k, v in custom_props.items():
@@ -372,7 +378,7 @@ class Cmf:
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
             print("Error - no execution id")
-            sys.exit(1)
+            return
         execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[
             0
         ]
@@ -458,6 +464,16 @@ class Cmf:
             custom_properties=custom_props,
             create_new_execution=create_new_execution
         )
+
+        uuids = self.execution.properties["Execution_uuid"].string_value
+        if uuids:
+            self.execution.properties["Execution_uuid"].string_value = uuids +\
+                ","+properties["Execution_uuid"]
+        else:
+            self.execution.properties["Execution_uuid"].string_value =\
+                  properties["Execution_uuid"]
+        self.store.put_executions([self.execution])
+        
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = execution_cmd
         for k, v in custom_props.items():
@@ -868,6 +884,7 @@ class Cmf:
             )
         # custom_properties["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
+        #To DO model nodes should be similar to dataset nodes when we create neo4j
         if self.graph:
             self.driver.create_model_node(
                 model_uri,
@@ -1054,7 +1071,7 @@ class Cmf:
                 )
 
         return artifact
-    
+
     def log_execution_metrics_from_client(self, metrics_name: str,
                                          custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         metrics = None
