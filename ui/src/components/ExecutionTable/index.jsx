@@ -34,6 +34,7 @@ const filteredData = executions.filter((item) =>
     || (item.Execution && item.Execution.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+// eslint-disable-next-line
 const sortedData = filteredData.sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];

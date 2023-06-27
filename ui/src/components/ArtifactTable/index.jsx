@@ -35,6 +35,8 @@ const filteredData = artifacts.filter((item) =>
        (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase()))
     || (item.type && item.type.toLowerCase().includes(searchQuery.toLowerCase()))
  );
+
+// eslint-disable-next-line
 const sortedData = filteredData.sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
@@ -63,19 +65,19 @@ const toggleRow = (rowId) => {
 
 
 return (
-    <div className="flex flex-col">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+    <div className="container flex flex-col mx-auto p-6 mr-4">
+      <div className="flex flex-col items-end m-1">
       <input
         type="text"
         value={searchQuery}
         onChange={handleSearchChange}
         placeholder="Search..."
-        style={{ marginRight: '1rem', padding: '0.5rem',border: '1px solid #ccc' }}
+        className="w-64 px-1 border-2 border-gray"
       />
       </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 border-4">
             <thead className="bg-gray-100">
               <tr className="text-xs font-bold text-left text-gray-500 uppercase">
                 <th scope="col" className="id px-6 py-3"></th>
@@ -94,7 +96,7 @@ return (
               {currentItems.map((data, index) => (
                 <React.Fragment key={index}>
                 <tr key={index} onClick={() => toggleRow(index)} className="text-sm font-medium text-gray-800">
-                  <td classname="px-6 py-4">{expandedRow === index ? '-' : '+'}</td>
+                  <td className="px-6 py-4">{expandedRow === index ? '-' : '+'}</td>
                   <td className="px-6 py-4">{data.id}</td>
                   <td className="px-6 py-4">{data.name}</td>
                   <td className="px-6 py-4">{data.type}</td>
