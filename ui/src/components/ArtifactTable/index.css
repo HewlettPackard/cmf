@@ -21,3 +21,15 @@
 .expanded-table tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
+
+.pagination-button.active {
+  background-color: #2c5282;
+  color: #fff;
+  font-weight: bold;
+  border-color: #2c5282;
+}
+
+.pagination-button.active:hover {
+  background-color: #1a365d;
+  border-color: #1a365d;
+}
