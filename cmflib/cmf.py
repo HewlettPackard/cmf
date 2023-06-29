@@ -429,8 +429,8 @@ class Cmf:
         execution_cmd: str,
         properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None,
-        orig_execution_name: str = "",
-        create_new_execution: bool = True
+        orig_execution_name:str = "",
+        create_new_execution:bool = True
     ) -> mlpb.Execution:
         # Initializing the execution related fields
         properties = {} if properties is None else properties
@@ -465,15 +465,21 @@ class Cmf:
             create_new_execution=create_new_execution
         )
 
-        uuids = self.execution.properties["Execution_uuid"].string_value
-        if uuids:
-            self.execution.properties["Execution_uuid"].string_value = uuids +\
-                ","+properties["Execution_uuid"]
+        uuids = ""
+
+        if "Execution_uuid" in self.execution.properties:
+            uuids = self.execution.properties["Execution_uuid"].string_value
+            if uuids:
+                self.execution.properties["Execution_uuid"].string_value = uuids +\
+                    ","+properties["Execution_uuid"]
+            else:
+                self.execution.properties["Execution_uuid"].string_value =\
+                    properties["Execution_uuid"]
         else:
-            self.execution.properties["Execution_uuid"].string_value =\
-                  properties["Execution_uuid"]
-        self.store.put_executions([self.execution])
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())
+
         
+        self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = execution_cmd
         for k, v in custom_props.items():
