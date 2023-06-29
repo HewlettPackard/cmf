@@ -89,11 +89,11 @@ def main():
     map = {}
     with open(args.map) as f:
         for line in f:
-            tokens = line.split()
+            tokens = line.split(",")
             assert (len(tokens) == 2), \
                 (f'Invalid format of file {args.map} : Expected 2 tokens '
                  'per line, received {len(tokens)} : {line}') 
-            map[int(tokens[0])] = tokens[1]
+            map[int(tokens[0])] = tokens[1].strip()
 
     # get the lists of images to label, all labeled and unlabeled
     labeled_indexes = np.load(args.selected)
