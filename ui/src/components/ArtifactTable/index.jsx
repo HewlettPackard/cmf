@@ -55,6 +55,11 @@ useEffect(() => {
     setCurrentPage(1); // Reset current page to 1 when search query changes
   }, [searchQuery]);
 
+useEffect(() => {
+    setCurrentPage(1); // Reset current page to 1 when search query changes
+  }, [artifacts]);
+
+
 const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
       setExpandedRow(null);
@@ -62,6 +67,68 @@ const toggleRow = (rowId) => {
       setExpandedRow(rowId);
     }
   };
+
+// eslint-disable-next-line
+const renderTableData = () => {
+    if (currentItems.length === 0) {
+      return (
+        <tr>
+          <td colSpan="4">No data available</td>
+        </tr>
+      );
+    }
+
+    return currentItems.map((item) => (
+      <tr key={item.id}>
+        {/* Render table row */}
+      </tr>
+    ));
+  };
+
+
+const renderPagination = () => {
+    if (totalPages === 1){
+       return null;
+    }
+
+    const totalPagesToShow = 5; // Number of pages to show in the pagination
+
+    const startPage = Math.max(1, currentPage - Math.floor(totalPagesToShow / 2));
+    const endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
+
+    const pages = Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+
+    return (
+      <div>
+        <button
+          className={`pagination-button ${currentPage === 1 ? 'active' : ''}`}
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          Previous
+        </button>
+        {pages.map((page) => (
+          <button
+            key={page}
+            className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+            onClick={() => handlePageChange(page)}
+            disabled={currentPage === page}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          className={`pagination-button ${currentPage === totalPages ? 'active' : ''}`}
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          Next
+        </button>
+
+      </div>
+    );
+  };
+
 
 
 return (
@@ -133,31 +200,7 @@ return (
             </tbody>
           </table>
           </div>
-          <div>
-        <button
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </button>
-        {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-          (page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              disabled={currentPage === page}
-            >
-              {page}
-            </button>
-          )
-        )}
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </button>
-      </div>
+          <div>{renderPagination()}</div>
        </div>
       </div>
   );
