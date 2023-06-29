@@ -2,6 +2,7 @@ version: '3.8'
 services:
   server:
     image: server:latest
+    #This directory path should be updated 
     volumes:
       - /home/user/cmf-server/data:/cmf-server/data
     container_name: cmf-server
