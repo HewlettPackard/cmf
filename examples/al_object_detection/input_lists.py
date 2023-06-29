@@ -69,6 +69,9 @@ def main():
     cfg.seed = args.seed
 
     # create and save sample lists 
+    with open(args.labeled) as f:
+        line = f.readline().strip()
+    num_digits = len(line)
     labeled = np.loadtxt(args.labeled, dtype=np.uintc)
     unlabeled = np.loadtxt(args.unlabeled, dtype=np.uintc)
     num_labeled = len(labeled)
@@ -87,7 +90,7 @@ def main():
             (unlabeled_indexes, labeled_indexes[:num_labeled - num_unlabeled]))
     labeled_indexes.sort()
     unlabeled_indexes.sort()
-    np.savetxt(args.train, all, fmt='%s')
+    np.savetxt(args.train, all, fmt='%0'+str(num_digits)+'u')
     np.save(args.selected, labeled_indexes)
     np.save(args.unselected, unlabeled_indexes)
 

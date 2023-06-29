@@ -100,6 +100,9 @@ def main():
     labeled_next_indexes = np.load(args.selected_next)
     to_label_indexes = np.array(list(set(labeled_next_indexes) - 
                                      set(labeled_indexes)))
+    with open(args.train) as f:
+        line = f.readline().strip()
+    num_digits = len(line)
     all = np.loadtxt(args.train, dtype=np.uintc)
     to_label = all[to_label_indexes]
     to_label.sort()
@@ -114,8 +117,8 @@ def main():
         for image_number in to_label:
             image_name = map[image_number]
             f.write(image_name + "\n")
-    np.savetxt(args.labeled, labeled, fmt='%s')
-    np.savetxt(args.unlabeled, unlabeled, fmt='%s')
+    np.savetxt(args.labeled, labeled, fmt='%0'+str(num_digits)+'u')
+    np.savetxt(args.unlabeled, unlabeled, fmt='%0'+str(num_digits)+'u')
 
     # Update active learning config file with new cycle and random number
     # generator seed
