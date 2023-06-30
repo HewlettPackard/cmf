@@ -53,7 +53,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-
+from cmflib.cmf_commands_wrapper import mt_push, mt_pull, arti_pull, arti_push, cmf_cmd_init
 
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
@@ -1364,6 +1364,35 @@ class Cmf:
     def update_model_output(self, artifact: mlpb.Artifact):
         """updates an artifact"""
         put_artifact(self.store, artifact)
+
+    def metadata_push(self, execution_id = 0):
+        #print("pipeline_name: ", self.parent_context.name)
+        output = mt_push(self.parent_context.name)
+        return output
+
+    def metadata_pull(self):
+        print("pipeline_name: ", pipeline_name)
+        output = mt_pull(pipeline_name)
+        return output
+
+
+    def artifact_pull(self):
+        print("pipeline_name: ", pipeline_name)
+        output = arti_pull(pipeline_name)
+        return output
+
+
+    def artifact_push(self):
+        print("pipeline_name: ", pipeline_name)
+        output = arti_push(pipeline_name)
+        return output
+
+
+    def cmf_init(self):
+        print("pipeline_name: ", pipeline_name)
+        output = cmf_cmf_init(pipeline_name)
+        return output
+
 
     def create_dataslice(self, name: str) -> "Cmf.DataSlice":
         """Creates a dataslice object.
