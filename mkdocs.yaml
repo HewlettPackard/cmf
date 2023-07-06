@@ -77,12 +77,22 @@ extra:
 # This defines the structure of the CMF documentation portal (all must be in `docs/` directory).
 nav:
   - index.md
+  - Getting started: cmf_client/step-by-step.md
   - Examples:
       - Getting Started: examples/getting_started.md
   - Architecture:
       - Overview: architecture/overview.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
+  - Client:
+      - Overview: cmf_client/cmf_client.md
+      - Getting started: cmf_client/step-by-step.md
+      - dvc minio backend: cmf_client/minio-server.md
+  - Server:
+      - Getting started: cmf_server/cmf-server.md
   - Public API:
       - CMF: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
+  - Ontology:
+      - Ontology: common-metadata-ontology/readme.md
+
