@@ -9,7 +9,12 @@ import sys
 from pathlib import Path
 import typing as t
 from copy import deepcopy
+from dataclasses import dataclass
 from cmflib.cmf import Cmf
+
+
+__all__ = ["CMFError", "Artifact", "Dataset", "MLModel", "ExecutionMetrics", "Context", "Parameters",
+           "cmf_config", "step", "prepare_workspace"]
 
 
 class CMFError(Exception):
@@ -63,6 +68,9 @@ class Context(dict):
 
     This is not the context as it is defined in MLMD. Rather, it contains runtime parameters for steps, such as, for
     instance, workspace directory or instance of the initialized Cmf.
+
+    If a step function defines this parameter, then it will have the following fields:
+        - cmf: Instance of the `cmflib.Cmf`.
     """
     ...
 
@@ -73,6 +81,51 @@ class Parameters(dict):
     These parameters include, for instance, hyperparameters for training ML models (learning rate, batch size etc.)
     """
     ...
+
+
+def _str_to_bool(val: t.Optional[str]) -> t.Optional[bool]:
+    if val is None:
+        return None
+    val = val.lower()
+    return val in ('1', 'on', 'true')
+
+
+@dataclass
+class CmfConfig:
+
+    filename: t.Optional[str] = None
+    pipeline_name: t.Optional[str] = None
+    pipeline_stage: t.Optional[str] = None
+    graph: t.Optional[bool] = None
+    is_server: t.Optional[bool] = None
+
+    def update(self, config: "CmfConfig") -> "CmfConfig":
+        if config.filename is not None:
+            self.filename = config.filename
+        if config.pipeline_name is not None:
+            self.pipeline_name = config.pipeline_name
+        if config.pipeline_stage is not None:
+            self.pipeline_stage = config.pipeline_stage
+        if config.graph is not None:
+            self.graph = config.graph
+        return self
+
+    @classmethod
+    def from_env(cls) -> "CmfConfig":
+        return cls(
+            filename=os.environ.get("CMF_URI", None),
+            pipeline_name=os.environ.get("CMF_PIPELINE", None),
+            pipeline_stage=os.environ.get("CMF_STAGE", None),
+            graph=_str_to_bool(os.environ.get("CMF_GRAPH", None)),
+            is_server=_str_to_bool(os.environ.get("CMF_IS_SERVER", None))
+        )
+
+    @classmethod
+    def from_params(cls, **kwargs) -> "CmfConfig":
+        return cls(**kwargs)
+
+
+cmf_config = CmfConfig()
 
 
 def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] = None) -> t.Callable:
@@ -130,22 +183,22 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
     """
     def step_decorator(func: t.Callable) -> t.Callable:
         nonlocal pipeline_name, pipeline_stage
-        options = {
-            'pipeline_name': pipeline_name, 'pipeline_stage': pipeline_stage
-        }
 
         @functools.wraps(func)
-        def _wrapper(*args, **kwargs):
+        def _wrapper(*args, **kwargs) -> t.Any:
             from cmflib.cmf import Cmf
-            options.update(
-                pipeline_name=options['pipeline_name'] or os.environ.get('CMF_PIPELINE', None),
-                filename=os.environ.get('CMF_URI', 'mlmd'),
-                graph=os.environ.get('CMF_GRAPH', 'false').lower() == 'true',
-                pipeline_stage=options['pipeline_stage'] or func.__name__
-            )
-            options['pipeline_name'] = options['pipeline_name'] or os.environ.get('CMF_PIPELINE', None)
-            options['cmf_uri'] = os.environ.get('CMF_URI', 'mlmd')
-            if not options['pipeline_name']:
+
+            config = CmfConfig.from_params(filename="mlmd", graph=False)
+            config = config.update(CmfConfig.from_env()) \
+                .update(cmf_config) \
+                .update(CmfConfig.from_params(pipeline_name=pipeline_name, pipeline_stage=pipeline_stage))
+
+            if config.pipeline_name is None:
+                if hasattr(func, "__module__") and "__file__" in func.__module__:
+                    config.pipeline_name = Path(func.__module__["__file__"]).stem
+            if config.pipeline_stage is None:
+                config.pipeline_stage = func.__name__
+            if not config.pipeline_name:
                 raise CMFError(
                     "The pipeline name is not specified. You have two options to specify the name. Option 1: export "
                     "environmental variable `export CMF_PIPELINE=iris` in linux or `set CMF_PIPELINE=iris` in Windows. "
@@ -156,21 +209,30 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             ctx, params, inputs = _validate_task_arguments(args, kwargs)
 
             # Create a pipeline, create a context and an execution
-            cmf = Cmf(filename=options['filename'], pipeline_name=options['pipeline_name'], graph=options['graph'])
-            _ = cmf.create_context(pipeline_stage=options['pipeline_stage'])
-            _ = cmf.create_execution(execution_type=options['pipeline_stage'], custom_properties=params)
+            cmf = Cmf(filename=config.filename, pipeline_name=config.pipeline_name, graph=config.graph)
+            _ = cmf.create_context(pipeline_stage=config.pipeline_stage)
+            _ = cmf.create_execution(execution_type=config.pipeline_stage, custom_properties=params)
             _log_artifacts(cmf, 'input', inputs)
 
             # Run the step
             if ctx is not None:
                 ctx['cmf'] = cmf
             outputs: t.Optional[t.Dict[str, Artifact]] = func(*args, **kwargs)
-            outputs = outputs or {}
             if ctx is not None:
                 del ctx['cmf']
 
             # Log the output artifacts
-            _log_artifacts(cmf, 'output', outputs)
+            if outputs is not None:
+                _log_artifacts(cmf, 'output', outputs)
+
+            # Commit all metrics
+            for metrics_name in cmf.metrics.keys():
+                cmf.commit_metrics(metrics_name)
+
+            # All done
+            cmf.finalize()
+
+            return outputs
 
         return _wrapper
 
@@ -196,7 +258,7 @@ def cli_run(step_fn: t.Callable) -> None:
         step_fn: Pipeline python function.
 
     """
-    # Pase command line arguments
+    # Parse command line arguments
     import argparse
     parser = argparse.ArgumentParser(description='CMF step arguments')
     parser.add_argument(
@@ -235,18 +297,21 @@ def cli_run(step_fn: t.Callable) -> None:
     _call_step_with_parameter_check(step_fn, ctx, params, inputs)
 
 
-def prepare_workspace(ctx: Context) -> Path:
+def prepare_workspace(ctx: Context, namespace: t.Optional[str] = None) -> Path:
     """Ensure the workspace directory exists.
 
     Workspace is a place where we store various files.
 
     Args:
         ctx: Context for this step. If it does not contain `workspace` parameter, current working directory is used.
+        namespace: Relative path within workspace (relative directory path) that a step is requesting to create.
 
     Returns:
         Path to the workspace directory.
     """
     workspace = Path(ctx.get('workspace', Path.cwd() / 'workspace'))
+    if namespace:
+        workspace = workspace / namespace
     workspace.mkdir(parents=True, exist_ok=True)
     return workspace
 
@@ -388,19 +453,34 @@ def _validate_task_arguments(
     return context, params, inputs
 
 
-def _log_artifacts(cmf: Cmf, event: str, artifacts: t .Dict[str, Artifact]) -> None:
+def _log_artifacts(
+        cmf: Cmf,
+        event: str,
+        artifacts: t.Union[
+            Artifact,
+            t.List[Artifact],
+            t.Tuple[Artifact],
+            t.Set[Artifact],
+            t.Dict[str, t.Union[Artifact, t.List[Artifact]]]
+        ]
+) -> None:
     """Log artifacts with Cmf.
     Args:
         cmf: Instance of initialized Cmf.
         event: One of `input` or `output` (whether these artifacts input or output artifacts).
         artifacts: Dictionary that maps artifacts names to artifacts. Names are not used, only artifacts.
     """
-    for name, artifact in artifacts.items():
-        if isinstance(artifact, Dataset):
-            cmf.log_dataset(url=artifact.uri, event=event, custom_properties=artifact.params)
-        elif isinstance(artifact, MLModel):
-            cmf.log_model(path=artifact.uri, event=event, **artifact.params)
-        elif isinstance(artifact, ExecutionMetrics):
-            cmf.log_execution_metrics(artifact.name, artifact.params)
-        else:
-            raise CMFError(f"Can't log unrecognized artifact: type={type(artifact)}, artifact={str(artifact)}")
+    if isinstance(artifacts, dict):
+        for artifact in artifacts.values():
+            _log_artifacts(cmf, event, artifact)
+    elif isinstance(artifacts, (list, tuple, set)):
+        for artifact in artifacts:
+            _log_artifacts(cmf, event, artifact)
+    elif isinstance(artifacts, Dataset):
+        cmf.log_dataset(url=artifacts.uri, event=event, custom_properties=artifacts.params)
+    elif isinstance(artifacts, MLModel):
+        cmf.log_model(path=artifacts.uri, event=event, **artifacts.params)
+    elif isinstance(artifacts, ExecutionMetrics):
+        cmf.log_execution_metrics(artifacts.name, artifacts.params)
+    else:
+        raise CMFError(f"Can't log unrecognized artifact: type={type(artifacts)}, artifacts={str(artifacts)}")
