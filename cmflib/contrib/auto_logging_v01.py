@@ -4,21 +4,59 @@
 import argparse
 import functools
 import inspect
+import json
+import logging
 import os
 import sys
-from pathlib import Path
+import time
 import typing as t
 from copy import deepcopy
 from dataclasses import dataclass
+from pathlib import Path
+
+import yaml
+
 from cmflib.cmf import Cmf
 
+__all__ = [
+    "CMFError",
+    "Artifact",
+    "Dataset",
+    "MLModel",
+    "MLModelCard",
+    "ExecutionMetrics",
+    "Context",
+    "Parameters",
+    "cmf_config",
+    "step",
+    "prepare_workspace",
+]
 
-__all__ = ["CMFError", "Artifact", "Dataset", "MLModel", "ExecutionMetrics", "Context", "Parameters",
-           "cmf_config", "step", "prepare_workspace"]
+logger = logging.getLogger(__name__)
+
+
+class LogMessage:
+    """Helper class to do structured logging.
+
+    Args:
+        type_: Message type (aka event type).
+        kwargs: Additional keyword arguments to be logged associated with the event being logged.
+    """
+
+    def __init__(self, type_: str, **kwargs) -> None:
+        self.type = type_
+        self.kwargs = kwargs  # maybe copy?
+
+    def __str__(self) -> str:
+        return json.dumps({"type": self.type, **self.kwargs}, cls=JSONEncoder)
+
+
+M = LogMessage
 
 
 class CMFError(Exception):
     """Base exception for CMF."""
+
     ...
 
 
@@ -29,9 +67,15 @@ class Artifact:
             it's something that can be used to retrieve an artifact from one of backends.
         params: Dictionary of parameters associated with this artifact. Should be serializable with ML metadata.
     """
-    def __init__(self, uri: t.Union[str, Path], params: t.Optional[t.Dict] = None) -> None:
+
+    def __init__(
+        self, uri: t.Union[str, Path], params: t.Optional[t.Dict] = None
+    ) -> None:
         self.uri = uri if isinstance(uri, str) else uri.as_posix()
         self.params = deepcopy(params or {})
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(uri={self.uri}, params={self.params})"
 
 
 class Dataset(Artifact):
@@ -40,11 +84,19 @@ class Dataset(Artifact):
     Note:
         Various dataset splits, when represented as different files or directories, should have different artifacts.
     """
+
     ...
 
 
 class MLModel(Artifact):
     """Artifact to represent machine learning models."""
+
+    ...
+
+
+class MLModelCard(Artifact):
+    """Artifact to represent machine learning model cards containing evaluation reports"""
+
     ...
 
 
@@ -58,9 +110,22 @@ class ExecutionMetrics(Artifact):
         params: Dictionary of metrics. Keys do not have to specify the dataset split these metrics were computed with
             (it's specified with the `name` parameter).
     """
-    def __init__(self, uri: t.Union[str, Path], name: str, params: t.Optional[t.Dict] = None) -> None:
+
+    def __init__(
+        self, uri: t.Union[str, Path], name: str, params: t.Optional[t.Dict] = None
+    ) -> None:
         super().__init__(uri, params)
         self.name = name
+
+    def __str__(self) -> str:
+        return f"{self.__class__.__name__}(uri={self.uri}, params={self.params}, name={self.name})"
+
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o: t.Any) -> t.Any:
+        if isinstance(o, Artifact):
+            return str(o)
+        return super().default(o)
 
 
 class Context(dict):
@@ -72,6 +137,7 @@ class Context(dict):
     If a step function defines this parameter, then it will have the following fields:
         - cmf: Instance of the `cmflib.Cmf`.
     """
+
     ...
 
 
@@ -80,18 +146,45 @@ class Parameters(dict):
 
     These parameters include, for instance, hyperparameters for training ML models (learning rate, batch size etc.)
     """
-    ...
+
+    @classmethod
+    def from_file(
+        cls, stage_name: str, file_name: t.Union[str, Path] = "pipeline.yaml"
+    ) -> "Parameters":
+        with open(file_name, "rt") as f:
+            pipeline_stages_params = yaml.load(f, Loader=yaml.SafeLoader)
+            return Parameters(**pipeline_stages_params[stage_name])
 
 
 def _str_to_bool(val: t.Optional[str]) -> t.Optional[bool]:
+    """Convert string value into boolean.
+
+    Args:
+        val: String representation of the boolean value.
+
+    Returns:
+        True or False.
+    """
     if val is None:
         return None
     val = val.lower()
-    return val in ('1', 'on', 'true')
+    return val in ("1", "on", "true")
 
 
 @dataclass
 class CmfConfig:
+    """CMF configuration.
+
+    CMF for autologging is configured in a hierarchical manner. The following is the respective hierarchy (if certain
+    fields are not specified (e.g., they are Nones), they are considered to be not set, and default values defined by
+    CMF are used):
+        - Default configuration: filename="mlmd", graph=False.
+        - Configuration from environment.
+        - Configuration from user (see `cmf_config` variable below).
+        - Configuration provided via `step` decorator.
+
+    The CMf autologging framework uses the same values for stage and execution names (`pipeline_stage`).
+    """
 
     filename: t.Optional[str] = None
     pipeline_name: t.Optional[str] = None
@@ -99,36 +192,42 @@ class CmfConfig:
     graph: t.Optional[bool] = None
     is_server: t.Optional[bool] = None
 
-    def update(self, config: "CmfConfig") -> "CmfConfig":
-        if config.filename is not None:
-            self.filename = config.filename
-        if config.pipeline_name is not None:
-            self.pipeline_name = config.pipeline_name
-        if config.pipeline_stage is not None:
-            self.pipeline_stage = config.pipeline_stage
-        if config.graph is not None:
-            self.graph = config.graph
+    def update(self, other: "CmfConfig") -> "CmfConfig":
+        """Override this configuration with other configuration."""
+        if other.filename is not None:
+            self.filename = other.filename
+        if other.pipeline_name is not None:
+            self.pipeline_name = other.pipeline_name
+        if other.pipeline_stage is not None:
+            self.pipeline_stage = other.pipeline_stage
+        if other.graph is not None:
+            self.graph = other.graph
         return self
 
     @classmethod
     def from_env(cls) -> "CmfConfig":
+        """Retrieve CMF configuration from environment."""
         return cls(
             filename=os.environ.get("CMF_URI", None),
             pipeline_name=os.environ.get("CMF_PIPELINE", None),
             pipeline_stage=os.environ.get("CMF_STAGE", None),
             graph=_str_to_bool(os.environ.get("CMF_GRAPH", None)),
-            is_server=_str_to_bool(os.environ.get("CMF_IS_SERVER", None))
+            is_server=_str_to_bool(os.environ.get("CMF_IS_SERVER", None)),
         )
 
     @classmethod
     def from_params(cls, **kwargs) -> "CmfConfig":
+        """Build CMF configuration using provided parameters."""
         return cls(**kwargs)
 
 
 cmf_config = CmfConfig()
+"""Users can use this object to configure CMF programmatically"""
 
 
-def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] = None) -> t.Callable:
+def step(
+    pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] = None
+) -> t.Callable:
     """Function decorator that automatically logs input and output artifacts for Cmf steps.
 
     This function decorator adds automated Cmf-based logging of input and output artifacts to user functions. Users must
@@ -180,7 +279,10 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
         pipeline_name: Name of a pipeline. This name override name provided with environment variable `CMF_PIPELINE`.
         pipeline_stage: Name of a pipeline stage (==context name in MLMD terms). If not specified, a function name is
             used.
+
+    TODO: (sergey) rename to stage (or just do `stage = step`)?
     """
+
     def step_decorator(func: t.Callable) -> t.Callable:
         nonlocal pipeline_name, pipeline_stage
 
@@ -189,13 +291,20 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             from cmflib.cmf import Cmf
 
             config = CmfConfig.from_params(filename="mlmd", graph=False)
-            config = config.update(CmfConfig.from_env()) \
-                .update(cmf_config) \
-                .update(CmfConfig.from_params(pipeline_name=pipeline_name, pipeline_stage=pipeline_stage))
+            config = (
+                config.update(CmfConfig.from_env())
+                .update(cmf_config)
+                .update(
+                    CmfConfig.from_params(
+                        pipeline_name=pipeline_name, pipeline_stage=pipeline_stage
+                    )
+                )
+            )
 
             if config.pipeline_name is None:
-                if hasattr(func, "__module__") and "__file__" in func.__module__:
-                    config.pipeline_name = Path(func.__module__["__file__"]).stem
+                _module = getattr(func, "__module__", None)
+                if _module is not None and "__file__" in _module:
+                    config.pipeline_name = Path(_module["__file__"]).stem
             if config.pipeline_stage is None:
                 config.pipeline_stage = func.__name__
             if not config.pipeline_name:
@@ -209,21 +318,67 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             ctx, params, inputs = _validate_task_arguments(args, kwargs)
 
             # Create a pipeline, create a context and an execution
-            cmf = Cmf(filename=config.filename, pipeline_name=config.pipeline_name, graph=config.graph)
+            cmf = Cmf(
+                filename=config.filename,
+                pipeline_name=config.pipeline_name,
+                graph=config.graph,
+            )
             _ = cmf.create_context(pipeline_stage=config.pipeline_stage)
-            _ = cmf.create_execution(execution_type=config.pipeline_stage, custom_properties=params)
-            _log_artifacts(cmf, 'input', inputs)
+            _ = cmf.create_execution(
+                execution_type=config.pipeline_stage, custom_properties=params
+            )
+            _log_artifacts(cmf, "input", inputs)
 
             # Run the step
             if ctx is not None:
-                ctx['cmf'] = cmf
+                ctx["cmf"] = cmf
+
+            logger.debug(
+                M(
+                    "execution",
+                    pipeline=config.pipeline_name,
+                    stage=config.pipeline_stage,
+                    execution_id=cmf.execution.id,
+                )
+            )
+            logger.debug(
+                M("execution.impl", execution_id=cmf.execution.id, impl=func.__name__)
+            )
+            logger.debug(
+                M(
+                    "execution.inputs",
+                    execution_id=cmf.execution.id,
+                    ctx_keys=list((ctx or {}).keys()),
+                    params=(params or {}),
+                    inputs=inputs,
+                )
+            )
+            start_time = time.time()
             outputs: t.Optional[t.Dict[str, Artifact]] = func(*args, **kwargs)
+            end_time = time.time()
+
+            logger.debug(
+                M(
+                    "execution.runtime",
+                    execution_id=cmf.execution.id,
+                    time_seconds=end_time - start_time,
+                )
+            )
+            logger.debug(
+                M(
+                    "execution.outputs",
+                    execution_id=cmf.execution.id,
+                    outputs=outputs,
+                    metrics=list(cmf.metrics.keys()),
+                )
+            )
+
             if ctx is not None:
-                del ctx['cmf']
+                del ctx["cmf"]
 
             # Log the output artifacts
             if outputs is not None:
-                _log_artifacts(cmf, 'output', outputs)
+                _log_artifacts(cmf, "output", outputs)
 
             # Commit all metrics
             for metrics_name in cmf.metrics.keys():
@@ -260,32 +415,39 @@ def cli_run(step_fn: t.Callable) -> None:
     """
     # Parse command line arguments
     import argparse
-    parser = argparse.ArgumentParser(description='CMF step arguments')
+
+    parser = argparse.ArgumentParser(description="CMF step arguments")
     parser.add_argument(
-        '--params', required=False, default='',
-        help='Execution parameters for a pipeline step, e.g., --params=train_size=0.7,add_noise=true. Users must define'
-             'their functions accepting exactly one positional or keyed argument of type `Parameters` if they want to '
-             'be able to accept execution parameters.'
+        "--params",
+        required=False,
+        default="",
+        help="Execution parameters for a pipeline step, e.g., --params=train_size=0.7,add_noise=true. Users must define"
+        "their functions accepting exactly one positional or keyed argument of type `Parameters` if they want to "
+        "be able to accept execution parameters.",
     )
     parser.add_argument(
-        '--ctx', required=False, default='',
-        help='Runtime parameters for the step. These parameters define execution environment, e.g., workspace location.'
-             'Also, users can access the instance of `Cmf` via this context under the `cmf` key. Users must define'
-             'their functions accepting exactly one positional or keyed argument of type `Context` if they want to '
-             'be able to accept these runtime parameters.'
+        "--ctx",
+        required=False,
+        default="",
+        help="Runtime parameters for the step. These parameters define execution environment, e.g., workspace location."
+        "Also, users can access the instance of `Cmf` via this context under the `cmf` key. Users must define"
+        "their functions accepting exactly one positional or keyed argument of type `Context` if they want to "
+        "be able to accept these runtime parameters.",
     )
     parsed, artifacts = parser.parse_known_args(sys.argv[1:])
 
     # Convert command line arguments into dictionaries
-    def _parse_key_value_list(_kv_list: t.Union[str, t.List[str]], _dict_cls) -> t.Union[t.Dict, Context, Parameters]:
+    def _parse_key_value_list(
+        _kv_list: t.Union[str, t.List[str]], _dict_cls
+    ) -> t.Union[t.Dict, Context, Parameters]:
         """Convert a string like 'a=3,b=5' into a dictionary."""
         _dict = _dict_cls()
         if not _kv_list:
             return _dict
         if isinstance(_kv_list, str):
-            _kv_list = _kv_list.split(',')
+            _kv_list = _kv_list.split(",")
         for _item in _kv_list:
-            _k, _v = _item.split('=')
+            _k, _v = _item.split("=")
             _dict[_k.strip()] = _v.strip()
         return _dict
 
@@ -309,14 +471,16 @@ def prepare_workspace(ctx: Context, namespace: t.Optional[str] = None) -> Path:
     Returns:
         Path to the workspace directory.
     """
-    workspace = Path(ctx.get('workspace', Path.cwd() / 'workspace'))
+    workspace = Path(ctx.get("workspace", Path.cwd() / "workspace"))
     if namespace:
         workspace = workspace / namespace
     workspace.mkdir(parents=True, exist_ok=True)
     return workspace
 
 
-def _call_step_with_parameter_check(fn: t.Callable, ctx: Context, params: Parameters, inputs: t.Dict) -> None:
+def _call_step_with_parameter_check(
+    fn: t.Callable, ctx: Context, params: Parameters, inputs: t.Dict
+) -> None:
     """The goal is to make sure the fn's API accept provided `context`, `params` and `inputs`.
 
     Args:
@@ -347,7 +511,9 @@ def _call_step_with_parameter_check(fn: t.Callable, ctx: Context, params: Parame
             if isinstance(inputs[param.name], Artifact):
                 fn_specs.kwargs[param.name] = inputs[param.name]
             elif isinstance(inputs[param.name], str):
-                fn_specs.kwargs[param.name] = _uri_to_artifact(inputs[param.name], param.annotation)
+                fn_specs.kwargs[param.name] = _uri_to_artifact(
+                    inputs[param.name], param.annotation
+                )
             else:
                 raise CMFError(
                     f"Unrecognized artifact value: name={param.name}, value={inputs[param.name]}. Supported values are "
@@ -371,9 +537,13 @@ def _call_step_with_parameter_check(fn: t.Callable, ctx: Context, params: Parame
         )
     # Check that this function does accept context and parameters if they are present
     if ctx and not fn_specs.needs_ctx:
-        raise CMFError(f"Context is provided (keys={ctx.keys()}) but function ({fn}) does not accept context.")
+        raise CMFError(
+            f"Context is provided (keys={ctx.keys()}) but function ({fn}) does not accept context."
+        )
     if params and not fn_specs.needs_params:
-        raise CMFError(f"Params are provided (keys={params.keys()}) but function ({fn}) does not accept params.")
+        raise CMFError(
+            f"Params are provided (keys={params.keys()}) but function ({fn}) does not accept params."
+        )
 
     # All done - call the function
     fn(**fn_specs.kwargs)
@@ -394,7 +564,9 @@ def _uri_to_artifact(uri: str, annotation: t.Any) -> Artifact:
         return Dataset(uri)
     elif issubclass(annotation, MLModel):
         return MLModel(uri)
-    raise CMFError(f"Cannot convert URI to an Artifact instance: uri={uri}, annotation={annotation}.")
+    raise CMFError(
+        f"Cannot convert URI to an Artifact instance: uri={uri}, annotation={annotation}."
+    )
 
 
 def _validate_task_arguments(
@@ -447,22 +619,23 @@ def _validate_task_arguments(
             inputs[key] = value
         else:
             raise CMFError(
-                f"Invalid keyword parameter (key={key}, value={value}, type={type(value)})"
+                f"Invalid keyword parameter type (name={key}, value={value}, type={type(value)}). "
+                "Expecting one of: `Context`, `Parameters` or `Artifact`."
             )
 
     return context, params, inputs
 
 
 def _log_artifacts(
-        cmf: Cmf,
-        event: str,
-        artifacts: t.Union[
-            Artifact,
-            t.List[Artifact],
-            t.Tuple[Artifact],
-            t.Set[Artifact],
-            t.Dict[str, t.Union[Artifact, t.List[Artifact]]]
-        ]
+    cmf: Cmf,
+    event: str,
+    artifacts: t.Union[
+        Artifact,
+        t.List[Artifact],
+        t.Tuple[Artifact],
+        t.Set[Artifact],
+        t.Dict[str, t.Union[Artifact, t.List[Artifact]]],
+    ],
 ) -> None:
     """Log artifacts with Cmf.
     Args:
@@ -477,10 +650,14 @@ def _log_artifacts(
         for artifact in artifacts:
             _log_artifacts(cmf, event, artifact)
     elif isinstance(artifacts, Dataset):
-        cmf.log_dataset(url=artifacts.uri, event=event, custom_properties=artifacts.params)
+        cmf.log_dataset(
+            url=artifacts.uri, event=event, custom_properties=artifacts.params
+        )
     elif isinstance(artifacts, MLModel):
         cmf.log_model(path=artifacts.uri, event=event, **artifacts.params)
     elif isinstance(artifacts, ExecutionMetrics):
         cmf.log_execution_metrics(artifacts.name, artifacts.params)
     else:
-        raise CMFError(f"Can't log unrecognized artifact: type={type(artifacts)}, artifacts={str(artifacts)}")
+        raise CMFError(
+            f"Can't log unrecognized artifact: type={type(artifacts)}, artifacts={str(artifacts)}"
+        )
