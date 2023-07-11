@@ -17,7 +17,7 @@ def get_executions(mlmdfilepath, pipeline_name):
 
 
 # This function fetches all the artifacts available in given mlmd
-def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return value (artifact_type or artifact_df) is 
+def get_artifacts_old(mlmdfilepath, pipeline_name, data):  # get_artifacts return value (artifact_type or artifact_df) is 
   # determined by a data variable().
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
@@ -48,6 +48,32 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return va
         tempout = json.loads(result)
     return tempout
 
+
+def get_artifacts(mlmdfilepath, pipeline_name, art_type):
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    names = query.get_pipeline_names()  # getting all pipeline names in mlmd
+    df = pd.DataFrame()
+    for name in names:
+        if name == pipeline_name:
+            get_artifacts = query.get_all_artifacts_by_context(pipeline_name)
+            #print("ids: ", get_artifacts['id'])
+            artifact_list = get_artifacts['id']
+            df = query.get_all_artifacts_by_ids_list(artifact_list)
+            df['name'] = df['name'].str.split(':').str[0]
+            df = df.drop_duplicates()
+            #print(df["type"])
+            df = df.loc[df["type"] == art_type]
+            result = df.to_json(orient="records")
+            tempout = json.loads(result)
+            print(tempout)
+            return tempout
+    return
+
+def get_artifact_types(mlmdfilepath):
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    artifact_types = query.get_all_artifact_types()
+    print(artifact_types)
+    return artifact_types
 
 def create_unique_executions(server_store_path, req_info):
     mlmd_data = json.loads(req_info["json_payload"])

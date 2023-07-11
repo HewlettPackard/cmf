@@ -350,6 +350,36 @@ class CmfQuery(object):
         """
         return [ctx.name for ctx in self._get_pipelines()]
 
+    def _transform_to_artifacts_dataframe(self, node):
+        d = {"id": node.id}
+        d["name"] = getattr(node, "name", "")
+        d["create_time_since_epoch"] = getattr(node, "create_time_since_epoch", "")
+        d["last_update_time_since_epoch"] = getattr(node, "last_update_time_since_epoch", "")
+        d["uri"] = getattr(node, "uri", "")
+        type_id = getattr(node, "type_id", "")
+        output = self.store.get_artifact_types_by_id([type_id])[0]
+        #print("type", output)
+        #print(output.name)
+        d["type"] = output.name
+        for k, v in node.properties.items():
+             if v.HasField('string_value'):
+                 d[k] = v.string_value
+             elif v.HasField('int_value'):
+                 d[k] = v.int_value
+             else:
+                 d[k] = v.double_value
+
+        for k, v in node.custom_properties.items():
+             if v.HasField('string_value'):
+                 d[k] = v.string_value
+             elif v.HasField('int_value'):
+                 d[k] = v.int_value
+             else:
+                 d[k] = v.double_value
+
+        df = pd.DataFrame(d, index=[0, ])
+        return df
+
     def get_pipeline_id(self, pipeline_name: str) -> int:
         """Return pipeline identifier for the pipeline names `pipeline_name`.
         Args:
@@ -388,6 +418,31 @@ class CmfQuery(object):
                 if stage.name == stage_name:
                     return self.store.get_executions_by_context(stage.id)
         return []
+
+    def get_all_artifacts_by_context(self, pipeline_name: str) -> pd.DataFrame:
+        df = pd.DataFrame()
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        context_id = self.get_pipeline_id(pipeline_name)
+        for ctx in contexts:
+            if ctx.id == context_id:
+                child_contexts = self.store.get_children_contexts_by_context(ctx.id)
+                for cc in child_contexts:
+                    artifacts = self.store.get_artifacts_by_context(cc.id)
+                    for art in artifacts:
+                        d1 = self._transform_to_dataframe(art)
+                        # df = df.append(d1, sort=True, ignore_index=True)
+                        df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
+
+    def get_all_artifacts_by_ids_list(self, artifact_list) -> pd.DataFrame: # change here
+        df = pd.DataFrame()
+        artifacts = self.store.get_artifacts_by_id(artifact_list)
+        #print(artifacts[0])
+        for art in artifacts:
+            d1 = self._transform_to_artifacts_dataframe(art)
+                        # df = df.append(d1, sort=True, ignore_index=True)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         """Return executions of the given stage as pandas data frame.
@@ -470,6 +525,16 @@ class CmfQuery(object):
                     [df, self.get_artifact_df(artifact, {"event": event_type})], sort=True, ignore_index=True
                 )
         return df
+
+    def get_all_artifact_types(self) -> t.List:
+        artifact_list = []
+        artifacts = self.store.get_artifacts()
+        for art in artifacts:
+            id = art.id
+            artifact_list.append(id)
+        type=self.store.get_artifact_types_by_id(artifact_list)
+        types=[i.name for i in type if not '.' in i.name]
+        return types
 
     def get_all_executions_for_artifact(self, artifact_name: str) -> pd.DataFrame:
         """Return executions that consumed and produced given artifact.
@@ -698,6 +763,75 @@ class CmfQuery(object):
         return json.dumps({"Pipeline": pipelines})
 
     """def materialize(self, artifact_name:str):
+    def __get_customproperties(node) -> dict:
+        prop_dict = {}
+        for k, v in node.custom_properties.items():
+            if k == "type":
+                k = "user_type"
+            if k == "id":
+                k = "user_id"
+            if v.HasField("string_value"):
+                prop_dict[k] = v.string_value
+            elif v.HasField("int_value"):
+                prop_dict[k] = v.int_value
+            else:
+                prop_dict[k] = v.double_value
+        return prop_dict
+
+    def dumptojson(self, pipeline_name: str, exec_id):
+        mlmd_json = {}
+        mlmd_json["Pipeline"] = []
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        for ctx in contexts:
+            if ctx.name == pipeline_name:
+                ctx_dict = CmfQuery.__get_node_properties(ctx)
+                ctx_dict["stages"] = []
+                stages = self.store.get_children_contexts_by_context(ctx.id)
+                for stage in stages:
+                    stage_dict = CmfQuery.__get_node_properties(stage)
+                    # ctx["stages"].append(stage_dict)
+                    stage_dict["executions"] = []
+                    executions = self.store.get_executions_by_context(stage.id)
+                    if exec_id is None:
+                        list_executions = [exe for exe in executions]
+                    elif exec_id is not None:
+                        list_executions = [
+                            exe for exe in executions if exe.id == int(exec_id)
+                        ]
+                    else:
+                        return "Invalid execution id given."
+                    for exe in list_executions:
+                        exe_dict = CmfQuery.__get_node_properties(exe)
+                        exe_type = self.store.get_execution_types_by_id([exe.type_id])
+                        exe_dict["type"] = exe_type[0].name
+                        exe_dict["events"] = []
+                        # name will be an empty string for executions that are created with 
+                        # create new execution as true(default)
+                        # In other words name property will there only for execution 
+                        # that are created with create new execution flag set to false(special case)
+                        exe_dict["name"] = exe.name if exe.name != "" else ""
+                        events = self.store.get_events_by_execution_ids([exe.id])
+                        for evt in events:
+                            evt_dict = CmfQuery.__get_node_properties(evt)
+                            artifact = self.store.get_artifacts_by_id([evt.artifact_id])
+                            if artifact is not None:
+                                artifact_type = self.store.get_artifact_types_by_id(
+                                    [artifact[0].type_id]
+                                )
+                                artifact_dict = CmfQuery.__get_node_properties(
+                                    artifact[0]
+                                )
+                                artifact_dict["type"] = artifact_type[0].name
+                                evt_dict["artifact"] = artifact_dict
+                            exe_dict["events"].append(evt_dict)
+                        stage_dict["executions"].append(exe_dict)
+                    ctx_dict["stages"].append(stage_dict)
+                mlmd_json["Pipeline"].append(ctx_dict)
+                json_str = json.dumps(mlmd_json)
+                # json_str = jsonpickle.encode(ctx_dict)
+                return json_str
+
+    '''def materialize(self, artifact_name:str):
        artifacts = self.store.get_artifacts()
        for art in artifacts:
            if art.name == artifact_name:

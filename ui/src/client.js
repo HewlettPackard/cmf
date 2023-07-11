@@ -31,6 +31,14 @@ class FastAPIClient {
       });
   }
 
+  async getArtifactTypes() {
+    return this.apiClient
+      .get(`/display_artifact_types`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
   async getImage(pipeline) {
    try {
       const response  = await this.apiClient.get(`/display_lineage/${pipeline}`, { responseType: "blob" });

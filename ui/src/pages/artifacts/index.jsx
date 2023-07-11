@@ -38,8 +38,8 @@ const Artifacts = () => {
   };
 
 
-  const fetchArtifactTypes = (pipelineName) => {
-    client.getArtifacts(pipelineName, "artifact_type").then((types) => {
+  const fetchArtifactTypes = () => {
+    client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
       handleArtifactTypeClick(types[0])
     });

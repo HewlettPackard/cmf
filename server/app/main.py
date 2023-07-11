@@ -1,5 +1,6 @@
 # cmf-server api's
 from fastapi import FastAPI, Request, APIRouter, status, HTTPException
+from contextlib import asynccontextmanager
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
 from cmflib import cmfquery, cmf_merger
@@ -7,14 +8,34 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from server.app.get_data import get_executions, get_artifacts,get_lineage_img_path,create_unique_executions,get_mlmd_from_server
+from server.app.get_data import get_executions, get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types
 from server.app.query_visualization import query_visualization
 from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
 import os
 import json
 
-app = FastAPI(title="cmf-server")
+server_store_path = "/cmf-server/data/mlmd"
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    data = {
+    "name": "John Doe",
+    "age": 30,
+    "city": "New York"
+    }
+    # create a json file
+    file_path = "/cmf-server/data/data.json"
+    with open(file_path, 'w') as json_file:
+        json.dump(data, json_file)
+
+    # load the json file
+    yield
+    # delete the json file
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+app = FastAPI(title="cmf-server", lifespan=lifespan)
 
 BASE_PATH = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
@@ -38,6 +59,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 @app.get("/")
 def read_root(request: Request):
@@ -99,6 +121,17 @@ async def display_artifact(request: Request, pipeline_name: str,data: str):
         return artifact_df
     else:
         artifact_df = ""
+
+@app.get("/display_artifact_types")
+async def display_artifact_types(request: Request):
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        artifact_types = get_artifact_types(server_store_path)
+        return artifact_types
+    else:
+        artifact_types = ""
+        return
+
 
 @app.get("/display_pipelines")
 async def display_list_of_pipelines(request: Request):
