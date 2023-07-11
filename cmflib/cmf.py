@@ -53,7 +53,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_commands_wrapper import mt_push, mt_pull, arti_pull, arti_push, cmf_cmd_init
+from cmflib.cmf_commands_wrapper import mt_push, mt_pull, arti_pull, arti_push, cmf_cmd_init,init_local,init_minioS3,init_amazonS3,init_sshremote
 
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
@@ -1365,32 +1365,42 @@ class Cmf:
         """updates an artifact"""
         put_artifact(self.store, artifact)
 
-    def metadata_push(self, execution_id = 0):
-        #print("pipeline_name: ", self.parent_context.name)
-        output = mt_push(self.parent_context.name)
+    def metadata_push(self, execution_id =""):
+        output = mt_push(self.parent_context.name,self.filename,execution_id)
         return output
 
-    def metadata_pull(self):
-        print("pipeline_name: ", pipeline_name)
-        output = mt_pull(pipeline_name)
+    def metadata_pull(self,execution_id =""):
+        output = mt_pull(self.parent_context.name,self.filename,execution_id)
         return output
 
 
     def artifact_pull(self):
-        print("pipeline_name: ", pipeline_name)
-        output = arti_pull(pipeline_name)
+        output = arti_pull(pipeline_na)
         return output
-
 
     def artifact_push(self):
-        print("pipeline_name: ", pipeline_name)
-        output = arti_push(pipeline_name)
+        output = arti_push()
         return output
 
 
-    def cmf_init(self):
-        print("pipeline_name: ", pipeline_name)
-        output = cmf_cmf_init(pipeline_name)
+    def cmf_init_show(self):
+        output = cmf_cmd_init()
+        return output
+
+    def cmf_init_local(self,path,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
+        output=init_local(path,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
+        return output
+
+    def cmf_init_minio(self,url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
+        output=init_minioS3(url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
+        return output
+
+    def cmf_init_amazon(self,url,access_key_id,secret_key,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
+        output=init_amazonS3(url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
+        return output
+
+    def cmf_init_sshremote(self,path,user,port,password,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
+        output=init_sshremote(path,user,port,password,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
         return output
 
 
