@@ -19,9 +19,6 @@ def mt_push(pipeline_name, file_name, execution_id):
     print(msg)
     return msg
 
-
-
-
 def mt_pull(pipeline_name, file_name, execution_id):
     cli_args = cli.parse_args(
             [
@@ -45,6 +42,7 @@ def arti_push():
             [
                "artifact",
                "push",
+
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -53,13 +51,23 @@ def arti_push():
     return msg
 
 
-def arti_pull(self):
+def arti_pull(pipeline_name, file_name):
+
     cli_args = cli.parse_args(
             [
                "artifact",
                "pull",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+
             ]
            )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
 
 
 def cmf_cmd_init(): 

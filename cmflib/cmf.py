@@ -1375,7 +1375,7 @@ class Cmf:
 
 
     def artifact_pull(self):
-        output = arti_pull(pipeline_na)
+        output = arti_pull(self.parent_context.name,self.filename)
         return output
 
     def artifact_push(self):

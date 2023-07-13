@@ -48,7 +48,6 @@ class CmdArtifactPull(CmdBase):
     def run(self):
         # Put a check to see whether pipline exists or not
         pipeline_name = self.args.pipeline_name
-        print(pipeline_name)
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
         if self.args.file_name:
