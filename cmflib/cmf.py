@@ -53,7 +53,17 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_commands_wrapper import mt_push, mt_pull, arti_pull, arti_push, cmf_cmd_init,init_local,init_minioS3,init_amazonS3,init_sshremote
+from cmflib.cmf_commands_wrapper import (
+    mt_push,
+    mt_pull,
+    arti_pull,
+    arti_push,
+    cmf_cmd_init,
+    init_local,
+    init_minioS3,
+    init_amazonS3,
+    init_sshremote
+)
 
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
@@ -1365,44 +1375,127 @@ class Cmf:
         """updates an artifact"""
         put_artifact(self.store, artifact)
 
-    def metadata_push(self, execution_id =""):
-        output = mt_push(self.parent_context.name,self.filename,execution_id)
+    def metadata_push(self, execution_id: str = ""):
+        """Pushes mlmd file to cmf-server """
+        # Required arguments:  pipeline_name, filename (mlmd file path) 
+        #Optional arguments: Execution_ID
+        output = mt_push(self.parent_context.name, self.filename, execution_id)
         return output
 
-    def metadata_pull(self,execution_id =""):
-        output = mt_pull(self.parent_context.name,self.filename,execution_id)
+    def metadata_pull(self, execution_id: str = ""):
+        """Pulls mlmd file from cmf-server"""
+        # Required arguments:  pipeline_name, filename(file path to store mlmd file) 
+        #Optional arguments: Execution_ID
+        output = mt_pull(self.parent_context.name, self.filename, execution_id)
         return output
-
 
     def artifact_pull(self):
-        output = arti_pull(self.parent_context.name,self.filename)
+        """Pulls artifacts from initialized repository """
+        # Required arguments: Pipeline_name
+        # Optional arguments: filename( path to store artifacts)
+        output = arti_pull(self.parent_context.name, self.filename)
         return output
 
     def artifact_push(self):
+        """Push artifacts to initialized repository"""
         output = arti_push()
         return output
 
-
     def cmf_init_show(self):
+        """Check whether repository is initialized(local,minioS3,amazonS3,sshremote)"""
         output = cmf_cmd_init()
         return output
 
-    def cmf_init_local(self,path,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
-        output=init_local(path,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
+    def cmf_init_local(
+        self,
+        path: str,
+        git_remote_url: str,
+        cmf_server_url: str = "",
+        neo4j_user: str = "",
+        neo4j_password: str = "",
+        neo4j_uri: str = "",
+    ):
+        """Initialize local repository"""
+        output = init_local(
+            path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
+        )
         return output
 
-    def cmf_init_minio(self,url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
-        output=init_minioS3(url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
+    def cmf_init_minio(
+        self,
+        url: str,
+        endpoint_url: str,
+        access_key_id: str,
+        secret_key: str,
+        git_remote_url: str,
+        cmf_server_url: str = "",
+        neo4j_user: str = "",
+        neo4j_password: str = "",
+        neo4j_uri: str = "",
+    ):
+        """Initialize minioS3 repository"""
+        output = init_minioS3(
+            url,
+            endpoint_url,
+            access_key_id,
+            secret_key,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
+        return output
+    
+    def cmf_init_amazon(
+        self,
+        url: str,
+        access_key_id: str,
+        secret_key: str,
+        git_remote_url: str,
+        cmf_server_url: str = "",
+        neo4j_user: str = "",
+        neo4j_password: str = "",
+        neo4j_uri: str = "",
+    ):
+        """Initialize amazonS3 repository"""
+        output = init_amazonS3(
+            url,
+            access_key_id,
+            secret_key,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
         return output
 
-    def cmf_init_amazon(self,url,access_key_id,secret_key,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
-        output=init_amazonS3(url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
+    def cmf_init_sshremote(
+        self,
+        path: str,
+        user: str,
+        port: int,
+        password: str,
+        git_remote_url: str,
+        cmf_server_url: str = "",
+        neo4j_user: str = "",
+        neo4j_password: str = "",
+        neo4j_uri: str = "",
+    ):
+        """Initialize sshremote repository"""
+        output = init_sshremote(
+            path,
+            user,
+            port,
+            password,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
         return output
-
-    def cmf_init_sshremote(self,path,user,port,password,git_remote_url,cmf_server_url="",neo4j_user="",neo4j_password="",neo4j_uri=""):
-        output=init_sshremote(path,user,port,password,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri)
-        return output
-
 
     def create_dataslice(self, name: str) -> "Cmf.DataSlice":
         """Creates a dataslice object.
