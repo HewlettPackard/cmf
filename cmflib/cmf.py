@@ -128,7 +128,6 @@ class Cmf:
         self.execution_label_props = {}
         self.graph = graph
         self.branch_name = filename.rsplit("/", 1)[-1]
-
         if is_server is False:
             git_checkout_new_branch(self.branch_name)
         self.parent_context = get_or_create_parent_context(
@@ -1382,11 +1381,11 @@ class Cmf:
         output = mt_push(self.parent_context.name, self.filename, execution_id)
         return output
 
-    def metadata_pull(self, execution_id: str = ""):
+    def metadata_pull(self,file_path="",execution_id: str = ""):
         """Pulls mlmd file from cmf-server"""
         # Required arguments:  pipeline_name, filename(file path to store mlmd file) 
         #Optional arguments: Execution_ID
-        output = mt_pull(self.parent_context.name, self.filename, execution_id)
+        output = mt_pull(self.parent_context.name, file_path, execution_id)
         return output
 
     def artifact_pull(self):
