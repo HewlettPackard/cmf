@@ -16,6 +16,9 @@ const Artifacts = () => {
   const [artifacts, setArtifacts] = useState([]);
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [page, setPage] = useState(1);
+
 
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
@@ -55,21 +58,20 @@ const Artifacts = () => {
 
 
 
-  const fetchArtifacts = (pipelineName, type) => {
-    client.getArtifacts(pipelineName, type).then((data) => {
-      setArtifacts(data);
+  const fetchArtifacts = (pipelineName, type, page) => {
+    client.getArtifacts(pipelineName, type, page).then((data) => {
+      setArtifacts(data.items);
+      setTotalItems(data.total_items);
     });
   };
-
-  
 
 
   useEffect(() => {
     if(selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, page);
     }
 
-  }, [selectedPipeline, selectedArtifactType]);
+  }, [selectedPipeline, selectedArtifactType, page]);
 
 
 return (
@@ -92,6 +94,25 @@ return (
               {selectedPipeline !== null && selectedArtifactType !== null && (
                   <ArtifactTable artifacts={artifacts} />
               )}
+              <div>
+        <button
+          onClick={() => setPage((prevPage) => Math.max(prevPage - 1, 1))}
+          disabled={page === 1}
+        >
+          Previous
+        </button>
+        <span>{page}</span>
+        <button
+          onClick={() =>
+            setPage((prevPage) =>
+              Math.min(prevPage + 1, Math.ceil(totalItems / 10))
+            )
+          }
+          disabled={page === Math.ceil(totalItems / 10)}
+        >
+          Next
+        </button>
+      </div>
             </div>
           </div>
         </div>

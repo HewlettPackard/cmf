@@ -200,7 +200,6 @@ return (
             </tbody>
           </table>
           </div>
-          <div>{renderPagination()}</div>
        </div>
       </div>
   );

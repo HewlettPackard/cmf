@@ -351,6 +351,7 @@ class CmfQuery(object):
         return [ctx.name for ctx in self._get_pipelines()]
 
     def _transform_to_artifacts_dataframe(self, node):
+        #print("node.id: ", node.id)
         d = {"id": node.id}
         d["name"] = getattr(node, "name", "")
         d["create_time_since_epoch"] = getattr(node, "create_time_since_epoch", "")
@@ -429,7 +430,7 @@ class CmfQuery(object):
                 for cc in child_contexts:
                     artifacts = self.store.get_artifacts_by_context(cc.id)
                     for art in artifacts:
-                        d1 = self._transform_to_dataframe(art)
+                        d1 = self._transform_to_artifacts_dataframe(art)
                         # df = df.append(d1, sort=True, ignore_index=True)
                         df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df

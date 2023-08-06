@@ -1,5 +1,5 @@
 # cmf-server api's
-from fastapi import FastAPI, Request, APIRouter, status, HTTPException
+from fastapi import FastAPI, Request, APIRouter, status, HTTPException, Query
 from contextlib import asynccontextmanager
 import pandas as pd
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from server.app.get_data import get_executions, get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types
+from server.app.get_data import get_executions, get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types, get_all_artifact_ids
 from server.app.query_visualization import query_visualization
 from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
@@ -17,23 +17,16 @@ import json
 
 server_store_path = "/cmf-server/data/mlmd"
 
+dict_of_art_ids = {}
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    data = {
-    "name": "John Doe",
-    "age": 30,
-    "city": "New York"
-    }
-    # create a json file
-    file_path = "/cmf-server/data/data.json"
-    with open(file_path, 'w') as json_file:
-        json.dump(data, json_file)
-
-    # load the json file
+    #loaded artifact ids into memory
+    global dict_of_art_ids
+    dict_of_art_ids = get_all_artifact_ids(server_store_path)
+    #print(dict_of_art_ids)
     yield
-    # delete the json file
-    if os.path.exists(file_path):
-        os.remove(file_path)
+    dict_of_art_ids.clear()
 
 app = FastAPI(title="cmf-server", lifespan=lifespan)
 
@@ -71,6 +64,18 @@ def read_root(request: Request):
 async def mlmd_push(info: Request):
     req_info = await info.json()
     status= create_unique_executions(server_store_path,req_info)
+    # check how to make it async 
+    global dict_of_art_ids
+    result_dict = dict_of_art_ids.copy()
+    output_dict = get_all_artifact_ids(server_store_path)
+    for key, value in output_dict.items():
+        if key in result_dict:
+            result_dict[key].update(value)
+        else:
+            result_dict[key] = value.copy()
+    dict_of_art_ids = result_dict
+    #print("print dict_ids after the mlmd push ")
+    #print(dict_of_art_ids)
     return {"status": status, "data": req_info}
 
 
@@ -113,14 +118,36 @@ async def display_lineage(request: Request, pipeline_name: str):
         return 'mlmd doesnt exist'
 
 # api to display artifacts available in mlmd
-@app.get("/display_artifact_type/{pipeline_name}/{data}")
-async def display_artifact(request: Request, pipeline_name: str,data: str):
+@app.get("/display_artifacts/{pipeline_name}/{type}")
+async def display_artifact(
+    request: Request, 
+    pipeline_name: str,
+    type: str,   # type = artifact type 
+    page: int = Query(1, description="Page number", gt=0),
+    per_page: int = Query(10, description="Items per page", le=100),
+    ):
     # checks if mlmd file exists on server
+    artifact_id_set = dict_of_art_ids.get(pipeline_name, set())
+    #print(type(artifact_id_set))
+    #print(artifact_id_set)
+    if not artifact_id_set:
+       artifact_df = ""
+       return artifact_df
     if os.path.exists(server_store_path):
-        artifact_df = get_artifacts(server_store_path, pipeline_name,data)
-        return artifact_df
+        artifact_df = get_artifacts(server_store_path, pipeline_name, type, artifact_id_set)
+        total_items = len(artifact_df)
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        data_paginated = artifact_df[start_idx:end_idx]
+
+        return {
+            "total_items": total_items,
+            "items": data_paginated
+        }
+        #return artifact_df
     else:
         artifact_df = ""
+        return artifact_df
 
 @app.get("/display_artifact_types")
 async def display_artifact_types(request: Request):

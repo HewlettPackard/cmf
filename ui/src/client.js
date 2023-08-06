@@ -23,9 +23,13 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(pipelineName, type) {
+  async getArtifacts(pipelineName, type, page) {
     return this.apiClient
-      .get(`/display_artifact_type/${pipelineName}/${type}`)
+      .get(`/display_artifacts/${pipelineName}/${type}`, {
+        params: {
+          page: page,
+        },
+      })
       .then(({ data }) => {
         return data;
       });
@@ -49,9 +53,13 @@ class FastAPIClient {
     }
   }
 
-  getExecutions(pipelineName) {
+  getExecutions(pipelineName, page) {
     return this.apiClient
-      .get(`/display_executions/${pipelineName}`)
+      .get(`/display_executions/${pipelineName}`, {
+        params: {
+          page: page,
+        },
+      })
       .then(({ data }) => {
         return data;
       });
