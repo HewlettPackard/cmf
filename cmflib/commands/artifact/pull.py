@@ -56,59 +56,55 @@ class CmdArtifactPull(CmdBase):
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
         query = cmfquery.CmfQuery(mlmd_file_name)
+
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
         identifiers = []
-        for stage in stages:
-            executions = query.get_all_executions_in_stage(
-                stage
-            )  # getting all executions for stages
-            if len(executions) > 0:  # check if stage has executions
-                dict_executions = executions.to_dict(
-                    "dict"
-                )  # converting it to dictionary
-                identifiers.append(dict_executions["id"][0])  # id's of execution
 
+        for stage in stages:
+            # getting all executions for stages
+            executions = query.get_all_executions_in_stage(stage)
+            # check if stage has executions
+            if len(executions) > 0:
+                 # converting it to dictionary
+                dict_executions = executions.to_dict("dict")
+                for id in dict_executions["id"].values():
+                    identifiers.append(id)
             else:
                 print("No Executions found for " + stage + " stage.")
-        name = []
-        url = []
+
+        name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
             return "No executions found."
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
-            artifacts_dict = get_artifacts.to_dict(
-                "dict"
-            )  # converting it to dictionary
-            name.append(list(artifacts_dict["name"].values()))
-            url.append(list(artifacts_dict["url"].values()))    # change here
-        name_list_updated = [name for l in name for name in l]  # getting names and urls
-        url_list_updated = [url for l in url for url in l]  # change here  - a big one
-        final_list = []
-        file_name = [(i.split(":"))[0] for i in name_list_updated]  # getting names
-        for i in tuple(zip(file_name, url_list_updated)):
-            if type(i[1]) == str:
-                final_list.append(i)
-        names_urls = list(set(final_list))  # list of tuple consist of names and urls
-        # names_urls = ('artifacts/parsed/test.tsv', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
-        # names_urls = ('artifacts/parsed/test.tsv', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
+            temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url']))
+            name_url_dict.update(temp_dict)
+        #print(name_url_dict)
+        # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
+        # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
+
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
             return output
         dvc_config_op = output
+
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts()
-            for name_url in names_urls:
-                # name_url[1] = 'Test-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81')
-                url = self.split_url_pipeline(name_url[1], pipeline_name)
-                # url = s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81
-                temp = url.split("/")
+            for name, url in name_url_dict.items():
+                if not isinstance(url, str):
+                    continue
+                # url = 'Test-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81')
+                s_url = self.split_url_pipeline(url, pipeline_name)
+                # s_url = s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81
+                temp = s_url.split("/")
                 bucket_name = temp[2]
                 object_name = temp[3] + "/" + temp[4]
-                # name_url[0] = 'artifacts/parsed/test.tsv'
-                path_name = current_directory + "/" + name_url[0]
+                name = name.split(":")[0]
+                # name = 'artifacts/parsed/test.tsv'
+                path_name = current_directory + "/" + name
                 stmt = minio_class_obj.download_artifacts(
                     dvc_config_op,
                     current_directory,
@@ -120,51 +116,60 @@ class CmdArtifactPull(CmdBase):
             return "Done"
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts()
-            for name_url in names_urls:
-                # name_url[1] = 'Test-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034'
-                url = self.split_url_pipeline(name_url[1], pipeline_name)
-                temp = url.split("/")
+            for name, url in name_url_dict.items():
+                if not isinstance(url, str):
+                    continue
+                # url = 'Test-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034'
+                s_url = self.split_url_pipeline(url, pipeline_name)
+                temp = s_url.split("/")
                 temp_length = len(temp)
-                # name_url[0] = artifacts/model/model.pkl
-                download_loc = current_directory + "/" + name_url[0]
+                name = name.split(":")[0]
+                # name = artifacts/model/model.pkl
+                download_loc = current_directory + "/" + name
                 current_dvc_loc = (
                     temp[(temp_length - 2)] + "/" + temp[(temp_length - 1)]
                 )
                 stmt = local_class_obj.download_artifacts(
-                    dvc_config_op, current_directory, current_dvc_loc, name_url[0]
+                    dvc_config_op, current_directory, current_dvc_loc, name
                 )
                 print(stmt)
             return "Done"
         elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
-            for name_url in names_urls:
-                # name_url[1] = 'Test-env:ssh://127.0.0.1/home/user/ssh-storage/06/d100ff3e04e2c87bf20f0feacc9034'
-                url = self.split_url_pipeline(name_url[1], pipeline_name)
-                temp = url.split("/")
+            for name, url in name_url_dict.items():
+                if not isinstance(url, str):
+                    continue
+                # url = 'Test-env:ssh://127.0.0.1/home/user/ssh-storage/06/d100ff3e04e2c87bf20f0feacc9034'
+                s_url = self.split_url_pipeline(url, pipeline_name)
+                temp = s_url.split("/")
                 temp_var = temp[2].split(":")
                 host = temp_var[0]
-                # name_url[0] = artifacts/model/model.pkl
-                download_loc = current_directory + "/" + name_url[0]
+                name = name.split(":")[0]
+                # name = artifacts/model/model.pkl
+                download_loc = current_directory + "/" + name
                 temp.pop(0)
                 temp.pop(0)
                 temp.pop(0)
                 current_loc_1 = "/".join(temp)
                 current_loc = f"/{current_loc_1}"
                 stmt = sshremote_class_obj.download_artifacts(
-                    dvc_config_op, host, current_directory, current_loc, name_url[0]
+                    dvc_config_op, host, current_directory, current_loc, name
                 )
                 print(stmt)
             return "Done"
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
-            for name_url in names_urls:
-                # name_url[1] ='Test-env:s3://XXXXXXX/dvc-art/6f/597d341ceb7d8fbbe88859a892ef81'
-                url = self.split_url_pipeline(name_url[1], pipeline_name)
-                temp = url.split("/")
+            for name_url in name_url_dict.items():
+                if not isinstance(url, str):
+                    continue
+                # url ='Test-env:s3://XXXXXXX/dvc-art/6f/597d341ceb7d8fbbe88859a892ef81'
+                s_url = self.split_url_pipeline(url, pipeline_name)
+                temp = s_url.split("/")
                 bucket_name = temp[2]
                 object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
-                # name_url[0] = artifacts/model/model.pkl
-                download_loc = current_directory + "/" + name_url[0]
+                name = name.split(":")[0]
+                # name = artifacts/model/model.pkl
+                download_loc = current_directory + "/" + name
                 stmt = amazonS3_class_obj.download_artifacts(
                     dvc_config_op,
                     current_directory,
@@ -203,6 +208,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+    )
+
+    parser.add_argument(
+        "-a", "--artifact_name", help="Specify artifact name.", metavar="<artifact_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPull)
