@@ -15,7 +15,8 @@ const Executions = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [executions, setExecutions] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [page, setPage] = useState(1);
+  const [activePage, setActivePage] = useState(1);
+  const [clickedButton, setClickedButton] = useState("page");
 
   useEffect(() => {
     fetchPipelines();
@@ -30,10 +31,10 @@ const Executions = () => {
 
   useEffect(() => {
     if(selectedPipeline) {
-      fetchExecutions(selectedPipeline, page);
+      fetchExecutions(selectedPipeline, activePage);
     }
 
-  }, [selectedPipeline, page]);
+  }, [selectedPipeline, activePage]);
 
   const fetchExecutions = (pipelineName, page) => {
     client.getExecutions(pipelineName, page).then((data) => {
@@ -44,6 +45,26 @@ const Executions = () => {
 
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline)
+  };
+
+
+  const handlePageClick = (page) => {
+    setActivePage(page);
+    setClickedButton("page");
+  };
+
+  const handlePrevClick = () => {
+    if (activePage > 1) {
+      setActivePage(activePage - 1);
+      setClickedButton("prev");
+    }
+  };
+
+  const handleNextClick = () => {
+    if (activePage < Math.ceil(totalItems / 2)) {
+      setActivePage(activePage + 1);
+      setClickedButton("next");
+    }
   };
 
   return (
@@ -63,22 +84,27 @@ const Executions = () => {
             </div>
             <div>
         <button
-          className={`pagination-button ${currentPage === 1 ? 'active' : ''}`}
-          onClick={() => setPage((prevPage) => Math.max(prevPage - 1, 1))}
-          disabled={page === 1}
+          onClick={handlePrevClick}
+          disabled={activePage === 1}
+          className={clickedButton === "prev" ? "active" : ""}
         >
           Previous
         </button>
-        <span>{page}</span>
+        {[...Array(Math.ceil(totalItems / 2))].map((_, index) => (
+          <button
+            key={index + 1}
+            onClick={() => handlePageClick(index + 1)}
+            className={activePage === index + 1 && clickedButton === "page" ? "active" : ""}
+          >
+            {index + 1}
+          </button>
+        ))}
         <button
-          onClick={() =>
-            setPage((prevPage) =>
-              Math.min(prevPage + 1, Math.ceil(totalItems / 10))
-            )
-          }
-          disabled={page === Math.ceil(totalItems / 10)}
+          onClick={handleNextClick}
+          disabled={activePage === Math.ceil(totalItems / 2)}
+          className={clickedButton === "next" ? "active" : ""}
         >
-          Next
+Next
         </button>
       </div>
           </div>
