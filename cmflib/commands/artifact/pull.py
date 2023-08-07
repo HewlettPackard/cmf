@@ -156,15 +156,6 @@ class CmdArtifactPull(CmdBase):
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
-                # url = 'Test-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81')
-                #s_url = self.split_url_pipeline(url, pipeline_name)
-                # s_url = s3://dvc-art/6f/597d341ceb7d8fbbe88859a892ef81
-                #temp = s_url.split("/")
-                #bucket_name = temp[2]
-                #object_name = temp[3] + "/" + temp[4]
-                #name = name.split(":")[0]
-                # name = 'artifacts/parsed/test.tsv'
-                #path_name = current_directory + "/" + name
                     minio_args = self.manipulate_args("minio", output[0], output[1], current_directory)
                     stmt = minio_class_obj.download_artifacts(
                         dvc_config_op,
@@ -225,19 +216,6 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                # url = 'Test-env:ssh://127.0.0.1/home/user/ssh-storage/06/d100ff3e04e2c87bf20f0feacc9034'
-                #s_url = self.split_url_pipeline(url, pipeline_name)
-                #temp = s_url.split("/")
-                #temp_var = temp[2].split(":")
-                #host = temp_var[0]
-                #name = name.split(":")[0]
-                # name = artifacts/model/model.pkl
-                #download_loc = current_directory + "/" + name
-                #temp.pop(0)
-                #temp.pop(0)
-                #temp.pop(0)
-                #current_loc_1 = "/".join(temp)
-                #current_loc = f"/{current_loc_1}"
                     args = self.manipulate_args("ssh", output[0], output[1], current_directory)
                     stmt = sshremote_class_obj.download_artifacts(
                         dvc_config_op,
@@ -271,14 +249,6 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                # url ='Test-env:s3://XXXXXXX/dvc-art/6f/597d341ceb7d8fbbe88859a892ef81'
-                #s_url = self.split_url_pipeline(url, pipeline_name)
-                #temp = s_url.split("/")
-                #bucket_name = temp[2]
-                #object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
-                #name = name.split(":")[0]
-                # name = artifacts/model/model.pkl
-                #download_loc = current_directory + "/" + name
                     args = self.manipulate_args("amazonS3", output[0], output[1], current_directory)
                     stmt = amazonS3_class_obj.download_artifacts(
                         dvc_config_op,
