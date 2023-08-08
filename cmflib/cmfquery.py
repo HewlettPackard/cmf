@@ -351,7 +351,6 @@ class CmfQuery(object):
         return [ctx.name for ctx in self._get_pipelines()]
 
     def _transform_to_artifacts_dataframe(self, node):
-        #print("node.id: ", node.id)
         d = {"id": node.id}
         d["name"] = getattr(node, "name", "")
         d["create_time_since_epoch"] = getattr(node, "create_time_since_epoch", "")
@@ -359,8 +358,6 @@ class CmfQuery(object):
         d["uri"] = getattr(node, "uri", "")
         type_id = getattr(node, "type_id", "")
         output = self.store.get_artifact_types_by_id([type_id])[0]
-        #print("type", output)
-        #print(output.name)
         d["type"] = output.name
         for k, v in node.properties.items():
              if v.HasField('string_value'):
@@ -431,23 +428,19 @@ class CmfQuery(object):
                     artifacts = self.store.get_artifacts_by_context(cc.id)
                     for art in artifacts:
                         d1 = self._transform_to_artifacts_dataframe(art)
-                        # df = df.append(d1, sort=True, ignore_index=True)
                         df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
-    def get_all_artifacts_by_ids_list(self, artifact_list) -> pd.DataFrame: # change here
+    def get_all_artifacts_by_ids_list(self, artifact_list) -> pd.DataFrame:
         df = pd.DataFrame()
         artifacts = self.store.get_artifacts_by_id(artifact_list)
-        #print(artifacts[0])
         for art in artifacts:
             d1 = self._transform_to_artifacts_dataframe(art)
-                        # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         """Return executions of the given stage as pandas data frame.
-
         Args:
             stage_name: Stage name. See doc strings for the prev method.
         Returns:
@@ -664,6 +657,7 @@ class CmfQuery(object):
         executions_ids = set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact.id])
+
             if event.type == mlpb.Event.OUTPUT
         )
         if not executions_ids:

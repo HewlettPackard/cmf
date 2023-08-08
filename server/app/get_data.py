@@ -15,28 +15,25 @@ def get_executions(mlmdfilepath, pipeline_name):
             df = pd.concat([df, executions], sort=True, ignore_index=True)
     return df
 
-def get_all_artifact_ids(mlmdfilepath):
-    # following is a dictionary with key as pipeline name and set of artifact_ids as values
-    artifact_ids_with_pipeline = {}
+def get_all_artifact_ids_with_type(mlmdfilepath):
+    # following is a dictionary of dictionary 
+    # First level dictionary key is pipeline_name 
+    # First lvel dicitonary value is nested dictionary
+    # Nested dictionary key is type i.e. Dataset, Model, etc.
+    # Nested dictionary value is type i.e. set of integers
+    artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
     for name in names:
-        #print("pipeline_name: ", name)
-        artifacts = query.get_all_artifacts_by_context(name)
-        if artifacts.empty:
+        artifacts_df = query.get_all_artifacts_by_context(name)
+        if artifacts_df.empty:
             pass
         else:
-            #print(artifacts.iloc[0])
-            id = 'id'
-            if '_id' in artifacts.columns:
-                id = '_id'
-            #print(id)
-            ids = artifacts[id]
-            #print(type(ids))
-            artifact_ids_with_pipeline[name] = set()
-            for id in ids:
-                artifact_ids_with_pipeline[name].add(id)
-    return artifact_ids_with_pipeline
+            artifact_ids[name] = {}
+            for type in artifacts_df['type']:
+                filtered_values = set(artifacts_df.loc[artifacts_df['type'] == type, 'id'])
+                artifact_ids[name][type] = filtered_values
+    return artifact_ids
 
 
 # This function fetches all the artifacts available in given mlmd
@@ -72,25 +69,21 @@ def get_artifacts_old(mlmdfilepath, pipeline_name, data):  # get_artifacts retur
     return tempout
 
 
-def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_id_set):
+def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     df = pd.DataFrame()
     for name in names:
         if name == pipeline_name:
-            #get_artifacts = query.get_all_artifacts_by_context(pipeline_name)
-            #print("ids: ", get_artifacts['id'])
-            #artifact_list = get_artifacts['id']
-            df = query.get_all_artifacts_by_ids_list(artifact_id_set)
-            df['name'] = df['name'].str.split(':').str[0]
+            df = query.get_all_artifacts_by_ids_list(artifact_ids)
             df = df.drop_duplicates()
-            #print(df["type"])
+            df['name'] = df['name'].str.split(':').str[0]
             df = df.loc[df["type"] == art_type]
             result = df.to_json(orient="records")
             tempout = json.loads(result)
-            #print(tempout)
             return tempout
-    return
+        else:
+            return
 
 def get_artifact_types(mlmdfilepath):
     query = cmfquery.CmfQuery(mlmdfilepath)

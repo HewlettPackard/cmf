@@ -10,7 +10,6 @@ import Sidebar from "../../components/Sidebar";
 const client = new FastAPIClient(config);
 
 const Executions = () => {
-
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [executions, setExecutions] = useState([]);
@@ -30,23 +29,21 @@ const Executions = () => {
   };
 
   useEffect(() => {
-    if(selectedPipeline) {
+    if (selectedPipeline) {
       fetchExecutions(selectedPipeline, activePage);
     }
-
   }, [selectedPipeline, activePage]);
 
   const fetchExecutions = (pipelineName, page) => {
     client.getExecutions(pipelineName, page).then((data) => {
-      setExecutions(data);
+      setExecutions(data.items);
       setTotalItems(data.total_items);
     });
   };
 
   const handlePipelineClick = (pipeline) => {
-    setSelectedPipeline(pipeline)
+    setSelectedPipeline(pipeline);
   };
-
 
   const handlePageClick = (page) => {
     setActivePage(page);
@@ -75,38 +72,45 @@ const Executions = () => {
       >
         <DashboardHeader />
         <div className="flex flex-row">
-          <Sidebar pipelines={pipelines} handlePipelineClick={handlePipelineClick} />
+          <Sidebar
+            pipelines={pipelines}
+            handlePipelineClick={handlePipelineClick}
+          />
           <div className="container justify-center items-center mx-auto px-4">
             <div className="container">
               {selectedPipeline !== null && (
-                  <ExecutionTable executions={executions} />
+                <ExecutionTable executions={executions} />
               )}
             </div>
             <div>
-        <button
-          onClick={handlePrevClick}
-          disabled={activePage === 1}
-          className={clickedButton === "prev" ? "active" : ""}
-        >
-          Previous
-        </button>
-        {[...Array(Math.ceil(totalItems / 2))].map((_, index) => (
-          <button
-            key={index + 1}
-            onClick={() => handlePageClick(index + 1)}
-            className={activePage === index + 1 && clickedButton === "page" ? "active" : ""}
-          >
-            {index + 1}
-          </button>
-        ))}
-        <button
-          onClick={handleNextClick}
-          disabled={activePage === Math.ceil(totalItems / 2)}
-          className={clickedButton === "next" ? "active" : ""}
-        >
-Next
-        </button>
-      </div>
+              <button
+                onClick={handlePrevClick}
+                disabled={activePage === 1}
+                className={clickedButton === "prev" ? "active" : ""}
+              >
+                Previous
+              </button>
+              {[...Array(Math.ceil(totalItems / 2))].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => handlePageClick(index + 1)}
+                  className={
+                    activePage === index + 1 && clickedButton === "page"
+                      ? "active"
+                      : ""
+                  }
+                >
+                  {index + 1}
+                </button>
+              ))}
+              <button
+                onClick={handleNextClick}
+                disabled={activePage === Math.ceil(totalItems / 2)}
+                className={clickedButton === "next" ? "active" : ""}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </div>
         <Footer />

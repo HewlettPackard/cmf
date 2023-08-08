@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from server.app.get_data import get_executions, get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types, get_all_artifact_ids
+from server.app.get_data import get_executions, get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types, get_all_artifact_ids_with_type
 from server.app.query_visualization import query_visualization
 from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
@@ -21,10 +21,10 @@ dict_of_art_ids = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    #loaded artifact ids into memory
+    # loaded artifact ids into memory
     global dict_of_art_ids
-    dict_of_art_ids = get_all_artifact_ids(server_store_path)
-    #print(dict_of_art_ids)
+    dict_of_art_ids = get_all_artifact_ids_with_type(server_store_path)
+    # print(dict_of_art_ids)
     yield
     dict_of_art_ids.clear()
 
@@ -67,7 +67,8 @@ async def mlmd_push(info: Request):
     # check how to make it async 
     global dict_of_art_ids
     result_dict = dict_of_art_ids.copy()
-    output_dict = get_all_artifact_ids(server_store_path)
+    output_dict = get_all_artifact_ids_with_type(server_store_path)
+    #print("output_dict", output_dict)
     for key, value in output_dict.items():
         if key in result_dict:
             result_dict[key].update(value)
@@ -94,13 +95,27 @@ async def mlmd_pull(info: Request, pipeline_name: str):
 
 # api to display executions available in mlmd
 @app.get("/display_executions/{pipeline_name}")
-async def display_exec(request: Request, pipeline_name: str):
+async def display_exec(
+    request: Request,
+    pipeline_name: str,
+    page: int = Query(1, description="Page number", gt=0),
+    per_page: int = Query(2, description="Items per page", le=100),
+    ):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        execution_df = get_executions(server_store_path, pipeline_name)
-    tempOut = execution_df.to_json(orient="records")
-    parsed = json.loads(tempOut)
-    return parsed
+        executions_df = get_executions(server_store_path, pipeline_name)
+        total_items = len(executions_df)
+        start_idx = (page - 1) * per_page
+        end_idx = start_idx + per_page
+        executions_paginated = executions_df.iloc[start_idx:end_idx]
+        temp = executions_paginated.to_json(orient="records")
+        executions_parsed = json.loads(temp)
+        return {
+            "total_items": total_items,
+            "items": executions_parsed
+        }
+    else:
+        return
 
 @app.get("/display_lineage/{pipeline_name}")
 async def display_lineage(request: Request, pipeline_name: str):
@@ -120,34 +135,35 @@ async def display_lineage(request: Request, pipeline_name: str):
 # api to display artifacts available in mlmd
 @app.get("/display_artifacts/{pipeline_name}/{type}")
 async def display_artifact(
-    request: Request, 
+    request: Request,
     pipeline_name: str,
-    type: str,   # type = artifact type 
+    type: str,   # type = artifact type
     page: int = Query(1, description="Page number", gt=0),
-    per_page: int = Query(10, description="Items per page", le=100),
+    per_page: int = Query(2, description="Items per page", le=100),
     ):
     # checks if mlmd file exists on server
-    artifact_id_set = dict_of_art_ids.get(pipeline_name, set())
-    #print(type(artifact_id_set))
-    #print(artifact_id_set)
-    if not artifact_id_set:
-       artifact_df = ""
-       return artifact_df
+    art_ids_dict = dict_of_art_ids[pipeline_name]
+    # print("art_ids_dict",art_ids_dict)
+    if not art_ids_dict:
+        return
     if os.path.exists(server_store_path):
-        artifact_df = get_artifacts(server_store_path, pipeline_name, type, artifact_id_set)
-        total_items = len(artifact_df)
+        temp_art_dict = {}
+        if type in art_ids_dict:
+            temp_art_dict = art_ids_dict[type]
+        else:
+            return
+        total_items = len(temp_art_dict)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
-        data_paginated = artifact_df[start_idx:end_idx]
-
+        artifact_id_list = list(temp_art_dict)[start_idx:end_idx]
+        artifact_df = get_artifacts(server_store_path, pipeline_name, type, artifact_id_list)
+        data_paginated = artifact_df
         return {
             "total_items": total_items,
             "items": data_paginated
         }
-        #return artifact_df
     else:
-        artifact_df = ""
-        return artifact_df
+        return
 
 @app.get("/display_artifact_types")
 async def display_artifact_types(request: Request):
