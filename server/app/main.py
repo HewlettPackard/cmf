@@ -64,19 +64,8 @@ def read_root(request: Request):
 async def mlmd_push(info: Request):
     req_info = await info.json()
     status= create_unique_executions(server_store_path,req_info)
-    # check how to make it async 
-    global dict_of_art_ids
-    result_dict = dict_of_art_ids.copy()
-    output_dict = get_all_artifact_ids_with_type(server_store_path)
-    #print("output_dict", output_dict)
-    for key, value in output_dict.items():
-        if key in result_dict:
-            result_dict[key].update(value)
-        else:
-            result_dict[key] = value.copy()
-    dict_of_art_ids = result_dict
-    #print("print dict_ids after the mlmd push ")
-    #print(dict_of_art_ids)
+    # async function
+    await update_global_art_dict()
     return {"status": status, "data": req_info}
 
 
@@ -99,7 +88,7 @@ async def display_exec(
     request: Request,
     pipeline_name: str,
     page: int = Query(1, description="Page number", gt=0),
-    per_page: int = Query(2, description="Items per page", le=100),
+    per_page: int = Query(5, description="Items per page", le=100),
     ):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
@@ -139,22 +128,27 @@ async def display_artifact(
     pipeline_name: str,
     type: str,   # type = artifact type
     page: int = Query(1, description="Page number", gt=0),
-    per_page: int = Query(2, description="Items per page", le=100),
+    per_page: int = Query(5, description="Items per page", le=100),
     ):
+    empty_df = ""
     # checks if mlmd file exists on server
-    art_ids_dict = dict_of_art_ids[pipeline_name]
-    # print("art_ids_dict",art_ids_dict)
-    if not art_ids_dict:
-        return
+    #art_ids_dict = dict_of_art_ids[pipeline_name]
+    #if not art_ids_dict:
+     #   return empty_df
     if os.path.exists(server_store_path):
+        art_ids_dict = dict_of_art_ids[pipeline_name]
+        if not art_ids_dict:
+            return empty_df
         temp_art_dict = {}
         if type in art_ids_dict:
             temp_art_dict = art_ids_dict[type]
         else:
-            return
+            return empty_df
         total_items = len(temp_art_dict)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
+        if total_items < end_idx:
+            end_idx = total_items
         artifact_id_list = list(temp_art_dict)[start_idx:end_idx]
         artifact_df = get_artifacts(server_store_path, pipeline_name, type, artifact_id_list)
         data_paginated = artifact_df
@@ -163,7 +157,7 @@ async def display_artifact(
             "items": data_paginated
         }
     else:
-        return
+        return f"{server_store_path} file doesn't exist."
 
 @app.get("/display_artifact_types")
 async def display_artifact_types(request: Request):
@@ -188,3 +182,20 @@ async def display_list_of_pipelines(request: Request):
         pipeline_names = []
         return pipeline_names
 
+
+
+async def update_global_art_dict():
+    # check how to make it async
+    global dict_of_art_ids
+    result_dict = dict_of_art_ids.copy()
+    output_dict = get_all_artifact_ids_with_type(server_store_path)
+    #print("output_dict", output_dict)
+    for key, value in output_dict.items():
+        if key in result_dict:
+            result_dict[key].update(value)
+        else:
+            result_dict[key] = value.copy()
+    dict_of_art_ids = result_dict
+    #print("print dict_ids after the mlmd push ")
+    #print(dict_of_art_ids)
+    return

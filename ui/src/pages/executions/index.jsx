@@ -43,6 +43,7 @@ const Executions = () => {
 
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline);
+    setActivePage(1)
   };
 
   const handlePageClick = (page) => {
@@ -54,13 +55,15 @@ const Executions = () => {
     if (activePage > 1) {
       setActivePage(activePage - 1);
       setClickedButton("prev");
+      handlePageClick(activePage - 1)
     }
   };
 
   const handleNextClick = () => {
-    if (activePage < Math.ceil(totalItems / 2)) {
+    if (activePage < Math.ceil(totalItems / 5)) {
       setActivePage(activePage + 1);
       setClickedButton("next");
+      handlePageClick(activePage + 1)
     }
   };
 
@@ -90,7 +93,7 @@ const Executions = () => {
               >
                 Previous
               </button>
-              {[...Array(Math.ceil(totalItems / 2))].map((_, index) => (
+              {[...Array(Math.ceil(totalItems / 5))].map((_, index) => (
                 <button
                   key={index + 1}
                   onClick={() => handlePageClick(index + 1)}
@@ -105,7 +108,7 @@ const Executions = () => {
               ))}
               <button
                 onClick={handleNextClick}
-                disabled={activePage === Math.ceil(totalItems / 2)}
+                disabled={activePage === Math.ceil(totalItems / 5)}
                 className={clickedButton === "next" ? "active" : ""}
               >
                 Next

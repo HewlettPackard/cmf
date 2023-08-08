@@ -27,7 +27,7 @@ def get_all_artifact_ids_with_type(mlmdfilepath):
     for name in names:
         artifacts_df = query.get_all_artifacts_by_context(name)
         if artifacts_df.empty:
-            pass
+            return
         else:
             artifact_ids[name] = {}
             for type in artifacts_df['type']:
@@ -82,8 +82,6 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
             result = df.to_json(orient="records")
             tempout = json.loads(result)
             return tempout
-        else:
-            return
 
 def get_artifact_types(mlmdfilepath):
     query = cmfquery.CmfQuery(mlmdfilepath)
