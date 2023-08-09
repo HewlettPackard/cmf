@@ -62,6 +62,8 @@ def read_root(request: Request):
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
+    print("mlmd push started")
+    print("......................")
     req_info = await info.json()
     status= create_unique_executions(server_store_path,req_info)
     # async function

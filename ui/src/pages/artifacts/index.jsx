@@ -33,12 +33,12 @@ const Artifacts = () => {
 
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline);
-    setActivePage(1)
+    setActivePage(1);
   };
 
   const handleArtifactTypeClick = (artifactType) => {
     setSelectedArtifactType(artifactType);
-    setActivePage(1)
+    setActivePage(1);
   };
 
   const fetchArtifactTypes = () => {
@@ -116,36 +116,81 @@ const Artifacts = () => {
               )}
               <div>
                 {artifacts !== null && totalItems > 0 && (
-                <>
-                <button
-                  onClick={handlePrevClick}
-                  disabled={activePage === 1}
-                  className={clickedButton === "prev" ? "active" : ""}
-                >
-                  Previous
-                </button>
-                {[...Array(Math.ceil(totalItems / 5))].map((_, index) => (
-                  <button
-                    key={index + 1}
-                    onClick={() => handlePageClick(index + 1)}
-                    className={
-                      activePage === index + 1 && clickedButton === "page"
-                        ? "active"
-                        : ""
-                    }
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-                <button
-                  onClick={handleNextClick}
-                  disabled={activePage === Math.ceil(totalItems / 5)}
-                  className={clickedButton === "next" ? "active" : ""}
-                >
-                  Next
-                </button>
-               </>
-               )}
+                  <>
+                    <button
+                      onClick={handlePrevClick}
+                      disabled={activePage === 1}
+                      className={clickedButton === "prev" ? "active" : ""}
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: Math.ceil(totalItems / 5) }).map(
+                      (_, index) => {
+                        const pageNumber = index + 1;
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === Math.ceil(totalItems / 5)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageClick(pageNumber)}
+                              className={
+                                activePage === pageNumber &&
+                                clickedButton === "page"
+                                  ? "active"
+                                  : ""
+                              }
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          (activePage <= 3 && pageNumber <= 6) ||
+                          (activePage >= Math.ceil(totalItems / 5) - 2 &&
+                            pageNumber >= Math.ceil(totalItems / 5) - 5) ||
+                          Math.abs(pageNumber - activePage) <= 2
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageClick(pageNumber)}
+                              className={
+                                activePage === pageNumber &&
+                                clickedButton === "page"
+                                  ? "active"
+                                  : ""
+                              }
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          (pageNumber === 2 && activePage > 3) ||
+                          (pageNumber === Math.ceil(totalItems / 5) - 1 &&
+                            activePage < Math.ceil(totalItems / 5) - 3)
+                        ) {
+                          return (
+                            <span
+                              key={`ellipsis-${pageNumber}`}
+                              className="ellipsis"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      }
+                    )}
+                    <button
+                      onClick={handleNextClick}
+                      disabled={activePage === Math.ceil(totalItems / 5)}
+                      className={clickedButton === "next" ? "active" : ""}
+                    >
+                      Next
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
