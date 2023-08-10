@@ -156,7 +156,7 @@ class CmdArtifactPull(CmdBase):
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
-                    minio_args = self.manipulate_args("minio", output[0], output[1], current_directory)
+                    minio_args = self.manipulate_args("minio", name, url, current_directory)
                     stmt = minio_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
@@ -216,7 +216,7 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                    args = self.manipulate_args("ssh", output[0], output[1], current_directory)
+                    args = self.manipulate_args("ssh", name, url, current_directory)
                     stmt = sshremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
@@ -235,7 +235,7 @@ class CmdArtifactPull(CmdBase):
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
-                    args = self.manipulate_args("amazonS3", output[0], output[1], current_directory)
+                    args = self.manipulate_args("amazons3", output[0], output[1], current_directory)
                     stmt = amazonS3_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
@@ -249,7 +249,7 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                    args = self.manipulate_args("amazonS3", output[0], output[1], current_directory)
+                    args = self.manipulate_args("amazons3", name, url, current_directory)
                     stmt = amazonS3_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
