@@ -23,8 +23,9 @@ dict_of_art_ids = {}
 async def lifespan(app: FastAPI):
     # loaded artifact ids into memory
     global dict_of_art_ids
-    dict_of_art_ids = get_all_artifact_ids_with_type(server_store_path)
-    # print(dict_of_art_ids)
+    if os.path.exists(server_store_path):
+        dict_of_art_ids = get_all_artifact_ids_with_type(server_store_path)
+        # print(dict_of_art_ids)
     yield
     dict_of_art_ids.clear()
 
