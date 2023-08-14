@@ -53,6 +53,7 @@ class CmdArtifactPull(CmdBase):
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
+            bucket_name = temp[2]
             object_name = temp[3] + "/" + temp[4]
             path_name = current_directory + "/" + name
             return bucket_name, object_name, path_name
