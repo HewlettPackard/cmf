@@ -42,18 +42,27 @@ class CmdMetadataPull(CmdBase):
         attr_dict = CmfConfig.read_config(config_file_path)
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
 
-
-        directory_to_dump = ""
+        current_directory = os.getcwd()
+        full_path_to_dump = ""
         data = ""
         cmd = "pull"
         mlmd_data = ""
         status = 0
         exec_id = None
         execution_flag = 0
-        if self.args.file_path:  # setting directory where mlmd file will be dumped
-            directory_to_dump = self.args.file_path
+        if self.args.file_name:  # setting directory where mlmd file will be dumped
+            if not os.path.isdir(self.args.file_name):
+                temp = os.path.dirname(self.args.file_name)
+                if temp != "":
+                    current_directory = temp
+                if os.path.exists(current_directory):
+                    full_path_to_dump  = self.args.file_name
+                else:
+                    return f"{current_directory} doesn't exists."
+            else:
+                return "Provide path with file name."
         else:
-            directory_to_dump = os.getcwd()
+            full_path_to_dump = os.getcwd() + "/mlmd"
         if self.args.execution:
             exec_id = self.args.execution
         output = server_interface.call_mlmd_pull(
@@ -68,13 +77,13 @@ class CmdMetadataPull(CmdBase):
         elif output.content:
             try:
                 cmf_merger.parse_json_to_mlmd(
-                    output.content, directory_to_dump + "/mlmd", cmd, None
+                    output.content, full_path_to_dump, cmd, None
                 )  # converts mlmd json data to mlmd file
             except Exception as e:
                 return e
             # verifying status codes
             if status == 200:
-                return "SUCCESS: mlmd is successfully pulled."
+                return f"SUCCESS: {full_path_to_dump} is successfully pulled."
             elif status == 404:
                 return "ERROR: cmf-server is not available."
             elif status == 500:
@@ -105,11 +114,11 @@ def add_parser(subparsers, parent_parser):
         metavar="<pipeline_name>",
     )
 
-    required_arguments.add_argument(
+    parser.add_argument(
         "-f",
-        "--file_path",
-        help="Specify location to pull mlmd file.",
-        metavar="<file_path>",
+        "--file_name",
+        help="Specify mlmd file name with full path.",
+        metavar="<file_name>",
     )
 
     parser.add_argument(
