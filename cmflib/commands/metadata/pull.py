@@ -42,7 +42,7 @@ class CmdMetadataPull(CmdBase):
         attr_dict = CmfConfig.read_config(config_file_path)
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
 
-
+        current_directory = os.getcwd()
         full_path_to_dump = ""
         data = ""
         cmd = "pull"
@@ -52,7 +52,9 @@ class CmdMetadataPull(CmdBase):
         execution_flag = 0
         if self.args.file_name:  # setting directory where mlmd file will be dumped
             if not os.path.isdir(self.args.file_name):
-                current_directory = os.path.dirname(self.args.file_name)
+                temp = os.path.dirname(self.args.file_name)
+                if temp != "":
+                    current_directory = temp
                 if os.path.exists(current_directory):
                     full_path_to_dump  = self.args.file_name
                 else:
@@ -81,7 +83,7 @@ class CmdMetadataPull(CmdBase):
                 return e
             # verifying status codes
             if status == 200:
-                return "SUCCESS: mlmd is successfully pulled."
+                return f"SUCCESS: {full_path_to_dump} is successfully pulled."
             elif status == 404:
                 return "ERROR: cmf-server is not available."
             elif status == 500:
