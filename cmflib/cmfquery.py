@@ -30,22 +30,24 @@ class CmfQuery(object):
         self.store = metadata_store.MetadataStore(config)
 
     def _transform_to_dataframe(self, node):
+        #d = CmfQuery.__get_node_properties(node)
         d = {"id": node.id}
+        d["name"] = getattr(node, "name", "")        
         for k, v in node.properties.items():
-            if v.HasField('string_value'):
-                d[k] = v.string_value
-            elif v.HasField('int_value'):
-                d[k] = v.int_value
-            else:
-                d[k] = v.double_value
+             if v.HasField('string_value'):
+                 d[k] = v.string_value
+             elif v.HasField('int_value'):
+                 d[k] = v.int_value
+             else:
+                 d[k] = v.double_value
 
         for k, v in node.custom_properties.items():
-            if v.HasField('string_value'):
-                d[k] = v.string_value
-            elif v.HasField('int_value'):
-                d[k] = v.int_value
-            else:
-                d[k] = v.double_value
+             if v.HasField('string_value'):
+                 d[k] = v.string_value
+             elif v.HasField('int_value'):
+                 d[k] = v.int_value
+             else:
+                 d[k] = v.double_value
 
         df = pd.DataFrame(d, index=[0, ])
         return df
@@ -74,6 +76,18 @@ class CmfQuery(object):
                 for cc in child_contexts:
                     stages.append(cc.name)
         return stages
+
+    def get_all_exe_in_stage(self, stage_name: str) -> []:
+        df = pd.DataFrame()
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        executions = None
+        for ctx in contexts:
+            child_contexts = self.store.get_children_contexts_by_context(ctx.id)
+            for cc in child_contexts:
+                if cc.name == stage_name:
+                    executions = self.store.get_executions_by_context(cc.id)
+        return executions
+
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         df = pd.DataFrame()
@@ -324,9 +338,8 @@ class CmfQuery(object):
                         node
                     )
                 else:
-                    node_dict[attr] = node.__getattribute__(attr)
+                    node_dict[attr] = getattr(node, attr, "")
 
-        # print(node_dict)
         return node_dict
 
     @staticmethod
@@ -382,8 +395,11 @@ class CmfQuery(object):
                         exe_type = self.store.get_execution_types_by_id([exe.type_id])
                         exe_dict["type"] = exe_type[0].name
                         exe_dict["events"] = []
-                        if exe.name != "":
-                            exe_dict["Name"] = exe.name
+                        # name will be an empty string for executions that are created with 
+                        # create new execution as true(default)
+                        # In other words name property will there only for execution 
+                        # that are created with create new execution flag set to false(special case)
+                        exe_dict["name"] = exe.name if exe.name != "" else ""
                         events = self.store.get_events_by_execution_ids([exe.id])
                         for evt in events:
                             evt_dict = CmfQuery.__get_node_properties(evt)

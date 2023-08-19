@@ -342,6 +342,12 @@ class Cmf:
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
+        uuids = self.execution.properties["Execution_uuid"].string_value
+        if uuids:
+            self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
+        else:
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())            
+        self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
         for k, v in custom_props.items():
@@ -372,7 +378,7 @@ class Cmf:
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
             print("Error - no execution id")
-            sys.exit(1)
+            return
         execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[
             0
         ]
@@ -423,6 +429,7 @@ class Cmf:
         execution_cmd: str,
         properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None,
+        orig_execution_name:str = "",
         create_new_execution:bool = True
     ) -> mlpb.Execution:
         # Initializing the execution related fields
@@ -434,17 +441,19 @@ class Cmf:
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
-        name = properties.get("Name", "")
+        #name = properties.get("Name", "")
         create_new_execution = True
         execution_name = execution_type
-        if name != "":
+        #exe.name property is passed as the orig_execution_name.
+        #if name is not an empty string then we are re-using executions
+        if orig_execution_name != "":
             create_new_execution = False
-            execution_name = name
+            execution_name = orig_execution_name
 
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             execution_type_name=execution_type, # Type field when re-using executions
-            execution_name=execution_type, #Name field if we are re-using executions
+            execution_name=execution_name, #Name field if we are re-using executionsname
                                            #Type field , if creating new executions always
             context_id=self.child_context.id,
             execution=execution_cmd,
@@ -455,6 +464,22 @@ class Cmf:
             custom_properties=custom_props,
             create_new_execution=create_new_execution
         )
+
+        uuids = ""
+
+        if "Execution_uuid" in self.execution.properties:
+            uuids = self.execution.properties["Execution_uuid"].string_value
+            if uuids:
+                self.execution.properties["Execution_uuid"].string_value = uuids +\
+                    ","+properties["Execution_uuid"]
+            else:
+                self.execution.properties["Execution_uuid"].string_value =\
+                    properties["Execution_uuid"]
+        else:
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())
+
+        
+        self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = execution_cmd
         for k, v in custom_props.items():
@@ -505,6 +530,11 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+                ### To Do : Technical Debt. 
+        # If the dataset already exist , then we just link the existing dataset to the execution
+        # We do not update the dataset properties . 
+        # We need to append the new properties to the existing dataset properties
+
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -782,6 +812,10 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
+        # To Do : Technical Debt. 
+        # If the model already exist , then we just link the existing model to the execution
+        # We do not update the model properties . 
+        # We need to append the new properties to the existing model properties
 
         if custom_properties is None:
             custom_properties = {}
@@ -812,7 +846,6 @@ class Cmf:
         if (
             existing_artifact
             and len(existing_artifact) != 0
-            and event_type == mlpb.Event.Type.INPUT
         ):
             # update url for existing artifact
             existing_artifact = self.update_model_url(
@@ -857,6 +890,7 @@ class Cmf:
             )
         # custom_properties["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
+        #To DO model nodes should be similar to dataset nodes when we create neo4j
         if self.graph:
             self.driver.create_model_node(
                 model_uri,
@@ -962,7 +996,6 @@ class Cmf:
         if (
             existing_artifact
             and len(existing_artifact) != 0
-            and event_type == mlpb.Event.Type.INPUT
         ):
             # update url for existing artifact
             existing_artifact = self.update_model_url(existing_artifact, url)
@@ -1044,6 +1077,67 @@ class Cmf:
                 )
 
         return artifact
+
+    def log_execution_metrics_from_client(self, metrics_name: str,
+                                         custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        metrics = None
+        custom_props = {} if custom_properties is None else custom_properties
+        existing_artifact = []
+        name_tokens = metrics_name.split(":")
+        if name_tokens and len(name_tokens) > 2:
+            name = name_tokens[0]
+            uri = name_tokens[1]
+            execution_id = name_tokens[2]
+        else:
+            print(f"Error : metrics name {metrics_name} is not in the correct format")
+            return 
+
+        #we need to add the execution id to the metrics name
+        new_metrics_name = f"{name}:{uri}:{str(self.execution.id)}"
+        existing_artifacts = self.store.get_artifacts_by_uri(uri)
+
+        existing_artifact = existing_artifacts[0] if existing_artifacts else None
+        if not existing_artifact or \
+           ((existing_artifact) and not
+            (existing_artifact.name == new_metrics_name)):  #we need to add the artifact otherwise its already there 
+            metrics = create_new_artifact_event_and_attribution(
+            store=self.store,
+            execution_id=self.execution.id,
+            context_id=self.child_context.id,
+            uri=uri,
+            name=new_metrics_name,
+            type_name="Metrics",
+            event_type=mlpb.Event.Type.OUTPUT,
+            properties={"metrics_name": metrics_name},
+            artifact_type_properties={"metrics_name": mlpb.STRING},
+            custom_properties=custom_props,
+            milliseconds_since_epoch=int(time.time() * 1000),
+        )
+            if self.graph:
+                # To do create execution_links
+                self.driver.create_metrics_node(
+                    metrics_name,
+                    uri,
+                    "output",
+                    self.execution.id,
+                    self.parent_context,
+                    custom_props,
+                )
+                child_artifact = {
+                    "Name": metrics_name,
+                    "URI": uri,
+                    "Event": "output",
+                    "Execution_Name": self.execution_name,
+                    "Type": "Metrics",
+                    "Execution_Command": self.execution_command,
+                    "Pipeline_Id": self.parent_context.id,
+                    "Pipeline_Name": self.parent_context.name,
+                }
+                self.driver.create_artifact_relationships(
+                    self.input_artifacts, child_artifact, self.execution_label_props
+                )
+        return metrics
+
 
     def log_execution_metrics(
         self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None

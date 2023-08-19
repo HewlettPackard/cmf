@@ -152,17 +152,17 @@ def create_artifact_with_type(
 def create_execution_with_type(
         store,
         type_name: str,
-        name:str,
+        name: str,
         properties: dict = None,
         type_properties: dict = None,
         custom_properties: t.Optional[t.Dict] = None,
-        create_new_execution:bool = True
+        create_new_execution: bool = True
 ) -> metadata_store_pb2.Execution:
     if create_new_execution:
         execution_type = get_or_create_execution_type(
-        store=store,
-        type_name=name +'_'+str(uuid.uuid1()),
-        properties=type_properties,
+        store = store,
+        type_name = name,
+        properties = type_properties,
         )
         execution = metadata_store_pb2.Execution(
             type_id=execution_type.id,
@@ -261,12 +261,12 @@ def get_or_create_context_with_type(
 def create_new_execution_in_existing_context(
         store,
         execution_type_name: str,
-        execution_name:str,
+        execution_name: str,
         context_id: int,
         properties: dict = None,
         execution_type_properties: dict = None,
         custom_properties: dict = None,
-        create_new_execution:bool = True
+        create_new_execution: bool = True
 ) -> metadata_store_pb2.Execution:
     execution = create_execution_with_type(
         store=store,
@@ -312,7 +312,7 @@ EXECUTION_END_COMMIT = "Git_End_Commit"
 EXECUTION_PIPELINE_TYPE = "Pipeline_Type"
 
 EXECUTION_PIPELINE_ID = "Pipeline_id"
-
+EXECUTION_UNIQUE_ID = "Execution_uuid"
 
 def get_or_create_parent_context(
         store,
@@ -396,9 +396,10 @@ def create_new_execution_in_existing_run_context(
     return create_new_execution_in_existing_context(
         store=store,
         execution_type_name=execution_type_name,
-        execution_name = execution_name,
+        execution_name=execution_name,
         context_id=context_id,
         execution_type_properties={
+            EXECUTION_UNIQUE_ID: metadata_store_pb2.STRING,
             EXECUTION_CONTEXT_NAME_PROPERTY_NAME: metadata_store_pb2.STRING,
             EXECUTION_CONTEXT_ID: metadata_store_pb2.INT,
             EXECUTION_EXECUTION: metadata_store_pb2.STRING,
@@ -410,6 +411,7 @@ def create_new_execution_in_existing_run_context(
         },
 
         properties={
+
             EXECUTION_CONTEXT_NAME_PROPERTY_NAME: metadata_store_pb2.Value(string_value=execution_type_name),
             # Mistakenly used for grouping in the UX
             EXECUTION_CONTEXT_ID: metadata_store_pb2.Value(int_value=context_id),

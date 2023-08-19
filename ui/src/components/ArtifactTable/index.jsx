@@ -35,6 +35,8 @@ const filteredData = artifacts.filter((item) =>
        (item.name && item.name.toLowerCase().includes(searchQuery.toLowerCase()))
     || (item.type && item.type.toLowerCase().includes(searchQuery.toLowerCase()))
  );
+
+// eslint-disable-next-line
 const sortedData = filteredData.sort((a, b) => {
     const aValue = a[sortBy];
     const bValue = b[sortBy];
@@ -53,6 +55,11 @@ useEffect(() => {
     setCurrentPage(1); // Reset current page to 1 when search query changes
   }, [searchQuery]);
 
+useEffect(() => {
+    setCurrentPage(1); // Reset current page to 1 when search query changes
+  }, [artifacts]);
+
+
 const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
       setExpandedRow(null);
@@ -61,21 +68,83 @@ const toggleRow = (rowId) => {
     }
   };
 
+// eslint-disable-next-line
+const renderTableData = () => {
+    if (currentItems.length === 0) {
+      return (
+        <tr>
+          <td colSpan="4">No data available</td>
+        </tr>
+      );
+    }
+
+    return currentItems.map((item) => (
+      <tr key={item.id}>
+        {/* Render table row */}
+      </tr>
+    ));
+  };
+
+
+const renderPagination = () => {
+    if (totalPages === 1){
+       return null;
+    }
+
+    const totalPagesToShow = 5; // Number of pages to show in the pagination
+
+    const startPage = Math.max(1, currentPage - Math.floor(totalPagesToShow / 2));
+    const endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
+
+    const pages = Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
+
+    return (
+      <div>
+        <button
+          className={`pagination-button ${currentPage === 1 ? 'active' : ''}`}
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          Previous
+        </button>
+        {pages.map((page) => (
+          <button
+            key={page}
+            className={`pagination-button ${currentPage === page ? 'active' : ''}`}
+            onClick={() => handlePageChange(page)}
+            disabled={currentPage === page}
+          >
+            {page}
+          </button>
+        ))}
+        <button
+          className={`pagination-button ${currentPage === totalPages ? 'active' : ''}`}
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          Next
+        </button>
+
+      </div>
+    );
+  };
+
+
 
 return (
-    <div className="flex flex-col">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+    <div className="container flex flex-col mx-auto p-6 mr-4">
+      <div className="flex flex-col items-end m-1">
       <input
         type="text"
         value={searchQuery}
         onChange={handleSearchChange}
         placeholder="Search..."
-        style={{ marginRight: '1rem', padding: '0.5rem',border: '1px solid #ccc' }}
+        className="w-64 px-1 border-2 border-gray"
       />
       </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
-          <table className="min-w-full divide-y divide-gray-200">
+          <table className="min-w-full divide-y divide-gray-200 border-4">
             <thead className="bg-gray-100">
               <tr className="text-xs font-bold text-left text-gray-500 uppercase">
                 <th scope="col" className="id px-6 py-3"></th>
@@ -94,7 +163,7 @@ return (
               {currentItems.map((data, index) => (
                 <React.Fragment key={index}>
                 <tr key={index} onClick={() => toggleRow(index)} className="text-sm font-medium text-gray-800">
-                  <td classname="px-6 py-4">{expandedRow === index ? '-' : '+'}</td>
+                  <td className="px-6 py-4">{expandedRow === index ? '-' : '+'}</td>
                   <td className="px-6 py-4">{data.id}</td>
                   <td className="px-6 py-4">{data.name}</td>
                   <td className="px-6 py-4">{data.type}</td>
@@ -131,31 +200,7 @@ return (
             </tbody>
           </table>
           </div>
-          <div>
-        <button
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </button>
-        {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-          (page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              disabled={currentPage === page}
-            >
-              {page}
-            </button>
-          )
-        )}
-        <button
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </button>
-      </div>
+          <div>{renderPagination()}</div>
        </div>
       </div>
   );
