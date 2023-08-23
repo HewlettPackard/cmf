@@ -305,7 +305,7 @@ PIPELINE_STAGE = "Pipeline_Stage"
 EXECUTION_CONTEXT_NAME_PROPERTY_NAME = "Context_Type"
 EXECUTION_CONTEXT_ID = "Context_ID"
 EXECUTION_EXECUTION = "Execution"
-
+EXECUTION_EXECUTION_UUID = "Execution_uuid"
 EXECUTION_REPO = "Git_Repo"
 EXECUTION_START_COMMIT = "Git_Start_Commit"
 EXECUTION_END_COMMIT = "Git_End_Commit"
@@ -380,6 +380,7 @@ def create_new_execution_in_existing_run_context(
         execution_name:str = None,
         context_id: int = 0,  # TRAINING CONTEXT ASSOCIATED WITH THIS EXECUTION
         execution: str = None,
+        Execution_uuid: str =None,
         pipeline_id: int = 0,  # THE PARENT CONTEXT
         pipeline_type: str = None,
         git_repo: str = None,
@@ -403,6 +404,7 @@ def create_new_execution_in_existing_run_context(
             EXECUTION_CONTEXT_NAME_PROPERTY_NAME: metadata_store_pb2.STRING,
             EXECUTION_CONTEXT_ID: metadata_store_pb2.INT,
             EXECUTION_EXECUTION: metadata_store_pb2.STRING,
+            EXECUTION_EXECUTION_UUID: metadata_store_pb2.STRING,
             EXECUTION_PIPELINE_TYPE: metadata_store_pb2.STRING,
             EXECUTION_PIPELINE_ID: metadata_store_pb2.INT,
             EXECUTION_REPO: metadata_store_pb2.STRING,
@@ -416,6 +418,7 @@ def create_new_execution_in_existing_run_context(
             # Mistakenly used for grouping in the UX
             EXECUTION_CONTEXT_ID: metadata_store_pb2.Value(int_value=context_id),
             EXECUTION_EXECUTION: metadata_store_pb2.Value(string_value=execution),
+            EXECUTION_EXECUTION_UUID:metadata_store_pb2.Value(string_value=Execution_uuid),
             EXECUTION_PIPELINE_TYPE: metadata_store_pb2.Value(string_value=pipeline_type),
             EXECUTION_PIPELINE_ID: metadata_store_pb2.Value(int_value=pipeline_id),
             EXECUTION_REPO: metadata_store_pb2.Value(string_value=git_repo),
