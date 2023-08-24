@@ -14,414 +14,577 @@
 # limitations under the License.
 ###
 
+import json
+import typing as t
+import logging
 import pandas as pd
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-from cmflib.mlmd_objects import CONTEXT_LIST
-import json
-import typing as t
 
+from cmflib.mlmd_objects import CONTEXT_LIST
+
+__all__ = ["CmfQuery"]
+
+logger = logging.getLogger(__name__)
+
+
+# TODO: Rename to CMF Client or just set CmfClient = CmfQuery
 
 
 class CmfQuery(object):
-    def __init__(self, filepath: str = "mlmd"):
+    """CMF Query (client) communicates with MLMD database and implements basic search and retrieval functionality.
+
+    Args:
+        filepath: Path to the MLMD database file.
+    """
+    def __init__(self, filepath: str = "mlmd") -> None:
         config = mlpb.ConnectionConfig()
         config.sqlite.filename_uri = filepath
         self.store = metadata_store.MetadataStore(config)
 
-    def _transform_to_dataframe(self, node):
-        #d = CmfQuery.__get_node_properties(node)
-        d = {"id": node.id}
-        d["name"] = getattr(node, "name", "")        
-        for k, v in node.properties.items():
-             if v.HasField('string_value'):
-                 d[k] = v.string_value
-             elif v.HasField('int_value'):
-                 d[k] = v.int_value
-             else:
-                 d[k] = v.double_value
+    @staticmethod
+    def _copy(source: t.Mapping, target: t.Optional[t.Dict] = None, key_mapper: t.Optional[t.Dict] = None) -> t.Dict:
+        """Create copy of `_copy` and return use, reuse `target` if not None.
 
-        for k, v in node.custom_properties.items():
-             if v.HasField('string_value'):
-                 d[k] = v.string_value
-             elif v.HasField('int_value'):
-                 d[k] = v.int_value
-             else:
-                 d[k] = v.double_value
+        Args:
+            source: Input dict-like object to create copy.
+            target: If not None, this will be reused and returned. If None, new dict will be created.
+            key_mapper: Dictionary containing how to map keys in `source`, e.g., {"key_in": "key_out"} means the
+            key in `source` named "key_in" should be renamed to "key_out" in output dictionary object.
+        Returns:
+            If `target` is not None, it is returned containing data from `source`. Else, new object is returned.
+        """
+        target = target or {}
+        key_mapper = key_mapper or {}
 
-        df = pd.DataFrame(d, index=[0, ])
+        for key, value in source.items():
+            if value.HasField("string_value"):
+                value = value.string_value
+            elif value.HasField("int_value"):
+                value = value.int_value
+            else:
+                value = value.double_value
+
+            target[key_mapper.get(key, key)] = value
+
+        return target
+
+    @staticmethod
+    def _transform_to_dataframe(node, d: t.Optional[t.Dict] = None) -> pd.DataFrame:
+        """Transform MLMD entity `node` to pandas data frame.
+
+        Args:
+            node: MLMD entity to transform.
+            d: Pre-populated dictionary of KV-pairs to associate  with `node` (will become columns in output table).
+        Returns:
+            Pandas data frame with one row containing data from `node`.
+        """
+        if d is None:
+            d = {"id": node.id, "name": getattr(node, "name", "")}
+
+        _ = CmfQuery._copy(node.properties, d)
+        _ = CmfQuery._copy(node.custom_properties, d)
+
+        return pd.DataFrame(
+            d,
+            index=[
+                0,
+            ],
+        )
+
+    @staticmethod
+    def _as_pandas_df(elements: t.Iterable, transform_fn: t.Callable[[t.Any], pd.DataFrame]) -> pd.DataFrame:
+        """Convert elements in `elements` to rows in pandas data frame using `transform_fn` function.
+
+        Args:
+            elements: Collection with items to be converted to tabular representation, each item becomes one row.
+            transform_fn: A callable object that takes one element in `elements` and returns its tabular representation
+                (pandas data frame with one row).
+        Returns:
+            Pandas data frame containing representation of elements in `elements` with one row being one element.
+
+        TODO: maybe easier to initially transform elements to list of dicts?
+        """
+        df = pd.DataFrame()
+        for element in elements:
+            df = pd.concat([df, transform_fn(element)], sort=True, ignore_index=True)
         return df
 
-    def get_pipeline_id(self, pipeline_name: str) -> int:
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        for ctx in contexts:
-            if ctx.name == pipeline_name:
-                return ctx.id
-        return -1
+    def _get_pipelines(self, name: t.Optional[str] = None) -> t.List[mlpb.Context]:
+        """Return list of pipelines with the given name.
 
+        Args:
+            name: Piepline name or None to return all pipelines.
+        Returns:
+            List of objects associated with pipelines.
+        """
+        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context")
+        if name is not None:
+            pipelines = [pipeline for pipeline in pipelines if pipeline.name == name]
+        return pipelines
 
-    def get_pipeline_names(self) -> t.List:
-        names = []
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        for ctx in contexts:
-            names.append(ctx.name)
-        return names
+    def _get_pipeline(self, name: str) -> t.Optional[mlpb.Context]:
+        """Return a pipeline with the given name or None if one does not exist.
+        Args:
+            name: Pipeline name.
+        Returns:
+            A pipeline object if found, else None.
+        """
+        pipelines: t.List = self._get_pipelines(name)
+        if pipelines:
+            if len(pipelines) >= 2:
+                logger.debug("Found %d pipelines with '%s' name.", len(pipelines), name)
+            return pipelines[0]
+        return None
 
-    def get_pipeline_stages(self, pipeline_name: str) -> []:
-        stages = []
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        for ctx in contexts:
-            if ctx.name == pipeline_name:
-                child_contexts = self.store.get_children_contexts_by_context(ctx.id)
-                for cc in child_contexts:
-                    stages.append(cc.name)
-        return stages
+    def _get_stages(self, pipeline_id: int) -> t.List[mlpb.Context]:
+        """Return stages for the given pipeline.
 
-    def get_all_exe_in_stage(self, stage_name: str) -> []:
-        df = pd.DataFrame()
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        executions = None
-        for ctx in contexts:
-            child_contexts = self.store.get_children_contexts_by_context(ctx.id)
-            for cc in child_contexts:
-                if cc.name == stage_name:
-                    executions = self.store.get_executions_by_context(cc.id)
+        Args:
+            pipeline_id: Pipeline ID.
+        Returns:
+            List of associated pipeline stages.
+        """
+        return self.store.get_children_contexts_by_context(pipeline_id)
+
+    def _get_executions(self, stage_id: int, execution_id: t.Optional[int] = None) -> t.List[mlpb.Execution]:
+        """Return executions of the given stage.
+
+        Args:
+            stage_id: Stage identifier.
+            execution_id: If not None, return only execution with this ID.
+        Returns:
+            List of executions matching input parameters.
+        """
+        executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id)
+        if execution_id is not None:
+            executions = [execution for execution in executions if execution.id == execution_id]
         return executions
 
+    def _get_executions_by_input_artifact_id(self, artifact_id: int) -> t.List[int]:
+        """Return stage executions that consumed given input artifact.
+
+        Args:
+            artifact_id: Identifier of the input artifact.
+        Returns:
+            List of stage executions that consumed the given artifact.
+        """
+        execution_ids = set(
+            event.execution_id
+            for event in self.store.get_events_by_artifact_ids([artifact_id])
+            if event.type == mlpb.Event.INPUT
+        )
+        return list(execution_ids)
+
+    def _get_executions_by_output_artifact_id(self, artifact_id: int) -> t.List[int]:
+        """Return stage execution that produced given output artifact.
+
+        Args:
+            artifact_id: Identifier of the output artifact.
+        Return:
+            List of stage executions, should probably be size of 1 or zero.
+        """
+        execution_ids: t.List[int] = [
+            event.execution_id
+            for event in self.store.get_events_by_artifact_ids([artifact_id])
+            if event.type == mlpb.Event.OUTPUT
+        ]
+        if len(execution_ids) >= 2:
+            logger.warning("%d executions claim artifact (id=%d) as output.", len(execution_ids), artifact_id)
+
+        return list(set(execution_ids))
+
+    def _get_artifact(self, name: str) -> t.Optional[mlpb.Artifact]:
+        """Return artifact with the given name or None.
+
+        TODO: Different artifact types may have the same name (see `get_artifacts_by_type`,
+              `get_artifact_by_type_and_name`).
+
+        Args:
+            name: Artifact name.
+        Returns:
+            Artifact or None (if not found).
+        """
+        name = name.strip()
+        for artifact in self.store.get_artifacts():
+            if artifact.name == name:
+                return artifact
+        return None
+
+    def _get_output_artifacts(self, execution_ids: t.List[int]) -> t.List[int]:
+        """Return output artifacts for the given executions.
+
+        Args:
+            execution_ids: List of execution identifiers to return output artifacts for.
+        Returns:
+            List of output artifact identifiers.
+        """
+        artifact_ids: t.List[int] = [
+            event.artifact_id
+            for event in self.store.get_events_by_execution_ids(set(execution_ids))
+            if event.type == mlpb.Event.OUTPUT
+        ]
+        unique_artifact_ids = set(artifact_ids)
+        if len(unique_artifact_ids) != len(artifact_ids):
+            logger.warning("Multiple executions claim the same output artifacts")
+
+        return list(unique_artifact_ids)
+
+    def _get_input_artifacts(self, execution_ids: t.List[int]) -> t.List[int]:
+        """Return input artifacts for the given executions.
+
+        Args:
+            execution_ids: List of execution identifiers to return input artifacts for.
+        Returns:
+            List of input artifact identifiers.
+        """
+        artifact_ids = set(
+            event.artifact_id
+            for event in self.store.get_events_by_execution_ids(set(execution_ids))
+            if event.type == mlpb.Event.INPUT
+        )
+        return list(artifact_ids)
+
+    def get_pipeline_names(self) -> t.List[str]:
+        """Return names of all pipelines in the MLMD database."""
+        return [ctx.name for ctx in self._get_pipelines()]
+
+    def get_pipeline_id(self, pipeline_name: str) -> int:
+        """Return pipeline identifier for the pipeline names `pipeline_name`.
+        Args:
+            pipeline_name: Name of the pipeline.
+        Returns:
+            Pipeline identifier or -1 if one does not exist.
+        """
+        pipeline: t.Optional[mlpb.Context] = self._get_pipeline(pipeline_name)
+        return -1 if not pipeline else pipeline.id
+
+    def get_pipeline_stages(self, pipeline_name: str) -> t.List[str]:
+        """Return list of pipeline stages for the pipeline with the given name.
+
+        TODO: Can there be multiple pipelines with the same name?
+        """
+        stages = []
+        for pipeline in self._get_pipelines(pipeline_name):
+            stages.extend(stage.name for stage in self._get_stages(pipeline.id))
+        return stages
+
+    def get_all_exe_in_stage(self, stage_name: str) -> t.List[mlpb.Execution]:
+        """Return list of all executions for the stage with the given name.
+
+        TODO: Can stages from different pipelines have the same name?. Currently, the first matching stage is used to
+              identify its executions. Also see "get_all_executions_in_stage".
+        """
+        for pipeline in self._get_pipelines():
+            for stage in self._get_stages(pipeline.id):
+                if stage.name == stage_name:
+                    return self.store.get_executions_by_context(stage.id)
+        return []
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
-        df = pd.DataFrame()
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        for ctx in contexts:
-            child_contexts = self.store.get_children_contexts_by_context(ctx.id)
-            for cc in child_contexts:
-                if cc.name == stage_name:
-                    executions = self.store.get_executions_by_context(cc.id)
-                    for exe in executions:
-                        d1 = self._transform_to_dataframe(exe)
-                        # df = df.append(d1, sort=True, ignore_index=True)
-                        df = pd.concat([df, d1], sort=True, ignore_index=True)
+        """Return executions of the given stage as pandas data frame.
 
+        TODO: Multiple stages with the same name? This method collects executions from all such stages. Also, see
+              "get_all_exe_in_stage"
+        """
+        df = pd.DataFrame()
+        for pipeline in self._get_pipelines():
+            for stage in self._get_stages(pipeline.id):
+                if stage.name == stage_name:
+                    for execution in self._get_executions(stage.id):
+                        df = pd.concat([df, self._transform_to_dataframe(execution)], sort=True, ignore_index=True)
         return df
 
-    def get_artifact_df(self, node):
-        d = {"id": node.id, "type": self.store.get_artifact_types_by_id([node.type_id])[0].name, "uri": node.uri,
-             "name": node.name, "create_time_since_epoch": node.create_time_since_epoch,
-             "last_update_time_since_epoch": node.last_update_time_since_epoch}
-        for k, v in node.properties.items():
-            if v.HasField('string_value'):
-                d[k] = v.string_value
-            elif v.HasField('int_value'):
-                d[k] = v.int_value
-            else:
-                d[k] = v.double_value
-        for k, v in node.custom_properties.items():
-            if v.HasField('string_value'):
-                d[k] = v.string_value
-            elif v.HasField('int_value'):
-                d[k] = v.int_value
-            else:
-                d[k] = v.double_value
-        df = pd.DataFrame(d, index=[0, ])
-        return df
+    def get_artifact_df(self, artifact: mlpb.Artifact, d: t.Optional[t.Dict] = None) -> pd.DataFrame:
+        """Return artifact's data frame representation.
 
-    def get_all_artifacts(self) -> t.List:
-        artifact_list = []
-        artifacts = self.store.get_artifacts()
-        for art in artifacts:
-            name = art.name
-            artifact_list.append(name)
-        return artifact_list
+        Args:
+            artifact: MLMD entity representing artifact.
+            d: Optional initial content for data frame.
+        Returns:
+            A data frame with the single row containing attributes of this artifact.
+        """
+        d = d or {}
+        d.update(
+            {
+                "id": artifact.id,
+                "type": self.store.get_artifact_types_by_id([artifact.type_id])[0].name,
+                "uri": artifact.uri,
+                "name": artifact.name,
+                "create_time_since_epoch": artifact.create_time_since_epoch,
+                "last_update_time_since_epoch": artifact.last_update_time_since_epoch,
+            }
+        )
+        return self._transform_to_dataframe(artifact, d)
 
-    def get_artifact(self, name: str):
-        artifact = None
-        artifacts = self.store.get_artifacts()
-        for art in artifacts:
-            if art.name == name:
-                artifact = art
-                break
-        return self.get_artifact_df(artifact)
+    def get_all_artifacts(self) -> t.List[str]:
+        """Return names of all artifacts.
 
-    def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame: # change here
+        TODO: Can multiple artifacts have the same name?
+        """
+        return [artifact.name for artifact in self.store.get_artifacts()]
+
+    get_artifact_names = get_all_artifacts
+
+    def get_artifact(self, name: str) -> t.Optional[pd.DataFrame]:
+        """Return artifact's data frame representation using artifact name.
+
+        Args:
+            name: artifact name.
+        Returns:
+            Pandas data frame with one row.
+        """
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(name)
+        if artifact:
+            return self.get_artifact_df(artifact)
+        return None
+
+    def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame:
+        """Return input and output artifacts for the given execution.
+
+        Args:
+            execution_id: Execution identifier.
+        Return:
+            Data frame containing input and output artifacts for the given execution, one artifact per row.
+        """
         df = pd.DataFrame()
-        input_artifacts = []
-        output_artifacts = []
-        events = self.store.get_events_by_execution_ids([execution_id])
-        for event in events:
-            if event.type == mlpb.Event.Type.INPUT:  # 3 - INPUT #4 - Output
-                input_artifacts.extend(self.store.get_artifacts_by_id([event.artifact_id]))
-            else:
-                output_artifacts.extend(self.store.get_artifacts_by_id([event.artifact_id]))
-        for art in input_artifacts:
-            d1 = self.get_artifact_df(art)
-            d1["event"] = "INPUT"
-            #df = df.append(d1, sort=True, ignore_index=True)
-            df = pd.concat([df, d1], sort=True, ignore_index=True)
-        for art in output_artifacts:
-            d1 = self.get_artifact_df(art)
-            d1["event"] = "OUTPUT"
-            #df = df.append(d1, sort=True, ignore_index=True)
-            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        for event in self.store.get_events_by_execution_ids([execution_id]):
+            event_type = "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT"
+            for artifact in self.store.get_artifacts_by_id([event.artifact_id]):
+                df = pd.concat(
+                    [df, self.get_artifact_df(artifact, {"event": event_type})], sort=True, ignore_index=True
+                )
         return df
 
     def get_all_executions_for_artifact(self, artifact_name: str) -> pd.DataFrame:
-        selected_artifact = None
-        linked_execution = {}
-        events = []
+        """Return executions that consumed and produced given artifact.
+
+        Args:
+            artifact_name: Artifact name.
+        Returns:
+            Pandas data frame containing stage executions, one execution per row.
+        """
         df = pd.DataFrame()
-        artifacts = self.store.get_artifacts()
-        for art in artifacts:
-            if art.name == artifact_name:
-                selected_artifact = art
-                break
-        if selected_artifact is not None:
-            events = self.store.get_events_by_artifact_ids([selected_artifact.id])
 
-        for evt in events:
-            linked_execution["Type"] = "INPUT" if evt.type == mlpb.Event.Type.INPUT else "OUTPUT"
-            linked_execution["execution_id"] = evt.execution_id
-            linked_execution["execution_name"] = self.store.get_executions_by_id([evt.execution_id])[0].name
-            ctx = self.store.get_contexts_by_execution(evt.execution_id)[0]
-            linked_execution["stage"] = self.store.get_contexts_by_execution(evt.execution_id)[0].name
+        artifact: t.Optional = self._get_artifact(artifact_name)
+        if not artifact:
+            return df
 
-            linked_execution["pipeline"] = self.store.get_parent_contexts_by_context(ctx.id)[0].name
-            d1 = pd.DataFrame(linked_execution, index=[0, ])
-            #df = df.append(d1, sort=True, ignore_index=True)
+        for event in self.store.get_events_by_artifact_ids([artifact.id]):
+            ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
+            linked_execution = {
+                "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
+                "execution_id": event.execution_id,
+                "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
+                "stage": self.store.get_contexts_by_execution(event.execution_id)[0].name,
+                "pipeline": self.store.get_parent_contexts_by_context(ctx.id)[0].name
+            }
+            d1 = pd.DataFrame(
+                linked_execution,
+                index=[
+                    0,
+                ],
+            )
             df = pd.concat([df, d1], sort=True, ignore_index=True)
-
         return df
 
     def get_one_hop_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
-        df = pd.DataFrame()
+        """Get artifacts produced by executions that consume given artifact.
 
-        artifact = None
-        artifacts = self.store.get_artifacts()
-        for art in artifacts:
-            if artifact_name.strip() == art.name:
-                artifact = art
-                break
-        # Get a list of artifacts within a 1-hop of the artifacts of interest
-        artifact_ids = [artifact.id]
-        executions_ids = set(
-            event.execution_id
-            for event in self.store.get_events_by_artifact_ids(artifact_ids)
-            if event.type == mlpb.Event.INPUT)
-        artifacts_ids = set(
-            event.artifact_id
-            for event in self.store.get_events_by_execution_ids(executions_ids)
-            if event.type == mlpb.Event.OUTPUT)
-        artifacts = self.store.get_artifacts_by_id(artifacts_ids)
-        for art in artifacts:
-            d1 = self.get_artifact_df(art)
-            #df = df.append(d1, sort=True, ignore_index=True)
-            df = pd.concat([df, d1], sort=True, ignore_index=True)
-        return df
+        Args:
+            artifact name: Name of an artifact.
+        Return:
+            Output artifacts of all executions that consumed given artifact.
+        """
+        artifact: t.Optional = self._get_artifact(artifact_name)
+        if not artifact:
+            return pd.DataFrame()
+
+        # Get output artifacts of executions consumed the above artifact.
+        artifacts_ids = self._get_output_artifacts(
+            self._get_executions_by_input_artifact_id(artifact.id)
+        )
+
+        return self._as_pandas_df(
+            self.store.get_artifacts_by_id(artifacts_ids),
+            lambda _artifact: self.get_artifact_df(_artifact)
+        )
 
     def get_all_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
+        """Return all downstream artifacts starting from the given artifact.
+
+        TODO: Only output artifacts or all?
+        """
         df = pd.DataFrame()
         d1 = self.get_one_hop_child_artifacts(artifact_name)
-        #df = df.append(d1, sort=True, ignore_index=True)
+        # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
             d1 = self.get_all_child_artifacts(row.name)
-            #df = df.append(d1, sort=True, ignore_index=True)
+            # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
-        df = df.drop_duplicates(subset=None, keep='first', inplace=False)
+        df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
     def get_one_hop_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
-        df = pd.DataFrame()
+        """Return input artifacts for the execution that produced the given artifact."""
+        artifact: t.Optional = self._get_artifact(artifact_name)
+        if not artifact:
+            return pd.DataFrame()
 
-        artifact = None
-        artifacts = self.store.get_artifacts()
-        for art in artifacts:
-            if artifact_name in art.name:
-                artifact = art
-                break
-        # Get a list of artifacts within a 1-hop of the artifacts of interest
-        artifact_ids = [artifact.id]
-        executions_ids = set(
-            event.execution_id
-            for event in self.store.get_events_by_artifact_ids(artifact_ids)
-            if event.type == mlpb.Event.OUTPUT)
-        artifacts_ids = set(
-            event.artifact_id
-            for event in self.store.get_events_by_execution_ids(executions_ids)
-            if event.type == mlpb.Event.INPUT)
-        artifacts = self.store.get_artifacts_by_id(artifacts_ids)
-        for art in artifacts:
-            d1 = self.get_artifact_df(art)
-            #df = df.append(d1, sort=True, ignore_index=True)
-            df = pd.concat([df, d1], sort=True, ignore_index=True)
-        return df
+        artifact_ids = self._get_input_artifacts(
+            self._get_executions_by_output_artifact_id(artifact.id)
+        )
+
+        return self._as_pandas_df(
+            self.store.get_artifacts_by_id(artifact_ids),
+            lambda _artifact: self.get_artifact_df(_artifact)
+        )
 
     def get_all_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
+        """Return all upstream artifacts.
+
+        TODO: All input and output artifacts?
+        """
         df = pd.DataFrame()
         d1 = self.get_one_hop_parent_artifacts(artifact_name)
-        #df = df.append(d1, sort=True, ignore_index=True)
+        # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
             d1 = self.get_all_parent_artifacts(row.name)
-            #df = df.append(d1, sort=True, ignore_index=True)
-            df = pd.concat([df, d1], sort=True, ignore_index=True)
-        df = df.drop_duplicates(subset=None, keep='first', inplace=False)
-        return df
-
-    def get_all_parent_executions(self, artifact_name:str)-> pd.DataFrame:
-        df = self.get_all_parent_artifacts(artifact_name)
-        artifact_ids = df.id.values.tolist()
-
-        executions_ids = set(
-            event.execution_id
-            for event in self.store.get_events_by_artifact_ids(artifact_ids)
-            if event.type == mlpb.Event.OUTPUT)
-        executions = self.store.get_executions_by_id(executions_ids)
-
-        df = pd.DataFrame()
-        for exe in executions:
-            d1 = self._transform_to_dataframe(exe)
             # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
+        df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
-    def find_producer_execution(self, artifact_name: str) -> object:
-        artifact = None
-        artifacts = self.store.get_artifacts()
-        for art in artifacts:
-            if art.name == artifact_name:
-                artifact = art
-                break
+    def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
+        """Return all executions that produced upstream artifacts for the given artifact."""
+        parent_artifacts = self.get_all_parent_artifacts(artifact_name)
+
+        execution_ids = set(
+            event.execution_id
+            for event in self.store.get_events_by_artifact_ids(parent_artifacts.id.values.tolist())
+            if event.type == mlpb.Event.OUTPUT
+        )
+
+        return self._as_pandas_df(
+            self.store.get_executions_by_id(execution_ids),
+            lambda _execution: self._transform_to_dataframe(_execution)
+        )
+
+    def find_producer_execution(self, artifact_name: str) -> t.Optional[object]:
+        """Return execution that produced the given artifact.
+
+        TODO: how come one artifact can have multiple producer executions?
+        """
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name)
+        if not artifact:
+            logger.debug("Artifact does not exist (name=%s).", artifact_name)
+            return None
 
         executions_ids = set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact.id])
-            if event.type == mlpb.Event.OUTPUT)
-        return self.store.get_executions_by_id(executions_ids)[0]
-    
-    def get_metrics(self, metrics_name:str) ->pd.DataFrame:
-        metric = None
-        metrics = self.store.get_artifacts_by_type("Step_Metrics")
-        for m in metrics:
-            if m.name == metrics_name:
-                metric = m
-                break
-        if metric is None:
-            print("Error : The given metrics does not exist")
+            if event.type == mlpb.Event.OUTPUT
+        )
+        if not executions_ids:
+            logger.debug(
+                "No producer execution exists for artifact (name=%s, id=%s).", artifact.name, artifact.id
+            )
             return None
-        name = ""
-        for k, v in metric.custom_properties.items():
-            if k == "Name":
-                name = v
+
+        executions: t.List[mlpb.Execution] = self.store.get_executions_by_id(executions_ids)
+        if not executions:
+            logger.debug("No executions exist for given IDs (ids=%s)", str(executions_ids))
+            return None
+
+        if len(executions) >= 2:
+            logger.debug(
+                "Multiple executions (ids=%s) claim artifact (name=%s) as output.",
+                [e.id for e in executions], artifact.name
+            )
+
+        return executions[0]
+
+    get_producer_execution = find_producer_execution
+
+    def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
+        """Return metric data frame.
+
+        TODO: need better description.
+        """
+        for metric in self.store.get_artifacts_by_type("Step_Metrics"):
+            if metric.name == metrics_name:
+                name: t.Optional[str] = metric.custom_properties.get("Name", None)
+                if name:
+                    return pd.read_parquet(name)
                 break
-        df = pd.read_parquet(name)
-        return df
-    
-    def read_dataslice(self, name: str) -> pd.DataFrame:
-        """Reads the dataslice"""
+        return None
+
+    @staticmethod
+    def read_dataslice(name: str) -> pd.DataFrame:
+        """Reads the data slice.
+
+        TODO: Why is it here?
+        """
         # To do checkout if not there
         df = pd.read_parquet(name)
         return df
-        
 
+    def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
+        """Return JSON-parsable string containing details about the given pipeline.
 
+        TODO: Think if this method should return dict.
+        """
+        if exec_id is not None:
+            exec_id = int(exec_id)
 
-    @staticmethod
-    def __get_node_properties(node) -> dict:
-        # print(node)
-        node_dict = {}
-        for attr in dir(node):
-            if attr in CONTEXT_LIST:
-                if attr == "properties":
-                    node_dict["properties"] = CmfQuery.__get_properties(node)
-                elif attr == "custom_properties":
-                    node_dict["custom_properties"] = CmfQuery.__get_customproperties(
-                        node
+        def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
+            for attr in CONTEXT_LIST:
+                if getattr(_node, attr, None) is not None:
+                    _attrs[attr] = getattr(_node, attr)
+
+            if "properties" in _attrs:
+                _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
+            if "custom_properties" in _attrs:
+                _attrs["custom_properties"] = CmfQuery._copy(_attrs["custom_properties"],
+                                                             key_mapper={"type": "user_type"})
+            return _attrs
+
+        pipelines: t.List[t.Dict] = []
+        for pipeline in self._get_pipelines(pipeline_name):
+            pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
+            for stage in self._get_stages(pipeline.id):
+                stage_attrs = _get_node_attributes(stage, {"executions": []})
+                for execution in self._get_executions(stage.id, execution_id=exec_id):
+                    # name will be an empty string for executions that are created with
+                    # create new execution as true(default)
+                    # In other words name property will there only for execution
+                    # that are created with create new execution flag set to false(special case)
+                    exec_attrs = _get_node_attributes(
+                        execution,
+                        {
+                            "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
+                            "name": execution.name if execution.name != "" else "",
+                            "events": []
+                        }
                     )
-                else:
-                    node_dict[attr] = getattr(node, attr, "")
+                    for event in self.store.get_events_by_execution_ids([execution.id]):
+                        event_attrs = _get_node_attributes(event, {"artifacts": []})
+                        for artifact in self.store.get_artifacts_by_id([event.artifact_id]):
+                            artifact_attrs = _get_node_attributes(
+                                artifact,
+                                {"type": self.store.get_artifact_types_by_id([artifact.type_id])[0].name}
+                            )
+                            event_attrs["artifacts"].append(artifact_attrs)
+                        exec_attrs["events"].append(event_attrs)
+                    stage_attrs["executions"].append(exec_attrs)
+                pipeline_attrs["stages"].append(stage_attrs)
+            pipelines.append(pipeline_attrs)
 
-        return node_dict
+        return json.dumps({"Pipeline": pipelines})
 
-    @staticmethod
-    def __get_properties(node) -> dict:
-        prop_dict = {}
-        for k, v in node.properties.items():
-            if v.HasField("string_value"):
-                prop_dict[k] = v.string_value
-            elif v.HasField("int_value"):
-                prop_dict[k] = v.int_value
-            else:
-                prop_dict[k] = v.double_value
-        return prop_dict
-
-    @staticmethod
-    def __get_customproperties(node) -> dict:
-        prop_dict = {}
-        for k, v in node.custom_properties.items():
-            if k == "type":
-                k = "user_type"
-            if v.HasField("string_value"):
-                prop_dict[k] = v.string_value
-            elif v.HasField("int_value"):
-                prop_dict[k] = v.int_value
-            else:
-                prop_dict[k] = v.double_value
-        return prop_dict
-
-    def dumptojson(self, pipeline_name: str, exec_id):
-        mlmd_json = {}
-        mlmd_json["Pipeline"] = []
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        for ctx in contexts:
-            if ctx.name == pipeline_name:
-                ctx_dict = CmfQuery.__get_node_properties(ctx)
-                ctx_dict["stages"] = []
-                stages = self.store.get_children_contexts_by_context(ctx.id)
-                for stage in stages:
-                    stage_dict = CmfQuery.__get_node_properties(stage)
-                    # ctx["stages"].append(stage_dict)
-                    stage_dict["executions"] = []
-                    executions = self.store.get_executions_by_context(stage.id)
-                    if exec_id is None:
-                        list_executions = [exe for exe in executions]
-                    elif exec_id is not None:
-                        list_executions = [
-                            exe for exe in executions if exe.id == int(exec_id)
-                        ]
-                    else:
-                        return "Invalid execution id given."
-                    for exe in list_executions:
-                        exe_dict = CmfQuery.__get_node_properties(exe)
-                        exe_type = self.store.get_execution_types_by_id([exe.type_id])
-                        exe_dict["type"] = exe_type[0].name
-                        exe_dict["events"] = []
-                        # name will be an empty string for executions that are created with 
-                        # create new execution as true(default)
-                        # In other words name property will there only for execution 
-                        # that are created with create new execution flag set to false(special case)
-                        exe_dict["name"] = exe.name if exe.name != "" else ""
-                        events = self.store.get_events_by_execution_ids([exe.id])
-                        for evt in events:
-                            evt_dict = CmfQuery.__get_node_properties(evt)
-                            artifact = self.store.get_artifacts_by_id([evt.artifact_id])
-                            if artifact is not None:
-                                artifact_type = self.store.get_artifact_types_by_id(
-                                    [artifact[0].type_id]
-                                )
-                                artifact_dict = CmfQuery.__get_node_properties(
-                                    artifact[0]
-                                )
-                                artifact_dict["type"] = artifact_type[0].name
-                                evt_dict["artifact"] = artifact_dict
-                            exe_dict["events"].append(evt_dict)
-                        stage_dict["executions"].append(exe_dict)
-                    ctx_dict["stages"].append(stage_dict)
-                mlmd_json["Pipeline"].append(ctx_dict)
-                json_str = json.dumps(mlmd_json)
-                # json_str = jsonpickle.encode(ctx_dict)
-                return json_str
-
-    '''def materialize(self, artifact_name:str):
+    """def materialize(self, artifact_name:str):
        artifacts = self.store.get_artifacts()
        for art in artifacts:
            if art.name == artifact_name:
@@ -437,5 +600,4 @@ class CmfQuery(object):
            elif (remote == "Remote"):
                remote = v
        
-       Cmf.materialize(path, git_repo, rev, remote)'''
-    
+       Cmf.materialize(path, git_repo, rev, remote)"""
