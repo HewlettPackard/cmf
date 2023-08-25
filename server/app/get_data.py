@@ -74,8 +74,12 @@ def create_unique_executions(server_store_path, req_info):
                 if j['name'] != "":#If executions have name , they are reusable executions                        
                     continue       #which needs to be merged in irrespective of whether already 
                                    #present or not so that new artifacts associated with it gets in.
-                for uuid in j['properties']['Execution_uuid'].split(","):
-                    executions_client.append(uuid)
+                if 'Execution_uuid' in j['properties']:
+                    for uuid in j['properties']['Execution_uuid'].split(","):
+                        executions_client.append(uuid)
+                else:
+                    status="version_update"
+                    return status
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
         for i in mlmd_data["Pipeline"]:
