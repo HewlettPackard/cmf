@@ -440,7 +440,6 @@ class Cmf:
         custom_props = {} if custom_properties is None else custom_properties
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
-        execution_uuid=properties.get("Execution_uuid","")
         git_start_commit = properties.get("Git_Start_Commit", "")
         #name = properties.get("Name", "")
         create_new_execution = True
@@ -458,7 +457,6 @@ class Cmf:
                                            #Type field , if creating new executions always
             context_id=self.child_context.id,
             execution=execution_cmd,
-            Execution_uuid=execution_uuid,
             pipeline_id=self.parent_context.id,
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
@@ -469,16 +467,13 @@ class Cmf:
 
         uuids = ""
 
-        if "Execution_uuid" in self.execution.properties:
-            uuids = self.execution.properties["Execution_uuid"].string_value
-            if uuids:
-                self.execution.properties["Execution_uuid"].string_value = uuids +\
-                    ","+properties["Execution_uuid"]
-            else:
-                self.execution.properties["Execution_uuid"].string_value =\
-                    properties["Execution_uuid"]
+        uuids = self.execution.properties["Execution_uuid"].string_value
+        if uuids:
+            self.execution.properties["Execution_uuid"].string_value = uuids +\
+                ","+properties["Execution_uuid"]
         else:
-            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())
+            self.execution.properties["Execution_uuid"].string_value =\
+                properties["Execution_uuid"]
 
         
         self.store.put_executions([self.execution])
