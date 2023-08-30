@@ -1,69 +1,34 @@
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.css";
-const ArtifactTable = ({ artifacts }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); // Number of items to display per page
-  const [sortBy, setSortBy] = useState(null); // Property to sort by
-  const [sortOrder, setSortOrder] = useState("asc"); // Sort order ('asc' or 'desc')
-  const [expandedRow, setExpandedRow] = useState(null);
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
+const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
 
-  const handleSort = (property) => {
-    if (sortBy === property) {
-      // If currently sorted by the same property, toggle sort order
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      // If sorting by a new property, set it to ascending order by default
-      setSortBy(property);
-      setSortOrder("asc");
-    }
-  };
+  // Default sorting order
+  const [sortOrder, setSortOrder] = useState("Context_Type");
+
+  // Local filter value state
+  const [filterValue, setFilterValue] = useState("");
+
+  const [expandedRow, setExpandedRow] = useState(null);
 
   const consistentColumns = [];
-  let filteredData = [];
- 
-  console.log(artifacts)
-  
- if (typeof artifacts === "object" && Array.isArray(artifacts)) {
-  filteredData = artifacts.filter(
-    (item) =>
-      (item.name &&
-        item.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (item.type && item.type.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
- }
- else {
-    console.error("executions is not an array.");
-  }
-
-
- 
-
-  // eslint-disable-next-line
-  const sortedData = filteredData.sort((a, b) => {
-    const aValue = a[sortBy];
-    const bValue = b[sortBy];
-
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset current page to 1 when search query changes
-  }, [searchQuery]);
+    // Set initial sorting order when component mounts
+    setSortOrder("asc");
+  }, []);
 
-  useEffect(() => {
-    setCurrentPage(1); // Reset current page to 1 when search query changes
-  }, [artifacts]);
+  const handleSort = () => {
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newSortOrder);
+    onSort("name", newSortOrder); // Notify parent component about sorting change
+  };
+
+  const handleFilterChange = (event) => {
+    const value = event.target.value;
+    setFilterValue(value);
+    onFilter("name", value); // Notify parent component about filter change
+  };
 
   const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
@@ -73,29 +38,14 @@ const ArtifactTable = ({ artifacts }) => {
     }
   };
 
-  // eslint-disable-next-line
-  const renderTableData = () => {
-    if (currentItems.length === 0) {
-      return (
-        <tr>
-          <td colSpan="4">No data available</td>
-        </tr>
-      );
-    }
-
-    return currentItems.map((item) => (
-      <tr key={item.id}>{/* Render table row */}</tr>
-    ));
-  };
-
   return (
     <div className="container flex flex-col mx-auto p-6 mr-4">
       <div className="flex flex-col items-end m-1">
         <input
           type="text"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder="Search..."
+          value={filterValue}
+          onChange={handleFilterChange}
+          placeholder="Filter by Name"
           className="w-64 px-1 border-2 border-gray"
         />
       </div>
@@ -110,12 +60,11 @@ const ArtifactTable = ({ artifacts }) => {
                 </th>
                 <th
                   scope="col"
-                  onClick={() => handleSort("name")}
+                  onClick={handleSort}
                   className="name px-6 py-3"
                 >
-                  name
-                  {sortBy === "name" && sortOrder === "asc" && "▲"}
-                  {sortBy === "name" && sortOrder === "desc" && "▼"}
+                  name {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
+                  {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
                 </th>
                 <th scope="col" className="type px-6 py-3">
                   Type
@@ -135,7 +84,7 @@ const ArtifactTable = ({ artifacts }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {currentItems.map((data, index) => (
+              {artifacts.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}

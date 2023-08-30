@@ -59,6 +59,8 @@ class CmdMetadataPush(CmdBase):
         attr_dict = CmfConfig.read_config(config_file_path)
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
 
+        print("metadata push started")
+        print("........................................")
 
         if self.args.pipeline_name in query.get_pipeline_names():  # Checks if pipeline name exists
             json_payload = query.dumptojson(

@@ -16,6 +16,14 @@ const Executions = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [activePage, setActivePage] = useState(1);
   const [clickedButton, setClickedButton] = useState("page");
+  // Default sort field
+  const [sortField, setSortField] = useState("Context_Type");
+  // Default sort order
+  const [sortOrder, setSortOrder] = useState("asc");
+  // Default filter field
+  const [filterBy, setFilterBy] = useState(null);
+  // Default filter value
+  const [filterValue, setFilterValue] = useState(null);
 
   useEffect(() => {
     fetchPipelines();
@@ -30,12 +38,12 @@ const Executions = () => {
 
   useEffect(() => {
     if (selectedPipeline) {
-      fetchExecutions(selectedPipeline, activePage);
+      fetchExecutions(selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue);
     }
-  }, [selectedPipeline, activePage]);
+  }, [selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue]);
 
-  const fetchExecutions = (pipelineName, page) => {
-    client.getExecutions(pipelineName, page).then((data) => {
+  const fetchExecutions = (pipelineName, page, sortField, sortOrder, filterBy, filterValue) => {
+    client.getExecutions(pipelineName, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
       setExecutions(data.items);
       setTotalItems(data.total_items);
     });
@@ -67,6 +75,16 @@ const Executions = () => {
     }
   };
 
+  const handleSort = (newSortField, newSortOrder) => {
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
+  };
+
+  const handleFilter = (field, value) => {
+    setFilterBy(field);
+    setFilterValue(value);
+  };
+
   return (
     <>
       <section
@@ -82,7 +100,7 @@ const Executions = () => {
           <div className="container justify-center items-center mx-auto px-4">
             <div className="container">
               {selectedPipeline !== null && (
-                <ExecutionTable executions={executions} />
+                <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
               )}
             </div>
             <div>

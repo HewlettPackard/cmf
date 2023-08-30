@@ -5,7 +5,7 @@ import os
 from server.app.query_visualization import query_visualization
 from fastapi.responses import FileResponse
 
-def get_executions(mlmdfilepath, pipeline_name):
+def get_executions_old(mlmdfilepath, pipeline_name):
     query = cmfquery.CmfQuery(mlmdfilepath)
     stages = query.get_pipeline_stages(pipeline_name)
     df = pd.DataFrame()
@@ -15,6 +15,29 @@ def get_executions(mlmdfilepath, pipeline_name):
             df = pd.concat([df, executions], sort=True, ignore_index=True)
     return df
 
+def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    df = pd.DataFrame()
+    executions = query.get_executions_by_id(exe_ids)
+    df = pd.concat([df, executions], sort=True, ignore_index=True)
+    return df
+
+def get_exe_ids(mlmdfilepath):
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    df = pd.DataFrame()
+    execution_ids = {}
+    names = query.get_pipeline_names()
+    for name in names:
+        stages = query.get_pipeline_stages(name)
+        for stage in stages:
+            executions = query.get_all_executions_in_stage(stage)
+            df = pd.concat([df, executions], sort=True, ignore_index=True)
+    if df.empty:
+        return
+    for name in names:
+        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type']]
+    return execution_ids
+
 def get_all_artifact_ids_with_type(mlmdfilepath):
     # following is a dictionary of dictionary 
     # First level dictionary key is pipeline_name 
@@ -22,16 +45,18 @@ def get_all_artifact_ids_with_type(mlmdfilepath):
     # Nested dictionary key is type i.e. Dataset, Model, etc.
     # Nested dictionary value is type i.e. set of integers
     artifact_ids = {}
+    df = pd.DataFrame()
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
     for name in names:
-        artifacts_df = query.get_all_artifacts_by_context(name)
-        if artifacts_df.empty:
+        artifacts = query.get_all_artifacts_by_context(name)
+        df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+        if df.empty:
             return
         else:
             artifact_ids[name] = {}
-            for type in artifacts_df['type']:
-                filtered_values = set(artifacts_df.loc[artifacts_df['type'] == type, 'id'])
+            for art_type in df['type']:
+                filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
                 artifact_ids[name][type] = filtered_values
     return artifact_ids
 
@@ -108,7 +133,7 @@ def create_unique_executions(server_store_path, req_info):
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
-                if j['name'] != "":#If executions have name , they are reusable executions                        
+                if j['name'] != "": #If executions have name , they are reusable executions
                     continue       #which needs to be merged in irrespective of whether already 
                                    #present or not so that new artifacts associated with it gets in.
                 if 'Execution_uuid' in j['properties']:

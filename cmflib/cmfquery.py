@@ -417,6 +417,28 @@ class CmfQuery(object):
                     return self.store.get_executions_by_context(stage.id)
         return []
 
+    def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
+        df = pd.DataFrame()
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        for ctx in contexts:
+            child_contexts = self.store.get_children_contexts_by_context(ctx.id)
+            for cc in child_contexts:
+                if cc.name == stage_name:
+                    executions = self.store.get_executions_by_context(cc.id)
+                    for exe in executions:
+                        d1 = self._transform_to_dataframe(exe)
+                        df = pd.concat([df, d1], sort=True, ignore_index=True)
+
+        return df
+
+    def get_executions_by_id(self, exe_ids) -> pd.DataFrame:
+        df = pd.DataFrame()
+        executions = self.store.get_executions_by_id(exe_ids)
+        for exe in executions:
+            d1 = self._transform_to_dataframe(exe)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
+
     def get_all_artifacts_by_context(self, pipeline_name: str) -> pd.DataFrame:
         df = pd.DataFrame()
         contexts = self.store.get_contexts_by_type("Parent_Context")

@@ -19,6 +19,14 @@ const Artifacts = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [activePage, setActivePage] = useState(1);
   const [clickedButton, setClickedButton] = useState("page");
+  // Default sort field
+  const [sortField, setSortField] = useState("name");
+  // Default sort order
+  const [sortOrder, setSortOrder] = useState("asc");
+  // Default filter field
+  const [filterBy, setFilterBy] = useState(null);
+  // Default filter value
+  const [filterValue, setFilterValue] = useState(null);
 
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
@@ -55,8 +63,8 @@ const Artifacts = () => {
     // eslint-disable-next-line
   }, [selectedPipeline]);
 
-  const fetchArtifacts = (pipelineName, type, page) => {
-    client.getArtifacts(pipelineName, type, page).then((data) => {
+  const fetchArtifacts = (pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) => {
+    client.getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
       setArtifacts(data.items);
       setTotalItems(data.total_items);
     });
@@ -64,9 +72,9 @@ const Artifacts = () => {
 
   useEffect(() => {
     if (selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType, activePage);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
     }
-  }, [selectedPipeline, selectedArtifactType, activePage]);
+  }, [selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue]);
 
   const handlePageClick = (page) => {
     setActivePage(page);
@@ -88,6 +96,17 @@ const Artifacts = () => {
       handlePageClick(activePage + 1);
     }
   };
+
+  const handleSort = (newSortField, newSortOrder) => {
+    setSortField(newSortField);
+    setSortOrder(newSortOrder);
+  };
+
+  const handleFilter = (field, value) => {
+    setFilterBy(field);
+    setFilterValue(value);
+  };
+
 
   return (
     <>
@@ -112,7 +131,7 @@ const Artifacts = () => {
             </div>
             <div className="container">
               {selectedPipeline !== null && selectedArtifactType !== null && (
-                <ArtifactTable artifacts={artifacts} />
+                <ArtifactTable artifacts={artifacts} onSort={handleSort} onFilter={handleFilter}/>
               )}
               <div>
                 {artifacts !== null && totalItems > 0 && (

@@ -8,7 +8,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from server.app.get_data import get_executions, get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types, get_all_artifact_ids_with_type
+from server.app.get_data import get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types, get_all_artifact_ids_with_type, get_exe_ids, get_executions_by_ids
 from server.app.query_visualization import query_visualization
 from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
@@ -18,16 +18,19 @@ import json
 server_store_path = "/cmf-server/data/mlmd"
 
 dict_of_art_ids = {}
+dict_of_exe_ids = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # loaded artifact ids into memory
     global dict_of_art_ids
     if os.path.exists(server_store_path):
+        # loaded artifact ids into memory
         dict_of_art_ids = get_all_artifact_ids_with_type(server_store_path)
-        # print(dict_of_art_ids)
+        # loaded execution ids with names into memory
+        dict_of_exe_ids = get_exe_ids(server_store_path)
     yield
     dict_of_art_ids.clear()
+    dict_of_exe_ids.clear()
 
 app = FastAPI(title="cmf-server", lifespan=lifespan)
 
@@ -84,7 +87,6 @@ async def mlmd_pull(info: Request, pipeline_name: str):
         json_payload = ""
     return json_payload
 
-
 # api to display executions available in mlmd
 @app.get("/display_executions/{pipeline_name}")
 async def display_exec(
@@ -92,15 +94,28 @@ async def display_exec(
     pipeline_name: str,
     page: int = Query(1, description="Page number", gt=0),
     per_page: int = Query(5, description="Items per page", le=100),
+    sort_field: str = Query("Context_Type", description="Column to sort by"),
+    sort_order: str = Query("asc", description="Sort order (asc or desc)"),
+    filter_by: str = Query(None, description="Filter by column"),
+    filter_value: str = Query(None, description="Filter value"),
     ):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        executions_df = get_executions(server_store_path, pipeline_name)
-        total_items = len(executions_df)
+        exe_ids_initial = dict_of_exe_ids[pipeline_name]
+        # Apply filtering if provided
+        if filter_by and filter_value:
+            exe_ids_initial = exe_ids_initial[exe_ids_initial[filter_by].str.contains(filter_value, case=False)]
+        # Apply sorting if provided
+        exe_ids_sorted = exe_ids_initial.sort_values(by=sort_field, ascending=(sort_order == "asc"))
+        exe_ids = exe_ids_sorted['id'].tolist()
+        total_items = len(exe_ids)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
-        executions_paginated = executions_df.iloc[start_idx:end_idx]
-        temp = executions_paginated.to_json(orient="records")
+        if total_items < end_idx:
+            end_idx = total_items
+        exe_ids_list = exe_ids[start_idx:end_idx]
+        executions_df = get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
+        temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {
             "total_items": total_items,
@@ -108,6 +123,7 @@ async def display_exec(
         }
     else:
         return
+
 
 @app.get("/display_lineage/{pipeline_name}")
 async def display_lineage(request: Request, pipeline_name: str):
@@ -124,6 +140,7 @@ async def display_lineage(request: Request, pipeline_name: str):
     else:
         return 'mlmd doesnt exist'
 
+
 # api to display artifacts available in mlmd
 @app.get("/display_artifacts/{pipeline_name}/{type}")
 async def display_artifact(
@@ -132,28 +149,37 @@ async def display_artifact(
     type: str,   # type = artifact type
     page: int = Query(1, description="Page number", gt=0),
     per_page: int = Query(5, description="Items per page", le=100),
+    sort_field: str = Query("name", description="Column to sort by"),
+    sort_order: str = Query("asc", description="Sort order (asc or desc)"),
+    filter_by: str = Query(None, description="Filter by column"),
+    filter_value: str = Query(None, description="Filter value"),
     ):
-    empty_df = ""
+    empty_df = pd.DataFrame()
+    art_ids_dict = {}
+    art_type = type
     # checks if mlmd file exists on server
-    #art_ids_dict = dict_of_art_ids[pipeline_name]
-    #if not art_ids_dict:
-     #   return empty_df
     if os.path.exists(server_store_path):
         art_ids_dict = dict_of_art_ids[pipeline_name]
         if not art_ids_dict:
             return empty_df
-        temp_art_dict = {}
-        if type in art_ids_dict:
-            temp_art_dict = art_ids_dict[type]
+        art_ids_initial = []
+        if art_type in art_ids_dict:
+            art_ids_initial = art_ids_dict[art_type]
         else:
             return empty_df
-        total_items = len(temp_art_dict)
+        # Apply filtering if provided
+        if filter_by and filter_value:
+            art_ids_initial = art_ids_initial[art_ids_initial[filter_by].str.contains(filter_value, case=False)]
+        # Apply sorting if provided
+        art_ids_sorted = art_ids_initial.sort_values(by=sort_field, ascending=(sort_order == "asc"))
+        art_ids = art_ids_sorted['id'].tolist()
+        total_items = len(art_ids)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
         if total_items < end_idx:
             end_idx = total_items
-        artifact_id_list = list(temp_art_dict)[start_idx:end_idx]
-        artifact_df = get_artifacts(server_store_path, pipeline_name, type, artifact_id_list)
+        artifact_id_list = list(art_ids)[start_idx:end_idx]
+        artifact_df = get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
         data_paginated = artifact_df
         return {
             "total_items": total_items,
@@ -161,6 +187,8 @@ async def display_artifact(
         }
     else:
         return f"{server_store_path} file doesn't exist."
+
+
 
 @app.get("/display_artifact_types")
 async def display_artifact_types(request: Request):

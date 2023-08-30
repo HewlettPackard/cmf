@@ -23,11 +23,15 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(pipelineName, type, page) {
+  async getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) {
     return this.apiClient
       .get(`/display_artifacts/${pipelineName}/${type}`, {
         params: {
           page: page,
+          sort_field: sortField,
+          sort_order: sortOrder,
+          filter_by: filterBy,
+          filter_value: filterValue,
         },
       })
       .then(({ data }) => {
@@ -53,11 +57,15 @@ class FastAPIClient {
     }
   }
 
-  getExecutions(pipelineName, page) {
+  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
       .get(`/display_executions/${pipelineName}`, {
         params: {
           page: page,
+          sort_field: sortField,
+          sort_order: sortOrder,
+          filter_by: filterBy,
+          filter_value: filterValue,
         },
       })
       .then(({ data }) => {

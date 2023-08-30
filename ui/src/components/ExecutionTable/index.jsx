@@ -2,67 +2,34 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ExecutionTable = ({ executions }) => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); // Number of items to display per page
-  const [sortBy, setSortBy] = useState(null); // Property to sort by
-  const [sortOrder, setSortOrder] = useState("asc"); // Sort order ('asc' or 'desc')
+const ExecutionTable = ({ executions, onSort, onFilter }) => {
+
+  // Default sorting order
+  const [sortOrder, setSortOrder] = useState("Context_Type");
+
+  // Local filter value state
+  const [filterValue, setFilterValue] = useState("");
+
   const [expandedRow, setExpandedRow] = useState(null);
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
 
-  const handleSort = (property) => {
-    if (sortBy === property) {
-      // If currently sorted by the same property, toggle sort order
-      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
-    } else {
-      // If sorting by a new property, set it to ascending order by default
-      setSortBy(property);
-      setSortOrder("asc");
-    }
-  };
   const consistentColumns = [];
-  let filteredData = [];
-
-  console.log(executions);
-
-  if (typeof executions === "object" && Array.isArray(executions)) {
-    filteredData = executions.filter(
-      (item) =>
-        (item.Context_Type &&
-          item.Context_Type.toLowerCase().includes(
-            searchQuery.toLowerCase()
-          )) ||
-        (item.Execution &&
-          item.Execution.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-  } else {
-    console.error("executions is not an array.");
-  }
-
-  // eslint-disable-next-line
-  const sortedData = filteredData.sort((a, b) => {
-    const aValue = a[sortBy];
-    const bValue = b[sortBy];
-
-    if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-    if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
 
   useEffect(() => {
-    setCurrentPage(1); // Reset current page to 1 when search query changes
-  }, [searchQuery]);
+    // Set initial sorting order when component mounts
+    setSortOrder("asc");
+  }, []);
 
-  useEffect(() => {
-    setCurrentPage(1); // Reset current page to 1 when search query changes
-  }, [executions]);
+  const handleSort = () => {
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newSortOrder);
+    onSort("Context_Type", newSortOrder); // Notify parent component about sorting change
+  };
+
+  const handleFilterChange = (event) => {
+    const value = event.target.value;
+    setFilterValue(value);
+    onFilter("Context_Type", value); // Notify parent component about filter change
+  };
 
   const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
@@ -70,21 +37,6 @@ const ExecutionTable = ({ executions }) => {
     } else {
       setExpandedRow(rowId);
     }
-  };
-
-  // eslint-disable-next-line
-  const renderTableData = () => {
-    if (currentItems.length === 0) {
-      return (
-        <tr>
-          <td colSpan="4">No data available</td>
-        </tr>
-      );
-    }
-
-    return currentItems.map((item) => (
-      <tr key={item.id}>{/* Render table row */}</tr>
-    ));
   };
 
   return (
@@ -98,9 +50,9 @@ const ExecutionTable = ({ executions }) => {
       >
         <input
           type="text"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          placeholder="Search..."
+          value={filterValue}
+          onChange={handleFilterChange}
+          placeholder="Filter by Context_Type"
           style={{
             marginRight: "1rem",
             padding: "0.5rem",
@@ -116,12 +68,11 @@ const ExecutionTable = ({ executions }) => {
                 <th scope="col" className="px-6 py-3"></th>
                 <th
                   scope="col"
-                  onClick={() => handleSort("Context_Type")}
+                  onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  Context_Type
-                  {sortBy === "Context_Type" && sortOrder === "asc" && "▲"}
-                  {sortBy === "Context_Type" && sortOrder === "desc" && "▼"}
+                  Context_Type {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
+                  {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
@@ -138,7 +89,7 @@ const ExecutionTable = ({ executions }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {currentItems.map((data, index) => (
+              {executions.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}
