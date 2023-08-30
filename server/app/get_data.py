@@ -22,7 +22,7 @@ def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     df = pd.concat([df, executions], sort=True, ignore_index=True)
     return df
 
-def get_exe_ids(mlmdfilepath):
+def get_all_exe_ids(mlmdfilepath):
     query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
     execution_ids = {}
@@ -38,26 +38,28 @@ def get_exe_ids(mlmdfilepath):
         execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type']]
     return execution_ids
 
-def get_all_artifact_ids_with_type(mlmdfilepath):
-    # following is a dictionary of dictionary 
-    # First level dictionary key is pipeline_name 
-    # First lvel dicitonary value is nested dictionary
+def get_all_artifact_ids(mlmdfilepath):
+    # following is a dictionary of dictionary
+    # First level dictionary key is pipeline_name
+    # First level dicitonary value is nested dictionary
     # Nested dictionary key is type i.e. Dataset, Model, etc.
-    # Nested dictionary value is type i.e. set of integers
+    # Nested dictionary value is ids i.e. set of integers
     artifact_ids = {}
     df = pd.DataFrame()
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
     for name in names:
+        print("piepeline_name", name)
         artifacts = query.get_all_artifacts_by_context(name)
         df = pd.concat([df, artifacts], sort=True, ignore_index=True)
         if df.empty:
             return
         else:
+            print(df)
             artifact_ids[name] = {}
             for art_type in df['type']:
                 filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
-                artifact_ids[name][type] = filtered_values
+                artifact_ids[name][art_type] = filtered_values
     return artifact_ids
 
 

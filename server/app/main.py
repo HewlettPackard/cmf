@@ -1,16 +1,27 @@
 # cmf-server api's
-from fastapi import FastAPI, Request, APIRouter, status, HTTPException, Query
-from contextlib import asynccontextmanager
-import pandas as pd
+from fastapi import FastAPI, Request, status, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from cmflib import cmfquery, cmf_merger
-from fastapi.encoders import jsonable_encoder
-from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from server.app.get_data import get_artifacts, get_lineage_img_path, create_unique_executions, get_mlmd_from_server, get_artifact_types, get_all_artifact_ids_with_type, get_exe_ids, get_executions_by_ids
+
+from contextlib import asynccontextmanager
+import pandas as pd
+
+from cmflib import cmfquery, cmf_merger
+#from fastapi.encoders import jsonable_encoder
+from server.app.get_data import (
+    get_artifacts,
+    get_lineage_img_path,
+    create_unique_executions,
+    get_mlmd_from_server,
+    get_artifact_types,
+    get_all_artifact_ids,
+    get_all_exe_ids,
+    get_executions_by_ids
+)
 from server.app.query_visualization import query_visualization
-from server.app.schemas.dataframe import ExecutionDataFrame
+
+#from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
 import os
 import json
@@ -23,11 +34,12 @@ dict_of_exe_ids = {}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
+    global dict_of_exe_ids
     if os.path.exists(server_store_path):
         # loaded artifact ids into memory
-        dict_of_art_ids = get_all_artifact_ids_with_type(server_store_path)
+        dict_of_art_ids = get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
-        dict_of_exe_ids = get_exe_ids(server_store_path)
+        dict_of_exe_ids = get_all_exe_ids(server_store_path)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -35,7 +47,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="cmf-server", lifespan=lifespan)
 
 BASE_PATH = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
+#templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
 if os.environ.get("MYIP") != "127.0.0.1":
@@ -71,7 +83,8 @@ async def mlmd_push(info: Request):
     req_info = await info.json()
     status= create_unique_executions(server_store_path,req_info)
     # async function
-    await update_global_art_dict()
+    #await update_global_art_dict()
+    #await update_global_exe_dict()
     return {"status": status, "data": req_info}
 
 
@@ -138,7 +151,7 @@ async def display_lineage(request: Request, pipeline_name: str):
             return f"Pipeline name {pipeline_name} doesn't exist."
 
     else:
-        return 'mlmd doesnt exist'
+        return 'mlmd does not exist!!'
 
 
 # api to display artifacts available in mlmd
@@ -219,7 +232,7 @@ async def update_global_art_dict():
     # check how to make it async
     global dict_of_art_ids
     result_dict = dict_of_art_ids.copy()
-    output_dict = get_all_artifact_ids_with_type(server_store_path)
+    output_dict = get_all_artifact_ids(server_store_path)
     #print("output_dict", output_dict)
     for key, value in output_dict.items():
         if key in result_dict:
@@ -230,3 +243,7 @@ async def update_global_art_dict():
     #print("print dict_ids after the mlmd push ")
     #print(dict_of_art_ids)
     return
+
+
+async def update_global_exe_dict():
+    global dict_of_exe_ids

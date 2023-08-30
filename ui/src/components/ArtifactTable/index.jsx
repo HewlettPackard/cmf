@@ -84,7 +84,7 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {artifacts.map((data, index) => (
+              {artifacts.length > 0 && artifacts.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}
