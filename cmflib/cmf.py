@@ -472,16 +472,13 @@ class Cmf:
 
         uuids = ""
 
-        if "Execution_uuid" in self.execution.properties:
-            uuids = self.execution.properties["Execution_uuid"].string_value
-            if uuids:
-                self.execution.properties["Execution_uuid"].string_value = uuids +\
-                    ","+properties["Execution_uuid"]
-            else:
-                self.execution.properties["Execution_uuid"].string_value =\
-                    properties["Execution_uuid"]
+        uuids = self.execution.properties["Execution_uuid"].string_value
+        if uuids:
+            self.execution.properties["Execution_uuid"].string_value = uuids +\
+                ","+properties["Execution_uuid"]
         else:
-            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())
+            self.execution.properties["Execution_uuid"].string_value =\
+                properties["Execution_uuid"]
 
         
         self.store.put_executions([self.execution])
