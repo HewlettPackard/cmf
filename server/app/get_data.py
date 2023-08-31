@@ -45,17 +45,15 @@ def get_all_artifact_ids(mlmdfilepath):
     # Nested dictionary key is type i.e. Dataset, Model, etc.
     # Nested dictionary value is ids i.e. set of integers
     artifact_ids = {}
-    df = pd.DataFrame()
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
     for name in names:
-        print("piepeline_name", name)
+        df = pd.DataFrame()
         artifacts = query.get_all_artifacts_by_context(name)
         df = pd.concat([df, artifacts], sort=True, ignore_index=True)
         if df.empty:
             return
         else:
-            print(df)
             artifact_ids[name] = {}
             for art_type in df['type']:
                 filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]

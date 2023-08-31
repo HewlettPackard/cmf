@@ -8,7 +8,6 @@ from contextlib import asynccontextmanager
 import pandas as pd
 
 from cmflib import cmfquery, cmf_merger
-#from fastapi.encoders import jsonable_encoder
 from server.app.get_data import (
     get_artifacts,
     get_lineage_img_path,
@@ -21,7 +20,6 @@ from server.app.get_data import (
 )
 from server.app.query_visualization import query_visualization
 
-#from server.app.schemas.dataframe import ExecutionDataFrame
 from pathlib import Path
 import os
 import json
@@ -47,7 +45,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="cmf-server", lifespan=lifespan)
 
 BASE_PATH = Path(__file__).resolve().parent
-#templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
 if os.environ.get("MYIP") != "127.0.0.1":
