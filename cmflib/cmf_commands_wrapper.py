@@ -69,6 +69,26 @@ def arti_pull(pipeline_name, file_name):
     print(msg)
     return msg
 
+def arti_pull_single(pipeline_name, file_name,artifact_name):
+    print("inside_cmf_cmd_wrapper")
+    cli_args = cli.parse_args(
+            [
+               "artifact",
+               "pull",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-a",
+               artifact_name,
+
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
 
 def cmf_cmd_init(): 
     cli_args = cli.parse_args(
