@@ -1,6 +1,5 @@
-from cmflib.cmf import Cmf
 import os
-from cmflib import cmfquery
+from cmflib import cmfquery,cmf
 from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
 import requests
@@ -9,7 +8,6 @@ def data_push(file_path,pipeline_name):
     server=0
     query=cmfquery.CmfQuery(file_path)
     if pipeline_name in query.get_pipeline_names():
-        cmf = Cmf(file_path,pipeline_name)
    
         cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
 
@@ -33,9 +31,9 @@ def data_push(file_path,pipeline_name):
         except:
             print("Server is down !")
             return 
-        meta=cmf.metadata_push()
+        meta=cmf.metadata_push(pipeline_name,file_path)
         arti=cmf.artifact_push()
     else:
         print("Pipeline name "+pipeline_name+ " doesn't exists.")    
 if __name__ == '__main__':
-    data_push("./mlmd",pipeline_name="Test-env1")
+    data_push("./mlmd",pipeline_name="Test-env")

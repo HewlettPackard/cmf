@@ -1,4 +1,4 @@
-from cmflib.cmf import Cmf
+from cmflib import cmf
 import os
 from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
@@ -7,8 +7,6 @@ import requests
 def data_pull(pipeline_name,file_path=""):
     server=0
 
-    cmf = Cmf(pipeline_name)
-    
     cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
 
     # find root_dir of .cmfconfig
@@ -30,14 +28,13 @@ def data_pull(pipeline_name,file_path=""):
     except:
         print("Server is down !")
         return 
-    meta=cmf.metadata_pull(file_path)
+    meta=cmf.metadata_pull(pipeline_name,file_path)
     if file_path=="":
         file_path="./mlmd"
     else:
         file_path=file_path+"/mlmd"
-    cmf = Cmf(file_path,pipeline_name)
-    arti=cmf.artifact_pull()
+    arti=cmf.artifact_pull(pipeline_name,file_path)
 
     
 if __name__ == '__main__':
-    data_pull(pipeline_name="Testenv")
+    data_pull(pipeline_name="Test-env")
