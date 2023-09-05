@@ -20,7 +20,7 @@ They accept and return JSON-encoded request bodies and responses and return stan
 | Code  | Title                     | Description                                                  |
 |-------| ------------------------- |--------------------------------------------------------------|
 | `200` | `OK`                      | mlmd is successfully pushed (e.g. when using `GET`, `POST`). |
-| `400` | `Bad request`             | When the cmf[env](cmf%2Fenv)-server is not available.                        |
+| `400` | `Bad request`             | When the cmf-server is not available.                        |
 | `500` | `Internal server error`   | When an internal error has happened                          |
 
 
@@ -76,6 +76,7 @@ There are two ways to start cmf server -
    ```
    docker compose -f docker-compose-server.yml stop
    ```
+> It is neccessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling latest cmf code from git.
 
 ## Using `docker run` command
 
