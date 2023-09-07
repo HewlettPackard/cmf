@@ -80,8 +80,8 @@ async def mlmd_push(info: Request):
     req_info = await info.json()
     status= create_unique_executions(server_store_path,req_info)
     # async function
-    #await update_global_art_dict()
-    #await update_global_exe_dict()
+    await update_global_art_dict()
+    await update_global_exe_dict()
     return {"status": status, "data": req_info}
 
 
@@ -226,21 +226,14 @@ async def display_list_of_pipelines(request: Request):
 
 
 async def update_global_art_dict():
-    # check how to make it async
     global dict_of_art_ids
-    result_dict = dict_of_art_ids.copy()
     output_dict = get_all_artifact_ids(server_store_path)
-    #print("output_dict", output_dict)
-    for key, value in output_dict.items():
-        if key in result_dict:
-            result_dict[key].update(value)
-        else:
-            result_dict[key] = value.copy()
-    dict_of_art_ids = result_dict
-    #print("print dict_ids after the mlmd push ")
-    #print(dict_of_art_ids)
+    dict_of_art_ids = output_dict
     return
 
 
 async def update_global_exe_dict():
     global dict_of_exe_ids
+    output_dict = get_all_exe_ids(server_store_path)
+    dict_of_exe_ids = output_dict
+    return
