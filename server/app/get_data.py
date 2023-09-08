@@ -101,8 +101,10 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     for name in names:
         if name == pipeline_name:
             df = query.get_all_artifacts_by_ids_list(artifact_ids)
+            if len(df) == 0:
+                return df
             df = df.drop_duplicates()
-            df['name'] = df['name'].str.split(':').str[0]
+            df['name'] = df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
             df = df.loc[df["type"] == art_type]
             result = df.to_json(orient="records")
             tempout = json.loads(result)
