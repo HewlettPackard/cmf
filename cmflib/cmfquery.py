@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###
-
+import abc
 import json
 import logging
 import typing as t
+from enum import Enum
 
 import pandas as pd
 from ml_metadata.metadata_store import metadata_store
@@ -29,8 +30,87 @@ __all__ = ["CmfQuery"]
 logger = logging.getLogger(__name__)
 
 
+class _KeyMapper(abc.ABC):
+    """Map one key (string) to another key (string) using a predefined strategy.
+    Args:
+        on_collision: What to do if the mapped key already exists in the target dictionary.
+    """
+
+    class OnCollision(Enum):
+        """What to do when a mapped key exists in the target dictionary."""
+
+        DO_NOTHING = 0
+        """Ignore the collision and overwrite the value associated with this key."""
+        RESOLVE = 1
+        """Resolve it by appending `_INDEX` where INDEX as the smallest positive integer that avoids this collision."""
+        RAISE_ERROR = 2
+        """Raise an exception."""
+
+    def __init__(self, on_collision: OnCollision = OnCollision.DO_NOTHING) -> None:
+        self.on_collision = on_collision
+
+    def get(self, d: t.Mapping, key: t.Any) -> t.Any:
+        """Return new (mapped) key.
+        Args:
+            d: Dictionary to update with the mapped key.
+            key: Source key name.
+         Returns:
+            A mapped (target) key to be used with the `d` dictionary.
+        """
+        new_key = self._get(key)
+        if new_key in d:
+            if self.on_collision == _KeyMapper.OnCollision.RAISE_ERROR:
+                raise ValueError(f"Mapped key ({key} -> {new_key}) already exists.")
+            elif self.on_collision == _KeyMapper.OnCollision.RESOLVE:
+                _base_key, index = new_key, 0
+                while new_key in d:
+                    index += 1
+                    new_key = f"{_base_key}_{index}"
+        return new_key
+
+    @abc.abstractmethod
+    def _get(self, key: t.Any) -> t.Any:
+        """Mapp a source key to a target key.
+        Args:
+            key: Source key.
+        Returns:
+            Target key.
+        """
+        raise NotImplementedError()
+
+
+class _DictMapper(_KeyMapper):
+    """Use dictionaries to specify key mappings (source -> target)."""
+
+    def __init__(self, mappings: t.Mapping, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.mappings = mappings
+
+    def _get(self, key: t.Any) -> t.Any:
+        return self.mappings.get(key, key)
+
+
+class _PrefixMapper(_KeyMapper):
+    """Prepend a constant prefix to produce a mapped key."""
+
+    def __init__(self, prefix: str, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.prefix = prefix
+
+    def _get(self, key: t.Any) -> t.Any:
+        return self.prefix + key
+
+
 class CmfQuery(object):
     """CMF Query communicates with the MLMD database and implements basic search and retrieval functionality.
+
+    This class has been designed to work with the CMF framework. CMF alters names of pipelines, stages and artifacts
+    in various ways. This means that actual names in the MLMD database will be different from those originally provided
+    by users via CMF API. When methods in this class accept `name` parameters, it is expected that values of these
+    parameters are fully-qualified names of respective entities.
+
+    TODO: (sergey) need to provide concrete examples and detailed description on how to actually use methods of this
+          class correctly, e.g., how to determine these fully-qualified names.
 
     Args:
         filepath: Path to the MLMD database file.
@@ -42,21 +122,27 @@ class CmfQuery(object):
         self.store = metadata_store.MetadataStore(config)
 
     @staticmethod
-    def _copy(source: t.Mapping, target: t.Optional[t.Dict] = None, key_mapper: t.Optional[t.Dict] = None) -> t.Dict:
+    def _copy(
+        source: t.Mapping, target: t.Optional[t.Dict] = None, key_mapper: t.Optional[t.Union[t.Dict, _KeyMapper]] = None
+    ) -> t.Dict:
         """Create copy of `source` and return it, reuse `target` if not None.
 
         Args:
             source: Input dict-like object to create copy.
             target: If not None, this will be reused and returned. If None, new dict will be created.
             key_mapper: Dictionary containing how to map keys in `source`, e.g., {"key_in": "key_out"} means the
-            key in `source` named "key_in" should be renamed to "key_out" in output dictionary object.
+                        key in `source` named "key_in" should be renamed to "key_out" in output dictionary object, or
+                        instance of _KeyMapper.
         Returns:
             If `target` is not None, it is returned containing data from `source`. Else, new object is returned.
         """
         if target is None:
             target = {}
         if key_mapper is None:
-            key_mapper = {}
+            key_mapper = _DictMapper({})
+        elif isinstance(key_mapper, dict):
+            key_mapper = _DictMapper(key_mapper)
+        assert isinstance(key_mapper, _KeyMapper), f"Invalid key_mapper type (type={type(key_mapper)})."
 
         for key, value in source.items():
             if value.HasField("string_value"):
@@ -66,7 +152,7 @@ class CmfQuery(object):
             else:
                 value = value.double_value
 
-            target[key_mapper.get(key, key)] = value
+            target[key_mapper.get(target, key)] = value
 
         return target
 
@@ -81,52 +167,20 @@ class CmfQuery(object):
             d: Pre-populated dictionary of KV-pairs to associate  with `node` (will become columns in output table).
         Returns:
             Pandas data frame with one row containing data from `node`.
-
-        TODO: (sergey) Overwriting `d` with key/values from `properties` and `custom_properties` is not safe, some
-              tests fail (`test_get_all_parent_executions`) - it happens to be the case that `id` gets overwritten. For
-              instance, this happens when artifact is of type Dataset, and custom_properties contain id equal to
-              `multi_nli`. Later, this `id` can be used to invoke other MLMD APIs and that fails.
-
-        TODO: (sergey) Maybe add prefix for properties and custom_properties keys?
         """
         if d is None:
             d = {}
 
-        keys_to_be_updated = set(d.keys()).intersection(node.properties.keys())
-        if keys_to_be_updated:
-            logger.warning(
-                "Unsafe OP detected for node (type=%s, id=%i): existing node keys (%s) will be updated from "
-                "node's `properties`.",
-                type(node),
-                node.id,
-                keys_to_be_updated,
-            )
-        if "id" in node.properties:
-            logger.warning(
-                "Unsafe OP detected for node (type=%s, id=%i): will update `id` from properties (value=%s)",
-                type(node),
-                node.id,
-                node.properties["id"],
-            )
-        d = CmfQuery._copy(node.properties, d)
-
-        keys_to_be_updated = set(d.keys()).intersection(node.properties.keys())
-        if keys_to_be_updated:
-            logger.warning(
-                "Unsafe OP detected for node (type=%s, id=%i): existing node keys (%s) will be updated from "
-                "node's `custom_properties`.",
-                type(node),
-                node.id,
-                keys_to_be_updated,
-            )
-        if "id" in node.custom_properties:
-            logger.warning(
-                "Unsafe OP detected for node (type=%s, id=%i): will update `id` from custom_properties (value=%s)",
-                type(node),
-                node.id,
-                node.properties["id"],
-            )
-        d = CmfQuery._copy(node.custom_properties, d)
+        d = CmfQuery._copy(
+            source=node.properties,
+            target=d,
+            key_mapper=_PrefixMapper("properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
+        )
+        d = CmfQuery._copy(
+            source=node.custom_properties,
+            target=d,
+            key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
+        )
 
         return pd.DataFrame(
             d,
@@ -145,8 +199,6 @@ class CmfQuery(object):
                 (pandas data frame with one row).
         Returns:
             Pandas data frame containing representation of elements in `elements` with one row being one element.
-
-        TODO: maybe easier to initially transform elements to list of dicts?
         """
         df = pd.DataFrame()
         for element in elements:
@@ -154,18 +206,14 @@ class CmfQuery(object):
         return df
 
     def _get_pipelines(self, name: t.Optional[str] = None) -> t.List[mlpb.Context]:
+        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context")
         """Return list of pipelines with the given name.
 
         Args:
             name: Piepline name or None to return all pipelines.
         Returns:
             List of objects associated with pipelines.
-
-        TODO (sergey): Is `Parent_Context` value always used for pipelines?
-        TODO (sergey): Why `name` parameter when there's another method `_get_pipeline`?
-        TODO (sergey): Use `self.store.get_context_by_type_and_name` when name presents?
         """
-        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context")
         if name is not None:
             pipelines = [pipeline for pipeline in pipelines if pipeline.name == name]
         return pipelines
@@ -176,8 +224,6 @@ class CmfQuery(object):
             name: Pipeline name.
         Returns:
             A pipeline object if found, else None.
-
-        TODO (sergey): Use `self.store.get_context_by_type_and_name` instead calling self._get_pipelines?
         """
         pipelines: t.List = self._get_pipelines(name)
         if pipelines:
@@ -238,19 +284,17 @@ class CmfQuery(object):
             for event in self.store.get_events_by_artifact_ids([artifact_id])
             if event.type == mlpb.Event.OUTPUT
         ]
-        if len(execution_ids) >= 2:
-            logger.warning("%d executions claim artifact (id=%d) as output.", len(execution_ids), artifact_id)
+        # According to CMF, it's OK to have multiple executions that produce the same exact artifact.
+        # if len(execution_ids) >= 2:
+        #     logger.warning("%d executions claim artifact (id=%d) as output.", len(execution_ids), artifact_id)
 
         return list(set(execution_ids))
 
     def _get_artifact(self, name: str) -> t.Optional[mlpb.Artifact]:
         """Return artifact with the given name or None.
-
-        TODO: Different artifact types can have the same name (see `get_artifacts_by_type`,
-              `get_artifact_by_type_and_name`).
-        TODO: (sergey) Use `self.store.get_artifacts` with list_options (filter_query)?
         Args:
-            name: Artifact name.
+            name: Fully-qualified name (e.g., artifact hash is added to the name), so name collisions across different
+                  artifact types are not issues here.
         Returns:
             Artifact or None (if not found).
         """
@@ -263,13 +307,14 @@ class CmfQuery(object):
     def _get_output_artifacts(self, execution_ids: t.List[int]) -> t.List[int]:
         """Return output artifacts for the given executions.
 
+        Artifacts are uniquely identified by their hashes in CMF, and so, when executions produce the same exact file,
+        they will claim this artifact as an output artifact, and so same artifact can have multiple producer
+        executions.
+
         Args:
             execution_ids: List of execution identifiers to return output artifacts for.
         Returns:
             List of output artifact identifiers.
-
-        TODO: (sergey) The `test_get_one_hop_child_artifacts` prints the warning in this method (Multiple executions
-              claim the same output artifacts)
         """
         artifact_ids: t.List[int] = [
             event.artifact_id
@@ -319,12 +364,10 @@ class CmfQuery(object):
         """Return list of pipeline stages for the pipeline with the given name.
 
         Args:
-            pipeline_name: Name of the pipeline for which stages need to be returned.
+            pipeline_name: Name of the pipeline for which stages need to be returned. In CMF, there are no different
+                pipelines with the same name.
         Returns:
             List of stage names associated with the given pipeline.
-
-        TODO: Can there be multiple pipelines with the same name?
-        TODO: (sergey) not clear from method name that this method returns stage names
         """
         stages = []
         for pipeline in self._get_pipelines(pipeline_name):
@@ -335,12 +378,10 @@ class CmfQuery(object):
         """Return list of all executions for the stage with the given name.
 
         Args:
-            stage_name: Name of the stage.
+            stage_name: Name of the stage. Before stages are recorded in MLMD, they are modified (e.g., pipeline name
+                        will become part of the stage name). So stage names from different pipelines will not collide.
         Returns:
             List of executions for the given stage.
-
-        TODO: Can stages from different pipelines have the same name?. Currently, the first matching stage is used to
-              identify its executions. Also see "get_all_executions_in_stage".
         """
         for pipeline in self._get_pipelines():
             for stage in self._get_stages(pipeline.id):
@@ -352,12 +393,9 @@ class CmfQuery(object):
         """Return executions of the given stage as pandas data frame.
 
         Args:
-            stage_name: Stage name.
+            stage_name: Stage name. See doc strings for the prev method.
         Returns:
             Data frame with all executions associated with the given stage.
-
-        TODO: Multiple stages with the same name? This method collects executions from all such stages. Also, see
-              "get_all_exe_in_stage"
         """
         df = pd.DataFrame()
         for pipeline in self._get_pipelines():
@@ -378,9 +416,6 @@ class CmfQuery(object):
             d: Optional initial content for data frame.
         Returns:
             A data frame with the single row containing attributes of this artifact.
-
-        TODO: (sergey) there are no "public" methods that return `mlpb.Artifact`.
-        TODO: (sergey) what's the  difference between this method and `get_artifact`?
         """
         if d is None:
             d = {}
@@ -401,9 +436,6 @@ class CmfQuery(object):
 
         Returns:
             List of all artifact names.
-
-        TODO: (sergey) Can multiple artifacts have the same name?
-        TODO: (sergey) Maybe rename to get_artifact_names (to be consistent with `get_pipeline_names`)?
         """
         return [artifact.name for artifact in self.store.get_artifacts()]
 
@@ -416,8 +448,6 @@ class CmfQuery(object):
             name: Artifact name.
         Returns:
             Pandas data frame with one row containing attributes of this artifact.
-
-        TODO: (sergey) what's the  difference between this method and `get_artifact_df`?
         """
         artifact: t.Optional[mlpb.Artifact] = self._get_artifact(name)
         if artifact:
@@ -431,8 +461,6 @@ class CmfQuery(object):
             execution_id: Execution identifier.
         Return:
             Data frame containing input and output artifacts for the given execution, one artifact per row.
-
-        TODO: (sergey) briefly describe in what cases an execution may not have any artifacts.
         """
         df = pd.DataFrame()
         for event in self.store.get_events_by_execution_ids([execution_id]):
@@ -450,9 +478,6 @@ class CmfQuery(object):
             artifact_name: Artifact name.
         Returns:
             Pandas data frame containing stage executions, one execution per row.
-
-        TODO: (sergey) build list of dicts and then convert to data frame - will be quicker.
-        TODO: (sergey) can multiple contexts (pipeline and stage) be associated with one execution?
         """
         df = pd.DataFrame()
 
@@ -461,14 +486,13 @@ class CmfQuery(object):
             return df
 
         for event in self.store.get_events_by_artifact_ids([artifact.id]):
-            # TODO: (sergey) seems to be the same as stage below. What's this context for (stage or pipeline)?
-            ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
+            stage_ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
             linked_execution = {
                 "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
                 "execution_id": event.execution_id,
                 "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
-                "stage": self.store.get_contexts_by_execution(event.execution_id)[0].name,
-                "pipeline": self.store.get_parent_contexts_by_context(ctx.id)[0].name,
+                "stage": stage_ctx.name,
+                "pipeline": self.store.get_parent_contexts_by_context(stage_ctx.id)[0].name,
             }
             d1 = pd.DataFrame(
                 linked_execution,
@@ -505,8 +529,6 @@ class CmfQuery(object):
             artifact_name: Artifact name.
         Returns:
             Data frame containing all child artifacts.
-
-        TODO: Only output artifacts or all?
         """
         df = pd.DataFrame()
         d1 = self.get_one_hop_child_artifacts(artifact_name)
@@ -520,11 +542,7 @@ class CmfQuery(object):
         return df
 
     def get_one_hop_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
-        """Return input artifacts for the execution that produced the given artifact.
-
-        Args:
-            artifact_name
-        """
+        """Return input artifacts for the execution that produced the given artifact."""
         artifact: t.Optional = self._get_artifact(artifact_name)
         if not artifact:
             return pd.DataFrame()
@@ -536,10 +554,7 @@ class CmfQuery(object):
         )
 
     def get_all_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
-        """Return all upstream artifacts.
-
-        TODO: All input and output artifacts?
-        """
+        """Return all upstream artifacts."""
         df = pd.DataFrame()
         d1 = self.get_one_hop_parent_artifacts(artifact_name)
         # df = df.append(d1, sort=True, ignore_index=True)
@@ -554,6 +569,9 @@ class CmfQuery(object):
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
         """Return all executions that produced upstream artifacts for the given artifact."""
         parent_artifacts: pd.DataFrame = self.get_all_parent_artifacts(artifact_name)
+        if parent_artifacts.shape[0] == 0:
+            # If it's empty, there's no `id` column and the code below raises an exception.
+            return pd.DataFrame()
 
         execution_ids = set(
             event.execution_id
@@ -569,7 +587,8 @@ class CmfQuery(object):
     def find_producer_execution(self, artifact_name: str) -> t.Optional[mlpb.Execution]:
         """Return execution that produced the given artifact.
 
-        TODO: how come one artifact can have multiple producer executions?
+        One artifact can have multiple producer executions (names of artifacts are fully-qualified with hashes). So,
+        if two executions produced the same exact artifact, this one artifact will have multiple parent executions.
         """
         artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name)
         if not artifact:
@@ -602,10 +621,7 @@ class CmfQuery(object):
     get_producer_execution = find_producer_execution
 
     def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
-        """Return metric data frame.
-
-        TODO: need better description.
-        """
+        """Return metric data frame."""
         for metric in self.store.get_artifacts_by_type("Step_Metrics"):
             if metric.name == metrics_name:
                 name: t.Optional[str] = metric.custom_properties.get("Name", None)
@@ -616,18 +632,16 @@ class CmfQuery(object):
 
     @staticmethod
     def read_dataslice(name: str) -> pd.DataFrame:
-        """Reads the data slice.
-
-        TODO: Why is it here?
-        """
+        """Reads the data slice."""
         # To do checkout if not there
         df = pd.read_parquet(name)
         return df
 
     def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
-
-        TODO: Think if this method should return dict.
+        Args:
+            pipeline_name: Name of an AI pipelines.
+            exec_id: Optional stage execution ID - filter stages by this execution ID.
         """
         if exec_id is not None:
             exec_id = int(exec_id)
@@ -640,6 +654,7 @@ class CmfQuery(object):
             if "properties" in _attrs:
                 _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
             if "custom_properties" in _attrs:
+                # TODO: (sergey) why do we need to rename "type" to "user_type" if we just copy into a new dictionary?
                 _attrs["custom_properties"] = CmfQuery._copy(
                     _attrs["custom_properties"], key_mapper={"type": "user_type"}
                 )
@@ -694,3 +709,53 @@ class CmfQuery(object):
                remote = v
        
        Cmf.materialize(path, git_repo, rev, remote)"""
+
+
+def test_on_collision() -> None:
+    from unittest import TestCase
+
+    tc = TestCase()
+
+    tc.assertEqual(3, len(_KeyMapper.OnCollision))
+    tc.assertEqual(0, _KeyMapper.OnCollision.DO_NOTHING.value)
+    tc.assertEqual(1, _KeyMapper.OnCollision.RESOLVE.value)
+    tc.assertEqual(2, _KeyMapper.OnCollision.RAISE_ERROR.value)
+
+
+def test_dict_mapper() -> None:
+    from unittest import TestCase
+
+    tc = TestCase()
+
+    dm = _DictMapper({"src_key": "tgt_key"}, on_collision=_KeyMapper.OnCollision.RESOLVE)
+    tc.assertEqual("tgt_key", dm.get({}, "src_key"))
+    tc.assertEqual("other_key", dm.get({}, "other_key"))
+    tc.assertEqual("existing_key_1", dm.get({"existing_key": "value"}, "existing_key"))
+    tc.assertEqual("existing_key_2", dm.get({"existing_key": "value", "existing_key_1": "value_1"}, "existing_key"))
+
+    dm = _DictMapper({"src_key": "tgt_key"}, on_collision=_KeyMapper.OnCollision.DO_NOTHING)
+    tc.assertEqual("existing_key", dm.get({"existing_key": "value"}, "existing_key"))
+
+
+def test_prefix_mapper() -> None:
+    from unittest import TestCase
+
+    tc = TestCase()
+
+    pm = _PrefixMapper("nested_", on_collision=_KeyMapper.OnCollision.RESOLVE)
+    tc.assertEqual("nested_src_key", pm.get({}, "src_key"))
+
+    tc.assertEqual("nested_existing_key_1", pm.get({"nested_existing_key": "value"}, "existing_key"))
+    tc.assertEqual(
+        "nested_existing_key_2",
+        pm.get({"nested_existing_key": "value", "nested_existing_key_1": "value_1"}, "existing_key"),
+    )
+
+    dm = _PrefixMapper("nested_", on_collision=_KeyMapper.OnCollision.DO_NOTHING)
+    tc.assertEqual("nested_existing_key", dm.get({"nested_existing_key": "value"}, "existing_key"))
+
+
+if __name__ == "__main__":
+    test_on_collision()
+    test_dict_mapper()
+    test_prefix_mapper()
