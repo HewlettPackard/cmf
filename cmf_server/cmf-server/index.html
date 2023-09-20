@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.2.5">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.3.2">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.0e669242.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.30068a00.min.css">
       
       
 
@@ -1026,25 +1026,30 @@ server:
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute following command to start both the containers. <code>IP</code> variable is the IP address of the machine on which you are executing the following command.
-    <div class="highlight"><pre><span></span><code>IP=200.200.200.200 docker compose -f docker-compose-server.yml up
-</code></pre></div>
-    &gt; Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.</p>
+<p>Execute following command to start both the containers. <code>IP</code> variable is the IP address and <code>hostname</code> is host name of the machine on which you are executing the following command.
+   You can use either way.
+   <div class="highlight"><pre><span></span><code>IP=200.200.200.200 docker compose -f docker-compose-server.yml up
+           OR
+hostname=host_name docker compose -f docker-compose-server.yml up
+</code></pre></div></p>
+<blockquote>
+<p>Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.</p>
+</blockquote>
+</li>
+</ol>
 <blockquote>
 <p>Also you can adjust <code>$IP</code> in <code>docker-compose-server.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying 
-  IP=200.200.200.200.
-  <div class="highlight"><pre><span></span><code>.......
+    IP=200.200.200.200.
+     <div class="highlight"><pre><span></span><code>.......
 environment:
 REACT_APP_MY_IP: ${IP}
 ......
 </code></pre></div></p>
 </blockquote>
-</li>
-<li>
-<p>Stop the containers. 
+<ol>
+<li>Stop the containers. 
    <div class="highlight"><pre><span></span><code>docker compose -f docker-compose-server.yml stop
-</code></pre></div></p>
-</li>
+</code></pre></div></li>
 </ol>
 <h2 id="using-docker-run-command">Using <code>docker run</code> command<a class="headerlink" href="#using-docker-run-command" title="Permanent link">&para;</a></h2>
 <ol>
@@ -1165,7 +1170,7 @@ REACT_APP_MY_IP: ${IP}
     <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.78eede0e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
       
     
   </body>
