@@ -54,16 +54,16 @@ from cmflib.metadata_helper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_commands_wrapper import (
-    mt_push,
-    mt_pull,
-    arti_pull,
-    arti_push,
-    arti_pull_single,
-    cmf_cmd_init,
-    init_local,
-    init_minioS3,
-    init_amazonS3,
-    init_sshremote
+    _metadata_push,
+    _metadata_pull,
+    _artifact_pull,
+    _artifact_push,
+    _artifact_pull_single,
+    _cmf_cmd_init,
+    _init_local,
+    _init_minioS3,
+    _init_amazonS3,
+    _init_sshremote
 
 )
 
@@ -1562,37 +1562,37 @@ def metadata_push(pipeline_name,filename,execution_id: str = ""):
     """Pushes mlmd file to cmf-server """
     # Required arguments:  pipeline_name, filename (mlmd file path) 
     #Optional arguments: Execution_ID
-    output = mt_push(pipeline_name,filename, execution_id)
+    output = _metadata_push(pipeline_name,filename, execution_id)
     return output
 
 def metadata_pull(pipeline_name,filename ="./mlmd", execution_id: str = ""):
     """Pulls mlmd file from cmf-server"""
     # Required arguments:  pipeline_name, filename(file path to store mlmd file) 
     #Optional arguments: Execution_ID
-    output = mt_pull(pipeline_name,filename, execution_id)
+    output = _metadata_pull(pipeline_name,filename, execution_id)
     return output
 
 def artifact_pull(pipeline_name,filename="./mlmd"):
     """Pulls artifacts from initialized repository """
     # Required arguments: Pipeline_name
     # Optional arguments: filename( path to store artifacts)
-    output = arti_pull(pipeline_name,filename)
+    output = _artifact_pull(pipeline_name,filename)
     return output
 
 def artifact_pull_single(pipeline_name,filename,artifact_name):
     """Pulls artifacts from initialized repository """
     # Required arguments: Pipeline_name
     # Optional arguments: filename( path to store artifacts)
-    output = arti_pull_single(pipeline_name,filename,artifact_name)
+    output = _artifact_pull_single(pipeline_name,filename,artifact_name)
     return output
 
 def artifact_push():
     """Push artifacts to initialized repository"""
-    output = arti_push()
+    output = _artifact_push()
     return output
 
 def cmf_init_show():
-    output=cmf_cmd_init()
+    output=_cmf_cmd_init()
     return output
 
 def cmf_init(type: str="",
@@ -1636,7 +1636,7 @@ def cmf_init(type: str="",
 
     if type=="local" and path!= "" and  git_remote_url!= "" :
         """Initialize local repository"""
-        output = init_local(
+        output = _init_local(
             path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
         )
         if status_args != []:
@@ -1645,7 +1645,7 @@ def cmf_init(type: str="",
          
     elif type=="minioS3" and url!= "" and endpoint_url!= "" and access_key_id!= "" and secret_key!= "" and git_remote_url!= "":
         """Initialize minioS3 repository"""
-        output = init_minioS3(
+        output = _init_minioS3(
             url,
             endpoint_url,
             access_key_id,
@@ -1662,7 +1662,7 @@ def cmf_init(type: str="",
 
     elif type=="amazonS3" and url!= "" and access_key_id!= "" and secret_key!= "" and git_remote_url!= "":
         """Initialize amazonS3 repository"""
-        output = init_amazonS3(
+        output = _init_amazonS3(
             url,
             access_key_id,
             secret_key,
@@ -1679,7 +1679,7 @@ def cmf_init(type: str="",
 
     elif type=="sshremote" and path !="" and user!="" and port!=0 and password!="" and git_remote_url!="":
         """Initialize sshremote repository"""
-        output = init_sshremote(
+        output = _init_sshremote(
             path,
             user,
             port,

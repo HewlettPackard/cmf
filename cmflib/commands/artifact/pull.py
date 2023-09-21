@@ -38,43 +38,45 @@ class CmdArtifactPull(CmdBase):
                 for u in urls:
                     if pipeline_name in u:
                         url = u
-            temp = url.split(":")
-            temp.pop(0)
-            if len(temp) > 1:
-                temp = ":".join(temp)
-                return temp
-            return "".join(temp)
+            token = url.split(":")
+            token.pop(0)
+            if len(token) > 1:
+                token = ":".join(token)
+                return token
+            return "".join(token)
 
-    def manipulate_args(self, type: str, name: str, url: str, current_directory: str):
+    def extract_repo_args(self, type: str, name: str, url: str, current_directory: str):
+        #Extracting the repository URL, current path, bucket name, and other relevant 
+        #information from the user-supplied arguments.
         #url = 'Test-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/06/d100ff3e04e2c>
         # s_url = Url without pipeline name
         s_url = self.split_url_pipeline(url, self.args.pipeline_name)
-        temp = s_url.split("/")
+        token = s_url.split("/")
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
-            bucket_name = temp[2]
-            object_name = temp[3] + "/" + temp[4]
+            bucket_name = token[2]
+            object_name = token[3] + "/" + token[4]
             path_name = current_directory + "/" + name
             return bucket_name, object_name, path_name
         elif type == "local":
-            temp_length = len(temp)
+            token_length = len(token)
             download_loc = current_directory + "/" + name
-            current_dvc_loc = (temp[(temp_length - 2)] + "/" + temp[(temp_length - 1)])
+            current_dvc_loc = (token[(token_length - 2)] + "/" + token[(token_length - 1)])
             return current_dvc_loc, download_loc
         elif type == "ssh":
-            temp_var = temp[2].split(":")
-            host = temp_var[0]
+            token_var = token[2].split(":")
+            host = token_var[0]
             download_loc = current_directory + "/" + name
-            temp.pop(0)
-            temp.pop(0)
-            temp.pop(0)
-            current_loc_1 = "/".join(temp)
+            token.pop(0)
+            token.pop(0)
+            token.pop(0)
+            current_loc_1 = "/".join(token)
             current_loc = f"/{current_loc_1}"
             return host, current_loc, name
         else:
-            bucket_name = temp[2]
-            object_name = f"{temp[3]}/{temp[4]}/{temp[5]}"
+            bucket_name = token[2]
+            object_name = f"{token[3]}/{token[4]}/{token[5]}"
             download_loc = current_directory + "/" + name
             return bucket_name, object_name, download_loc
 
@@ -144,7 +146,7 @@ class CmdArtifactPull(CmdBase):
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
-                    minio_args = self.manipulate_args("minio", output[0], output[1], current_directory)
+                    minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
                     stmt = minio_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
@@ -157,7 +159,7 @@ class CmdArtifactPull(CmdBase):
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
-                    minio_args = self.manipulate_args("minio", name, url, current_directory)
+                    minio_args = self.extract_repo_args("minio", name, url, current_directory)
                     stmt = minio_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
@@ -176,7 +178,7 @@ class CmdArtifactPull(CmdBase):
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
-                    local_args = self.manipulate_args("local", output[0], output[1], current_directory)
+                    local_args = self.extract_repo_args("local", output[0], output[1], current_directory)
                     stmt = local_class_obj.download_artifacts(
                            dvc_config_op, current_directory, local_args[0], local_args[1]
                     )
@@ -186,7 +188,7 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                    local_args = self.manipulate_args("local", name, url, current_directory)
+                    local_args = self.extract_repo_args("local", name, url, current_directory)
                     # local_args[0] = current dvc location
                     # local_args[1] = current download location
                     stmt = local_class_obj.download_artifacts(
@@ -203,7 +205,7 @@ class CmdArtifactPull(CmdBase):
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
-                    args = self.manipulate_args("ssh", output[0], output[1], current_directory)
+                    args = self.extract_repo_args("ssh", output[0], output[1], current_directory)
                     stmt = sshremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
@@ -217,7 +219,7 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                    args = self.manipulate_args("ssh", name, url, current_directory)
+                    args = self.extract_repo_args("ssh", name, url, current_directory)
                     stmt = sshremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
@@ -236,7 +238,7 @@ class CmdArtifactPull(CmdBase):
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
-                    args = self.manipulate_args("amazons3", output[0], output[1], current_directory)
+                    args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
                     stmt = amazonS3_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
@@ -250,7 +252,7 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
-                    args = self.manipulate_args("amazons3", name, url, current_directory)
+                    args = self.extract_repo_args("amazons3", name, url, current_directory)
                     stmt = amazonS3_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
