@@ -14,7 +14,7 @@ Following are the steps:
 4. Pushing this metadata to CMF-server.
 5. Pushing artifacts to initialized repositories.
 
-<b>Note: Executions and artifacts after pushing can be analyzed on server(http://url:3000).
+<b>Note: Executions and artifacts after pushing can be analyzed on server(http://url:3000).</b>
 
 ## 2. training_cmf_pull.ipynb
 This file shows how to pull metadata from CMF-server and download artifacts from initialized repository to local.  
