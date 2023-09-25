@@ -12,12 +12,12 @@ services:
       dockerfile: ./server/Dockerfile
     restart: always
     environment:
-     MYIP: ${IP}
+     MYIP: ${IP:-127.0.0.1}
+     HOSTNAME: ${hostname:-None}
     ports:
       - "8080:80"
     expose:
       - 8000
-
   ui:
     image: ui:latest
     container_name: ui-server
@@ -27,6 +27,7 @@ services:
     restart: always
     environment:
       REACT_APP_MY_IP: ${IP}
+      REACT_APP_MY_HOSTNAME: ${hostname}
     ports:
       - "3000:3000"
     expose:
