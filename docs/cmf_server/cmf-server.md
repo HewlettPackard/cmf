@@ -58,21 +58,24 @@ There are two ways to start cmf server -
     ....
     ```
   
- 4. Execute following command to start both the containers. `IP` variable is the IP address of the machine on which you are executing the following command.
-    ```
-    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
-    ```
-    > Replace `docker compose` with `docker-compose` for older versions.
+4. Execute following command to start both the containers. `IP` variable is the IP address and `hostname` is host name of the machine on which you are executing the following command.
+   You can use either way.
+   ```
+   IP=200.200.200.200 docker compose -f docker-compose-server.yml up
+              OR
+   hostname=host_name docker compose -f docker-compose-server.yml up
+   ```
+   > Replace `docker compose` with `docker-compose` for older versions.
     
-    > Also you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying 
-      IP=200.200.200.200.
-      ```
-      .......
-      environment:
-      REACT_APP_MY_IP: ${IP}
-      ......
-      ```
-    
+   > Also you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying 
+    IP=200.200.200.200.
+     ```
+     .......
+     environment:
+     REACT_APP_MY_IP: ${IP}
+     ......
+     ```
+   
 5. Stop the containers. 
    ```
    docker compose -f docker-compose-server.yml stop
