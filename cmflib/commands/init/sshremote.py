@@ -68,6 +68,7 @@ class CmdInitSSHRemote(CmdBase):
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
 
+        is_git: bool = True
         if self.args.git_remote_url:
             output = check_git_repo()
             if not output:
@@ -78,11 +79,10 @@ class CmdInitSSHRemote(CmdBase):
                 git_initial_commit()
                 git_add_remote(self.args.git_remote_url)
                 print("git init complete.")
-            print("Starting cmf init.")
-            dvc_quiet_init()
         else:
-            print("Starting cmf init.")
-            dvc_quiet_init(False)
+            is_git = False
+        print("Starting cmf init.")
+        dvc_quiet_init(is_git)
 
         repo_type = "ssh-storage"
         output = dvc_add_remote_repo(repo_type, self.args.path)
@@ -169,6 +169,13 @@ def add_parser(subparsers, parent_parser):
         help="Specify neo4j uri.eg bolt://localhost:7687",
         metavar="<neo4j_uri>",
         # default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--artifact-versioning",
+        help="Specify artifact versioning tool (Options - DVC, PachyDerm, None).",
+        metavar="<artifact_versioning>",
+        default="DVC",
     )
 
     parser.set_defaults(func=CmdInitSSHRemote)

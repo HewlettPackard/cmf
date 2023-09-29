@@ -67,6 +67,7 @@ class CmdInitAmazonS3(CmdBase):
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
 
+        is_git: bool = True
         if self.args.git_remote_url:
             output = check_git_repo()
             if not output:
@@ -77,18 +78,23 @@ class CmdInitAmazonS3(CmdBase):
                 git_initial_commit()
                 git_add_remote(self.args.git_remote_url)
                 print("git init complete.")
-            print("Starting cmf init.")
-            dvc_quiet_init()
         else:
-            print("Starting cmf init.")
-            dvc_quiet_init(False)
-        repo_type = "amazons3"
-        output = dvc_add_remote_repo(repo_type, self.args.url)
-        if not output:
-            return "cmf init failed."
-        print(output)
-        dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
-        dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
+            is_git = False
+
+        print("Starting cmf init.")
+        if self.args.artifact_versioning == "None":
+            print("No artifact versioning tool initialised")
+        elif self.args.artifact_versioning == "PachyDerm":
+            pass
+        else:
+            dvc_quiet_init(is_git)
+            repo_type = "amazons3"
+            output = dvc_add_remote_repo(repo_type, self.args.url)
+            if not output:
+                return "cmf init failed."
+            print(output)
+            dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
+            dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
         return "cmf init complete."
 
 
@@ -159,5 +165,13 @@ def add_parser(subparsers, parent_parser):
         metavar="<neo4j_uri>",
         # default=argparse.SUPPRESS,
     )
+
+    parser.add_argument(
+    "--artifact-versioning",
+    help="Specify artifact versioning tool (Options - DVC, PachyDerm, None).",
+    metavar="<artifact_versioning>",
+    default="DVC",
+    )
+
 
     parser.set_defaults(func=CmdInitAmazonS3)
