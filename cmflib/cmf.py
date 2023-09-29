@@ -39,6 +39,7 @@ from cmflib.dvc_wrapper import (
     check_default_remote,
     check_git_remote,
     git_commit,
+    dvc_get_config,
 )
 from cmflib import graph_wrapper
 from cmflib.metadata_helper import (
@@ -92,6 +93,13 @@ class Cmf:
         __neo4j_uri = attr_dict.get("neo4j-uri", "")
         __neo4j_password = attr_dict.get("neo4j-password", "")
         __neo4j_user = attr_dict.get("neo4j-user", "")
+
+    __is_git: bool = True
+
+    dvc_config = dvc_get_config()
+
+    if "no_scm=True" in dvc_config:
+        __is_git = False
 
     def __init__(
         self,
@@ -147,13 +155,14 @@ class Cmf:
     def __prechecks():
         """Pre checks for cmf
         1. Needs to be a git repository and
-           git remote should be set
+           git remote should be set if git option is chosen by user
         2. Needs to be a dvc repository and
            default dvc remote should be set
         """
-        Cmf.__check_git_init()
+        if Cmf.__is_git:
+            Cmf.__check_git_init()
+            Cmf.__check_git_remote()
         Cmf.__check_default_remote()
-        Cmf.__check_git_remote()
 
     @staticmethod
     def __check_git_remote():
@@ -186,7 +195,8 @@ class Cmf:
             sys.exit(1)
 
     def finalize(self):
-        git_commit(self.execution_name)
+        if self.__is_git:
+            git_commit(self.execution_name)
         if self.graph:
             self.driver.close()
 
@@ -323,8 +333,11 @@ class Cmf:
         self.input_artifacts = []
         self.execution_label_props = {}
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = git_get_repo()
-        git_start_commit = git_get_commit()
+        git_repo = ""
+        git_start_commit = ""
+        if self.__is_git:
+            git_repo = git_get_repo()
+            git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
@@ -533,7 +546,9 @@ class Cmf:
         # We need to append the new properties to the existing dataset properties
 
         custom_props = {} if custom_properties is None else custom_properties
-        git_repo = git_get_repo()
+        git_repo = ""
+        if self.__is_git:
+            git_repo = git_get_repo()
         name = re.split("/", url)[-1]
         event_type = mlpb.Event.Type.OUTPUT
         existing_artifact = []
@@ -1454,7 +1469,10 @@ class Cmf:
                 Example{"mean":2.5, "median":2.6}
             """
             custom_props = {} if custom_properties is None else custom_properties
-            git_repo = git_get_repo()
+            git_repo = ""
+            if self.__is_git:
+                git_repo = git_get_repo()
+
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
             dataslice_df.index.names = ["Path"]
             dataslice_df.to_parquet(self.name)

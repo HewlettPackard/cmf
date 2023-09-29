@@ -351,14 +351,21 @@ def git_add_remote(git_url) -> str:
     return commit
 
 # dvc init with quiet option
-def dvc_quiet_init() -> str:
+def dvc_quiet_init(git: bool = True) -> str:
     commit = ""
     try:
-        process = subprocess.Popen(['dvc', 'init', '-q'],
+        if git == False:
+            process = subprocess.Popen(['dvc', 'init','--no-scm', '-q'],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
-        output, errs = process.communicate(timeout=60)
-        commit = output.strip()
+            output, errs = process.communicate(timeout=60)
+            commit = output.strip()
+        else:
+            process = subprocess.Popen(['dvc', 'init', '-q'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+            output, errs = process.communicate(timeout=60)
+            commit = output.strip()
 
     except Exception as err:
         print(f"Unexpected {err}, {type(err)}")
