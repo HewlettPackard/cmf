@@ -1281,17 +1281,30 @@ class Cmf:
 
     def commit_existing_metrics(self, metrics_name: str, uri: str, custom_properties: t.Optional[t.Dict] = None):
         custom_props =  {} if custom_properties is None else custom_properties
-        metrics = create_new_artifact_event_and_attribution(
-            store=self.store,
-            execution_id=self.execution.id,
-            context_id=self.child_context.id,
-            uri=uri,
-            name=metrics_name,
-            type_name="Step_Metrics",
-            event_type=mlpb.Event.Type.OUTPUT,
-            custom_properties=custom_props,
-            milliseconds_since_epoch=int(time.time() * 1000),
-        )
+        c_hash = uri.strip()
+        existing_artifact = []
+        existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
+        if (existing_artifact
+            and len(existing_artifact) != 0 ):
+            metrics = link_execution_to_artifact(
+                store=self.store,
+                execution_id=self.execution.id,
+                uri=c_hash,
+                input_name=metrics_name,
+                event_type=mlpb.Event.Type.OUTPUT,
+            )
+        else:
+            metrics = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=metrics_name,
+                type_name="Step_Metrics",
+                event_type=mlpb.Event.Type.OUTPUT,
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
         if self.graph:
             self.driver.create_metrics_node(
                 metrics_name,
@@ -1330,6 +1343,55 @@ class Cmf:
             event_type=mlpb.Event.Type.INTERNAL_OUTPUT,
             properties={"version": version},
             artifact_type_properties={"version": mlpb.STRING},
+            custom_properties=custom_properties,
+            milliseconds_since_epoch=int(time.time() * 1000),
+        )
+
+    def log_env_packages(
+        self,
+        env_name: str = "Environment",
+        custom_properties: t.Optional[t.Dict] = None,
+    ) -> object:
+        custom_props = {} if custom_properties is None else custom_properties
+        uri = str(uuid.uuid1())
+        env_name = env_name + ":" + uri + ":" + str(self.execution.id)
+        env_dict = {}
+        python_version = sys.version
+        python_version = f"Python {python_version}"
+        print(python_version)
+        # conda 
+        try:
+            import conda
+
+            # List all installed packages and their versions
+            installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
+            env_dict[python_version] = installed_packages
+            print(installed_packages)
+        except ImportError:
+            print("Conda is not installed.")
+
+        # pip
+        try:
+            from pip._internal.operations import freeze
+
+            # List all installed packages and their versions
+            installed_packages_generator = freeze.freeze()
+            installed_packages = list(installed_packages_generator)
+            env_dict[python_version] = installed_packages
+            print(installed_packages)
+        except ImportError:
+            print("Pip is not installed.")
+
+        return create_new_artifact_event_and_attribution(
+            store=self.store,
+            execution_id=self.execution.id,
+            context_id=self.child_context.id,
+            uri=uri,
+            name=env_name,
+            type_name="Environment",
+            event_type=mlpb.Event.Type.INTERNAL_OUTPUT,
+            properties={"Environment": env_dict},
+            artifact_type_properties={"Environment": mlpb.STRING},
             custom_properties=custom_properties,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
