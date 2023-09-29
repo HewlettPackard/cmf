@@ -51,6 +51,7 @@ def test(model_dir: str, dataset_dir: str, output_dir: str) -> None:
     metawriter = cmf.Cmf(filename="mlmd", pipeline_name="Test-env", graph=graph)
     _ = metawriter.create_context(pipeline_stage="Evaluate")
     _ = metawriter.create_execution(execution_type="Evaluate-execution")
+    _ = metawriter.log_env_packages()
 
     # TODO: Sergey - how do I know these custom properties here?
     metawriter.log_model(

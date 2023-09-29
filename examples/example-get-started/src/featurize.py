@@ -78,6 +78,7 @@ def featurize(input_dir: str, output_dir: str) -> None:
 
     _ = metawriter.create_context(pipeline_stage="Featurize")
     _ = metawriter.create_execution(execution_type="Featurize-execution", custom_properties=params)
+    _ = metawriter.log_env_packages()
 
     _ = metawriter.log_dataset(input_ds.train, "input")
     _ = metawriter.log_dataset(input_ds.test, "input")
