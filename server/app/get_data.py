@@ -104,9 +104,27 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
             if len(df) == 0:
                 return df
             df = df.drop_duplicates()
-            df['name'] = df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
-            df = df.loc[df["type"] == art_type]
-            result = df.to_json(orient="records")
+            art_names = df['name'].tolist()
+            exe_df = pd.DataFrame()
+            name_uuid_dict = {}
+            temp_dict = {}
+            name_list = []
+            uuid_list = []
+            for name in art_names:
+                executions = query.get_all_executions_for_artifact(name)
+                exe_df = pd.concat([exe_df, executions], ignore_index=True)
+                execution_uuid = exe_df["execution_uuid"].drop_duplicates().tolist()
+                execution_uuid = [str(element).split('"')[1] for element in execution_uuid]
+                execution_uuid_str = ',\n '.join(map(str, execution_uuid))
+                name_list.append(name)
+                uuid_list.append(execution_uuid_str)
+            name_uuid_dict['name'] = name_list
+            name_uuid_dict['execution_uuid'] = uuid_list
+            name_uuid_df = pd.DataFrame(name_uuid_dict)
+            merged_df = df.merge(name_uuid_df, on='name', how='left')
+            merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+            merged_df = merged_df.loc[merged_df["type"] == art_type]
+            result = merged_df.to_json(orient="records")
             tempout = json.loads(result)
             return tempout
 

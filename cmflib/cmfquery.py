@@ -434,6 +434,7 @@ class CmfQuery(object):
     def get_executions_by_id(self, exe_ids) -> pd.DataFrame:
         df = pd.DataFrame()
         executions = self.store.get_executions_by_id(exe_ids)
+        print(executions)
         for exe in executions:
             d1 = self._transform_to_dataframe(exe)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
@@ -549,7 +550,11 @@ class CmfQuery(object):
             id = art.id
             artifact_list.append(id)
         type=self.store.get_artifact_types_by_id(artifact_list)
-        types=[i.name for i in type if not '.' in i.name]
+        types=[i.name for i in type]
+        processed_list = [item.split('.')[-1] for item in types if 'mlmd' in item]
+        unique_processed_items = set(processed_list)
+        types = list(unique_processed_items)
+        types.remove("Statistics")
         return types
 
     def get_all_executions_for_artifact(self, artifact_name: str) -> pd.DataFrame:

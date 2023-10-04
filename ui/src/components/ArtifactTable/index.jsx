@@ -66,8 +66,8 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                   name {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
                   {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
                 </th>
-                <th scope="col" className="type px-6 py-3">
-                  Type
+                <th scope="col" className="exe_uuid px-6 py-3">
+                  execution_uuid
                 </th>
                 <th scope="col" className="url px-6 py-3">
                   Url
@@ -96,7 +96,7 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                     </td>
                     <td className="px-6 py-4">{data.id}</td>
                     <td className="px-6 py-4">{data.name}</td>
-                    <td className="px-6 py-4">{data.type}</td>
+                    <td className="px-6 py-4">{data.execution_uuid}</td>
                     <td className="px-6 py-4">{data.url}</td>
                     <td className="px-6 py-4">{data.uri}</td>
                     <td className="px-6 py-4">{data.git_repo}</td>
