@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.3.2">
+      <meta name="generator" content="mkdocs-1.5.3, mkdocs-material-9.4.4">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.30068a00.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.bd3936ea.min.css">
       
       
 
@@ -262,14 +262,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
+          
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
@@ -323,14 +325,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
+          
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
             
   
@@ -426,14 +430,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
         
+          
           <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
             
   
@@ -669,14 +675,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
+          
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
@@ -730,14 +738,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
         
+          
           <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
             
   
@@ -811,14 +821,16 @@
     
     
     
+    
+    
     <li class="md-nav__item md-nav__item--nested">
       
         
         
         
-        
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
         
+          
           <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
             
   
@@ -1099,8 +1111,8 @@ Optional Arguments
                                --git-remote-url [git_remote_url] 
                                --cmf-server-url [cmf_server_url]
                                --neo4j-user [neo4j_user]
-                              --neo4j-password neo4j_password]
-                              --neo4j-uri [neo4j_uri]
+                               --neo4j-password neo4j_password]
+                               --neo4j-uri [neo4j_uri]
 </code></pre></div>
 <code>cmf init sshremote</code> command initialises remote ssh directory as a cmf artifact repository.
 <div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
@@ -1124,17 +1136,18 @@ Optional Arguments
 </code></pre></div>
 <code>cmf artifact</code> pull or push artifacts from or to the user configured artifact repository, respectively.</p>
 <h3 id="cmf-artifact-pull">cmf artifact pull<a class="headerlink" href="#cmf-artifact-pull" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name]
+<p><div class="highlight"><pre><span></span><code>Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] [-a &lt;artifact_name&gt;]
 </code></pre></div>
 <code>cmf artifact pull</code> command pull artifacts from the user configured repository to the user's local machine.
-<div class="highlight"><pre><span></span><code>cmf artifact pull -p &#39;Test-env&#39;  
+<div class="highlight"><pre><span></span><code>cmf artifact pull -p &#39;Test-env&#39; 
 </code></pre></div>
 Required Arguments
 <div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
 </code></pre></div>
 Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                  show this help message and exit
-  -f [file_name],--file-name [file_name]      Specify mlmd file name.
+<div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit
+  -a &lt;artifact_name&gt;, --artifact_name &lt;artifact_name&gt;   Specify artifact name.
+  -f [file_name],--file-name [file_name]                Specify mlmd file name.
 </code></pre></div></p>
 <h3 id="cmf-artifact-push">cmf artifact push<a class="headerlink" href="#cmf-artifact-push" title="Permanent link">&para;</a></h3>
 <p><div class="highlight"><pre><span></span><code>Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
@@ -1147,18 +1160,18 @@ Optional Arguments
 </code></pre></div>
 <code>cmf metadata</code> push or pull the metadata file to and from the cmf-server, respectively.</p>
 <h3 id="cmf-metadata-pull">cmf metadata pull<a class="headerlink" href="#cmf-metadata-pull" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_path]  -e [exec_id]
+<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 </code></pre></div>
 <code>cmf metadata pull</code> command pulls the metadata file from the cmf-server to the user's local machine.
 <div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;Test-env&#39; -f &quot;/home/user/example/name_of_file&quot;
 </code></pre></div>
 Required Arguments
 <div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
-  -f [file_path], --file_path [file_path]                 Specify a location for mlmd file.
 </code></pre></div>
 Optional Arguments
 <div class="highlight"><pre><span></span><code>-h, --help                                  show this help message and exit
 -e [exec_id], --execution [exec_name]       Specify execution id
+-f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
 </code></pre></div></p>
 <h3 id="cmf-metadata-push">cmf metadata push<a class="headerlink" href="#cmf-metadata-push" title="Permanent link">&para;</a></h3>
 <p><div class="highlight"><pre><span></span><code>Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
@@ -1237,10 +1250,11 @@ Required Arguments
       <div class="md-dialog__inner md-typeset"></div>
     </div>
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.dfff1995.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.f886a092.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.dff1b7c8.min.js"></script>
+      <script src="../../assets/javascripts/bundle.94c44541.min.js"></script>
       
     
   </body>
