@@ -109,8 +109,8 @@ Usage: cmf init sshremote [-h] --path [path]
                                --git-remote-url [git_remote_url] 
                                --cmf-server-url [cmf_server_url]
                                --neo4j-user [neo4j_user]
-                              --neo4j-password neo4j_password]
-                              --neo4j-uri [neo4j_uri]
+                               --neo4j-password neo4j_password]
+                               --neo4j-uri [neo4j_uri]
 ```
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 ```
@@ -140,11 +140,11 @@ Usage: cmf artifact [-h] {pull,push}
 `cmf artifact` pull or push artifacts from or to the user configured artifact repository, respectively.
 ### cmf artifact pull
 ```
-Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name]
+Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] [-a <artifact_name>]
 ```
 `cmf artifact pull` command pull artifacts from the user configured repository to the user's local machine.
 ```
-cmf artifact pull -p 'Test-env'  
+cmf artifact pull -p 'Test-env' 
 ```
 Required Arguments
 ```
@@ -152,8 +152,9 @@ Required Arguments
 ```
 Optional Arguments
 ```
-  -h, --help                                  show this help message and exit
-  -f [file_name],--file-name [file_name]      Specify mlmd file name.
+  -h, --help                                            show this help message and exit
+  -a <artifact_name>, --artifact_name <artifact_name>   Specify artifact name.
+  -f [file_name],--file-name [file_name]                Specify mlmd file name.
 ```
 ### cmf artifact push
 ```
@@ -170,7 +171,7 @@ Usage: cmf metadata [-h] {pull,push}
 `cmf metadata` push or pull the metadata file to and from the cmf-server, respectively.
 ### cmf metadata pull
 ```
-Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_path]  -e [exec_id]
+Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
@@ -179,12 +180,12 @@ cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
 Required Arguments
 ```
   -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
-  -f [file_path], --file_path [file_path]                 Specify a location for mlmd file.
 ```
 Optional Arguments
 ```
 -h, --help                                  show this help message and exit
 -e [exec_id], --execution [exec_name]       Specify execution id
+-f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
 ```
 ### cmf metadata push
 ```
