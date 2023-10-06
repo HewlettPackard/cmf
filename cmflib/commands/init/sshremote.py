@@ -78,7 +78,7 @@ class CmdInitSSHRemote(CmdBase):
             print("git init complete.")
 
         print("Starting cmf init.")
-        repo_type = "sshremote"
+        repo_type = "ssh-storage"
         dvc_quiet_init()
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
