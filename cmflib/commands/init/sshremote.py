@@ -67,7 +67,6 @@ class CmdInitSSHRemote(CmdBase):
             pass
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
-
         is_git: bool = True
         if self.args.git_remote_url:
             output = check_git_repo()
