@@ -83,7 +83,6 @@ class CmdInitSSHRemote(CmdBase):
             is_git = False
         print("Starting cmf init.")
         dvc_quiet_init(is_git)
-
         repo_type = "ssh-storage"
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
@@ -169,13 +168,6 @@ def add_parser(subparsers, parent_parser):
         help="Specify neo4j uri.eg bolt://localhost:7687",
         metavar="<neo4j_uri>",
         # default=argparse.SUPPRESS,
-    )
-
-    parser.add_argument(
-        "--artifact-versioning",
-        help="Specify artifact versioning tool (Options - DVC, PachyDerm, None).",
-        metavar="<artifact_versioning>",
-        default="DVC",
     )
 
     parser.set_defaults(func=CmdInitSSHRemote)

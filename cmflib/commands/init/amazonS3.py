@@ -82,19 +82,14 @@ class CmdInitAmazonS3(CmdBase):
             is_git = False
 
         print("Starting cmf init.")
-        if self.args.artifact_versioning == "None":
-            print("No artifact versioning tool initialised")
-        elif self.args.artifact_versioning == "PachyDerm":
-            pass
-        else:
-            dvc_quiet_init(is_git)
-            repo_type = "amazons3"
-            output = dvc_add_remote_repo(repo_type, self.args.url)
-            if not output:
-                return "cmf init failed."
-            print(output)
-            dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
-            dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
+        dvc_quiet_init(is_git)
+        repo_type = "amazons3"
+        output = dvc_add_remote_repo(repo_type, self.args.url)
+        if not output:
+            return "cmf init failed."
+        print(output)
+        dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
+        dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
         return "cmf init complete."
 
 
@@ -165,13 +160,5 @@ def add_parser(subparsers, parent_parser):
         metavar="<neo4j_uri>",
         # default=argparse.SUPPRESS,
     )
-
-    parser.add_argument(
-    "--artifact-versioning",
-    help="Specify artifact versioning tool (Options - DVC, PachyDerm, None).",
-    metavar="<artifact_versioning>",
-    default="DVC",
-    )
-
 
     parser.set_defaults(func=CmdInitAmazonS3)
