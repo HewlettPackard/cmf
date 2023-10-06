@@ -95,7 +95,6 @@ class Cmf:
         __neo4j_user = attr_dict.get("neo4j-user", "")
 
     __is_git: bool = True
-
     dvc_config = dvc_get_config()
 
     if "no_scm=True" in dvc_config:
