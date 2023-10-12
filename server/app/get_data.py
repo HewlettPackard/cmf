@@ -20,6 +20,7 @@ def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     df = pd.DataFrame()
     executions = query.get_executions_by_id(exe_ids)
     df = pd.concat([df, executions], sort=True, ignore_index=True)
+    df=df.drop('name',axis=1)
     return df
 
 def get_all_exe_ids(mlmdfilepath):
@@ -105,21 +106,21 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
                 return df
             df = df.drop_duplicates()
             art_names = df['name'].tolist()
-            exe_df = pd.DataFrame()
             name_uuid_dict = {}
             temp_dict = {}
             name_list = []
-            uuid_list = []
+            exec_type_name_list=[]
+            exe_type_name=pd.DataFrame()
             for name in art_names:
                 executions = query.get_all_executions_for_artifact(name)
-                exe_df = pd.concat([exe_df, executions], ignore_index=True)
-                execution_uuid = exe_df["execution_uuid"].drop_duplicates().tolist()
-                execution_uuid = [str(element).split('"')[1] for element in execution_uuid]
-                execution_uuid_str = ',\n '.join(map(str, execution_uuid))
+                exe_type_name=pd.concat([exe_type_name,executions],ignore_index=True)
+                execution_type_name=exe_type_name["execution_type_name"].drop_duplicates().tolist()
+                execution_type_name= [str(element).split('"')[1] for element in execution_type_name]
+                execution_type_name_str= ',\n '.join(map(str, execution_type_name))
                 name_list.append(name)
-                uuid_list.append(execution_uuid_str)
+                exec_type_name_list.append(execution_type_name_str)
             name_uuid_dict['name'] = name_list
-            name_uuid_dict['execution_uuid'] = uuid_list
+            name_uuid_dict['execution_type_name']=exec_type_name_list
             name_uuid_df = pd.DataFrame(name_uuid_dict)
             merged_df = df.merge(name_uuid_df, on='name', how='left')
             merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)

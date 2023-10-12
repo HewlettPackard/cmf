@@ -577,6 +577,7 @@ class CmfQuery(object):
                 "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
                 "execution_id": event.execution_id,
                 "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
+                "execution_type_name":self.store.get_executions_by_id([evt.execution_id])[0].properties['Execution_type_name']
                 "stage": stage_ctx.name,
                 "pipeline": self.store.get_parent_contexts_by_context(stage_ctx.id)[0].name,
             }
