@@ -554,7 +554,6 @@ class CmfQuery(object):
         processed_list = [item.split('.')[-1] for item in types if 'mlmd' in item]
         unique_processed_items = set(processed_list)
         types = list(unique_processed_items)
-        types.remove("Statistics")
         return types
 
     def get_all_executions_for_artifact(self, artifact_name: str) -> pd.DataFrame:
@@ -786,75 +785,6 @@ class CmfQuery(object):
         return json.dumps({"Pipeline": pipelines})
 
     """def materialize(self, artifact_name:str):
-    def __get_customproperties(node) -> dict:
-        prop_dict = {}
-        for k, v in node.custom_properties.items():
-            if k == "type":
-                k = "user_type"
-            if k == "id":
-                k = "user_id"
-            if v.HasField("string_value"):
-                prop_dict[k] = v.string_value
-            elif v.HasField("int_value"):
-                prop_dict[k] = v.int_value
-            else:
-                prop_dict[k] = v.double_value
-        return prop_dict
-
-    def dumptojson(self, pipeline_name: str, exec_id):
-        mlmd_json = {}
-        mlmd_json["Pipeline"] = []
-        contexts = self.store.get_contexts_by_type("Parent_Context")
-        for ctx in contexts:
-            if ctx.name == pipeline_name:
-                ctx_dict = CmfQuery.__get_node_properties(ctx)
-                ctx_dict["stages"] = []
-                stages = self.store.get_children_contexts_by_context(ctx.id)
-                for stage in stages:
-                    stage_dict = CmfQuery.__get_node_properties(stage)
-                    # ctx["stages"].append(stage_dict)
-                    stage_dict["executions"] = []
-                    executions = self.store.get_executions_by_context(stage.id)
-                    if exec_id is None:
-                        list_executions = [exe for exe in executions]
-                    elif exec_id is not None:
-                        list_executions = [
-                            exe for exe in executions if exe.id == int(exec_id)
-                        ]
-                    else:
-                        return "Invalid execution id given."
-                    for exe in list_executions:
-                        exe_dict = CmfQuery.__get_node_properties(exe)
-                        exe_type = self.store.get_execution_types_by_id([exe.type_id])
-                        exe_dict["type"] = exe_type[0].name
-                        exe_dict["events"] = []
-                        # name will be an empty string for executions that are created with 
-                        # create new execution as true(default)
-                        # In other words name property will there only for execution 
-                        # that are created with create new execution flag set to false(special case)
-                        exe_dict["name"] = exe.name if exe.name != "" else ""
-                        events = self.store.get_events_by_execution_ids([exe.id])
-                        for evt in events:
-                            evt_dict = CmfQuery.__get_node_properties(evt)
-                            artifact = self.store.get_artifacts_by_id([evt.artifact_id])
-                            if artifact is not None:
-                                artifact_type = self.store.get_artifact_types_by_id(
-                                    [artifact[0].type_id]
-                                )
-                                artifact_dict = CmfQuery.__get_node_properties(
-                                    artifact[0]
-                                )
-                                artifact_dict["type"] = artifact_type[0].name
-                                evt_dict["artifact"] = artifact_dict
-                            exe_dict["events"].append(evt_dict)
-                        stage_dict["executions"].append(exe_dict)
-                    ctx_dict["stages"].append(stage_dict)
-                mlmd_json["Pipeline"].append(ctx_dict)
-                json_str = json.dumps(mlmd_json)
-                # json_str = jsonpickle.encode(ctx_dict)
-                return json_str
-
-    '''def materialize(self, artifact_name:str):
        artifacts = self.store.get_artifacts()
        for art in artifacts:
            if art.name == artifact_name:
