@@ -171,12 +171,12 @@ async def display_artifact(
     if os.path.exists(server_store_path):
         art_ids_dict = dict_of_art_ids[pipeline_name]
         if not art_ids_dict:
-            return empty_df
+            return
         art_ids_initial = []
         if art_type in art_ids_dict:
             art_ids_initial = art_ids_dict[art_type]
         else:
-            return empty_df
+            return
         # Apply filtering if provided
         if filter_by and filter_value:
             art_ids_initial = art_ids_initial[art_ids_initial[filter_by].str.contains(filter_value, case=False)]

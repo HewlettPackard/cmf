@@ -8,9 +8,9 @@ from fastapi.responses import FileResponse
 def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
-    executions = query.get_executions_by_id(exe_ids)
+    executions = query.get_all_executions_by_ids_list(exe_ids)
     df = pd.concat([df, executions], sort=True, ignore_index=True)
-    df=df.drop('name',axis=1)
+    #df=df.drop('name',axis=1)
     return df
 
 def get_all_exe_ids(mlmdfilepath):
@@ -25,7 +25,6 @@ def get_all_exe_ids(mlmdfilepath):
             df = pd.concat([df, executions], sort=True, ignore_index=True)
     if df.empty:
         return
-    print(df)
     for name in names:
         execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type']]
     return execution_ids
