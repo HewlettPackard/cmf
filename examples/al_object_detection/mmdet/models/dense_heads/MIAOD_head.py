@@ -715,3 +715,25 @@ class MIAODHead(BaseDenseHead):
     def loss(self, **kwargs):
         # This function is to avoid the TypeError caused by the abstract method defined in "base_dense_head.py".
         return
+
+    @force_fp32(apply_to=('y_f_r', ))
+    def get_uncertain_bboxes(self, arg, y_f_r, img_shape, scale_factor, nuboxes, cfg=None, rescale=False):
+        cfg = self.test_cfg if cfg is None else cfg
+        num_levels = len(y_f_r)
+        assert y_f_r[0].size(0) == 1
+        device = y_f_r[0].device
+        featmap_sizes = [y_f_r[i].shape[-2:] for i in range(num_levels)]
+        mlvl_anchors = self.anchor_generator.grid_anchors(featmap_sizes, device=
+device)
+        y_head_f_r = []
+        for y_head_f_r_single in y_f_r:
+                y_head_f_r.append(y_head_f_r_single.permute(0,2,3,1).reshape(-1, 4))
+        y_head_f_r = torch.cat(y_head_f_r, 0)
+        mlvl_anchors = torch.cat(mlvl_anchors, 0)
+        assert y_head_f_r.size(0) == mlvl_anchors.size(0)
+        y_head_f_r = y_head_f_r[arg[-nuboxes:]]
+        mlvl_anchors = mlvl_anchors[arg[-nuboxes:]]
+        bboxes = self.bbox_coder.decode(mlvl_anchors, y_head_f_r, max_shape=img_shape)
+        if rescale:
+            bboxes /= bboxes.new_tensor(scale_factor)
+        return bboxes

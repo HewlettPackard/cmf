@@ -51,4 +51,8 @@ X_L_0_size = make_even(12150//10)#9964//20
 cycles = [0, 1, 2, 3, 4, 5, 6]
 # The work directory for saving logs and files can be changed here. Please refer to README.md for more information.
 work_directory = './work_dirs/MI-AOD'
-
+# Output bounding boxes for most uncertain image regions to help guide labeling
+plot_nuboxes = 5
+nubox_colors = [(0,0,255), (0,255,255), (0,255,0), (255,255,0), (255,0,0)]
+check_nuboxes = 1000
+guide_image_dir = data_root + 'hdc/GuideImages'
