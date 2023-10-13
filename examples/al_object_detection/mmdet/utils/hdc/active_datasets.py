@@ -75,5 +75,5 @@ def update_X_L(uncertainty, X_all, X_L, X_S_size, return_X_S=False):
     X_U_next.sort()
     if return_X_S:
         return X_L_next, X_U_next, X_S
-    else
+    else:
         return X_L_next, X_U_next
