@@ -173,13 +173,13 @@ class CmfQuery(object):
 
         d = CmfQuery._copy(
             source=node.properties,
-            target=d,
-            key_mapper=_PrefixMapper("properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
+            target=d#, # renaming properties with prefix properties has impact in server GUI 
+            #key_mapper=_PrefixMapper("properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
         )
         d = CmfQuery._copy(
             source=node.custom_properties,
-            target=d,
-            key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
+            target=d#, # renaming custom_properties with prefix custom_properties has impact in server GUI 
+            #key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
         )
 
         return pd.DataFrame(
@@ -648,7 +648,9 @@ class CmfQuery(object):
 
         def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
             for attr in CONTEXT_LIST:
-                if getattr(_node, attr, None) is not None:
+                #Artifacts getattr call on Type was giving empty string, which was overwriting 
+                # the defined types such as Dataset, Metrics, Models
+                if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
                     _attrs[attr] = getattr(_node, attr)
 
             if "properties" in _attrs:
@@ -679,12 +681,15 @@ class CmfQuery(object):
                         },
                     )
                     for event in self.store.get_events_by_execution_ids([execution.id]):
-                        event_attrs = _get_node_attributes(event, {"artifacts": []})
-                        for artifact in self.store.get_artifacts_by_id([event.artifact_id]):
-                            artifact_attrs = _get_node_attributes(
-                                artifact, {"type": self.store.get_artifact_types_by_id([artifact.type_id])[0].name}
+                        event_attrs = _get_node_attributes(event, {})
+                        # An event has only a single Artifact associated with it. 
+                        # For every artifact we create an event to link it to the execution.
+
+                        artifacts =  self.store.get_artifacts_by_id([event.artifact_id])
+                        artifact_attrs = _get_node_attributes(
+                                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
                             )
-                            event_attrs["artifacts"].append(artifact_attrs)
+                        event_attrs["artifact"] = artifact_attrs
                         exec_attrs["events"].append(event_attrs)
                     stage_attrs["executions"].append(exec_attrs)
                 pipeline_attrs["stages"].append(stage_attrs)

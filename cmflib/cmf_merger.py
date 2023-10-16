@@ -93,7 +93,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         path=artifact_name,
                         event="input",
                         props=props,
-                        custom_properties=props,
+                        custom_properties=custom_props,
                     )
                 elif artifact_type == "Model" and event_type == 4:
                     props["uri"] = uri
@@ -101,7 +101,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         path=artifact_name,
                         event="output",
                         props=props,
-                        custom_properties=props,
+                        custom_properties=custom_props,
                     )
                 elif artifact_type == "Metrics":
                     # print(props,'parse')

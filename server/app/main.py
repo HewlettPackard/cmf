@@ -20,11 +20,15 @@ BASE_PATH = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=str(BASE_PATH/"template"))
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
+if os.environ.get("MYIP") != "127.0.0.1":
+    url="http://"+os.environ.get('MYIP')+":3000"
+else:
+    url="http://"+os.environ.get('HOSTNAME')+":3000"
 
 origins = [
     "http://localhost:3000",
     "localhost:3000",
-    "http://"+os.environ.get('MYIP')+":3000"
+    url
 ]
 
 app.add_middleware(
