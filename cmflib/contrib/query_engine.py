@@ -1,6 +1,6 @@
 import typing as t
 
-from contrib.graph_api import Artifact, Execution, Type, one, unique
+from contrib.graph_api import Artifact, Execution, Node, Type, one, unique
 
 __all__ = ["Visitor", "Accept", "Stop", "Traverse", "QueryEngine"]
 
@@ -41,7 +41,7 @@ class Accept:
     """Class that implements various acceptor functions."""
 
     @staticmethod
-    def all(_artifact: Artifact) -> bool:
+    def all(_node: Node) -> bool:
         """Accept all artifacts."""
         return True
 
@@ -49,8 +49,8 @@ class Accept:
     def by_type(type_: str) -> t.Callable:
         """Accept artifacts of this particular type."""
 
-        def _accept(artifact: Artifact) -> bool:
-            return artifact.type.name == type_
+        def _accept(node: Node) -> bool:
+            return node.type.name == type_
 
         return _accept
 
@@ -58,11 +58,11 @@ class Accept:
     def by_id(id_: t.Union[int, t.Set[int]]) -> t.Callable:
         """Accept artifacts with this ID or IDs."""
 
-        def _accept_one(artifact: Artifact) -> bool:
-            return artifact.id == id_
+        def _accept_one(node: Node) -> bool:
+            return node.id == id_
 
-        def _accept_many(artifact: Artifact) -> bool:
-            return artifact.id in id_
+        def _accept_many(node: Node) -> bool:
+            return node.id in id_
 
         return _accept_one if isinstance(id_, int) else _accept_many
 
@@ -137,6 +137,7 @@ class Traverse:
         return Traverse._traverse(artifact, visitor, "upstream")
 
 
+# noinspection PyMethodMayBeStatic
 class QueryEngine:
     """Query and search engine for ML and pipeline metadata.
 
@@ -150,25 +151,42 @@ class QueryEngine:
             artifact  -> executions (consumed_by and produced_by)
 
     This class is based on `MlmdGraph` to provide high-level query and search features for multiple common use cases.
+
+    TODO (sergey) Some methods assume (for simplicity) that any given artifact has only one producer execution.
     """
 
     def __init__(self) -> None:
         ...
 
-    def is_model_trained_on_dataset(self, model: Artifact, dataset: Artifact) -> bool:
-        """Return true if this model was trained on this dataset.
+    def is_direct_descendant(self, parent: Artifact, child: Artifact) -> bool:
+        """Return true if the given child is the direct descendant of the given parent.
+
+        This implementation assumes that the iven child was produced by exactly one execution. The parent and
+        child must then be related as: [parent] --input-> execution --output--> [child]
 
         Args:
-            model: Machine learning model
-            dataset: Training dataset.
+             parent: Candidate parent.
+             child: Candidate child.
         Returns:
-            True if this model was trained on this dataset.
-
-        TODO: (sergey) How do I know if this dataset was used as a train and not test or validation dataset?
+            True if given child is the direct descendant of the given parent.
         """
-        _check_artifact_type(model, Type.MODEL)
-        _check_artifact_type(dataset, Type.DATASET)
-        visitor: Visitor = Traverse.downstream(dataset, Visitor(Accept.by_id(model.id), Stop.by_accepted_count(1)))
+        # FIXME (sergey) assumption is there's only one producer execution.
+        execution: Execution = one(child.produced_by())
+        input_ids: t.Set[int] = set((artifact.id for artifact in execution.inputs()))
+        return parent.id in input_ids
+
+    def is_descendant(self, ancestor: Artifact, descendant: Artifact) -> bool:
+        """Identify if `descendant` artifact depends on `ancestor` artifact implicitly or explicitly.
+
+        Args:
+            ancestor: Artifact that is supposedly resulted in descendant.
+            descendant: Artifact that is supposedly depend on ancestor.
+        Returns:
+            True if ancestor and descendant are on the same lineage path, and descendant is the downstream for ancestor.
+        """
+        visitor: Visitor = Traverse.downstream(
+            ancestor, Visitor(Accept.by_id(descendant.id), Stop.by_accepted_count(1))
+        )
         return visitor.stopped
 
     def is_on_the_same_lineage_path(self, artifacts: t.List[Artifact]) -> bool:
@@ -177,7 +195,7 @@ class QueryEngine:
         Args:
             artifacts: List of artifacts.
         Returns:
-            True when all artifacts are connected via dependency chain.
+            True when all artifacts are connected via a dependency chain.
         """
         if not artifacts:
             return False
@@ -197,28 +215,107 @@ class QueryEngine:
 
         return visitor.stopped
 
-    def get_datasets_by_dataset(self, dataset: Artifact) -> t.List[Artifact]:
+    def get_siblings(
+        self, artifact: Artifact, select: t.Optional[t.Callable[[Artifact], bool]] = None
+    ) -> t.List[Artifact]:
+        """Get all siblings of the given node.
+
+        Siblings in this method are defined as other artifacts produced by the same execution that produced this
+        artifact. It is assumed there's one producer execution. The artifact itself is not sibling to itself.
+
+        Args:
+            artifact: Artifact.
+            select: Callable object that accepts an artifact and returns True if this artifact should be added to list
+                of siblings. The artifact itself is excluded from siblings automatically.
+        """
+        # FIXME (sergey) assumption is there's only one producer execution.
+        execution: Execution = one(artifact.produced_by())
+        siblings = [sibling for sibling in execution.outputs() if sibling.id != artifact.id]
+        return _select(siblings, select)
+
+    def get_direct_descendants(
+        self,
+        parent: Artifact,
+        select_executions_fn: t.Optional[t.Callable[[Execution], bool]] = None,
+        select_artifact_fn: t.Optional[t.Callable[[Artifact], bool]] = None,
+    ) -> t.List[t.Tuple[Execution, t.List[Artifact]]]:
+        """Return all direct descendants (immediate children) of the given parent artifact.
+
+        Immediate descendants are those for which `is_direct_descendant` method returns True - see doc strings for more
+        details.
+
+        """
+        descendants: t.List[t.Tuple[Execution, t.List[Artifact]]] = []
+        executions = _select(parent.consumed_by(), select_executions_fn)
+        for execution in executions:
+            execution_outputs = _select(execution.outputs(), select_artifact_fn)
+            if execution_outputs:
+                descendants.append((execution, execution_outputs))
+        return descendants
+
+    def get_descendants(
+        self, artifact: Artifact, select_fn: t.Optional[t.Callable[[Artifact], bool]] = None
+    ) -> t.List[Artifact]:
+        """Get all descendants of the given artifact.
+
+        A descendant is defined as an artifact reachable starting the anchor node and traversing downstream.
+
+        Args:
+            artifact: Anchor artifact.
+            select_fn: Only those artifacts for which this callable returns True are returned.
+        Returns:
+            List of all descendants artifacts for which select_fn(descendant) == True.
+        """
+        visitor: Visitor = Traverse.downstream(artifact, Visitor(acceptor=select_fn))
+        return visitor.artifacts
+
+    def is_model_trained_on_dataset(self, model: Artifact, dataset: Artifact) -> bool:
+        """Return true if this model was trained on this dataset.
+
+        This method verifies there is a path between the `dataset` and the `model`, in other words, the model should
+        be reachable when traversing MLMD graph starting from the `dataset` node in the downstream direction.
+        Depending on adopted best practices, there maybe an easier (better to some extent) approach to test this. In
+        some cases, a model and a dataset must be connected to the same execution in order to be related via
+        `trained_on` relation.
+
+        Args:
+            model: Machine learning model
+            dataset: Training dataset.
+        Returns:
+            True if this model was trained on this dataset.
+        """
+        _check_artifact_type(model, Type.MODEL)
+        _check_artifact_type(dataset, Type.DATASET)
+        return self.is_descendant(ancestor=dataset, descendant=model)
+
+    def get_datasets_by_dataset(
+        self, dataset: Artifact, select_fn: t.Optional[t.Callable[[Artifact], bool]]
+    ) -> t.List[Artifact]:
         """Return all datasets produced by executions that directly or indirectly depend on this dataset.
 
         Args:
-            dataset Training dataset.
+            dataset: Training dataset.
+            select_fn: Function to select datasets matching certain criteria. This function does not need to check
+                artifact type - datasets are selected automatically.
         Returns:
             Datasets that directly or indirectly depend on input dataset.
         """
         _check_artifact_type(dataset, Type.DATASET)
-        visitor: Visitor = Traverse.downstream(dataset, Visitor(Accept.by_type(Type.DATASET)))
-        return visitor.artifacts
+        return self.get_descendants(dataset, _combine_select_fn(Accept.by_type(Type.DATASET), select_fn))
 
-    def get_models_by_dataset(self, dataset: Artifact) -> t.List[Artifact]:
+    def get_models_by_dataset(
+        self, dataset: Artifact, select_fn: t.Optional[t.Callable[[Artifact], bool]]
+    ) -> t.List[Artifact]:
         """Get all models that depend on this dataset.
         Args:
             dataset: Dataset
+            select_fn: Function to select models matching certain criteria. This function does not need to check
+                artifact type - models are selected automatically.
         Returns:
             List of unique models trained on the given dataset.
         """
         _check_artifact_type(dataset, Type.DATASET)
-        visitor = Traverse.downstream(dataset, Visitor(Accept.by_type(Type.MODEL)))
-        return visitor.artifacts
+        return self.get_descendants(dataset, _combine_select_fn(Accept.by_type(Type.MODEL), select_fn))
 
     def get_metrics_by_models(self, models: t.List[Artifact]) -> t.List[Artifact]:
         """Return metrics for each model.
@@ -233,16 +330,9 @@ class QueryEngine:
         """
         metrics: t.List[t.Optional[Artifact]] = [None] * len(models)
         for idx, model in enumerate(models):
-            if model.type.name != Type.MODEL:
-                raise ValueError(f"Input artifact is not a model (idx={idx}, artifact={model}).")
-            execution: Execution = one(
-                model.produced_by,
-                error=NotImplementedError(
-                    f"Multiple producer executions ({len(model.produced_by)}) are not supported yet."
-                ),
-            )
+            _check_artifact_type(model, Type.MODEL)
             metrics[idx] = one(
-                [a for a in execution.outputs() if a.type.name == Type.METRICS],
+                self.get_siblings(model, Accept.by_type(Type.METRICS)),
                 return_none_if_empty=True,
                 error=NotImplementedError("Multiple metrics in one execution are not supported yet."),
             )
@@ -259,6 +349,7 @@ class QueryEngine:
         """
         metrics: t.List[t.Optional[Artifact]] = [None] * len(executions)
         for idx, execution in enumerate(executions):
+            # FIXME (sergey): It is assumed there's one or zero metric artifacts for each execution.
             metrics[idx] = one(
                 [a for a in execution.outputs if a.type.name == Type.METRICS],
                 return_none_if_empty=True,
@@ -278,3 +369,37 @@ def _check_artifact_type(artifact: Artifact, type_name: str) -> None:
     """
     if artifact.type.name != type_name:
         raise ValueError(f"Invalid artifact type (type={artifact.type}). Expected type is '{type_name}'.")
+
+
+def _select(items: t.List, select_fn: t.Optional[t.Callable[[t.Any], bool]] = None) -> t.List:
+    """Select items from `items` using select_fn condition.
+
+    Args:
+        items: Input list of items.
+        select_fn: Callable object that accepts one item from items and returns True if it should be selected.
+    Returns:
+         Input list if `select_fn` is None, else those items for which select_fn(item) returns True.
+    """
+    if not select_fn:
+        return items
+    return [item for item in items if select_fn(item)]
+
+
+def _combine_select_fn(func_a: t.Callable, func_b: t.Optional[t.Callable] = None) -> t.Callable:
+    """Combine two selection functions using AND operator.
+
+    Selection function is a function that takes one parameter and returns True or False.
+
+    Args:
+        func_a: First selection function is always present.
+        func_b: Second selection function is optional.
+    Returns:
+        func_a if func_b is None else new function that implements func_a(input) and func_b(input)
+    """
+    if func_b is None:
+        return func_a
+
+    def _combined_fn(node: t.Any) -> bool:
+        return func_a(node) and func_b(node)
+
+    return _combined_fn
