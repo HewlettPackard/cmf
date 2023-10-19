@@ -51,7 +51,13 @@ class EpochBasedRunner(BaseRunner):
             self.call_hook('before_train_epoch')
             time.sleep(2)  # Prevent possible deadlock during epoch transition
             unlabeled_data_iter = iter(data_loader[1])
+            sum_unlabelled = (sum(1 for _ in unlabeled_data_iter))
+            self.logger.info('printing unlabelled sum %d', sum_unlabelled)
+            unlabeled_data_iter = iter(data_loader[1])
             for i, X_L in enumerate(data_loader[0]):
+                if i == sum_unlabelled:
+                    break
+
                 X_L.update({'x': X_L.pop('img')})
                 X_L.update({'y_loc_img': X_L.pop('gt_bboxes')})
                 X_L.update({'y_cls_img': X_L.pop('gt_labels')})

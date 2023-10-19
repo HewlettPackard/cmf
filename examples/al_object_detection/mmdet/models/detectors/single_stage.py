@@ -83,7 +83,7 @@ class SingleStageDetector(BaseDetector):
         losses = self.bbox_head.forward_train(x, img_metas, y_loc_img, y_cls_img, y_loc_img_ignore)
         return losses
 
-    def simple_test(self, x, img_metas, return_box=True, rescale=False):
+    def simple_test(self, x, img_metas, return_box=True, rescale=False, uncertain_box=False):
         """Test function without test time augmentation.
 
         Args:
@@ -104,7 +104,10 @@ class SingleStageDetector(BaseDetector):
                 y_head_f_1_1level.append(y_head_f_i_single.permute(0,2,3,1).reshape(-1, self.bbox_head.cls_out_channels))
             for y_head_f_i_single in y_head_f_2:
                 y_head_f_2_1level.append(y_head_f_i_single.permute(0,2,3,1).reshape(-1, self.bbox_head.cls_out_channels))
-            return y_head_f_1_1level, y_head_f_2_1level, y_head_cls
+            if uncertain_box:
+                return y_head_f_1_1level, y_head_f_2_1level, y_head_f_r, y_head_cls
+            else:
+                return y_head_f_1_1level, y_head_f_2_1level, y_head_cls
         outs = (y_head_f_1, y_head_f_r)
         y_head_loc_cls = self.bbox_head.get_bboxes(*outs, img_metas, rescale=rescale)
         # skip post-processing when exporting to ONNX

@@ -80,8 +80,8 @@ def tpfp_imagenet(det_bboxes,
     """
     # an indicator of ignored gts
     gt_ignore_inds = np.concatenate(
-        (np.zeros(gt_bboxes.shape[0], dtype=np.bool),
-         np.ones(gt_bboxes_ignore.shape[0], dtype=np.bool)))
+        (np.zeros(gt_bboxes.shape[0], dtype=bool),
+         np.ones(gt_bboxes_ignore.shape[0], dtype=bool)))
     # stack gt_bboxes and gt_bboxes_ignore for convenience
     gt_bboxes = np.vstack((gt_bboxes, gt_bboxes_ignore))
 
@@ -173,8 +173,8 @@ def tpfp_default(det_bboxes,
     """
     # an indicator of ignored gts
     gt_ignore_inds = np.concatenate(
-        (np.zeros(gt_bboxes.shape[0], dtype=np.bool),
-         np.ones(gt_bboxes_ignore.shape[0], dtype=np.bool)))
+        (np.zeros(gt_bboxes.shape[0], dtype=bool),
+         np.ones(gt_bboxes_ignore.shape[0], dtype=bool)))
     # stack gt_bboxes and gt_bboxes_ignore for convenience
     gt_bboxes = np.vstack((gt_bboxes, gt_bboxes_ignore))
 
@@ -248,7 +248,6 @@ def get_cls_results(det_results, annotations, class_id):
     Returns:
         tuple[list[np.ndarray]]: detected bboxes, gt bboxes, ignored gt bboxes
     """
-
     cls_dets = [img_res[class_id] for img_res in det_results]
     cls_gts = []
     cls_gts_ignore = []
@@ -261,7 +260,6 @@ def get_cls_results(det_results, annotations, class_id):
             cls_gts_ignore.append(ann['bboxes_ignore'][ignore_inds, :])
         else:
             cls_gts_ignore.append(np.empty((0, 4), dtype=np.float32))
-
     return cls_dets, cls_gts, cls_gts_ignore
 
 
@@ -316,6 +314,7 @@ def eval_map(det_results,
         # get gt and det bboxes of this class
         cls_dets, cls_gts, cls_gts_ignore = get_cls_results(
             det_results, annotations, i)
+
         # choose proper function according to datasets to compute tp and fp
         if dataset in ['det', 'vid']:
             tpfp_func = tpfp_imagenet
@@ -341,7 +340,9 @@ def eval_map(det_results,
                     num_gts[k] += np.sum((gt_areas >= min_area)
                                          & (gt_areas < max_area))
         # sort all det bboxes by score, also sort tp and fp
+
         cls_dets = np.vstack(cls_dets)
+
         num_dets = cls_dets.shape[0]
         sort_inds = np.argsort(-cls_dets[:, -1])
         tp = np.hstack(tp)[:, sort_inds]
@@ -357,7 +358,7 @@ def eval_map(det_results,
             recalls = recalls[0, :]
             precisions = precisions[0, :]
             num_gts = num_gts.item()
-        mode = 'area' if dataset != 'voc07' or 'hdc' else '11points'
+        mode = 'area' if dataset != 'voc07' or 'HDCDataset' or 'hdc' else '11points'
         ap = average_precision(recalls, precisions, mode)
         eval_results.append({
             'num_gts': num_gts,
@@ -420,6 +421,7 @@ def print_map_summary(mean_ap,
 
     if scale_ranges is not None:
         assert len(scale_ranges) == num_scales
+   
     num_classes = len(results)
     recalls = np.zeros((num_scales, num_classes), dtype=np.float32)
     aps = np.zeros((num_scales, num_classes), dtype=np.float32)

@@ -10,16 +10,17 @@ _base_ = [
 data = dict(
     test=dict(
         ann_file=[
-            data_root + 'train.txt'#TRAINING SET INDEXES?
+            data_root + 'train.txt',
         ],
-        img_prefix=[data_root])
+        img_prefix=[data_root ])
 )
-model = dict(bbox_head=dict(C=2))
+model = dict(bbox_head=dict(C=1))
 # The initial learning rate, momentum, weight decay can be changed here.
-optimizer = dict(type='SGD', lr=12e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
-#optimizer = dict(type='Adam', lr=1e-6, momentum=0.9, weight_decay=0.0001)#changed lr from 1e-3
+optimizer = dict(type='Adam', lr=12e-6, weight_decay=0.0001)
 
 optimizer_config = dict(grad_clip=dict(max_norm=35, norm_type=2))
+#optimizer_config = dict(grad_clip=None)
+
 # The moment when the learning rate drops can be changed here.
 lr_config = dict(policy='step', step=[2])
 # The frequency of saving models can be changed here.
@@ -42,10 +43,16 @@ train_cfg = dict(param_lambda = 0.5)
 k = 10000
 # The size of the initial labeled set and the newly selected sets after each cycle can be set here.
 # Note that there are 16551 images in the PASCAL VOC 2007+2012 trainval sets.
-X_S_size = 12150//40#9964//40 #should be percentage of all available images (set this to max)
-X_L_0_size = 12150//10#9964//20#(set to zero)?
+def make_even(x):
+    return (x//2)*2
+X_S_size = make_even(12150//40)#9964//40
+X_L_0_size = make_even(12150//10)#9964//20
 # The active learning cycles can be changed here.
 cycles = [0, 1, 2, 3, 4, 5, 6]
 # The work directory for saving logs and files can be changed here. Please refer to README.md for more information.
 work_directory = './work_dirs/MI-AOD'
-
+# Output bounding boxes for most uncertain image regions to help guide labeling
+plot_nuboxes = 5
+nubox_colors = [(0,0,255), (0,255,255), (0,255,0), (255,255,0), (255,0,0)]
+check_nuboxes = 1000
+guide_image_dir = data_root + 'hdc/GuideImages'
