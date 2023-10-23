@@ -1,3 +1,19 @@
+###
+# Copyright (2023) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
 import typing as t
 
 from contrib.graph_api import Artifact, Execution, Node, Type, one, unique
@@ -7,6 +23,9 @@ __all__ = ["Visitor", "Accept", "Stop", "Traverse", "QueryEngine"]
 
 class Visitor:
     """Class that `visits` MLMD artifact nodes.
+
+    It is used to traverse MLMD graph and to collect artifacts of interest. An artifact is collected if it is accepted
+    by an acceptor function.
 
     Args:
         acceptor: Callable that takes one artifact and returns True if this node should be accepted (stored in
@@ -38,7 +57,12 @@ class Visitor:
 
 
 class Accept:
-    """Class that implements various acceptor functions."""
+    """Class that implements various acceptor functions.
+
+    They are used to inform graph visitors if a particular artifact (or node in general) should be collected. All
+    acceptor functions must accept one parameter of type `Node` and return True if this artifact is "accepted", e.g.,
+    matchers user criteria.
+    """
 
     @staticmethod
     def all(_node: Node) -> bool:
@@ -68,7 +92,12 @@ class Accept:
 
 
 class Stop:
-    """Class that implements various graph traversal stoppers."""
+    """Class that implements various graph traversal stoppers.
+
+    Teh visitor instance can instruct the traversal algorithm to stop after visiting each artifact in a graph. Stopper
+    functions are used to determine if traversal should be stopped. A stopper function accepts one argument - list of
+    collected (accepted) artifacts so far, and returns True if traversal should be stopped.
+    """
 
     @staticmethod
     def never(_artifacts: t.List[Artifact]) -> bool:
