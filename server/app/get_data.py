@@ -26,11 +26,9 @@ def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return va
         if name==pipeline_name:
             stages = query.get_pipeline_stages(name)
             for stage in stages:
-                executions = query.get_all_executions_in_stage(stage)
-                dict_executions = executions.to_dict("dict")  # converting it to dictionary
-                for id in dict_executions["id"].values():
-                    identifiers.append(id)
-                identifiers.append(dict_executions["id"][0])
+                executions = query.get_all_exe_in_stage(stage)
+                for exe in executions:
+                    identifiers.append(exe.id)
     name = []
     url = []
     df = pd.DataFrame()
@@ -64,7 +62,6 @@ def create_unique_executions(server_store_path, req_info):
         for stage in stages:
             executions = []
             executions = query.get_all_executions_in_stage(stage)
-            #print(executions)
             for i in executions.index:                
                 for uuid in executions['Execution_uuid'][i].split(","):
                     executions_server.append(uuid)
@@ -74,8 +71,12 @@ def create_unique_executions(server_store_path, req_info):
                 if j['name'] != "":#If executions have name , they are reusable executions                        
                     continue       #which needs to be merged in irrespective of whether already 
                                    #present or not so that new artifacts associated with it gets in.
-                for uuid in j['properties']['Execution_uuid'].split(","):
-                    executions_client.append(uuid)
+                if 'Execution_uuid' in j['properties']:
+                    for uuid in j['properties']['Execution_uuid'].split(","):
+                        executions_client.append(uuid)
+                else:
+                    status="version_update"
+                    return status
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
         for i in mlmd_data["Pipeline"]:
