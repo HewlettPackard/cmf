@@ -1,6 +1,19 @@
-"""
+###
+# Copyright (2022) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
 
-"""
 import argparse
 import functools
 import inspect
@@ -30,6 +43,7 @@ __all__ = [
     "cmf_config",
     "step",
     "prepare_workspace",
+    "cli_run",
 ]
 
 logger = logging.getLogger(__name__)
@@ -40,7 +54,7 @@ class LogMessage:
 
     Args:
         type_: Message type (aka event type).
-        kwargs: Additional keyword arguments to be logged associated with the event being logged.
+        kwargs: Additional keyword arguments to be associated with the event being logged.
     """
 
     def __init__(self, type_: str, **kwargs) -> None:
@@ -68,9 +82,7 @@ class Artifact:
         params: Dictionary of parameters associated with this artifact. Should be serializable with ML metadata.
     """
 
-    def __init__(
-        self, uri: t.Union[str, Path], params: t.Optional[t.Dict] = None
-    ) -> None:
+    def __init__(self, uri: t.Union[str, Path], params: t.Optional[t.Dict] = None) -> None:
         self.uri = uri if isinstance(uri, str) else uri.as_posix()
         self.params = deepcopy(params or {})
 
@@ -111,9 +123,7 @@ class ExecutionMetrics(Artifact):
             (it's specified with the `name` parameter).
     """
 
-    def __init__(
-        self, uri: t.Union[str, Path], name: str, params: t.Optional[t.Dict] = None
-    ) -> None:
+    def __init__(self, uri: t.Union[str, Path], name: str, params: t.Optional[t.Dict] = None) -> None:
         super().__init__(uri, params)
         self.name = name
 
@@ -122,6 +132,8 @@ class ExecutionMetrics(Artifact):
 
 
 class JSONEncoder(json.JSONEncoder):
+    """JSON encoder that can handle instances of the `Artifact` class."""
+
     def default(self, o: t.Any) -> t.Any:
         if isinstance(o, Artifact):
             return str(o)
@@ -148,9 +160,17 @@ class Parameters(dict):
     """
 
     @classmethod
-    def from_file(
-        cls, stage_name: str, file_name: t.Union[str, Path] = "pipeline.yaml"
-    ) -> "Parameters":
+    def from_file(cls, stage_name: str, file_name: t.Union[str, Path] = "pipeline.yaml") -> "Parameters":
+        """Helper method to load parameters from a `yaml` file.
+
+        Args:
+            stage_name: Name of a stage to load parameters for. It is assumed the yaml file is a dictionary where
+                top-level keys correspond to stage names. Each top-level key must point to a dictionary containing
+                parameters for the given stage.
+            file_name: Path to a `yaml` file containing pipeline parameters.
+        Returns:
+            Instance of this class containing parameters for the requested stage.
+        """
         with open(file_name, "rt") as f:
             pipeline_stages_params = yaml.load(f, Loader=yaml.SafeLoader)
             return Parameters(**pipeline_stages_params[stage_name])
@@ -225,9 +245,7 @@ cmf_config = CmfConfig()
 """Users can use this object to configure CMF programmatically"""
 
 
-def step(
-    pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] = None
-) -> t.Callable:
+def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] = None) -> t.Callable:
     """Function decorator that automatically logs input and output artifacts for Cmf steps.
 
     This function decorator adds automated Cmf-based logging of input and output artifacts to user functions. Users must
@@ -294,11 +312,7 @@ def step(
             config = (
                 config.update(CmfConfig.from_env())
                 .update(cmf_config)
-                .update(
-                    CmfConfig.from_params(
-                        pipeline_name=pipeline_name, pipeline_stage=pipeline_stage
-                    )
-                )
+                .update(CmfConfig.from_params(pipeline_name=pipeline_name, pipeline_stage=pipeline_stage))
             )
 
             if config.pipeline_name is None:
@@ -324,9 +338,7 @@ def step(
                 graph=config.graph,
             )
             _ = cmf.create_context(pipeline_stage=config.pipeline_stage)
-            _ = cmf.create_execution(
-                execution_type=config.pipeline_stage, custom_properties=params
-            )
+            _ = cmf.create_execution(execution_type=config.pipeline_stage, custom_properties=params)
             _log_artifacts(cmf, "input", inputs)
 
             # Run the step
@@ -341,9 +353,7 @@ def step(
                     execution_id=cmf.execution.id,
                 )
             )
-            logger.debug(
-                M("execution.impl", execution_id=cmf.execution.id, impl=func.__name__)
-            )
+            logger.debug(M("execution.impl", execution_id=cmf.execution.id, impl=func.__name__))
             logger.debug(
                 M(
                     "execution.inputs",
@@ -395,7 +405,7 @@ def step(
 
 
 def cli_run(step_fn: t.Callable) -> None:
-    """Parse command line and run the CMF step.
+    """Parse command line and run the CMF stage.
 
     The following syntax for command line arguments is supported.
         - Context parameters: `--ctx name1=value1,name2=value2`.
@@ -410,7 +420,7 @@ def cli_run(step_fn: t.Callable) -> None:
         - CMG_GRAPH: If set, Neo4J will be used, default is not to use. To enable, set it to `true`.
 
     Args:
-        step_fn: Pipeline python function.
+        step_fn: Python function implementing a pipeline stage.
 
     """
     # Parse command line arguments
@@ -437,9 +447,7 @@ def cli_run(step_fn: t.Callable) -> None:
     parsed, artifacts = parser.parse_known_args(sys.argv[1:])
 
     # Convert command line arguments into dictionaries
-    def _parse_key_value_list(
-        _kv_list: t.Union[str, t.List[str]], _dict_cls
-    ) -> t.Union[t.Dict, Context, Parameters]:
+    def _parse_key_value_list(_kv_list: t.Union[str, t.List[str]], _dict_cls) -> t.Union[t.Dict, Context, Parameters]:
         """Convert a string like 'a=3,b=5' into a dictionary."""
         _dict = _dict_cls()
         if not _kv_list:
@@ -478,9 +486,7 @@ def prepare_workspace(ctx: Context, namespace: t.Optional[str] = None) -> Path:
     return workspace
 
 
-def _call_step_with_parameter_check(
-    fn: t.Callable, ctx: Context, params: Parameters, inputs: t.Dict
-) -> None:
+def _call_step_with_parameter_check(fn: t.Callable, ctx: Context, params: Parameters, inputs: t.Dict) -> None:
     """The goal is to make sure the fn's API accept provided `context`, `params` and `inputs`.
 
     Args:
@@ -511,9 +517,7 @@ def _call_step_with_parameter_check(
             if isinstance(inputs[param.name], Artifact):
                 fn_specs.kwargs[param.name] = inputs[param.name]
             elif isinstance(inputs[param.name], str):
-                fn_specs.kwargs[param.name] = _uri_to_artifact(
-                    inputs[param.name], param.annotation
-                )
+                fn_specs.kwargs[param.name] = _uri_to_artifact(inputs[param.name], param.annotation)
             else:
                 raise CMFError(
                     f"Unrecognized artifact value: name={param.name}, value={inputs[param.name]}. Supported values are "
@@ -537,13 +541,9 @@ def _call_step_with_parameter_check(
         )
     # Check that this function does accept context and parameters if they are present
     if ctx and not fn_specs.needs_ctx:
-        raise CMFError(
-            f"Context is provided (keys={ctx.keys()}) but function ({fn}) does not accept context."
-        )
+        raise CMFError(f"Context is provided (keys={ctx.keys()}) but function ({fn}) does not accept context.")
     if params and not fn_specs.needs_params:
-        raise CMFError(
-            f"Params are provided (keys={params.keys()}) but function ({fn}) does not accept params."
-        )
+        raise CMFError(f"Params are provided (keys={params.keys()}) but function ({fn}) does not accept params.")
 
     # All done - call the function
     fn(**fn_specs.kwargs)
@@ -564,9 +564,7 @@ def _uri_to_artifact(uri: str, annotation: t.Any) -> Artifact:
         return Dataset(uri)
     elif issubclass(annotation, MLModel):
         return MLModel(uri)
-    raise CMFError(
-        f"Cannot convert URI to an Artifact instance: uri={uri}, annotation={annotation}."
-    )
+    raise CMFError(f"Cannot convert URI to an Artifact instance: uri={uri}, annotation={annotation}.")
 
 
 def _validate_task_arguments(
@@ -650,14 +648,10 @@ def _log_artifacts(
         for artifact in artifacts:
             _log_artifacts(cmf, event, artifact)
     elif isinstance(artifacts, Dataset):
-        cmf.log_dataset(
-            url=artifacts.uri, event=event, custom_properties=artifacts.params
-        )
+        cmf.log_dataset(url=artifacts.uri, event=event, custom_properties=artifacts.params)
     elif isinstance(artifacts, MLModel):
         cmf.log_model(path=artifacts.uri, event=event, **artifacts.params)
     elif isinstance(artifacts, ExecutionMetrics):
         cmf.log_execution_metrics(artifacts.name, artifacts.params)
     else:
-        raise CMFError(
-            f"Can't log unrecognized artifact: type={type(artifacts)}, artifacts={str(artifacts)}"
-        )
+        raise CMFError(f"Can't log unrecognized artifact: type={type(artifacts)}, artifacts={str(artifacts)}")
