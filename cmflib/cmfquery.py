@@ -350,34 +350,6 @@ class CmfQuery(object):
         """
         return [ctx.name for ctx in self._get_pipelines()]
 
-    def _transform_to_artifacts_dataframe(self, node):
-        d = {"id": node.id}
-        d["name"] = getattr(node, "name", "")
-        d["create_time_since_epoch"] = getattr(node, "create_time_since_epoch", "")
-        d["last_update_time_since_epoch"] = getattr(node, "last_update_time_since_epoch", "")
-        d["uri"] = getattr(node, "uri", "")
-        type_id = getattr(node, "type_id", "")
-        output = self.store.get_artifact_types_by_id([type_id])[0]
-        d["type"] = output.name
-        for k, v in node.properties.items():
-             if v.HasField('string_value'):
-                 d[k] = v.string_value
-             elif v.HasField('int_value'):
-                 d[k] = v.int_value
-             else:
-                 d[k] = v.double_value
-
-        for k, v in node.custom_properties.items():
-             if v.HasField('string_value'):
-                 d[k] = v.string_value
-             elif v.HasField('int_value'):
-                 d[k] = v.int_value
-             else:
-                 d[k] = v.double_value
-
-        df = pd.DataFrame(d, index=[0, ])
-        return df
-
     def get_pipeline_id(self, pipeline_name: str) -> int:
         """Return pipeline identifier for the pipeline names `pipeline_name`.
         Args:
@@ -452,7 +424,7 @@ class CmfQuery(object):
                 for cc in child_contexts:
                     artifacts = self.store.get_artifacts_by_context(cc.id)
                     for art in artifacts:
-                        d1 = self._transform_to_artifacts_dataframe(art)
+                        d1 = self.get_artifact_df(art)
                         df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
@@ -468,7 +440,7 @@ class CmfQuery(object):
         df = pd.DataFrame()
         artifacts = self.store.get_artifacts_by_id(artifact_ids)
         for art in artifacts:
-            d1 = self._transform_to_artifacts_dataframe(art)
+            d1 = self.get_artifact_df(art)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
