@@ -23,9 +23,25 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(pipelineName, type) {
+  async getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) {
     return this.apiClient
-      .get(`/display_artifact_type/${pipelineName}/${type}`)
+      .get(`/display_artifacts/${pipelineName}/${type}`, {
+        params: {
+          page: page,
+          sort_field: sortField,
+          sort_order: sortOrder,
+          filter_by: filterBy,
+          filter_value: filterValue,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactTypes() {
+    return this.apiClient
+      .get(`/display_artifact_types`)
       .then(({ data }) => {
         return data;
       });
@@ -41,9 +57,17 @@ class FastAPIClient {
     }
   }
 
-  getExecutions(pipelineName) {
+  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
-      .get(`/display_executions/${pipelineName}`)
+      .get(`/display_executions/${pipelineName}`, {
+        params: {
+          page: page,
+          sort_field: sortField,
+          sort_order: sortOrder,
+          filter_by: filterBy,
+          filter_value: filterValue,
+        },
+      })
       .then(({ data }) => {
         return data;
       });

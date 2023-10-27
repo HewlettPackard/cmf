@@ -389,9 +389,63 @@ class CmfQuery(object):
                     return self.store.get_executions_by_context(stage.id)
         return []
 
+    def get_all_executions_by_ids_list(self, exe_ids: t.List[int]) -> pd.DataFrame:
+        """Return executions for given execution ids list as a pandas data frame.
+
+        Args:
+            exe_ids: List of execution identifiers.
+
+        Returns:
+            Data frame with all executions for the list of given execution identifiers.
+        """
+
+        df = pd.DataFrame()
+        executions = self.store.get_executions_by_id(exe_ids)
+        for exe in executions:
+            d1 = self._transform_to_dataframe(exe)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
+
+    def get_all_artifacts_by_context(self, pipeline_name: str) -> pd.DataFrame:
+        """Return artifacts for given pipeline name as a pandas data frame.
+
+        Args:
+            pipeline_name: Name of the pipeline.
+
+        Returns:
+            Data frame with all artifacts associated with given pipeline name.
+        """
+        df = pd.DataFrame()
+        contexts = self.store.get_contexts_by_type("Parent_Context")
+        context_id = self.get_pipeline_id(pipeline_name)
+        for ctx in contexts:
+            if ctx.id == context_id:
+                child_contexts = self.store.get_children_contexts_by_context(ctx.id)
+                for cc in child_contexts:
+                    artifacts = self.store.get_artifacts_by_context(cc.id)
+                    for art in artifacts:
+                        d1 = self.get_artifact_df(art)
+                        df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
+
+    def get_all_artifacts_by_ids_list(self, artifact_ids: t.List[int]) -> pd.DataFrame:
+        """Return all artifacts for the given artifact ids list.
+
+        Args:
+            artifact_ids: List of artifact identifiers
+
+        Returns:
+            Data frame with all artifacts for the given artifact ids list.
+        """
+        df = pd.DataFrame()
+        artifacts = self.store.get_artifacts_by_id(artifact_ids)
+        for art in artifacts:
+            d1 = self.get_artifact_df(art)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        return df
+
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         """Return executions of the given stage as pandas data frame.
-
         Args:
             stage_name: Stage name. See doc strings for the prev method.
         Returns:
@@ -471,6 +525,16 @@ class CmfQuery(object):
                 )
         return df
 
+    def get_all_artifact_types(self) -> t.List[str]:
+        """Return names of all artifact types.
+
+        Returns:
+            List of all artifact types.
+        """
+        artifact_list = self.store.get_artifact_types()
+        types=[i.name for i in artifact_list]
+        return types
+
     def get_all_executions_for_artifact(self, artifact_name: str) -> pd.DataFrame:
         """Return executions that consumed and produced given artifact.
 
@@ -491,6 +555,7 @@ class CmfQuery(object):
                 "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
                 "execution_id": event.execution_id,
                 "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
+                "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'],
                 "stage": stage_ctx.name,
                 "pipeline": self.store.get_parent_contexts_by_context(stage_ctx.id)[0].name,
             }
@@ -598,6 +663,7 @@ class CmfQuery(object):
         executions_ids = set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact.id])
+
             if event.type == mlpb.Event.OUTPUT
         )
         if not executions_ids:
