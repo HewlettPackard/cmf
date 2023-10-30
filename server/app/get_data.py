@@ -5,49 +5,89 @@ import os
 from server.app.query_visualization import query_visualization
 from fastapi.responses import FileResponse
 
-def get_executions(mlmdfilepath, pipeline_name):
+def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
-    stages = query.get_pipeline_stages(pipeline_name)
     df = pd.DataFrame()
-    for stage in stages:
-        executions = query.get_all_executions_in_stage(stage)
-        if str(executions.Pipeline_Type[0]) == pipeline_name:
-            df = pd.concat([df, executions], sort=True, ignore_index=True)
+    executions = query.get_all_executions_by_ids_list(exe_ids)
+    df = pd.concat([df, executions], sort=True, ignore_index=True)
+    #df=df.drop('name',axis=1)
     return df
 
+def get_all_exe_ids(mlmdfilepath):
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    df = pd.DataFrame()
+    execution_ids = {}
+    names = query.get_pipeline_names()
+    for name in names:
+        stages = query.get_pipeline_stages(name)
+        for stage in stages:
+            executions = query.get_all_executions_in_stage(stage)
+            df = pd.concat([df, executions], sort=True, ignore_index=True)
+    if df.empty:
+        return
+    for name in names:
+        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type']]
+    return execution_ids
 
-# This function fetches all the artifacts available in given mlmd
-def get_artifacts(mlmdfilepath, pipeline_name, data):  # get_artifacts return value (artifact_type or artifact_df) is 
-  # determined by a data variable().
+def get_all_artifact_ids(mlmdfilepath):
+    # following is a dictionary of dictionary
+    # First level dictionary key is pipeline_name
+    # First level dicitonary value is nested dictionary
+    # Nested dictionary key is type i.e. Dataset, Model, etc.
+    # Nested dictionary value is ids i.e. set of integers
+    artifact_ids = {}
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    names = query.get_pipeline_names()
+    for name in names:
+        df = pd.DataFrame()
+        artifacts = query.get_all_artifacts_by_context(name)
+        df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+        if df.empty:
+            return
+        else:
+            artifact_ids[name] = {}
+            for art_type in df['type']:
+                filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
+                artifact_ids[name][art_type] = filtered_values
+    return artifact_ids
+
+def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
-    identifiers = []
-    for name in names:
-        if name==pipeline_name:
-            stages = query.get_pipeline_stages(name)
-            for stage in stages:
-                executions = query.get_all_exe_in_stage(stage)
-                for exe in executions:
-                    identifiers.append(exe.id)
-    name = []
-    url = []
     df = pd.DataFrame()
-    for identifier in identifiers:
-        get_artifacts = query.get_all_artifacts_for_execution(
-            identifier
-        )  # getting all artifacts
-        df = pd.concat([df, get_artifacts], sort=True, ignore_index=True)
-    df['event'] = df.groupby('id')['event'].transform(lambda x: ', '.join(x))
-    df['name'] = df['name'].str.split(':').str[0]
-    df=df.drop_duplicates()
-    if data == "artifact_type":
-        tempout = list(set(df["type"]))
-    else:
-        df = df.loc[df["type"] == data]
-        result = df.to_json(orient="records")
-        tempout = json.loads(result)
-    return tempout
+    for name in names:
+        if name == pipeline_name:
+            df = query.get_all_artifacts_by_ids_list(artifact_ids)
+            if len(df) == 0:
+                return
+            df = df.drop_duplicates()
+            art_names = df['name'].tolist()
+            name_dict = {}
+            name_list = []
+            exec_type_name_list = []
+            exe_type_name = pd.DataFrame()
+            for name in art_names:
+                executions = query.get_all_executions_for_artifact(name)
+                exe_type_name = pd.concat([exe_type_name,executions],ignore_index=True)
+                execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
+                execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
+                execution_type_name_str = ',\n '.join(map(str, execution_type_name))
+                name_list.append(name)
+                exec_type_name_list.append(execution_type_name_str)
+            name_dict['name'] = name_list
+            name_dict['execution_type_name'] = exec_type_name_list
+            name_df = pd.DataFrame(name_dict)
+            merged_df = df.merge(name_df, on='name', how='left')
+            merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+            merged_df = merged_df.loc[merged_df["type"] == art_type]
+            result = merged_df.to_json(orient="records")
+            tempout = json.loads(result)
+            return tempout
 
+def get_artifact_types(mlmdfilepath):
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    artifact_types = query.get_all_artifact_types()
+    return artifact_types
 
 def create_unique_executions(server_store_path, req_info):
     mlmd_data = json.loads(req_info["json_payload"])
@@ -68,7 +108,7 @@ def create_unique_executions(server_store_path, req_info):
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
-                if j['name'] != "":#If executions have name , they are reusable executions                        
+                if j['name'] != "": #If executions have name , they are reusable executions
                     continue       #which needs to be merged in irrespective of whether already 
                                    #present or not so that new artifacts associated with it gets in.
                 if 'Execution_uuid' in j['properties']:
