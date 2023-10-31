@@ -48,3 +48,8 @@ To test the `cmf` client, follow these additional steps:
    cp -r /path/to/cmf/examples/example-get-started /path/to/destination/
    
 2. **Copy a Test File `cmf/test/client/test_cmf.py` to the Copied `example-get-started` Folder:**
+
+3. **Run pytest to Test the `cmf` Client with the following command:**
+
+   ```bash
+   pytest -vs test_cmf.py
