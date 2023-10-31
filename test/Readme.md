@@ -17,6 +17,7 @@ To run the tests, you'll need to have pytest installed. If you haven't already i
 
 ```bash
 pip install pytest
+```
 
 To get started with the sanity testing project, follow these steps:
 ### Feature 1: Server
