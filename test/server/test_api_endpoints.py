@@ -1,7 +1,9 @@
-import requests
+from fastapi.testclient import TestClient
+from server.app.main import app
 
-def test_display_pipelines():
-    url = "http://10.93.244.204:3000/display_pipelines"
-    response = requests.get(url)
+client = TestClient(app)
+
+def test_read_main():
+    response = client.get("/")
     assert response.status_code == 200
-    assert "Test-env" in response.json()
+    assert response.json() == ["cmf-server"]

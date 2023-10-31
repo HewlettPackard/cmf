@@ -24,20 +24,23 @@ from pathlib import Path
 import os
 import json
 
-server_store_path = "/cmf-server/data/mlmd"
+server_store_path = os.environ.get("server_store_path", "/home/sharvark/cmf-server/data")
+print(server_store_path)
 
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
+mlmd_path = server_store_path + "/mlmd"
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
-    if os.path.exists(server_store_path):
+    if os.path.exists(mlmd_path):
         # loaded artifact ids into memory
-        dict_of_art_ids = get_all_artifact_ids(server_store_path)
+        dict_of_art_ids = get_all_artifact_ids(mlmd_path)
         # loaded execution ids with names into memory
-        dict_of_exe_ids = get_all_exe_ids(server_store_path)
+        dict_of_exe_ids = get_all_exe_ids(mlmd_path)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -45,10 +48,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="cmf-server", lifespan=lifespan)
 
 BASE_PATH = Path(__file__).resolve().parent
-app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
-server_store_path = "/cmf-server/data/mlmd"
-if os.environ.get("MYIP") != "127.0.0.1":
-    url="http://"+os.environ.get('MYIP')+":3000"
+static_dir_path = server_store_path+"/static"
+app.mount(static_dir_path, StaticFiles(directory=static_dir_path), name="static")
+
+my_ip = os.environ.get("MYIP", "0.0.0.0")
+
+if my_ip != "127.0.0.1":
+    url="http://"+my_ip+":3000"
 else:
     url="http://"+os.environ.get('HOSTNAME')+":3000"
 
@@ -78,7 +84,7 @@ async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
     req_info = await info.json()
-    status= create_unique_executions(server_store_path,req_info)
+    status= create_unique_executions(mlmd_path, req_info)
     # async function
     await update_global_art_dict()
     await update_global_exe_dict()
@@ -90,8 +96,8 @@ async def mlmd_push(info: Request):
 async def mlmd_pull(info: Request, pipeline_name: str):
     # checks if mlmd file exists on server
     req_info = await info.json()
-    if os.path.exists(server_store_path):
-        json_payload= get_mlmd_from_server(server_store_path,pipeline_name,req_info['exec_id'])
+    if os.path.exists(mlmd_path):
+        json_payload= get_mlmd_from_server(mlmd_path, pipeline_name, req_info['exec_id'])
     else:
         print("No mlmd file submitted.")
         json_payload = ""
@@ -110,21 +116,26 @@ async def display_exec(
     filter_value: str = Query(None, description="Filter value"),
     ):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
+    if os.path.exists(mlmd_path):
         exe_ids_initial = dict_of_exe_ids[pipeline_name]
+
         # Apply filtering if provided
         if filter_by and filter_value:
             exe_ids_initial = exe_ids_initial[exe_ids_initial[filter_by].str.contains(filter_value, case=False)]
+
         # Apply sorting if provided
         exe_ids_sorted = exe_ids_initial.sort_values(by=sort_field, ascending=(sort_order == "asc"))
         exe_ids = exe_ids_sorted['id'].tolist()
+
         total_items = len(exe_ids)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
+
         if total_items < end_idx:
             end_idx = total_items
+
         exe_ids_list = exe_ids[start_idx:end_idx]
-        executions_df = get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
+        executions_df = get_executions_by_ids(mlmd_path, pipeline_name, exe_ids_list)
         temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {
@@ -139,10 +150,10 @@ async def display_exec(
 async def display_lineage(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
     img_path=""
-    if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
+    if os.path.exists(mlmd_path):
+        query = cmfquery.CmfQuery(mlmd_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=get_lineage_img_path(server_store_path,pipeline_name)
+            response=get_lineage_img_path(mlmd_path,pipeline_name)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -168,43 +179,51 @@ async def display_artifact(
     art_ids_dict = {}
     art_type = type
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
+    if os.path.exists(mlmd_path):
         art_ids_dict = dict_of_art_ids[pipeline_name]
+
         if not art_ids_dict:
             return
+
         art_ids_initial = []
+
         if art_type in art_ids_dict:
             art_ids_initial = art_ids_dict[art_type]
         else:
             return
+
         # Apply filtering if provided
         if filter_by and filter_value:
             art_ids_initial = art_ids_initial[art_ids_initial[filter_by].str.contains(filter_value, case=False)]
+
         # Apply sorting if provided
         art_ids_sorted = art_ids_initial.sort_values(by=sort_field, ascending=(sort_order == "asc"))
         art_ids = art_ids_sorted['id'].tolist()
+
         total_items = len(art_ids)
         start_idx = (page - 1) * per_page
         end_idx = start_idx + per_page
+
         if total_items < end_idx:
             end_idx = total_items
+
         artifact_id_list = list(art_ids)[start_idx:end_idx]
-        artifact_df = get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
+        artifact_df = get_artifacts(mlmd_path, pipeline_name, art_type, artifact_id_list)
         data_paginated = artifact_df
         return {
             "total_items": total_items,
             "items": data_paginated
         }
     else:
-        return f"{server_store_path} file doesn't exist."
+        return f"{mlmd_path} file doesn't exist."
 
 
 
 @app.get("/display_artifact_types")
 async def display_artifact_types(request: Request):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
-        artifact_types = get_artifact_types(server_store_path)
+    if os.path.exists(mlmd_path):
+        artifact_types = get_artifact_types(mlmd_path)
         return artifact_types
     else:
         artifact_types = ""
@@ -214,8 +233,8 @@ async def display_artifact_types(request: Request):
 @app.get("/display_pipelines")
 async def display_list_of_pipelines(request: Request):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
+    if os.path.exists(mlmd_path):
+        query = cmfquery.CmfQuery(mlmd_path)
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
@@ -227,13 +246,13 @@ async def display_list_of_pipelines(request: Request):
 
 async def update_global_art_dict():
     global dict_of_art_ids
-    output_dict = get_all_artifact_ids(server_store_path)
+    output_dict = get_all_artifact_ids(mlmd_path)
     dict_of_art_ids = output_dict
     return
 
 
 async def update_global_exe_dict():
     global dict_of_exe_ids
-    output_dict = get_all_exe_ids(server_store_path)
+    output_dict = get_all_exe_ids(mlmd_path)
     dict_of_exe_ids = output_dict
     return
