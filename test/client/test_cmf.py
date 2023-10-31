@@ -38,7 +38,7 @@ def start_server():
         return "server is down"
 
 def server_start():
-    compose_file_path = '/home/user/path/cmf/docker-compose-server.yml'
+    compose_file_path = '/home/chobey/testing/cmf/docker-compose-server.yml'
     server_process=  subprocess.run(['docker','compose', '-f', compose_file_path, 'up','-d'], check=True,env={'IP':'10.93.244.206' })
     print("Docker Compose services have been started.")
     timeout = 120  
@@ -63,21 +63,30 @@ class TestClass:
     
 #    def test_cmf_init_minios3(self):
 #        _=cmf.cmf_init(type="minioS3",url="s3://bucket-name",endpoint_url="http://localhost:9000",access_key_id="minioadmin",secret_key="minioadmin",git_remote_url="https://github.com")
-        print("___________________________________________________________")
+#        print("___________________________________________________________")
 
 #    def test_cmf_init_amazonS3(self):
 #        _=cmf.cmf_init(type="amazonS3",url="s3://bucket-name",endpoint_url="http://localhost:9000",access_key_id="minioadmin",secret_key="minioadmin",git_remote_url="https://github.com")
-        print("___________________________________________________________")
+#        print("___________________________________________________________")
 
 #    def test_cmf_init_sshremote(self):
 #        _=cmf.cmf_init(type="sshremote",path="/home/user/local-storage",user="abhi",port="22",password="user",git_remote_url="https://github.com")
-        print("___________________________________________________________")
+#        print("___________________________________________________________")
 
     def test_cmf_init_local(self):
-        _=cmf.cmf_init(type="local",path="/home/user/local-storage",git_remote_url="https://github.com",neo4j_user='neo4j',neo4j_password="Abhinav@2021",neo4j_uri="bolt://10.93.244.206:7687",cmf_server_url="http://10.93.244.206:8080")
+        _=cmf.cmf_init(type="local",path="/home/chobey/local-storage",git_remote_url="https://github.com",neo4j_user='neo4j',neo4j_password="Abhinav@2021",neo4j_uri="bolt://10.93.244.206:7687",cmf_server_url="http://10.93.244.206:8080")
         print("___________________________________________________________")
 
 class TestCommands:
+    try:
+        script_name='test_script.sh'
+        subprocess.run(['chmod','+x',script_name],check=True)
+        subprocess.run(['./',script_name], check=True, shell=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error running {script_name}: {e}")
+    else:
+        print(f"{script_name} executed successfully.")
+
     def test_metadata_push(self,start_server):
         _=cmf.metadata_push(pipeline_name="Test-env",filename="/home/chobey/testing/testenv/example-get-started/mlmd")
         print("___________________________________________________________")
