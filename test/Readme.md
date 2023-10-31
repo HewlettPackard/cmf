@@ -38,3 +38,13 @@ We test various artifact and metadata commands using the `cmf` client:
 4. `artifact push`: Push artifacts to the repository.
 
 These interactions with the client are crucial for ensuring the proper management and functioning of your content management system.
+To test the `cmf` client, follow these additional steps:
+
+1. **Copy `example-get-started` from `cmf/examples/` to your desired location outside the `cmf` folder.**
+
+   You can use standard file operations to copy the folder. Here's an example command for Unix-based systems:
+
+   ```bash
+   cp -r /path/to/cmf/examples/example-get-started /path/to/destination/
+   
+2. **Copy a Test File `cmf/test/client/test_cmf.py` to the Copied `example-get-started` Folder:**
