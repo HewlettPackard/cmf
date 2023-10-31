@@ -11,6 +11,12 @@ The "Sanity Testing" project focuses on performing sanity testing for basic func
 - Testing of public API endpoints.
 
 ## Installation
+### Install pytest to Run Tests
+
+To run the tests, you'll need to have pytest installed. If you haven't already installed pytest, you can do so using pip:
+
+```bash
+pip install pytest
 
 To get started with the sanity testing project, follow these steps:
 ### Feature 1: Server
