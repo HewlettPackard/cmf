@@ -2,7 +2,7 @@
 
 ## Description
 
-The "Sanity Testing" project focuses on performing sanity testing for basic functionalities of the server, client, and public API. This type of testing ensures that the essential features of your application are working as expected after changes or updates.
+The "Sanity Testing" focuses on performing sanity testing for basic functionalities of the server, client, and public API. This type of testing ensures that the essential features of your application are working as expected after changes or updates.
 
 ## Features
 
@@ -39,13 +39,13 @@ We test the following repository initialization commands using the `cmf` client:
 
 We test various artifact and metadata commands using the `cmf` client:
 
-1. `metadata push`: Push metadata to the repository.
-2. `metadata pull`: Pull metadata from the repository.
+1. `metadata push`: Push metadata to the CMF server.
+2. `metadata pull`: Pull metadata from the CMF server.
 3. `artifact pull`: Pull artifacts from the repository.
 4. `artifact push`: Push artifacts to the repository.
 
 These interactions with the client are crucial for ensuring the proper management and functioning of your content management system.
-To test the `cmf` client, follow these additional steps:
+To test the `CMF Client`, follow these additional steps:
 
 1. **Copy `example-get-started` from `cmf/examples/` to your desired location outside the `cmf` folder.**
 
@@ -54,9 +54,9 @@ To test the `cmf` client, follow these additional steps:
    ```bash
    cp -r /path/to/cmf/examples/example-get-started /path/to/destination/
    
-2. **Copy a Test File `cmf/test/client/test_cmf.py` to the Copied `example-get-started` Folder:**
+2. **Copy test file `cmf/test/client/test_cmf.py` to the `example-get-started` folder:**
 
-3. **Run pytest to Test the `cmf` Client with the following command:**
+3. **Run pytest to Test the `CMF Client` with the following command:**
 
    ```bash
    pytest -vs test_cmf.py
