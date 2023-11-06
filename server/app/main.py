@@ -24,7 +24,7 @@ from pathlib import Path
 import os
 import json
 
-server_store_path = os.environ.get("server_store_path", "/home/sharvark/cmf-server/data")
+server_store_path = os.environ.get("server_store_path", "/cmf-server/data")
 print(server_store_path)
 
 dict_of_art_ids = {}
