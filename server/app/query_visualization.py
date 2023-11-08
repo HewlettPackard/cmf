@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import dvc
 import json
 import random
+import os
 import warnings
 
 warnings.filterwarnings("ignore")
@@ -21,7 +22,7 @@ def query_visualization(mlmd_path, pipeline_name):
     temp1 = []
     list_all_artifacts_with_chash = []
     artifact_name_type_dict = {}
-    static_path= "/cmf-server/data/static/"
+    static_path = os.path.dirname(mlmd_path)
     for stage in stages:
         executions = query.get_all_executions_in_stage(stage)
         artifacts = query.get_all_artifacts_for_execution(executions.iloc[0]["id"])
