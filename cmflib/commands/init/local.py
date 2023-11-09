@@ -67,18 +67,22 @@ class CmdInitLocal(CmdBase):
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
 
-        output = check_git_repo()
-        if not output:
-            branch_name = "master"
-            print("Starting git init.")
-            git_quiet_init()
-            git_checkout_new_branch(branch_name)
-            git_initial_commit()
-            git_add_remote(self.args.git_remote_url)
-            print("git init complete.")
+        is_git: bool = True
+        if self.args.git_remote_url:
+            output = check_git_repo()
+            if not output:
+                branch_name = "master"
+                print("Starting git init.")
+                git_quiet_init()
+                git_checkout_new_branch(branch_name)
+                git_initial_commit()
+                git_add_remote(self.args.git_remote_url)
+                print("git init complete.")
+        else:
+            is_git = False
 
         print("Starting cmf init.")
-        dvc_quiet_init()
+        dvc_quiet_init(is_git)
         repo_type = "local-storage"
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
@@ -107,9 +111,8 @@ def add_parser(subparsers, parent_parser):
         default=argparse.SUPPRESS,
     )
 
-    required_arguments.add_argument(
+    parser.add_argument(
         "--git-remote-url",
-        required=True,
         help="Specify git repo url, eg: https://github.com/XXX/example.git",
         metavar="<git_remote_url>",
         # default=argparse.SUPPRESS
