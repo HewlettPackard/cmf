@@ -1,67 +1,37 @@
 //ExecutionTable.jsx
-import React, { useState, useEffect } from 'react';
-import './index.css';
+import React, { useState, useEffect } from "react";
+import "./index.css";
 
-const ExecutionTable = ({ executions }) => {
+const ExecutionTable = ({ executions, onSort, onFilter }) => {
 
-const [searchQuery, setSearchQuery] = useState('');
-const [currentPage, setCurrentPage] = useState(1);
-const [itemsPerPage] = useState(5); // Number of items to display per page
-const [sortBy, setSortBy] = useState(null); // Property to sort by
-const [sortOrder, setSortOrder] = useState('asc'); // Sort order ('asc' or 'desc')
-const [expandedRow, setExpandedRow] = useState(null);  
-const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
+  // Default sorting order
+  const [sortOrder, setSortOrder] = useState("Context_Type");
+
+  // Local filter value state
+  const [filterValue, setFilterValue] = useState("");
+
+  const [expandedRow, setExpandedRow] = useState(null);
+
+  const consistentColumns = [];
+
+  useEffect(() => {
+    // Set initial sorting order when component mounts
+    setSortOrder("asc");
+  }, []);
+
+  const handleSort = () => {
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newSortOrder);
+    onSort("Context_Type", newSortOrder); // Notify parent component about sorting change
   };
 
-const handlePageChange = (page) => {
-    setCurrentPage(page);
+  const handleFilterChange = (event) => {
+    const value = event.target.value;
+    setFilterValue(value);
+    onFilter("Context_Type", value); // Notify parent component about filter change
   };
 
-
-const handleSort = (property) => {
-    if (sortBy === property) {
-      // If currently sorted by the same property, toggle sort order
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      // If sorting by a new property, set it to ascending order by default
-      setSortBy(property);
-      setSortOrder('asc');
-    }
-  };
-const consistentColumns = [];
-
-const filteredData = executions.filter((item) =>
-    (item.Context_Type && item.Context_Type.toLowerCase().includes(searchQuery.toLowerCase()))
-    || (item.Execution && item.Execution.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-// eslint-disable-next-line
-const sortedData = filteredData.sort((a, b) => {
-    const aValue = a[sortBy];
-    const bValue = b[sortBy];
-
-    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-const indexOfLastItem = currentPage * itemsPerPage;
-const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-useEffect(() => {
-    setCurrentPage(1); // Reset current page to 1 when search query changes
-  }, [searchQuery]);
-
-useEffect(() => {
-    setCurrentPage(1); // Reset current page to 1 when search query changes
-  }, [executions]);
-
-
-
-const toggleRow = (rowId) => {
+  const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
       setExpandedRow(null);
     } else {
@@ -69,79 +39,26 @@ const toggleRow = (rowId) => {
     }
   };
 
-// eslint-disable-next-line
-const renderTableData = () => {
-    if (currentItems.length === 0) {
-      return (
-        <tr>
-          <td colSpan="4">No data available</td>
-        </tr>
-      );
-    }
-
-    return currentItems.map((item) => (
-      <tr key={item.id}>
-        {/* Render table row */}
-      </tr>
-    ));
-  };
-
-
-const renderPagination = () => {
-    if (totalPages === 1){
-       return null;
-    }
-
-    const totalPagesToShow = 5; // Number of pages to show in the pagination
-
-    const startPage = Math.max(1, currentPage - Math.floor(totalPagesToShow / 2));
-    const endPage = Math.min(totalPages, startPage + totalPagesToShow - 1);
-
-    const pages = Array.from({ length: endPage - startPage + 1 }, (_, index) => startPage + index);
-
-    return (
-      <div>
-        <button
-          className={`pagination-button ${currentPage === 1 ? 'active' : ''}`}
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          Previous
-        </button>
-        {pages.map((page) => (
-          <button
-            key={page}
-            className={`pagination-button ${currentPage === page ? 'active' : ''}`}
-            onClick={() => handlePageChange(page)}
-            disabled={currentPage === page}
-          >
-            {page}
-          </button>
-        ))}
-        <button
-          className={`pagination-button ${currentPage === totalPages ? 'active' : ''}`}
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Next
-        </button>
-
-      </div>
-    );
-  };
-
-
-
-return (
+  return (
     <div className="flex flex-col">
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={handleSearchChange}
-        placeholder="Search..."
-        style={{ marginRight: '1rem', padding: '0.5rem',border: '1px solid #ccc' }}
-      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginBottom: "1rem",
+        }}
+      >
+        <input
+          type="text"
+          value={filterValue}
+          onChange={handleFilterChange}
+          placeholder="Filter by Context_Type"
+          style={{
+            marginRight: "1rem",
+            padding: "0.5rem",
+            border: "1px solid #ccc",
+          }}
+        />
       </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
@@ -149,59 +66,81 @@ return (
             <thead className="bg-gray-100">
               <tr className="text-xs font-bold text-left text-gray-500 uppercase">
                 <th scope="col" className="px-6 py-3"></th>
-                <th scope="col" onClick={() => handleSort('Context_Type')} className="px-6 py-3 Context_Type">Context_Type
-              {sortBy === 'Context_Type' && sortOrder === 'asc' && '▲'}
-              {sortBy === 'Context_Type' && sortOrder === 'desc' && '▼'}</th>
-                <th scope="col" className="px-6 py-3 Execution">Execution</th>
-                <th scope="col" className="px-6 py-3 Git_Repo">Git_Repo</th>
-                <th scope="col" className="px-6 py-3 Git_Start_Commit">Git_Start_Commit</th>
-                <th scope="col" className="px-6 py-3 Pipeline_Type">Pipeline_Type</th>
+                <th
+                  scope="col"
+                  onClick={handleSort}
+                  className="px-6 py-3 Context_Type"
+                >
+                  Context_Type {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
+                  {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
+                </th>
+                <th scope="col" className="px-6 py-3 Execution">
+                  Execution
+                </th>
+                <th scope="col" className="px-6 py-3 Git_Repo">
+                  Git_Repo
+                </th>
+                <th scope="col" className="px-6 py-3 Git_Start_Commit">
+                  Git_Start_Commit
+                </th>
+                <th scope="col" className="px-6 py-3 Pipeline_Type">
+                  Pipeline_Type
+                </th>
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {currentItems.map((data, index) => (
+              {executions.map((data, index) => (
                 <React.Fragment key={index}>
-                <tr key={index} onClick={() => toggleRow(index)} className="text-sm font-medium text-gray-800">
-                  <td classname="px-6 py-4">{expandedRow === index ? '-' : '+'}</td>
-                  <td className="px-6 py-4">{data.Context_Type}</td>
-                  <td className="px-6 py-4">{data.Execution}</td>
-                  <td className="px-6 py-4">{data.Git_Repo}</td>
-                  <td className="px-6 py-4">{data.Git_Start_Commit}</td>
-                  <td className="px-6 py-4">{data.Pipeline_Type}</td>
-                </tr>
-                {expandedRow === index &&  (
-                <tr>
-                   <td colSpan='4'>
-                    <table className="expanded-table">
-             <tbody>
-            {Object.entries(data).map(([key, value]) => {
-               if (!consistentColumns.includes(key) && value != null) {
-                  return (  
-                    <React.Fragment key={key}>
-                      <tr>
-                         <td key={key}>{key}</td>
-                         <td key={value}>{value  ? value :"Null"}</td>
-                      </tr>
-                     </React.Fragment>
-                         );
-                        }
-                       return null;
-                     })}
-               </tbody>
-                   </table>
-                  </td>
-                </tr>
-              )}
-            </React.Fragment>
+                  <tr
+                    key={index}
+                    onClick={() => toggleRow(index)}
+                    className="text-sm font-medium text-gray-800"
+                  >
+                    <td classname="px-6 py-4">
+                      {expandedRow === index ? "-" : "+"}
+                    </td>
+                    <td className="px-6 py-4">{data.Context_Type}</td>
+                    <td className="px-6 py-4">{data.Execution}</td>
+                    <td className="px-6 py-4">{data.Git_Repo}</td>
+                    <td className="px-6 py-4">{data.Git_Start_Commit}</td>
+                    <td className="px-6 py-4">{data.Pipeline_Type}</td>
+                  </tr>
+                  {expandedRow === index && (
+                    <tr>
+                      <td colSpan="4">
+                        <table className="expanded-table">
+                          <tbody>
+                            {Object.entries(data).map(([key, value]) => {
+                              if (
+                                !consistentColumns.includes(key) &&
+                                value != null
+                              ) {
+                                return (
+                                  <React.Fragment key={key}>
+                                    <tr>
+                                      <td key={key}>{key}</td>
+                                      <td key={value}>
+                                        {value ? value : "Null"}
+                                      </td>
+                                    </tr>
+                                  </React.Fragment>
+                                );
+                              }
+                              return null;
+                            })}
+                          </tbody>
+                        </table>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               ))}
             </tbody>
           </table>
-          </div>
-          <div>{renderPagination()}</div>
-       </div>
+        </div>
       </div>
+    </div>
   );
 };
-
 
 export default ExecutionTable;
