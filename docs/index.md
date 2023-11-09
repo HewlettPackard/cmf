@@ -28,8 +28,7 @@ Install CMF
     ```
 
 === "Stable version form PyPI"
-    ```shell
-    # Work in progress: not available yet.
+    ```shell    
     # pip install cmflib
     ```
 ## Configuration
