@@ -8,59 +8,6 @@ import requests
 import time
 
 @pytest.fixture(scope="module")
-def start_cmf_server():
-    # Define the path to your Docker Compose file
-    server=0
-
-    cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
-
-    # find root_dir of .cmfconfig
-    output = find_root(cmfconfig)
-
-    # in case, there is no .cmfconfig file
-    if output.find("'cmf' is  not configured") != -1:
-        return output
-
-    config_file_path = os.path.join(output, cmfconfig)
-
-    attr_dict = CmfConfig.read_config(config_file_path)
-    url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
-    if url_exists(url):
-        subprocess.run(['docker','stop', 'cmf-server','ui-server'], check=True)
-        subprocess.run(['docker','rm', 'cmf-server','ui-server'], check=True)
-        subprocess.run(['docker','image','rm','server:latest','ui:latest'], check=True)
-        server_start()
-    else:
-        server_start()
-    if url_exists(url):
-        return
-    else:
-        return "server is down"
-
-def server_start():
-    compose_file_path = '/home/user/testing/cmf/docker-compose-server.yml'
-    server_process=  subprocess.run(['docker','compose', '-f', compose_file_path, 'up','-d'], check=True,env={'IP':'10.93.244.206' })
-    print("Docker Compose services have been started.")
-    timeout = 80  
-    while timeout > 0:
-        time.sleep(1)
-        timeout -= 1
-
-def url_exists(url):
-    try:
-        print(url,"url")
-        response = requests.get(url)
-        if response.status_code == 200:
-            print("if true")
-            return True  # URL exists
-        else:
-            print("else false")
-            return False  # URL exists, but the response status code is not 200
-    except requests.ConnectionError:
-        print("except false")
-        return False  # URL doesn't e
-
-@pytest.fixture(scope="module")
 def start_minio_server():
     # Define the path to your Docker Compose file
     server=0
@@ -123,11 +70,11 @@ class TestCommands:
             else:
                 print(f"{script_name} executed successfully.")
 
-    def test_metadata_push(self,start_cmf_server):
+    def test_metadata_push(self,start_server):
         _=cmf.metadata_push(pipeline_name="Test-env",filename="/home/user/example-get-started/mlmd")
         print("___________________________________________________________")
 
-    def test_metadata_pull(self):
+    def test_metadata_pull(self,stop_server):
         _=cmf.metadata_pull(pipeline_name="Test-env",filename="./mlmd")
         print("___________________________________________________________")
 
