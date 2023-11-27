@@ -2,6 +2,7 @@ import argparse
 import os
 import os.path as osp
 import time
+import json
 
 import mmcv
 import torch
@@ -203,6 +204,7 @@ def main():
     # output bounding box hints for highest uncertainty areas in selected images
     if return_X_S:
         with open(args.bbox_output, 'w') as f:
+            entries = []
             for i in np.flip(X_S):
                 if len(all_anns[0]) == 1:
                     idx = all_anns[i]
@@ -213,16 +215,32 @@ def main():
                         if j > i:
                             idx = all_anns[k-1][i-(j-len(all_anns[k]))]
                             break
-                print("Image %s, mean uncertainty %f" % (idx, uncertainty[i]),
-                      file=f)
+                nested_data = {}
+                #print("Image %s, mean uncertainty %f" % (idx, uncertainty[i]),
+                #      file=f)
+                print("Image %s, mean uncertainty %f" % (idx, uncertainty[i]))
+                nested_data['image'] = str(idx)
+                nested_data['mean_uncertainty'] = str(float(uncertainty[i]))
+                nested_data['bboxes']=[]
 
                 for udet in udets[i]:
-                    print("    bbox (%d, %d) (%d, %d), uncertainty %f" %
-                          (udet[0], udet[1], udet[2], udet[3], udet[4]), file=f)
-                print("", file=f)
+                    inner_entry = {
+                        'x1':str(int(udet[0])),
+                        'y1':str(int(udet[1])),
+                        'x2':str(int(udet[2])),
+                        'y2':str(int(udet[3])),
+                        'uncertainty':str(float(udet[4]))
+                    }
+                    nested_data['bboxes'].append(inner_entry)
+                    #print("bbox (%d, %d) (%d, %d), uncertainty %f" %
+                    #      (udet[0], udet[1], udet[2], udet[3], udet[4]), file=f)
+                    print("bbox (%d, %d) (%d, %d), uncertainty %f" %
+                          (udet[0], udet[1], udet[2], udet[3], udet[4]))
+                entries.append(nested_data)
+                #print("", file=f)
 
                 image_read_path = osp.join(cfg.data.test.img_prefix[0],
-                                           'JPEGImages', '{}.jpg'.format(idx))
+                                           'PNGImages', '{}.png'.format(idx))
                 image = cv2.imread(image_read_path)
                 for udet, nubox_color in zip(udets[i], cfg.nubox_colors):
                     image = cv2.rectangle(image,
@@ -230,8 +248,10 @@ def main():
                                 (int(udet[2].item()), int(udet[3].item())),
                                 color=nubox_color, thickness=2)
                 image_write_path = osp.join(cfg.guide_image_dir,
-                                            '{}.jpg'.format(idx))
+                                            '{}.png'.format(idx))
                 cv2.imwrite(image_write_path, image)
+            json.dump(entries,f, indent=4)
+            #f.write(entries)
 
 
 if __name__ == '__main__':
