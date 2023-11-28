@@ -67,7 +67,7 @@ class CmdInitSSHRemote(CmdBase):
             pass
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
-        output = check_git_repo()
+        output = is_git_repo()
         if not output:
             branch_name = "master"
             print("Starting git init.")
