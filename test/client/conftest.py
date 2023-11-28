@@ -1,56 +1,67 @@
 import pytest
+import re
+import psutil
 import subprocess
 import time
 import os
+import json
 from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
 import requests
 
 @pytest.fixture(scope="module")
 def start_server():
-    # Define the path to your Docker Compose file
-    server=0
+    # Specify the path to your JSON file
+    json_file_path = '../config.json'
 
-    cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
+   # Open the file for reading
+    with open(json_file_path, 'r') as file:
+        # Load the JSON data from the file
+         data = json.load(file)
 
-    # find root_dir of .cmfconfig
-    output = find_root(cmfconfig)
+    url = data.get("cmf_server_url", "http://127.0.0.1:8080")
+    print(url)
 
-    # in case, there is no .cmfconfig file
-    if output.find("'cmf' is  not configured") != -1:
-        return output
+    # Ports to check
+    ports_to_check = [8080, 3000]
 
-    config_file_path = os.path.join(output, cmfconfig)
+    # Check if ports are in use
+    for port in ports_to_check:
+        if check_port_in_use(port):
+            print(f"Port {port} is in use.")
+            stop()
+        else:
+            print(f"Port {port} is not in use.")
 
-    attr_dict = CmfConfig.read_config(config_file_path)
-    url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
-    if url_exists(url):
-        subprocess.run(['docker','stop', 'cmf-server','ui-server'], check=True)
-        subprocess.run(['docker','rm', 'cmf-server','ui-server'], check=True)
-        subprocess.run(['docker','image','rm','server:latest','ui:latest'], check=True)
-        server_start()
-    else:
-        server_start()
-    if url_exists(url):
-        return
-    else:
-        return "server is down"
-    
+    start(url)
+
 @pytest.fixture(scope="module")
 def stop_server():
     yield
-    subprocess.run(['docker','stop', 'cmf-server','ui-server'], check=True)
-    subprocess.run(['docker','rm', 'cmf-server','ui-server'], check=True)
-    subprocess.run(['docker','image','rm','server:latest','ui:latest'], check=True)
+    stop()
 
-def server_start():
-    compose_file_path = '/home/chobey/testing/cmf/docker-compose-server.yml'
-    server_process=  subprocess.run(['docker','compose', '-f', compose_file_path, 'up','-d'], check=True,env={'IP':'xx.xx.xxx.xxx' })
-    print("Docker Compose services have been started.")
-    timeout = 120  
-    while timeout > 0:
-        time.sleep(1)
-        timeout -= 1
+def stop():
+    compose_file_path = "../../docker-compose-server.yml"
+    command = f"docker compose -f {compose_file_path} stop"
+    server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
+
+
+def start(url):
+    compose_file_path = "../../docker-compose-server.yml"
+    ip = url.split(":")[1].split("/")[2]
+    command = f"IP={ip} docker compose -f {compose_file_path} up -d"
+    server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
+    print("cmf server is starting.")
+    if url_exists(url):
+        print("server started")
+    else:
+        timeout = 120
+        while timeout > 0 and not url_exists(url):
+             time.sleep(1)
+             timeout -= 1
+        print("server started")
+    if timeout < 0 :
+        print("couldn't start server")
 
 def url_exists(url):
     try:
@@ -61,3 +72,25 @@ def url_exists(url):
             return False  # URL exists, but the response status code is not 200
     except requests.ConnectionError:
         return False  # URL doesn't e
+
+def pytest_addoption(parser):
+    parser.addoption(
+        "--cmf_server_url",
+        action="append",
+        default=[],
+        help="pass cmf_server_url to test functions",
+    )
+
+
+
+def pytest_generate_tests(metafunc):
+    if "cmf_server_url" in metafunc.fixturenames:
+        metafunc.parametrize("cmf_server_url", metafunc.config.getoption("cmf_server_url"))
+
+
+def check_port_in_use(port):
+    """Check if a given port is in use."""
+    for conn in psutil.net_connections():
+        if conn.laddr.port == port:
+            return True
+    return False

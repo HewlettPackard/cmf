@@ -1,56 +1,57 @@
 import pytest
 import subprocess
-from cmflib import cmf	
 import time
 import os
-from cmflib.cli.utils import find_root
-from cmflib.utils.cmf_config import CmfConfig
-import requests
+from cmflib import cmf
 
-class TestClass:
-    def test_cmf_init_show(self):
-        _=cmf.cmf_init_show()
-        print("___________________________________________________________")
-    
-    def test_cmf_init_local(self):
-        _=cmf.cmf_init(type="local",path="/home/user/local-storage",git_remote_url="https://github.com",neo4j_user='neo4j',neo4j_password="xxxxxx",neo4j_uri="bolt://xx.xx.xxx.xxx:7687",cmf_server_url="http://xx.xx.xxx.xxx:8080")
-        print("___________________________________________________________")
+def test_cmf_init_show():
+    print()
+    print("-------------------------------Test Case Name: cmf init show ----------------------------------")
+    _= cmf.cmf_init_show()
 
-class TestCommands:
-    def test_script(self):
-        script_name='./test_script.sh'
+
+def test_cmf_init_local(cmf_server_url):
+    print("-------------------------------Test Case Name: cmf init local ----------------------------------")
+    _ = cmf.cmf_init(type="local", path="./local-storage", git_remote_url="https://github.com/user-hpe/experiment-repo.git",
+               neo4j_user='neo4j', neo4j_password="xxxxxx", neo4j_uri="bolt://xx.xx.xxx.xxx:7687", cmf_server_url=cmf_server_url)
+
+
+def test_script():
+    print("-------------------------------Test Case Name: Run sample test_script.sh ----------------------------------")
+    cur_dir = os.getcwd()
+    script_name = cur_dir + '/test_script.sh'
+    try:
+        subprocess.run(['chmod','+x',script_name],check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error setting execute permission for {script_name}: {e}")
+    else:
         try:
-            subprocess.run(['chmod','+x',script_name],check=True)
+           subprocess.run([script_name], check=True, shell=True)
         except subprocess.CalledProcessError as e:
-            print(f"Error setting execute permission for {script_name}: {e}")
+            print(f"Error running {script_name}: {e}")
         else:
-            try:
-                subprocess.run([script_name], check=True, shell=True)
-            except subprocess.CalledProcessError as e:
-                print(f"Error running {script_name}: {e}")
-            else:
-                print(f"{script_name} executed successfully.")
-
-    def test_metadata_push(self,start_server):
-        _=cmf.metadata_push(pipeline_name="Test-env",filename="/home/user/example-get-started/mlmd")
-        print("___________________________________________________________")
-
-    def test_metadata_pull(self,stop_server):
-        _=cmf.metadata_pull(pipeline_name="Test-env",filename="./mlmd")
-        print("___________________________________________________________")
-
-    def test_artifact_push(self):
-        _=cmf.artifact_push()
-        print("___________________________________________________________")
-
-#    def test_artifact_pull(self):
-#        _=cmf.artifact_pull(pipeline_name="Test-env",filename="./mlmd")
-#        print("___________________________________________________________")
-
-    def test_artifact_pull_single(self):
-        _=cmf.artifact_pull_single(pipeline_name="Test-env",filename="./mlmd",artifact_name="data.xml.gz")
-        print("___________________________________________________________")
+            print(f"{script_name} executed successfully.")
 
 
+def test_artifact_push():
+    print("-------------------------------Test Case Name: cmf artifact push ----------------------------------")
+    _= cmf.artifact_push()
 
-     
+
+def test_metadata_push(start_server):
+    print("-------------------------------Test Case Name: cmf metadata push  ----------------------------------")
+    _= cmf.metadata_push(pipeline_name="Test-env", filename="mlmd")
+
+
+def test_metadata_pull(stop_server):
+    print("-------------------------------Test Case Name: cmf metadata pull  ----------------------------------")
+    os.makedirs("./pull", exist_ok=True)
+    _=cmf.metadata_pull(pipeline_name="Test-env",filename="./pull/mlmd")
+
+def test_artifact_pull():
+    print("-------------------------------Test Case Name: cmf artifact pull  ----------------------------------")
+    _=cmf.artifact_pull(pipeline_name="Test-env",filename="./pull/mlmd")
+
+def test_artifact_pull_single():
+    print("-------------------------------Test Case Name: cmf artifact pull single artifact  ----------------------------------")
+    _=cmf.artifact_pull_single(pipeline_name="Test-env",filename="./pull/mlmd",artifact_name="data.xml.gz")

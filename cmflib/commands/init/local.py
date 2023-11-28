@@ -67,7 +67,21 @@ class CmdInitLocal(CmdBase):
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
 
-        output = check_git_repo()
+        output = ""        # import os
+
+        subfolder_name = ".git"
+
+        # Get the current directory
+        temp_current_directory = os.getcwd()
+
+# Create the path to the subfolder
+        subfolder_path = os.path.join(temp_current_directory, subfolder_name)
+
+# Check if the subfolder exists
+        if os.path.exists(subfolder_path) and os.path.isdir(subfolder_path):
+            output = f"The subfolder '{subfolder_name}' exists in the current directory."
+#output = check_git_repo()
+        
         if not output:
             branch_name = "master"
             print("Starting git init.")
