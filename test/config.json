@@ -1,18 +1,7 @@
 {
-    "server_store_path": "/home/sharvark/testing_framework/cmf/test/cmf-server/data",
-    "compose_file_path": "/home/sharvark/testing/cmf/docker-compose-server.yml",
-    "git_remote_url": "https://github.com/varkha-d-sharma/experiment-repo.git",
-    "cmf_server_url": "http://10.93.244.204:8080",
-    "minio_bucket_url": "",
-    "minio_endpoint_url": "",
-    "minio_access_key_id": "",
-    "minio_secret_key": "",
-    "aws_bucket_url": "",
-    "aws_endpoint_url": "",
-    "aws_access_key_id": "",
-    "aws_secret_key": "",
-    "ssh_remote_path": "/home/sharvark/ssh-storage", 
-    "ssh_remote_user":"abhi",
-    "ssh_remote_port": "22",
-    "ssh_remote_password": "user"
+    "server_store_path": "/home/xxx/cmf/test/cmf-server/data",
+    "cmf_server_url": "http://X.X.X.X:8080",
+    "ssh__path": "/home/xxxx/ssh-storage", 
+    "ssh__user":"xxx",
+    "ssh__password": "wxyz"
 }
