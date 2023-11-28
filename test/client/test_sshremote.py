@@ -11,9 +11,9 @@ def test_cmf_init_show():
 
 
 def test_cmf_init_sshremote(cmf_server_url, ssh_user, ssh_pass, ssh_path):
-    print("-------------------------------Test Case Name: cmf init local ----------------------------------")
-        _=cmf.cmf_init(type="sshremote", path=ssh_path, user=ssh_user, port="22", password=ssh_password,
-                      git_remote_url="https://github.comuser-hpe/experiment-repo.git", cmf_server_url=cmf_server_url)
+    print("-------------------------------Test Case Name: cmf init sshremote ----------------------------------")
+        _=cmf.cmf_init(type="sshremote", path=ssh_path, user=ssh_user, port="22", password=ssh_pass,
+                      git_remote_url="https://github.com/user-hpe/experiment-repo.git", cmf_server_url=cmf_server_url)
 
 def test_script():
     print("-------------------------------Test Case Name: Run sample test_script.sh ----------------------------------")

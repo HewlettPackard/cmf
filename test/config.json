@@ -1,7 +1,6 @@
 {
-    "server_store_path": "/home/xxx/cmf/test/cmf-server/data",
     "cmf_server_url": "http://X.X.X.X:8080",
-    "ssh__path": "/home/xxxx/ssh-storage", 
-    "ssh__user":"xxx",
-    "ssh__password": "wxyz"
+    "ssh_path": "/home/xxxx/ssh-storage", 
+    "ssh_user":"xxx",
+    "ssh_password": "wxyz"
 }
