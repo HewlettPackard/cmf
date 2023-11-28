@@ -58,7 +58,7 @@ def test_artifact_push(start_minio_server):
     print("-------------------------------Test Case Name: cmf artifact pull  ----------------------------------")
     _=cmf.artifact_pull(pipeline_name="Test-env",filename="./pull/mlmd")
 
-def test_artifact_pull_single():
+def test_artifact_pull_single(stop_minio_server):
     print("-------------------------------Test Case Name: cmf artifact pull single artifact  ----------------------------------")
     _=cmf.artifact_pull_single(pipeline_name="Test-env",filename="./pull/mlmd",artifact_name="data.xml.gz")
 
