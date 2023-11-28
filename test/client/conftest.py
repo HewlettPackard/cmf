@@ -4,6 +4,7 @@ import subprocess
 import time
 import os
 import json
+import requests
 
 @pytest.fixture(scope="module")
 def start_server():
@@ -46,6 +47,7 @@ def start(url):
     compose_file_path = "../../docker-compose-server.yml"
     ip = url.split(":")[1].split("/")[2]
     command = f"IP={ip} docker compose -f {compose_file_path} up -d"
+    print(command)
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
     print("cmf server is starting.")
     if url_exists(url):
@@ -72,21 +74,21 @@ def url_exists(url):
 def pytest_addoption(parser):
     parser.addoption(
         "--cmf_server_url",
-        action="store",
-        default="",
+        action="append",
+        default=[],
         help="pass cmf_server_url to test functions",
     )
     parser.addoption(
         "--ssh_path",
-        action="store",
-        default="",
+        action="append",
+        default=[],
         help="pass ssh remote path to test ssh functionality",
     )
 
     parser.addoption(
         "--ssh_user",
-        action="store",
-        default="",
+        action="append",
+        default=[],
         help="pass ssh remote user to test ssh functionality",
     )
 
@@ -137,7 +139,7 @@ def start_minio_server():
     for port in ports_to_check:
         if check_port_in_use(port):
             print(f"Port {port} is in use.")
-            stop()
+            minio_stop()
         else:
             print(f"Port {port} is not in use.")
 
@@ -149,9 +151,10 @@ def minio_start(url):
     ip = url.split(":")[1].split("/")[2]
     command = f"IP={ip} docker compose -f {compose_file_path} up -d"
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
-    url = f"http://{ip}:9000"
+    end_url = f"http://{ip}:9000"
+    print("end_url", end_url)
     print("minio server is starting.")
-    if url_exists(url):
+    if url_exists(end_url):
         print("server started")
     else:
         timeout = 120
@@ -159,7 +162,7 @@ def minio_start(url):
              time.sleep(1)
              timeout -= 1
         print("server started")
-    if timeout < 0 :
+    if timeout < 0:
         print("couldn't start server")
 
 @pytest.fixture(scope="module")

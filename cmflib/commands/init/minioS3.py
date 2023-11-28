@@ -32,6 +32,7 @@ from cmflib.dvc_wrapper import (
     dvc_add_attribute,
 )
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import is_git_repo
 
 
 class CmdInitMinioS3(CmdBase):
