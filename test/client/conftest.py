@@ -172,7 +172,7 @@ def stop_minio_server():
     minio_stop()
 
 def minio_stop():
-    compose_file_path = "../../docker-compose-server.yml"
+    compose_file_path = "./docker-compose-server.yml"
     command = f"docker compose -f {compose_file_path} stop"
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
 
