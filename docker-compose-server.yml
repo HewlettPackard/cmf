@@ -2,9 +2,10 @@ version: '3.8'
 services:
   server:
     image: server:latest
-    #This directory path should be updated 
+    # both the directory paths should be updated as per user's environment
     volumes:
-      - /home/user/cmf-server/data:/cmf-server/data
+      - /home/xxxx/cmf-server/data:/cmf-server/data
+      - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
     container_name: cmf-server
     build:
      
