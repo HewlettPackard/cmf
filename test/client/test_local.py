@@ -12,7 +12,8 @@ def test_cmf_init_show():
 
 def test_cmf_init_local(cmf_server_url):
     print("-------------------------------Test Case Name: cmf init local ----------------------------------")
-    _ = cmf.cmf_init(type="local", path="./local-storage", git_remote_url="https://github.com/user-hpe/experiment-repo.git",
+    path = f"{os.getcwd()}/local-storage"
+    _ = cmf.cmf_init(type="local", path=path, git_remote_url="https://github.com/user-hpe/experiment-repo.git",
                neo4j_user='neo4j', neo4j_password="xxxxxx", neo4j_uri="bolt://xx.xx.xxx.xxx:7687", cmf_server_url=cmf_server_url)
 
 

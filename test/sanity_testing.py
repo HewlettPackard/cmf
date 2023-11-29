@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
         command = f"pytest -vs -q  --cmf_server_url={cmf_server_url} ../client/test_local.py"
 
-        #result = subprocess.run(command, text=True, shell=True)
+        result = subprocess.run(command, text=True, shell=True)
 
         os.chdir("..")
         # Deleting example-get-started folder
