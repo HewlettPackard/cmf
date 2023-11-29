@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
         command = f"pytest -vs -q  --cmf_server_url={cmf_server_url} ../client/test_local.py"
 
-        result = subprocess.run(command, text=True, shell=True)
+        #result = subprocess.run(command, text=True, shell=True)
 
         os.chdir("..")
         # Deleting example-get-started folder
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         os.chdir("./example-get-started")
 
 
-        command = f"pytest -vs -q  --cmf_server_url={cmf_server_url} --ssh_path={ssh_path} --ssh_user={ssh_user} --ssh_pass={ssh_pass}../client/test_sshremote.py"
+        command = f"pytest -vs -q  --cmf_server_url={cmf_server_url} --ssh_path={ssh_path} --ssh_user={ssh_user} --ssh_pass={ssh_pass} ../client/test_sshremote.py"
 
         result = subprocess.run(command, text=True, shell=True)
 

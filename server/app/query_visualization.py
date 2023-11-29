@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import dvc
 import json
 import random
-import os
 import warnings
 
 warnings.filterwarnings("ignore")

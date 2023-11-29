@@ -17,7 +17,6 @@ def start_server():
          data = json.load(file)
 
     url = data.get("cmf_server_url", "http://127.0.0.1:8080")
-    print(url)
 
     # Ports to check
     ports_to_check = [8080, 3000]
@@ -47,7 +46,6 @@ def start(url):
     compose_file_path = "../../docker-compose-server.yml"
     ip = url.split(":")[1].split("/")[2]
     command = f"IP={ip} docker compose -f {compose_file_path} up -d"
-    print(command)
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
     print("cmf server is starting.")
     if url_exists(url):
@@ -57,8 +55,9 @@ def start(url):
         while timeout > 0 and not url_exists(url):
              time.sleep(1)
              timeout -= 1
+    if url_exists(url):
         print("server started")
-    if timeout < 0 :
+    else:
         print("couldn't start server")
 
 def url_exists(url):
@@ -94,8 +93,8 @@ def pytest_addoption(parser):
 
     parser.addoption(
         "--ssh_pass",
-        action="store",
-        default="",
+        action="append",
+        default=[],
         help="pass ssh remote pass to test ssh functionality",
     )
 
@@ -107,7 +106,7 @@ def pytest_generate_tests(metafunc):
     if "ssh_path" in metafunc.fixturenames:
         metafunc.parametrize("ssh_path", metafunc.config.getoption("ssh_path"))
     if "ssh_user" in metafunc.fixturenames:
-        metafunc.parametrize("ssh_path", metafunc.config.getoption("ssh_user"))
+        metafunc.parametrize("ssh_user", metafunc.config.getoption("ssh_user"))
     if "ssh_pass" in metafunc.fixturenames:
         metafunc.parametrize("ssh_pass", metafunc.config.getoption("ssh_pass"))
 
@@ -130,7 +129,6 @@ def start_minio_server():
          data = json.load(file)
 
     url = data.get("cmf_server_url", "http://127.0.0.1:8080")
-    print(url)
 
     # Ports to check
     ports_to_check = [9000]
@@ -143,7 +141,7 @@ def start_minio_server():
         else:
             print(f"Port {port} is not in use.")
 
-    start_minio(url)
+    minio_start(url)
 
 
 def minio_start(url):
@@ -151,19 +149,22 @@ def minio_start(url):
     ip = url.split(":")[1].split("/")[2]
     command = f"IP={ip} docker compose -f {compose_file_path} up -d"
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
-    end_url = f"http://{ip}:9000"
-    print("end_url", end_url)
+    #end_url = f"http://{ip}:9000/minio/login"
     print("minio server is starting.")
-    if url_exists(end_url):
-        print("server started")
+    # Port to check
+    port = 9000
+
+    timeout = 120
+    while timeout > 0 and not check_port_in_use(port):
+         time.sleep(1)
+         timeout -= 1
+    if check_port_in_use(port):
+            print(f"minioS3 server started")
     else:
-        timeout = 120
-        while timeout > 0 and not url_exists(url):
-             time.sleep(1)
-             timeout -= 1
-        print("server started")
-    if timeout < 0:
-        print("couldn't start server")
+        print(f"couldn't start minioS3 server.")
+        sys.exit(1)
+
+
 
 @pytest.fixture(scope="module")
 def stop_minio_server():

@@ -16,9 +16,8 @@ def test_cmf_init_minios3(cmf_server_url):
     temp.pop(-1)
     temp.append("9000")
     endpoint_url = ":".join(temp)
-    print(endpoint_url)
     _=cmf.cmf_init(type="minioS3", url="s3://dvc-art", endpoint_url=endpoint_url,
-                 access_key_id="minio", secret_key="minio", git_remote_url="https://github.com/user-hpe/experiment-repo.git",
+                 access_key_id="minioadmin", secret_key="minioadmin", git_remote_url="https://github.com/user-hpe/experiment-repo.git",
                  cmf_server_url=cmf_server_url)
 
 def test_script():
@@ -38,7 +37,7 @@ def test_script():
             print(f"{script_name} executed successfully.")
 
 
-def test_artifact_push():
+def test_artifact_push(start_minio_server):
     print("-------------------------------Test Case Name: cmf artifact push ----------------------------------")
     _= cmf.artifact_push()
 
@@ -54,7 +53,7 @@ def test_metadata_pull(stop_server):
     _=cmf.metadata_pull(pipeline_name="Test-env",filename="./pull/mlmd")
 
 
-def test_artifact_push(start_minio_server):
+def test_artifact_pull():
     print("-------------------------------Test Case Name: cmf artifact pull  ----------------------------------")
     _=cmf.artifact_pull(pipeline_name="Test-env",filename="./pull/mlmd")
 
