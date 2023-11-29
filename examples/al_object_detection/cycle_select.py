@@ -240,7 +240,7 @@ def main():
                 #print("", file=f)
 
                 image_read_path = osp.join(cfg.data.test.img_prefix[0],
-                                           'PNGImages', '{}.png'.format(idx))
+                                           'JPEGImages', '{}.jpg'.format(idx))
                 image = cv2.imread(image_read_path)
                 for udet, nubox_color in zip(udets[i], cfg.nubox_colors):
                     image = cv2.rectangle(image,
@@ -248,7 +248,7 @@ def main():
                                 (int(udet[2].item()), int(udet[3].item())),
                                 color=nubox_color, thickness=2)
                 image_write_path = osp.join(cfg.guide_image_dir,
-                                            '{}.png'.format(idx))
+                                            '{}.jpg'.format(idx))
                 cv2.imwrite(image_write_path, image)
             json.dump(entries,f, indent=4)
             #f.write(entries)
