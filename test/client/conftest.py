@@ -145,7 +145,7 @@ def start_minio_server():
 
 
 def minio_start(url):
-    compose_file_path = './docker-compose.yml'
+    compose_file_path = os.path.join(os.getcwd(), 'docker-compose.yml')
     ip = url.split(":")[1].split("/")[2]
     command = f"IP={ip} docker compose -f {compose_file_path} up -d"
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
@@ -172,7 +172,7 @@ def stop_minio_server():
     minio_stop()
 
 def minio_stop():
-    compose_file_path = "./docker-compose-server.yml"
+    compose_file_path = os.path.join(os.getcwd(), 'docker-compose.yml')
     command = f"docker compose -f {compose_file_path} stop"
     server_process =  subprocess.run(command, check=True, shell=True,  capture_output=True)
 
