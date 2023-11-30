@@ -61,11 +61,11 @@ To run the `full sanity test suite`, follow these steps:
 ### Feature 2: `cmf-server` test suite
 In the `cmf-server` test suite feature, we perform validaton of cmf-server api endpoints.
 We are testing following cmf-server api commands:
-1. `display_executions`:This api endpoints return
-2. `display_artifacts`: This api
-3. `display_lineage`:
-4. `display_artifact_types`:
-5. `display_pipelines`:
+1. `display_executions`: This api endpoint retrieves all the executions available on the cmf-server's master mlmd based on the pipeline-name provided.
+2. `display_artifacts`: This api endpoint retrieves all the artifacts available on the cmf-server's master mlmd based on the pipeline-name provided.
+3. `display_lineage`: This endpoint returns `artifact lineage` of the pipeline name passed.
+4. `display_artifact_types`: This api endpoint retrieves `artifact types` as per the value of argument pipeline-name.
+5. `display_pipelines`: This api endpoint retrieves all `pipeline names` available on the cmf-server's master mlmd.
 
 To test the `cmf-server`, follow these steps:
 1. Navigate to the `cmf` Directory
