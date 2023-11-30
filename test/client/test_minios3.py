@@ -17,7 +17,7 @@ def test_cmf_init_minios3(cmf_server_url):
     temp.append("9000")
     endpoint_url = ":".join(temp)
     _=cmf.cmf_init(type="minioS3", url="s3://dvc-art", endpoint_url=endpoint_url,
-                 access_key_id="minioadmin", secret_key="minioadmin", git_remote_url="https://github.com/user-hpe/experiment-repo.git",
+                 access_key_id="minioadmin", secret_key="minioadmin", git_remote_url="https://github.com/hpe-user/experiment-repo.git",
                  cmf_server_url=cmf_server_url)
 
 def test_script():

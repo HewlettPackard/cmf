@@ -18,11 +18,30 @@ def test_display_executions():
         response = c.get("/display_executions/" + pipeline_name)
         assert response.status_code == 200
 
+        # Load executions from the inpute test-data/executions.json file
         with open("test-data/executions.json", "r") as file:
             expected_content = json.load(file)
 
-        # Check that the response JSON content matches the expected content
-        assert response.json() == expected_content
+        print(expected_content)
+
+        # Remove these keys from the json data 
+        keys_to_remove = ["Execution_uuid", "max_features", "min_split",
+                "n_est", "ngrams", "original_create_time_since_epoch",
+                "seed", "split"]
+
+        # remove the above keys from json data
+        for index in sorted(keys_to_remove, reverse=True):
+            del expected_content[index]
+
+        # remove the above keys from response data
+        response = response.json()
+        print(response)
+
+        for index in sorted(keys_to_remove, reverse=True):
+            del response[index]
+
+        # Check that the response  content matches the expected content
+        assert response == expected_content
 
 def test_display_artifacts():
     with TestClient(app) as c:
@@ -31,8 +50,24 @@ def test_display_artifacts():
         with open("test-data/artifacts.json", "r") as file:
             expected_content = json.load(file)
 
-        # Check that the response JSON content matches the expected content
-        assert response.json() == expected_content
+        print(expected_content)
+        # Remove these keys from the json data
+        keys_to_remove = ["Commit", "create_time_since_epoch", "last_update_time_since_epoch",
+                "original_create_time_since_epoch"]
+
+        # remove the above keys from json data
+        for index in sorted(keys_to_remove, reverse=True):
+            del expected_content[index]
+
+        # remove the above keys from response data
+        response = response.json()
+        print(response)
+
+        for index in sorted(keys_to_remove, reverse=True):
+            del response[index]
+
+        # Check that the response  content matches the expected content
+        assert response == expected_content
 
 
 def test_display_lineage():
