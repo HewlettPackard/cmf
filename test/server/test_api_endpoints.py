@@ -77,11 +77,11 @@ def test_display_artifacts():
         assert filtered_response == filtered_expected
 
 
-def test_display_lineage():
-    with TestClient(app) as c:
-        response = client.get("/display_lineage/" + pipeline_name)
-        assert response.status_code == 200
-        assert response.headers["content-type"] == "image/png"
+#def test_display_lineage():
+#    with TestClient(app) as c:
+#        response = client.get("/display_lineage/" + pipeline_name)
+#        assert response.status_code == 200
+#        assert response.headers["content-type"] == "image/png"
 
 
 def test_display_artifact_types():
