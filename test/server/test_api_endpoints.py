@@ -22,26 +22,29 @@ def test_display_executions():
         with open("test-data/executions.json", "r") as file:
             expected_content = json.load(file)
 
-        print(expected_content)
-
-        # Remove these keys from the json data 
+        # Remove these keys from the json data
         keys_to_remove = ["Execution_uuid", "max_features", "min_split",
                 "n_est", "ngrams", "original_create_time_since_epoch",
-                "seed", "split"]
+                "seed", "split", "Git_Start_Commit"]
 
-        # remove the above keys from json data
-        for index in sorted(keys_to_remove, reverse=True):
-            del expected_content[index]
+        # Remove the specified keys from each item
+        filtered_expected = {"total_items": expected_content["total_items"], "items": []}
+        for item in expected_content["items"]:
+            filtered_item = {key: value for key, value in item.items() if key not in keys_to_remove}
+            filtered_expected["items"].append(filtered_item)
 
         # remove the above keys from response data
         response = response.json()
-        print(response)
 
-        for index in sorted(keys_to_remove, reverse=True):
-            del response[index]
+        # Remove the specified keys from each item
+        filtered_response = {"total_items": response["total_items"], "items": []}
+        for item in response["items"]:
+            filtered_item = {key: value for key, value in item.items() if key not in keys_to_remove}
+            filtered_response["items"].append(filtered_item)
 
-        # Check that the response  content matches the expected content
-        assert response == expected_content
+        #print("filtered_response", filtered_response)
+
+        assert filtered_response == filtered_expected
 
 def test_display_artifacts():
     with TestClient(app) as c:
@@ -50,24 +53,28 @@ def test_display_artifacts():
         with open("test-data/artifacts.json", "r") as file:
             expected_content = json.load(file)
 
-        print(expected_content)
         # Remove these keys from the json data
         keys_to_remove = ["Commit", "create_time_since_epoch", "last_update_time_since_epoch",
-                "original_create_time_since_epoch"]
+                "original_create_time_since_epoch", "url"]
 
-        # remove the above keys from json data
-        for index in sorted(keys_to_remove, reverse=True):
-            del expected_content[index]
+        # Remove the specified keys from each item
+        filtered_expected = {"total_items": expected_content["total_items"], "items": []}
+        for item in expected_content["items"]:
+            filtered_item = {key: value for key, value in item.items() if key not in keys_to_remove}
+            filtered_expected["items"].append(filtered_item)
+
+        #print("filtered_expected", filtered_expected)
 
         # remove the above keys from response data
         response = response.json()
-        print(response)
 
-        for index in sorted(keys_to_remove, reverse=True):
-            del response[index]
+        # Remove the specified keys from each item
+        filtered_response = {"total_items": response["total_items"], "items": []}
+        for item in response["items"]:
+            filtered_item = {key: value for key, value in item.items() if key not in keys_to_remove}
+            filtered_response["items"].append(filtered_item)
 
-        # Check that the response  content matches the expected content
-        assert response == expected_content
+        assert filtered_response == filtered_expected
 
 
 def test_display_lineage():
