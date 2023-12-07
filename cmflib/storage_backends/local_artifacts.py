@@ -35,8 +35,7 @@ class LocalArtifacts:
             temp = download_loc.split("/")
             temp.pop()
             dir_path = "/".join(temp)
-            dir_to_create = os.path.join(current_directory, dir_path)
-            os.makedirs(dir_to_create, mode=0o777, exist_ok=True)  # creating subfolders
+            os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders
             obj = fs.get_file(current_loc, download_loc)
             if obj == None:  # get_file() returns none when file gets downloaded.
                 stmt = f"object {current_loc} downloaded at {download_loc}."

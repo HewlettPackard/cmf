@@ -70,7 +70,6 @@ def _artifact_pull(pipeline_name, file_name):
     return msg
 
 def _artifact_pull_single(pipeline_name, file_name,artifact_name):
-    print("inside_cmf_cmd_wrapper")
     cli_args = cli.parse_args(
             [
                "artifact",
