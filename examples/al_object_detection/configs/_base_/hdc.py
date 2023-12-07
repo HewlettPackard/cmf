@@ -16,6 +16,29 @@ train_pipeline = [
 
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=32),
+    dict(type='Albu',
+    transforms=[dict(
+        type='ShiftScaleRotate',
+        shift_limit=0.0,
+        scale_limit=0.0,
+        rotate_limit=[90,90],
+        interpolation=1,
+        p=0.5),
+        ],
+    bbox_params=dict(
+            type='BboxParams',
+            format='pascal_voc',
+            label_fields=['gt_labels'],
+            min_visibility=0.0,
+            filter_lost_elements=True),
+    keymap={
+            'img': 'image',
+            'gt_masks': 'masks',
+            'gt_bboxes': 'bboxes'
+        },
+    update_pad_shape=False,
+    skip_img_without_anno=True
+    ),
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),
 ]
