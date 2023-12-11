@@ -1,6 +1,6 @@
 {
-    "cmf_server_url": "http://X.X.X.X:8080",
-    "ssh_path": "ssh://X.X.X.X/home/xxxx/ssh-storage",
-    "ssh_user":"xxx",
-    "ssh_password": "wxyz"
+    "cmf_server_url": "http://10.93.244.204:8080",
+    "ssh_path": "ssh://10.93.244.204/home/sharvark/ssh-storage",
+    "ssh_user":"root",
+    "ssh_password": "root@123"
 }
