@@ -118,6 +118,11 @@ class Cmf:
             Cmf.__prechecks()
         if custom_properties is None:
             custom_properties = {}
+        if not pipeline_name:
+            # assign folder name as pipeline name 
+            cur_folder = os.path.basename(os.getcwd())
+            pipeline_name = cur_folder
+            print(pipeline_name)
         config = mlpb.ConnectionConfig()
         config.sqlite.filename_uri = filename
         self.store = metadata_store.MetadataStore(config)
@@ -344,6 +349,14 @@ class Cmf:
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
         """
+        # Assigning current file name as stage and execution name
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        name_without_extension = os.path.splitext(file_name)[0]
+        # create context if not already created
+        if not self.child_context:
+            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+
         # Initializing the execution related fields
         self.metrics = {}
         self.input_artifacts = []
@@ -621,11 +634,23 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+
+        # Assigning current file name as stage and execution name
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        name_without_extension = os.path.splitext(file_name)[0]
+        # create context if not already created
+        if not self.child_context:
+            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+
+        # create execution if not already created
+        if not self.execution:
+            self.execution = self.create_execution(execution_type=name_without_extension)
+
                 ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -952,6 +977,20 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
+
+        # Assigning current file name as stage and execution name
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        name_without_extension = os.path.splitext(file_name)[0]
+        # create context if not already created
+        if not self.child_context:
+            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+
+        # create execution if not already created
+        if not self.execution:
+            self.execution = self.create_execution(execution_type=name_without_extension)
+
+
         # To Do : Technical Debt. 
         # If the model already exist , then we just link the existing model to the execution
         # We do not update the model properties . 
@@ -1233,6 +1272,19 @@ class Cmf:
               Returns: 
                  Artifact object from the ML Protocol Buffers library associated with the metrics artifact.
         """
+
+        # Assigning current file name as stage and execution name
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        name_without_extension = os.path.splitext(file_name)[0]
+        # create context if not already created
+        if not self.child_context:
+            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+
+        # create execution if not already created
+        if not self.execution:
+            self.execution = self.create_execution(execution_type=name_without_extension)
+
         metrics = None
         custom_props = {} if custom_properties is None else custom_properties
         existing_artifact = []
@@ -1311,6 +1363,19 @@ class Cmf:
         Returns:
               Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
+
+        # Assigning current file name as stage and execution name
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        name_without_extension = os.path.splitext(file_name)[0]
+        # create context if not already created
+        if not self.child_context:
+            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+
+        # create execution if not already created
+        if not self.execution:
+            self.execution = self.create_execution(execution_type=name_without_extension)
+
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
         metrics_name = metrics_name + ":" + uri + ":" + str(self.execution.id)
