@@ -47,10 +47,14 @@ app = FastAPI(title="cmf-server", lifespan=lifespan)
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 server_store_path = "/cmf-server/data/mlmd"
-if os.environ.get("MYIP") != "127.0.0.1":
-    url="http://"+os.environ.get('MYIP')+":3000"
+
+my_ip = os.environ.get("MYIP", "127.0.0.1")
+hostname = os.environ.get('HOSTNAME', "localhost")
+
+if my_ip != "127.0.0.1":
+    url="http://"+my_ip+":3000"
 else:
-    url="http://"+os.environ.get('HOSTNAME')+":3000"
+    url="http://"+hostname+":3000"
 
 origins = [
     "http://localhost:3000",

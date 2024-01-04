@@ -14,5 +14,13 @@
 # limitations under the License.
 ###
 
-CONTEXT_LIST = ["create_time_since_epoch", "custom_properties", "id", \
-                 "last_update_time_since_epoch", "name", "properties", "type", "type_id", "uri", "name", "Execution_uuid"]
+import os
+
+def is_git_repo():
+    git_dir = os.path.join(os.getcwd(), '.git')
+    print("git_dir", git_dir)
+    result = os.path.exists(git_dir) and os.path.isdir(git_dir)
+    if result:
+        return f"A Git repository already exists in {git_dir}."
+    else:
+        return
