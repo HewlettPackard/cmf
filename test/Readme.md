@@ -15,7 +15,7 @@ The `Sanity Testing` focuses on performing sanity testing for basic functionalit
 ### Install pytest to Run tests
 To run the tests, you'll need to have pytest installed. If you haven't already installed pytest, you can do so using pip:
 ```bash
-pip install pytest
+pip install pytest fastapi httpx matplotlib
 ```
 
 To get started with the sanity testing project, follow these steps:
