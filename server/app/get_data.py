@@ -3,6 +3,7 @@ import pandas as pd
 import json,glob
 import os
 from server.app.query_visualization import query_visualization
+from server.app.query_visualization_execution import query_visualization_execution
 from fastapi.responses import FileResponse
 
 def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
@@ -43,7 +44,7 @@ def get_all_artifact_ids(mlmdfilepath):
         artifacts = query.get_all_artifacts_by_context(name)
         df = pd.concat([df, artifacts], sort=True, ignore_index=True)
         if df.empty:
-            return
+            return 
         else:
             artifact_ids[name] = {}
             for art_type in df['type']:
@@ -166,13 +167,13 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_img_path(server_store_path,pipeline_name):
+def get_lineage_img_path(server_store_path,pipeline_name,type):
     query = cmfquery.CmfQuery(server_store_path)
-    del_img = glob.glob("./data/static/*.png")
-    for img in del_img:
-        os.remove(img)
-    img_path = query_visualization(server_store_path, pipeline_name)
-    response = FileResponse(img_path,
-    media_type="image/png",)
-    return response
+    if type=="Artifacts":
+        img_path = query_visualization(server_store_path, pipeline_name)
+    elif type=="Execution":
+        img_path = query_visualization_execution(server_store_path, pipeline_name)
+    else:
+        img_path = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
+    return True
 
