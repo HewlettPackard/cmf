@@ -1,6 +1,6 @@
 # Please change the dataset directory to your actual directory
 #data_root = '/lustre/data/hdcdatasets/'
-data_root = '/mnt/beegfs/PAMS/data/tomography_data/tiled_annotations/'
+data_root = '/mnt/beegfs/HDC/data/tomography_data/tiled_annotations/'
 
 _base_ = [
     './_base_/retinanet_r50_fpn.py', './_base_/hdc.py',
@@ -45,8 +45,8 @@ k = 10000
 # Note that there are 16551 images in the PASCAL VOC 2007+2012 trainval sets.
 def make_even(x):
     return (x//2)*2
-X_S_size = make_even(12150//40)#9964//40
-X_L_0_size = make_even(12150//10)#9964//20
+X_S_size = 1000#make_even(12150//40)#9964//40
+X_L_0_size = make_even(12150)#make_even(12150//10)#9964//20
 # The active learning cycles can be changed here.
 cycles = [0, 1, 2, 3, 4, 5, 6]
 # The work directory for saving logs and files can be changed here. Please refer to README.md for more information.
