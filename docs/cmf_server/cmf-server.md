@@ -139,12 +139,25 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:3000:80 uiimage
    ```
-9. To stop the docker container.
+   `Note` - If you face issue regarding `Libzar proxy` you need add proxy as follows:
+   ```
+   ~/.docker/config.json
+    {
+      proxies: {
+           "default": {
+                        "httpProxy": "http://web-proxy.labs.xxxx.net:8080",
+                        "httpsProxy": "http://web-proxy.labs.xxxx.net:8080",
+                        "noProxy": ".labs.xxxx.net,127.0.0.0/8"
+                }
+            }
+    }
+    ```
+10. To stop the docker container.
    ```
    docker stop [container_name]
    ```
 
-10. To delete the docker container.
+11. To delete the docker container.
    ```
    docker rm [container_name] 
    ```
