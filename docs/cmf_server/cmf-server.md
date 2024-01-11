@@ -8,12 +8,15 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 ### List of APIs
    
-| Method | URL                          | Description                                  | 
-|--------|------------------------------|----------------------------------------------|
-| `Post` | `/mlmd_push`                 | Used to push Json Encoded data to cmf-server |
-| `Get`  | `/mlmd_pull/{pipeline_name}` | Retrieves a mlmd file from cmf-server        |
-| `Get`  | `/display_executions`        | Retrieves all executions from cmf-server     |
-| `Get`  | `/display_artifacts`         | Retrieves all artifacts from cmf-server      |
+| Method | URL                          | Description                                                              | 
+|--------|------------------------------|------------------------------------------------------------------------  |
+| `Post` | `/mlmd_push`                 | Used to push Json Encoded data to cmf-server                             | 
+| `Get`  | `/mlmd_pull/{pipeline_name}` | Retrieves a mlmd file from cmf-server                                    |
+| `Get`  | `/display_executions`                             | Retrieves all executions from cmf-server            |
+| `Get`  | `/display_artifacts/{pipeline_name}/{data_type}`  | Retrieves all artifacts from cmf-server for resp datat type             |
+| `Get`  | `/display_lineage/{lineage_type}/{pipeline_name}` | Creates lineage data from cmf-server            |
+| `Get`  | `/display_pipelines`                             | Retrieves all pipelines present in mlmd file            |
+
 
 ### HTTP Response Status codes
 
@@ -52,7 +55,8 @@ There are two ways to start cmf server -
     server:
       image: server:latest
       volumes:
-         - /home/<user>/cmf-server/data:/cmf-server/data
+         - /home/xxxx/cmf-server/data:/cmf-server/data
+         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
       container_name: cmf-server
       build:
     ....
@@ -115,18 +119,37 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
    ```
-
-6. To stop the docker container.
+6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
+   ```
+   cd /cmf/ui
+   ```
+7. Execute the below-mentioned command to create a `ui-server` docker image.
+   ```
+   Usage:  docker build -t [image_name] -f ./Dockerfile ../
+   ```
+   Example:
+   ```
+   docker build -t uiimage -f ./Dockerfile ../
+   ```
+8. Launch a new docker container using the image with directory
+   <pre>
+   Usage: docker run --name [container_name] -p 0.0.0.0:3000:80 [image_name]
+   </pre>
+   Example:
+   ```
+   docker run --name mycontainer -p 0.0.0.0:3000:80 uiimage
+   ```
+9. To stop the docker container.
    ```
    docker stop [container_name]
    ```
 
-7. To delete the docker container.
+10. To delete the docker container.
    ```
    docker rm [container_name] 
    ```
 
-8. To remove the docker image.
+11. To remove the docker image.
    ``` 
    docker image rm [image_name] 
    ```
