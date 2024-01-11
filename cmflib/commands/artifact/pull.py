@@ -67,7 +67,6 @@ class CmdArtifactPull(CmdBase):
         elif type == "ssh":
             token_var = token[2].split(":")
             host = token_var[0]
-            download_loc = current_directory + "/" + name
             token.pop(0)
             token.pop(0)
             token.pop(0)
@@ -98,7 +97,9 @@ class CmdArtifactPull(CmdBase):
         mlmd_file_name = "./mlmd"
         if self.args.file_name:
             mlmd_file_name = self.args.file_name
-            current_directory = os.path.dirname(self.args.file_name)
+            if mlmd_file_name == "mlmd":
+                mlmd_file_name = "./mlmd"
+            current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
         query = cmfquery.CmfQuery(mlmd_file_name)
@@ -210,7 +211,7 @@ class CmdArtifactPull(CmdBase):
                         dvc_config_op,
                         args[0], # host,
                         current_directory,
-                        args[1], # current_loc
+                        args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
                     print(stmt)
@@ -224,7 +225,7 @@ class CmdArtifactPull(CmdBase):
                         dvc_config_op,
                         args[0], # host,
                         current_directory,
-                        args[1], # current_loc 
+                        args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
                     print(stmt)

@@ -32,6 +32,7 @@ from cmflib.dvc_wrapper import (
     dvc_add_attribute,
 )
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import is_git_repo
 
 
 class CmdInitMinioS3(CmdBase):
@@ -66,7 +67,7 @@ class CmdInitMinioS3(CmdBase):
             pass
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
-        output = check_git_repo()
+        output = is_git_repo()
         if not output:
             branch_name = "master"
             print("Starting git init.")

@@ -11,7 +11,7 @@ services:
   aws:
     image: amazon/aws-cli
     container_name: aws-cli
-    command: -c "sleep 2 && aws --endpoint-url http://minio:9000 s3 mb s3://dvc-art --region eu-west-1 || exit 0"
+    command: -c "sleep 2 && aws --endpoint-url http://${MYIP}:9000 s3 mb s3://dvc-art --region eu-west-1 || exit 0"
     entrypoint: [/bin/bash]
     environment:
       AWS_ACCESS_KEY_ID: minioadmin

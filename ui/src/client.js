@@ -1,3 +1,19 @@
+/***
+* Copyright (2023) Hewlett Packard Enterprise Development LP
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* You may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+***/
+
 import config from "./config";
 
 const axios = require("axios");
@@ -23,9 +39,25 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(pipelineName, type) {
+  async getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) {
     return this.apiClient
-      .get(`/display_artifact_type/${pipelineName}/${type}`)
+      .get(`/display_artifacts/${pipelineName}/${type}`, {
+        params: {
+          page: page,
+          sort_field: sortField,
+          sort_order: sortOrder,
+          filter_by: filterBy,
+          filter_value: filterValue,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactTypes() {
+    return this.apiClient
+      .get(`/display_artifact_types`)
       .then(({ data }) => {
         return data;
       });
@@ -41,9 +73,17 @@ class FastAPIClient {
     }
   }
 
-  getExecutions(pipelineName) {
+  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
-      .get(`/display_executions/${pipelineName}`)
+      .get(`/display_executions/${pipelineName}`, {
+        params: {
+          page: page,
+          sort_field: sortField,
+          sort_order: sortOrder,
+          filter_by: filterBy,
+          filter_value: filterValue,
+        },
+      })
       .then(({ data }) => {
         return data;
       });
