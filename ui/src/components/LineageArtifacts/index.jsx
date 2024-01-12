@@ -5,6 +5,7 @@ import runtimeEnv from "@mars/heroku-js-runtime-env";
 
 const LineageArtifacts = () => {
   let apiUrl="";
+  // eslint-disable-next-line no-unused-vars
   const env = runtimeEnv();
   const [jsondata, setJsonData] = useState(null);
   apiUrl ="http://"+process.env.REACT_APP_MY_IP+":8080/cmf-server/data/static/data.json";
