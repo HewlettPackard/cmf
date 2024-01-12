@@ -32,13 +32,9 @@ def query_visualization_ArtifactExecution(mlmd_path, pipeline_name):
                 if id_and_name not in seen_ids_and_names:
                     seen_ids_and_names.add(id_and_name)
                     node_id_name_list.append(node_id_name)
-                print(stage,"stage")
                 if artifacts.loc[i, "event"] == "INPUT":
                     link_src_trgt["source"]=stage
                     link_src_trgt["target"]=artifacts.loc[i,"id"]
-                    print("$$$$$$$$$$$$$$$$$$$$$$")
-                print(artifacts.loc[i, "name"],artifacts.loc[i, "id"], artifacts.loc[i, "event"])
-    print(node_id_name_list,"#############")
     for stage in stages:
         id_list=[100:200]
         node_id_name["id"]
