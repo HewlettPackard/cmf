@@ -26,7 +26,7 @@ const LineageArtifacts = () => {
     };
 
     fetchData();
-  }, []); // Empty dependency array ensures this effect runs only once
+  }, [apiUrl]); // Empty dependency array ensures this effect runs only once
 
   useEffect(() => {
     if (!jsondata) {
