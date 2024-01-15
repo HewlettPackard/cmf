@@ -455,6 +455,7 @@ class Cmf:
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
+        python_env = properties.get("Python_Env", "")
         #name = properties.get("Name", "")
         create_new_execution = True
         execution_name = execution_type
@@ -475,6 +476,7 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
+            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution
         )
@@ -1731,7 +1733,7 @@ def non_related_args(type:str,args:dict):
 
 
 def get_python_env()-> str:
-    env_dict = {}
+    installed_packages = ""
     python_version = sys.version
     python_version = f"Python {python_version}"
     # conda
@@ -1740,8 +1742,6 @@ def get_python_env()-> str:
 
         # List all installed packages and their versions
         installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
-        env_dict[python_version] = installed_packages
-        # print(installed_packages)
     except ImportError:
         print("Conda is not installed.")
 
@@ -1752,9 +1752,8 @@ def get_python_env()-> str:
         # List all installed packages and their versions
         installed_packages_generator = freeze.freeze()
         installed_packages = list(installed_packages_generator)
-        env_dict[python_version] = installed_packages
-        # print(installed_packages)
     except ImportError:
         print("Pip is not installed.")
-    return str(env_dict)
+    package = f"{python_version}: {installed_packages}"
+    return package
 
