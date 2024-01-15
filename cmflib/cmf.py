@@ -338,6 +338,7 @@ class Cmf:
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
+        python_env=get_python_env()
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
@@ -351,6 +352,7 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
+            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
@@ -1359,54 +1361,6 @@ class Cmf:
             milliseconds_since_epoch=int(time.time() * 1000),
         )
 
-    def log_env_packages(
-        self,
-        env_name: str = "Environment",
-        custom_properties: t.Optional[t.Dict] = None,
-    ) -> object:
-        custom_props = {} if custom_properties is None else custom_properties
-        uri = str(uuid.uuid1())
-        env_name = env_name + ":" + uri + ":" + str(self.execution.id)
-        env_dict = {}
-        python_version = sys.version
-        python_version = f"Python {python_version}"
-        print(python_version)
-        # conda 
-        try:
-            import conda
-
-            # List all installed packages and their versions
-            installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
-            env_dict[python_version] = installed_packages
-            print(installed_packages)
-        except ImportError:
-            print("Conda is not installed.")
-
-        # pip
-        try:
-            from pip._internal.operations import freeze
-
-            # List all installed packages and their versions
-            installed_packages_generator = freeze.freeze()
-            installed_packages = list(installed_packages_generator)
-            env_dict[python_version] = installed_packages
-            print(installed_packages)
-        except ImportError:
-            print("Pip is not installed.")
-
-        return create_new_artifact_event_and_attribution(
-            store=self.store,
-            execution_id=self.execution.id,
-            context_id=self.child_context.id,
-            uri=uri,
-            name=env_name,
-            type_name="Environment",
-            event_type=mlpb.Event.Type.INTERNAL_OUTPUT,
-            properties={"Environment": env_dict},
-            artifact_type_properties={"Environment": mlpb.STRING},
-            custom_properties=custom_properties,
-            milliseconds_since_epoch=int(time.time() * 1000),
-        )
 
     def update_existing_artifact(
         self, artifact: mlpb.Artifact, custom_properties: t.Dict
@@ -1774,5 +1728,33 @@ def non_related_args(type:str,args:dict):
         if repo ==type:
             non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
     return non_related_args
- 
-    
+
+
+def get_python_env()-> str:
+    env_dict = {}
+    python_version = sys.version
+    python_version = f"Python {python_version}"
+    # conda
+    try:
+        import conda
+
+        # List all installed packages and their versions
+        installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
+        env_dict[python_version] = installed_packages
+        # print(installed_packages)
+    except ImportError:
+        print("Conda is not installed.")
+
+    # pip
+    try:
+        from pip._internal.operations import freeze
+
+        # List all installed packages and their versions
+        installed_packages_generator = freeze.freeze()
+        installed_packages = list(installed_packages_generator)
+        env_dict[python_version] = installed_packages
+        # print(installed_packages)
+    except ImportError:
+        print("Pip is not installed.")
+    return str(env_dict)
+
