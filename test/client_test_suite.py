@@ -43,17 +43,11 @@ if __name__ == "__main__":
 
         file_path = "./cmf-server/data/mlmd" #assumption running inside from test folder
         # delete mlmd pushed on server
-        try:
-            # Attempt to delete the file
-            os.remove(file_path)
-            print(f"The file '{file_path}' has been deleted.")
-        except FileNotFoundError:
-          # Handle the case where the file does not exist
-            print(f"The file '{file_path}' does not exist.")
-        except Exception as e:
-           # Handle other exceptions
-            print(f"An error occurred: {e}")
-
+        if os.path.exists(file_path):
+            command = f"sudo rm -rf {file_path}"
+            result = subprocess.run(command, text=True, shell=True)
+            if result.returncode == 0:
+                print(f"The file '{file_path}' successfully deleted.")
 
         # run test for minioS3
         source_folder = '../examples/example-get-started'
@@ -74,17 +68,11 @@ if __name__ == "__main__":
 
         file_path = "./cmf-server/data/mlmd"
         # delete mlmd pushed on server
-        try:
-            # Attempt to delete the file
-            os.remove(file_path)
-            print(f"The file '{file_path}' has been deleted.")
-        except FileNotFoundError:
-          # Handle the case where the file does not exist
-            print(f"The file '{file_path}' does not exist.")
-        except Exception as e:
-           # Handle other exceptions
-            print(f"An error occurred: {e}")
-
+        if os.path.exists(file_path):
+            command = f"sudo rm -rf {file_path}"
+            result = subprocess.run(command, text=True, shell=True)
+            if result.returncode == 0:
+                print(f"The file '{file_path}' successfully deleted.")
 
         # run tests for ssh remote
         if not ssh_path and not ssh_user and not ssh_pass:
@@ -109,16 +97,11 @@ if __name__ == "__main__":
 
         file_path = "./cmf-server/data/mlmd"
         # delete mlmd pushed on server
-        try:
-            # Attempt to delete the file
-            os.remove(file_path)
-            print(f"The file '{file_path}' has been deleted.")
-        except FileNotFoundError:
-          # Handle the case where the file does not exist
-            print(f"The file '{file_path}' does not exist.")
-        except Exception as e:
-           # Handle other exceptions
-            print(f"An error occurred: {e}")
+        if os.path.exists(file_path):
+            command = f"sudo rm -rf {file_path}"
+            result = subprocess.run(command, text=True, shell=True)
+            if result.returncode == 0:
+                print(f"The file '{file_path}' successfully deleted.")
 
     except Exception as e:
         print(f"An error occurred: {e}")
