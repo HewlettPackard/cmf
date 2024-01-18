@@ -139,7 +139,10 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:3000:80 uiimage
    ```
-   `Note` - If you face issue regarding `Libzar proxy` you need add proxy as follows:
+   `Note` - If you face issue regarding `Libzbar-dev` as follows you need add proxy:
+   ![Screenshot (115)](https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4)
+
+
    ```
    ~/.docker/config.json
     {
