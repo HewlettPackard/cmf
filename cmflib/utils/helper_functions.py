@@ -15,6 +15,8 @@
 ###
 
 import os
+import sys
+import subprocess
 
 def is_git_repo():
     git_dir = os.path.join(os.getcwd(), '.git')
@@ -24,3 +26,38 @@ def is_git_repo():
         return f"A Git repository already exists in {git_dir}."
     else:
         return
+
+
+def get_python_env()-> str:
+    installed_packages = ""
+    python_version = sys.version
+    python_version = f"Python {python_version}"
+    # check if conda is installed
+    if is_conda_installed():
+        import conda
+        # List all installed packages and their versions
+        installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
+    else:
+        # pip
+        try:
+            from pip._internal.operations import freeze
+
+            # List all installed packages and their versions
+            installed_packages_generator = freeze.freeze()
+            installed_packages = list(installed_packages_generator)
+        except ImportError:
+            print("Pip is not installed.")
+    package = f"{python_version}: {installed_packages}"
+    return package
+
+def is_conda_installed():
+    try:
+        import conda
+        # Run the 'conda --version' command and capture the output
+        subprocess.run(['conda', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+    except ImportError:
+        return False
+

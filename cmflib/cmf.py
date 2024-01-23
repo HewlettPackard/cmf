@@ -53,6 +53,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import get_python_env
 from cmflib.cmf_commands_wrapper import (
     _metadata_push,
     _metadata_pull,
@@ -1730,30 +1731,4 @@ def non_related_args(type:str,args:dict):
         if repo ==type:
             non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
     return non_related_args
-
-
-def get_python_env()-> str:
-    installed_packages = ""
-    python_version = sys.version
-    python_version = f"Python {python_version}"
-    # conda
-    try:
-        import conda
-
-        # List all installed packages and their versions
-        installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
-    except ImportError:
-        print("Conda is not installed.")
-
-    # pip
-    try:
-        from pip._internal.operations import freeze
-
-        # List all installed packages and their versions
-        installed_packages_generator = freeze.freeze()
-        installed_packages = list(installed_packages_generator)
-    except ImportError:
-        print("Pip is not installed.")
-    package = f"{python_version}: {installed_packages}"
-    return package
 
