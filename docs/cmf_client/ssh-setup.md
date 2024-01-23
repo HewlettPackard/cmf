@@ -4,9 +4,8 @@ SSH (Secure Shell) remote storage refers to using the SSH protocol to securely a
 
 Proceed with the following steps to set up a SSH Remote Repository:
 
-1. Copy contents of the `example-get-started` directory (sample project) to a separate directory outside the cmf repository and then follow below steps .\
-   Replace `example-get-started` with your `source directory`.                                       
-2. Check whether cmf is initialized.
+1. Get started with initializing `project directory` with SSH repo.                                       
+2. Check whether cmf is initialized in your project directory with following command.
    ```
    cmf init show
    ```
