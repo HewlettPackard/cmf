@@ -17,6 +17,7 @@
 import os
 import sys
 import subprocess
+import json
 
 def is_git_repo():
     git_dir = os.path.join(os.getcwd(), '.git')
@@ -36,7 +37,11 @@ def get_python_env()-> str:
     if is_conda_installed():
         import conda
         # List all installed packages and their versions
-        installed_packages = list_conda_packages()
+        data = list_conda_packages_json()
+        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data]
+        #installed_packages = ', '.join(map(str, transformed_result))
+        installed_packages =  transformed_result
+        print(type(installed_packages))
     else:
         # pip
         try:
@@ -70,4 +75,12 @@ def list_conda_packages():
         return result.stdout
     except subprocess.CalledProcessError as e:
         return f"Error: {e.stderr}"
+
+def list_conda_packages_json():
+    try:
+        result = subprocess.run(['conda', 'list', '--json'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return json.loads(result.stdout)
+    except subprocess.CalledProcessError as e:
+        return f"Error: {e.stderr}"
+
 
