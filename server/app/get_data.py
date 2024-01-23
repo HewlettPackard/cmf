@@ -39,8 +39,8 @@ def get_all_artifact_ids(mlmdfilepath):
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
+    df = pd.DataFrame()
     for name in names:
-        df = pd.DataFrame()
         artifacts = query.get_all_artifacts_by_context(name)
         df = pd.concat([df, artifacts], sort=True, ignore_index=True)
         if df.empty:
