@@ -36,7 +36,7 @@ def get_python_env()-> str:
     if is_conda_installed():
         import conda
         # List all installed packages and their versions
-        installed_packages = conda.cli.python_api.run_command(conda.cli.python_api.Commands.LIST)
+        installed_packages = list_conda_packages()
     else:
         # pip
         try:
@@ -60,4 +60,14 @@ def is_conda_installed():
         return False
     except ImportError:
         return False
+
+
+def list_conda_packages():
+    try:
+        # Run the 'conda list' command and capture the output
+        result = subprocess.run(['conda', 'list'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        #print(result.stdout)
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        return f"Error: {e.stderr}"
 
