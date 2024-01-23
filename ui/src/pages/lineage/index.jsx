@@ -21,23 +21,19 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import LineageSidebar from "../../components/LineageSidebar";
-import LineageImage from "../../components/LineageImage";
-
+import LineageTypeSidebar from "./LineageTypeSidebar";
+import LineageArtifacts from "../../components/LineageArtifacts";
 const client = new FastAPIClient(config);
 
 const Lineage = () => {
-  const [activeTab, setActiveTab] = useState(0);
   const [pipelines, setPipelines] = useState([]);
-  const [imageSrc, setImageSrc] = useState("");
   const [selectedPipeline, setSelectedPipeline] = useState(null);
 
-  useEffect(() => {
-    fetchPipelines();
-  }, []);
+//  const LineageTypes=['Artifacts','Execution','ArtifactExecution']
+  const LineageTypes=['Artifacts']
+  const [selectedLineageType, setSelectedLineageType] = useState(null);
 
-  useEffect(() => {
-    fetchImage(selectedPipeline);
-  }, [selectedPipeline]);
+  const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
 
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
@@ -46,15 +42,40 @@ const Lineage = () => {
     });
   };
 
-  async function fetchImage(pipeline){
-    const objectURL = await client.getImage(pipeline);
-    setImageSrc(objectURL);
-  }
+  useEffect(() => {
+    fetchPipelines();
+  }, []);
 
-  const handleClick = (index) => {
-    setActiveTab(index);
-    fetchImage(pipelines[index]);
+  const handlePipelineClick = (pipeline) => {
+    setSelectedPipeline(pipeline);
   };
+
+  const handleLineageTypeClick = (lineageType) => {
+    setSelectedLineageType(lineageType);
+  };  
+
+  const fetchLineageTypes = () => {
+      handleLineageTypeClick(LineageTypes[0]);
+  };
+
+  useEffect(() => {
+    if (selectedPipeline) {
+      fetchLineageTypes(selectedPipeline);
+    }
+    // eslint-disable-next-line 
+ }, [selectedPipeline]);
+
+  const fetchLineage = (pipelineName, type) => {
+    client.getLineage(pipelineName,type).then((data) => {
+    });
+  };
+
+  useEffect(() => {
+    if (selectedPipeline && selectedLineageType) {
+      fetchLineage(selectedPipeline, selectedLineageType);
+      setLineageArtifactsKey((prevKey) => prevKey + 1);
+    }
+  }, [selectedPipeline, selectedLineageType]);
 
   return (
     <>
@@ -68,12 +89,25 @@ const Lineage = () => {
           <div className="flex flex-row">
             <LineageSidebar
               pipelines={pipelines}
-              activeTab={activeTab}
-              handleClick={handleClick}
+              handlePipelineClick={handlePipelineClick}
             />
-            <LineageImage imageSrc={imageSrc} activeTab={activeTab} />
+          <div className="container justify-center items-center mx-auto px-4">
+            <div className="flex flex-col">
+             {selectedPipeline !== null && (
+                <LineageTypeSidebar
+                  LineageTypes={LineageTypes}
+                  handleLineageTypeClick= {handleLineageTypeClick}
+                />
+             )}
+            </div>
+            <div className="container">
+                {selectedPipeline !== null && (
+                <LineageArtifacts key={lineageArtifactsKey} />
+              )}
+            </div>
           </div>
         </div>
+       </div>
         <Footer />
       </section>
     </>
