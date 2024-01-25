@@ -8,8 +8,7 @@ const LineageTypeSidebar = ({ LineageTypes,handleLineageTypeClick }) => {
 
   useEffect(() => {
     handleClick(clickedLineageType);
-    // eslint-disable-next-line     
-  }, [LineageTypes]);
+  }, [clickedLineageType]);
 
   const handleClick = (LineageType) => {
    setClickedLineageType(LineageType);
