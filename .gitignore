@@ -86,5 +86,3 @@ venv.bak/
 # PyCharm, IDEA
 .idea
 
-#lock files
-*.lock

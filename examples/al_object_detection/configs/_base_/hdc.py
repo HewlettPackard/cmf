@@ -1,6 +1,6 @@
 # Please change the dataset directory to your actual directory
 #data_root = '/lustre/data/hdcdatasets/'
-data_root = '/mnt/beegfs/PAMS/data/tomography_data/tiled_annotations/'
+data_root = '/mnt/beegfs/HDC/data/tomography_data/tiled_annotations/'
 
 # dataset settings
 dataset_type = 'HDCDataset'

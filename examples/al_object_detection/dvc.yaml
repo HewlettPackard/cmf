@@ -23,9 +23,9 @@ stages:
     active_learning_training:
         cmd:
             #single gpu
-            #python cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --labeled work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy --seed ${al_seed} --model work_dirs/test/cycle.pth
+            python cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --labeled work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy --seed ${al_seed} --model work_dirs/test/cycle.pth
             #distributed mode
-            python -m torch.distributed.launch --nproc_per_node=2 --master_port=39025  cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --labeled work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy --seed ${al_seed} --model work_dirs/test/cycle.pth --gpus 2 --launcher pytorch
+            #python -m torch.distributed.launch --nproc_per_node=2 --master_port=39025  cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --labeled work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy --seed ${al_seed} --model work_dirs/test/cycle.pth --gpus 2 --launcher pytorch
         deps:
             - work_dirs/test/X_L_${al_cycle}.npy
             - work_dirs/test/X_U_${al_cycle}.npy
