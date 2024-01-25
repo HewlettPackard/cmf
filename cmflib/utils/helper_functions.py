@@ -32,16 +32,15 @@ def is_git_repo():
 def get_python_env()-> str:
     installed_packages = ""
     python_version = sys.version
-    python_version = f"Python {python_version}"
+    packages = ""
     # check if conda is installed
     if is_conda_installed():
         import conda
         # List all installed packages and their versions
         data = list_conda_packages_json()
-        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data]
-        #installed_packages = ', '.join(map(str, transformed_result))
+        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data if not entry['name'].startswith('_')]
         installed_packages =  transformed_result
-        print(type(installed_packages))
+        packages = f"Conda: Python {python_version}: {installed_packages}"
     else:
         # pip
         try:
@@ -50,10 +49,10 @@ def get_python_env()-> str:
             # List all installed packages and their versions
             installed_packages_generator = freeze.freeze()
             installed_packages = list(installed_packages_generator)
+            packages = f"Python {python_version}: {installed_packages}"
         except ImportError:
             print("Pip is not installed.")
-    package = f"{python_version}: {installed_packages}"
-    return package
+    return packages
 
 def is_conda_installed():
     try:
@@ -66,15 +65,6 @@ def is_conda_installed():
     except ImportError:
         return False
 
-
-def list_conda_packages():
-    try:
-        # Run the 'conda list' command and capture the output
-        result = subprocess.run(['conda', 'list'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        #print(result.stdout)
-        return result.stdout
-    except subprocess.CalledProcessError as e:
-        return f"Error: {e.stderr}"
 
 def list_conda_packages_json():
     try:
