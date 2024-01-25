@@ -52,19 +52,20 @@ const Lineage = () => {
     setSelectedPipeline(pipeline);
   };
 
+
+  useEffect(() => {
+    if (selectedPipeline) {
+       setSelectedLineageType(LineageTypes[0]);
+    }
+    // eslint-disable-next-line 
+  }, [selectedPipeline]);
+
   const handleLineageTypeClick = (lineageType) => {
-    console.log("inside handleLineageTypeClick", lineageType);
     setLineageData(null);
     setSelectedLineageType(lineageType);
     fetchLineage(selectedPipeline, lineageType);
   };  
 
-  useEffect(() => {
-    if (selectedPipeline) {
-      handleLineageTypeClick(LineageTypes[0]);
-    }
-    // eslint-disable-next-line 
- }, [selectedPipeline]);
 
   const fetchLineage = (pipelineName, type) => {
     client.getLineage(pipelineName,type).then((data) => {    

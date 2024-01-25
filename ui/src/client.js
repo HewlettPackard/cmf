@@ -64,13 +64,10 @@ class FastAPIClient {
   }
 
   async getLineage(pipeline,lineage_type) {
-   try {
-      const response  = await this.apiClient.get(`/display_lineage/${lineage_type}/${pipeline}`, { responseType: "blob" });
-      const objectURL = URL.createObjectURL(response.data);
-      return objectURL;
-    } catch (error) {
-      console.error(error);
-    }
+      return this.apiClient.get(`/display_lineage/${lineage_type}/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
   }
 
 

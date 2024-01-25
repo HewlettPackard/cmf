@@ -6,10 +6,6 @@ const LineageTypeSidebar = ({ LineageTypes,handleLineageTypeClick }) => {
 
   const [clickedLineageType, setClickedLineageType] = useState(LineageTypes[0]);
 
-  useEffect(() => {
-    handleClick(clickedLineageType);
-  }, [clickedLineageType]);
-
   const handleClick = (LineageType) => {
    setClickedLineageType(LineageType);
    handleLineageTypeClick(LineageType);

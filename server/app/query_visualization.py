@@ -72,5 +72,5 @@ def query_visualization(mlmd_path, pipeline_name):
 
     with open(file_path, 'w') as json_file:
         json.dump(data, json_file)
-    return file_path
+    return data
 
