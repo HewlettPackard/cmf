@@ -38,7 +38,7 @@ def get_python_env()-> str:
         import conda
         # List all installed packages and their versions
         data = list_conda_packages_json()
-        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data if not entry['name'].startswith('_')]
+        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data]
         installed_packages =  transformed_result
         packages = f"Conda: Python {python_version}: {installed_packages}"
     else:
