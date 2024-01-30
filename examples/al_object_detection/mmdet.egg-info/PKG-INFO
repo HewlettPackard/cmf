@@ -21,6 +21,312 @@ Provides-Extra: build
 Provides-Extra: optional
 License-File: LICENSE
 
+# MI-AOD integration with CMF
+
+<!-- TOC -->
+
+- [Overview](#overview)
+- [Running on Pascal VOC example](#running-on-pascal-voc-example)
+- [Installation](#installation)
+
+<!-- TOC -->
+
+
+## Overview
+
+We divide the MI-AOD pipeline to three stages: 
+- random selection of samples for initial training cycle: [initial_select.py](<./initial_select.py>)
+- model training in single active learning cycle: [cycle_train.py](<./cycle_train.py>)
+- selection of most informative samples for the next cycle: [cycle_select.py](<./cycle_select.py>)
+
+These stages are linked through their dependences in [dvc.yaml](<./dvc.yaml>) file
+
+## Running on Pascal VOC example
+
+### Configure the pipeline
+
+Optionally, start Neo4J server if it is not already running to help visualize
+CMF recorded lineage. The steps below assume that Neo4J local directory is
+"~/.neo4j", but a different directory can be used depending on how Neo4J
+is configured: 
+
+```bash
+export NEO4J_HOME=~/.neo4j
+export NEO4J_CONF=~/.neo4j/neo4j.conf
+neo4j start
+```
+
+After installing the code (see [Installation](#installation)), copy the code
+from "<cmf_installation>/examples/al_object_detection/" to run directory.
+This is to avoid conflicts between git repos for master source code and for
+artifacts, metadata, and run code.
+
+```bash
+mkdir <run_directory>
+cp -pr <cmf_installation>/examples/al_object_detection/* <run_directory>
+```
+
+Configure the pipeline. Everything is pre-configured for this example, except
+for the location of the input data. Modify "data_root" parameter in
+[configs/MIAOD.py](<./configs/MIAOD.py>) and [configs/_base_/voc0712.py](<./configs/_base_/voc0712.py>) configuration files
+to point to the location of Pascal VOC2007 and VOC2012 datasets 
+("<datasets_path>/VOCdevkit/" - see [Installation](#installation)
+for installing these datasets). 
+
+Activate Conda virtual environment containing CMF, PyTorch, MMCV, and MI-AOD
+dependences installed as per [Installation](#installation).
+
+```bash
+conda activate <venv_name>
+```
+
+Initialize CMF. First edit the "<run_directory>/sample_env" file to customize
+your git, DVC and Neo4J configuration. Note that the Neo4J URI is typically
+"bolt://IP_ADDRESS:7687" or "bolt://localhost:7687". Neo4J is not needed by CMF
+to capture the lineage, it is only needed to visualize the lineage.
+Then, source this file and run "<run_directory>/initialize.sh" to initialize
+DVC and git repos. This will print "NEXT STEPS". Ignore the recommendation
+to run "test_script.sh".
+
+```bash
+cd <run_directory>
+# first, edit the sample_env file to customize git, DVC and Neo4J environments
+source sample_env
+./initialize.sh
+```
+
+### Run the pipeline
+
+If not already active (for example, when not running in the same terminal
+window that was used to [Configure](#configure-the-pipeline) the pipeline), activate Conda virtual environment
+containing CMF, PyTorch, MMCV, and MI-AOD dependences installed as per
+[Installation](#installation)
+
+```bash
+conda activate <venv_name>
+```
+
+If not already set (for example, when not running in the same terminal
+window that was used to [Configure](#configure-the-pipeline) the pipeline), source "<run_directory>/sample_env"
+file to customize your Neo4J configuration:
+
+```bash
+cd <run_directory>
+source sample_env
+```
+
+Visualize pipeline execution dependences:
+
+```bash
+cd <run_directory>
+dvc dag
+```
+
+Use dvc to run the pipeline:
+
+```bash
+dvc repro -f
+```
+
+Optional - Change this line (Line Number:126)in dvc_cmf_ingest.py to capture the lineage in neo4j. Set graph=True
+```
+metawriter = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=True)
+```
+After running the pipeline, build CMF lineage. This is done separately because
+during the dvc run, stage inputs and outputs are locked by DVC:
+
+```bash
+python dvc_cmf_ingest.py
+```
+
+
+Visualize CMF lineage in Neo4J. TODO: Note that mAP or other metrics recorded by CMF
+during pipeline execution are shown as ouputs from [cycle_select.py](<./cycle_select.py>) stage:
+
+```
+Point your browser to Neo4J server, e.g.:
+<ip_address>:7474/browser/ or
+localhost:7474/browser/ 
+
+Visualize CMF lineage with Neo4J command:
+MATCH (a:Execution)-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r,b
+```
+
+To delete old lineages from Neo4J database :
+
+```
+MATCH(n) DETACH DELETE n
+```
+
+## Installation
+
+These installation instructions supersede installation instructions for
+the original MI-AOD package.
+
+Create and activate new Conda virtual environment:
+
+```bash
+conda create -n <venv_name> python=3.8
+conda activate <venv_name>
+```
+
+Install CMF.
+
+As of today, clone CMF library from al_objectdetection branch for this example.
+In the future, the code will be merged to master branch:
+
+```bash
+cd <cmf_installation_parent_directory>
+git clone -b al_objectdetection https://github.com/HewlettPackard/cmf.git
+cd cmf # this is the <cmf_installation> directory
+python setup.py bdist_wheel
+cd dist
+pip install cmflib-0.0.1-py3-none-any.whl
+```
+
+Optionally, install Neo4J to view pipeline lineages recorded by CMF. Note
+that this is not needed by CMF to capture the lineage, it is only needed
+to visualize the lineage.
+
+Neo4J installation instructions are described at:
+https://neo4j.com/docs/operations-manual/current/installation/linux/ .
+Before proceeding with install, verify installed Java OpenJDK as per those
+instructions. For Ubuntu, Java prerequisites are explained here:
+https://neo4j.com/docs/operations-manual/current/installation/linux/debian/
+We used these installation steps:
+
+```bash
+wget -O - https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
+echo 'deb https://debian.neo4j.com stable latest' | sudo tee /etc/apt/sources.list.d/neo4j.list
+sudo apt-get update
+sudo add-apt-repository universe
+sudo apt-get install neo4j
+```
+
+Configure Neo4J (if installed) as follows, then edit ~/.neo4j/neo4j.conf
+to point to local directories (data, run, logs, etc.) from below:
+
+```bash
+mkdir ~/.neo4j
+cp -p /etc/neo4j/neo4j.conf ~/.neo4j
+mkdir ~/.neo4j/data
+mkdir ~/.neo4j/run
+mkdir ~/.neo4j/logs
+mkdir ~/.neo4j/metrics
+mkdir ~/.neo4j/data/transactions
+mkdir ~/.neo4j/data/dumps
+# Edit ~/.neo4j/neo4j.conf to point to the above directories
+```
+
+Install PyTorch and MMCV libraries 
+
+It is important to choose matching versions of GPU CUDA version, PyTorch
+and MMCV. First, source NVidia environment and identify CUDA version by
+running "nvcc --version". Then, identify corresponding PyTorch version on
+this Web site: https://pytorch.org/get-started/previous-versions/ along
+with TorchVision and TorchAudio versions. Note that multiple PyTorch versions
+listed there will support your CUDA version. From the supported list, choose
+CUDA and PyTorch combination that is supported by MMCV libraries as per this
+Web site: https://mmcv.readthedocs.io/en/latest/get_started/installation.html .
+On this site, scroll down to "Install with pip" section and enter CUDA
+and PyTorch combination in pull-down boxes. The MMCV pull-down box will then
+show the MMCV versions that support this CUDA and PyTorch combination. Choose
+one of these versions, which will then show "pip install" command for this MMCV
+version. We tested the flow with MMCV 1.5.0 (note that this is newer than
+MMCV 1.0.5 mentioned in the original MI-AOD documentation, but we found that
+MMDetection and MI-AOD code works wth this MMCV library version under
+Python 3.8 and various CUDA and PyTorch versions, e.g., CUDA 11.3 and
+PyTorch 1.11.0). Here are the commands to install PyTorch and MMCV libraries: 
+
+```bash
+conda install pytorch==<Pytorch_version> torchvision==<Torch_vision_version> torchaudio==<Torch_audio_version> cudatoolkit=<CUDA_version> -c pytorch
+pip install mmcv-full==<MMCV_version> -f https://download.openmmlab.com/mmcv/dist/cu<CUDA_version>/<PyTorch_version>/index.html
+
+# for example:
+# conda install pytorch==1.11.0 torchvision==0.12.0 torchaudio==0.11.0 cudatoolkit=11.3 -c pytorch
+#pip install mmcv-full==1.5.0 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11/index.html
+# where "https://download.openmmlab.com/mmcv/dist/cu113/torch1.11/index.html"
+# is from "https://mmcv.readthedocs.io/en/latest/get_started/installation.html"
+# Web site as per the description above
+```
+
+Install the MI-AOD code
+
+Note that <conda_local_dir> is the conda local directory and <venv_name>
+is the virtual environment name:
+
+```bash
+cd <cmf_installation>
+cd examples/al_object_detection
+pip install -r requirements/build.txt
+pip install -v -e .  # or "python setup.py develop"
+pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=pycocotools"
+pip install "git+https://github.com/open-mmlab/cocoapi.git#subdirectory=lvis"
+cp -v epoch_based_runner.py <conda_local_dir>/envs/<venv_name>/lib/python3.8/site-packages/mmcv/runner/
+```
+
+Install Pascal VOC2007 and 2012 datsets
+
+```bash
+cd <datasets_path>
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
+wget http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar
+tar -xf VOCtrainval_06-Nov-2007.tar
+tar -xf VOCtest_06-Nov-2007.tar
+tar -xf VOCtrainval_11-May-2012.tar
+```
+
+Notice that dataset annotation XML files are in Annotations subdirectory while
+corresponding input images are in JPEGImages subdirectory.
+
+## Running on Custom Dataset.
+
+Please update the following files
+
+1. Preparing the dataset.
+    Dataset folder should have the following structure.
+    ```
+    BaseFolder
+    |
+    |___ Dataset
+    |    |
+    |    |---Annotations    
+    |    |    |---xml file
+    |    |---ImageSets
+    |    |    |
+    |    |    |---Main             
+    |    |    |    |---trainval.txt
+    |    |    |    |---test.txt
+    |    |    |
+    |    |---JPEGImages    
+    |    |    |   |---Image files in jpg format
+       ```       
+ 2. Preparing the dataset file.<br>
+    Create a file inside the folder mmdet/datasets.<br>
+    we can take voc.py in the same folder as a template and make necessary modifications.<br>
+    Newly added file hdc.py was created for the custom dataset.<br>
+    Please modify the class names in this file appropriately.<br>
+ 
+ 3. Prepare config file for the new dataset in the folder config/_base_ <br>
+     hdc.py was created for the custom dataset.<br>
+     Please modify it appropriately.<br>
+ 
+ 4. Config changes 
+    1. Dataset path <br>
+       - Modify *configs/MIAOD-GRAY* to reflect the dataset path<br>
+         sections - data_root, data<br>
+       - Modify *configs/_base_/hdc.py* to reflect the dataset path<br>
+         sections - data_root, data<br>
+    
+     2. Number of classes<br>
+         Modify the section model in MIAOD-GRAY.<br>
+         C=2, for two class dataset.<br>
+         
+     3. Number of images to train.<br>
+         Modify the section X_S_size AND X_L_0_size in *config/MIAOD-GRAY*<br>
+           
+
 # MI-AOD
 
 Language: [简体中文](README_cn.md) | English

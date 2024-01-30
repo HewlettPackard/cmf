@@ -78,6 +78,8 @@ mmdet/datasets/coco.py
 mmdet/datasets/custom.py
 mmdet/datasets/dataset_wrappers.py
 mmdet/datasets/deepfashion.py
+mmdet/datasets/gray.py
+mmdet/datasets/hdc.py
 mmdet/datasets/lvis.py
 mmdet/datasets/voc.py
 mmdet/datasets/wider_face.py
@@ -214,3 +216,12 @@ mmdet/utils/contextmanagers.py
 mmdet/utils/logger.py
 mmdet/utils/profiling.py
 mmdet/utils/util_mixins.py
+mmdet/utils/hdc/__init__.py
+mmdet/utils/hdc/active_datasets.py
+tests/test_anchor.py
+tests/test_assigner.py
+tests/test_async.py
+tests/test_config.py
+tests/test_fp16.py
+tests/test_masks.py
+tests/test_version.py

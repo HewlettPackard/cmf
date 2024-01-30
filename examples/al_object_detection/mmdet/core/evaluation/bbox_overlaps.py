@@ -1,20 +1,20 @@
 import numpy as np
 
 
-def bbox_overlaps(bboxes1, bboxes2, mode='iou', eps=1e-6):
+def bbox_overlaps(bboxes1, bboxes2, mode='iog', eps=1e-6):
     """Calculate the ious between each bbox of bboxes1 and bboxes2.
 
     Args:
         bboxes1(ndarray): shape (n, 4)
         bboxes2(ndarray): shape (k, 4)
         mode(str): iou (intersection over union) or iof (intersection
-            over foreground)
+            over foreground) or iog (intersection over ground truth)
 
     Returns:
         ious(ndarray): shape (n, k)
     """
 
-    assert mode in ['iou', 'iof']
+    assert mode in ['iou', 'iof', 'iog']
 
     bboxes1 = bboxes1.astype(np.float32)
     bboxes2 = bboxes2.astype(np.float32)
@@ -39,8 +39,10 @@ def bbox_overlaps(bboxes1, bboxes2, mode='iou', eps=1e-6):
             y_end - y_start, 0)
         if mode == 'iou':
             union = area1[i] + area2 - overlap
-        else:
+        elif mode == 'iof':
             union = area1[i] if not exchange else area2
+        else:
+            union = area1[i] if exchange else area2 
         union = np.maximum(union, eps)
         ious[i, :] = overlap / union
     if exchange:
