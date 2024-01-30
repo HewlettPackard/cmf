@@ -1,0 +1,76 @@
+vars:
+    - configs/MIAOD-GRAY.py:data_root
+    - al_cycle.json:al_cycle,next_cycle,al_seed
+
+stages:
+    input_sample_lists:
+        cmd:
+            python input_lists.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --labeled ${data_root}/training.txt --unlabeled ${data_root}/unlabeled.txt --seed ${al_seed} --train ${data_root}/train.txt --selected work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy
+        deps:
+            - ${data_root}/training.txt
+            - ${data_root}/unlabeled.txt
+        outs:
+            - ${data_root}/train.txt
+            - work_dirs/test/X_L_${al_cycle}.npy
+            - work_dirs/test/X_U_${al_cycle}.npy
+        params:
+            - configs/MIAOD-GRAY.py:
+                - data_root
+            - al_cycle.json:
+                - al_cycle
+                - al_seed
+
+    active_learning_training:
+        cmd:
+            #single gpu
+            python cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --labeled work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy --seed ${al_seed} --model work_dirs/test/cycle.pth
+            #distributed mode
+            #python -m torch.distributed.launch --nproc_per_node=6 --master_port=39025  cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --labeled work_dirs/test/X_L_${al_cycle}.npy --unselected work_dirs/test/X_U_${al_cycle}.npy --seed ${al_seed} --model work_dirs/test/cycle.pth --gpus 6 --launcher pytorch
+        deps:
+            - work_dirs/test/X_L_${al_cycle}.npy
+            - work_dirs/test/X_U_${al_cycle}.npy
+        outs:
+            - work_dirs/test/cycle.pth
+        params:
+            - al_cycle.json:
+                - al_cycle
+                - al_seed
+
+    active_learning_selection:
+        cmd:
+            #single gpu
+            python cycle_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --model work_dirs/test/cycle.pth --labeled work_dirs/test/X_L_${al_cycle}.npy --seed ${al_seed} --labeled_next work_dirs/test/X_L_${next_cycle}.npy --unselected work_dirs/test/X_U_${next_cycle}.npy --bbox_output work_dirs/test/labeling_hints_${next_cycle}.txt
+            #distributed mode
+            #python -m torch.distributed.launch --nproc_per_node=4 --master_port=39016  cycle_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${al_cycle} --model work_dirs/test/cycle.pth --labeled work_dirs/test/X_L_${al_cycle}.npy --seed ${al_seed} --labeled_next work_dirs/test/X_L_${next_cycle}.npy --unselected work_dirs/test/X_U_${next_cycle}.npy --bbox_output work_dirs/test/labeling_hints_${next_cycle}.txt --gpus 4 --launcher pytorch
+        deps:
+            - work_dirs/test/cycle.pth
+            - work_dirs/test/X_L_${al_cycle}.npy
+        outs:
+            - work_dirs/test/X_L_${next_cycle}.npy
+            - work_dirs/test/X_U_${next_cycle}.npy
+        params:
+            - al_cycle.json:
+                - al_cycle
+                - next_cycle
+                - al_seed
+
+    output_sample_lists:
+        cmd:
+            python output_lists.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --selected work_dirs/test/X_L_${al_cycle}.npy --selected_next work_dirs/test/X_L_${next_cycle}.npy --train ${data_root}/train.txt --map ${data_root}/map.txt --seed ${al_seed} --label_next ${data_root}/label_next.txt --labeled ${data_root}/training_next.txt --unlabeled ${data_root}/unlabeled_next.txt --cycle_config al_cycle.json --cycle_config_next al_cycle_next.json
+        deps:
+            - work_dirs/test/X_L_${al_cycle}.npy
+            - work_dirs/test/X_L_${next_cycle}.npy
+            - ${data_root}/train.txt 
+            - ${data_root}/map.txt
+        outs:
+            - ${data_root}/label_next.txt
+            - ${data_root}/training_next.txt
+            - ${data_root}/unlabeled_next.txt
+            - al_cycle_next.json
+        params:
+            - configs/MIAOD-GRAY.py:
+                - data_root
+            - al_cycle.json:
+                - al_cycle
+                - next_cycle
+                - al_seed

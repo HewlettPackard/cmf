@@ -1,0 +1,1 @@
+python cycle_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle 0 --model work_dirs/test/cycle.pth --labeled work_dirs/test/X_L_0.npy --seed 666 --labeled_next work_dirs/test/X_L_1.npy --unselected work_dirs/test/X_U_1.npy --bbox_output work_dirs/test/labeling_hints_1.txt

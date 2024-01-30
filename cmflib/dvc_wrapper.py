@@ -20,6 +20,46 @@ import dvc.api
 import dvc.exceptions
 
 
+def check_git_remote() -> bool:
+    process = ""
+    commit = ""
+    git_remote_configured = False
+    try:
+        process = subprocess.Popen(['git', 'remote', 'show'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        remote = output.strip()
+        if remote:
+            git_remote_configured = True
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+    return git_remote_configured
+
+
+def check_default_remote() -> bool:
+    process = ""
+    commit = ""
+    dvc_configured = False
+    try:
+        process = subprocess.Popen(['dvc', 'config', 'core.remote'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        remote = output.strip()
+        if remote:
+            dvc_configured = True
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+    return dvc_configured
+
+
 def dvc_get_url(folder: str, retry: bool = False, repo: str = "") -> str:
     url = ""
     try:
@@ -54,7 +94,57 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
     return c_hash
 
 
+def check_git_repo() -> bool:
+
+    process = ""
+    commit = ""
+    is_git_repo = False
+    try:
+        process = subprocess.Popen(['git',
+                                    'rev-parse',
+                                    '--is-inside-work-tree'],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        is_git_repo = output.strip()
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+    return is_git_repo
+
+
+def git_checkout_new_branch(branch_name: str):
+
+    process = ""
+    commit = ""
+    try:
+        process = subprocess.Popen(['git',
+                                    'checkout',
+                                    '-q',
+                                    '-B',
+                                    branch_name],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        # output = process.stdout.readline()
+        output, error = process.communicate(timeout=60)
+
+        commit = output.strip()
+        print(f"*** Note: CMF will check out a new branch in git to commit the metadata files ***\n"
+              f"*** The checked out branch is {branch_name}. ***")
+    except Exception as err:
+        process.kill()
+        outs, errs = process.communicate()
+        print(f"Unexpected {err}, {type(err)}")
+        print(f"Unexpected {outs}")
+        print(f"Unexpected {errs}")
+        print(f"Checking out new branch for the execution failed, continuing in the default branch.")
+
+
 def git_get_commit() -> str:
+    process = ""
+    commit = ""
     try:
         process = subprocess.Popen(['git', 'rev-parse', 'HEAD'],
                                    stdout=subprocess.PIPE,
@@ -70,17 +160,27 @@ def git_get_commit() -> str:
         print(f"Unexpected {errs}")
     return commit
 
+
 def commit_dvc_lock_file(file_path: str, execution_id) -> str:
     commit = ""
+    process = ""
     try:
         process = subprocess.Popen(['git', 'add', file_path],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         _, _ = process.communicate(timeout=60)
-        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting ' + str(file_path) + "-" + str(execution_id)],
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
+        process = subprocess.Popen(
+            [
+                'git',
+                'commit',
+                '-m ' +
+                'commiting ' +
+                str(file_path) +
+                "-" +
+                str(execution_id)],
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
 
         output, errs = process.communicate(timeout=60)
         commit = output.strip()
@@ -101,6 +201,7 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
 
 def commit_output(folder: str, execution_id: str) -> str:
     commit = ""
+    process = ""
     try:
         process = subprocess.Popen(['dvc', 'add', folder],
                                    stdout=subprocess.PIPE,
@@ -114,9 +215,17 @@ def commit_output(folder: str, execution_id: str) -> str:
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         _, _ = process.communicate(timeout=60)
-        process = subprocess.Popen(['git', 'commit', '-m ' + 'commiting ' + str(folder) + "-" + str(execution_id)],
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
+        process = subprocess.Popen(
+            [
+                'git',
+                'commit',
+                '-m ' +
+                'commiting dvc metadata file for ' +
+                str(folder) +
+                "-" +
+                str(execution_id)],
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
 
         output, errs = process.communicate(timeout=60)
         commit = output.strip()
@@ -139,6 +248,9 @@ def commit_output(folder: str, execution_id: str) -> str:
 # Get the remote repo
 def git_get_repo() -> str:
     commit = ""
+    process = ""
+    output = ""
+    errs = ""
     try:
         process = subprocess.Popen(['git', 'remote', '-v'],
                                    stdout=subprocess.PIPE,

@@ -14,6 +14,7 @@
 # limitations under the License.
 ###
 from neo4j import GraphDatabase
+import typing as t
 import re
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
@@ -34,7 +35,8 @@ class GraphDriver:
             props = {}
         pipeline_syntax = self._create_pipeline_syntax(name, props, uri)
         with self.driver.session() as session:
-            node = session.write_transaction(self._run_transaction, pipeline_syntax)
+            node = session.write_transaction(
+                self._run_transaction, pipeline_syntax)
             self.pipeline_id = node[0]["node_id"]
 
     def create_stage_node(self, name: str, parent_context: mlpb.Context, stage_id: int, props=None):
@@ -42,12 +44,14 @@ class GraphDriver:
             props = {}
         parent_id = parent_context.id
         parent_name = parent_context.name
-        stage_syntax = self._create_stage_syntax(name, props, stage_id, parent_id, parent_name)
+        stage_syntax = self._create_stage_syntax(
+            name, props, stage_id, parent_id, parent_name)
         with self.driver.session() as session:
-            node = session.write_transaction(self._run_transaction, stage_syntax)
+            node = session.write_transaction(
+                self._run_transaction, stage_syntax)
             self.stage_id = node[0]["node_id"]
-            pc_syntax = self._create_parent_child_syntax("Pipeline", "Stage", self.pipeline_id, self.stage_id,
-                                                         "contains")
+            pc_syntax = self._create_parent_child_syntax(
+                "Pipeline", "Stage", self.pipeline_id, self.stage_id, "contains")
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     def create_execution_node(self, name: str, parent_id: int, pipeline_context: mlpb.Context, command: str,
@@ -57,11 +61,14 @@ class GraphDriver:
             props = {}
         pipeline_id = pipeline_context.id
         pipeline_name = pipeline_context.name
-        execution_syntax = self._create_execution_syntax(name, command, props, execution_id, pipeline_id, pipeline_name)
+        execution_syntax = self._create_execution_syntax(
+            name, command, props, execution_id, pipeline_id, pipeline_name)
         with self.driver.session() as session:
-            node = session.write_transaction(self._run_transaction, execution_syntax)
+            node = session.write_transaction(
+                self._run_transaction, execution_syntax)
             self.execution_id = node[0]["node_id"]
-            pc_syntax = self._create_parent_child_syntax("Stage", "Execution", self.stage_id, self.execution_id, "runs")
+            pc_syntax = self._create_parent_child_syntax(
+                "Stage", "Execution", self.stage_id, self.execution_id, "runs")
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     def create_dataset_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
@@ -71,13 +78,14 @@ class GraphDriver:
             custom_properties = {}
         pipeline_id = pipeline_context.id
         pipeline_name = pipeline_context.name
-        dataset_syntax = self._create_dataset_syntax(name, path, uri, pipeline_id, pipeline_name,
-                                                     custom_properties)
+        dataset_syntax = self._create_dataset_syntax(
+            name, path, uri, pipeline_id, pipeline_name, custom_properties)
         with self.driver.session() as session:
-            node = session.write_transaction(self._run_transaction, dataset_syntax)
+            node = session.write_transaction(
+                self._run_transaction, dataset_syntax)
             node_id = node[0]["node_id"]
-            pc_syntax = self._create_execution_artifacts_link_syntax("Execution", "Dataset", self.execution_id, node_id,
-                                                                     event)
+            pc_syntax = self._create_execution_artifacts_link_syntax(
+                "Execution", "Dataset", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     def create_model_node(self, name: str, uri: str, event: str, execution_id: str, pipeline_context: mlpb.Context,
@@ -86,12 +94,14 @@ class GraphDriver:
             custom_properties = {}
         pipeline_id = pipeline_context.id
         pipeline_name = pipeline_context.name
-        model_syntax = self._create_model_syntax(name, uri, pipeline_id, pipeline_name, custom_properties)
+        model_syntax = self._create_model_syntax(
+            name, uri, pipeline_id, pipeline_name, custom_properties)
         with self.driver.session() as session:
-            node = session.write_transaction(self._run_transaction, model_syntax)
+            node = session.write_transaction(
+                self._run_transaction, model_syntax)
             node_id = node[0]["node_id"]
-            pc_syntax = self._create_execution_artifacts_link_syntax("Execution", "Model", self.execution_id, node_id,
-                                                                     event)
+            pc_syntax = self._create_execution_artifacts_link_syntax(
+                "Execution", "Model", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     def create_metrics_node(self, name: str, uri: str, event: str, execution_id: int, pipeline_context: mlpb.Context,
@@ -100,16 +110,21 @@ class GraphDriver:
             custom_properties = {}
         pipeline_id = pipeline_context.id
         pipeline_name = pipeline_context.name
-        metrics_syntax = self._create_metrics_syntax(name, uri, event, execution_id, pipeline_id, pipeline_name,
-                                                     custom_properties)
+        metrics_syntax = self._create_metrics_syntax(
+            name, uri, event, execution_id, pipeline_id, pipeline_name, custom_properties)
         with self.driver.session() as session:
-            node = session.write_transaction(self._run_transaction, metrics_syntax)
+            node = session.write_transaction(
+                self._run_transaction, metrics_syntax)
             node_id = node[0]["node_id"]
-            pc_syntax = self._create_execution_artifacts_link_syntax("Execution", "Metrics", self.execution_id, node_id,
-                                                                     event)
+            pc_syntax = self._create_execution_artifacts_link_syntax(
+                "Execution", "Metrics", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
-    def create_artifact_relationships(self, parent_artifacts, child_artifact, relation_properties):
+    def create_artifact_relationships(
+            self,
+            parent_artifacts,
+            child_artifact,
+            relation_properties):
         #      f = lambda d: d['Event']
         #      res = {k:list(v) for k,v in groupby(sorted(artifacts, key=f), f)}
 
@@ -123,45 +138,58 @@ class GraphDriver:
             parent_artifact_type = k["Type"]
             parent_artifact_uri = k["URI"]
             parent_name = k["Name"]
-            relation = re.sub('\W+', '', re.split(",", k["Execution_Name"])[-1])
-            pc_syntax = self._create_parent_child_artifacts_syntax(parent_artifact_type, child_artifact_type,
-                                                                   parent_artifact_uri, child_artifact_uri, parent_name,
-                                                                   child_name, pipeline_id, relation,
-                                                                   relation_properties)
+            relation = re.sub(
+                '\W+', '', re.split(",", k["Execution_Name"])[-1])
+            pc_syntax = self._create_parent_child_artifacts_syntax(
+                parent_artifact_type,
+                child_artifact_type,
+                parent_artifact_uri,
+                child_artifact_uri,
+                parent_name,
+                child_name,
+                pipeline_id,
+                relation,
+                relation_properties)
             with self.driver.session() as session:
                 _ = session.write_transaction(self._run_transaction, pc_syntax)
 
-    def create_execution_links(self, parent_artifact_uri, parent_artifact_name, parent_artifact_type):
+    def create_execution_links(
+            self,
+            parent_artifact_uri,
+            parent_artifact_name,
+            parent_artifact_type):
 
         parent_execution_query = "MATCH (n:{}".format(
-            parent_artifact_type) + "{uri: '" + parent_artifact_uri + "'}) <-[:output]-(f:Execution) Return ID(f)as id, f.uri as uri"
+            parent_artifact_type) + "{uri: '" + parent_artifact_uri + "'}) " \
+            "<-[:output]-(f:Execution) Return ID(f)as id, f.uri as uri"
 
-        already_linked_execution_query = "MATCH (f)-[r:linked]->(e2:Execution) WHERE r.uri = '{}' RETURN ID(f)as id, f.uri as uri".format(
-            parent_artifact_uri)
+        already_linked_execution_query = "MATCH (f)-[r:linked]->(e2:Execution) " \
+            "WHERE r.uri = '{}' RETURN ID(f)as id, f.uri as uri".format(parent_artifact_uri)
 
         with self.driver.session() as session:
-            execution_parent = session.read_transaction(self._run_transaction, parent_execution_query)
+            execution_parent = session.read_transaction(
+                self._run_transaction, parent_execution_query)
             executions = {}
 
             for record in execution_parent:
                 p_id = record["id"]
                 executions[str(p_id)] = str(record["uri"])
 
-            linked_executions = session.read_transaction(self._run_transaction, already_linked_execution_query)
+            linked_executions = session.read_transaction(
+                self._run_transaction, already_linked_execution_query)
             linked = {}
             for record in linked_executions:
                 linked_id = record["id"]
                 linked[str(linked_id)] = str(record["uri"])
-            unlinked_executions = [i for i in executions.keys() if i not in linked.keys()]
+            unlinked_executions = [
+                i for i in executions.keys() if i not in linked.keys()]
             if not unlinked_executions:
                 return
             execution_id_to_link = unlinked_executions[0]
             execution_uri = executions[execution_id_to_link]
-            pc_syntax = self._create_execution_link_syntax("Execution", "Execution", execution_uri,
-                                                           execution_id_to_link,
-                                                           self.execution_id,
-                                                           "linked", {"Artifact_Name": parent_artifact_name,
-                                                                      "uri": parent_artifact_uri})
+            pc_syntax = self._create_execution_link_syntax(
+                "Execution", "Execution", execution_uri, execution_id_to_link, self.execution_id, "linked", {
+                    "Artifact_Name": parent_artifact_name, "uri": parent_artifact_uri})
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     @staticmethod
@@ -173,7 +201,7 @@ class GraphDriver:
         return values
 
     @staticmethod
-    def _create_pipeline_syntax(name: str, props: {}, uri: int) -> str:
+    def _create_pipeline_syntax(name: str, props: t.Dict, uri: int) -> str:
         props["Name"] = name
         props["uri"] = str(uri)
         props["pipeline_id"] = str(uri)
@@ -186,7 +214,8 @@ class GraphDriver:
         syntax_str = syntax_str + "}) RETURN ID(a) as node_id"
         return syntax_str
 
-    # Todo - Verify what is considered as unique node . is it a combination of all properties
+    # Todo - Verify what is considered as unique node . is it a combination of
+    # all properties
 
     @staticmethod
     def _create_dataset_syntax(name: str, path: str, uri: str, pipeline_id: int, pipeline_name: str,
@@ -196,11 +225,11 @@ class GraphDriver:
         custom_properties["pipeline_id"] = str(pipeline_id)
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Dataset {uri:\"" + uri + "\"}) SET "
-        props_str = ""
+        # props_str = ""
         for k, v in custom_properties.items():
             k = re.sub('\W+', '', k)
-            props_str = "a." + k + " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(
-                v) + "\","
+            props_str = "a." + k + \
+                " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str
         syntax_str = syntax_str.rstrip(",")
         syntax_str = syntax_str + " RETURN ID(a) as node_id"
@@ -239,7 +268,7 @@ class GraphDriver:
         return syntax_str
 
     @staticmethod
-    def _create_stage_syntax(name: str, props: {}, uri: int, pipeline_id: int, pipeline_name: str) -> str:
+    def _create_stage_syntax(name: str, props: t.Dict, uri: int, pipeline_id: int, pipeline_name: str) -> str:
         props["Name"] = name
         props["uri"] = str(uri)
         props["pipeline_id"] = str(pipeline_id)
@@ -274,7 +303,7 @@ class GraphDriver:
     @staticmethod
     def _create_execution_link_syntax(parent_label: str, child_label: str, parent_uri: str, parent_id: str,
                                       child_id: int,
-                                      relation: str, relation_properties: {}):
+                                      relation: str, relation_properties: t.Dict):
         """
         MATCH
         (a:Person),
@@ -284,25 +313,22 @@ class GraphDriver:
         RETURN type(r)
         """
         parent_child_syntax_1 = "MATCH (a:{}), (b:{}) WHERE a.uri = '{}' AND ID(a) = {} AND  ID(b) = {} ".format(
-            parent_label,
-            child_label,
-            parent_uri,
-            parent_id,
-            child_id)
+            parent_label, child_label, parent_uri, parent_id, child_id)
         parent_child_syntax_2 = "MERGE (a)-[r:{}".format(relation)
         parent_child_syntax_3 = "{"
         for k, v in relation_properties.items():
             parent_child_syntax_3 = parent_child_syntax_3 + k + ":" + "\"" + v + "\"" + ","
-        parent_child_syntax_3 = parent_child_syntax_3.rstrip(parent_child_syntax_3[-1])
+        parent_child_syntax_3 = parent_child_syntax_3.rstrip(
+            parent_child_syntax_3[-1])
         parent_child_syntax_4 = "}]->(b) RETURN type(r)"
         parent_child_syntax = parent_child_syntax_1 + parent_child_syntax_2 \
-                              + parent_child_syntax_3 + parent_child_syntax_4
+            + parent_child_syntax_3 + parent_child_syntax_4
         return parent_child_syntax
 
     @staticmethod
     def _create_parent_child_artifacts_syntax(parent_label: str, child_label: str, parent_uri: str, child_uri: str,
                                               parent_name: str, child_name: str, pipeline_id: int, relation: str,
-                                              relation_properties: {}):
+                                              relation_properties: t.Dict):
         """
         MATCH
         (a:Person),
@@ -316,15 +342,17 @@ class GraphDriver:
         parent_child_syntax_2 = "MERGE (a)-[r:{}".format(relation)
         parent_child_syntax_3 = "{"
         for k, v in relation_properties.items():
-            parent_child_syntax_3 = parent_child_syntax_3 + k + ":" + "\"" + str(v) + "\"" + ","
-        parent_child_syntax_3 = parent_child_syntax_3.rstrip(parent_child_syntax_3[-1])
+            parent_child_syntax_3 = parent_child_syntax_3 + \
+                k + ":" + "\"" + str(v) + "\"" + ","
+        parent_child_syntax_3 = parent_child_syntax_3.rstrip(
+            parent_child_syntax_3[-1])
         parent_child_syntax_4 = "}]->(b) RETURN type(r)"
-        parent_child_syntax = parent_child_syntax_1 + parent_child_syntax_2 + parent_child_syntax_3 + \
-                              parent_child_syntax_4
+        parent_child_syntax = parent_child_syntax_1 + parent_child_syntax_2 + \
+            parent_child_syntax_3 + parent_child_syntax_4
         return parent_child_syntax
 
     @staticmethod
-    def _create_execution_syntax(name: str, command: str, props: {}, uri: int, pipeline_id: int,
+    def _create_execution_syntax(name: str, command: str, props: t.Dict, uri: int, pipeline_id: int,
                                  pipeline_name: str) -> str:
         props["Name"] = name
         props["Command"] = command

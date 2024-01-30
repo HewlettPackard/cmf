@@ -57,7 +57,7 @@ def load_ann_list(paths):
     return anns
 
 
-def update_X_L(uncertainty, X_all, X_L, X_S_size):
+def update_X_L(uncertainty, X_all, X_L, X_S_size, return_X_S=False):
     uncertainty = uncertainty.cpu().numpy()
     all_X_U = np.array(list(set(X_all) - set(X_L)))
     uncertainty_X_U = uncertainty[all_X_U]
@@ -72,4 +72,25 @@ def update_X_L(uncertainty, X_all, X_L, X_S_size):
         X_U_next = np.concatenate((X_U_next, X_L_next[:X_L_next.shape[0] - X_U_next.shape[0]]))
     X_L_next.sort()
     X_U_next.sort()
-    return X_L_next, X_U_next
+    if return_X_S:
+        return X_L_next, X_U_next, X_S
+    else:
+        return X_L_next, X_U_next
+
+def update_X_L_random(X_all, X_L, X_S_size, return_X_S=False):
+    all_X_U = np.array(list(set(X_all) - set(X_L)))
+    np.random.shuffle(all_X_U)
+    X_S = all_X_U[:X_S_size]
+    X_L_next = np.concatenate((X_L, X_S))
+    all_X_U_next = np.array(list(set(X_all) - set(X_L_next)))
+    np.random.shuffle(all_X_U_next)
+    X_U_next = all_X_U_next[:X_L_next.shape[0]]
+    if X_L_next.shape[0] > X_U_next.shape[0]:
+        np.random.shuffle(X_L_next)
+        X_U_next = np.concatenate((X_U_next, X_L_next[:X_L_next.shape[0] - X_U_next.shape[0]]))
+    X_L_next.sort()
+    X_U_next.sort()
+    if return_X_S:
+        return X_L_next, X_U_next, X_S
+    else:
+        return X_L_next, X_U_next

@@ -1,0 +1,27 @@
+stages:
+    initial_selection:
+            cmd:
+                python initial_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --labeled_next work_dirs/test/X_L_0.npy --unselected work_dirs/test/X_U_0.npy
+            deps:
+                - configs/MIAOD-GRAY.py
+            outs:
+                - work_dirs/test/X_L_0.npy
+                - work_dirs/test/X_U_0.npy
+
+    active_learning_training:
+        foreach:
+            - cycle: 0
+
+        do:
+            cmd:
+                    #single gpu
+                    python train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${item.cycle} --labeled work_dirs/test/X_L_${item.cycle}.npy --unselected work_dirs/test/X_U_${item.cycle}.npy --model work_dirs/test/cycle_${item.cycle}.pth
+                    #distributed mode
+                    #python -m torch.distributed.launch --nproc_per_node=6 --master_port=39025  cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${item.cycle} --labeled work_dirs/test/X_L_${item.cycle}.npy --unselected work_dirs/test/X_U_${item.cycle}.npy --model work_dirs/test/cycle_${item.cycle}.pth --gpus 6 --launcher pytorch
+
+            deps:
+                - work_dirs/test/X_L_${item.cycle}.npy
+                - work_dirs/test/X_U_${item.cycle}.npy
+            outs:
+                - work_dirs/test/cycle_${item.cycle}.pth
+
