@@ -1,0 +1,50 @@
+schema: '2.0'
+stages:
+  input_sample_lists:
+    cmd: python input_lists.py configs/MIAOD-GRAY.py --work_directory work_dirs/test
+      --labeled /mnt/beegfs/HDC/data/tomography_data/tiled_annotations/training.txt
+      --unlabeled /mnt/beegfs/HDC/data/tomography_data/tiled_annotations/unlabeled.txt
+      --seed 123 --train /mnt/beegfs/HDC/data/tomography_data/tiled_annotations/train.txt
+      --selected work_dirs/test/X_L_1.npy --unselected work_dirs/test/X_U_1.npy
+    deps:
+    - path: /mnt/beegfs/HDC/data/tomography_data/tiled_annotations/training.txt
+      md5: 465b0575ca40f63bb9a6fdb32a3797da
+      size: 122740
+    - path: /mnt/beegfs/HDC/data/tomography_data/tiled_annotations/unlabeled.txt
+      md5: d31e0407a305a2dcb22646ff95570101
+      size: 55985000
+    params:
+      al_cycle.json:
+        al_cycle: 1
+        al_seed: 123
+      configs/MIAOD-GRAY.py:
+        data_root: /mnt/beegfs/HDC/data/tomography_data/tiled_annotations
+    outs:
+    - path: /mnt/beegfs/HDC/data/tomography_data/tiled_annotations/train.txt
+      md5: de261a7327a8227586e1eac3a5a9dec4
+      size: 56107740
+    - path: work_dirs/test/X_L_1.npy
+      md5: 10a7bdd4723df0e040a26af145ac8db4
+      size: 98320
+    - path: work_dirs/test/X_U_1.npy
+      md5: e5610b59611259f004316ea4732c9fcf
+      size: 98320
+  active_learning_training:
+    cmd: python cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test
+      --cycle 1 --labeled work_dirs/test/X_L_1.npy --unselected work_dirs/test/X_U_1.npy
+      --seed 123 --model work_dirs/test/cycle.pth
+    deps:
+    - path: work_dirs/test/X_L_1.npy
+      md5: 10a7bdd4723df0e040a26af145ac8db4
+      size: 98320
+    - path: work_dirs/test/X_U_1.npy
+      md5: e5610b59611259f004316ea4732c9fcf
+      size: 98320
+    params:
+      al_cycle.json:
+        al_cycle: 1
+        al_seed: 123
+    outs:
+    - path: work_dirs/test/cycle.pth
+      md5: 76f3213b889f71415fe0f85eeeae8737
+      size: 164713749

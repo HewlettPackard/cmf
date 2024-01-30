@@ -1,6 +1,6 @@
 # Please change the dataset directory to your actual directory
 #data_root = '/lustre/data/hdcdatasets/'
-data_root = '/mnt/beegfs/HDC/data/tomography_data/tiled_annotations/'
+data_root = '/mnt/beegfs/HDC/data/tomography_data/tiled_annotations'
 
 _base_ = [
     './_base_/retinanet_r50_fpn.py', './_base_/hdc.py',
@@ -10,7 +10,7 @@ _base_ = [
 data = dict(
     test=dict(
         ann_file=[
-            data_root + 'train.txt',
+            data_root + '/train.txt',
         ],
         img_prefix=[data_root ])
 )
