@@ -49,6 +49,7 @@ const Lineage = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
+    setLineageData(null);
     setSelectedPipeline(pipeline);
   };
 

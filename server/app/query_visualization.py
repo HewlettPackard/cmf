@@ -20,19 +20,18 @@ def truncate_artifact_name(my_str):
     return temp
 
 def query_visualization(mlmd_path, pipeline_name):
-    file_path="/cmf-server/data/static/data.json"
     query = cmfquery.CmfQuery(mlmd_path)
     stages = query.get_pipeline_stages(pipeline_name)
     list_all_artifacts = []
     temp = []
     temp1 = []
     new_list_artifacts=[]
+    pipeline_id=query.get_pipeline_id(pipeline_name)
     for stage in stages:
         executions = query.get_all_executions_in_stage(stage)
         for i in executions.id.to_list():
             artifacts = query.get_all_artifacts_for_execution(i)
             artifact_name_list = [i for i in artifacts.name.to_list()]
-                      
             new_list_artifacts.extend(artifact_name_list)
          
         for name in artifacts["name"]:
@@ -51,7 +50,7 @@ def query_visualization(mlmd_path, pipeline_name):
         node_id_name_list.append(node_id_name)
 
     for artifact_name in list(set(new_list_artifacts)):
-        immediate_child_artifacts = query.get_one_hop_child_artifacts(artifact_name)
+        immediate_child_artifacts = query.get_one_hop_child_artifacts(artifact_name,pipeline_id)
         if immediate_child_artifacts.empty == True:
             pass
         else:
@@ -70,7 +69,6 @@ def query_visualization(mlmd_path, pipeline_name):
         "links" : new_list
     }
 
-    with open(file_path, 'w') as json_file:
-        json.dump(data, json_file)
     return data
 
+#print(query_visualization("/home/chobey/cmf-server/data/mlmd","Test-env"))
