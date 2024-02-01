@@ -4,7 +4,6 @@ import "./index.css"; // Adjust the path if needed
 import runtimeEnv from "@mars/heroku-js-runtime-env";
 
 const LineageArtifacts = ({data}) => {
-  console.log(data,"lineagedata");
   // eslint-disable-next-line no-unused-vars
   const [jsondata, setJsonData] = useState(null);
 
@@ -14,7 +13,6 @@ const LineageArtifacts = ({data}) => {
       // Data is not yet available
       return;
     }
-    console.log(jsondata,"jsondata");
     jsondata.nodes.forEach(node => {
         const hasIncomingLinks = jsondata.links.some(link => link.target === node.id);
         if (!hasIncomingLinks) {
@@ -141,7 +139,6 @@ const LineageArtifacts = ({data}) => {
     }
 
     return () => {
-      console.log("svg remove")
       svg.remove(); // Remove the SVG when the component is unmounted
     };
 
