@@ -1,7 +1,7 @@
 # Example Machine Learning pipeline with metadata tracking and artifact versioning using CMF.
-<pre>
+<p>
 In the traditional apporach in CMF, the typical sequence involves the initialization of the Cmf class, the creation of a context (analogous to a stage in Machine Learning), and the creation an execution before logging datasets, models, or metrics. However, CMF provides a streamlined feature wherein users have the flexibility to log datasets, models, and metrics without the explicit requirement ofcreating a context and an execution. This capability simplifies the logging process and enhances the user experience, allowing for more efficient and concise interactions with the framework.
-</pre>
+</p>
 
 ### Steps to reproduce
 
