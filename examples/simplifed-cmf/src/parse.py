@@ -30,6 +30,15 @@ from cmflib import cmf
 __all__ = ['parse']
 
 
+""" In the traditional apporach in CMF, the typical sequence involves the
+    initialization of the Cmf class, the creation of a context (analogous
+    to a stage in Machine Learning), and the creation an execution before
+    logging datasets, models, or metrics.
+    However, CMF provides a streamlined feature wherein users have the flexibility
+    to log datasets, models, and metrics without the explicit requirement of
+    creating a context and an execution.
+"""
+
 def _process_posts(fd_in: t.IO, fd_out_train: t.IO, fd_out_test: t.IO, target_tag: str, split: int) -> None:
     for idx, line in enumerate(fd_in):
         try:
@@ -59,6 +68,8 @@ def parse(input_file: str, output_dir: str) -> None:
     """
     params = yaml.safe_load(open("params.yaml"))["parse"]
     random.seed(params["seed"])
+    # Cmf class takes four parameters: filename, pipeline_name, custom_properties, graph
+    # User can pass any combination of these four.
     metawriter = cmf.Cmf()
     _ = metawriter.log_dataset(input_file, "input", custom_properties={"user-metadata1": "metadata_value"})
 
