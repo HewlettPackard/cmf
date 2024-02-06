@@ -11,9 +11,9 @@
 4. Execute `sh test_script.sh`. This file mimics a Machine Learning pipeline. It has one stage: 
    [parse](./src/parse.py). It will run the pipeline and will store its pipeline metadata in a sqlite file named mlmd
    
-7. Execute [`cmf artifact push`](./../../docs/cmf_client/cmf_client.md#cmf-artifact) command to push artifacts to the artifact repo.
+5. Execute [`cmf artifact push`](./../../docs/cmf_client/cmf_client.md#cmf-artifact) command to push artifacts to the artifact repo.
 
-8. Execute [`cmf metadata push`](./../../docs/cmf_client/cmf_client.md#cmf-metadata) command to push metadata to central cmf server. To start cmf-server, use [cmf-server.md](./../../docs/cmf_server/cmf-server.md).
+6. Execute [`cmf metadata push`](./../../docs/cmf_client/cmf_client.md#cmf-metadata) command to push metadata to central cmf server. To start cmf-server, use [cmf-server.md](./../../docs/cmf_server/cmf-server.md).
 
 
 ### Query 
