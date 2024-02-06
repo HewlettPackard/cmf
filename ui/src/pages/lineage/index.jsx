@@ -1,26 +1,41 @@
+/***
+* Copyright (2023) Hewlett Packard Enterprise Development LP
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* You may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+***/
+
+
 import React, { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import LineageSidebar from "../../components/LineageSidebar";
-import LineageImage from "../../components/LineageImage";
-
+import LineageTypeSidebar from "./LineageTypeSidebar";
+import LineageArtifacts from "../../components/LineageArtifacts";
+import ExecutionDropdown from "../../components/ExecutionDropdown";
 const client = new FastAPIClient(config);
 
 const Lineage = () => {
-  const [activeTab, setActiveTab] = useState(0);
   const [pipelines, setPipelines] = useState([]);
-  const [imageSrc, setImageSrc] = useState("");
   const [selectedPipeline, setSelectedPipeline] = useState(null);
 
-  useEffect(() => {
-    fetchPipelines();
-  }, []);
-
-  useEffect(() => {
-    fetchImage(selectedPipeline);
-  }, [selectedPipeline]);
+//  const LineageTypes=['Artifacts','Execution','ArtifactExecution']
+  const LineageTypes=['Artifacts','Execution'];
+  const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
+  const [lineagedata, setLineageData]=useState(null);
+  const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
+  const [execDropdownData,setExecDropdownData] = useState([]);
 
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
@@ -29,15 +44,50 @@ const Lineage = () => {
     });
   };
 
-  async function fetchImage(pipeline){
-    const objectURL = await client.getImage(pipeline);
-    setImageSrc(objectURL);
-  }
+  useEffect(() => {
+    fetchPipelines();
+  }, []);
 
-  const handleClick = (index) => {
-    setActiveTab(index);
-    fetchImage(pipelines[index]);
+  const handlePipelineClick = (pipeline) => {
+    setLineageData(null);
+    setSelectedPipeline(pipeline);
   };
+
+
+  useEffect(() => {
+    if (selectedPipeline) {
+       setSelectedLineageType(LineageTypes[0]);
+    }
+    // eslint-disable-next-line 
+  }, [selectedPipeline]);
+
+  const handleLineageTypeClick = (lineageType) => {
+    setLineageData(null);
+    setSelectedLineageType(lineageType);
+    fetchLineage(selectedPipeline, lineageType);
+  };  
+
+
+  const fetchLineage = (pipelineName, type) => {
+    client.getLineage(pipelineName,type).then((data) => {    
+    if (type === "Artifacts") {
+    setLineageData(data);
+    }
+    else {
+    setExecDropdownData(data);
+    }
+    });
+  };
+
+  useEffect(() => {
+    if (selectedPipeline) {
+      if (selectedLineageType === "Artifacts") {
+        fetchLineage(selectedPipeline, "Artifacts");
+      }
+      setLineageArtifactsKey((prevKey) => prevKey + 1);
+    } 
+  }, [selectedPipeline, selectedLineageType]);
+
 
   return (
     <>
@@ -51,12 +101,28 @@ const Lineage = () => {
           <div className="flex flex-row">
             <LineageSidebar
               pipelines={pipelines}
-              activeTab={activeTab}
-              handleClick={handleClick}
+              handlePipelineClick={handlePipelineClick}
             />
-            <LineageImage imageSrc={imageSrc} activeTab={activeTab} />
+          <div className="container justify-center items-center mx-auto px-4">
+            <div className="flex flex-col">
+             {selectedPipeline !== null && (
+                <LineageTypeSidebar
+                  LineageTypes={LineageTypes}
+                  handleLineageTypeClick= {handleLineageTypeClick}
+                />
+             )}
+            </div>
+            <div className="container">
+                {selectedPipeline !== null && selectedLineageType === "Artifacts" && lineagedata !== null && (
+                <LineageArtifacts key={lineageArtifactsKey} data={lineagedata}/>
+              )}
+                {selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null && (
+                <ExecutionDropdown data={execDropdownData} />        
+              )}
+            </div>
           </div>
         </div>
+       </div>
         <Footer />
       </section>
     </>
