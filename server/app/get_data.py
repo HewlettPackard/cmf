@@ -170,10 +170,10 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
 def get_lineage_img_path(server_store_path,pipeline_name,type):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
-        img_path = query_visualization(server_store_path, pipeline_name)
+        lineage_data = query_visualization(server_store_path, pipeline_name)
     elif type=="Execution":
-        img_path = query_visualization_execution(server_store_path, pipeline_name)
+        lineage_data = query_visualization_execution(server_store_path, pipeline_name)
     else:
-        img_path = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
-    return True
+        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
+    return lineage_data
 
