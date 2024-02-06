@@ -8,19 +8,22 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 ### List of APIs
    
-| Method | URL                          | Description                                  | 
-|--------|------------------------------|----------------------------------------------|
-| `Post` | `/mlmd_push`                 | Used to push Json Encoded data to cmf-server |
-| `Get`  | `/mlmd_pull/{pipeline_name}` | Retrieves a mlmd file from cmf-server        |
-| `Get`  | `/display_executions`        | Retrieves all executions from cmf-server     |
-| `Get`  | `/display_artifacts`         | Retrieves all artifacts from cmf-server      |
+| Method | URL                          | Description                                                              | 
+|--------|------------------------------|------------------------------------------------------------------------  |
+| `Post` | `/mlmd_push`                 | Used to push Json Encoded data to cmf-server                             | 
+| `Get`  | `/mlmd_pull/{pipeline_name}` | Retrieves a mlmd file from cmf-server                                    |
+| `Get`  | `/display_executions`                             | Retrieves all executions from cmf-server            |
+| `Get`  | `/display_artifacts/{pipeline_name}/{data_type}`  | Retrieves all artifacts from cmf-server for resp datat type             |
+| `Get`  | `/display_lineage/{lineage_type}/{pipeline_name}` | Creates lineage data from cmf-server            |
+| `Get`  | `/display_pipelines`                             | Retrieves all pipelines present in mlmd file            |
+
 
 ### HTTP Response Status codes
 
 | Code  | Title                     | Description                                                  |
 |-------| ------------------------- |--------------------------------------------------------------|
 | `200` | `OK`                      | mlmd is successfully pushed (e.g. when using `GET`, `POST`). |
-| `400` | `Bad request`             | When the cmf[env](cmf%2Fenv)-server is not available.                        |
+| `400` | `Bad request`             | When the cmf-server is not available.                        |
 | `500` | `Internal server error`   | When an internal error has happened                          |
 
 
@@ -34,6 +37,7 @@ There are two ways to start cmf server -
 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
 > In earlier versions of docker compose, `docker compose` was independent of docker. Hence, `docker-compose` was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
+3. **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
 
 ## Using `docker compose` file 
 > This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
@@ -51,7 +55,8 @@ There are two ways to start cmf server -
     server:
       image: server:latest
       volumes:
-         - /home/<user>/cmf-server/data:/cmf-server/data
+         - /home/xxxx/cmf-server/data:/cmf-server/data
+         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
       container_name: cmf-server
       build:
     ....
@@ -79,6 +84,7 @@ There are two ways to start cmf server -
    ```
    docker compose -f docker-compose-server.yml stop
    ```
+> It is neccessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling latest cmf code from git.
 
 ## Using `docker run` command
 
@@ -113,18 +119,53 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
    ```
+6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
+   ```
+   cd /cmf/ui
+   ```
+7. Execute the below-mentioned command to create a `ui-server` docker image.
+   ```
+   Usage:  docker build -t [image_name] -f ./Dockerfile ../
+   ```
+   Example:
+   ```
+   docker build -t uiimage -f ./Dockerfile ../
+   ```
+8. Launch a new docker container using the image with directory
+   <pre>
+   Usage: docker run --name [container_name] -p 0.0.0.0:3000:80 [image_name]
+   </pre>
+   Example:
+   ```
+   docker run --name mycontainer -p 0.0.0.0:3000:80 uiimage
+   ```
+   `Note` - If you face issue regarding `Libzbar-dev` as follows you need add proxy:
+   ![Screenshot (115)](https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4)
 
-6. To stop the docker container.
+
+   ```
+   ~/.docker/config.json
+    {
+      proxies: {
+           "default": {
+                        "httpProxy": "http://web-proxy.labs.xxxx.net:8080",
+                        "httpsProxy": "http://web-proxy.labs.xxxx.net:8080",
+                        "noProxy": ".labs.xxxx.net,127.0.0.0/8"
+                }
+            }
+    }
+    ```
+10. To stop the docker container.
    ```
    docker stop [container_name]
    ```
 
-7. To delete the docker container.
+11. To delete the docker container.
    ```
    docker rm [container_name] 
    ```
 
-8. To remove the docker image.
+11. To remove the docker image.
    ``` 
    docker image rm [image_name] 
    ```

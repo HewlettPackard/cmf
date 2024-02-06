@@ -63,15 +63,13 @@ class FastAPIClient {
       });
   }
 
-  async getImage(pipeline) {
-   try {
-      const response  = await this.apiClient.get(`/display_lineage/${pipeline}`, { responseType: "blob" });
-      const objectURL = URL.createObjectURL(response.data);
-      return objectURL;
-    } catch (error) {
-      console.error(error);
-    }
+  async getLineage(pipeline,lineage_type) {
+      return this.apiClient.get(`/display_lineage/${lineage_type}/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
   }
+
 
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient

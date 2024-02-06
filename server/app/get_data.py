@@ -3,6 +3,7 @@ import pandas as pd
 import json,glob
 import os
 from server.app.query_visualization import query_visualization
+from server.app.query_visualization_execution import query_visualization_execution
 from fastapi.responses import FileResponse
 
 def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
@@ -38,17 +39,24 @@ def get_all_artifact_ids(mlmdfilepath):
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
+    execution_ids = get_all_exe_ids(mlmdfilepath)
     for name in names:
         df = pd.DataFrame()
-        artifacts = query.get_all_artifacts_by_context(name)
-        df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+        exe_ids = execution_ids[name]['id'].tolist()
+        for id in exe_ids:
+            artifacts = query.get_all_artifacts_for_execution(id)
+            df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+        df.sort_values("id", inplace=True) 
+        df.drop_duplicates(subset="id",keep='first', inplace=True)
         if df.empty:
-            return
+            return 
         else:
             artifact_ids[name] = {}
             for art_type in df['type']:
                 filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
                 artifact_ids[name][art_type] = filtered_values
+    #print("artifact_ids")
+    #print(artifact_ids)
     return artifact_ids
 
 def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
@@ -166,13 +174,13 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_img_path(server_store_path,pipeline_name):
+def get_lineage_img_path(server_store_path,pipeline_name,type):
     query = cmfquery.CmfQuery(server_store_path)
-    del_img = glob.glob("./data/static/*.png")
-    for img in del_img:
-        os.remove(img)
-    img_path = query_visualization(server_store_path, pipeline_name)
-    response = FileResponse(img_path,
-    media_type="image/png",)
-    return response
+    if type=="Artifacts":
+        lineage_data = query_visualization(server_store_path, pipeline_name)
+    elif type=="Execution":
+        lineage_data = query_visualization_execution(server_store_path, pipeline_name)
+    else:
+        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
+    return lineage_data
 

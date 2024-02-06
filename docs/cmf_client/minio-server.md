@@ -35,16 +35,16 @@ Follow the below mentioned steps to set up a MinIO server:
 
 5. Build a MinIO server using a Docker container. `docker-compose.yml` available in `example-get-started` directory provides two services: `minio` and `aws-cli`.
    User will initialise the repository with bucket name, storage URL, and credentials to access MinIO.
-6. Execute the following command to start the docker container. Following command requires root privileges.
+6. Execute the following command to start the docker container. MYIP variable is the IP address of the machine on which you are executing the following command. Following command requires root privileges.
    ```
-   docker-compose up
+   MYIP= XX.XX.XXX.XXX docker-compose up
    ```
    or
    ```
-   docker compose up
+   MYIP= XX.XX.XXX.XXX docker compose up
    ```
    After executing the above command, following messages confirm that MinIO is up and running.
-
+   > Also you can adjust `$MYIP` in `examples/example-get-started/docker-compose.yml` to reflect the server IP and run the `docker compose` command without specifying 
 7. Login into `remote.minio.endpointurl` (in the above example - http://localhost:9000) using access-key and secret-key mentioned in cmf configuration.
 
 8. Following image is an example snapshot of the MinIO server with bucket named 'dvc-art'.

@@ -139,14 +139,19 @@ async def display_exec(
         return
 
 
-@app.get("/display_lineage/{pipeline_name}")
-async def display_lineage(request: Request, pipeline_name: str):
+@app.get("/display_lineage/{lineage_type}/{pipeline_name}")
+async def display_lineage(request: Request,lineage_type: str, pipeline_name: str):
     # checks if mlmd file exists on server
     img_path=""
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=get_lineage_img_path(server_store_path,pipeline_name)
+            if lineage_type=="Artifacts":
+                response=get_lineage_img_path(server_store_path,pipeline_name,"Artifacts")
+            elif lineage_type=="Execution":
+                response=get_lineage_img_path(server_store_path,pipeline_name,"Execution")
+            else:
+                response=get_lineage_img_path(server_store_path,pipeline_name,"ArtifactExecution")
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."

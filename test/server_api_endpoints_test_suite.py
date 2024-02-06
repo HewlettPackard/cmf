@@ -74,17 +74,12 @@ if __name__ == "__main__":
         subprocess.run(['sudo','cp', file_path, destination_folder])
 
 
-        # delete mlmd pushed on server
-        try:
-            # Attempt to delete the file
-            os.remove(file_path)
-            print(f"The file '{file_path}' has been deleted.")
-        except FileNotFoundError:
-          # Handle the case where the file does not exist
-            print(f"The file '{file_path}' does not exist.")
-        except Exception as e:
-           # Handle other exceptions
-            print(f"An error occurred: {e}")
+        # delete mlmd on file_path
+        if os.path.exists(file_path):
+            command = f"sudo rm -rf {file_path}"
+            result = subprocess.run(command, text=True, shell=True)
+            if result.returncode == 0:
+                print(f"The file '{file_path}' successfully deleted.")
 
         # execute test_api_endpoints
         command = f"pytest -vs  ./server/test_api_endpoints.py"
