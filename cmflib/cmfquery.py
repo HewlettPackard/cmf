@@ -178,8 +178,8 @@ class CmfQuery(object):
         )
         d = CmfQuery._copy(
             source=node.custom_properties,
-            target=d#, # renaming custom_properties with prefix custom_properties has impact in server GUI 
-            #key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
+            target=d, # renaming custom_properties with prefix custom_properties has impact in server GUI 
+            key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
         )
 
         return pd.DataFrame(
