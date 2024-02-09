@@ -3,7 +3,6 @@ from fastapi import FastAPI, Request, status, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-
 from contextlib import asynccontextmanager
 import pandas as pd
 
@@ -147,7 +146,7 @@ async def display_lineage(request: Request,lineage_type: str, pipeline_name: str
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             if lineage_type=="Artifacts":
-                response=get_lineage_img_path(server_store_path,pipeline_name,"Artifacts")
+                response=get_lineage_img_path(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids)
             elif lineage_type=="Execution":
                 response=get_lineage_img_path(server_store_path,pipeline_name,"Execution")
             else:
