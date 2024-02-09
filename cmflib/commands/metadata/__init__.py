@@ -16,19 +16,19 @@
 
 import argparse
 
-from cmflib.commands.metadata import push, pull
+from cmflib.commands.metadata import push, pull, export
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [push, pull]
+SUB_COMMANDS = [push, pull, export]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
-    METADATA_HELP = "Command for metadata pull/push."
+    METADATA_HELP = "Command for metadata pull, push and export."
 
     metadata_parser = subparsers.add_parser(
         "metadata",
         parents=[parent_parser],
-        description="Command pulls or pushes metadata on to cmf-server.",
+        description="Command pulls or pushes metadata on to cmf-server and exports the local mlmd into json.",
         help=METADATA_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
