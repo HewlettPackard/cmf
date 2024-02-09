@@ -141,12 +141,23 @@ class Cmf:
         if is_server:
             Cmf.__get_neo4j_server_config()
         if graph is True:
+            Cmf.__load_neo4j_params()
             self.driver = graph_wrapper.GraphDriver(
                 Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password
             )
             self.driver.create_pipeline_node(
                 pipeline_name, self.parent_context.id, custom_properties
             )
+
+    @staticmethod
+    def __load_neo4j_params():
+         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+         if os.path.exists(cmf_config):
+             attr_dict = CmfConfig.read_config(cmf_config)
+             __neo4j_uri = attr_dict.get("neo4j-uri", "")
+             __neo4j_password = attr_dict.get("neo4j-password", "")
+             __neo4j_user = attr_dict.get("neo4j-user", "")
+
 
     @staticmethod
     def __get_neo4j_server_config():
