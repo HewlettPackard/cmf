@@ -74,6 +74,7 @@ class CmdArtifactPull(CmdBase):
             current_loc = f"/{current_loc_1}"
             return host, current_loc, name
         else:
+            print(token)
             bucket_name = token[2]
             object_name = f"{token[3]}/{token[4]}/{token[5]}"
             download_loc = current_directory + "/" + name
