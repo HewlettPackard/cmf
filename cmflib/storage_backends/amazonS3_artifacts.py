@@ -15,9 +15,7 @@
 ###
 
 import os
-from minio import Minio
-from minio.error import S3Error
-
+import boto3
 
 class AmazonS3Artifacts:
     def download_artifacts(
@@ -30,22 +28,30 @@ class AmazonS3Artifacts:
     ):
         access_key = dvc_config_op["remote.amazons3.access_key_id"]
         secret_key = dvc_config_op["remote.amazons3.secret_access_key"]
+        session_token = dvc_config_op["remote.amazons3.session_token"]
         try:
-            client = Minio(
-                "s3.amazonaws.com", access_key=access_key, secret_key=secret_key
+            s3 = boto3.client(
+                's3',
+                aws_access_key_id=access_key,
+                aws_secret_access_key=secret_key,
+                aws_session_token=session_token
             )
-            found = client.bucket_exists(bucket_name)
-            if not found:
-                return "Bucket doesn't exists"
+            s3.head_bucket(Bucket=bucket_name)
+            temp = download_loc.split("/")
+            temp.pop()
+            dir_path = "/".join(temp)
+            os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders
+            response = s3.download_file(bucket_name, object_name, download_loc)
+            if response == None:
+                return f"{object_name} downloaded at {download_loc}"
+            return response
 
-            obj = client.fget_object(bucket_name, object_name, download_loc)
-            if obj:
-                stmt = f"object {object_name} downloaded at {download_loc}."
-                return stmt
+        except s3.exceptions.ClientError as e:
+            # If a specific error code is returned, the bucket does not exist
+            if e.response['Error']['Code'] == '404':
+                return f"{bucket_name}  doesn't exists!!"
             else:
-                return f"object {object_name} is not downloaded."
-
+                # Handle other errors
+               raise
         except TypeError as exception:
-            return exception
-        except S3Error as exception:
             return exception
