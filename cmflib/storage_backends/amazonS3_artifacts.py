@@ -16,8 +16,6 @@
 
 import os
 import boto3
-from botocore.session import Session
-from botocore.exceptions import ClientError
 
 class AmazonS3Artifacts:
     def download_artifacts(
