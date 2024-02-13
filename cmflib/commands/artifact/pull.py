@@ -74,7 +74,9 @@ class CmdArtifactPull(CmdBase):
             current_loc = f"/{current_loc_1}"
             return host, current_loc, name
         else:
-            if s_url:
+            # sometimes s_url is empty - this shouldn't happen technically
+            # sometimes s_url is not starting with s3:// - technically this shouldn't happen
+            if s_url and s_url.startswith("s3://"):
                 url_with_bucket = s_url.split("s3://")[1]
                 # url_with_bucket = varkha-test/23/6d9502e0283d91f689d7038b8508a2
                 # Splitting the string using '/' as the delimiter
@@ -82,7 +84,6 @@ class CmdArtifactPull(CmdBase):
                 download_loc = current_directory + "/" + name
                 return bucket_name, object_name, download_loc
             else:
-                # sometimes s_url is empty - this shouldn't happen technically
                 # returning bucket_name, object_name and download_loc returning as empty
                 return "", "", ""
 
