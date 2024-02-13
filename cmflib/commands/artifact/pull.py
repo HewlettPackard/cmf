@@ -259,7 +259,7 @@ class CmdArtifactPull(CmdBase):
                         print(stmt)
             else:
                 for name, url in name_url_dict.items():
-                    print(name, url)
+                    #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
