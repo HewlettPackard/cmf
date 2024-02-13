@@ -37,10 +37,9 @@ class AmazonS3Artifacts:
                 aws_session_token=session_token
             )
             s3.head_bucket(Bucket=bucket_name)
-            temp = download_loc.split("/")
-            temp.pop()
-            dir_path = "/".join(temp)
-            os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders
+            dir_path, _ = download_loc.rsplit("/", 1)
+            if dir_path != "":
+                os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
             response = s3.download_file(bucket_name, object_name, download_loc)
             if response == None:
                 return f"{object_name} downloaded at {download_loc}"
@@ -55,3 +54,5 @@ class AmazonS3Artifacts:
                raise
         except TypeError as exception:
             return exception
+        except Exception as e:
+            return e
