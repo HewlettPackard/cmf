@@ -82,6 +82,7 @@ class CmdArtifactPull(CmdBase):
                 # Splitting the string using '/' as the delimiter
                 bucket_name, object_name = url_with_bucket.split('/', 1)
                 download_loc =  current_directory + "/" + name if current_directory != ""  else name
+                print(download_loc)
                 return bucket_name, object_name, download_loc
             else:
                 # returning bucket_name, object_name and download_loc returning as empty
