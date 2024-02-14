@@ -37,7 +37,9 @@ class AmazonS3Artifacts:
                 aws_session_token=session_token
             )
             s3.head_bucket(Bucket=bucket_name)
-            dir_path, _ = download_loc.rsplit("/", 1)
+            dir_path = ""
+            if "/" in download_loc:
+                dir_path, _ = download_loc.rsplit("/", 1)
             if dir_path != "":
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
             response = s3.download_file(bucket_name, object_name, download_loc)
