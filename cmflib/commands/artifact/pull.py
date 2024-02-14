@@ -81,7 +81,7 @@ class CmdArtifactPull(CmdBase):
                 # url_with_bucket = varkha-test/23/6d9502e0283d91f689d7038b8508a2
                 # Splitting the string using '/' as the delimiter
                 bucket_name, object_name = url_with_bucket.split('/', 1)
-                download_loc = current_directory + "/" + name
+                download_loc =  current_directory + "/" + name if current_directory != ""  else name
                 return bucket_name, object_name, download_loc
             else:
                 # returning bucket_name, object_name and download_loc returning as empty
