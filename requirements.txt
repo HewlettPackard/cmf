@@ -9,4 +9,4 @@ click
 minio
 paramiko
 scikit_learn
-
+boto3

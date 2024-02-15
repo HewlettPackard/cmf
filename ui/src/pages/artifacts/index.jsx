@@ -147,7 +147,7 @@ const Artifacts = () => {
               )}
             </div>
             <div className="container">
-              {selectedPipeline !== null && selectedArtifactType !== null && (
+              {selectedPipeline !== null && selectedArtifactType !== null && artifacts!== null && (
                 <ArtifactTable artifacts={artifacts} onSort={handleSort} onFilter={handleFilter}/>
               )}
               <div>
