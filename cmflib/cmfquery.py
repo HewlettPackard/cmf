@@ -178,8 +178,8 @@ class CmfQuery(object):
         )
         d = CmfQuery._copy(
             source=node.custom_properties,
-            target=d#, # renaming custom_properties with prefix custom_properties has impact in server GUI 
-            #key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
+            target=d, # renaming custom_properties with prefix custom_properties has impact in server GUI 
+            key_mapper=_PrefixMapper("custom_properties_", on_collision=_KeyMapper.OnCollision.RESOLVE),
         )
 
         return pd.DataFrame(
@@ -256,7 +256,7 @@ class CmfQuery(object):
             executions = [execution for execution in executions if execution.id == execution_id]
         return executions
 
-    def _get_executions_by_input_artifact_id(self, artifact_id: int) -> t.List[int]:
+    def _get_executions_by_input_artifact_id(self, artifact_id: int,pipeline_id: str = None) -> t.List[int]:
         """Return stage executions that consumed given input artifact.
 
         Args:
@@ -264,12 +264,19 @@ class CmfQuery(object):
         Returns:
             List of stage executions that consumed the given artifact.
         """
-        execution_ids = set(
+        execution_ids = list(set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact_id])
             if event.type == mlpb.Event.INPUT
-        )
-        return list(execution_ids)
+        ))
+        
+        if pipeline_id != None:
+            list_exec=self.store.get_executions_by_id(execution_ids)
+            execution_ids=[]
+            for exe in list_exec:
+                if (self._transform_to_dataframe(exe).Pipeline_id.to_string(index=False)) == str(pipeline_id):
+                    execution_ids.append(exe.id)
+        return execution_ids
 
     def _get_executions_by_output_artifact_id(self, artifact_id: int) -> t.List[int]:
         """Return stage execution that produced given output artifact.
@@ -324,7 +331,9 @@ class CmfQuery(object):
         unique_artifact_ids = set(artifact_ids)
         if len(unique_artifact_ids) != len(artifact_ids):
             logger.warning("Multiple executions claim the same output artifacts")
-
+#        artifacts=self.get_all_artifacts_by_ids_list(list(unique_artifact_ids))
+#        for key,val in artifacts.iterrows():
+#                print(val["name"])
         return list(unique_artifact_ids)
 
     def _get_input_artifacts(self, execution_ids: t.List[int]) -> t.List[int]:
@@ -568,7 +577,7 @@ class CmfQuery(object):
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
-    def get_one_hop_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
+    def get_one_hop_child_artifacts(self, artifact_name: str, pipeline_id: str = None) -> pd.DataFrame:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
@@ -581,11 +590,43 @@ class CmfQuery(object):
             return pd.DataFrame()
 
         # Get output artifacts of executions consumed the above artifact.
-        artifacts_ids = self._get_output_artifacts(self._get_executions_by_input_artifact_id(artifact.id))
-
+        artifacts_ids = self._get_output_artifacts(self._get_executions_by_input_artifact_id(artifact.id,pipeline_id))
         return self._as_pandas_df(
             self.store.get_artifacts_by_id(artifacts_ids), lambda _artifact: self.get_artifact_df(_artifact)
         )
+
+    def get_one_hop_parent_executions(self, execution_id: t.List[int]) -> t.List[int]:
+        """Get artifacts produced by executions that consume given artifact.
+
+        Args:
+            artifact name: Name of an artifact.
+        Return:
+            Output artifacts of all executions that consumed given artifact.
+        """
+        artifacts_input=self._get_input_artifacts(execution_id)
+        arti=self.store.get_artifacts_by_id(artifacts_input)
+         
+        for i in artifacts_input:
+            exec=self._get_executions_by_output_artifact_id(i)
+            list_exec=self.store.get_executions_by_id(exec)
+#            for id in list_exec:
+                #print(self._transform_to_dataframe(id).Execution_type_name,"@@@@@@@@@")
+
+    def get_one_hop_child_executions(self, execution_id: t.List[int]) -> t.List[int]:
+        """Get artifacts produced by executions that consume given artifact.
+
+        Args:
+            artifact name: Name of an artifact.
+        Return:
+            Output artifacts of all executions that consumed given artifact.
+        """
+        artifacts_output=self._get_output_artifacts(execution_id)
+        arti=self.store.get_artifacts_by_id(artifacts_output)
+        for i in artifacts_output:
+            exec=self._get_executions_by_input_artifact_id(i)
+            list_exec=self.store.get_executions_by_id(exec)
+            for id in list_exec:
+                self._transform_to_dataframe(id).Execution_type_name
 
     def get_all_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return all downstream artifacts starting from the given artifact.

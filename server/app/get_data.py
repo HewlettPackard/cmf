@@ -39,10 +39,15 @@ def get_all_artifact_ids(mlmdfilepath):
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
+    execution_ids = get_all_exe_ids(mlmdfilepath)
     for name in names:
         df = pd.DataFrame()
-        artifacts = query.get_all_artifacts_by_context(name)
-        df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+        exe_ids = execution_ids[name]['id'].tolist()
+        for id in exe_ids:
+            artifacts = query.get_all_artifacts_for_execution(id)
+            df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+        df.sort_values("id", inplace=True) 
+        df.drop_duplicates(subset="id",keep='first', inplace=True)
         if df.empty:
             return 
         else:
@@ -50,6 +55,8 @@ def get_all_artifact_ids(mlmdfilepath):
             for art_type in df['type']:
                 filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
                 artifact_ids[name][art_type] = filtered_values
+    #print("artifact_ids")
+    #print(artifact_ids)
     return artifact_ids
 
 def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
@@ -170,10 +177,10 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
 def get_lineage_img_path(server_store_path,pipeline_name,type):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
-        img_path = query_visualization(server_store_path, pipeline_name)
+        lineage_data = query_visualization(server_store_path, pipeline_name)
     elif type=="Execution":
-        img_path = query_visualization_execution(server_store_path, pipeline_name)
+        lineage_data = query_visualization_execution(server_store_path, pipeline_name)
     else:
-        img_path = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
-    return True
+        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
+    return lineage_data
 

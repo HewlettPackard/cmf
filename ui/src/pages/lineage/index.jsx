@@ -23,6 +23,7 @@ import Footer from "../../components/Footer";
 import LineageSidebar from "../../components/LineageSidebar";
 import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
+import ExecutionDropdown from "../../components/ExecutionDropdown";
 const client = new FastAPIClient(config);
 
 const Lineage = () => {
@@ -30,10 +31,11 @@ const Lineage = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
 
 //  const LineageTypes=['Artifacts','Execution','ArtifactExecution']
-  const LineageTypes=['Artifacts']
-  const [selectedLineageType, setSelectedLineageType] = useState(null);
-
+  const LineageTypes=['Artifacts','Execution'];
+  const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
+  const [lineagedata, setLineageData]=useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
+  const [execDropdownData,setExecDropdownData] = useState([]);
 
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
@@ -47,35 +49,45 @@ const Lineage = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
+    setLineageData(null);
     setSelectedPipeline(pipeline);
   };
 
-  const handleLineageTypeClick = (lineageType) => {
-    setSelectedLineageType(lineageType);
-  };  
-
-  const fetchLineageTypes = () => {
-      handleLineageTypeClick(LineageTypes[0]);
-  };
 
   useEffect(() => {
     if (selectedPipeline) {
-      fetchLineageTypes(selectedPipeline);
+       setSelectedLineageType(LineageTypes[0]);
     }
     // eslint-disable-next-line 
- }, [selectedPipeline]);
+  }, [selectedPipeline]);
+
+  const handleLineageTypeClick = (lineageType) => {
+    setLineageData(null);
+    setSelectedLineageType(lineageType);
+    fetchLineage(selectedPipeline, lineageType);
+  };  
+
 
   const fetchLineage = (pipelineName, type) => {
-    client.getLineage(pipelineName,type).then((data) => {
+    client.getLineage(pipelineName,type).then((data) => {    
+    if (type === "Artifacts") {
+    setLineageData(data);
+    }
+    else {
+    setExecDropdownData(data);
+    }
     });
   };
 
   useEffect(() => {
-    if (selectedPipeline && selectedLineageType) {
-      fetchLineage(selectedPipeline, selectedLineageType);
+    if (selectedPipeline) {
+      if (selectedLineageType === "Artifacts") {
+        fetchLineage(selectedPipeline, "Artifacts");
+      }
       setLineageArtifactsKey((prevKey) => prevKey + 1);
-    }
+    } 
   }, [selectedPipeline, selectedLineageType]);
+
 
   return (
     <>
@@ -101,8 +113,11 @@ const Lineage = () => {
              )}
             </div>
             <div className="container">
-                {selectedPipeline !== null && (
-                <LineageArtifacts key={lineageArtifactsKey} />
+                {selectedPipeline !== null && selectedLineageType === "Artifacts" && lineagedata !== null && (
+                <LineageArtifacts key={lineageArtifactsKey} data={lineagedata}/>
+              )}
+                {selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null && (
+                <ExecutionDropdown data={execDropdownData} />        
               )}
             </div>
           </div>

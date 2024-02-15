@@ -3,7 +3,7 @@ Common metadata framework (cmf) has the following components:
 
 - **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
 - **cmf-client** interacts with the server to pull or push metadata from or to the cmf-server.
-- **cmf-server** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. 
+- **cmf-server with GUI** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. GUI renders metadata for simplified tracking. 
 - **Central Artifact Repositories** hosts the code and data. 
 
 ## Setup a cmf-client 

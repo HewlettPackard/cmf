@@ -3,38 +3,16 @@ import * as d3 from 'd3';
 import "./index.css"; // Adjust the path if needed
 import runtimeEnv from "@mars/heroku-js-runtime-env";
 
-const LineageArtifacts = () => {
-  let apiUrl="";
+const LineageArtifacts = ({data}) => {
   // eslint-disable-next-line no-unused-vars
-  const env = runtimeEnv();
   const [jsondata, setJsonData] = useState(null);
-  apiUrl ="http://"+process.env.REACT_APP_MY_IP+":8080/cmf-server/data/static/data.json";
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-
-        // Assuming the response is in JSON format
-        const jsonData = await response.json();
-        setJsonData(jsonData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
-  }, [apiUrl]); // Empty dependency array ensures this effect runs only once
 
   useEffect(() => {
+    setJsonData(data);
     if (!jsondata) {
       // Data is not yet available
       return;
     }
-
     jsondata.nodes.forEach(node => {
         const hasIncomingLinks = jsondata.links.some(link => link.target === node.id);
         if (!hasIncomingLinks) {
