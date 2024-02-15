@@ -46,6 +46,7 @@ class SSHremoteArtifacts:
                 dir_to_create, mode=0o777, exist_ok=True
             )  # creates subfolders needed as per artifacts folder structure
             local_file_path = os.path.join(current_directory, local_path)
+            local_file_path = os.path.abspath(local_file_path)
             output = sftp.put(remote_file_path, local_file_path)
             sftp.close()
             ssh.close()

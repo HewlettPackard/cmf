@@ -1,6 +1,19 @@
 [project]
 name = "cmflib"
-version = "0.0.4"
+version = "0.0.7"
+dependencies = [
+	"ml-metadata==1.11.0",
+	"dvc[ssh,s3]==2.27.0",
+	"pandas",
+	"retrying",
+	"pyarrow",
+	"neo4j",
+	"scikit-learn",
+	"tabulate",
+	"click",
+	"minio",
+	"paramiko",
+]
 authors = [
   { name="Hewlett Packard Enterprise"},
 ]

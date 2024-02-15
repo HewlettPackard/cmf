@@ -32,7 +32,7 @@ from cmflib.dvc_wrapper import (
     dvc_add_attribute,
 )
 from cmflib.utils.cmf_config import CmfConfig
-
+from cmflib.utils.helper_functions import is_git_repo
 
 class CmdInitAmazonS3(CmdBase):
     def run(self):
@@ -67,7 +67,7 @@ class CmdInitAmazonS3(CmdBase):
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
 
-        output = check_git_repo()
+        output = is_git_repo()
         if not output:
             branch_name = "master"
             print("Starting git init.")
@@ -86,6 +86,7 @@ class CmdInitAmazonS3(CmdBase):
         print(output)
         dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
         dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
+        dvc_add_attribute(repo_type, "session_token", self.args.session_token)
         return "cmf init complete."
 
 
@@ -123,6 +124,14 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify Secret Key.",
         metavar="<secret_key>",
+        default=argparse.SUPPRESS,
+    )
+
+    required_arguments.add_argument(
+        "--session-token",
+        required=True,
+        help="Specify Session Token.",
+        metavar="<session_token>",
         default=argparse.SUPPRESS,
     )
 

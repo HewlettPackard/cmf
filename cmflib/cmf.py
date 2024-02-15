@@ -53,7 +53,19 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.cmf_commands_wrapper import (
+    _metadata_push,
+    _metadata_pull,
+    _artifact_pull,
+    _artifact_push,
+    _artifact_pull_single,
+    _cmf_cmd_init,
+    _init_local,
+    _init_minioS3,
+    _init_amazonS3,
+    _init_sshremote
 
+)
 
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
@@ -129,12 +141,23 @@ class Cmf:
         if is_server:
             Cmf.__get_neo4j_server_config()
         if graph is True:
+            Cmf.__load_neo4j_params()
             self.driver = graph_wrapper.GraphDriver(
                 Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password
             )
             self.driver.create_pipeline_node(
                 pipeline_name, self.parent_context.id, custom_properties
             )
+
+    @staticmethod
+    def __load_neo4j_params():
+         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+         if os.path.exists(cmf_config):
+             attr_dict = CmfConfig.read_config(cmf_config)
+             __neo4j_uri = attr_dict.get("neo4j-uri", "")
+             __neo4j_password = attr_dict.get("neo4j-password", "")
+             __neo4j_user = attr_dict.get("neo4j-user", "")
+
 
     @staticmethod
     def __get_neo4j_server_config():
@@ -1281,17 +1304,30 @@ class Cmf:
 
     def commit_existing_metrics(self, metrics_name: str, uri: str, custom_properties: t.Optional[t.Dict] = None):
         custom_props =  {} if custom_properties is None else custom_properties
-        metrics = create_new_artifact_event_and_attribution(
-            store=self.store,
-            execution_id=self.execution.id,
-            context_id=self.child_context.id,
-            uri=uri,
-            name=metrics_name,
-            type_name="Step_Metrics",
-            event_type=mlpb.Event.Type.OUTPUT,
-            custom_properties=custom_props,
-            milliseconds_since_epoch=int(time.time() * 1000),
-        )
+        c_hash = uri.strip()
+        existing_artifact = []
+        existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
+        if (existing_artifact
+            and len(existing_artifact) != 0 ):
+            metrics = link_execution_to_artifact(
+                store=self.store,
+                execution_id=self.execution.id,
+                uri=c_hash,
+                input_name=metrics_name,
+                event_type=mlpb.Event.Type.OUTPUT,
+            )
+        else:
+            metrics = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=metrics_name,
+                type_name="Step_Metrics",
+                event_type=mlpb.Event.Type.OUTPUT,
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
         if self.graph:
             self.driver.create_metrics_node(
                 metrics_name,
@@ -1545,3 +1581,160 @@ class Cmf:
 #                first, middle, last = str(index).split("/")
 #                print(last)
 #                os.symlink(str(index), slicedir + "/ " + last)
+
+def metadata_push(pipeline_name,filename,execution_id: str = ""):
+    """Pushes mlmd file to cmf-server """
+    # Required arguments:  pipeline_name, filename (mlmd file path) 
+    #Optional arguments: Execution_ID
+    output = _metadata_push(pipeline_name,filename, execution_id)
+    return output
+
+def metadata_pull(pipeline_name,filename ="./mlmd", execution_id: str = ""):
+    """Pulls mlmd file from cmf-server"""
+    # Required arguments:  pipeline_name, filename(file path to store mlmd file) 
+    #Optional arguments: Execution_ID
+    output = _metadata_pull(pipeline_name,filename, execution_id)
+    return output
+
+def artifact_pull(pipeline_name,filename="./mlmd"):
+    """Pulls artifacts from initialized repository """
+    # Required arguments: Pipeline_name
+    # Optional arguments: filename( path to store artifacts)
+    output = _artifact_pull(pipeline_name,filename)
+    return output
+
+def artifact_pull_single(pipeline_name,filename,artifact_name):
+    """Pulls artifacts from initialized repository """
+    # Required arguments: Pipeline_name
+    # Optional arguments: filename( path to store artifacts)
+    output = _artifact_pull_single(pipeline_name,filename,artifact_name)
+    return output
+
+def artifact_push():
+    """Push artifacts to initialized repository"""
+    output = _artifact_push()
+    return output
+
+def cmf_init_show():
+    output=_cmf_cmd_init()
+    return output
+
+def cmf_init(type: str="",
+        path: str="",
+        git_remote_url: str="",
+        cmf_server_url: str = "",
+        neo4j_user: str = "",
+        neo4j_password: str = "",
+        neo4j_uri: str = "",
+        url: str="",
+        endpoint_url: str="",
+        access_key_id: str="",
+        secret_key: str="",
+        user: str="",
+        password: str="",
+        port: int=0
+         ):
+    if type=="":
+        return print("Error: Type is not provided")
+    if type not in ["local","minioS3","amazonS3","sshremote"]:
+        return print("Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote"]))
+
+    if neo4j_user!="" and  neo4j_password != "" and neo4j_uri != "":
+        pass
+    elif neo4j_user == "" and  neo4j_password == "" and neo4j_uri == "":
+        pass
+    else:
+        return print("Error: Enter all neo4j parameters.") 
+
+    args={'path':path,
+        'git_remote_url':git_remote_url,
+       'url':url,
+        'endpoint_url':endpoint_url,
+        'access_key_id':access_key_id,
+        'secret_key':secret_key,
+        'user':user,
+        'password':password,
+        }
+
+    status_args=non_related_args(type,args)
+
+    if type=="local" and path!= "" and  git_remote_url!= "" :
+        """Initialize local repository"""
+        output = _init_local(
+            path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
+        )
+        if status_args != []:
+            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+        return output
+         
+    elif type=="minioS3" and url!= "" and endpoint_url!= "" and access_key_id!= "" and secret_key!= "" and git_remote_url!= "":
+        """Initialize minioS3 repository"""
+        output = _init_minioS3(
+            url,
+            endpoint_url,
+            access_key_id,
+            secret_key,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
+        if status_args != []:
+            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+        return output
+
+    elif type=="amazonS3" and url!= "" and access_key_id!= "" and secret_key!= "" and git_remote_url!= "":
+        """Initialize amazonS3 repository"""
+        output = _init_amazonS3(
+            url,
+            access_key_id,
+            secret_key,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
+        if status_args != []:
+            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+
+        return output
+
+    elif type=="sshremote" and path !="" and user!="" and port!=0 and password!="" and git_remote_url!="":
+        """Initialize sshremote repository"""
+        output = _init_sshremote(
+            path,
+            user,
+            port,
+            password,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
+        if status_args != []:
+            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+
+        return output
+
+    else:
+        print("Error: Enter all arguments")
+
+
+def non_related_args(type:str,args:dict):
+    available_args=[i for i,j in args.items() if j!=""]
+    local=["path","git_remote_url"]
+    minioS3=["url","endpoint_url","access_key_id","secret_key","git_remote_url"]
+    amazonS3=["url","access_key_id","secret_key","git_remote_url"]
+    sshremote=["path","user","port","password","git_remote_url"]
+
+    dict_repository_args={"local":local,"minioS3":minioS3,"amazonS3":amazonS3,"sshremote":sshremote}
+    
+    for repo,arg in dict_repository_args.items():
+        if repo ==type:
+            non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
+    return non_related_args
+ 
+    

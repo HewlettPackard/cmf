@@ -33,7 +33,7 @@ from cmflib.dvc_wrapper import (
     dvc_add_attribute,
 )
 from cmflib.utils.cmf_config import CmfConfig
-
+from cmflib.utils.helper_functions import is_git_repo
 
 class CmdInitSSHRemote(CmdBase):
     def run(self):
@@ -67,7 +67,7 @@ class CmdInitSSHRemote(CmdBase):
             pass
         else:
             return "ERROR: Provide user, password and uri for neo4j initialization."
-        output = check_git_repo()
+        output = is_git_repo()
         if not output:
             branch_name = "master"
             print("Starting git init.")
@@ -78,7 +78,7 @@ class CmdInitSSHRemote(CmdBase):
             print("git init complete.")
 
         print("Starting cmf init.")
-        repo_type = "sshremote"
+        repo_type = "ssh-storage"
         dvc_quiet_init()
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
