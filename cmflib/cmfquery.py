@@ -648,7 +648,12 @@ class CmfQuery(object):
         return df
 
     def get_one_hop_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
-        """Return input artifacts for the execution that produced the given artifact."""
+        """Return input artifacts for the execution that produced the given artifact.
+        Args:
+            artifact_name: Artifact name.
+        Returns:
+            Data frame containing immediate parent artifactog of given artifact.
+        """
         artifact: t.Optional = self._get_artifact(artifact_name)
         if not artifact:
             return pd.DataFrame()
@@ -660,7 +665,12 @@ class CmfQuery(object):
         )
 
     def get_all_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
-        """Return all upstream artifacts."""
+        """Return all upstream artifacts.
+        Args:
+            artifact_name: Artifact name.
+        Returns:
+            Data frame containing all parent artifacts.
+        """
         df = pd.DataFrame()
         d1 = self.get_one_hop_parent_artifacts(artifact_name)
         # df = df.append(d1, sort=True, ignore_index=True)
@@ -673,7 +683,12 @@ class CmfQuery(object):
         return df
 
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
-        """Return all executions that produced upstream artifacts for the given artifact."""
+        """Return all executions that produced upstream artifacts for the given artifact.
+        Args:
+            artifact_name: Artifact name.
+        Returns:
+            Data frame containing all parent executions.
+        """
         parent_artifacts: pd.DataFrame = self.get_all_parent_artifacts(artifact_name)
         if parent_artifacts.shape[0] == 0:
             # If it's empty, there's no `id` column and the code below raises an exception.
@@ -728,7 +743,12 @@ class CmfQuery(object):
     get_producer_execution = find_producer_execution
 
     def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
-        """Return metric data frame."""
+        """Return metric data frame.
+        Args:
+            metrics_name: Metrics name.
+        Returns:
+            Data frame containing all metrics.
+        """
         for metric in self.store.get_artifacts_by_type("Step_Metrics"):
             if metric.name == metrics_name:
                 name: t.Optional[str] = metric.custom_properties.get("Name", None)
@@ -749,6 +769,8 @@ class CmfQuery(object):
         Args:
             pipeline_name: Name of an AI pipelines.
             exec_id: Optional stage execution ID - filter stages by this execution ID.
+        Returns:
+            Pipeline in JSON format.
         """
         if exec_id is not None:
             exec_id = int(exec_id)
