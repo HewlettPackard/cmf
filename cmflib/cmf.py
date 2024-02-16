@@ -741,7 +741,7 @@ class Cmf:
                ```
                Args:
                   artifact: Artifact for which url is to be updated
-                  updated_url: The updated url path of the dataset.                       
+                  updated_url: The updated url path of the dataset.
                Returns:
                   Updates artifact in mlmd, does not returns anything.
         """
@@ -1780,22 +1780,18 @@ def metadata_push(pipeline_name,filename,execution_id: str = ""):
     return output
 
 def metadata_pull(pipeline_name,filename ="./mlmd", execution_id: str = ""):
-     """ Pulls MLMD file from CMF-server. 
+    """ Pulls MLMD file from CMF-server. 
      Example: 
      ```python 
           result = metadata_pull("example_pipeline", "./mlmd_directory", "execution_123") 
      ``` 
-
      Args: 
         pipeline_name: Name of the pipeline. 
         filename: File path to store the MLMD file. 
         execution_id: Optional execution ID. 
-
      Returns: 
         Message from the _metadata_pull function. 
      """
-
-
     # Required arguments:  pipeline_name, filename(file path to store mlmd file) 
     #Optional arguments: Execution_ID
     output = _metadata_pull(pipeline_name,filename, execution_id)
@@ -1889,31 +1885,31 @@ def cmf_init(type: str="",
     ```python
        cmf_init( type="local", 
                  path="/path/to/re",
-                 git_remote_url="git@github.com:user/repo.git",
+                 git_remote_url="git@github.com:user/repo.git",
                  cmf_server_url="http://cmf-server"
                  neo4j_user", 
                  neo4j_password="password",
-                 neo4j_uri="bolt://localhost:76"
+                 neo4j_uri="bolt://localhost:76"
                )
     ```
-    Args:  
-       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote")
-       path: Path for the local repository. 
-       git_remote_url: Git remote URL for version control.
-       cmf_server_url: CMF server URL.
-       neo4j_user: Neo4j database username.
-       neo4j_password: Neo4j database password.
-       neo4j_uri: Neo4j database URI.
-       url: URL for MinioS3 or AmazonS3.
+    Args: 
+       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote")
+       path: Path for the local repository. 
+       git_remote_url: Git remote URL for version control.
+       cmf_server_url: CMF server URL.
+       neo4j_user: Neo4j database username.
+       neo4j_password: Neo4j database password.
+       neo4j_uri: Neo4j database URI.
+       url: URL for MinioS3 or AmazonS3.
        endpoint_url: Endpoint URL for MinioS3.
-       access_key_id: Access key ID for MinioS3 or AmazonS3.
-       secret_key: Secret key for MinioS3 or AmazonS3. 
-       user: SSH remote username.
-       password: SSH remote password.   
-       port: SSH remote port
-    Returns:
-       Output based on the initialized repository type.
-.   """
+       access_key_id: Access key ID for MinioS3 or AmazonS3.
+       secret_key: Secret key for MinioS3 or AmazonS3. 
+       user: SSH remote username.
+       password: SSH remote password. 
+       port: SSH remote port
+    Returns:
+       Output based on the initialized repository type.
+    """
 
     if type=="":
         return print("Error: Type is not provided")
