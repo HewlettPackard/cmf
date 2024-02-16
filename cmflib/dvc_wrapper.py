@@ -435,7 +435,7 @@ def dvc_push() -> str:
         process = subprocess.Popen(['dvc', 'push'],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
-        output, errs = process.communicate(timeout=60)
+        output, errs = process.communicate()
         commit = output.strip()
 
     except Exception as err:

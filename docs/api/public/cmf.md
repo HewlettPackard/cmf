@@ -1,4 +1,18 @@
-# cmflib.cmf.Cmf
+# cmflib.cmf
+
+::: cmflib.cmf
+    options:
+      show_root_toc_entry: false
+      merge_init_into_class: true
+      docstring_style: google
+      members:
+        - metadata_push
+        - metadata_pull
+        - artifact_pull
+        - artifact_pull_single
+        - artifact_push
+        - cmf_init_show
+        - cmf_init
 
 ::: cmflib.cmf.Cmf
     options:
@@ -22,10 +36,3 @@
         - commit_existing_metrics
         - create_dataslice
         - update_dataslice
-        - metadata_push
-        - metadata_pull
-        - artifact_pull
-        - artifact_pull_single
-        - artifact_push
-        - cmf_init_show
-        - cmf_init

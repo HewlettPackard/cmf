@@ -109,8 +109,6 @@ class CmfQuery(object):
     by users via CMF API. When methods in this class accept `name` parameters, it is expected that values of these
     parameters are fully-qualified names of respective entities.
 
-    TODO: (sergey) need to provide concrete examples and detailed description on how to actually use methods of this
-          class correctly, e.g., how to determine these fully-qualified names.
 
     Args:
         filepath: Path to the MLMD database file.
