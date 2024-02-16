@@ -1215,7 +1215,7 @@ and will adjust its name, so it's unique. This is also the place where we can lo
 <p><strong>Import CMF</strong>.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmflib</span> <span class="kn">import</span> <span class="n">cmf</span>
 </code></pre></div></p>
-<p><strong>Initialize CMF</strong>. The <a class="autorefs autorefs-internal" href="api/public/cmf/#cmflibcmfcmf">CMF</a> object is responsible for managing a CMF backend to record 
+<p><strong>Initialize CMF</strong>. The [CMF][cmflibcmfcmf] object is responsible for managing a CMF backend to record 
 the pipeline metadata. Internally, it creates a pipeline abstraction that groups individual stages and their executions. 
 All stages, their executions and produced artifacts will be associated with a pipeline with the given name.
 <div class="highlight"><pre><span></span><code><span class="n">cmf</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">Cmf</span><span class="p">(</span>

@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cmflibcmfcmf" class="md-skip">
+        <a href="#cmflibcmf" class="md-skip">
           Skip to content
         </a>
       
@@ -682,6 +682,69 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#cmflib.cmf.metadata_push" class="md-nav__link">
+    <span class="md-ellipsis">
+      metadata_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.metadata_pull" class="md-nav__link">
+    <span class="md-ellipsis">
+      metadata_pull
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_pull" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_pull
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_pull_single" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_pull_single
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_push" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.cmf_init_show" class="md-nav__link">
+    <span class="md-ellipsis">
+      cmf_init_show
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.cmf_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      cmf_init
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cmflib.cmf.Cmf.create_context" class="md-nav__link">
     <span class="md-ellipsis">
       create_context
@@ -955,6 +1018,69 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#cmflib.cmf.metadata_push" class="md-nav__link">
+    <span class="md-ellipsis">
+      metadata_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.metadata_pull" class="md-nav__link">
+    <span class="md-ellipsis">
+      metadata_pull
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_pull" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_pull
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_pull_single" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_pull_single
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_push" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.cmf_init_show" class="md-nav__link">
+    <span class="md-ellipsis">
+      cmf_init_show
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.cmf_init" class="md-nav__link">
+    <span class="md-ellipsis">
+      cmf_init
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cmflib.cmf.Cmf.create_context" class="md-nav__link">
     <span class="md-ellipsis">
       create_context
@@ -1095,8 +1221,829 @@
                   
 
 
-<h1 id="cmflibcmfcmf">cmflib.cmf.Cmf<a class="headerlink" href="#cmflibcmfcmf" title="Permanent link">&para;</a></h1>
+<h1 id="cmflibcmf">cmflib.cmf<a class="headerlink" href="#cmflibcmf" title="Permanent link">&para;</a></h1>
 
+
+<div class="doc doc-object doc-module">
+
+
+
+
+  <div class="doc doc-contents first">
+  
+      <p>This module contains all the public API for CMF</p>
+
+  
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.metadata_push" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.metadata_push" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Pushes MLMD file to CMF-server.
+Example:
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;mlmd_file&quot;</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">)</span>
+</code></pre></div>
+Args:
+    pipeline_name: Name of the pipeline.
+    filename: Path to the MLMD file.
+    execution_id: Optional execution ID.</p>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Response output from the _metadata_push function.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1763</span>
+<span class="normal">1764</span>
+<span class="normal">1765</span>
+<span class="normal">1766</span>
+<span class="normal">1767</span>
+<span class="normal">1768</span>
+<span class="normal">1769</span>
+<span class="normal">1770</span>
+<span class="normal">1771</span>
+<span class="normal">1772</span>
+<span class="normal">1773</span>
+<span class="normal">1774</span>
+<span class="normal">1775</span>
+<span class="normal">1776</span>
+<span class="normal">1777</span>
+<span class="normal">1778</span>
+<span class="normal">1779</span>
+<span class="normal">1780</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes MLMD file to CMF-server.</span>
+<span class="sd">    Example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">         result = metadata_push(&quot;example_pipeline&quot;, &quot;mlmd_file&quot;, &quot;3&quot;)</span>
+<span class="sd">    ```</span>
+<span class="sd">    Args:</span>
+<span class="sd">        pipeline_name: Name of the pipeline.</span>
+<span class="sd">        filename: Path to the MLMD file.</span>
+<span class="sd">        execution_id: Optional execution ID.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Response output from the _metadata_push function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments:  pipeline_name, filename (mlmd file path) </span>
+    <span class="c1">#Optional arguments: Execution_ID</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.metadata_pull" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.metadata_pull" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Pulls MLMD file from CMF-server. 
+Example: 
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;execution_123&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   filename: File path to store the MLMD file. 
+   execution_id: Optional execution ID. 
+Returns: 
+   Message from the _metadata_pull function.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1782</span>
+<span class="normal">1783</span>
+<span class="normal">1784</span>
+<span class="normal">1785</span>
+<span class="normal">1786</span>
+<span class="normal">1787</span>
+<span class="normal">1788</span>
+<span class="normal">1789</span>
+<span class="normal">1790</span>
+<span class="normal">1791</span>
+<span class="normal">1792</span>
+<span class="normal">1793</span>
+<span class="normal">1794</span>
+<span class="normal">1795</span>
+<span class="normal">1796</span>
+<span class="normal">1797</span>
+<span class="normal">1798</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span> <span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls MLMD file from CMF-server. </span>
+<span class="sd">     Example: </span>
+<span class="sd">     ```python </span>
+<span class="sd">          result = metadata_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;execution_123&quot;) </span>
+<span class="sd">     ``` </span>
+<span class="sd">     Args: </span>
+<span class="sd">        pipeline_name: Name of the pipeline. </span>
+<span class="sd">        filename: File path to store the MLMD file. </span>
+<span class="sd">        execution_id: Optional execution ID. </span>
+<span class="sd">     Returns: </span>
+<span class="sd">        Message from the _metadata_pull function. </span>
+<span class="sd">     &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments:  pipeline_name, filename(file path to store mlmd file) </span>
+    <span class="c1">#Optional arguments: Execution_ID</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.artifact_pull" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.artifact_pull" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Pulls artifacts from the initialized repository.</p>
+<p>Example:
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+
+
+
+  <p><strong>Parameters:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Default</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td><code>pipeline_name</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Name of the pipeline.</p>
+            </div>
+          </td>
+          <td>
+              <em>required</em>
+          </td>
+        </tr>
+        <tr>
+          <td><code>filename</code></td>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Path to store artifacts.</p>
+            </div>
+          </td>
+          <td>
+                <code>&#39;./mlmd&#39;</code>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Output from the _artifact_pull function.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1800</span>
+<span class="normal">1801</span>
+<span class="normal">1802</span>
+<span class="normal">1803</span>
+<span class="normal">1804</span>
+<span class="normal">1805</span>
+<span class="normal">1806</span>
+<span class="normal">1807</span>
+<span class="normal">1808</span>
+<span class="normal">1809</span>
+<span class="normal">1810</span>
+<span class="normal">1811</span>
+<span class="normal">1812</span>
+<span class="normal">1813</span>
+<span class="normal">1814</span>
+<span class="normal">1815</span>
+<span class="normal">1816</span>
+<span class="normal">1817</span>
+<span class="normal">1818</span>
+<span class="normal">1819</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls artifacts from the initialized repository.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">         result = artifact_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pipeline_name: Name of the pipeline.</span>
+<span class="sd">        filename: Path to store artifacts.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Output from the _artifact_pull function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Required arguments: Pipeline_name</span>
+    <span class="c1"># Optional arguments: filename( path to store artifacts)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.artifact_pull_single" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.artifact_pull_single" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Pulls a single artifact from the initialized repository. 
+Example: 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull_single</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   filename: Path to store the artifact. 
+   artifact_name: Name of the artifact. 
+Returns:
+   Output from the _artifact_pull_single function.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1821</span>
+<span class="normal">1822</span>
+<span class="normal">1823</span>
+<span class="normal">1824</span>
+<span class="normal">1825</span>
+<span class="normal">1826</span>
+<span class="normal">1827</span>
+<span class="normal">1828</span>
+<span class="normal">1829</span>
+<span class="normal">1830</span>
+<span class="normal">1831</span>
+<span class="normal">1832</span>
+<span class="normal">1833</span>
+<span class="normal">1834</span>
+<span class="normal">1835</span>
+<span class="normal">1836</span>
+<span class="normal">1837</span>
+<span class="normal">1838</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls a single artifact from the initialized repository. </span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">        result = artifact_pull_single(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_artifact&quot;) </span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       filename: Path to store the artifact. </span>
+<span class="sd">       artifact_name: Name of the artifact. </span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output from the _artifact_pull_single function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Required arguments: Pipeline_name</span>
+    <span class="c1"># Optional arguments: filename( path to store artifacts)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.artifact_push" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">()</span></code>
+
+<a href="#cmflib.cmf.artifact_push" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Pushes artifacts to the initialized repository.</p>
+<p>Example:
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">()</span>
+</code></pre></div></p>
+
+
+
+  <p><strong>Returns:</strong></p>
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td>
+          </td>
+          <td>
+            <div class="doc-md-description">
+              <p>Output from the _artifact_push function.</p>
+            </div>
+          </td>
+        </tr>
+    </tbody>
+  </table>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1840</span>
+<span class="normal">1841</span>
+<span class="normal">1842</span>
+<span class="normal">1843</span>
+<span class="normal">1844</span>
+<span class="normal">1845</span>
+<span class="normal">1846</span>
+<span class="normal">1847</span>
+<span class="normal">1848</span>
+<span class="normal">1849</span>
+<span class="normal">1850</span>
+<span class="normal">1851</span>
+<span class="normal">1852</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_push</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes artifacts to the initialized repository.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">         result = artifact_push()</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Output from the _artifact_push function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.cmf_init_show" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">cmf_init_show</span><span class="p">()</span></code>
+
+<a href="#cmflib.cmf.cmf_init_show" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Initializes and shows details of the CMF command. 
+Example: 
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">cmf_init_show</span><span class="p">()</span> 
+</code></pre></div>
+Returns: 
+   Output from the _cmf_cmd_init function.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1854</span>
+<span class="normal">1855</span>
+<span class="normal">1856</span>
+<span class="normal">1857</span>
+<span class="normal">1858</span>
+<span class="normal">1859</span>
+<span class="normal">1860</span>
+<span class="normal">1861</span>
+<span class="normal">1862</span>
+<span class="normal">1863</span>
+<span class="normal">1864</span>
+<span class="normal">1865</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init_show</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes and shows details of the CMF command. </span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">         result = cmf_init_show() </span>
+<span class="sd">    ``` </span>
+<span class="sd">    Returns: </span>
+<span class="sd">       Output from the _cmf_cmd_init function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">output</span><span class="o">=</span><span class="n">_cmf_cmd_init</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+
+<h2 id="cmflib.cmf.cmf_init" class="doc doc-heading">
+          <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.cmf_init" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+  <div class="doc doc-contents ">
+  
+      <p>Initializes the CMF configuration based on the provided parameters. 
+Example:
+<div class="highlight"><pre><span></span><code>   <span class="n">cmf_init</span><span class="p">(</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> 
+             <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/re&quot;</span><span class="p">,</span>
+             <span class="n">git_remote_url</span><span class="o">=</span><span class="s2">&quot;git@github.com:user/repo.git&quot;</span><span class="p">,</span>
+             <span class="n">cmf_server_url</span><span class="o">=</span><span class="s2">&quot;http://cmf-server&quot;</span>
+             <span class="n">neo4j_user</span><span class="s2">&quot;, </span>
+             <span class="n">neo4j_password</span><span class="o">=</span><span class="s2">&quot;password&quot;</span><span class="p">,</span>
+             <span class="n">neo4j_uri</span><span class="o">=</span><span class="s2">&quot;bolt://localhost:76&quot;</span>
+           <span class="p">)</span>
+</code></pre></div>
+Args: 
+   type: Type of repository ("local", "minioS3", "amazonS3", "sshremote")
+   path: Path for the local repository. 
+   git_remote_url: Git remote URL for version control.
+   cmf_server_url: CMF server URL.
+   neo4j_user: Neo4j database username.
+   neo4j_password: Neo4j database password.
+   neo4j_uri: Neo4j database URI.
+   url: URL for MinioS3 or AmazonS3.
+   endpoint_url: Endpoint URL for MinioS3.
+   access_key_id: Access key ID for MinioS3 or AmazonS3.
+   secret_key: Secret key for MinioS3 or AmazonS3. 
+   user: SSH remote username.
+   password: SSH remote password. 
+   port: SSH remote port
+Returns:
+   Output based on the initialized repository type.</p>
+
+          <details class="quote">
+            <summary>Source code in <code>cmflib/cmf.py</code></summary>
+            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1867</span>
+<span class="normal">1868</span>
+<span class="normal">1869</span>
+<span class="normal">1870</span>
+<span class="normal">1871</span>
+<span class="normal">1872</span>
+<span class="normal">1873</span>
+<span class="normal">1874</span>
+<span class="normal">1875</span>
+<span class="normal">1876</span>
+<span class="normal">1877</span>
+<span class="normal">1878</span>
+<span class="normal">1879</span>
+<span class="normal">1880</span>
+<span class="normal">1881</span>
+<span class="normal">1882</span>
+<span class="normal">1883</span>
+<span class="normal">1884</span>
+<span class="normal">1885</span>
+<span class="normal">1886</span>
+<span class="normal">1887</span>
+<span class="normal">1888</span>
+<span class="normal">1889</span>
+<span class="normal">1890</span>
+<span class="normal">1891</span>
+<span class="normal">1892</span>
+<span class="normal">1893</span>
+<span class="normal">1894</span>
+<span class="normal">1895</span>
+<span class="normal">1896</span>
+<span class="normal">1897</span>
+<span class="normal">1898</span>
+<span class="normal">1899</span>
+<span class="normal">1900</span>
+<span class="normal">1901</span>
+<span class="normal">1902</span>
+<span class="normal">1903</span>
+<span class="normal">1904</span>
+<span class="normal">1905</span>
+<span class="normal">1906</span>
+<span class="normal">1907</span>
+<span class="normal">1908</span>
+<span class="normal">1909</span>
+<span class="normal">1910</span>
+<span class="normal">1911</span>
+<span class="normal">1912</span>
+<span class="normal">1913</span>
+<span class="normal">1914</span>
+<span class="normal">1915</span>
+<span class="normal">1916</span>
+<span class="normal">1917</span>
+<span class="normal">1918</span>
+<span class="normal">1919</span>
+<span class="normal">1920</span>
+<span class="normal">1921</span>
+<span class="normal">1922</span>
+<span class="normal">1923</span>
+<span class="normal">1924</span>
+<span class="normal">1925</span>
+<span class="normal">1926</span>
+<span class="normal">1927</span>
+<span class="normal">1928</span>
+<span class="normal">1929</span>
+<span class="normal">1930</span>
+<span class="normal">1931</span>
+<span class="normal">1932</span>
+<span class="normal">1933</span>
+<span class="normal">1934</span>
+<span class="normal">1935</span>
+<span class="normal">1936</span>
+<span class="normal">1937</span>
+<span class="normal">1938</span>
+<span class="normal">1939</span>
+<span class="normal">1940</span>
+<span class="normal">1941</span>
+<span class="normal">1942</span>
+<span class="normal">1943</span>
+<span class="normal">1944</span>
+<span class="normal">1945</span>
+<span class="normal">1946</span>
+<span class="normal">1947</span>
+<span class="normal">1948</span>
+<span class="normal">1949</span>
+<span class="normal">1950</span>
+<span class="normal">1951</span>
+<span class="normal">1952</span>
+<span class="normal">1953</span>
+<span class="normal">1954</span>
+<span class="normal">1955</span>
+<span class="normal">1956</span>
+<span class="normal">1957</span>
+<span class="normal">1958</span>
+<span class="normal">1959</span>
+<span class="normal">1960</span>
+<span class="normal">1961</span>
+<span class="normal">1962</span>
+<span class="normal">1963</span>
+<span class="normal">1964</span>
+<span class="normal">1965</span>
+<span class="normal">1966</span>
+<span class="normal">1967</span>
+<span class="normal">1968</span>
+<span class="normal">1969</span>
+<span class="normal">1970</span>
+<span class="normal">1971</span>
+<span class="normal">1972</span>
+<span class="normal">1973</span>
+<span class="normal">1974</span>
+<span class="normal">1975</span>
+<span class="normal">1976</span>
+<span class="normal">1977</span>
+<span class="normal">1978</span>
+<span class="normal">1979</span>
+<span class="normal">1980</span>
+<span class="normal">1981</span>
+<span class="normal">1982</span>
+<span class="normal">1983</span>
+<span class="normal">1984</span>
+<span class="normal">1985</span>
+<span class="normal">1986</span>
+<span class="normal">1987</span>
+<span class="normal">1988</span>
+<span class="normal">1989</span>
+<span class="normal">1990</span>
+<span class="normal">1991</span>
+<span class="normal">1992</span>
+<span class="normal">1993</span>
+<span class="normal">1994</span>
+<span class="normal">1995</span>
+<span class="normal">1996</span>
+<span class="normal">1997</span>
+<span class="normal">1998</span>
+<span class="normal">1999</span>
+<span class="normal">2000</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">cmf_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">neo4j_user</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">neo4j_password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">neo4j_uri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">endpoint_url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">access_key_id</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">secret_key</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span>
+         <span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes the CMF configuration based on the provided parameters. </span>
+<span class="sd">    Example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">       cmf_init( type=&quot;local&quot;, </span>
+<span class="sd">                 path=&quot;/path/to/re&quot;,</span>
+<span class="sd">                 git_remote_url=&quot;git@github.com:user/repo.git&quot;,</span>
+<span class="sd">                 cmf_server_url=&quot;http://cmf-server&quot;</span>
+<span class="sd">                 neo4j_user&quot;, </span>
+<span class="sd">                 neo4j_password=&quot;password&quot;,</span>
+<span class="sd">                 neo4j_uri=&quot;bolt://localhost:76&quot;</span>
+<span class="sd">               )</span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       type: Type of repository (&quot;local&quot;, &quot;minioS3&quot;, &quot;amazonS3&quot;, &quot;sshremote&quot;)</span>
+<span class="sd">       path: Path for the local repository. </span>
+<span class="sd">       git_remote_url: Git remote URL for version control.</span>
+<span class="sd">       cmf_server_url: CMF server URL.</span>
+<span class="sd">       neo4j_user: Neo4j database username.</span>
+<span class="sd">       neo4j_password: Neo4j database password.</span>
+<span class="sd">       neo4j_uri: Neo4j database URI.</span>
+<span class="sd">       url: URL for MinioS3 or AmazonS3.</span>
+<span class="sd">       endpoint_url: Endpoint URL for MinioS3.</span>
+<span class="sd">       access_key_id: Access key ID for MinioS3 or AmazonS3.</span>
+<span class="sd">       secret_key: Secret key for MinioS3 or AmazonS3. </span>
+<span class="sd">       user: SSH remote username.</span>
+<span class="sd">       password: SSH remote password. </span>
+<span class="sd">       port: SSH remote port</span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output based on the initialized repository type.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Type is not provided&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span><span class="s2">&quot;minioS3&quot;</span><span class="p">,</span><span class="s2">&quot;amazonS3&quot;</span><span class="p">,</span><span class="s2">&quot;sshremote&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Type value is undefined&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">type</span><span class="o">+</span><span class="s2">&quot;.Expected: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;local&quot;</span><span class="p">,</span><span class="s2">&quot;minioS3&quot;</span><span class="p">,</span><span class="s2">&quot;amazonS3&quot;</span><span class="p">,</span><span class="s2">&quot;sshremote&quot;</span><span class="p">]))</span>
+
+    <span class="k">if</span> <span class="n">neo4j_user</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">neo4j_password</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">neo4j_uri</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="n">neo4j_user</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">neo4j_password</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">neo4j_uri</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Enter all neo4j parameters.&quot;</span><span class="p">)</span> 
+
+    <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;path&#39;</span><span class="p">:</span><span class="n">path</span><span class="p">,</span>
+        <span class="s1">&#39;git_remote_url&#39;</span><span class="p">:</span><span class="n">git_remote_url</span><span class="p">,</span>
+       <span class="s1">&#39;url&#39;</span><span class="p">:</span><span class="n">url</span><span class="p">,</span>
+        <span class="s1">&#39;endpoint_url&#39;</span><span class="p">:</span><span class="n">endpoint_url</span><span class="p">,</span>
+        <span class="s1">&#39;access_key_id&#39;</span><span class="p">:</span><span class="n">access_key_id</span><span class="p">,</span>
+        <span class="s1">&#39;secret_key&#39;</span><span class="p">:</span><span class="n">secret_key</span><span class="p">,</span>
+        <span class="s1">&#39;user&#39;</span><span class="p">:</span><span class="n">user</span><span class="p">,</span>
+        <span class="s1">&#39;password&#39;</span><span class="p">:</span><span class="n">password</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="n">status_args</span><span class="o">=</span><span class="n">non_related_args</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="n">path</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">git_remote_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize local repository&quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">_init_local</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="p">,</span> <span class="n">neo4j_uri</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_args</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;minioS3&quot;</span> <span class="ow">and</span> <span class="n">url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">endpoint_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">access_key_id</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">secret_key</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize minioS3 repository&quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">_init_minioS3</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="n">endpoint_url</span><span class="p">,</span>
+            <span class="n">access_key_id</span><span class="p">,</span>
+            <span class="n">secret_key</span><span class="p">,</span>
+            <span class="n">git_remote_url</span><span class="p">,</span>
+            <span class="n">cmf_server_url</span><span class="p">,</span>
+            <span class="n">neo4j_user</span><span class="p">,</span>
+            <span class="n">neo4j_password</span><span class="p">,</span>
+            <span class="n">neo4j_uri</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_args</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;amazonS3&quot;</span> <span class="ow">and</span> <span class="n">url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">access_key_id</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">secret_key</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize amazonS3 repository&quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">_init_amazonS3</span><span class="p">(</span>
+            <span class="n">url</span><span class="p">,</span>
+            <span class="n">access_key_id</span><span class="p">,</span>
+            <span class="n">secret_key</span><span class="p">,</span>
+            <span class="n">git_remote_url</span><span class="p">,</span>
+            <span class="n">cmf_server_url</span><span class="p">,</span>
+            <span class="n">neo4j_user</span><span class="p">,</span>
+            <span class="n">neo4j_password</span><span class="p">,</span>
+            <span class="n">neo4j_uri</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_args</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;sshremote&quot;</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">user</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">port</span><span class="o">!=</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">password</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span><span class="o">!=</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize sshremote repository&quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">_init_sshremote</span><span class="p">(</span>
+            <span class="n">path</span><span class="p">,</span>
+            <span class="n">user</span><span class="p">,</span>
+            <span class="n">port</span><span class="p">,</span>
+            <span class="n">password</span><span class="p">,</span>
+            <span class="n">git_remote_url</span><span class="p">,</span>
+            <span class="n">cmf_server_url</span><span class="p">,</span>
+            <span class="n">neo4j_user</span><span class="p">,</span>
+            <span class="n">neo4j_password</span><span class="p">,</span>
+            <span class="n">neo4j_uri</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_args</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Enter all arguments&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+          </details>
+  </div>
+
+</div>
+
+
+
+  </div>
+
+  </div>
+
+</div>
 
 <div class="doc doc-object doc-class">
 
