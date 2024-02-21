@@ -127,12 +127,12 @@ def add_parser(subparsers, parent_parser):
         default=argparse.SUPPRESS,
     )
 
-    required_arguments.add_argument(
+    parser.add_argument(
         "--session-token",
         required=True,
         help="Specify Session Token.",
         metavar="<session_token>",
-        default=argparse.SUPPRESS,
+        default="",
     )
 
     required_arguments.add_argument(

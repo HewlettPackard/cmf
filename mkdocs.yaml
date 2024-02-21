@@ -93,6 +93,7 @@ nav:
   - Public API:
       - CMF: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
+      - CmfQuery: api/public/cmfquery.md
   - Ontology:
       - Ontology: common-metadata-ontology/readme.md
 
