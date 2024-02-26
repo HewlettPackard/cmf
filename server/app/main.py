@@ -18,7 +18,7 @@ from server.app.get_data import (
     get_executions_by_ids
 )
 from server.app.query_visualization import query_visualization
-
+from server.app.query_exec_lineage import query_exec_lineage
 from pathlib import Path
 import os
 import json
@@ -146,9 +146,9 @@ async def display_lineage(request: Request,lineage_type: str, pipeline_name: str
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             if lineage_type=="Artifacts":
-                response=get_lineage_img_path(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids)
+                response=get_lineage_img_path(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
             elif lineage_type=="Execution":
-                response=get_lineage_img_path(server_store_path,pipeline_name,"Execution")
+                response=get_lineage_img_path(server_store_path,pipeline_name,"Execution",dict_of_art_ids,dict_of_exe_ids)
             else:
                 response=get_lineage_img_path(server_store_path,pipeline_name,"ArtifactExecution")
             return response
@@ -158,6 +158,15 @@ async def display_lineage(request: Request,lineage_type: str, pipeline_name: str
     else:
         return 'mlmd does not exist!!'
 
+@app.get("/display_exec_lineage/{exec_type}/{pipeline_name}")
+async def display_exec_lineage(request: Request,exec_type: str, pipeline_name: str):
+    # checks if mlmd file exists on server
+    img_path=""
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response=query_exec_lineage(server_store_path,pipeline_name,dict_of_exe_ids,exec_type)
+    return response
 
 # api to display artifacts available in mlmd
 @app.get("/display_artifacts/{pipeline_name}/{type}")

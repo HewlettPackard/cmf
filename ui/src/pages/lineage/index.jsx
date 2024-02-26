@@ -20,7 +20,7 @@ import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
-import LineageSidebar from "../../components/LineageSidebar";
+import Sidebar from "../../components/Sidebar";
 import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
@@ -30,64 +30,86 @@ const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
 
-//  const LineageTypes=['Artifacts','Execution','ArtifactExecution']
   const LineageTypes=['Artifacts','Execution'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
-  const [lineagedata, setLineageData]=useState(null);
+  const [selectedExecutionType, setSelectedExecutionType] = useState(null);
+  const [lineageData, setLineageData]=useState(null);
+  const [executionData, setExecutionData]=useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
   const [execDropdownData,setExecDropdownData] = useState([]);
+
+  // fetching list of pipelines
+  useEffect(() => {
+    fetchPipelines();
+  }, []);
 
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
       setPipelines(data);
       setSelectedPipeline(data[0]);
+      // when pipeline is updated we need to update the lineage selection too
+      // in my opinion this is also not needed as we have selectedLineage has
+      // default value
+      if (data[0]) {
+        setSelectedLineageType(LineageTypes[0]);
+        // call artifact lineage as it is default
+        fetchArtifactLineage(data[0], "Artifacts");
+      }
     });
   };
-
-  useEffect(() => {
-    fetchPipelines();
-  }, []);
-
   const handlePipelineClick = (pipeline) => {
     setLineageData(null);
     setSelectedPipeline(pipeline);
-  };
-
-
-  useEffect(() => {
-    if (selectedPipeline) {
+    // when pipeline is updated we need to update the lineage selection too
+    // this is also not needed as selectedLineage has default value
+    // setSelectedLineageType(LineageTypes[0]);
+     if (selectedPipeline) {
        setSelectedLineageType(LineageTypes[0]);
-    }
-    // eslint-disable-next-line 
-  }, [selectedPipeline]);
+       //call artifact lineage as it is default
+       fetchArtifactLineage(selectedPipeline, selectedLineageType);
+     }
+  };
 
   const handleLineageTypeClick = (lineageType) => {
     setLineageData(null);
+    setExecutionData(null);
     setSelectedLineageType(lineageType);
-    fetchLineage(selectedPipeline, lineageType);
-  };  
-
-
-  const fetchLineage = (pipelineName, type) => {
-    client.getLineage(pipelineName,type).then((data) => {    
-    if (type === "Artifacts") {
-    setLineageData(data);
+    if (lineageType === "Artifacts") {
+      fetchArtifactLineage(selectedPipeline, lineageType);
     }
     else {
-    setExecDropdownData(data);
+      fetchArtifactLineage(selectedPipeline, "Execution");
     }
+  };  
+
+  const fetchArtifactLineage = (pipelineName, type) => {
+    client.getLineage(pipelineName,type).then((data) => {    
+      if (type === "Artifacts") {
+        setLineageData(data);
+      } 
+      else {
+        setExecDropdownData(data);
+        const typeParts = data[0].split('/');
+        const exec_type = typeParts[1].split('_')[0];
+        fetchExecutionLineage(pipelineName, exec_type);
+      }
     });
+    setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
-  useEffect(() => {
-    if (selectedPipeline) {
-      if (selectedLineageType === "Artifacts") {
-        fetchLineage(selectedPipeline, "Artifacts");
-      }
-      setLineageArtifactsKey((prevKey) => prevKey + 1);
-    } 
-  }, [selectedPipeline, selectedLineageType]);
+  // used for execution drop down
+  const handleExecutionClick = (executionType) => {
+    setExecutionData(null);
+    const typeParts = executionType.split('/');
+    const type = typeParts[1].split('_')[0];
+    fetchExecutionLineage(selectedPipeline, type);
+  };  
 
+  const fetchExecutionLineage = (pipelineName, type) => {
+    client.getExecutionLineage(pipelineName,type).then((data) => {    
+      setExecutionData(data);
+    });
+  };
 
   return (
     <>
@@ -99,7 +121,7 @@ const Lineage = () => {
 
         <div className="container">
           <div className="flex flex-row">
-            <LineageSidebar
+            <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}
             />
@@ -113,11 +135,14 @@ const Lineage = () => {
              )}
             </div>
             <div className="container">
-                {selectedPipeline !== null && selectedLineageType === "Artifacts" && lineagedata !== null && (
-                <LineageArtifacts key={lineageArtifactsKey} data={lineagedata}/>
+                {selectedPipeline !== null && selectedLineageType === "Artifacts" && lineageData !== null && (
+                <LineageArtifacts key={lineageArtifactsKey} data={lineageData}/>
               )}
-                {selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null && (
-                <ExecutionDropdown data={execDropdownData} />        
+                {selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null  && executionData !== null &&(
+                <div>
+                <ExecutionDropdown data={execDropdownData} handleExecutionClick= {handleExecutionClick}/>        
+                <LineageArtifacts key={lineageArtifactsKey} data={executionData}/>
+                </div>
               )}
             </div>
           </div>

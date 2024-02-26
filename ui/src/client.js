@@ -70,6 +70,12 @@ class FastAPIClient {
     });
   }
 
+  async getExecutionLineage(pipeline,exec_type) {
+      return this.apiClient.get(`/display_exec_lineage/${exec_type}/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
 
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient

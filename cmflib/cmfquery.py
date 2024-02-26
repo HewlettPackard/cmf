@@ -278,7 +278,7 @@ class CmfQuery(object):
                     execution_ids.append(exe.id)
         return execution_ids
 
-    def _get_executions_by_output_artifact_id(self, artifact_id: int) -> t.List[int]:
+    def _get_executions_by_output_artifact_id(self, artifact_id: int,pipeline_id: str = None) -> t.List[int]:
         """Return stage execution that produced given output artifact.
 
         Args:
@@ -294,8 +294,13 @@ class CmfQuery(object):
         # According to CMF, it's OK to have multiple executions that produce the same exact artifact.
         # if len(execution_ids) >= 2:
         #     logger.warning("%d executions claim artifact (id=%d) as output.", len(execution_ids), artifact_id)
-
-        return list(set(execution_ids))
+        if pipeline_id != None:
+            list_exec=self.store.get_executions_by_id(execution_ids)
+            execution_ids=[]
+            for exe in list_exec:
+                if (self._transform_to_dataframe(exe).Pipeline_id.to_string(index=False)) == str(pipeline_id):
+                    execution_ids.append(exe.id)
+        return execution_ids
 
     def _get_artifact(self, name: str) -> t.Optional[mlpb.Artifact]:
         """Return artifact with the given name or None.
@@ -595,7 +600,7 @@ class CmfQuery(object):
             self.store.get_artifacts_by_id(artifacts_ids), lambda _artifact: self.get_artifact_df(_artifact)
         )
 
-    def get_one_hop_parent_executions(self, execution_id: t.List[int]) -> t.List[int]:
+    def get_one_hop_parent_executions(self, execution_id: t.List[int],pipeline_id: str = None) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
@@ -605,12 +610,14 @@ class CmfQuery(object):
         """
         artifacts_input=self._get_input_artifacts(execution_id)
         arti=self.store.get_artifacts_by_id(artifacts_input)
-         
+        list_exec=[]
+        exec_ids_added=[]
         for i in artifacts_input:
-            exec=self._get_executions_by_output_artifact_id(i)
-            list_exec=self.store.get_executions_by_id(exec)
-#            for id in list_exec:
-                #print(self._transform_to_dataframe(id).Execution_type_name,"@@@@@@@@@")
+            exec=self._get_executions_by_output_artifact_id(i,pipeline_id)
+            if exec not in exec_ids_added:
+                exec_ids_added.append(exec)
+                list_exec.append(self.store.get_executions_by_id(exec))
+        return list_exec
 
     def get_one_hop_child_executions(self, execution_id: t.List[int]) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.

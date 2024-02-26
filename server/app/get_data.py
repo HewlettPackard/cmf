@@ -24,11 +24,10 @@ def get_all_exe_ids(mlmdfilepath):
         for stage in stages:
             executions = query.get_all_executions_in_stage(stage)
             df = pd.concat([df, executions], sort=True, ignore_index=True)
-
     if df.empty:
         return
     for name in names:
-        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type']]
+        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type','Execution_uuid']]
     return execution_ids
 
 def get_all_artifact_ids(mlmdfilepath):
@@ -173,12 +172,12 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_img_path(server_store_path,pipeline_name,type,dict_of_art_ids):
+def get_lineage_img_path(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
         lineage_data = query_visualization(server_store_path, pipeline_name,dict_of_art_ids)
     elif type=="Execution":
-        lineage_data = query_visualization_execution(server_store_path, pipeline_name)
+        lineage_data = query_visualization_execution(server_store_path, pipeline_name,dict_of_art_ids,dict_of_exe_ids)
     else:
         lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
     return lineage_data
