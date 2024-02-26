@@ -35,7 +35,7 @@ services:
     expose:
       - 8000
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://$IP:8080"]
+      test: if [ -n $IP ]; then curl -f http://$IP:8080; else curl -f http://$hostname:8080; fi
       interval: 15s
       retries: 32
     
