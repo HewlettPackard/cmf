@@ -3,16 +3,16 @@ import pandas as pd
 import itertools
 from ml_metadata.proto.metadata_store_pb2 import Value
 
-def query_exec_lineage(mlmd_path, pipeline_name,dict_of_exe_ids,exec_type):
+def query_exec_lineage(mlmd_path, pipeline_name,dict_of_exe_ids,exec_type,uuid_server):
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id=query.get_pipeline_id(pipeline_name)
     node_id_name_list=[]
     link_src_trgt_list=[]
     for id,context_type,uuid in zip(dict_of_exe_ids[pipeline_name]["id"],dict_of_exe_ids[pipeline_name]["Context_Type"],dict_of_exe_ids[pipeline_name]["Execution_uuid"]):
-        if context_type == (pipeline_name+"/"+exec_type):
+        truncated_uuid=uuid.split("_")[0][:4]
+        if (context_type+"_"+truncated_uuid) == (pipeline_name+"/"+exec_type+"_"+uuid_server):
             host_id=id
             node_id_name_list.append({"id":host_id,"name":(context_type+"_"+uuid.split("-")[0][:4]),"color":"#16B8E9"})
-   
     exec=query.get_one_hop_parent_executions([host_id],pipeline_id)
     for i in exec:
         for j in i:

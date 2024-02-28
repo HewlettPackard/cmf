@@ -1,17 +1,24 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 
-const ExecutionDropdown = ({data,handleExecutionClick}) => {
+const ExecutionDropdown = ({data,exec_type,handleExecutionClick}) => {
    const [selectedExecutionType, setSelectedExecutionType] = useState('');
-   const [execTypes,setExecTypes]= useState([]);
-   const handleExecutionTypeSelect = (event) => {
-       setSelectedExecutionType(event.target.value);
+
+   useEffect(() => {
+    if (exec_type)  {
+       setSelectedExecutionType(exec_type);
+    }
+   }, [exec_type]);
+
+   const handleCallExecutionClick = (event) => {
        handleExecutionClick(event.target.value);
    };
+
    return (
      <div className= "dropdown">  
       <select 
         className= "dropdown-select"
-        onChange={handleExecutionTypeSelect}
+        value= {selectedExecutionType}
+        onChange={(event) => { handleCallExecutionClick(event); }}
       > 
         {data.map((type, index) => {
          return (
@@ -21,7 +28,6 @@ const ExecutionDropdown = ({data,handleExecutionClick}) => {
          );
          })}
        </select>
-       <p>{selectedExecutionType}</p>
       </div>
 
   );

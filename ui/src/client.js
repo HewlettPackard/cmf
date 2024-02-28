@@ -70,8 +70,8 @@ class FastAPIClient {
     });
   }
 
-  async getExecutionLineage(pipeline,exec_type) {
-      return this.apiClient.get(`/display_exec_lineage/${exec_type}/${pipeline}`)
+  async getExecutionLineage(pipeline,exec_type,uuid) {
+      return this.apiClient.get(`/display_exec_lineage/${exec_type}/${pipeline}/${uuid}`)
       .then(({ data }) => {
       return data;
     });

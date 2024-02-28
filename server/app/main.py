@@ -158,14 +158,14 @@ async def display_lineage(request: Request,lineage_type: str, pipeline_name: str
     else:
         return 'mlmd does not exist!!'
 
-@app.get("/display_exec_lineage/{exec_type}/{pipeline_name}")
-async def display_exec_lineage(request: Request,exec_type: str, pipeline_name: str):
+@app.get("/display_exec_lineage/{exec_type}/{pipeline_name}/{uuid}")
+async def display_exec_lineage(request: Request,exec_type: str, pipeline_name: str,uuid: str):
     # checks if mlmd file exists on server
     img_path=""
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=query_exec_lineage(server_store_path,pipeline_name,dict_of_exe_ids,exec_type)
+            response=query_exec_lineage(server_store_path,pipeline_name,dict_of_exe_ids,exec_type,uuid)
     return response
 
 # api to display artifacts available in mlmd

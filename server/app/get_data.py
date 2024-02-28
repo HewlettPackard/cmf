@@ -27,7 +27,7 @@ def get_all_exe_ids(mlmdfilepath):
     if df.empty:
         return
     for name in names:
-        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type','Execution_uuid']]
+        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type','Execution_uuid','Context_ID']]
     return execution_ids
 
 def get_all_artifact_ids(mlmdfilepath):
