@@ -74,10 +74,19 @@ class CmdArtifactPull(CmdBase):
             current_loc = f"/{current_loc_1}"
             return host, current_loc, name
         else:
-            bucket_name = token[2]
-            object_name = f"{token[3]}/{token[4]}/{token[5]}"
-            download_loc = current_directory + "/" + name
-            return bucket_name, object_name, download_loc
+            # sometimes s_url is empty - this shouldn't happen technically
+            # sometimes s_url is not starting with s3:// - technically this shouldn't happen
+            if s_url and s_url.startswith("s3://"):
+                url_with_bucket = s_url.split("s3://")[1]
+                # url_with_bucket = varkha-test/23/6d9502e0283d91f689d7038b8508a2
+                # Splitting the string using '/' as the delimiter
+                bucket_name, object_name = url_with_bucket.split('/', 1)
+                download_loc =  current_directory + "/" + name if current_directory != ""  else name
+                print(download_loc)
+                return bucket_name, object_name, download_loc
+            else:
+                # returning bucket_name, object_name and download_loc returning as empty
+                return "", "", ""
 
     def search_artifact(self, input_dict):
         for name, url in input_dict.items():
@@ -240,28 +249,30 @@ class CmdArtifactPull(CmdBase):
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
                     args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
-                    stmt = amazonS3_class_obj.download_artifacts(
-                        dvc_config_op,
-                        current_directory,
-                        args[0], # bucket_name
-                        args[1], # object_name
-                        args[2], # download_loc
-                    )
-                    print(stmt)
+                    if args[0] and args[1] and args[2]:
+                        stmt = amazonS3_class_obj.download_artifacts(
+                            dvc_config_op,
+                            current_directory,
+                            args[0], # bucket_name
+                            args[1], # object_name
+                            args[2], # download_loc
+                        )
+                        print(stmt)
             else:
                 for name, url in name_url_dict.items():
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
-                    stmt = amazonS3_class_obj.download_artifacts(
-                        dvc_config_op,
-                        current_directory,
-                        args[0], # bucket_name
-                        args[1], # object_name
-                        args[2], # download_loc
-                    )
-                    print(stmt)
+                    if args[0] and args[1] and args[2]:
+                        stmt = amazonS3_class_obj.download_artifacts(
+                            dvc_config_op,
+                            current_directory,
+                            args[0], # bucket_name
+                            args[1], # object_name
+                            args[2], # download_loc
+                        )
+                        print(stmt)
             return "Done"
         else:
             remote = dvc_config_op["core.remote"]

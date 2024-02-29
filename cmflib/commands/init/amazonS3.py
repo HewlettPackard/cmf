@@ -86,6 +86,7 @@ class CmdInitAmazonS3(CmdBase):
         print(output)
         dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
         dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
+        dvc_add_attribute(repo_type, "session_token", self.args.session_token)
         return "cmf init complete."
 
 
@@ -124,6 +125,14 @@ def add_parser(subparsers, parent_parser):
         help="Specify Secret Key.",
         metavar="<secret_key>",
         default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--session-token",
+        required=True,
+        help="Specify Session Token.",
+        metavar="<session_token>",
+        default="",
     )
 
     required_arguments.add_argument(
