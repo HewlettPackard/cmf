@@ -687,6 +687,27 @@ class CmfQuery(object):
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
+    def get_all_parent_executions_by_id(self,execution_id: t.List[int],pipeline_id: str = None) -> t.List[int]:
+        parents=[]
+        current_id=execution_id
+        list_of_exec_id=[]
+        while current_id:
+#            if type(current_id) != list:
+#                current_id=[current_id]
+            parent_ids = self.get_one_hop_parent_executions(current_id,pipeline_id)
+            list_of_exec_id = []
+            for i in parent_ids:
+                for j in i:
+                    list_of_exec_id.append(j.id)
+            if list_of_exec_id:
+                parents.extend(list_of_exec_id)
+                for parent_id in [list_of_exec_id]:
+                    current_id = parent_id
+                    parents.extend(self.get_all_parent_executions_by_id(current_id,pipeline_id))
+            else:
+                break
+        return list(set(parents)
+
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
         """Return all executions that produced upstream artifacts for the given artifact.
         Args:

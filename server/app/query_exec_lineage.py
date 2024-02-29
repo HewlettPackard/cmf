@@ -14,6 +14,7 @@ def query_exec_lineage(mlmd_path, pipeline_name,dict_of_exe_ids,exec_type,uuid_s
             host_id=id
             node_id_name_list.append({"id":host_id,"name":(context_type+"_"+uuid.split("-")[0][:4]),"color":"#16B8E9"})
     exec=query.get_one_hop_parent_executions([host_id],pipeline_id)
+    query.get_all_parent_executions_by_id([host_id],pipeline_id)    
     for i in exec:
         for j in i:
             name=j.properties["Execution_type_name"].string_value
@@ -30,5 +31,5 @@ def query_exec_lineage(mlmd_path, pipeline_name,dict_of_exe_ids,exec_type,uuid_s
     }
     return data
 
-#query_exec_lineage("/home/chobey/cmf-server/data/mlmd", "Test-env",dict_of_exe_ids,"Evaluate")
+#query_exec_lineage("/home/chobey/cmf-server/data/mlmd", "Test-env",data,"Evaluate")
     
