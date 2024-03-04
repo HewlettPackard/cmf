@@ -691,22 +691,25 @@ class CmfQuery(object):
         parents=[]
         current_id=execution_id
         list_of_exec_id=[]
+        seen = set()
         while current_id:
-#            if type(current_id) != list:
-#                current_id=[current_id]
             parent_ids = self.get_one_hop_parent_executions(current_id,pipeline_id)
             list_of_exec_id = []
             for i in parent_ids:
                 for j in i:
-                    list_of_exec_id.append(j.id)
+                    temp=[j.id, j.properties["Execution_type_name"].string_value, j.properties["Execution_uuid"].string_value]
+                    if temp not in parents:
+                        list_of_exec_id.append(temp)
             if list_of_exec_id:
-                parents.extend(list_of_exec_id)
-                for parent_id in [list_of_exec_id]:
-                    current_id = parent_id
-                    parents.extend(self.get_all_parent_executions_by_id(current_id,pipeline_id))
+                if list_of_exec_id not in parents:
+                    parents.extend(list_of_exec_id)
+                    for id_name_uuid in list_of_exec_id:
+                        current_id = [id_name_uuid[0]]
+                        parents.extend(self.get_all_parent_executions_by_id(current_id,pipeline_id))
             else:
                 break
-        return list(set(parents)
+        print(parents)
+        return parents
 
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
         """Return all executions that produced upstream artifacts for the given artifact.
