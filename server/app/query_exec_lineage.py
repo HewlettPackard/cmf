@@ -13,20 +13,20 @@ def query_exec_lineage(mlmd_path, pipeline_name,dict_of_exe_ids,exec_type,uuid_s
         if (context_type+"_"+truncated_uuid) == (pipeline_name+"/"+exec_type+"_"+uuid_server):
             host_id=id
             node_id_name_list.append({"id":host_id,"name":(context_type+"_"+uuid.split("-")[0][:4]),"color":"#16B8E9"})
-    exec=query.get_one_hop_parent_executions([host_id],pipeline_id)
-    query.get_all_parent_executions_by_id([host_id],pipeline_id)    
-    for i in exec:
-        for j in i:
-            name=j.properties["Execution_type_name"].string_value
-            exec_uuid=j.properties["Execution_uuid"].string_value
-            link_src_trgt_list.append({"source":j.id,"target":host_id})
-            node_id_name_list.append({"id":j.id,"name":(name+"_"+exec_uuid.split("-")[0][:4]),"color":"#FA6318"})
-
+#    exec=query.get_one_hop_parent_executions([host_id],pipeline_id)
+    exec_new=query.get_all_parent_executions_by_id([host_id],pipeline_id)
+    for i in exec_new[0]:
+        id=i[0]
+        name=i[1]
+        exec_uuid=i[2]
+        node_id_name_list.append({"id":i[0],"name":(name+"_"+exec_uuid.split("-")[0][:4]),"color":"#FA6318"})
+    link_src_trgt_list.append(exec_new[1])
+    node_id_name_list_unique=[dict(t) for t in {tuple(d.items()) for d in node_id_name_list}]
     new_list = pd.DataFrame(
-    link_src_trgt_list
+    link_src_trgt_list[0]
     ).drop_duplicates().to_dict('records')
     data = {
-        "nodes" : node_id_name_list,
+        "nodes" : node_id_name_list_unique,
         "links" : new_list
     }
     return data

@@ -688,28 +688,30 @@ class CmfQuery(object):
         return df
 
     def get_all_parent_executions_by_id(self,execution_id: t.List[int],pipeline_id: str = None) -> t.List[int]:
-        parents=[]
-        current_id=execution_id
-        list_of_exec_id=[]
-        seen = set()
-        while current_id:
-            parent_ids = self.get_one_hop_parent_executions(current_id,pipeline_id)
-            list_of_exec_id = []
-            for i in parent_ids:
-                for j in i:
+        parent_executions=[[],[]]
+        current_execution_id=execution_id
+        list_of_parent_execution_id=[]
+        link_src_trgt_list=[]
+        while current_execution_id:
+            parent_execution_ids = self.get_one_hop_parent_executions(current_execution_id,pipeline_id)
+            list_of_parent_execution_id = []
+            for data in parent_execution_ids:
+                for j in data:
                     temp=[j.id, j.properties["Execution_type_name"].string_value, j.properties["Execution_uuid"].string_value]
-                    if temp not in parents:
-                        list_of_exec_id.append(temp)
-            if list_of_exec_id:
-                if list_of_exec_id not in parents:
-                    parents.extend(list_of_exec_id)
-                    for id_name_uuid in list_of_exec_id:
-                        current_id = [id_name_uuid[0]]
-                        parents.extend(self.get_all_parent_executions_by_id(current_id,pipeline_id))
+                    if temp not in parent_executions[0]:
+                        link_src_trgt_list.append({"source":j.id,"target":current_execution_id[0]})
+                        list_of_parent_execution_id.append(temp)
+            if list_of_parent_execution_id:
+                parent_executions[0].extend(list_of_parent_execution_id)
+                parent_executions[1].extend(link_src_trgt_list)
+                for id_name_uuid in list_of_parent_execution_id:
+                    current_execution_id = [id_name_uuid[0]]
+                    recursive_parents = self.get_all_parent_executions_by_id(current_execution_id,pipeline_id)
+                    parent_executions[0].extend(recursive_parents[0])
+                    parent_executions[1].extend(recursive_parents[1])
             else:
                 break
-        print(parents)
-        return parents
+        return parent_executions
 
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
         """Return all executions that produced upstream artifacts for the given artifact.
