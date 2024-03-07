@@ -58,7 +58,7 @@ const TensorBoard = () => {
           <div className="container justify-center items-center mx-auto px-4">
             <iframe
               title="Example Iframe"
-              src="http://10.93.244.204:6006/"
+              src="http://x.x.x.x:6006/"
               allowFullScreen
               width="100%" height="1200"
             />
