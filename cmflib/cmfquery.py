@@ -293,8 +293,8 @@ class CmfQuery(object):
         # if len(execution_ids) >= 2:
         #     logger.warning("%d executions claim artifact (id=%d) as output.", len(execution_ids), artifact_id)
         if pipeline_id != None:
-            list_exec=self.store.get_executions_by_id(execution_ids)
-            execution_ids=[]
+            list_exec = self.store.get_executions_by_id(execution_ids)
+            execution_ids = []
             for exe in list_exec:
                 if (self._transform_to_dataframe(exe).Pipeline_id.to_string(index=False)) == str(pipeline_id):
                     execution_ids.append(exe.id)
@@ -607,11 +607,11 @@ class CmfQuery(object):
             Output artifacts of all executions that consumed given artifact.
         """
         artifacts_input=self._get_input_artifacts(execution_id)
-        arti=self.store.get_artifacts_by_id(artifacts_input)
-        list_exec=[]
-        exec_ids_added=[]
+        arti = self.store.get_artifacts_by_id(artifacts_input)
+        list_exec = []
+        exec_ids_added = []
         for i in artifacts_input:
-            exec=self._get_executions_by_output_artifact_id(i,pipeline_id)
+            exec = self._get_executions_by_output_artifact_id(i, pipeline_id)
             if exec not in exec_ids_added:
                 exec_ids_added.append(exec)
                 list_exec.append(self.store.get_executions_by_id(exec))
@@ -687,26 +687,26 @@ class CmfQuery(object):
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
-    def get_all_parent_executions_by_id(self,execution_id: t.List[int],pipeline_id: str = None) -> t.List[int]:
-        parent_executions=[[],[]]
-        current_execution_id=execution_id
-        list_of_parent_execution_id=[]
-        link_src_trgt_list=[]
+    def get_all_parent_executions_by_id(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
+        parent_executions = [[],[]]
+        current_execution_id = execution_id
+        list_of_parent_execution_id = []
+        link_src_trgt_list = []
         while current_execution_id:
-            parent_execution_ids = self.get_one_hop_parent_executions(current_execution_id,pipeline_id)
+            parent_execution_ids = self.get_one_hop_parent_executions(current_execution_id, pipeline_id)
             list_of_parent_execution_id = []
             for data in parent_execution_ids:
                 for j in data:
                     temp=[j.id, j.properties["Execution_type_name"].string_value, j.properties["Execution_uuid"].string_value]
                     if temp not in parent_executions[0]:
-                        link_src_trgt_list.append({"source":j.id,"target":current_execution_id[0]})
+                        link_src_trgt_list.append({"source":j.id, "target":current_execution_id[0]})
                         list_of_parent_execution_id.append(temp)
             if list_of_parent_execution_id:
                 parent_executions[0].extend(list_of_parent_execution_id)
                 parent_executions[1].extend(link_src_trgt_list)
                 for id_name_uuid in list_of_parent_execution_id:
                     current_execution_id = [id_name_uuid[0]]
-                    recursive_parents = self.get_all_parent_executions_by_id(current_execution_id,pipeline_id)
+                    recursive_parents = self.get_all_parent_executions_by_id(current_execution_id, pipeline_id)
                     parent_executions[0].extend(recursive_parents[0])
                     parent_executions[1].extend(recursive_parents[1])
             else:
