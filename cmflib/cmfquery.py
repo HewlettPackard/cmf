@@ -276,7 +276,7 @@ class CmfQuery(object):
                     execution_ids.append(exe.id)
         return execution_ids
 
-    def _get_executions_by_output_artifact_id(self, artifact_id: int,pipeline_id: str = None) -> t.List[int]:
+    def _get_executions_by_output_artifact_id(self, artifact_id: int, pipeline_id: str = None) -> t.List[int]:
         """Return stage execution that produced given output artifact.
 
         Args:
@@ -598,7 +598,7 @@ class CmfQuery(object):
             self.store.get_artifacts_by_id(artifacts_ids), lambda _artifact: self.get_artifact_df(_artifact)
         )
 
-    def get_one_hop_parent_executions(self, execution_id: t.List[int],pipeline_id: str = None) -> t.List[int]:
+    def get_one_hop_parent_executions(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:

@@ -27,7 +27,7 @@ def get_all_exe_ids(mlmdfilepath):
     if df.empty:
         return
     for name in names:
-        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type','Execution_uuid','Context_ID']]
+        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
     return execution_ids
 
 def get_all_artifact_ids(mlmdfilepath):
@@ -46,8 +46,8 @@ def get_all_artifact_ids(mlmdfilepath):
         for id in exe_ids:
             artifacts = query.get_all_artifacts_for_execution(id)
             df = pd.concat([df, artifacts], sort=True, ignore_index=True)
-        df.sort_values("id", inplace=True) 
-        df.drop_duplicates(subset="id",keep='first', inplace=True)
+        df.sort_values("id", inplace=True)
+        df.drop_duplicates(subset="id", keep='first', inplace=True)
         if df.empty:
             return 
         else:
@@ -74,7 +74,7 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
             exe_type_name = pd.DataFrame()
             for name in art_names:
                 executions = query.get_all_executions_for_artifact(name)
-                exe_type_name = pd.concat([exe_type_name,executions],ignore_index=True)
+                exe_type_name = pd.concat([exe_type_name, executions], ignore_index=True)
                 execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
                 execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
                 execution_type_name_str = ',\n '.join(map(str, execution_type_name))
@@ -108,14 +108,14 @@ def create_unique_executions(server_store_path, req_info):
         for stage in stages:
             executions = []
             executions = query.get_all_executions_in_stage(stage)
-            for i in executions.index:                
+            for i in executions.index:
                 for uuid in executions['Execution_uuid'][i].split(","):
                     executions_server.append(uuid)
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
                 if j['name'] != "": #If executions have name , they are reusable executions
-                    continue       #which needs to be merged in irrespective of whether already 
+                    continue       #which needs to be merged in irrespective of whether already
                                    #present or not so that new artifacts associated with it gets in.
                 if 'Execution_uuid' in j['properties']:
                     for uuid in j['properties']['Execution_uuid'].split(","):
@@ -172,13 +172,13 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_img_path(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
+def get_lineage_img_path(server_store_path, pipeline_name, type, dict_of_art_ids, dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
-        lineage_data = query_visualization(server_store_path, pipeline_name,dict_of_art_ids)
+        lineage_data = query_visualization(server_store_path, pipeline_name, dict_of_art_ids)
     elif type=="Execution":
-        lineage_data = query_visualization_execution(server_store_path, pipeline_name,dict_of_art_ids,dict_of_exe_ids)
+        lineage_data = query_visualization_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
     else:
-        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
+        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data
 
