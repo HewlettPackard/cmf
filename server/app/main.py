@@ -5,11 +5,12 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
+import time 
 
 from cmflib import cmfquery, cmf_merger
 from server.app.get_data import (
     get_artifacts,
-    get_lineage_img_path,
+    get_lineage_data,
     create_unique_executions,
     get_mlmd_from_server,
     get_artifact_types,
@@ -28,6 +29,8 @@ server_store_path = "/cmf-server/data/mlmd"
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
 
+#lifespan used to prevent multiple loading and save time for 
+#visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
@@ -50,6 +53,7 @@ server_store_path = "/cmf-server/data/mlmd"
 my_ip = os.environ.get("MYIP", "127.0.0.1")
 hostname = os.environ.get('HOSTNAME', "localhost")
 
+#checking if IP or Hostname is provided,initializing url accordingly.
 if my_ip != "127.0.0.1":
     url="http://"+my_ip+":3000"
 else:
@@ -94,6 +98,7 @@ async def mlmd_pull(info: Request, pipeline_name: str):
     # checks if mlmd file exists on server
     req_info = await info.json()
     if os.path.exists(server_store_path):
+        #json_payload values can be json data, NULL or no_exec_id.
         json_payload= get_mlmd_from_server(server_store_path, pipeline_name, req_info['exec_id'])
     else:
         print("No mlmd file submitted.")
@@ -137,20 +142,41 @@ async def display_exec(
     else:
         return
 
+@app.get("/display_artifact_lineage/{pipeline_name}")
+async def display_artifact_lineage(request: Request, pipeline_name: str):
+    '''
+      This api's returns dictionary of nodes and links for given 
+      pipeline.
+      response = {
+                   nodes: [{id:"",name:""}],
+                   links: [{source:1,target:4},{}],
+                 }
 
-@app.get("/display_lineage/{lineage_type}/{pipeline_name}")
-async def display_lineage(request: Request,lineage_type: str, pipeline_name: str):
+    '''
     # checks if mlmd file exists on server
-    img_path=""
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            if lineage_type == "Artifacts":
-                response = get_lineage_img_path(server_store_path, pipeline_name, "Artifacts", dict_of_art_ids, dict_of_exe_ids)
-            elif lineage_type == "Execution":
-                response = get_lineage_img_path(server_store_path, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
-            else:
-                response = get_lineage_img_path(server_store_path, pipeline_name, "ArtifactExecution")
+            response=get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            return response
+        else:
+            return f"Pipeline name {pipeline_name} doesn't exist."
+
+    else:
+        return 'mlmd does not exist!!'
+
+@app.get("/get_execution_types/{pipeline_name}")
+async def get_execution_types(request: Request, pipeline_name: str):
+    '''
+      This api's returns
+      list of execution types.
+
+    '''
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response=get_lineage_data(server_store_path,pipeline_name,"Execution",dict_of_art_ids,dict_of_exe_ids)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -160,8 +186,14 @@ async def display_lineage(request: Request,lineage_type: str, pipeline_name: str
 
 @app.get("/display_exec_lineage/{exec_type}/{pipeline_name}/{uuid}")
 async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: str, uuid: str):
+    '''
+      returns dictionary of nodes and links for given execution_type.
+      response = {
+                   nodes: [{id:"",name:"",execution_uuid:""}],
+                   links: [{source:1,target:4},{}],
+                 } 
+    '''
     # checks if mlmd file exists on server
-    img_path = ""
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
@@ -188,12 +220,18 @@ async def display_artifact(
     if os.path.exists(server_store_path):
         art_ids_dict = dict_of_art_ids[pipeline_name]
         if not art_ids_dict:
-            return
+            return {               #return {items: None} so that GUI loads 
+            "total_items": 0,      #empty page when art_ids_dict is {}
+            "items": None
+            }
         art_ids_initial = []
         if art_type in art_ids_dict:
             art_ids_initial = art_ids_dict[art_type]
         else:
-            return
+            return {
+            "total_items": 0,
+            "items": None
+        }
         # Apply filtering if provided
         if filter_by and filter_value:
             art_ids_initial = art_ids_initial[art_ids_initial[filter_by].str.contains(filter_value, case=False)]
@@ -208,15 +246,24 @@ async def display_artifact(
         artifact_id_list = list(art_ids)[start_idx:end_idx]
         artifact_df = get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
         data_paginated = artifact_df
+        #data_paginated is returned None if artifact df is None or {}
+        #it will load empty page, without this condition it will load 
+        #data of whichever artifact_type is loaded before this. 
+        if artifact_df == None or artifact_df == {}:   
+            data_paginated = None      
+            total_items = 0
         return {
             "total_items": total_items,
             "items": data_paginated
         }
     else:
-        return f"{server_store_path} file doesn't exist."
+        print(f"{server_store_path} file doesn't exist.")
+        return {
+            "total_items": 0,
+            "items": None
+        }
 
-
-
+#This api's returns list of artifact types.
 @app.get("/display_artifact_types")
 async def display_artifact_types(request: Request):
     # checks if mlmd file exists on server

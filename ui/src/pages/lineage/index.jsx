@@ -52,7 +52,7 @@ const Lineage = () => {
       if (data[0]) {
         setSelectedLineageType(LineageTypes[0]);
         // call artifact lineage as it is default
-        fetchArtifactLineage(data[0], "Artifacts");
+        fetchArtifactLineage(data[0]);
       }
     });
   };
@@ -64,9 +64,13 @@ const Lineage = () => {
     // this is also not needed as selectedLineage has default value
     // setSelectedLineageType(LineageTypes[0]);
      if (selectedPipeline) {
-       //call artifact lineage as it is default
-       fetchArtifactLineage(pipeline, selectedLineageType);
-     }
+       if (selectedLineageType === "Artifacts") {
+          //call artifact lineage as it is default
+          fetchArtifactLineage(pipeline);
+       }
+       else {
+          fetchExecutionTypes(pipeline);
+       }}
   };
 
   const handleLineageTypeClick = (lineageType) => {
@@ -74,26 +78,29 @@ const Lineage = () => {
     setExecutionData(null);
     setSelectedLineageType(lineageType);
     if (lineageType === "Artifacts") {
-      fetchArtifactLineage(selectedPipeline, lineageType);
+      fetchArtifactLineage(selectedPipeline);
     }
     else {
-      fetchArtifactLineage(selectedPipeline, "Execution");
+      fetchExecutionTypes(selectedPipeline);
     }
   };  
 
-  const fetchArtifactLineage = (pipelineName, type) => {
-    client.getLineage(pipelineName,type).then((data) => {    
-      if (type === "Artifacts") {
+
+  const fetchArtifactLineage = (pipelineName) => {
+    client.getArtifactLineage(pipelineName).then((data) => {    
         setLineageData(data);
-      } 
-      else {
+    });
+    setLineageArtifactsKey((prevKey) => prevKey + 1);
+  };
+
+  const fetchExecutionTypes = (pipelineName) => {
+    client.getExecutionTypes(pipelineName).then((data) => {    
         setExecDropdownData(data);
         setSelectedExecutionType(data[0]);
         const typeParts = data[0].split('/');
         const exec_type = typeParts[1].split('_')[0];
         const uuid= typeParts[1].split('_').slice(-1)[0];
         fetchExecutionLineage(pipelineName, exec_type,uuid);
-      }
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };

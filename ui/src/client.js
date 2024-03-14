@@ -63,8 +63,15 @@ class FastAPIClient {
       });
   }
 
-  async getLineage(pipeline,lineage_type) {
-      return this.apiClient.get(`/display_lineage/${lineage_type}/${pipeline}`)
+  async getArtifactLineage(pipeline) {
+      return this.apiClient.get(`/display_artifact_lineage/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
+
+  async getExecutionTypes(pipeline) {
+      return this.apiClient.get(`/get_execution_types/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
