@@ -35,6 +35,12 @@ RUN apt-get install -y build-essential
 
 RUN apt-get install -y python3-dev
 
+# library required for curl command
+
+RUN apt-get install -y gcc
+
+RUN apt-get update -y && apt-get install -y curl
+
 # Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 
@@ -67,3 +73,4 @@ RUN cd /cmf-server/data/static
 ENV NEO4J_URI=""
 ENV NEO4J_USER_NAME=""
 ENV NEO4J_PASSWD=""
+

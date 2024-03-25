@@ -23,18 +23,22 @@ services:
       - /home/xxxx/cmf-server/data:/cmf-server/data
       - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
     container_name: cmf-server
-    build:
-     
+    build:     
       context: ./
       dockerfile: ./server/Dockerfile
     restart: always
     environment:
-     MYIP: ${IP:-127.0.0.1}
-     HOSTNAME: ${hostname:-None}
+      MYIP: ${IP:-127.0.0.1}
+      HOSTNAME: ${hostname:-localhost}
     ports:
       - "8080:80"
     expose:
       - 8000
+    healthcheck:
+      test: if [ -n $IP ]; then curl -f http://$IP:8080; else curl -f http://$hostname:8080; fi
+      interval: 15s
+      retries: 32
+    
   ui:
     image: ui:latest
     container_name: ui-server
@@ -49,3 +53,6 @@ services:
       - "3000:3000"
     expose:
       - 3000
+    depends_on:
+      server:
+        condition: service_healthy
