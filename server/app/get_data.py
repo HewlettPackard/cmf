@@ -7,6 +7,15 @@ from server.app.query_visualization_execution import query_visualization_executi
 from fastapi.responses import FileResponse
 
 def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
+    '''
+    Args:
+     mlmdfilepath: mlmd file path.
+     pipeline_name: name of the pipeline.
+     exe_ids: list of execution ids.
+   
+    Returns:
+     returns dataframe of executions using execution_ids.
+    '''
     query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
     executions = query.get_all_executions_by_ids_list(exe_ids)
@@ -15,19 +24,26 @@ def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     return df
 
 def get_all_exe_ids(mlmdfilepath):
+    '''
+    Returns:
+        returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
+    '''
     query = cmfquery.CmfQuery(mlmdfilepath)
-    df = pd.DataFrame()
     execution_ids = {}
     names = query.get_pipeline_names()
     for name in names:
+        df = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
         stages = query.get_pipeline_stages(name)
         for stage in stages:
             executions = query.get_all_executions_in_stage(stage)
             df = pd.concat([df, executions], sort=True, ignore_index=True)
-    if df.empty:
-        return
-    for name in names:
-        execution_ids[name] = df.loc[df['Pipeline_Type'] == name, ['id', 'Context_Type']]
+        # check if df is empty return just pipeline_name: {}
+        # if df is not empty return dictionary with pipeline_name as key 
+        # and df with id, context_type, uuid, context_ID as value.
+        if not df.empty:
+            execution_ids[name] = df[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
+        else:
+            execution_ids[name] = pd.DataFrame()
     return execution_ids
 
 def get_all_artifact_ids(mlmdfilepath):
@@ -42,21 +58,25 @@ def get_all_artifact_ids(mlmdfilepath):
     execution_ids = get_all_exe_ids(mlmdfilepath)
     for name in names:
         df = pd.DataFrame()
-        exe_ids = execution_ids[name]['id'].tolist()
-        for id in exe_ids:
-            artifacts = query.get_all_artifacts_for_execution(id)
-            df = pd.concat([df, artifacts], sort=True, ignore_index=True)
-        df.sort_values("id", inplace=True) 
-        df.drop_duplicates(subset="id",keep='first', inplace=True)
-        if df.empty:
-            return 
+        if not execution_ids.get(name).empty:
+            exe_ids = execution_ids[name]['id'].tolist()
+            for id in exe_ids:
+                artifacts = query.get_all_artifacts_for_execution(id)
+                df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+            #acknowledging pipeline exist even if df is empty. 
+            if df.empty:
+                artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
+            else:
+                df.sort_values("id", inplace=True)
+                df.drop_duplicates(subset="id", keep='first', inplace=True)
+                artifact_ids[name] = {}
+                for art_type in df['type']:
+                    filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
+                    artifact_ids[name][art_type] = filtered_values
+        # if execution_ids is empty create dictionary with key as pipeline name
+        # and value as empty df
         else:
-            artifact_ids[name] = {}
-            for art_type in df['type']:
-                filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
-                artifact_ids[name][art_type] = filtered_values
-    #print("artifact_ids")
-    #print(artifact_ids)
+            artifact_ids[name] = pd.DataFrame()
     return artifact_ids
 
 def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
@@ -76,7 +96,7 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
             exe_type_name = pd.DataFrame()
             for name in art_names:
                 executions = query.get_all_executions_for_artifact(name)
-                exe_type_name = pd.concat([exe_type_name,executions],ignore_index=True)
+                exe_type_name = pd.concat([exe_type_name, executions], ignore_index=True)
                 execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
                 execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
                 execution_type_name_str = ',\n '.join(map(str, execution_type_name))
@@ -110,14 +130,14 @@ def create_unique_executions(server_store_path, req_info):
         for stage in stages:
             executions = []
             executions = query.get_all_executions_in_stage(stage)
-            for i in executions.index:                
+            for i in executions.index:
                 for uuid in executions['Execution_uuid'][i].split(","):
                     executions_server.append(uuid)
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
                 if j['name'] != "": #If executions have name , they are reusable executions
-                    continue       #which needs to be merged in irrespective of whether already 
+                    continue       #which needs to be merged in irrespective of whether already
                                    #present or not so that new artifacts associated with it gets in.
                 if 'Execution_uuid' in j['properties']:
                     for uuid in j['properties']['Execution_uuid'].split(","):
@@ -174,13 +194,23 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_img_path(server_store_path,pipeline_name,type):
+def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
-        lineage_data = query_visualization(server_store_path, pipeline_name)
+        lineage_data = query_visualization(server_store_path, pipeline_name, dict_of_art_ids)
+        '''
+        returns dictionary of nodes and links for artifact lineage.
+        lineage_data= {
+                       nodes:[],
+                       links:[]
+                      }
+        '''
     elif type=="Execution":
-        lineage_data = query_visualization_execution(server_store_path, pipeline_name)
+        lineage_data = query_visualization_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+        '''
+        returns list of execution types for specific pipeline.
+        '''
     else:
-        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)  
+        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data
 
