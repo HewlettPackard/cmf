@@ -57,11 +57,13 @@ const Artifacts = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
+    setArtifacts(null);
     setSelectedPipeline(pipeline);
     setActivePage(1);
   };
 
   const handleArtifactTypeClick = (artifactType) => {
+    setArtifacts(null);
     setSelectedArtifactType(artifactType);
     setActivePage(1);
   };

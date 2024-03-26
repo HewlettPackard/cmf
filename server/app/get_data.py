@@ -6,7 +6,7 @@ from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
 from fastapi.responses import FileResponse
 
-def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
+async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     '''
     Args:
      mlmdfilepath: mlmd file path.
@@ -23,7 +23,7 @@ def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     #df=df.drop('name',axis=1)
     return df
 
-def get_all_exe_ids(mlmdfilepath):
+async def get_all_exe_ids(mlmdfilepath):
     '''
     Returns:
         returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
@@ -46,7 +46,7 @@ def get_all_exe_ids(mlmdfilepath):
             execution_ids[name] = pd.DataFrame()
     return execution_ids
 
-def get_all_artifact_ids(mlmdfilepath):
+async def get_all_artifact_ids(mlmdfilepath):
     # following is a dictionary of dictionary
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
@@ -55,7 +55,7 @@ def get_all_artifact_ids(mlmdfilepath):
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
-    execution_ids = get_all_exe_ids(mlmdfilepath)
+    execution_ids = await get_all_exe_ids(mlmdfilepath)
     for name in names:
         df = pd.DataFrame()
         if not execution_ids.get(name).empty:
@@ -79,7 +79,7 @@ def get_all_artifact_ids(mlmdfilepath):
             artifact_ids[name] = pd.DataFrame()
     return artifact_ids
 
-def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
+async def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     df = pd.DataFrame()
@@ -117,7 +117,7 @@ def get_artifact_types(mlmdfilepath):
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-def create_unique_executions(server_store_path, req_info):
+async def create_unique_executions(server_store_path, req_info):
     mlmd_data = json.loads(req_info["json_payload"])
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
@@ -168,7 +168,7 @@ def create_unique_executions(server_store_path, req_info):
     return status
 
 
-def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
+async def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
     query = cmfquery.CmfQuery(server_store_path)
     execution_flag = 0
     # checks if given execution_id present in mlmd
@@ -194,7 +194,7 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
+async def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
         lineage_data = query_visualization(server_store_path, pipeline_name, dict_of_art_ids)
