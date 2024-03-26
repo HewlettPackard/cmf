@@ -34,10 +34,12 @@ async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
     if os.path.exists(server_store_path):
+        print("lifespan start...")
         # loaded artifact ids into memory
         dict_of_art_ids = get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
         dict_of_exe_ids = get_all_exe_ids(server_store_path)
+        print("lifespan end ....")
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
