@@ -5,7 +5,6 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
-import time 
 
 from cmflib import cmfquery, cmf_merger
 from server.app.get_data import (
@@ -37,9 +36,9 @@ async def lifespan(app: FastAPI):
     global dict_of_exe_ids
     if os.path.exists(server_store_path):
         # loaded artifact ids into memory
-        dict_of_art_ids = get_all_artifact_ids(server_store_path)
+        dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
-        dict_of_exe_ids = get_all_exe_ids(server_store_path)
+        dict_of_exe_ids = await get_all_exe_ids(server_store_path)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -75,7 +74,7 @@ app.add_middleware(
 
 
 @app.get("/")
-def read_root(request: Request):
+async def read_root(request: Request):
     return {"cmf-server"}
 
 
@@ -85,7 +84,7 @@ async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
     req_info = await info.json()
-    status = create_unique_executions(server_store_path, req_info)
+    status = await create_unique_executions(server_store_path, req_info)
     # async function
     await update_global_art_dict()
     await update_global_exe_dict()
@@ -99,7 +98,7 @@ async def mlmd_pull(info: Request, pipeline_name: str):
     req_info = await info.json()
     if os.path.exists(server_store_path):
         #json_payload values can be json data, NULL or no_exec_id.
-        json_payload= get_mlmd_from_server(server_store_path, pipeline_name, req_info['exec_id'])
+        json_payload= await get_mlmd_from_server(server_store_path, pipeline_name, req_info['exec_id'])
     else:
         print("No mlmd file submitted.")
         json_payload = ""
@@ -132,7 +131,7 @@ async def display_exec(
         if total_items < end_idx:
             end_idx = total_items
         exe_ids_list = exe_ids[start_idx:end_idx]
-        executions_df = get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
+        executions_df = await get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
         temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {
@@ -154,10 +153,11 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
 
     '''
     # checks if mlmd file exists on server
+ 
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            response=await get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -176,7 +176,7 @@ async def get_execution_types(request: Request, pipeline_name: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=get_lineage_data(server_store_path,pipeline_name,"Execution",dict_of_art_ids,dict_of_exe_ids)
+            response = await get_lineage_data(server_store_path,pipeline_name,"Execution",dict_of_art_ids,dict_of_exe_ids)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -197,7 +197,7 @@ async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: 
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
+            response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
     return response
 
 # api to display artifacts available in mlmd
@@ -244,7 +244,7 @@ async def display_artifact(
         if total_items < end_idx:
             end_idx = total_items
         artifact_id_list = list(art_ids)[start_idx:end_idx]
-        artifact_df = get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
+        artifact_df = await get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
         data_paginated = artifact_df
         #data_paginated is returned None if artifact df is None or {}
         #it will load empty page, without this condition it will load 
@@ -291,13 +291,13 @@ async def display_list_of_pipelines(request: Request):
 
 async def update_global_art_dict():
     global dict_of_art_ids
-    output_dict = get_all_artifact_ids(server_store_path)
+    output_dict = await get_all_artifact_ids(server_store_path)
     dict_of_art_ids = output_dict
     return
 
 
 async def update_global_exe_dict():
     global dict_of_exe_ids
-    output_dict = get_all_exe_ids(server_store_path)
+    output_dict = await get_all_exe_ids(server_store_path)
     dict_of_exe_ids = output_dict
     return
