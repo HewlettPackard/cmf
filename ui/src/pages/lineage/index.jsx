@@ -29,7 +29,7 @@ const client = new FastAPIClient(config);
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifacts','Execution'];
+  const LineageTypes=['Artifacts','Execution',"exp_Execution"];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData]=useState(null);

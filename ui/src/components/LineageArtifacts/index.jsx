@@ -70,20 +70,50 @@ const LineageArtifacts = ({data}) => {
 
     var node = g.selectAll(".node")
       .data(jsondata.nodes)
-      .enter().append("rect")
-              .attr("width", 100)
-              .attr("height", 30)
-              .attr("rx", 10)
-              .attr("ry", 10)
-              .attr('fill', d => d.color || 'gray')
+      .attr("class", "node")
+      .enter().append("g")
               // Set the stroke color as a slightly darker version of the fill color
-              .style("stroke", d => darkenColor(d.color || 'gray', 0.4)) // Adjust 0.3 to control darkness
-              .style("stroke-width", 1.5)
+
       .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
+ 
+    node.append("rect")
+       .attr("width", 100)
+       .attr("height", 30)
+       .attr("rx", 10)
+       .attr("ry", 10)
+       .attr('fill', d => d.color || 'gray')
+       .style("stroke", d => darkenColor(d.color || 'gray', 0.4)) // Adjust 0.3 to control darkness
+       .style("stroke-width", 1.5);
 
+    node.append("g")
+      .attr("class", "text-group")
+      .on("mouseover", handleMouseOver)
+      .on("mouseout", handleMouseOut)
+      .append("text")
+      .attr("x", 40)  // Set x position to the center of the rectangle
+      .attr("y", 15)
+      .attr("class", "truncated-text")
+      .text(d => d.name.substring(0, 5) + '...');
+
+    node.select(".text-group")
+      .append("text")
+      .attr("class", "full-text")
+      .text(d => d.name)
+      .attr("x", 50)  // Set x position to the center of the rectangle
+      .attr("y", -5)
+      .style("visibility", "hidden");
+
+    function handleMouseOver(event, d) {
+      d3.select(this).select(".full-text").style("visibility", "visible");
+    
+    }
+
+    function handleMouseOut(event, d) {
+      d3.select(this).select(".full-text").style("visibility", "hidden");
+    }
 
     svg.call(d3.zoom()
       .extent([[0, 0], [width, height]])

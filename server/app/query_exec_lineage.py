@@ -15,7 +15,7 @@ async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_typ
         # this condition is failing that's why we are unable to assign id to host_id
         if (context_type + "_" + truncated_uuid) == (pipeline_name + "/" + exec_type + "_" + uuid_server):
             host_id = id
-            node_id_name_list.append({"id":host_id, "name":(context_type + "_" + uuid.split("-")[0][:4]), "color":"#16B8E9"})
+            node_id_name_list.append({"id":host_id, "name":(context_type.split("/")[-1] + "_" + uuid.split("-")[0][:4]), "color":"#16B8E9"})
     #exec=query.get_one_hop_parent_executions([host_id],pipeline_id)
     exec_new = None
     if host_id is None:
@@ -27,7 +27,7 @@ async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_typ
         id = i[0]
         name = i[1]
         exec_uuid = i[2]
-        node_id_name_list.append({"id":i[0], "name":(name + "_" + exec_uuid.split("-")[0][:4]), "color":"#FA6318"})
+        node_id_name_list.append({"id":i[0], "name":(name.split("/")[-1] + "_" + exec_uuid.split("-")[0][:4]), "color":"#FA6318"})
     link_src_trgt_list.append(exec_new[1])
     if not node_id_name_list and not link_src_trgt_list:
         return data
