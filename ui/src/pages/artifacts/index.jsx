@@ -57,11 +57,13 @@ const Artifacts = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
+    setArtifacts(null);
     setSelectedPipeline(pipeline);
     setActivePage(1);
   };
 
   const handleArtifactTypeClick = (artifactType) => {
+    setArtifacts(null);
     setSelectedArtifactType(artifactType);
     setActivePage(1);
   };
@@ -147,7 +149,7 @@ const Artifacts = () => {
               )}
             </div>
             <div className="container">
-              {selectedPipeline !== null && selectedArtifactType !== null && artifacts!== null && (
+              {selectedPipeline !== null && selectedArtifactType !== null && artifacts !== null && artifacts !== {} && (
                 <ArtifactTable artifacts={artifacts} onSort={handleSort} onFilter={handleFilter}/>
               )}
               <div>

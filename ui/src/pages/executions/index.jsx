@@ -55,6 +55,7 @@ const Executions = () => {
 
   useEffect(() => {
     if (selectedPipeline) {
+      setExecutions(null);
       fetchExecutions(selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue);
     }
   }, [selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue]);
@@ -116,7 +117,7 @@ const Executions = () => {
           />
           <div className="container justify-center items-center mx-auto px-4">
             <div className="container">
-              {selectedPipeline !== null && (
+              {selectedPipeline !== null && executions !== null && (
                 <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
               )}
             </div>

@@ -53,6 +53,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import get_python_env
 from cmflib.cmf_commands_wrapper import (
     _metadata_push,
     _metadata_pull,
@@ -351,6 +352,7 @@ class Cmf:
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
+        python_env=get_python_env()
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
@@ -364,6 +366,7 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
+            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
@@ -530,6 +533,7 @@ class Cmf:
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
+        python_env = properties.get("Python_Env", "")
         #name = properties.get("Name", "")
         create_new_execution = True
         execution_name = execution_type
@@ -550,6 +554,7 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
+            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution
         )
@@ -1523,6 +1528,7 @@ class Cmf:
             milliseconds_since_epoch=int(time.time() * 1000),
         )
 
+
     def update_existing_artifact(
         self, artifact: mlpb.Artifact, custom_properties: t.Dict
     ):
@@ -2013,5 +2019,4 @@ def non_related_args(type:str,args:dict):
         if repo ==type:
             non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
     return non_related_args
- 
-    
+

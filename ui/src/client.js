@@ -63,13 +63,26 @@ class FastAPIClient {
       });
   }
 
-  async getLineage(pipeline,lineage_type) {
-      return this.apiClient.get(`/display_lineage/${lineage_type}/${pipeline}`)
+  async getArtifactLineage(pipeline) {
+      return this.apiClient.get(`/display_artifact_lineage/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
   }
 
+  async getExecutionTypes(pipeline) {
+      return this.apiClient.get(`/get_execution_types/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
+
+  async getExecutionLineage(pipeline,exec_type,uuid) {
+      return this.apiClient.get(`/display_exec_lineage/${exec_type}/${pipeline}/${uuid}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
 
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
