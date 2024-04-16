@@ -20,7 +20,7 @@ const LineageArtifacts = ({data}) => {
     if (!jsondata) {
       // Data is not yet available
       return;
-    }
+	    }
     jsondata.nodes.forEach(node => {
         const hasIncomingLinks = jsondata.links.some(link => link.target === node.id);
         if (!hasIncomingLinks) {
@@ -29,8 +29,10 @@ const LineageArtifacts = ({data}) => {
         }
     });
 
-    var width = 1000;
-    var height = 600;
+    var width = window.innerWidth;
+    var height = window.innerHeight;
+    const links = jsondata.links.map(d => ({...d}));
+    const nodes = jsondata.nodes.map(d => ({...d}));    
 
     var svg = d3.select("#chart-container")
       .append("svg")
@@ -39,12 +41,11 @@ const LineageArtifacts = ({data}) => {
 
     const g = svg.append("g")
 
-    var simulation = d3.forceSimulation(jsondata.nodes)
-      .force("link", d3.forceLink(jsondata.links).id(d => d.id).distance(250))
-      .force("charge", d3.forceManyBody().strength(-100))
+    var simulation = d3.forceSimulation(nodes)
+      .force("link", d3.forceLink(links).id(d => d.id).distance(350))
+      .force("charge", d3.forceManyBody().strength(-400))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .force("collide", d3.forceCollide(50));
-
   
     g.append("defs").selectAll("marker")
       .data(["arrow"])
@@ -62,14 +63,14 @@ const LineageArtifacts = ({data}) => {
       
 
     var link = g.selectAll(".link")
-      .data(jsondata.links)
+      .data(links)
       .enter().append("line")
               .attr("marker-end", "url(#arrow)")
               .style("stroke", "gray")
               .style("stroke-width", 1);
 
     var node = g.selectAll(".node")
-      .data(jsondata.nodes)
+      .data(nodes)
       .attr("class", "node")
       .enter().append("g")
               // Set the stroke color as a slightly darker version of the fill color
@@ -80,7 +81,7 @@ const LineageArtifacts = ({data}) => {
         .on("end", dragended));
  
     node.append("rect")
-       .attr("width", 100)
+       .attr("width", 60)
        .attr("height", 30)
        .attr("rx", 10)
        .attr("ry", 10)
@@ -93,7 +94,7 @@ const LineageArtifacts = ({data}) => {
       .on("mouseover", handleMouseOver)
       .on("mouseout", handleMouseOut)
       .append("text")
-      .attr("x", 40)  // Set x position to the center of the rectangle
+      .attr("x", 15)  // Set x position to the center of the rectangle
       .attr("y", 15)
       .attr("class", "truncated-text")
       .text(d => d.name.substring(0, 5) + '...');
