@@ -52,8 +52,8 @@ def ingest_metadata(execution_lineage:str, metadata:dict, execution_exist:bool, 
 
     if execution_exist:
         _ = metawriter.update_execution(int(execution))
-    else :
-        _ = metawriter.create_execution(execution, {}, command)
+    else:
+        _ = metawriter.create_execution(context_name, {}, command)
 
     for k, v in metadata.items():
         if k == "deps":
@@ -123,7 +123,7 @@ Create a unique Pipeline name if there is no mlmd file
 pipeline_name = "Pipeline"+"-"+str(uuid.uuid4()) if not pipeline_name else pipeline_name
 
 
-metawriter = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=False)
+metawriter = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=True)
 
 """
 Parse the dvc.lock dictionary and get the command section
@@ -144,13 +144,13 @@ for k, v in pipeline_dict.items():
                 if the pipeline_dict command is already there in the cmd_exe dict got from parsing the mlmd pop that cmd out 
                 and use the stored lineage from the mlmd
                 """
-                vvv.pop(0)
-                cmd = cmd_exe.get(str(vvv), None)
+                cmd = cmd_exe.get(k + '_' +str(vvv[-1]), None)
                 if cmd is not None:
                     """
                     cmd(lineage) - eg - '1,eval,active_learning '
                     format - execution_id, context, pipeline
                     """
+                    context_name = k
                     ingest_metadata(cmd, vv, True, metawriter)
                 else:
                     """
@@ -158,8 +158,8 @@ for k, v in pipeline_dict.items():
                     lineage eg - execution_file, context, pipeline
                     """
                     context_name = k
-                    execution_name = vvv[0]
+                    execution_name = vvv[-1]
                     lineage = execution_name+","+context_name+","+ pipeline_name
-                    ingest_metadata(lineage, vv, False, metawriter, str(vvv))
+                    ingest_metadata(lineage, vv, False, metawriter, str(k) + '_'+str(vvv[-1]))
 
 metawriter.log_dvc_lock("dvc.lock")
