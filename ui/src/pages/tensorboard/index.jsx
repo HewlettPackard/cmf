@@ -15,33 +15,14 @@
 ***/
 
 
-import React, { useEffect, useState } from "react";
-import FastAPIClient from "../../client";
+import React from "react";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
-import Sidebar from "../../components/Sidebar";
-
-const client = new FastAPIClient(config);
 
 const TensorBoard = () => {
-  const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const [pipelines, setPipelines] = useState([]);
 
-  const fetchPipelines = () => {
-    client.getPipelines("").then((data) => {
-      setPipelines(data);
-      setSelectedPipeline(data[0]);
-    });
-  };
-
-  useEffect(() => {
-    fetchPipelines();
-  }, []);
-
-  const handlePipelineClick = (pipeline) => {
-    setSelectedPipeline(pipeline);
-  };
+  const env = config.apiBasePathWOPort + ":6006"
 
   return (
     <>
@@ -51,14 +32,10 @@ const TensorBoard = () => {
       >
         <DashboardHeader />
         <div className="flex flex-row">
-          <Sidebar
-            pipelines={pipelines}
-            handlePipelineClick={handlePipelineClick}
-          />
           <div className="container justify-center items-center mx-auto px-4">
             <iframe
-              title="Example Iframe"
-              src="http://10.93.244.204:6006/"
+              title="tensorboard Iframe"
+              src={env}
               allowFullScreen
               width="100%" height="1200"
             />
