@@ -29,7 +29,7 @@ const client = new FastAPIClient(config);
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifacts','Execution',"exp_Execution"];
+  const LineageTypes=['Artifacts','Execution'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData]=useState(null);
@@ -88,6 +88,9 @@ const Lineage = () => {
 
   const fetchArtifactLineage = (pipelineName) => {
     client.getArtifactLineage(pipelineName).then((data) => {    
+        if (data === null) { 
+        setLineageData(null);
+        }
         setLineageData(data);
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
@@ -95,12 +98,18 @@ const Lineage = () => {
 
   const fetchExecutionTypes = (pipelineName) => {
     client.getExecutionTypes(pipelineName).then((data) => {    
+        if (data === null ) {
+           setExecDropdownData(null);
+        }
+        else {
         setExecDropdownData(data);
         setSelectedExecutionType(data[0]);
         const typeParts = data[0].split('/');
         const exec_type = typeParts[1].split('_')[0];
         const uuid= typeParts[1].split('_').slice(-1)[0];
         fetchExecutionLineage(pipelineName, exec_type,uuid);
+        }
+
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
@@ -117,6 +126,9 @@ const Lineage = () => {
 
   const fetchExecutionLineage = (pipelineName, type,uuid) => {
     client.getExecutionLineage(pipelineName,type,uuid).then((data) => {    
+      if (data === null) {
+          setExecutionData(null);
+      }
       setExecutionData(data);
     });
   };
