@@ -170,7 +170,7 @@ for k, v in pipeline_dict.items():
                     lineage eg - execution_file, context, pipeline
                     """
                     context_name = k
-                    execution_name = vvv[-1]
+                    execution_name = str(uuid_)
                     lineage = execution_name+","+context_name+","+ pipeline_name
                     _ = metawriter.create_context(pipeline_stage=context_name)
                     if pos:
