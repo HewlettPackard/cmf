@@ -18,6 +18,7 @@ as a dictionary. If the execution cmd in the stored dict, matches the execution 
 in the dvc.lock file, that execution is updated with additional metadata.
 If there is no prior execution captured, a new execution is created
 """
+uuid_ = str(uuid.uuid4())
 
 pipeline_name = ""
 
@@ -48,12 +49,11 @@ args
 """
 def ingest_metadata(execution_lineage:str, metadata:dict, execution_exist:bool, metawriter:cmf.Cmf, command:str = "") :
     pipeline_name, context_name, execution = get_cmf_hierarchy(execution_lineage)
-    _ = metawriter.create_context(pipeline_stage=context_name)
-
+    
     if execution_exist:
         _ = metawriter.update_execution(int(execution))
     else:
-        _ = metawriter.create_execution(context_name, {}, command)
+        _ = metawriter.create_execution(str(context_name) + '_' + str(uuid_), {}, command)
 
     for k, v in metadata.items():
         if k == "deps":
@@ -62,6 +62,12 @@ def ingest_metadata(execution_lineage:str, metadata:dict, execution_exist:bool, 
         if k == "outs":
             for out in v:
                 metawriter.log_dataset_with_version(out["path"], out["md5"], "output")
+
+def find_location(string, elements):
+    for index, element in enumerate(elements):
+        if string == element:
+            return index
+    return None
 
 #Query mlmd to get all the executions and its commands
 cmd_exe = {}
@@ -144,13 +150,19 @@ for k, v in pipeline_dict.items():
                 if the pipeline_dict command is already there in the cmd_exe dict got from parsing the mlmd pop that cmd out 
                 and use the stored lineage from the mlmd
                 """
-                cmd = cmd_exe.get(k + '_' +str(vvv[-1]), None)
+                pos = find_location('--execution_name', vvv)
+                if pos:
+                    cmd = cmd_exe.get(str(k) + '_' +str(vvv[pos + 1]), None)
+                else:
+                    cmd = cmd_exe.get(str(k) + '_' +str(uuid_), None)
+
                 if cmd is not None:
                     """
                     cmd(lineage) - eg - '1,eval,active_learning '
                     format - execution_id, context, pipeline
                     """
                     context_name = k
+                    _ = metawriter.create_context(pipeline_stage=context_name)
                     ingest_metadata(cmd, vv, True, metawriter)
                 else:
                     """
@@ -160,6 +172,10 @@ for k, v in pipeline_dict.items():
                     context_name = k
                     execution_name = vvv[-1]
                     lineage = execution_name+","+context_name+","+ pipeline_name
-                    ingest_metadata(lineage, vv, False, metawriter, str(k) + '_'+str(vvv[-1]))
+                    _ = metawriter.create_context(pipeline_stage=context_name)
+                    if pos:
+                        ingest_metadata(lineage, vv, False, metawriter, str(k) + '_'+str(vvv[pos + 1]))
+                    else:
+                        ingest_metadata(lineage, vv, False, metawriter, str(k) + '_'+str(uuid_))
 
 metawriter.log_dvc_lock("dvc.lock")

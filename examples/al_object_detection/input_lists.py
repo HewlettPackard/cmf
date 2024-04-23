@@ -1,6 +1,8 @@
 import argparse
 import os
 import os.path as osp
+import uuid
+import json
 
 from mmcv import Config
 
@@ -28,6 +30,7 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=666, help='random seed')
     parser.add_argument('--deterministic', action='store_true',
         help='whether to set deterministic options for CUDNN backend.')
+    parser.add_argument('--execution_name', help='Name for current execution')
     args = parser.parse_args()
     return args
 
@@ -56,6 +59,9 @@ def main():
 
     # create work_directory
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_directory))
+
+    execution_name = args.execution_name
+    os.environ['execution_name'] = execution_name
 
     # init the logger before other steps
     log_file = osp.join(cfg.work_directory, 'input_sample_lists.log')
@@ -93,6 +99,11 @@ def main():
     np.savetxt(args.train, all, fmt='%0'+str(num_digits)+'u')
     np.save(args.selected, labeled_indexes)
     np.save(args.unselected, unlabeled_indexes)
+
+    my_uuid = str(uuid.uuid4())
+    dict_ = {'uuid_var': my_uuid}
+    with open('uuid.json','w') as f:
+        json.dump(dict_, f) 
 
 if __name__ == '__main__':
     main()

@@ -101,13 +101,11 @@ class CmfLoggerHook(LoggerHook):
                 cmf_levels = cmd.split(',')
                 self.execution = self.cmf_logger.update_execution(int(cmf_levels[0]))
             else:
-                print('Created_Here', str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name']))
-                self.execution = self.cmf_logger.create_execution(os.environ['DVC_STAGE'], {}, 
+                self.execution = self.cmf_logger.create_execution(str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name']), {}, 
                 str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name']))
 
         else:
-            print('Created_Here_1', str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name']))
-            self.execution = self.cmf_logger.create_execution(os.environ['DVC_STAGE'], {}, 
+            self.execution = self.cmf_logger.create_execution(str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name']), {}, 
             str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name']))
 
     @master_only
@@ -122,7 +120,18 @@ class CmfLoggerHook(LoggerHook):
             else:
                 end_ = 1
             self.commit_name = prefix + '_' + str(end_)
-            self.cmf_logger.log_metric(self.commit_name, tags)
+            if mode == 'train':
+                self.cmf_logger.log_metric(self.commit_name, tags)
+            else:
+                # This will log validation metrics in viewable form by hovering over it in liineage
+                prefix = 'Validation_Metrics' + str(os.environ['DVC_STAGE'])+'_'+str(os.environ['execution_name'])
+                prefixed = [filename for filename in os.listdir('.') if filename.startswith(prefix)]
+                if len(prefixed)>=1:
+                    end_ = (len(prefixed)//2)+1
+                else:
+                    end_ = 1
+                commit_name = prefix + '_' + str(end_)
+                self.cmf_logger.log_execution_metrics(commit_name, tags)
 
     @master_only
     def after_run(self, runner):
