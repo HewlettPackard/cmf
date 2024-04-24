@@ -163,7 +163,7 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
             return f"Pipeline name {pipeline_name} doesn't exist."
 
     else:
-        return 'mlmd does not exist!!'
+        return None
 
 @app.get("/get_execution_types/{pipeline_name}")
 async def get_execution_types(request: Request, pipeline_name: str):
@@ -182,7 +182,7 @@ async def get_execution_types(request: Request, pipeline_name: str):
             return f"Pipeline name {pipeline_name} doesn't exist."
 
     else:
-        return 'mlmd does not exist!!'
+        return None
 
 @app.get("/display_exec_lineage/{exec_type}/{pipeline_name}/{uuid}")
 async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: str, uuid: str):
@@ -198,6 +198,8 @@ async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: 
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
+    else:
+        response = None
     return response
 
 # api to display artifacts available in mlmd
