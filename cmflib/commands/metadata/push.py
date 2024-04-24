@@ -99,11 +99,13 @@ class CmdMetadataPush(CmdBase):
             else:
                 return "ERROR: Status Code = {status_code}. Unable to push mlmd."
 
-            # /tensorboard api call is done only if mlmd push is successfully completed
-            # tensorboard parameter is passed
-            print(".......................................................................")
-            print("tensorboard logs upload started!!")
             if self.args.tensorboard:
+                # /tensorboard api call is done only if mlmd push is successfully completed
+                # tensorboard parameter is passed
+                print("......................................")
+                print("tensorboard logs upload started!!")
+                print("......................................")
+
                 # check if the path provided is for a file
                 if os.path.isfile(self.args.tensorboard):
                     file_name = os.path.basename(self.args.tensorboard)
@@ -128,6 +130,8 @@ class CmdMetadataPush(CmdBase):
                     return f"tensorboard logs: {self.args.tensorboard} uploaded successfully!!"
                 else:
                     return "ERROR: Invalid data path. Provide valid file/folder path for tensorboard logs!!"
+            else:
+                return "SUCCESS!!"
         else:
             return "Pipeline name " + self.args.pipeline_name + " doesn't exists."
 
