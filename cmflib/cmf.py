@@ -122,7 +122,6 @@ class Cmf:
             # assign folder name as pipeline name 
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
-            print(pipeline_name)
         config = mlpb.ConnectionConfig()
         config.sqlite.filename_uri = filename
         self.store = metadata_store.MetadataStore(config)
