@@ -5,18 +5,18 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.8 >= Python <= 3.9.<br>
+CMF requires 3.9 >= Python < 3.10.<br>
 Create python virtual environment:
 
 === "Conda"
     ```shell
-    conda create -n cmf python=3.8
+    conda create -n cmf python=3.9
     conda activate cmf
     ```
 
 === "VirtualEnv" 
     ```shell
-    virtualenv --python=3.8 .cmf
+    virtualenv --python=3.9 .cmf
     source .cmf/bin/activate
     ```
 

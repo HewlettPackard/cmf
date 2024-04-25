@@ -13,7 +13,7 @@ Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
 **Pre-Requisites**
 
-- Python 3.8+
+- Python 3.9+
 - Git latest version
 
 **Install cmf library i.e. cmflib**
