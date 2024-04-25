@@ -30,6 +30,9 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=666, help='random seed')
     parser.add_argument('--deterministic', action='store_true',
         help='whether to set deterministic options for CUDNN backend.')
+    
+    parser.add_argument('--stage_name', help='Name for current execution')
+    
     parser.add_argument('--execution_name', help='Name for current execution')
     args = parser.parse_args()
     return args
@@ -59,7 +62,10 @@ def main():
 
     # create work_directory
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_directory))
-
+    
+    stage_name = args.stage_name
+    os.environ['stage_name'] = stage_name
+    
     execution_name = args.execution_name
     os.environ['execution_name'] = execution_name
 
