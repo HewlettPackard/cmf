@@ -84,6 +84,9 @@ async def mlmd_push(info: Request):
     print("......................")
     req_info = await info.json()
     status = await create_unique_executions(server_store_path, req_info)
+    if status == "version_update":
+        # Raise an HTTPException with status code 422
+        raise HTTPException(status_code=422, detail="version_update")
     # async function
     await update_global_art_dict()
     await update_global_exe_dict()

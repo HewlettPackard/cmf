@@ -90,8 +90,8 @@ class CmdMetadataPush(CmdBase):
                 print("mlmd is successfully pushed.")
             elif status_code==200 and response.json()["status"]=="exists":
                 print("Executions already exists.")
-            elif status_code==200 and response.json()["status"]=="version_update":
-                print("You need to update cmf to the latest version.")
+            elif status_code==422 and response.json()["status"]=="version_update":
+                return "ERROR: You need to update cmf to the latest version. Unable to push metadata file."
             elif status_code == 404:
                 return "ERROR: cmf-server is not available."
             elif status_code == 500:
