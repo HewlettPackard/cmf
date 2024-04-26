@@ -1,0 +1,96 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+from mmcv.utils import TORCH_VERSION
+from ...dist_utils import master_only
+from ..hook import HOOKS
+from .base import LoggerHook
+import uuid
+import dvc.api
+import dvc
+import os
+import json
+import sys
+
+
+@HOOKS.register_module()
+class CmfLoggerHook(LoggerHook):
+    """Class to log metrics and (optionally) a trained model to CMF.
+
+    It requires `cmflib`_ to be installed.
+
+    Args:
+        mlmd_file_path (str): Path to mlmd file.
+        exp_name (str, optional): Name of the experiment to be used.
+            Default None. If not None, set the active experiment.
+            If experiment_name does not exist, an experiment_name
+            with be created using uuid.
+        tags (Dict[str], optional): Tags for the current run.
+            Default None. If not None, set tags for the current run.
+        interval (int): Logging interval (every k iterations). Default: 10.
+        ignore_last (bool): Ignore the log of last iterations in each epoch
+            if less than `interval`. Default: True.
+        reset_flag (bool): Whether to clear the output buffer after logging.
+            Default: False.
+        by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
+    """
+    @master_only
+    def __init__(self,
+                 mlmd_file_path = os.path.join('/'+os.environ['DVC_ROOT']) + '/mlmd',
+                 exp_name=None,
+                 tags=None,
+                 interval=10, #needed by super class
+                 ignore_last=True, #needed by super class
+                 reset_flag=False, #needed by super class
+                 by_epoch=True): #needed by super class
+        super(CmfLoggerHook, self).__init__(interval, ignore_last,
+                                               reset_flag, by_epoch)
+        self.mlmdFilePath = mlmd_file_path
+        self.exp_name = exp_name if exp_name else str(uuid.uuid4())
+        self.tags = tags
+
+        try:
+            from cmflib import cmf
+            from cmflib import cmfquery
+        except ImportError:
+            raise ImportError(
+                'Please run "pip install cmflib" to install cmflib')
+        self.cmf_logger = cmf.Cmf(filename="mlmd", pipeline_name=self.exp_name , graph=True)
+        self.context = self.cmf_logger.create_context(os.environ['stage_name'])
+        
+        file_ = os.path.isfile(self.mlmdFilePath)
+        cmd = str(' '.join(sys.argv)) 
+        self.execution = self.cmf_logger.create_execution(
+            str(os.environ['stage_name'])+'_'+str(os.environ['execution_name']), 
+            {}, 
+            cmd = str(cmd), 
+            create_new_execution=False
+            )
+
+    @master_only
+    def log(self, runner):
+        tags = self.get_loggable_tags(runner)
+        mode = self.get_mode(runner)
+        print(mode)
+        self.mode = mode
+        if tags:
+            prefix = 'Training_Metrics_' + str(os.environ['stage_name'])+'_'+str(os.environ['execution_name'])
+            prefixed = [filename for filename in os.listdir('.') if filename.startswith(prefix)]
+            if len(prefixed)>=1:
+                end_ = (len(prefixed)//2)+1
+            else:
+                end_ = 1
+            self.commit_name = prefix + '_' + str(end_)
+            if mode == 'train':
+                self.cmf_logger.log_metric(self.commit_name, tags)
+            else:
+                prefix = 'Validation_Metrics' + str(os.environ['stage_name'])+'_'+str(os.environ['execution_name'])
+                prefixed = [filename for filename in os.listdir('.') if filename.startswith(prefix)]
+                if len(prefixed)>=1:
+                    end_ = (len(prefixed)//2)+1
+                else:
+                    end_ = 1
+                commit_name = prefix + '_' + str(end_)
+                self.cmf_logger.log_execution_metrics(commit_name, tags)
+
+    @master_only
+    def after_run(self, runner):
+        self.cmf_logger.commit_metrics(self.commit_name)

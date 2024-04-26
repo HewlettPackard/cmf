@@ -57,6 +57,8 @@ def parse_args():
 
     parser.add_argument('--strategy', choices=['active_learning', 'random'], 
                           default='active_learning')
+    parser.add_argument('--stage_name', help='Name for current execution')
+    parser.add_argument('--execution_name', help='Name for current execution')
     args = parser.parse_args()
     if 'LOCAL_RANK' not in os.environ:
         os.environ['LOCAL_RANK'] = str(args.local_rank)
@@ -120,6 +122,12 @@ def main():
     # create work_directory
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_directory))
 
+    stage_name = args.stage_name
+    os.environ['stage_name'] = stage_name
+
+    execution_name = args.execution_name
+    os.environ['execution_name'] = execution_name
+        
     # dump config
     cfg.dump(osp.join(cfg.work_directory,
                       f'cycle_select{args.cycle}_' + osp.basename(args.config)))
