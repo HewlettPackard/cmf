@@ -1,9 +1,9 @@
 [project]
 name = "cmflib"
-version = "0.0.9"
+version = "0.0.8"
 dependencies = [
 	"ml-metadata==1.11.0",
-	"dvc[ssh,s3]==3.50.0",
+	"dvc[ssh,s3]==2.27.0",
 	"pandas",
 	"retrying",
 	"pyarrow",
