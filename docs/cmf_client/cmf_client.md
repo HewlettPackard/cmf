@@ -155,7 +155,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit
-  -a <artifact_name>, --artifact_name <artifact_name>   Specify artifact name.
+  -a <artifact_name>, --artifact_name <artifact_name>   Specify artifact name only; don't use folder name or absolute path.
   -f [file_name],--file-name [file_name]                Specify mlmd file name.
 ```
 ### cmf artifact push
