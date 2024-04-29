@@ -354,7 +354,7 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+            assert(self.create_context(pipeline_stage=name_without_extension))
 
         # Initializing the execution related fields
         self.metrics = {}
@@ -642,11 +642,11 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+            assert(self.create_context(pipeline_stage=name_without_extension))
 
         # create execution if not already created
         if not self.execution:
-            self.execution = self.create_execution(execution_type=name_without_extension)
+            assert(self.create_execution(execution_type=name_without_extension))
 
                 ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
@@ -985,11 +985,11 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+            assert(self.create_context(pipeline_stage=name_without_extension))
 
         # create execution if not already created
         if not self.execution:
-            self.execution = self.create_execution(execution_type=name_without_extension)
+            assert(self.create_execution(execution_type=name_without_extension))
 
 
         # To Do : Technical Debt. 
@@ -1274,18 +1274,6 @@ class Cmf:
                  Artifact object from the ML Protocol Buffers library associated with the metrics artifact.
         """
 
-        # Assigning current file name as stage and execution name
-        current_script = sys.argv[0]
-        file_name = os.path.basename(current_script)
-        name_without_extension = os.path.splitext(file_name)[0]
-        # create context if not already created
-        if not self.child_context:
-            self.child_context = self.create_context(pipeline_stage=name_without_extension)
-
-        # create execution if not already created
-        if not self.execution:
-            self.execution = self.create_execution(execution_type=name_without_extension)
-
         metrics = None
         custom_props = {} if custom_properties is None else custom_properties
         existing_artifact = []
@@ -1371,11 +1359,11 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.child_context = self.create_context(pipeline_stage=name_without_extension)
+            assert(self.create_context(pipeline_stage=name_without_extension))
 
         # create execution if not already created
         if not self.execution:
-            self.execution = self.create_execution(execution_type=name_without_extension)
+            assert(self.create_execution(execution_type=name_without_extension))
 
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
