@@ -28,6 +28,9 @@ RUN mkdir -p /cmf-server/data
 # folder for static files
 RUN mkdir -p /cmf-server/data/static
 
+# folder for tensorboard logs
+RUN mkdir -p /cmf-server/data/tensorboard-logs
+
 # libraries required for lineage
 RUN apt-get update -y && apt-get install -y libzbar-dev 
 
