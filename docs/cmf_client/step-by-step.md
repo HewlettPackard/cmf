@@ -46,7 +46,7 @@ CMF initialization is the first and foremost to use cmf-client commads. This com
 ```
 cmf init minioS3 --url s3://dvc-art --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
 ```
-Note: Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.
+Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.
 
 Check [here](./cmf_client.md) for more details.
 
@@ -72,7 +72,7 @@ Check [here](./cmf_client.md) for more details.
 
 **Push metadata to cmf-server**
 ```
-cmf metadata push -p pipeline-name
+cmf metadata push -p 'pipeline-name'
 ```
 Check [here](./cmf_client.md) for more details.
 
@@ -83,7 +83,7 @@ In the case of collaborative development, in addition to the above commands, use
 
 Execute `cmf metadata` command in the `example_folder`.
 ```
-cmf metadata pull -p pipeline-name
+cmf metadata pull -p 'pipeline-name'
 ```
 Check [here](./cmf_client.md) for more details.
 
@@ -91,7 +91,7 @@ Check [here](./cmf_client.md) for more details.
 
 Execute `cmf artifact` command in the `example_folder`.
 ```
-cmf artifact pull -p pipeline-name
+cmf artifact pull -p 'pipeline-name'
 ```
 Check [here](./cmf_client.md) for more details.
 
