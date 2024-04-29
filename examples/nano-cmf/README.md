@@ -5,9 +5,9 @@ In the traditional apporach in CMF, the typical sequence involves the initializa
 
 ### Steps to reproduce
 
-1. Copy contents of `` directory to a separate directory outside this repository.
+1. Copy contents of `nano-cmf` directory to a separate directory outside this repository.
 
-2. Create python virtual environment (version >= 3.7 and < 3.9), install git, install python dependencies
+2. Create python virtual environment (version >= 3.7 and < 3.9), install git, install python dependencies.
 
 3. Initialise the project using [`cmf init`](./../../docs/cmf_client/cmf_client.md#cmf-init) command.
 
