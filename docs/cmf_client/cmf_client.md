@@ -144,7 +144,7 @@ Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] [-a <artifact_na
 ```
 `cmf artifact pull` command pull artifacts from the user configured repository to the user's local machine.
 ```
-cmf artifact pull -p 'Test-env' 
+cmf artifact pull -p 'pipeline-name' 
 ```
 Required Arguments
 ```
@@ -175,7 +175,7 @@ Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
-cmf metadata pull -p 'Test-env' -f "/home/user/example/name_of_file"
+cmf metadata pull -p 'pipeline-name' -f "/path/to/mlmd-file-name"
 ```
 Required Arguments
 ```
@@ -184,7 +184,7 @@ Required Arguments
 Optional Arguments
 ```
 -h, --help                                  show this help message and exit
--e [exec_id], --execution [exec_name]       Specify execution id
+-e [exec_id], --execution [exec_id]         Specify execution id
 -f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
 ```
 ### cmf metadata push
@@ -193,7 +193,7 @@ Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 ```
 `cmf metadata push` command pushes the metadata file from the local machine to the cmf-server.
 ```
-cmf metadata push -p 'Test-env' -f "/home/user/example/name_of_file"
+cmf metadata push -p 'pipeline-name' -f "/path/to/mlmd-file-name"
 ```
 Required Arguments
 ```
@@ -204,5 +204,5 @@ Optional Arguments
 ```
   -h, --help                                    show this help message and exit
   -f [file_name], --file_name [file_name]       Specify mlmd file name.
-  -e [exec_name], --execution [exec_name]       Specify execution id.
+  -e [exec_id], --execution [exec_id]           Specify execution id.
 ```
