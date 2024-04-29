@@ -43,15 +43,15 @@ There are two ways to start cmf server -
 > This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
 
 1. Go to root `cmf` directory.
-2. Edit `docker-compose-server.yml` with above directory.
+2. Replace `xxxx` with user-name in docker-compose-server.yml available in the root cmf directory.
     ```
     ......
     services:
     server:
       image: server:latest
       volumes:
-         - /home/xxxx/cmf-server/data:/cmf-server/data
-         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
+         - /home/xxxx/cmf-server/data:/cmf-server/data                 # for example /home/hpe-user/cmf-server/data:/cmf-server/data 
+         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static   # for example /home/hpe-user/cmf-server/data/static:/cmf-server/data/static
       container_name: cmf-server
       build:
     ....
