@@ -43,12 +43,7 @@ There are two ways to start cmf server -
 > This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
 
 1. Go to root `cmf` directory.
-2. Create a directory which will be used as volume mount for docker containers.
-   ```
-   mkdir /home/<user>/cmf-server/data/static
-   ```
-   
-3.  Edit `docker-compose-server.yml` with above directory.
+2. Edit `docker-compose-server.yml` with above directory.
     ```
     ......
     services:
@@ -62,7 +57,7 @@ There are two ways to start cmf server -
     ....
     ```
   
-4. Execute following command to start both the containers. `IP` variable is the IP address and `hostname` is host name of the machine on which you are executing the following command.
+3. Execute following command to start both the containers. `IP` variable is the IP address and `hostname` is host name of the machine on which you are executing the following command.
    You can use either way.
    ```
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
@@ -80,7 +75,7 @@ There are two ways to start cmf server -
      ......
      ```
    
-5. Stop the containers. 
+4. Stop the containers. 
    ```
    docker compose -f docker-compose-server.yml stop
    ```
