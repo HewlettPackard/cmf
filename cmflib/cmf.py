@@ -404,7 +404,7 @@ class Cmf:
             self.execution_name,
             self.child_context.id,
             self.parent_context,
-            str(sys.argv),
+            cmd,
             self.execution.id,
             custom_props,
         )
