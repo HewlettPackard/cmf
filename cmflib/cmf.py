@@ -354,7 +354,8 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            assert(self.create_context(pipeline_stage=name_without_extension))
+            self.create_context(pipeline_stage=name_without_extension)
+            assert self.create_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # Initializing the execution related fields
         self.metrics = {}
@@ -642,11 +643,13 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            assert(self.create_context(pipeline_stage=name_without_extension))
+            self.create_context(pipeline_stage=name_without_extension)
+            assert self.create_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            assert(self.create_execution(execution_type=name_without_extension))
+            self.create_execution(execution_type=name_without_extension)
+            assert self.create_execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
                 ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
@@ -985,11 +988,13 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            assert(self.create_context(pipeline_stage=name_without_extension))
+            self.create_context(pipeline_stage=name_without_extension)
+            assert self.create_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            assert(self.create_execution(execution_type=name_without_extension))
+            self.create_execution(execution_type=name_without_extension)
+            assert self.create_execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
 
         # To Do : Technical Debt. 
@@ -1359,11 +1364,14 @@ class Cmf:
         name_without_extension = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            assert(self.create_context(pipeline_stage=name_without_extension))
+            self.create_context(pipeline_stage=name_without_extension)
+            assert self.create_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            assert(self.create_execution(execution_type=name_without_extension))
+            self.create_execution(execution_type=name_without_extension)
+            assert self.create_execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+
 
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
