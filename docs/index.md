@@ -7,7 +7,7 @@ models and performance metrics) recorded by the framework are versioned and iden
 ## Installation
 Before installing CMF, ensure that you have Python installed on your system, with a version between 3.8 and 3.9.
 
-#### 1. Set up Pthon Virtual Environment:
+#### 1. Set up Python Virtual Environment:
 
 === "Using Conda"
     ```shell
