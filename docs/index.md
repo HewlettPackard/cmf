@@ -5,22 +5,23 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.8 >= Python <= 3.9.<br>
-Create python virtual environment:
+Before installing CMF, ensure that you have Python installed on your system, with a version between 3.8 and 3.9.
 
-=== "Conda"
+#### 1. Set up Pthon Virtual Environment:
+
+=== "Using Conda"
     ```shell
     conda create -n cmf python=3.8
     conda activate cmf
     ```
 
-=== "VirtualEnv" 
+=== "Using VirtualEnv" 
     ```shell
     virtualenv --python=3.8 .cmf
     source .cmf/bin/activate
     ```
 
-Install CMF
+#### 2. Install CMF:
 
 === "Latest version form GitHub"
     ```shell
@@ -31,12 +32,13 @@ Install CMF
     ```shell    
     # pip install cmflib
     ```
-## Configuration
-1. Create working directory `mkdir <workdir>`
-2. Execute `cmf init` to configure dvc remote directory, git remote url, cmf server and neo4j. Follow [here](./cmf_client/cmf_client.md#cmf-init) for more details.
+## Next Steps
+
+After installing CMF, proceed to configure CMF server and client. For detailed configuration instructions, refer to the [Getting Started](./cmf_client/step-by-step.md) page.
 
 
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
+
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
 each stage performs a particular task, such as data loading,  pre-processing, ML model training and testing stages.
