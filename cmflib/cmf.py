@@ -386,16 +386,18 @@ class Cmf:
         self.execution_label_props["Execution_Name"] = (
             execution_type + ":" + str(self.execution.id)
         )
-        self.execution_label_props["execution_command"] = str(sys.argv)
+        
+        self.execution_label_props["execution_command"] = cmd
         if self.graph:
             self.driver.create_execution_node(
-                self.execution_name,
-                self.child_context.id,
-                self.parent_context,
-                str(sys.argv),
-                self.execution.id,
-                custom_props,
-            )
+            self.execution_name,
+            self.child_context.id,
+            self.parent_context,
+            cmd,
+            self.execution.id,
+            custom_props,
+        )
+
         return self.execution
 
     def update_execution(

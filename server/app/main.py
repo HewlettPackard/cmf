@@ -1,5 +1,5 @@
 # cmf-server api's
-from fastapi import FastAPI, Request, status, HTTPException, Query
+from fastapi import FastAPI, Request, status, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -28,8 +28,7 @@ server_store_path = "/cmf-server/data/mlmd"
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
 
-#lifespan used to prevent multiple loading and save time for 
-#visualization.
+#lifespan used to prevent multiple loading and save time for visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
@@ -85,6 +84,9 @@ async def mlmd_push(info: Request):
     print("......................")
     req_info = await info.json()
     status = await create_unique_executions(server_store_path, req_info)
+    if status == "version_update":
+        # Raise an HTTPException with status code 422
+        raise HTTPException(status_code=422, detail="version_update")
     # async function
     await update_global_art_dict()
     await update_global_exe_dict()
@@ -163,7 +165,7 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
             return f"Pipeline name {pipeline_name} doesn't exist."
 
     else:
-        return 'mlmd does not exist!!'
+        return None
 
 @app.get("/get_execution_types/{pipeline_name}")
 async def get_execution_types(request: Request, pipeline_name: str):
@@ -182,7 +184,7 @@ async def get_execution_types(request: Request, pipeline_name: str):
             return f"Pipeline name {pipeline_name} doesn't exist."
 
     else:
-        return 'mlmd does not exist!!'
+        return None
 
 @app.get("/display_exec_lineage/{exec_type}/{pipeline_name}/{uuid}")
 async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: str, uuid: str):
@@ -198,6 +200,8 @@ async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: 
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
+    else:
+        response = None
     return response
 
 # api to display artifacts available in mlmd
@@ -288,6 +292,17 @@ async def display_list_of_pipelines(request: Request):
         return pipeline_names
 
 
+@app.post("/tensorboard")
+async def upload_file(request:Request, pipeline_name: str = Query(..., description="Pipeline name"),
+    file: UploadFile = File(..., description="The file to upload")):
+    try:
+        file_path = os.path.join("/cmf-server/data/tensorboard-logs", pipeline_name, file.filename)
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "wb") as buffer:
+            buffer.write(await file.read())
+        return {"message": f"File '{file.filename}' uploaded successfully"}
+    except Exception as e:
+        return {"error": f"Failed to up load file: {e}"}
 
 async def update_global_art_dict():
     global dict_of_art_ids
