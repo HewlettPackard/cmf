@@ -20,6 +20,7 @@ import Home from "./pages/home";
 import Artifacts from "./pages/artifacts";
 import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
+import TensorBoard from "./pages/tensorboard";
 import "./App.css";
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route exact path="/display_artifacts" element={<Artifacts />} />
           <Route exact path="/display_executions" element={<Executions />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
+          <Route exact path="/tensorboard" element={<TensorBoard />} />
         </Routes>
       </BrowserRouter>
     </div>
