@@ -131,6 +131,8 @@ class Cmf:
         self.execution_label_props = {}
         self.graph = graph
         self.branch_name = filename.rsplit("/", 1)[-1]
+        self.cmf_init_path = os.getcwd()
+  
 
         if is_server is False:
             git_checkout_new_branch(self.branch_name)
@@ -625,7 +627,8 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-
+        if not os.getcwd() == self.cmf_init_path: 
+            os.chdir(self.cmf_init_path)
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -732,6 +735,7 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
+        os.chdir(os.getcwd())
         return artifact
 
     def update_dataset_url(self, artifact: mlpb.Artifact, updated_url: str):
@@ -956,6 +960,8 @@ class Cmf:
         # If the model already exist , then we just link the existing model to the execution
         # We do not update the model properties . 
         # We need to append the new properties to the existing model properties
+        if not os.getcwd() == self.cmf_init_path: 
+            os.chdir(self.cmf_init_path)
 
         if custom_properties is None:
             custom_properties = {}
@@ -1069,7 +1075,7 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
-
+        os.chdir(os.getcwd())
         return artifact
 
     # Add the model to dvc do a git commit and store the commit id in MLMD
@@ -1233,6 +1239,8 @@ class Cmf:
               Returns: 
                  Artifact object from the ML Protocol Buffers library associated with the metrics artifact.
         """
+        if not os.getcwd() == self.cmf_init_path: 
+            os.chdir(self.cmf_init_path)
         metrics = None
         custom_props = {} if custom_properties is None else custom_properties
         existing_artifact = []
@@ -1289,6 +1297,7 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
+        os.chdir(os.getcwd())
         return metrics
 
 
@@ -1311,6 +1320,8 @@ class Cmf:
         Returns:
               Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
+        if not os.getcwd() == self.cmf_init_path: 
+            os.chdir(self.cmf_init_path)
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
         metrics_name = metrics_name + ":" + uri + ":" + str(self.execution.id)
@@ -1350,6 +1361,7 @@ class Cmf:
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+        os.chdir(os.getcwd())
         return metrics
 
     def log_metric(
@@ -1371,12 +1383,15 @@ class Cmf:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metrics.
         """
+        if not os.getcwd() == self.cmf_init_path: 
+            os.chdir(self.cmf_init_path)
         if metrics_name in self.metrics:
             key = max((self.metrics[metrics_name]).keys()) + 1
             self.metrics[metrics_name][key] = custom_properties
         else:
             self.metrics[metrics_name] = {}
             self.metrics[metrics_name][1] = custom_properties
+        os.chdir(os.getcwd())
 
     def commit_metrics(self, metrics_name: str):
         """ Writes the in-memory metrics to a Parquet file, commits the metrics file associated with the metrics id to DVC and Git,
@@ -1513,7 +1528,10 @@ class Cmf:
     def log_validation_output(
         self, version: str, custom_properties: t.Optional[t.Dict] = None
     ) -> object:
+        if not os.getcwd() == self.cmf_init_path: 
+            os.chdir(self.cmf_init_path)
         uri = str(uuid.uuid1())
+        os.chdir(os.getcwd())
         return create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
