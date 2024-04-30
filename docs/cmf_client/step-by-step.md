@@ -17,14 +17,14 @@ Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 - Git latest version
 
 **Install cmf library i.e. cmflib**
-```
-pip install git+https://github.com/HewlettPackard/cmf
-```
-**OR**
-```
-pip install cmflib
-```
-Check [here](https://hewlettpackard.github.io/cmf/) for more details.
+
+Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided [here](../index.md). 
+
+**Configuration**
+
+1. Create working directory `mkdir <workdir>`
+2. Execute `cmf init` to configure dvc remote directory, git remote url, cmf server and neo4j. Follow [here](./cmf_client/cmf_client.md#cmf-init) for more details.
+
 
 ## Install cmf-server
 cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
@@ -42,11 +42,11 @@ mkdir example-folder
   
 **Initialize cmf**
 
-CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the [above](#create-a-folder) step.
+CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the above step.
 ```
 cmf init minioS3 --url s3://dvc-art --endpoint-url http://172.19.0.2:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
-Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.
+> Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.
 
 Check [here](./cmf_client.md) for more details.
 
@@ -61,6 +61,10 @@ Check [here](./cmf_client.md) for more details.
 Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
 
 More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
+
+
+> Before pushing artifacts or metadata, ensure that the cmf server and minioS3 are up and running.
+
 
 **Push artifacts**
   
