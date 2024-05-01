@@ -32,6 +32,9 @@ class CmfLoggerHook(LoggerHook):
             Default: False.
         by_epoch (bool): Whether EpochBasedRunner is used. Default: True.
     """
+    Training_metric_count = 1
+    Validation_metric_count = 1
+    
     @master_only
     def __init__(self,
                  mlmd_file_path = os.path.join('/'+os.environ['DVC_ROOT']) + '/mlmd',
@@ -64,6 +67,8 @@ class CmfLoggerHook(LoggerHook):
             cmd = str(cmd), 
             create_new_execution=False
             )
+        
+        self.prefix = 'Training_Metrics_' + str(os.environ['stage_name'])+'_'+str(os.environ['execution_name'])
 
     @master_only
     def log(self, runner):
@@ -72,25 +77,17 @@ class CmfLoggerHook(LoggerHook):
         print(mode)
         self.mode = mode
         if tags:
-            prefix = 'Training_Metrics_' + str(os.environ['stage_name'])+'_'+str(os.environ['execution_name'])
-            prefixed = [filename for filename in os.listdir('.') if filename.startswith(prefix)]
-            if len(prefixed)>=1:
-                end_ = (len(prefixed)//2)+1
-            else:
-                end_ = 1
-            self.commit_name = prefix + '_' + str(end_)
             if mode == 'train':
+                self.commit_name = self.prefix + '_' + str(CmfLoggerHook.Training_metric_count)
                 self.cmf_logger.log_metric(self.commit_name, tags)
+                
             else:
-                prefix = 'Validation_Metrics' + str(os.environ['stage_name'])+'_'+str(os.environ['execution_name'])
-                prefixed = [filename for filename in os.listdir('.') if filename.startswith(prefix)]
-                if len(prefixed)>=1:
-                    end_ = (len(prefixed)//2)+1
-                else:
-                    end_ = 1
-                commit_name = prefix + '_' + str(end_)
+                prefix = 'Validation_Metrics_' + str(os.environ['stage_name'])+'_'+str(os.environ['execution_name'])
+                commit_name = prefix + '_' + str(CmfLoggerHook.Validation_metric_count)
                 self.cmf_logger.log_execution_metrics(commit_name, tags)
+                CmfLoggerHook.Validation_metric_count+=1
 
     @master_only
     def after_run(self, runner):
         self.cmf_logger.commit_metrics(self.commit_name)
+        CmfLoggerHook.Training_metric_count+=1
