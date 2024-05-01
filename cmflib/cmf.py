@@ -1241,8 +1241,6 @@ class Cmf:
               Returns: 
                  Artifact object from the ML Protocol Buffers library associated with the metrics artifact.
         """
-        if not os.getcwd() == self.cmf_init_path: 
-            os.chdir(self.cmf_init_path)
         metrics = None
         custom_props = {} if custom_properties is None else custom_properties
         existing_artifact = []
@@ -1299,7 +1297,6 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
-        os.chdir(os.getcwd())
         return metrics
 
 
