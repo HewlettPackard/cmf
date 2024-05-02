@@ -98,7 +98,7 @@ There are two ways to start cmf server -
    ```
    docker images
    ```
-
+   
 4. Execute the below-mentioned command to create a `cmf-server` docker image.
    ```
    Usage:  docker build -t [image_name] -f ./Dockerfile ../
@@ -118,10 +118,12 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
    ```
+   
 6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
    ```
    cd /cmf/ui
    ```
+   
 7. Execute the below-mentioned command to create a `ui-server` docker image.
    ```
    Usage:  docker build -t [image_name] -f ./Dockerfile ../
@@ -130,6 +132,7 @@ There are two ways to start cmf server -
    ```
    docker build -t uiimage -f ./Dockerfile ../
    ```
+   
 8. Launch a new docker container using the image with directory
    ```
    Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 [image_name]
@@ -139,31 +142,17 @@ There are two ways to start cmf server -
    docker run --name mycontainer -p 0.0.0.0:3000:3000 uiimage
    ```
    
-   ### Note
-   If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
-   
-   ```{
-      proxies: {
-           "default": {
-                        "httpProxy": "http://web-proxy.labs.xxxx.net:8080",
-                        "httpsProxy": "http://web-proxy.labs.xxxx.net:8080",
-                        "noProxy": ".labs.xxxx.net,127.0.0.0/8"
-                }
-            }
-    }
+9. To stop the docker container.
+   ```
+   docker stop [container_name]
    ```
    
-9. To stop the docker container.
-    ```
-      docker stop [container_name]
-    ```
-    
 10. To delete the docker container.
     ```
-      docker rm [container_name] 
+    docker rm [container_name] 
     ```
     
 11. To remove the docker image.
     ``` 
-      docker image rm [image_name] 
+    docker image rm [image_name] 
     ```
