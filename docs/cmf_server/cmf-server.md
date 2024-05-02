@@ -141,20 +141,20 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:3000:3000 uiimage
    ```
-   ### Note
-   If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
+      ### Note
+      If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
    
-   ```
-   {
-      proxies: {
-           "default": {
-                        "httpProxy": "http://web-proxy.labs.xxxx.net:8080",
-                        "httpsProxy": "http://web-proxy.labs.xxxx.net:8080",
-                        "noProxy": ".labs.xxxx.net,127.0.0.0/8"
-                }
-            }
-    }
-   ```
+      ```
+      {
+         proxies: {
+              "default": {
+                           "httpProxy": "http://web-proxy.labs.xxxx.net:8080",
+                           "httpsProxy": "http://web-proxy.labs.xxxx.net:8080",
+                           "noProxy": ".labs.xxxx.net,127.0.0.0/8"
+                   }
+               }
+       }
+      ```
    
 10. To stop the docker container.
     ```
