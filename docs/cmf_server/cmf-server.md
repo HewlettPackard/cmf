@@ -70,7 +70,6 @@ There are two ways to start cmf server -
    hostname=host_name docker compose -f docker-compose-server.yml up
    ```
    > Replace `docker compose` with `docker-compose` for older versions.
-    
    > Also you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying 
     IP=200.200.200.200.
      ```
