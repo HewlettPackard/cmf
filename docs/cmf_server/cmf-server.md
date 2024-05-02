@@ -142,8 +142,6 @@ There are two ways to start cmf server -
    ### Note
    If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
    
-   <img src="https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4)" width=1000 height=500>
-   
    ```{
       proxies: {
            "default": {
@@ -155,17 +153,17 @@ There are two ways to start cmf server -
     }
    ```
    
-10. To stop the docker container.
+9. To stop the docker container.
     ```
       docker stop [container_name]
     ```
     
-11. To delete the docker container.
+10. To delete the docker container.
     ```
       docker rm [container_name] 
     ```
     
-12. To remove the docker image.
+11. To remove the docker image.
     ``` 
       docker image rm [image_name] 
     ```
