@@ -12,7 +12,7 @@ Before proceeding, ensure that the CMF library is installed on your system. If n
 ## Install cmf-server
 cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
 
-Follow the instructions on the [Getting Started](../cmf_server/cmf-server.md) page for details on how to setup a cmf-server.
+Follow the instructions on the [Getting started with cmf-server](../cmf_server/cmf-server.md) page for details on how to setup a cmf-server.
 
 ## Setup a cmf-client 
 cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
