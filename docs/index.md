@@ -122,7 +122,7 @@ are recorded as properties of executions.
 </table>
 
 ## Quick Example
-Simple "getting started" example is described [here](examples/getting_started.md). 
+Go through [Getting Started](examples/getting_started.md) page to learn more about CMF API usage.
    
 ## API Overview
 
