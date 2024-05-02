@@ -142,7 +142,6 @@ There are two ways to start cmf server -
    ![Screenshot (115)](https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4) 
    
    ```
-   ~/.docker/config.json
     {
       proxies: {
            "default": {
