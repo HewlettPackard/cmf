@@ -143,7 +143,6 @@ There are two ways to start cmf server -
    
    ```
    ~/.docker/config.json
-   
     {
       proxies: {
            "default": {
@@ -155,15 +154,15 @@ There are two ways to start cmf server -
     }
     ```
    
-10. To stop the docker container.
+9. To stop the docker container.
     ```
       docker stop [container_name]
     ```
-11. To delete the docker container.
+10. To delete the docker container.
     ```
       docker rm [container_name] 
     ```
-12. To remove the docker image.
+11. To remove the docker image.
     ``` 
       docker image rm [image_name] 
     ```
