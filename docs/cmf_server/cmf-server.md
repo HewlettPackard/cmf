@@ -109,8 +109,7 @@ There are two ways to start cmf server -
    docker build -t myimage -f ./Dockerfile ../
    ```
    `Note` - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
-
-
+   
 5. Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
    pre-requisite - `mkdir /home/<user>/cmf-server/data/static`
    <pre>
