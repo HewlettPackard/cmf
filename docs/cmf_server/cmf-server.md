@@ -79,11 +79,12 @@ There are two ways to start cmf server -
      REACT_APP_MY_IP: ${IP}
      ......
      ```
-   
-4. Stop the containers. 
-   ```
-   docker compose -f docker-compose-server.yml stop
-   ```
+     
+ 4. Stop the containers.
+    ```
+      docker compose -f docker-compose-server.yml stop
+    ```
+
 > It is neccessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling latest cmf code from git.
 
 ## Using `docker run` command
