@@ -37,7 +37,7 @@ models and performance metrics) recorded by the framework are versioned and iden
     ```
 ## Next Steps
 
-After installing CMF, proceed to configure CMF server and client. For detailed configuration instructions, refer to the [Getting Started](./cmf_client/step-by-step.md) page.
+After installing CMF, proceed to configure CMF server and client. For detailed configuration instructions, refer to the [Quick start with cmf-client](./cmf_client/step-by-step.md) page.
 
 
 ### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
