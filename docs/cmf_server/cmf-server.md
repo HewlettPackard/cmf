@@ -79,6 +79,7 @@ There are two ways to start cmf server -
      REACT_APP_MY_IP: ${IP}
      ......
      ```
+     
  4. Stop the containers.
     ```
       docker compose -f docker-compose-server.yml stop
