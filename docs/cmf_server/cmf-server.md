@@ -34,14 +34,14 @@ There are two ways to start cmf server -
 - Using docker run
 
 ### Pre-requisites
-1. Clone the [Github repository](https://github.com/HewlettPackard/cmf).
-   
+1. Clone the [Github repository](https://github.com/HewlettPackard/cmf). 
    ```
    git clone https://github.com/HewlettPackard/cmf
    ```
+   
 2. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 3. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
-> In earlier versions of docker compose, `docker compose` was independent of docker. Hence, `docker-compose` was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
+   > In earlier versions of docker compose, `docker compose` was independent of docker. Hence, `docker-compose` was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
 4. **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
 
 ## Using `docker compose` file 
