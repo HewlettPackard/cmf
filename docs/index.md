@@ -5,9 +5,12 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-Before installing CMF, ensure that you have Python installed on your system, with a version between 3.8 and 3.9.
 
-#### 1. Set up Python Virtual Environment:
+#### 1. Pre-Requisites:
+* 3.8>= Python <=3.9
+* Git latest version
+
+#### 2. Set up Python Virtual Environment:
 
 === "Using Conda"
     ```shell
@@ -21,7 +24,7 @@ Before installing CMF, ensure that you have Python installed on your system, wit
     source .cmf/bin/activate
     ```
 
-#### 2. Install CMF:
+#### 3. Install CMF:
 
 === "Latest version form GitHub"
     ```shell
