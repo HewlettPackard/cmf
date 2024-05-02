@@ -138,7 +138,8 @@ There are two ways to start cmf server -
    ```
    docker run --name mycontainer -p 0.0.0.0:3000:3000 uiimage
    ```
-   `Note` - If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to "/.docker/config.json":
+   ### Note
+   If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
    ![Screenshot (115)](https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4) 
    
    ```
@@ -153,15 +154,15 @@ There are two ways to start cmf server -
     }
     ```
    
-9. To stop the docker container.
+10. To stop the docker container.
     ```
       docker stop [container_name]
     ```
-10. To delete the docker container.
+11. To delete the docker container.
     ```
       docker rm [container_name] 
     ```
-11. To remove the docker image.
+12. To remove the docker image.
     ``` 
       docker image rm [image_name] 
     ```
