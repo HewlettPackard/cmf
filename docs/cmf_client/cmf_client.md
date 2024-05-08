@@ -57,8 +57,11 @@ Usage: cmf init local [-h] --path [path] -
 ```
 `cmf init local` initialises local directory as a cmf artifact repository.
 ```
-cmf init local --path /home/user/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
+
+> Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage
+
 Required Arguments
 ```
   --path [path]                         Specify local directory path.
@@ -76,8 +79,9 @@ Optional Arguments
 ```
 Usage: cmf init amazonS3 [-h] --url [url] 
                               --access-key-id [access_key_id]
-                              --secret-key [secret_key] 
-                              --git-remote-url [git_remote_url] 
+                              --secret-key [secret_key]
+                              --session-token [session_token]
+                              --git-remote-url [git_remote_url]
                               --cmf-server-url [cmf_server_url]
                               --neo4j-user [neo4j_user]
                               --neo4j-password neo4j_password]
@@ -85,7 +89,7 @@ Usage: cmf init amazonS3 [-h] --url [url]
 ```
 `cmf init amazonS3` initialises Amazon S3 bucket as a CMF artifact repository.
 ```
-cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687 
+cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687 
 ```
 
 Required Arguments
@@ -98,6 +102,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
+  --session-token                     Specify session token. (default: )
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
@@ -116,7 +121,7 @@ Usage: cmf init sshremote [-h] --path [path]
 ```
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 ```
-cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 Required Arguments
 ```
