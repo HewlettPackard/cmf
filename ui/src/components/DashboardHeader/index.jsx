@@ -70,6 +70,12 @@ function DashboardHeader() {
           >
             Lineage
           </Link>
+          <Link
+            to="/tensorboard"
+            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+          >
+           TensorBoard
+          </Link>
           <a
             href={"https://hewlettpackard.github.io/cmf/api/public/cmf/"}
             target={"_blank"}
