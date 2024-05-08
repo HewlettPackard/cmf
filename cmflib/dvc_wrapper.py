@@ -429,10 +429,10 @@ def dvc_get_config() -> str:
 
 
 # dvc push
-def dvc_push() -> str:
+def dvc_push(file_name: str) -> str:
     commit = ""
     try:
-        process = subprocess.Popen(['dvc', 'push'],
+        process = subprocess.Popen(['dvc', 'push', file_name],
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
         output, errs = process.communicate()
