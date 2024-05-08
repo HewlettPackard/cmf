@@ -1,13 +1,27 @@
 # Copyright (c) OpenMMLab. All rights reserved.
+
+###
+# Copyright (2024) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
 from mmcv.utils import TORCH_VERSION
 from ...dist_utils import master_only
 from ..hook import HOOKS
 from .base import LoggerHook
 import uuid
-import dvc.api
-import dvc
 import os
-import json
 import sys
 
 
@@ -56,10 +70,9 @@ class CmfLoggerHook(LoggerHook):
         except ImportError:
             raise ImportError(
                 'Please run "pip install cmflib" to install cmflib')
-        self.cmf_logger = cmf.Cmf(filename="mlmd", pipeline_name=self.exp_name , graph=True)
+        self.cmf_logger = cmf.Cmf(filename=self.mlmdFilePath, pipeline_name=self.exp_name , graph=True)
         self.context = self.cmf_logger.create_context(os.environ['stage_name'])
         
-        file_ = os.path.isfile(self.mlmdFilePath)
         cmd = str(' '.join(sys.argv)) 
         self.execution = self.cmf_logger.create_execution(
             str(os.environ['stage_name'])+'_'+str(os.environ['execution_name']), 
@@ -74,7 +87,6 @@ class CmfLoggerHook(LoggerHook):
     def log(self, runner):
         tags = self.get_loggable_tags(runner)
         mode = self.get_mode(runner)
-        print(mode)
         self.mode = mode
         if tags:
             if mode == 'train':
