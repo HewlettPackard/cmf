@@ -37,7 +37,7 @@ train_pipeline = [
             'gt_bboxes': 'bboxes'
         },
     update_pad_shape=False,
-    skip_img_without_anno=True
+    skip_img_without_anno=False
     ),'''
     dict(type='DefaultFormatBundle'),
     dict(type='Collect', keys=['img', 'gt_bboxes', 'gt_labels']),

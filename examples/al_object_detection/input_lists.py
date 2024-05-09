@@ -1,6 +1,8 @@
 import argparse
 import os
 import os.path as osp
+import uuid
+import json
 
 from mmcv import Config
 
@@ -28,11 +30,17 @@ def parse_args():
     parser.add_argument('--seed', type=int, default=666, help='random seed')
     parser.add_argument('--deterministic', action='store_true',
         help='whether to set deterministic options for CUDNN backend.')
+    
+    parser.add_argument('--stage_name', help='Name for current execution')
+
+    parser.add_argument('--execution_name', help='Name for current execution')
+
     args = parser.parse_args()
     return args
 
 def main():
     args = parse_args()
+
 
     assert (args.labeled and args.unlabeled and 
             args.train and args.selected and args.unselected), \
@@ -54,6 +62,12 @@ def main():
         cfg.work_directory = osp.join('./work_dirs',
                                      osp.splitext(osp.basename(args.config))[0])
 
+    stage_name = args.stage_name
+    os.environ['stage_name'] = stage_name
+
+    execution_name = args.execution_name
+    os.environ['execution_name'] = execution_name
+
     # create work_directory
     mmcv.mkdir_or_exist(osp.abspath(cfg.work_directory))
 
@@ -72,8 +86,10 @@ def main():
     with open(args.labeled) as f:
         line = f.readline().strip()
     num_digits = len(line)
-    labeled = np.loadtxt(args.labeled, dtype=np.uintc)
-    unlabeled = np.loadtxt(args.unlabeled, dtype=np.uintc)
+    #labeled = np.loadtxt(args.labeled, dtype=np.uintc)
+    #unlabeled = np.loadtxt(args.unlabeled, dtype=np.uintc)
+    labeled = np.loadtxt(args.labeled, dtype=str)
+    unlabeled = np.loadtxt(args.unlabeled, dtype=str)
     num_labeled = len(labeled)
     all = np.concatenate((labeled, unlabeled))
     all_sorted_indexes = np.argsort(all)
@@ -90,9 +106,15 @@ def main():
             (unlabeled_indexes, labeled_indexes[:num_labeled - num_unlabeled]))
     labeled_indexes.sort()
     unlabeled_indexes.sort()
-    np.savetxt(args.train, all, fmt='%0'+str(num_digits)+'u')
+    #np.savetxt(args.train, all, fmt='%0'+str(num_digits)+'u')
+    np.savetxt(args.train, all, fmt='%s')
     np.save(args.selected, labeled_indexes)
     np.save(args.unselected, unlabeled_indexes)
+
+    my_uuid = str(uuid.uuid4())
+    dict_ = {'uuid_var': my_uuid}
+    with open('uuid.json','w') as f:
+        json.dump(dict_, f) 
 
 if __name__ == '__main__':
     main()

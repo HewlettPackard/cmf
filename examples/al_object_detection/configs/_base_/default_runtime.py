@@ -3,8 +3,8 @@ checkpoint_config = dict(interval=1)
 log_config = dict(
     interval=1,
     hooks=[
-        dict(type='TextLoggerHook'),
-        # dict(type='TensorboardLoggerHook')
+        dict(type='TensorboardLoggerHook'),
+        dict(type = 'CmfLoggerHook', exp_name = 'ExperimentActiveLearning')
     ])
 # yapf:enable
 dist_params = dict(backend='nccl')
