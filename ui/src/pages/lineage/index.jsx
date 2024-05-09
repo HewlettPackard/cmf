@@ -24,12 +24,14 @@ import LineageSidebar from "../../components/LineageSidebar";
 import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
+import ExecutionTree from "../../components/ExecutionTree";
+
 const client = new FastAPIClient(config);
 
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifacts','Execution'];
+  const LineageTypes=['Artifacts','Execution','Exec_temp'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData]=useState(null);
@@ -80,8 +82,13 @@ const Lineage = () => {
     if (lineageType === "Artifacts") {
       fetchArtifactLineage(selectedPipeline);
     }
+    else if (lineageType === "Execution") {
+      fetchExecutionTypes(selectedPipeline, lineageType);
+      console.log("I am Execution")
+    }
     else {
-      fetchExecutionTypes(selectedPipeline);
+      fetchExecutionTypes(selectedPipeline, lineageType);
+      console.log("I am exec_tree")
     }
   };  
 
@@ -96,7 +103,7 @@ const Lineage = () => {
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
-  const fetchExecutionTypes = (pipelineName) => {
+  const fetchExecutionTypes = (pipelineName, lineageType) => {
     client.getExecutionTypes(pipelineName).then((data) => {    
         if (data === null ) {
            setExecDropdownData(null);
@@ -107,7 +114,13 @@ const Lineage = () => {
         const typeParts = data[0].split('/');
         const exec_type = typeParts[1].split('_')[0];
         const uuid= typeParts[1].split('_').slice(-1)[0];
-        fetchExecutionLineage(pipelineName, exec_type,uuid);
+        console.log(lineageType)
+        if (lineageType === "Execution") {
+            fetchExecutionLineage(pipelineName, exec_type,uuid);
+            }
+        else {
+            fetchExecTree(selectedPipeline);
+            }
         }
 
     });
@@ -117,6 +130,7 @@ const Lineage = () => {
   // used for execution drop down
   const handleExecutionClick = (executionType) => {
     setExecutionData(null);
+
     setSelectedExecutionType(executionType);
     const typeParts = executionType.split('/');
     const type = typeParts[1].split('_')[0];
@@ -130,6 +144,14 @@ const Lineage = () => {
           setExecutionData(null);
       }
       setExecutionData(data);
+    });
+  };
+
+  const fetchExecTree = (pipelineName) => {
+    client.getExecTreeLineage("prepare",pipelineName).then((data) => {    
+    console.log("exectree")
+    console.log(data)
+    setExecutionData(data);
     });
   };
 
@@ -170,6 +192,18 @@ const Lineage = () => {
                 <LineageArtifacts key={lineageArtifactsKey} data={executionData} />
                 </div>
                 )}
+                {selectedPipeline !== null && selectedLineageType === "Exec_temp" && execDropdownData !== null   &&(
+                <div>
+                <ExecutionDropdown data={execDropdownData} exec_type={selectedExecutionType} handleExecutionClick= {handleExecutionClick}/>        
+                </div>
+                )}
+                {selectedPipeline !== null && selectedLineageType === "Exec_temp" && execDropdownData !== null  && executionData !== null &&(
+                <div>
+                <ExecutionTree key={lineageArtifactsKey} data={executionData} />
+                </div>
+                )}
+
+
             </div>
           </div>
         </div>
