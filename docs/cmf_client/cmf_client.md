@@ -93,7 +93,7 @@ Optional Arguments
   --duration-seconds             Specifies the duration for which the temporary credentials will be valid, in seconds.
 ```
 
-Sample Example
+Example
 ```
 aws sts get-session-token --duration-seconds 3600 --serial-number arn:aws:iam::123456789012:mfa/user --token-code 123456
 ```
@@ -103,9 +103,9 @@ This will return output like
 ``` 
 {
     "Credentials": {
-        "AccessKeyId": "ABCD1234PQESDE",
-        "SecretAccessKey": "UR4JDMSOmueWDRIsplwPei3m5vAYJ",
-        "SessionToken": "wjdiwe43jdmeMSWIOD324EMoifjeoi///iesdERFUNSCSW344swdeiwjfmcdslemsdoW2WSDES244+JIHJMjsdheuiwnsagwqvvgasSWOMCD43ewasjdnwjanxsAIJSEMCRCODCdsasm",
+        "AccessKeyId": "ABCDEFGHIJKLMNO123456",
+        "SecretAccessKey": "PQRSTUVWXYZ789101112131415",
+        "SessionToken": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijlmnopqrstuvwxyz12345678910ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijlmnopqrstuvwxyz12345678910ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijlmnopqrstuvwxyz12345678910",
         "Expiration": "2021-05-10T15:31:08+00:00"
     }
 }
@@ -126,7 +126,7 @@ Usage: cmf init amazonS3 [-h] --url [url]
 ```
 cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687 
 ```
-> Here, we need to specify the --access-key-id, --secret-key and --session-token returned from the sample example output given above.
+> Here, use the --access-key-id, --secret-key and --session-token generated from the `aws sts` command which is mentioned above.
 
 > The bucket-name must exist within Amazon S3 before executing the `cmf artifact push` command.
 
