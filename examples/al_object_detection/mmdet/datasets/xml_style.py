@@ -8,6 +8,7 @@ from PIL import Image
 from .builder import DATASETS
 from .custom import CustomDataset
 
+ANNOTATIONS_FOLDER = 'Annotations_no_dummy'
 
 @DATASETS.register_module()
 class XMLDataset(CustomDataset):
@@ -38,11 +39,13 @@ class XMLDataset(CustomDataset):
         img_ids = mmcv.list_from_file(ann_file)
         for img_id in img_ids:
             filename = f'JPEGImages/{img_id}.jpg'
-            xml_path = osp.join(self.img_prefix, 'Annotations',
+            xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER,
                                 f'{img_id}.xml')
-            tree = ET.parse(xml_path)
-            root = tree.getroot()
-            size = root.find('size')
+            size = None
+            if osp.exists(xml_path):
+                tree = ET.parse(xml_path)
+                root = tree.getroot()
+                size = root.find('size')
             width = 0
             height = 0
             if size is not None:
@@ -63,15 +66,16 @@ class XMLDataset(CustomDataset):
         subset_data_infos = []
         for data_info in self.data_infos:
             img_id = data_info['id']
-            xml_path = osp.join(self.img_prefix, 'Annotations',
+            xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER,
                                 f'{img_id}.xml')
-            tree = ET.parse(xml_path)
-            root = tree.getroot()
-            for obj in root.findall('object'):
-                name = obj.find('name').text
-                if name in self.CLASSES:
-                    subset_data_infos.append(data_info)
-                    break
+            if osp.exists(xml_path):
+                tree = ET.parse(xml_path)
+                root = tree.getroot()
+                for obj in root.findall('object'):
+                    name = obj.find('name').text
+                    if name in self.CLASSES:
+                        subset_data_infos.append(data_info)
+                        break
 
         return subset_data_infos
 
@@ -86,50 +90,55 @@ class XMLDataset(CustomDataset):
         """
 
         img_id = self.data_infos[idx]['id']
-        xml_path = osp.join(self.img_prefix, 'Annotations', f'{img_id}.xml')
-        tree = ET.parse(xml_path)
-        root = tree.getroot()
+        xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER, f'{img_id}.xml')
         bboxes = []
         labels = []
         bboxes_ignore = []
         labels_ignore = []
-        for obj in root.findall('object'):
-            name = obj.find('name').text
-            if name not in self.CLASSES:
-                continue
-            label = self.cat2label[name]
-            difficult = int(obj.find('difficult').text)
-            bnd_box = obj.find('bndbox')
-            # TODO: check whether it is necessary to use int
-            # Coordinates may be float type
-            bbox = [
-                int(float(bnd_box.find('xmin').text)),
-                int(float(bnd_box.find('ymin').text)),
-                int(float(bnd_box.find('xmax').text)),
-                int(float(bnd_box.find('ymax').text))
-            ]
-            ignore = False
-            if self.min_size:
-                assert not self.test_mode
-                w = bbox[2] - bbox[0]
-                h = bbox[3] - bbox[1]
-                if w < self.min_size or h < self.min_size:
-                    ignore = True
-            if difficult or ignore:
-                bboxes_ignore.append(bbox)
-                labels_ignore.append(label)
-            else:
-                bboxes.append(bbox)
-                labels.append(label)
+        if osp.exists(xml_path):
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+            for obj in root.findall('object'):
+                name = obj.find('name').text
+                if name not in self.CLASSES:
+                    continue
+                label = self.cat2label[name]
+                difficult = int(obj.find('difficult').text)
+                bnd_box = obj.find('bndbox')
+                # TODO: check whether it is necessary to use int
+                # Coordinates may be float type
+                bbox = [
+                    int(float(bnd_box.find('xmin').text)),
+                    int(float(bnd_box.find('ymin').text)),
+                    int(float(bnd_box.find('xmax').text)),
+                    int(float(bnd_box.find('ymax').text))
+                ]
+                ignore = False
+                if self.min_size:
+                    assert not self.test_mode
+                    w = bbox[2] - bbox[0]
+                    h = bbox[3] - bbox[1]
+                    if w < self.min_size or h < self.min_size:
+                        ignore = True
+                if difficult or ignore:
+                    bboxes_ignore.append(bbox)
+                    labels_ignore.append(label)
+                else:
+                    bboxes.append(bbox)
+                    labels.append(label)
         if not bboxes:
-            bboxes = np.zeros((0, 4))
-            labels = np.zeros((0, ))
+            #bboxes = np.zeros((0, 4))
+            #labels = np.zeros((0, ))
+            bboxes = np.array([[0, 0, 10, 10]], ndmin=2) -1
+            labels = np.zeros((1, ))
         else:
             bboxes = np.array(bboxes, ndmin=2) - 1
             labels = np.array(labels)
         if not bboxes_ignore:
-            bboxes_ignore = np.zeros((0, 4))
-            labels_ignore = np.zeros((0, ))
+            #bboxes_ignore = np.zeros((0, 4))
+            #labels_ignore = np.zeros((0, ))
+            bboxes_ignore = np.array([[0, 0, 10, 10]], ndmin=2) -1
+            labels_ignore = np.zeros((1, ))
         else:
             bboxes_ignore = np.array(bboxes_ignore, ndmin=2) - 1
             labels_ignore = np.array(labels_ignore)
@@ -152,14 +161,15 @@ class XMLDataset(CustomDataset):
 
         cat_ids = []
         img_id = self.data_infos[idx]['id']
-        xml_path = osp.join(self.img_prefix, 'Annotations', f'{img_id}.xml')
-        tree = ET.parse(xml_path)
-        root = tree.getroot()
-        for obj in root.findall('object'):
-            name = obj.find('name').text
-            if name not in self.CLASSES:
-                continue
-            label = self.cat2label[name]
-            cat_ids.append(label)
+        xml_path = osp.join(self.img_prefix, ANNOTATIONS_FOLDER, f'{img_id}.xml')
+        if osp.exists(xml_path):
+            tree = ET.parse(xml_path)
+            root = tree.getroot()
+            for obj in root.findall('object'):
+                name = obj.find('name').text
+                if name not in self.CLASSES:
+                    continue
+                label = self.cat2label[name]
+                cat_ids.append(label)
 
         return cat_ids

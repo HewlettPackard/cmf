@@ -27,6 +27,7 @@ class EpochBasedRunner(BaseRunner):
                 X_L.update({'x': X_L.pop('img')})
                 X_L.update({'y_loc_img': X_L.pop('gt_bboxes')})
                 X_L.update({'y_cls_img': X_L.pop('gt_labels')})
+                self._add_dataset_flag(X_L, is_unlabeled=False)
                 self._inner_iter = i
                 self.call_hook('before_train_iter')
                 if self.batch_processor is None:
@@ -50,10 +51,17 @@ class EpochBasedRunner(BaseRunner):
             self.call_hook('before_train_epoch')
             time.sleep(2)  # Prevent possible deadlock during epoch transition
             unlabeled_data_iter = iter(data_loader[1])
+            sum_unlabelled = (sum(1 for _ in unlabeled_data_iter))
+            self.logger.info('printing unlabelled sum %d', sum_unlabelled)
+            unlabeled_data_iter = iter(data_loader[1])
             for i, X_L in enumerate(data_loader[0]):
+                if i == sum_unlabelled:
+                    break
+
                 X_L.update({'x': X_L.pop('img')})
                 X_L.update({'y_loc_img': X_L.pop('gt_bboxes')})
                 X_L.update({'y_cls_img': X_L.pop('gt_labels')})
+                self._add_dataset_flag(X_L, is_unlabeled=False)
                 self._inner_iter = i
                 self.call_hook('before_train_iter')
                 if self.batch_processor is None:
@@ -71,6 +79,7 @@ class EpochBasedRunner(BaseRunner):
                 X_U.update({'x': X_U.pop('img')})
                 X_U.update({'y_loc_img': X_U.pop('gt_bboxes')})
                 X_U.update({'y_cls_img': X_U.pop('gt_labels')})
+                self._add_dataset_flag(X_U, is_unlabeled=True)
                 X_U = self.clear_gt_label(X_U)
                 self._inner_iter = i
                 self.call_hook('before_train_iter')
@@ -88,6 +97,11 @@ class EpochBasedRunner(BaseRunner):
                 self._iter += 1
             self.call_hook('after_train_epoch')
             self._epoch += 1
+            
+    def _add_dataset_flag(self, X, is_unlabeled):
+        BatchSize = len(X['img_metas'].data[0])
+        for i in range(BatchSize):
+            X['img_metas'].data[0][i].update({'is_unlabeled': is_unlabeled})
 
     def clear_gt_label(self, X_U):
         BatchSize = len(X_U['y_cls_img'].data[0])

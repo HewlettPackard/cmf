@@ -369,6 +369,9 @@ class MIAODHead(BaseDenseHead):
             x_i_single = x_i_single.reshape(-1, 4)
             y_head_f_r_single = self.bbox_coder.decode(x_i_single, y_head_f_r_single)
         l_det_loc = self.SmoothL1(y_head_f_r_single, y_loc_single, bbox_weights, avg_factor=num_total_samples)
+        
+        l_det_loc = l_det_loc.clamp(None, 10)
+        
         return l_det_cls, l_det_loc
 
     # Label Set Training
@@ -477,7 +480,7 @@ class MIAODHead(BaseDenseHead):
         l_det_cls2, l_det_loc2 = multi_apply(self.l_det, y_f[1], y_f_r, all_x_i,
                                              y_cls, label_weights_list, y_loc, bbox_weights_list,
                                              num_total_samples=num_total_samples)
-        if y_loc_img[0][0][0] < 0:
+        if img_metas[0]['is_unlabeled'] :
             l_det_cls = list(map(lambda m, n: (m + n) * 0, l_det_cls1, l_det_cls2))
             l_det_loc = list(map(lambda m, n: (m + n) * 0, l_det_loc1, l_det_loc2))
             for (i, value) in enumerate(l_det_loc):
@@ -562,8 +565,8 @@ class MIAODHead(BaseDenseHead):
                                              num_total_samples=num_total_samples)
         l_det_cls2, l_det_loc2 = multi_apply(self.l_det, y_f[1], y_f_r, all_x_i,
                                              y_cls, label_weights_list, y_loc, bbox_weights_list,
-                                             num_total_samples=num_total_samples)
-        if y_loc_img[0][0][0] < 0:
+                                    num_total_samples=num_total_samples)
+        if img_metas[0]['is_unlabeled']:
             l_det_cls = list(map(lambda m, n: (m + n) * 0, l_det_cls1, l_det_cls2))
             l_det_loc = list(map(lambda m, n: (m + n) * 0, l_det_loc1, l_det_loc2))
             for (i, value) in enumerate(l_det_loc):
@@ -712,3 +715,25 @@ class MIAODHead(BaseDenseHead):
     def loss(self, **kwargs):
         # This function is to avoid the TypeError caused by the abstract method defined in "base_dense_head.py".
         return
+
+    @force_fp32(apply_to=('y_f_r', ))
+    def get_uncertain_bboxes(self, arg, y_f_r, img_shape, scale_factor, nuboxes, cfg=None, rescale=False):
+        cfg = self.test_cfg if cfg is None else cfg
+        num_levels = len(y_f_r)
+        assert y_f_r[0].size(0) == 1
+        device = y_f_r[0].device
+        featmap_sizes = [y_f_r[i].shape[-2:] for i in range(num_levels)]
+        mlvl_anchors = self.anchor_generator.grid_anchors(featmap_sizes, device=
+device)
+        y_head_f_r = []
+        for y_head_f_r_single in y_f_r:
+                y_head_f_r.append(y_head_f_r_single.permute(0,2,3,1).reshape(-1, 4))
+        y_head_f_r = torch.cat(y_head_f_r, 0)
+        mlvl_anchors = torch.cat(mlvl_anchors, 0)
+        assert y_head_f_r.size(0) == mlvl_anchors.size(0)
+        y_head_f_r = y_head_f_r[arg[-nuboxes:]]
+        mlvl_anchors = mlvl_anchors[arg[-nuboxes:]]
+        bboxes = self.bbox_coder.decode(mlvl_anchors, y_head_f_r, max_shape=img_shape)
+        if rescale:
+            bboxes /= bboxes.new_tensor(scale_factor)
+        return bboxes

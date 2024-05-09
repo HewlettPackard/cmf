@@ -10,19 +10,30 @@ import torch.distributed as dist
 from mmcv.runner import get_dist_info
 from mmdet.core import encode_mask_results, tensor2imgs
 from mmdet.models.detectors.base import *
+from mmcv.ops.nms import batched_nms
 
 
-def calculate_uncertainty(cfg, model, data_loader, return_box=False):
+def calculate_uncertainty(cfg, model, data_loader, plot_nuboxes=0, return_box=False):
     model.eval()
     model.cuda()
     dataset = data_loader.dataset
     print('>>> Computing Instance Uncertainty...')
     uncertainty = torch.zeros(len(dataset)).cuda(torch.cuda.current_device())
+    if plot_nuboxes > 0:
+        udets = torch.zeros(len(dataset), plot_nuboxes, 5).cuda(torch.cuda.current_device())
+        if cfg.get('check_nuboxes') and (cfg.check_nuboxes > 0):
+            check_nuboxes = cfg.check_nuboxes
+        else:
+            check_nuboxes = cfg.k
+        zero_offsets = torch.zeros(check_nuboxes).cuda(torch.cuda.current_device())
     for i, data in enumerate(data_loader):
         with torch.no_grad():
             data['img'][0] = data['img'][0].cuda()
             data.update({'x': data.pop('img')})
-            y_head_f_1, y_head_f_2, y_head_cls = model(return_loss=False, rescale=True, return_box=return_box, **data)
+            if plot_nuboxes > 0:
+                y_head_f_1, y_head_f_2, y_f_r, y_head_cls = model(return_loss=False, rescale=True, return_box=return_box, uncertain_box=True, **data)
+            else:
+                y_head_f_1, y_head_f_2, y_head_cls = model(return_loss=False, rescale=True, return_box=return_box, uncertain_box=False, **data)
             y_head_f_1 = torch.cat(y_head_f_1, 0)
             y_head_f_2 = torch.cat(y_head_f_2, 0)
             y_head_f_1 = nn.Sigmoid()(y_head_f_1)
@@ -30,11 +41,23 @@ def calculate_uncertainty(cfg, model, data_loader, return_box=False):
             loss_l2_p = (y_head_f_1 - y_head_f_2).pow(2)
             uncertainty_all_N = loss_l2_p.mean(dim=1)
             arg = uncertainty_all_N.argsort()
-            uncertainty_single = uncertainty_all_N[arg[-cfg.k:]].mean()
-            uncertainty[i] = uncertainty_single
+            if plot_nuboxes > 0:
+                img_shape = data['img_metas'][0].data[0][0]['img_shape']
+                scale_factor = data['img_metas'][0].data[0][0]['scale_factor']
+                ubboxes_single = model.bbox_head.get_uncertain_bboxes(arg,
+                    y_f_r, img_shape, scale_factor, check_nuboxes, cfg,
+                    rescale=True)
+                uncertainty_single = uncertainty_all_N[arg[-check_nuboxes:]]
+                udets_single, _ = batched_nms(ubboxes_single,
+                    uncertainty_single, zero_offsets, cfg.test_cfg.nms)
+                udets[i] = udets_single[:plot_nuboxes]
+            uncertainty[i] = uncertainty_all_N[arg[-cfg.k:]].mean()
             if i % 1000 == 0:
                 print('>>> ', i, '/', len(dataset))
-    return uncertainty.cpu()
+    if plot_nuboxes > 0:
+        return uncertainty.cpu(), udets.cpu()
+    else:
+        return uncertainty.cpu()
 
 
 def single_gpu_test(model, data_loader, show=False):

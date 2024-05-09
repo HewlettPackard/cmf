@@ -1,5 +1,5 @@
-#Following https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
-#And https://jupyter-docker-stacks.readthedocs.io/en/latest/using/common.html#docker-options
+# Following https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html
+# And https://jupyter-docker-stacks.readthedocs.io/en/latest/using/common.html#docker-options
 version: '3.8'
 services:
   jupyter-cmf-notebook:
@@ -8,8 +8,26 @@ services:
       context: ./
     container_name: jupyter-cmf-notebook
     hostname: jupyter-cmf-notebook
+
+    #workspace is the directory from your home folder that
+    #will be mounted inside the docker conatiner with cmf pre-installed
+    #dvc_remote is the remote data store for dvc 
+    #your .ssh folder is mounted inside the docker conatiner 
+    #to enable you to push and pull code from git
+    #To-Do 
+    # Create these directories in your home folder
+    #1. mkdir $HOME/workspace
+    #2. mkdir $HOME/dvc_remote
+    #or 
+    #Change the below lines to relect the appropriate directories
+    #1. If your workspace is named "experiment" change the below line
+    #$HOME/workspace:/home/jovyan/workspace to
+    #$HOME/experiment:/home/jovyan/wokspace
+    #2. If your remote is /extmount/data change the line 
+    #$HOME/dvc_remote:/home/jovyan/dvc_remote to 
+    #/extmount/data:/home/jovyan/dvc_remote
     volumes:
-      - $HOME/workspace:/home/jovyan/workspace
+      - $HOME/workspace:/home/jovyan/workspace  
       - $HOME/dvc_remote:/home/jovyan/dvc_remote
       - $HOME/.ssh:/home/jovyan/.ssh
     ports:
@@ -36,6 +54,7 @@ services:
       - GIT_BRANCH=${GIT_BRANCH} #from .env file
       - DB_URL=mysql://db:33060
       - DB_PASSWORD=${MYSQL_ROOT_PASSWORD} #from .env file
+      - NEO4J=TRUE
       - NEO4J_URI=bolt://neo4j:7687
       - NEO4J_USER_NAME=${NEO4J_USER_NAME} #from .env file
       - NEO4J_PASSWD=${NEO4J_PASSWD} #from .env file
@@ -48,7 +67,7 @@ services:
     container_name: neo4j
     hostname: neo4j
     ports:
-      - 7475:7474
-      - 7688:7687
+      - "7475:7474"
+      - "7688:7687"
     environment:
       - NEO4J_AUTH=${NEO4J_USER_NAME}/${NEO4J_PASSWD}        

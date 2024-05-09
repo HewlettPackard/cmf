@@ -13,15 +13,16 @@
 # limitations under the License.
 ###
 
-import json
+
 import os
 import sys
-import ml_metadata
+import typing as t
 from time import sleep
 from ml_metadata.proto import metadata_store_pb2
 from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
+import functools
 
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
@@ -50,7 +51,8 @@ def connect_to_mlmd() -> metadata_store.MetadataStore:
         try:
             mlmd_store = metadata_store.MetadataStore(mlmd_connection_config)
             # All get requests fail when the DB is empty, so we have to use a put request.
-            # TODO: Replace with _ = mlmd_store.get_context_types() when https://github.com/google/ml-metadata/issues/28 is fixed
+            # TODO: Replace with _ = mlmd_store.get_context_types()
+            # when https://github.com/google/ml-metadata/issues/28 is fixed
             _ = mlmd_store.put_execution_type(
                 metadata_store_pb2.ExecutionType(
                     name="DummyExecutionType",
@@ -85,7 +87,7 @@ def get_or_create_artifact_type(store, type_name, properties: dict = None) -> me
     try:
         artifact_type = store.get_artifact_type(type_name=type_name)
         return artifact_type
-    except:
+    except BaseException:
         artifact_type = metadata_store_pb2.ArtifactType(
             name=type_name,
             properties=properties,
@@ -98,12 +100,13 @@ def get_or_create_execution_type(store, type_name, properties: dict = None) -> m
     try:
         execution_type = store.get_execution_type(type_name=type_name)
         return execution_type
-    except:
+    except BaseException:
         execution_type = metadata_store_pb2.ExecutionType(
             name=type_name,
             properties=properties,
         )
-        execution_type.id = store.put_execution_type(execution_type)  # Returns ID
+        execution_type.id = store.put_execution_type(
+            execution_type)  # Returns ID
         return execution_type
 
 
@@ -111,7 +114,7 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
     try:
         context_type = store.get_context_type(type_name=type_name)
         return context_type
-    except:
+    except BaseException:
         context_type = metadata_store_pb2.ContextType(
             name=type_name,
             properties=properties,
@@ -190,18 +193,17 @@ def create_context_with_type(
     return context
 
 
-import functools
-
-
 @functools.lru_cache(maxsize=128)
 def get_context_by_name(
         store,
         context_name: str,
 ) -> metadata_store_pb2.Context:
-    matching_contexts = [context for context in store.get_contexts() if context.name == context_name]
+    matching_contexts = [
+        context for context in store.get_contexts() if context.name == context_name]
     assert len(matching_contexts) <= 1
     if len(matching_contexts) == 0:
-        raise ValueError('Context with name "{}" was not found'.format(context_name))
+        raise ValueError(
+            'Context with name "{}" was not found'.format(context_name))
     return matching_contexts[0]
 
 
@@ -215,7 +217,7 @@ def get_or_create_context_with_type(
 ) -> metadata_store_pb2.Context:
     try:
         context = get_context_by_name(store, context_name)
-    except:
+    except BaseException:
         context = create_context_with_type(
             store=store,
             context_name=context_name,
@@ -231,8 +233,8 @@ def get_or_create_context_with_type(
     assert len(context_types) == 1
     if context_types[0].name != type_name:
         raise RuntimeError(
-            'Context "{}" was found, but it has type "{}" instead of "{}"'.format(context_name, context_types[0].name,
-                                                                                  type_name))
+            'Context "{}" was found, but it has type "{}" instead of "{}"'.format(
+                context_name, context_types[0].name, type_name))
     return context
 
 
@@ -291,11 +293,12 @@ EXECUTION_PIPELINE_ID = "Pipeline_id"
 def get_or_create_parent_context(
         store,
         pipeline: str,
-        custom_properties: {} = None
+        custom_properties: t.Optional[t.Dict] = None
 ) -> metadata_store_pb2.Context:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     context = get_or_create_context_with_type(
         store=store,
@@ -305,21 +308,21 @@ def get_or_create_parent_context(
             PARENT_CONTEXT_NAME: metadata_store_pb2.STRING,
         },
         properties={
-            PARENT_CONTEXT_NAME: metadata_store_pb2.Value(string_value=pipeline)
-        },
-        custom_properties=mlmd_custom_properties
-    )
+            PARENT_CONTEXT_NAME: metadata_store_pb2.Value(
+                string_value=pipeline)},
+        custom_properties=mlmd_custom_properties)
     return context
 
 
 def get_or_create_run_context(
         store,
         pipeline_stage: str,
-        custom_properties: {} = None,
+        custom_properties: t.Optional[t.Dict] = None,
 ) -> metadata_store_pb2.Context:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     context = get_or_create_context_with_type(
         store=store,
@@ -329,19 +332,20 @@ def get_or_create_run_context(
             PIPELINE_STAGE: metadata_store_pb2.STRING,
         },
         properties={
-            PIPELINE_STAGE: metadata_store_pb2.Value(string_value=pipeline_stage)
-        },
-        custom_properties=mlmd_custom_properties
-    )
+            PIPELINE_STAGE: metadata_store_pb2.Value(
+                string_value=pipeline_stage)},
+        custom_properties=mlmd_custom_properties)
     return context
 
 
 def associate_child_to_parent_context(store, parent_context: metadata_store_pb2.Context,
                                       child_context: metadata_store_pb2.Context):
     try:
-        associate = metadata_store_pb2.ParentContext(child_id=child_context.id, parent_id=parent_context.id)
+        associate = metadata_store_pb2.ParentContext(
+            child_id=child_context.id, parent_id=parent_context.id)
         store.put_parent_contexts([associate])
     except Exception as e:
+        # print(e)
         # print('Warning: Exception:{}'.format(str(e)), file=sys.stderr)
         sys.stderr.flush()
 
@@ -356,11 +360,12 @@ def create_new_execution_in_existing_run_context(
         git_repo: str = None,
         git_start_commit: str = None,
         git_end_commit: str = "",
-        custom_properties: {} = None,
+        custom_properties: t.Optional[t.Dict] = None,
 ) -> metadata_store_pb2.Execution:
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     return create_new_execution_in_existing_context(
         store=store,
@@ -413,7 +418,8 @@ def create_new_artifact_event_and_attribution(
 
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
-        mlmd_custom_properties[property_name] = value_to_mlmd_value(property_value)
+        mlmd_custom_properties[property_name] = value_to_mlmd_value(
+            property_value)
 
     artifact = create_artifact_with_type(
         store=store,
@@ -494,7 +500,7 @@ def link_execution_to_artifact(
 
     artifact = artifacts[-1]
 
-    #Check if event already exist
+    # Check if event already exist
     events = store.get_events_by_artifact_ids([artifact.id])
     for evt in events:
         if evt.execution_id == execution_id:

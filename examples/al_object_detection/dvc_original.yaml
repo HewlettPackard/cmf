@@ -1,0 +1,69 @@
+stages:
+    initial_selection:
+            cmd:
+                python initial_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --labeled_next work_dirs/test/X_L_0.npy --unselected work_dirs/test/X_U_0.npy
+            deps:
+                - configs/MIAOD-GRAY.py
+            outs:
+                - work_dirs/test/X_L_0.npy
+                - work_dirs/test/X_U_0.npy
+
+    active_learning_training:
+        foreach:
+            - cycle: 0
+#            - cycle: 1
+#            - cycle: 2
+#            - cycle: 3
+#            - cycle: 4
+#            - cycle: 5
+#            - cycle: 6
+#            - cycle: 7
+#            - cycle: 8
+#            - cycle: 9
+
+        do:
+            cmd:
+                    #single gpu
+                    python train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${item.cycle} --labeled work_dirs/test/X_L_${item.cycle}.npy --unselected work_dirs/test/X_U_${item.cycle}.npy --model work_dirs/test/cycle_${item.cycle}.pth
+                    #distributed mode
+                    #python -m torch.distributed.launch --nproc_per_node=6 --master_port=39025  cycle_train.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${item.cycle} --labeled work_dirs/test/X_L_${item.cycle}.npy --unselected work_dirs/test/X_U_${item.cycle}.npy --model work_dirs/test/cycle_${item.cycle}.pth --gpus 6 --launcher pytorch
+
+            deps:
+                - work_dirs/test/X_L_${item.cycle}.npy
+                - work_dirs/test/X_U_${item.cycle}.npy
+            outs:
+                - work_dirs/test/cycle_${item.cycle}.pth
+
+    active_learning_selection:
+        foreach:
+            - cycle: 0
+              next_cycle: 1
+#            - cycle: 1
+#              next_cycle: 2
+#            - cycle: 2
+#              next_cycle: 3
+#            - cycle: 3
+#              next_cycle: 4
+#            - cycle: 4
+#              next_cycle: 5
+#            - cycle: 5
+#              next_cycle: 6
+#            - cycle: 6
+#              next_cycle: 7
+#            - cycle: 7
+#              next_cycle: 8
+#            - cycle: 8
+#              next_cycle: 9
+#            - cycle: 9
+#              next_cycle: 10
+        do:
+            cmd:
+
+                    python cycle_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${item.cycle} --model work_dirs/test/cycle_${item.cycle}.pth --labeled work_dirs/test/X_L_${item.cycle}.npy --labeled_next work_dirs/test/X_L_${item.next_cycle}.npy --unselected work_dirs/test/X_U_${item.next_cycle}.npy --bbox_output work_dirs/test/labeling_hints_${item.next_cycle}.txt
+                    #python -m torch.distributed.launch --nproc_per_node=4 --master_port=39016  cycle_select.py configs/MIAOD-GRAY.py --work_directory work_dirs/test --cycle ${item.cycle} --model work_dirs/test/cycle_${item.cycle}.pth --labeled work_dirs/test/X_L_${item.cycle}.npy --labeled_next work_dirs/test/X_L_${item.next_cycle}.npy --unselected work_dirs/test/X_U_${item.next_cycle}.npy --bbox_output work_dirs/test/labeling_hints_${item.next_cycle}.txt --gpus 4 --launcher pytorch
+          deps:
+              - work_dirs/test/cycle_${item.cycle}.pth
+              - work_dirs/test/X_L_${item.cycle}.npy
+          outs:
+              - work_dirs/test/X_L_${item.next_cycle}.npy
+              - work_dirs/test/X_U_${item.next_cycle}.npy

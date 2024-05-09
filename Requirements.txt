@@ -1,9 +1,9 @@
-ml-metadata==1.3.0
+ml-metadata==1.11.0
 dvc
 pandas
 retrying
 pyarrow
 neo4j
-sklearn
+scikit-learn
 tabulate
 click
