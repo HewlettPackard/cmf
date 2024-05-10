@@ -18,6 +18,7 @@
 import argparse
 import os
 import subprocess
+import time
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -76,17 +77,15 @@ class CmdArtifactPush(CmdBase):
             artifacts = query.get_all_artifacts_for_execution(
                  identifier
             )  # getting all artifacts with id
-            art_list = artifacts['name'].tolist()
             names.extend(artifacts['name'].tolist())
-
-        print(names)
-        count = 0
+        file_set = set()
         for name in names:
             temp = f"{name.split(':')[0]}.dvc"
-            res = dvc_push(temp)
-            count += 1
-        return f"{count} files pushed!!"
-
+            if temp == "metrics.dvc":
+                continue
+            file_set.add(temp)
+        result = dvc_push(list(file_set))
+        return result
 
 def add_parser(subparsers, parent_parser):
     HELP = "Push artifacts to the user configured artifact repo."
