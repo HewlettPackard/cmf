@@ -31,3 +31,12 @@ def call_mlmd_pull(url, pipeline_name, exec_id):
     url_to_pass = f"{url}/mlmd_pull/{pipeline_name}"
     response = requests.get(url_to_pass, json={"exec_id": exec_id})  # Get request
     return response
+
+
+# This function posts tensorboard files to cmf-server
+def call_tensorboard(url, pipeline_name, file_name, file_path):
+    url_to_pass = f"{url}/tensorboard"
+    files = {'file': (file_name, open(file_path, 'rb'))}
+    params = {'pipeline_name': pipeline_name}
+    response = requests.post(url_to_pass, files=files, params=params)
+    return response
