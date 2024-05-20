@@ -19,6 +19,7 @@ from server.app.get_data import (
 )
 from server.app.query_visualization import query_visualization
 from server.app.query_exec_lineage import query_exec_lineage
+from server.app.query_tangled_lineage import query_tangled_lineage
 from pathlib import Path
 import os
 import json
@@ -38,6 +39,7 @@ async def lifespan(app: FastAPI):
         dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
         dict_of_exe_ids = await get_all_exe_ids(server_store_path)
+    print(dict_of_exe_ids,"dict")
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -204,8 +206,8 @@ async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: 
         response = None
     return response
     
-@app.get("/display_tree_lineage/{exec_type}/{pipeline_name}")
-async def display_tree_lineage(request: Request, pipeline_name: str):
+@app.get("/display_tree_lineage/{uuid}/{pipeline_name}")
+async def display_tree_lineage(request: Request,uuid, pipeline_name: str):
     '''
       returns dictionary of nodes and links for given execution_type.
       response = {
@@ -216,90 +218,8 @@ async def display_tree_lineage(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
-        data = [
-    [{'id': "'Chaos'"}],
-    [
-        {'id': "'Gaea'", 'parents': ["'Chaos'"]},
-        {'id': "'Uranus'"},
-    ],
-    [
-        {'id': "'Oceanus'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Thethys'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Pontus'"},
-        {'id': "'Rhea'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Cronus'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Coeus'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Phoebe'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Crius'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Hyperion'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Iapetus'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Thea'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Themis'", 'parents': ["'Gaea'", "'Uranus'"]},
-        {'id': "'Mnemosyne'", 'parents': ["'Gaea'", "'Uranus'"]},
-    ],
-    [
-        {'id': "'Doris'", 'parents': ["'Oceanus'", "'Thethys'"]},
-        {'id': "'Neures'", 'parents': ["'Pontus'", "'Gaea'"]},
-        {'id': "'Dionne'"},
-        {'id': "'Demeter'", 'parents': ["'Rhea'", "'Cronus'"]},
-        {'id': "'Hades'", 'parents': ["'Rhea'", "'Cronus'"]},
-        {'id': "'Hera'", 'parents': ["'Rhea'", "'Cronus'"]},
-        {'id': "'Alcmene'"},
-        {'id': "'Zeus'", 'parents': ["'Rhea'", "'Cronus'"]},
-        {'id': "'Eris'"},
-        {'id': "'Leto'", 'parents': ["'Coeus'", "'Phoebe'"]},
-        {'id': "'Amphitrite'"},
-        {'id': "'Medusa'"},
-        {'id': "'Poseidon'", 'parents': ["'Rhea'", "'Cronus'"]},
-        {'id': "'Hestia'", 'parents': ["'Rhea'", "'Cronus'"]},
-    ],
-    [
-        {'id': "'Thetis'", 'parents': ["'Doris'", "'Neures'"]},
-        {'id': "'Peleus'"},
-        {'id': "'Anchises'"},
-        {'id': "'Adonis'"},
-        {'id': "'Aphrodite'", 'parents': ["'Zeus'", "'Dionne'"]},
-        {'id': "'Persephone'", 'parents': ["'Zeus'", "'Demeter'"]},
-        {'id': "'Ares'", 'parents': ["'Zeus'", "'Hera'"]},
-        {'id': "'Hephaestus'", 'parents': ["'Zeus'", "'Hera'"]},
-        {'id': "'Hebe'", 'parents': ["'Zeus'", "'Hera'"]},
-        {'id': "'Hercules'", 'parents': ["'Zeus'", "'Alcmene'"]},
-        {'id': "'Megara'"},
-        {'id': "'Deianira'"},
-        {'id': "'Eileithya'", 'parents': ["'Zeus'", "'Hera'"]},
-        {'id': "'Ate'", 'parents': ["'Zeus'", "'Eris'"]},
-        {'id': "'Leda'"},
-        {'id': "'Athena'", 'parents': ["'Zeus'"]},
-        {'id': "'Apollo'", 'parents': ["'Zeus'", "'Leto'"]},
-        {'id': "'Artemis'", 'parents': ["'Zeus'", "'Leto'"]},
-        {'id': "'Triton'", 'parents': ["'Poseidon'", "'Amphitrite'"]},
-        {'id': "'Pegasus'", 'parents': ["'Poseidon'", "'Medusa'"]},
-        {'id': "'Orion'", 'parents': ["'Poseidon'"]},
-        {'id': "'Polyphemus'", 'parents': ["'Poseidon'"]},
-    ],
-    [
-        {'id': "'Deidamia'"},
-        {'id': "'Achilles'", 'parents': ["'Peleus'", "'Thetis'"]},
-        {'id': "'Creusa'"},
-        {'id': "'Aeneas'", 'parents': ["'Anchises'", "'Aphrodite'"]},
-        {'id': "'Lavinia'"},
-        {'id': "'Eros'", 'parents': ["'Hephaestus'", "'Aphrodite'"]},
-        {'id': "'Helen'", 'parents': ["'Leda'", "'Zeus'"]},
-        {'id': "'Menelaus'"},
-        {'id': "'Polydueces'", 'parents': ["'Leda'", "'Zeus'"]},
-    ],
-    [
-        {'id': "'Andromache'"},
-        {'id': "'Neoptolemus'", 'parents': ["'Deidamia'", "'Achilles'"]},
-        {'id': "'Aeneas(2)'", 'parents': ["'Creusa'", "'Aeneas'"]},
-        {'id': "'Pompilius'", 'parents': ["'Creusa'", "'Aeneas'"]},
-        {'id': "'Iulus'", 'parents': ["'Lavinia'", "'Aeneas'"]},
-        {'id': "'Hermione'", 'parents': ["'Helen'", "'Menelaus'"]},
-    ],
-]
-        return data
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_tree_lineage(server_store_path, pipeline_name, dict_of_exe_ids)
+            response = await query_tangled_lineage(server_store_path, pipeline_name, dict_of_exe_ids,uuid)
     return response
 
 # api to display artifacts available in mlmd

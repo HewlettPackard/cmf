@@ -84,8 +84,8 @@ class FastAPIClient {
     });
   }
 
-  async getExecTreeLineage(exec_type,pipeline) {
-      return this.apiClient.get(`/display_tree_lineage/${exec_type}/${pipeline}/`)
+  async getExecTreeLineage(pipeline,uuid) {
+      return this.apiClient.get(`/display_tree_lineage/${uuid}/${pipeline}`)
       .then(({ data }) => {
       return data;
     });

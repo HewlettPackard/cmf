@@ -3,6 +3,9 @@ import * as d3 from 'd3';
 import _ from 'lodash';
 import svg from 'svg.js';
 
+let tangled_width;
+let tangled_height;
+
 const constructTangleLayout = (levels, options = {}) => {
   // precompute level depth
   levels.forEach((l, i) => l.forEach(n => (n.level = i)));
@@ -181,6 +184,8 @@ const renderChart = (data, options = {}) => {
 
   const tangleLayout = constructTangleLayout(_.cloneDeep(data), options);
   console.log("step2")
+  tangled_width = tangleLayout.layout.width
+  tangled_height = tangleLayout.layout.height 
   const svgWidth = 1000; // Set your desired width here
   const svgHeight = 600;
   return `
@@ -259,8 +264,8 @@ const ExecutionTree = ({ data }) => {
 //    const reactElements = ReactHtmlParser(chart);
 
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svgElement.setAttribute('width', '864'); // Set desired width
-    svgElement.setAttribute('height', '941'); // Set desired height
+    svgElement.setAttribute('width', 864); // Set desired width
+    svgElement.setAttribute('height', 941); // Set desired height
     svgElement.innerHTML = chart;
 
     // Append the rendered chart to the container

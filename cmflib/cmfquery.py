@@ -617,6 +617,36 @@ class CmfQuery(object):
                 list_exec.append(self.store.get_executions_by_id(exec))
         return list_exec
 
+    # this function name needs to be changed as it is returning the parent execution ids only
+    def get_one_hop_parent_executions_with_df(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
+
+        # getting input artifacts ids for given execution_d
+        artifacts: t.Optional = self._get_input_artifacts(execution_id)
+        if not artifacts:
+            return None
+
+        exe_ids = []
+
+        for id in artifacts:
+            ids = self._get_executions_by_output_artifact_id(id, pipeline_id)
+            exe_ids.extend(ids)
+        return exe_ids
+
+    # this is duplicate to an already existing function
+    def get_executions_with_execution_ids(self, exe_ids: t.List[int]):
+        df = pd.DataFrame()
+        executions = self.store.get_executions_by_id(exe_ids)
+        count = 0
+        for exe in executions:
+            temp_dict = {}
+            temp_dict['id'] = exe_ids[count]
+            d1 = self._transform_to_dataframe(exe, temp_dict)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+            count +=1
+        df.drop_duplicates()
+        df = df[["id", "Execution_type_name","Execution_uuid"]]
+        return df
+
     def get_one_hop_child_executions(self, execution_id: t.List[int]) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.
 
