@@ -39,7 +39,6 @@ async def lifespan(app: FastAPI):
         dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
         dict_of_exe_ids = await get_all_exe_ids(server_store_path)
-    print(dict_of_exe_ids,"dict")
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
