@@ -64,7 +64,9 @@ plugins:
   - search
   - mkdocstrings:     # Automatically generate API documentation.
       default_handler: python
-
+      handlers:
+        python:
+          paths: [src]
 extra:
   social:
     # Buttons at the bottom of every page.
