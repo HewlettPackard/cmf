@@ -9,9 +9,8 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     df=dict_of_exe_id[pipeline_name]
     
     #finding execution_id by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid ('Prepare_u3tr')  
-    result = df[df['Execution_uuid'].str[:4] == uuid.split('_')[1]]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
+    result = df[df['Execution_uuid'].str[:4] == uuid.split('_')[-1]]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
     execution_id=result["id"].tolist() 
-
     parents_set = set()
     queue = deque()  
     pd.set_option("display.max_columns", None)
@@ -19,6 +18,8 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
 
     parents = query.get_one_hop_parent_executions_ids(execution_id,pipeline_id) #list if parent execution ids     
     dict_parents = {}
+    if parents == None:
+        parents = []
     dict_parents[execution_id[0]] = list(set(parents))  # [2] = [1,2,3,4] list of parent id
     parents_set.add(execution_id[0])     #created so that we can directly find execuions using execution ids
     for i in set(parents):
@@ -27,6 +28,8 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     while len(queue) > 0:
         exe_id = queue.popleft()
         parents = query.get_one_hop_parent_executions_ids([exe_id],pipeline_id)
+        if parents == None:
+            parents = [] 
         dict_parents[exe_id] = list(set(parents))
         for i in set(parents):
             queue.append(i)
@@ -80,6 +83,7 @@ def topological_sort(input_data,execution_id_dict):
     return output_data
 
 def modify_exec_name(exec_name_uuid):
-    name=exec_name_uuid.split('_')[0].split('/')[-1]   # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> Prepare  
+    after_first_slash=exec_name_uuid.split('/', 1)[1]
+    name='_'.join(after_first_slash.rsplit('_', 1)[:-1])# 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> Prepare  
     uuid=exec_name_uuid.split('_')[-1].split('-')[0][:4] # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> d09f 
     return (name +"_"+uuid)   # Prepare_d09f

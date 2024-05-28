@@ -39,6 +39,7 @@ async def lifespan(app: FastAPI):
         dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
         dict_of_exe_ids = await get_all_exe_ids(server_store_path)
+
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -161,6 +162,7 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response=await get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            #response = null
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."

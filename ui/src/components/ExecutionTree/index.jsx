@@ -8,11 +8,10 @@ let tangled_height;
 const constructTangleLayout = (levels, options = {}) => {
   // The layout calculation logic remains the same
   levels.forEach((l, i) => l.forEach(n => (n.level = i)));
-
   var nodes = levels.reduce((a, x) => a.concat(x), []);
   var nodes_index = {};
   nodes.forEach(d => (nodes_index[d.id] = d));
-
+   
   nodes.forEach(d => {
     d.parents = (d.parents === undefined ? [] : d.parents).map(p => nodes_index[p]);
   });
@@ -233,7 +232,7 @@ const ExecutionTree = ({ data }) => {
   }, [data]);
 
   return (
-    <div ref={chartContainerRef}>
+    <div ref={chartContainerRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
       {chart}
     </div>
   );

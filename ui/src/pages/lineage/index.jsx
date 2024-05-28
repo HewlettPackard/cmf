@@ -117,7 +117,7 @@ const Lineage = () => {
             fetchExecutionLineage(pipelineName, exec_type,uuid);
             }
         else {
-            fetchExecTree(selectedPipeline,typeParts[1]);
+            fetchExecTree(selectedPipeline,typeParts[typeParts.length - 1]);
             }
         }
 
@@ -141,7 +141,7 @@ const Lineage = () => {
     setExecutionData(null);
     setSelectedExecutionType(executionType);
     const typeParts = executionType.split('/');
-    fetchExecTree(selectedPipeline, typeParts[1]);
+    fetchExecTree(selectedPipeline, typeParts[typeParts.length - 1]);
   };  
 
   const fetchExecutionLineage = (pipelineName, type,uuid) => {
