@@ -109,15 +109,16 @@ const Lineage = () => {
         }
         else {
         setExecDropdownData(data);
-        setSelectedExecutionType(data[0]);
-        const typeParts = data[0].split('/');
-        const exec_type = typeParts[1].split('_')[0];
-        const uuid= typeParts[1].split('_').slice(-1)[0];
+        setSelectedExecutionType(data[0]);     // data[0] = "Prepare_3f45"
+        // method used such that even with multiple "_" it will get right execution_name and uuid
+        const last_underscore_index = data[0].lastIndexOf('_'); 
+        const exec_type = data[0].substring(0, last_underscore_index);   // Prepare
+        const uuid= (data[0].split("_").pop());     // 3f45
         if (lineageType === "Execution") {
             fetchExecutionLineage(pipelineName, exec_type,uuid);
             }
         else {
-            fetchExecTree(selectedPipeline,typeParts[typeParts.length - 1]);
+            fetchExecTree(selectedPipeline,uuid);
             }
         }
 
@@ -130,18 +131,18 @@ const Lineage = () => {
     setExecutionData(null);
     
     setSelectedExecutionType(executionType);
-    const typeParts = executionType.split('/');
-    const type = typeParts[1].split('_')[0];
-    const uuid= typeParts[1].split('_').slice(-1)[0];
-    fetchExecutionLineage(selectedPipeline, type,uuid);
+    const last_underscore_index = executionType.lastIndexOf('_');
+    const exec_type = executionType.substring(0, last_underscore_index);
+    const uuid= (executionType.split("_").pop());
+    fetchExecutionLineage(selectedPipeline, exec_type,uuid);
   };  
 
   // used for execution drop down
   const handleTreeClick = (executionType) => {
     setExecutionData(null);
     setSelectedExecutionType(executionType);
-    const typeParts = executionType.split('/');
-    fetchExecTree(selectedPipeline, typeParts[typeParts.length - 1]);
+    const uuid= (executionType.split("_").pop());
+    fetchExecTree(selectedPipeline, uuid);
   };  
 
   const fetchExecutionLineage = (pipelineName, type,uuid) => {

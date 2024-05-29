@@ -83,6 +83,7 @@ const constructTangleLayout = (levels, options = {}) => {
   const metro_d = 4;
   const min_family_height = 22;
 
+
   options.c ||= 16;
   const c = options.c;
   options.bigc ||= node_width + c;
@@ -152,7 +153,8 @@ const renderChart = (data, options = {}) => {
   const tangleLayout = constructTangleLayout(_.cloneDeep(data), options);
   tangled_width = tangleLayout.layout.width;
   tangled_height = tangleLayout.layout.height;
-
+  const textPadding = 12;
+  const labelOffset = 4;
   return (
     <>
       <style>
@@ -169,17 +171,17 @@ const renderChart = (data, options = {}) => {
           }
         `}
       </style>
-      <svg width={tangled_width} height={tangled_height}>
+      <svg width={tangled_width + textPadding * 10} height={tangled_height + textPadding * 10}>
         {tangleLayout.bundles.map((b, i) => {
           let d = b.links
             .map(
               l => `
-              M${l.xt} ${l.yt}
-              L${l.xb - l.c1} ${l.yt}
-              A${l.c1} ${l.c1} 90 0 1 ${l.xb} ${l.yt + l.c1}
-              L${l.xb} ${l.ys - l.c2}
-              A${l.c2} ${l.c2} 90 0 0 ${l.xb + l.c2} ${l.ys}
-              L${l.xs} ${l.ys}`
+              M${l.xt + textPadding} ${l.yt + textPadding}
+              L${l.xb - l.c1 + textPadding} ${l.yt + textPadding}
+              A${l.c1} ${l.c1} 90 0 1 ${l.xb + textPadding} ${l.yt + l.c1 + textPadding}
+              L${l.xb + textPadding} ${l.ys - l.c2 + textPadding}
+              A${l.c2} ${l.c2} 90 0 0 ${l.xb + l.c2 + textPadding} ${l.ys + textPadding}
+              L${l.xs + textPadding} ${l.ys + textPadding}`
             )
             .join('');
           return (
@@ -196,17 +198,26 @@ const renderChart = (data, options = {}) => {
               data-id={n.id}
               stroke="black"
               strokeWidth="8"
-              d={`M${n.x} ${n.y - n.height / 2} L${n.x} ${n.y + n.height / 2}`}
+              d={`M${n.x + textPadding} ${n.y - n.height / 2 + textPadding} L${n.x + textPadding} ${n.y + n.height / 2 + textPadding}`}
             />
             <path
               className="node"
               stroke="white"
               strokeWidth="4"
-              d={`M${n.x} ${n.y - n.height / 2} L${n.x} ${n.y + n.height / 2}`}
+              d={`M${n.x + textPadding} ${n.y - n.height / 2 + textPadding} L${n.x + textPadding} ${n.y + n.height / 2 + textPadding}`}
             />
-            <text className="selectable" data-id={n.id} x={n.x + 4} y={n.y - n.height / 2 - 4} stroke={options.background_color} strokeWidth="2">{n.id}</text>
+            <text
+              className="selectable"
+              data-id={n.id}
+              x={n.x + labelOffset + textPadding}
+              y={n.y - n.height / 2 - labelOffset + textPadding}
+              stroke={options.background_color}
+              strokeWidth="2"
+            >
+              {n.id}
+            </text>
 
-            <text x={n.x + 4} y={n.y - n.height / 2 - 4} style={{ pointerEvents: 'none' }}>{n.id}</text>
+            <text x={n.x + labelOffset + textPadding} y={n.y - n.height / 2 - labelOffset + textPadding} style={{ pointerEvents: 'none' }}>{n.id}</text>
           </React.Fragment>
         ))}
       </svg>

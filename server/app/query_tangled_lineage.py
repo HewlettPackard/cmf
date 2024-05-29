@@ -9,7 +9,7 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     df=dict_of_exe_id[pipeline_name]
     
     #finding execution_id by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid ('Prepare_u3tr')  
-    result = df[df['Execution_uuid'].str[:4] == uuid.split('_')[-1]]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
+    result = df[df['Execution_uuid'].str[:4] == uuid]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
     execution_id=result["id"].tolist() 
     parents_set = set()
     queue = deque()  
