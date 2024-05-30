@@ -273,16 +273,49 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-pre-requisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration
+      1. Pre-Requisites:
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-set-up-python-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Set up Python Virtual Environment:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-install-cmf" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Install CMF:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Steps">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -414,7 +447,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Quick start with cmf-client
   </span>
   
 
@@ -658,7 +691,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Quick start with cmf-client
   </span>
   
 
@@ -742,7 +775,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Getting started with cmf-server
   </span>
   
 
@@ -960,16 +993,49 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
+    <nav class="md-nav" aria-label="Installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-pre-requisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Configuration
+      1. Pre-Requisites:
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Configuration">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-set-up-python-virtual-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. Set up Python Virtual Environment:
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-install-cmf" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. Install CMF:
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Next Steps">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1102,9 +1168,13 @@
 also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.</p>
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
-<p>CMF requires 3.8 &gt;= Python &lt;= 3.9.<br>
-Create python virtual environment:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Conda</label><label for="__tabbed_1_2">VirtualEnv</label></div>
+<h4 id="1-pre-requisites">1. Pre-Requisites:<a class="headerlink" href="#1-pre-requisites" title="Permanent link">&para;</a></h4>
+<ul>
+<li>3.8&gt;= Python &lt;=3.9</li>
+<li>Git latest version</li>
+</ul>
+<h4 id="2-set-up-python-virtual-environment">2. Set up Python Virtual Environment:<a class="headerlink" href="#2-set-up-python-virtual-environment" title="Permanent link">&para;</a></h4>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Using Conda</label><label for="__tabbed_1_2">Using VirtualEnv</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>cmf<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.8
@@ -1118,7 +1188,7 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf
 </div>
 </div>
 </div>
-<p>Install CMF</p>
+<h4 id="3-install-cmf">3. Install CMF:<a class="headerlink" href="#3-install-cmf" title="Permanent link">&para;</a></h4>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Latest version form GitHub</label><label for="__tabbed_2_2">Stable version form PyPI</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -1131,11 +1201,8 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf
 </div>
 </div>
 </div>
-<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
-<ol>
-<li>Create working directory <code>mkdir &lt;workdir&gt;</code></li>
-<li>Execute <code>cmf init</code> to configure dvc remote directory, git remote url, cmf server and neo4j. Follow <a href="cmf_client/cmf_client/#cmf-init">here</a> for more details.</li>
-</ol>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<p>After installing CMF, proceed to configure CMF server and client. For detailed configuration instructions, refer to the <a href="cmf_client/step-by-step/">Quick start with cmf-client</a> page.</p>
 <h3 id="jupyter-lab-docker-container-with-cmf-pre-installed"><a href="#docker-section">Jupyter Lab docker container with CMF pre-installed</a><a class="headerlink" href="#jupyter-lab-docker-container-with-cmf-pre-installed" title="Permanent link">&para;</a></h3>
 <h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">&para;</a></h2>
 <p>Complex ML projects rely on <code>ML pipelines</code> to train and test ML models. An ML pipeline is a sequence of stages where
@@ -1210,7 +1277,7 @@ and will adjust its name, so it's unique. This is also the place where we can lo
 </tbody>
 </table>
 <h2 id="quick-example">Quick Example<a class="headerlink" href="#quick-example" title="Permanent link">&para;</a></h2>
-<p>Simple "getting started" example is described <a href="examples/getting_started/">here</a>. </p>
+<p>Go through <a href="examples/getting_started/">Getting Started</a> page to learn more about CMF API usage.</p>
 <h2 id="api-overview">API Overview<a class="headerlink" href="#api-overview" title="Permanent link">&para;</a></h2>
 <p><strong>Import CMF</strong>.
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmflib</span> <span class="kn">import</span> <span class="n">cmf</span>
@@ -1307,8 +1374,11 @@ the <a class="autorefs autorefs-internal" href="api/public/cmf/#cmflib.cmf.Cmf.c
 <p>CMF library has an optional <code>graph layer</code> which stores the relationships in a Neo4J graph database. To use the graph 
 layer, the <code>graph</code> parameter in the library init call must be set to true (it is set to false by default). The 
 library reads the configuration parameters of the graph database from <code>cmf config</code> generated by <code>cmf init</code> command. </p>
-<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div>
+<blockquote>
+<p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
+</blockquote>
 <p>To use the graph layer, instantiate the CMF with <code>graph=True</code> parameter: 
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmflib</span> <span class="kn">import</span> <span class="n">cmf</span>
 

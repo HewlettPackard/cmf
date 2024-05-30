@@ -247,7 +247,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Quick start with cmf-client
   </span>
   
 
@@ -493,7 +493,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Quick start with cmf-client
   </span>
   
 
@@ -626,7 +626,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Getting started with cmf-server
   </span>
   
 
@@ -882,9 +882,14 @@ Execute the &#39;cmf init&#39; command.
 </li>
 <li>
 <p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository.
-    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key   minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 </li>
+</ol>
+<blockquote>
+<p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
+</blockquote>
+<ol>
 <li>
 <p>Execute <code>cmf init show</code> to check the CMF configuration. The sample output looks as follows:
    <div class="highlight"><pre><span></span><code>remote.minio.url=s3://bucket-name

@@ -24,7 +24,7 @@
     
     
       
-        <title>Getting started - CMF</title>
+        <title>Getting started with cmf-server - CMF</title>
       
     
     
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cmf-server" class="md-skip">
+        <a href="#getting-started-with-cmf-server" class="md-skip">
           Skip to content
         </a>
       
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Getting started
+              Getting started with cmf-server
             
           </span>
         </div>
@@ -247,7 +247,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Quick start with cmf-client
   </span>
   
 
@@ -491,7 +491,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Quick start with cmf-client
   </span>
   
 
@@ -586,7 +586,7 @@
           
   
   <span class="md-ellipsis">
-    Getting started
+    Getting started with cmf-server
   </span>
   
 
@@ -597,7 +597,7 @@
         
   
   <span class="md-ellipsis">
-    Getting started
+    Getting started with cmf-server
   </span>
   
 
@@ -993,7 +993,7 @@
                   
 
 
-<h1 id="cmf-server">cmf-server<a class="headerlink" href="#cmf-server" title="Permanent link">&para;</a></h1>
+<h1 id="getting-started-with-cmf-server">Getting started with cmf-server<a class="headerlink" href="#getting-started-with-cmf-server" title="Permanent link">&para;</a></h1>
 <p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
 <h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h2>
 <p>cmf-server APIs are organized around <a href="https://fastapi.tiangolo.com/">FastAPI</a>.
@@ -1073,7 +1073,14 @@ They accept and return JSON-encoded request bodies and responses and return stan
 - Using docker run</p>
 <h3 id="pre-requisites">Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker Engine</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</li>
+<li>
+<p>Clone the <a href="https://github.com/HewlettPackard/cmf">Github repository</a>. 
+   <div class="highlight"><pre><span></span><code>git clone https://github.com/HewlettPackard/cmf
+</code></pre></div></p>
+</li>
+<li>
+<p>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker Engine</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</p>
+</li>
 <li>Install <a href="https://docs.docker.com/compose/install/linux/">Docker Compose Plugin</a>.<blockquote>
 <p>In earlier versions of docker compose, <code>docker compose</code> was independent of docker. Hence, <code>docker-compose</code> was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - <a href="https://docs.docker.com/compose/reference/">Docker Compose Reference</a>.</p>
 </blockquote>
@@ -1087,19 +1094,14 @@ They accept and return JSON-encoded request bodies and responses and return stan
 <ol>
 <li>Go to root <code>cmf</code> directory.</li>
 <li>
-<p>Create a directory which will be used as volume mount for docker containers.
-   <div class="highlight"><pre><span></span><code>mkdir /home/&lt;user&gt;/cmf-server/data/static
-</code></pre></div></p>
-</li>
-<li>
-<p>Edit <code>docker-compose-server.yml</code> with above directory.
+<p>Replace <code>xxxx</code> with user-name in docker-compose-server.yml available in the root cmf directory.
     <div class="highlight"><pre><span></span><code>......
 services:
 server:
   image: server:latest
   volumes:
-     - /home/xxxx/cmf-server/data:/cmf-server/data
-     - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
+     - /home/xxxx/cmf-server/data:/cmf-server/data                 # for example /home/hpe-user/cmf-server/data:/cmf-server/data 
+     - /home/xxxx/cmf-server/data/static:/cmf-server/data/static   # for example /home/hpe-user/cmf-server/data/static:/cmf-server/data/static
   container_name: cmf-server
   build:
 ....
@@ -1113,12 +1115,8 @@ server:
 hostname=host_name docker compose -f docker-compose-server.yml up
 </code></pre></div></p>
 <blockquote>
-<p>Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.</p>
-</blockquote>
-</li>
-</ol>
-<blockquote>
-<p>Also you can adjust <code>$IP</code> in <code>docker-compose-server.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying 
+<p>Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.
+Also you can adjust <code>$IP</code> in <code>docker-compose-server.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying 
     IP=200.200.200.200.
      <div class="highlight"><pre><span></span><code>.......
 environment:
@@ -1126,14 +1124,16 @@ REACT_APP_MY_IP: ${IP}
 ......
 </code></pre></div></p>
 </blockquote>
-<ol>
-<li>Stop the containers. 
-   <div class="highlight"><pre><span></span><code>docker compose -f docker-compose-server.yml stop
-</code></pre></div><blockquote>
-<p>It is neccessary to rebuild images for cmf-server and ui-server after <code>cmf version update</code> or after pulling latest cmf code from git.</p>
-</blockquote>
+</li>
+<li>
+<p>Stop the containers.
+    <div class="highlight"><pre><span></span><code>  docker compose -f docker-compose-server.yml stop
+</code></pre></div></p>
 </li>
 </ol>
+<blockquote>
+<p>It is neccessary to rebuild images for cmf-server and ui-server after <code>cmf version update</code> or after pulling latest cmf code from git.</p>
+</blockquote>
 <h2 id="using-docker-run-command">Using <code>docker run</code> command<a class="headerlink" href="#using-docker-run-command" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
@@ -1161,56 +1161,59 @@ REACT_APP_MY_IP: ${IP}
 <li>
 <p>Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
    pre-requisite - <code>mkdir /home/&lt;user&gt;/cmf-server/data/static</code>
- <br />
-<pre>
-   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
-   </pre></p>
-</li>
-</ol>
-<p>Example:
+   <div class="highlight"><pre><span></span><code>Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/&lt;user&gt;/cmf-server/data/static:/cmf-server/data/static [image_name]
+</code></pre></div>
+   Example:
    <div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
-</code></pre></div>
-6. After cmf-server container is up, start <code>ui-server</code>, Go to <code>cmf/ui</code> folder.
+</code></pre></div></p>
+</li>
+<li>
+<p>After cmf-server container is up, start <code>ui-server</code>, Go to <code>cmf/ui</code> folder.
    <div class="highlight"><pre><span></span><code>cd /cmf/ui
-</code></pre></div>
-7. Execute the below-mentioned command to create a <code>ui-server</code> docker image.
+</code></pre></div></p>
+</li>
+<li>
+<p>Execute the below-mentioned command to create a <code>ui-server</code> docker image.
    <div class="highlight"><pre><span></span><code>Usage:  docker build -t [image_name] -f ./Dockerfile ../
 </code></pre></div>
    Example:
    <div class="highlight"><pre><span></span><code>docker build -t uiimage -f ./Dockerfile ../
-</code></pre></div>
-8. Launch a new docker container using the image with directory
- <br />
-<pre>
-   Usage: docker run --name [container_name] -p 0.0.0.0:3000:80 [image_name]
-   </pre></p>
-<p>Example:
-   <div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 0.0.0.0:3000:80 uiimage
-</code></pre></div>
-   <code>Note</code> - If you face issue regarding <code>Libzbar-dev</code> as follows you need add proxy:
-   <img alt="Screenshot (115)" src="https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4" /></p>
-<p><code>~/.docker/config.json
-    {
-      proxies: {
-           "default": {
-                        "httpProxy": "http://web-proxy.labs.xxxx.net:8080",
-                        "httpsProxy": "http://web-proxy.labs.xxxx.net:8080",
-                        "noProxy": ".labs.xxxx.net,127.0.0.0/8"
-                }
-            }
-    }</code>
-10. To stop the docker container.
-   <div class="highlight"><pre><span></span><code>docker stop [container_name]
 </code></pre></div></p>
-<ol>
+</li>
+<li>
+<p>Launch a new docker container using the image with directory
+   <div class="highlight"><pre><span></span><code>Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 [image_name]
+</code></pre></div>
+   Example:
+   <div class="highlight"><pre><span></span><code>docker run --name mycontainer -p 0.0.0.0:3000:3000 uiimage
+</code></pre></div>
+      Note:
+      If you face issue regarding <code>Libzbar-dev</code> similar to the snapshot, add proxies to '/.docker/config.json'</p>
+<p><img alt="Screentshot (115)" src="https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4" /></p>
+<div class="highlight"><pre><span></span><code>{
+   proxies: {
+        &quot;default&quot;: {
+                     &quot;httpProxy&quot;: &quot;http://web-proxy.labs.xxxx.net:8080&quot;,
+                     &quot;httpsProxy&quot;: &quot;http://web-proxy.labs.xxxx.net:8080&quot;,
+                     &quot;noProxy&quot;: &quot;.labs.xxxx.net,127.0.0.0/8&quot;
+             }
+         }
+ }
+</code></pre></div>
+</li>
+<li>
+<p>To stop the docker container.
+    <div class="highlight"><pre><span></span><code>docker stop [container_name]
+</code></pre></div></p>
+</li>
 <li>
 <p>To delete the docker container.
-   <div class="highlight"><pre><span></span><code>docker rm [container_name] 
+    <div class="highlight"><pre><span></span><code>docker rm [container_name] 
 </code></pre></div></p>
 </li>
 <li>
 <p>To remove the docker image.
-   <div class="highlight"><pre><span></span><code>docker image rm [image_name] 
+    <div class="highlight"><pre><span></span><code>docker image rm [image_name] 
 </code></pre></div></p>
 </li>
 </ol>
