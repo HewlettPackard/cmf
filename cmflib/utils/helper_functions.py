@@ -54,6 +54,12 @@ def get_python_env()-> str:
             print("Pip is not installed.")
     return packages
 
+def change_dir(cmf_init_path):
+    logging_dir = os.getcwd()
+    if not logging_dir == cmf_init_path:
+        os.chdir(cmf_init_path)
+    return logging_dir
+
 def is_conda_installed():
     try:
         import conda
