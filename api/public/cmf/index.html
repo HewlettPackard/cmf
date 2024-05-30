@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.21">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.25">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.66ac8b77.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.6543a935.min.css">
       
       
 
@@ -1229,22 +1229,22 @@
 
 
 
-  <div class="doc doc-contents first">
+    <div class="doc doc-contents first">
 
-  
+
       <p>This class provides methods to log metadata for distributed AI pipelines.
 The class instance creates an ML metadata store to store the metadata.
 It creates a driver to store nodes and its relationships to neo4j.
 The user has to provide the name of the pipeline, that needs to be recorded with CMF.
 <div class="highlight"><pre><span></span><code><span class="n">cmflib</span><span class="o">.</span><span class="n">cmf</span><span class="o">.</span><span class="n">Cmf</span><span class="p">(</span>
-    <span class="n">filename</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
+    <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
     <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">,</span>
     <span class="n">custom_properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;owner&quot;</span><span class="p">:</span> <span class="s2">&quot;user_a&quot;</span><span class="p">},</span>
     <span class="n">graph</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 </code></pre></div>
 Args:
-    filename: Path  to the sqlite file to store the metadata
+    filepath: Path  to the sqlite file to store the metadata
     pipeline_name: Name to uniquely identify the pipeline.
     Note that name is the unique identifier for a pipeline.
     If a pipeline already exist with the same name, the existing pipeline object is reused.
@@ -1257,9 +1257,9 @@ Args:
                       --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 
-                <details class="quote">
-                  <summary>Source code in <code>cmflib/cmf.py</code></summary>
-                  <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
+                  <details class="quote">
+                    <summary>Source code in <code>cmflib/cmf.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
 <span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
@@ -1305,60 +1305,75 @@ Args:
 <span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
-<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-    <span class="bp">self</span><span class="p">,</span>
-    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
-    <span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">graph</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">is_server</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-<span class="p">):</span>
-    <span class="k">if</span> <span class="n">is_server</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-        <span class="n">Cmf</span><span class="o">.</span><span class="n">__prechecks</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">custom_properties</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">pipeline_name</span><span class="p">:</span>
-        <span class="c1"># assign folder name as pipeline name </span>
-        <span class="n">cur_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
-        <span class="n">pipeline_name</span> <span class="o">=</span> <span class="n">cur_folder</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">ConnectionConfig</span><span class="p">()</span>
-    <span class="n">config</span><span class="o">.</span><span class="n">sqlite</span><span class="o">.</span><span class="n">filename_uri</span> <span class="o">=</span> <span class="n">filename</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">metadata_store</span><span class="o">.</span><span class="n">MetadataStore</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">child_context</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">execution</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">execution_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">execution_command</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">input_artifacts</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">branch_name</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
+        <span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">graph</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">is_server</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="c1">#path to directory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmf_init_path</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> \
+				 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">filepath</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">1</span> \
+					<span class="k">else</span>  <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
 
-    <span class="k">if</span> <span class="n">is_server</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
-        <span class="n">git_checkout_new_branch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_name</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">parent_context</span> <span class="o">=</span> <span class="n">get_or_create_parent_context</span><span class="p">(</span>
-        <span class="n">store</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
-        <span class="n">pipeline</span><span class="o">=</span><span class="n">pipeline_name</span><span class="p">,</span>
-        <span class="n">custom_properties</span><span class="o">=</span><span class="n">custom_properties</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="k">if</span> <span class="n">is_server</span><span class="p">:</span>
-        <span class="n">Cmf</span><span class="o">.</span><span class="n">__get_neo4j_server_config</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">graph</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-        <span class="n">Cmf</span><span class="o">.</span><span class="n">__load_neo4j_params</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">graph_wrapper</span><span class="o">.</span><span class="n">GraphDriver</span><span class="p">(</span>
-            <span class="n">Cmf</span><span class="o">.</span><span class="n">__neo4j_uri</span><span class="p">,</span> <span class="n">Cmf</span><span class="o">.</span><span class="n">__neo4j_user</span><span class="p">,</span> <span class="n">Cmf</span><span class="o">.</span><span class="n">__neo4j_password</span>
+        <span class="n">logging_dir</span> <span class="o">=</span> <span class="n">change_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmf_init_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_server</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">Cmf</span><span class="o">.</span><span class="n">__prechecks</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">custom_properties</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">pipeline_name</span><span class="p">:</span>
+            <span class="c1"># assign folder name as pipeline name </span>
+            <span class="n">cur_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+            <span class="n">pipeline_name</span> <span class="o">=</span> <span class="n">cur_folder</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">ConnectionConfig</span><span class="p">()</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">sqlite</span><span class="o">.</span><span class="n">filename_uri</span> <span class="o">=</span> <span class="n">filepath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">store</span> <span class="o">=</span> <span class="n">metadata_store</span><span class="o">.</span><span class="n">MetadataStore</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child_context</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution_name</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution_command</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_artifacts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graph</span> <span class="o">=</span> <span class="n">graph</span>
+        <span class="c1">#last token in filepath</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">branch_name</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">is_server</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">git_checkout_new_branch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">branch_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parent_context</span> <span class="o">=</span> <span class="n">get_or_create_parent_context</span><span class="p">(</span>
+            <span class="n">store</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">store</span><span class="p">,</span>
+            <span class="n">pipeline</span><span class="o">=</span><span class="n">pipeline_name</span><span class="p">,</span>
+            <span class="n">custom_properties</span><span class="o">=</span><span class="n">custom_properties</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">create_pipeline_node</span><span class="p">(</span>
-            <span class="n">pipeline_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_context</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">custom_properties</span>
-        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_server</span><span class="p">:</span>
+            <span class="n">Cmf</span><span class="o">.</span><span class="n">__get_neo4j_server_config</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">graph</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">Cmf</span><span class="o">.</span><span class="n">__load_neo4j_params</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">graph_wrapper</span><span class="o">.</span><span class="n">GraphDriver</span><span class="p">(</span>
+                <span class="n">Cmf</span><span class="o">.</span><span class="n">__neo4j_uri</span><span class="p">,</span> <span class="n">Cmf</span><span class="o">.</span><span class="n">__neo4j_user</span><span class="p">,</span> <span class="n">Cmf</span><span class="o">.</span><span class="n">__neo4j_password</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">create_pipeline_node</span><span class="p">(</span>
+                <span class="n">pipeline_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parent_context</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">custom_properties</span>
+            <span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">logging_dir</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-                </details>
+                  </details>
 
-  
+
 
   <div class="doc doc-children">
-
 
 
 
@@ -1371,15 +1386,14 @@ Args:
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.create_context" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">create_context</span><span class="p">(</span><span class="n">pipeline_stage</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">create_context</span><span class="p">(</span><span class="n">pipeline_stage</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.create_context" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Create's a  context(stage).
 Every call creates a unique pipeline stage.
 Updates Pipeline_stage name.
@@ -1389,7 +1403,7 @@ Example:
 <span class="kn">from</span> <span class="nn">cmflib.cmf</span> <span class="kn">import</span> <span class="n">Cmf</span>
 <span class="kn">from</span> <span class="nn">ml_metadata.proto</span> <span class="kn">import</span> <span class="n">metadata_store_pb2</span> <span class="k">as</span> <span class="n">mlpb</span>
 <span class="c1"># Create CMF logger</span>
-<span class="n">cmf</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">)</span>
+<span class="n">cmf</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">)</span>
 <span class="c1"># Create context</span>
 <span class="n">context</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Context</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_context</span><span class="p">(</span>
     <span class="n">pipeline_stage</span><span class="o">=</span><span class="s2">&quot;prepare&quot;</span><span class="p">,</span>
@@ -1403,17 +1417,9 @@ Example:
     Returns:
         Context object from ML Metadata library associated with the new context for this stage.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span>
-<span class="normal">229</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
 <span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
@@ -1445,7 +1451,15 @@ Example:
 <span class="normal">258</span>
 <span class="normal">259</span>
 <span class="normal">260</span>
-<span class="normal">261</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_context</span><span class="p">(</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_context</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Context</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create&#39;s a  context(stage).</span>
@@ -1458,7 +1472,7 @@ Example:
 <span class="sd">        from cmflib.cmf import Cmf</span>
 <span class="sd">        from ml_metadata.proto import metadata_store_pb2 as mlpb</span>
 <span class="sd">        # Create CMF logger</span>
-<span class="sd">        cmf = Cmf(filename=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
+<span class="sd">        cmf = Cmf(filepath=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
 <span class="sd">        # Create context</span>
 <span class="sd">        context: mlmd.proto.Context = cmf.create_context(</span>
 <span class="sd">            pipeline_stage=&quot;prepare&quot;,</span>
@@ -1487,24 +1501,22 @@ Example:
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">ctx</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.merge_created_context" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">merge_created_context</span><span class="p">(</span><span class="n">pipeline_stage</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">merge_created_context</span><span class="p">(</span><span class="n">pipeline_stage</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.merge_created_context" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Merge created context.
 Every call creates a unique pipeline stage.
 Created for metadata push purpose.
@@ -1515,7 +1527,7 @@ Example:</p>
 from cmflib.cmf import Cmf
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 # Create CMF logger
-cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
+cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
 # Create context
 context: mlmd.proto.Context = cmf.merge_created_context(
     pipeline_stage="Test-env/prepare",
@@ -1529,17 +1541,9 @@ Returns:
     Context object from ML Metadata library associated with the new context for this stage.
 </code></pre>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
 <span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
@@ -1570,7 +1574,15 @@ Returns:
 <span class="normal">299</span>
 <span class="normal">300</span>
 <span class="normal">301</span>
-<span class="normal">302</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">merge_created_context</span><span class="p">(</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">merge_created_context</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Context</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge created context.</span>
@@ -1584,7 +1596,7 @@ Returns:
 <span class="sd">        from cmflib.cmf import Cmf</span>
 <span class="sd">        from ml_metadata.proto import metadata_store_pb2 as mlpb</span>
 <span class="sd">        # Create CMF logger</span>
-<span class="sd">        cmf = Cmf(filename=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
+<span class="sd">        cmf = Cmf(filepath=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
 <span class="sd">        # Create context</span>
 <span class="sd">        context: mlmd.proto.Context = cmf.merge_created_context(</span>
 <span class="sd">            pipeline_stage=&quot;Test-env/prepare&quot;,</span>
@@ -1611,24 +1623,22 @@ Returns:
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">ctx</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.create_execution" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">create_new_execution</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">create_new_execution</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.create_execution" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Create execution.
 Every call creates a unique execution. Execution can only be created within a context, so
 <a class="autorefs autorefs-internal" href="#cmflib.cmf.Cmf.create_context">create_context</a> must be called first.
@@ -1637,7 +1647,7 @@ Example:
 <span class="kn">from</span> <span class="nn">cmflib.cmf</span> <span class="kn">import</span> <span class="n">Cmf</span>
 <span class="kn">from</span> <span class="nn">ml_metadata.proto</span> <span class="kn">import</span> <span class="n">metadata_store_pb2</span> <span class="k">as</span> <span class="n">mlpb</span>
 <span class="c1"># Create CMF logger</span>
-<span class="n">cmf</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">)</span>
+<span class="n">cmf</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">)</span>
 <span class="c1"># Create or reuse context for this stage</span>
 <span class="n">context</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Context</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_context</span><span class="p">(</span>
     <span class="n">pipeline_stage</span><span class="o">=</span><span class="s2">&quot;prepare&quot;</span><span class="p">,</span>
@@ -1665,40 +1675,31 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
 </code></pre>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="ml_metadata.proto.metadata_store_pb2.Execution">Execution</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Execution object from ML Metadata library associated with the new execution for this stage.</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ml_metadata.proto.metadata_store_pb2.Execution">Execution</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Execution object from ML Metadata library associated with the new execution for this stage.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -1798,7 +1799,17 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
 <span class="normal">409</span>
 <span class="normal">410</span>
 <span class="normal">411</span>
-<span class="normal">412</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_execution</span><span class="p">(</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_execution</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">execution_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -1814,7 +1825,7 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
 <span class="sd">        from cmflib.cmf import Cmf</span>
 <span class="sd">        from ml_metadata.proto import metadata_store_pb2 as mlpb</span>
 <span class="sd">        # Create CMF logger</span>
-<span class="sd">        cmf = Cmf(filename=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
+<span class="sd">        cmf = Cmf(filepath=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
 <span class="sd">        # Create or reuse context for this stage</span>
 <span class="sd">        context: mlmd.proto.Context = cmf.create_context(</span>
 <span class="sd">            pipeline_stage=&quot;prepare&quot;,</span>
@@ -1855,6 +1866,8 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">child_context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create context for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
 
     <span class="c1"># Initializing the execution related fields</span>
+
+    <span class="n">logging_dir</span> <span class="o">=</span> <span class="n">change_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmf_init_path</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">input_artifacts</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1905,27 +1918,25 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
         <span class="bp">self</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
         <span class="n">custom_props</span><span class="p">,</span>
     <span class="p">)</span>
-
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">logging_dir</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.update_execution" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">update_execution</span><span class="p">(</span><span class="n">execution_id</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">update_execution</span><span class="p">(</span><span class="n">execution_id</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.update_execution" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Updates an existing execution.
 The custom properties can be updated after creation of the execution.
 The new custom properties is merged with earlier custom properties.
@@ -1934,7 +1945,7 @@ Example
 <span class="kn">from</span> <span class="nn">cmflib.cmf</span> <span class="kn">import</span> <span class="n">Cmf</span>
 <span class="kn">from</span> <span class="nn">ml_metadata.proto</span> <span class="kn">import</span> <span class="n">metadata_store_pb2</span> <span class="k">as</span> <span class="n">mlpb</span>
 <span class="c1"># Create CMF logger</span>
-<span class="n">cmf</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">)</span>
+<span class="n">cmf</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">)</span>
 <span class="c1"># Update a execution</span>
 <span class="n">execution</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Execution</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">update_execution</span><span class="p">(</span>
     <span class="n">execution_id</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
@@ -1948,19 +1959,9 @@ Example
     Returns:
         Execution object from ML Metadata library associated with the updated execution for this stage.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span>
-<span class="normal">421</span>
-<span class="normal">422</span>
-<span class="normal">423</span>
-<span class="normal">424</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">424</span>
 <span class="normal">425</span>
 <span class="normal">426</span>
 <span class="normal">427</span>
@@ -2022,7 +2023,17 @@ Example
 <span class="normal">483</span>
 <span class="normal">484</span>
 <span class="normal">485</span>
-<span class="normal">486</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_execution</span><span class="p">(</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_execution</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates an existing execution.</span>
@@ -2034,7 +2045,7 @@ Example
 <span class="sd">        from cmflib.cmf import Cmf</span>
 <span class="sd">        from ml_metadata.proto import metadata_store_pb2 as mlpb</span>
 <span class="sd">        # Create CMF logger</span>
-<span class="sd">        cmf = Cmf(filename=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
+<span class="sd">        cmf = Cmf(filepath=&quot;mlmd&quot;, pipeline_name=&quot;test_pipeline&quot;)</span>
 <span class="sd">        # Update a execution</span>
 <span class="sd">        execution: mlmd.proto.Execution = cmf.update_execution(</span>
 <span class="sd">            execution_id=8,</span>
@@ -2096,24 +2107,22 @@ Example
         <span class="p">)</span>
     <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_dataset" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_dataset</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_dataset</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">external</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_dataset" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Logs a dataset as artifact.
 This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
 version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
@@ -2131,19 +2140,9 @@ Args:
 Returns:
     Artifact object from ML Metadata library associated with the new dataset artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">614</span>
-<span class="normal">615</span>
-<span class="normal">616</span>
-<span class="normal">617</span>
-<span class="normal">618</span>
-<span class="normal">619</span>
-<span class="normal">620</span>
-<span class="normal">621</span>
-<span class="normal">622</span>
-<span class="normal">623</span>
-<span class="normal">624</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">624</span>
 <span class="normal">625</span>
 <span class="normal">626</span>
 <span class="normal">627</span>
@@ -2283,7 +2282,24 @@ Returns:
 <span class="normal">761</span>
 <span class="normal">762</span>
 <span class="normal">763</span>
-<span class="normal">764</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset</span><span class="p">(</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2327,6 +2343,7 @@ Returns:
     <span class="c1"># If the dataset already exist , then we just link the existing dataset to the execution</span>
     <span class="c1"># We do not update the dataset properties . </span>
     <span class="c1"># We need to append the new properties to the existing dataset properties</span>
+    <span class="n">logging_dir</span> <span class="o">=</span> <span class="n">change_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmf_init_path</span><span class="p">)</span>
     <span class="n">custom_props</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">custom_properties</span>
     <span class="n">git_repo</span> <span class="o">=</span> <span class="n">git_get_repo</span><span class="p">()</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="n">url</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -2337,6 +2354,11 @@ Returns:
 
     <span class="n">commit_output</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
     <span class="n">c_hash</span> <span class="o">=</span> <span class="n">dvc_get_hash</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">c_hash</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in getting the dvc hash,return without logging&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">null</span>
+
     <span class="n">dataset_commit</span> <span class="o">=</span> <span class="n">c_hash</span>
     <span class="n">dvc_url</span> <span class="o">=</span> <span class="n">dvc_get_url</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="n">dvc_url_with_pipeline</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">parent_context</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">dvc_url</span><span class="si">}</span><span class="s2">&quot;</span>
@@ -2433,26 +2455,25 @@ Returns:
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">create_artifact_relationships</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">input_artifacts</span><span class="p">,</span> <span class="n">child_artifact</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span>
             <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">logging_dir</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">artifact</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_dataset_with_version" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_dataset_with_version</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_dataset_with_version</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">version</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_dataset_with_version" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Logs a dataset when the version (hash) is known.
 Example: 
   <div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset_with_version</span><span class="p">(</span> 
@@ -2473,26 +2494,9 @@ Example:
   Returns:
      Artifact object from the ML Protocol Buffers library associated with the new dataset artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">815</span>
-<span class="normal">816</span>
-<span class="normal">817</span>
-<span class="normal">818</span>
-<span class="normal">819</span>
-<span class="normal">820</span>
-<span class="normal">821</span>
-<span class="normal">822</span>
-<span class="normal">823</span>
-<span class="normal">824</span>
-<span class="normal">825</span>
-<span class="normal">826</span>
-<span class="normal">827</span>
-<span class="normal">828</span>
-<span class="normal">829</span>
-<span class="normal">830</span>
-<span class="normal">831</span>
-<span class="normal">832</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">832</span>
 <span class="normal">833</span>
 <span class="normal">834</span>
 <span class="normal">835</span>
@@ -2610,7 +2614,24 @@ Example:
 <span class="normal">947</span>
 <span class="normal">948</span>
 <span class="normal">949</span>
-<span class="normal">950</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset_with_version</span><span class="p">(</span>
+<span class="normal">950</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span>
+<span class="normal">958</span>
+<span class="normal">959</span>
+<span class="normal">960</span>
+<span class="normal">961</span>
+<span class="normal">962</span>
+<span class="normal">963</span>
+<span class="normal">964</span>
+<span class="normal">965</span>
+<span class="normal">966</span>
+<span class="normal">967</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset_with_version</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2747,24 +2768,22 @@ Example:
             <span class="p">)</span>
     <span class="k">return</span> <span class="n">artifact</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_model" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_model</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">model_framework</span><span class="o">=</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_model</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">model_framework</span><span class="o">=</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="n">model_type</span><span class="o">=</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="s1">&#39;Default&#39;</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_model" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Logs a model.
 The model is added to dvc and the metadata file (.dvc) gets committed to git.
 Example:
@@ -2786,26 +2805,9 @@ Args:
 Returns:
     Artifact object from ML Metadata library associated with the new model artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 953</span>
-<span class="normal"> 954</span>
-<span class="normal"> 955</span>
-<span class="normal"> 956</span>
-<span class="normal"> 957</span>
-<span class="normal"> 958</span>
-<span class="normal"> 959</span>
-<span class="normal"> 960</span>
-<span class="normal"> 961</span>
-<span class="normal"> 962</span>
-<span class="normal"> 963</span>
-<span class="normal"> 964</span>
-<span class="normal"> 965</span>
-<span class="normal"> 966</span>
-<span class="normal"> 967</span>
-<span class="normal"> 968</span>
-<span class="normal"> 969</span>
-<span class="normal"> 970</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 970</span>
 <span class="normal"> 971</span>
 <span class="normal"> 972</span>
 <span class="normal"> 973</span>
@@ -2953,7 +2955,29 @@ Returns:
 <span class="normal">1115</span>
 <span class="normal">1116</span>
 <span class="normal">1117</span>
-<span class="normal">1118</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model</span><span class="p">(</span>
+<span class="normal">1118</span>
+<span class="normal">1119</span>
+<span class="normal">1120</span>
+<span class="normal">1121</span>
+<span class="normal">1122</span>
+<span class="normal">1123</span>
+<span class="normal">1124</span>
+<span class="normal">1125</span>
+<span class="normal">1126</span>
+<span class="normal">1127</span>
+<span class="normal">1128</span>
+<span class="normal">1129</span>
+<span class="normal">1130</span>
+<span class="normal">1131</span>
+<span class="normal">1132</span>
+<span class="normal">1133</span>
+<span class="normal">1134</span>
+<span class="normal">1135</span>
+<span class="normal">1136</span>
+<span class="normal">1137</span>
+<span class="normal">1138</span>
+<span class="normal">1139</span>
+<span class="normal">1140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3004,7 +3028,7 @@ Returns:
     <span class="c1"># If the model already exist , then we just link the existing model to the execution</span>
     <span class="c1"># We do not update the model properties . </span>
     <span class="c1"># We need to append the new properties to the existing model properties</span>
-
+    <span class="n">logging_dir</span> <span class="o">=</span> <span class="n">change_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmf_init_path</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">custom_properties</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">custom_props</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">custom_properties</span>
@@ -3016,6 +3040,11 @@ Returns:
 
     <span class="n">commit_output</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
     <span class="n">c_hash</span> <span class="o">=</span> <span class="n">dvc_get_hash</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">c_hash</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error in getting the dvc hash,return without logging&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">null</span>
+
     <span class="n">model_commit</span> <span class="o">=</span> <span class="n">c_hash</span>
 
     <span class="c1"># If connecting to an existing artifact - The name of the artifact is</span>
@@ -3117,27 +3146,25 @@ Returns:
             <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">create_artifact_relationships</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">input_artifacts</span><span class="p">,</span> <span class="n">child_artifact</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span>
             <span class="p">)</span>
-
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">logging_dir</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">artifact</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_model_with_version" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_model_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_model_with_version</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">event</span><span class="p">,</span> <span class="n">props</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_model_with_version" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Logs a model when the version(hash) is known
  The model is added to dvc and the metadata file (.dvc) gets committed to git.
 Example:
@@ -3165,31 +3192,9 @@ Args:
 Returns:
     Artifact object from ML Metadata library associated with the new model artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1121</span>
-<span class="normal">1122</span>
-<span class="normal">1123</span>
-<span class="normal">1124</span>
-<span class="normal">1125</span>
-<span class="normal">1126</span>
-<span class="normal">1127</span>
-<span class="normal">1128</span>
-<span class="normal">1129</span>
-<span class="normal">1130</span>
-<span class="normal">1131</span>
-<span class="normal">1132</span>
-<span class="normal">1133</span>
-<span class="normal">1134</span>
-<span class="normal">1135</span>
-<span class="normal">1136</span>
-<span class="normal">1137</span>
-<span class="normal">1138</span>
-<span class="normal">1139</span>
-<span class="normal">1140</span>
-<span class="normal">1141</span>
-<span class="normal">1142</span>
-<span class="normal">1143</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1143</span>
 <span class="normal">1144</span>
 <span class="normal">1145</span>
 <span class="normal">1146</span>
@@ -3308,7 +3313,29 @@ Returns:
 <span class="normal">1259</span>
 <span class="normal">1260</span>
 <span class="normal">1261</span>
-<span class="normal">1262</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model_with_version</span><span class="p">(</span>
+<span class="normal">1262</span>
+<span class="normal">1263</span>
+<span class="normal">1264</span>
+<span class="normal">1265</span>
+<span class="normal">1266</span>
+<span class="normal">1267</span>
+<span class="normal">1268</span>
+<span class="normal">1269</span>
+<span class="normal">1270</span>
+<span class="normal">1271</span>
+<span class="normal">1272</span>
+<span class="normal">1273</span>
+<span class="normal">1274</span>
+<span class="normal">1275</span>
+<span class="normal">1276</span>
+<span class="normal">1277</span>
+<span class="normal">1278</span>
+<span class="normal">1279</span>
+<span class="normal">1280</span>
+<span class="normal">1281</span>
+<span class="normal">1282</span>
+<span class="normal">1283</span>
+<span class="normal">1284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model_with_version</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3451,24 +3478,22 @@ Returns:
 
     <span class="k">return</span> <span class="n">artifact</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_execution_metrics_from_client" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_execution_metrics_from_client</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_execution_metrics_from_client</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_execution_metrics_from_client" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Logs execution metrics from a client.
 Data from pre-existing metrics from client side is used to create identical metrics on server side. 
 Example: 
@@ -3483,31 +3508,9 @@ Example:
   Returns: 
      Artifact object from the ML Protocol Buffers library associated with the metrics artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1264</span>
-<span class="normal">1265</span>
-<span class="normal">1266</span>
-<span class="normal">1267</span>
-<span class="normal">1268</span>
-<span class="normal">1269</span>
-<span class="normal">1270</span>
-<span class="normal">1271</span>
-<span class="normal">1272</span>
-<span class="normal">1273</span>
-<span class="normal">1274</span>
-<span class="normal">1275</span>
-<span class="normal">1276</span>
-<span class="normal">1277</span>
-<span class="normal">1278</span>
-<span class="normal">1279</span>
-<span class="normal">1280</span>
-<span class="normal">1281</span>
-<span class="normal">1282</span>
-<span class="normal">1283</span>
-<span class="normal">1284</span>
-<span class="normal">1285</span>
-<span class="normal">1286</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1286</span>
 <span class="normal">1287</span>
 <span class="normal">1288</span>
 <span class="normal">1289</span>
@@ -3559,7 +3562,29 @@ Example:
 <span class="normal">1335</span>
 <span class="normal">1336</span>
 <span class="normal">1337</span>
-<span class="normal">1338</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics_from_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="normal">1338</span>
+<span class="normal">1339</span>
+<span class="normal">1340</span>
+<span class="normal">1341</span>
+<span class="normal">1342</span>
+<span class="normal">1343</span>
+<span class="normal">1344</span>
+<span class="normal">1345</span>
+<span class="normal">1346</span>
+<span class="normal">1347</span>
+<span class="normal">1348</span>
+<span class="normal">1349</span>
+<span class="normal">1350</span>
+<span class="normal">1351</span>
+<span class="normal">1352</span>
+<span class="normal">1353</span>
+<span class="normal">1354</span>
+<span class="normal">1355</span>
+<span class="normal">1356</span>
+<span class="normal">1357</span>
+<span class="normal">1358</span>
+<span class="normal">1359</span>
+<span class="normal">1360</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics_from_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                                      <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Logs execution metrics from a client.</span>
 <span class="sd">        Data from pre-existing metrics from client side is used to create identical metrics on server side. </span>
@@ -3635,24 +3660,22 @@ Example:
             <span class="p">)</span>
     <span class="k">return</span> <span class="n">metrics</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_execution_metrics" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_execution_metrics</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_execution_metrics</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_execution_metrics" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Log the metadata associated with the execution (coarse-grained tracking).
 It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
 have.
@@ -3668,31 +3691,9 @@ Args:
 Returns:
       Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1341</span>
-<span class="normal">1342</span>
-<span class="normal">1343</span>
-<span class="normal">1344</span>
-<span class="normal">1345</span>
-<span class="normal">1346</span>
-<span class="normal">1347</span>
-<span class="normal">1348</span>
-<span class="normal">1349</span>
-<span class="normal">1350</span>
-<span class="normal">1351</span>
-<span class="normal">1352</span>
-<span class="normal">1353</span>
-<span class="normal">1354</span>
-<span class="normal">1355</span>
-<span class="normal">1356</span>
-<span class="normal">1357</span>
-<span class="normal">1358</span>
-<span class="normal">1359</span>
-<span class="normal">1360</span>
-<span class="normal">1361</span>
-<span class="normal">1362</span>
-<span class="normal">1363</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1363</span>
 <span class="normal">1364</span>
 <span class="normal">1365</span>
 <span class="normal">1366</span>
@@ -3744,7 +3745,30 @@ Returns:
 <span class="normal">1412</span>
 <span class="normal">1413</span>
 <span class="normal">1414</span>
-<span class="normal">1415</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics</span><span class="p">(</span>
+<span class="normal">1415</span>
+<span class="normal">1416</span>
+<span class="normal">1417</span>
+<span class="normal">1418</span>
+<span class="normal">1419</span>
+<span class="normal">1420</span>
+<span class="normal">1421</span>
+<span class="normal">1422</span>
+<span class="normal">1423</span>
+<span class="normal">1424</span>
+<span class="normal">1425</span>
+<span class="normal">1426</span>
+<span class="normal">1427</span>
+<span class="normal">1428</span>
+<span class="normal">1429</span>
+<span class="normal">1430</span>
+<span class="normal">1431</span>
+<span class="normal">1432</span>
+<span class="normal">1433</span>
+<span class="normal">1434</span>
+<span class="normal">1435</span>
+<span class="normal">1436</span>
+<span class="normal">1437</span>
+<span class="normal">1438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Log the metadata associated with the execution (coarse-grained tracking).</span>
@@ -3763,7 +3787,6 @@ Returns:
 <span class="sd">    Returns:</span>
 <span class="sd">          Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="c1"># Assigning current file name as stage and execution name</span>
     <span class="n">current_script</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">current_script</span><span class="p">)</span>
@@ -3779,6 +3802,7 @@ Returns:
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create execution for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
 
 
+    <span class="n">logging_dir</span> <span class="o">=</span> <span class="n">change_dir</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmf_init_path</span><span class="p">)</span>
     <span class="n">custom_props</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">custom_properties</span>
     <span class="n">uri</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span>
     <span class="n">metrics_name</span> <span class="o">=</span> <span class="n">metrics_name</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">uri</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
@@ -3818,26 +3842,25 @@ Returns:
         <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">create_artifact_relationships</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">input_artifacts</span><span class="p">,</span> <span class="n">child_artifact</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span>
         <span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">logging_dir</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">metrics</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.log_metric" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">log_metric</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">log_metric</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.log_metric" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Stores the fine-grained (per step or per epoch) metrics to memory.
 The metrics provided are stored in a parquet file. The <code>commit_metrics</code> call add the parquet file in the version
 control framework. The metrics written in the parquet file can be retrieved using the <code>read_metrics</code> call.
@@ -3853,33 +3876,33 @@ Args:
     metrics_name: Name to identify the metrics.
     custom_properties: Dictionary with metrics.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1417</span>
-<span class="normal">1418</span>
-<span class="normal">1419</span>
-<span class="normal">1420</span>
-<span class="normal">1421</span>
-<span class="normal">1422</span>
-<span class="normal">1423</span>
-<span class="normal">1424</span>
-<span class="normal">1425</span>
-<span class="normal">1426</span>
-<span class="normal">1427</span>
-<span class="normal">1428</span>
-<span class="normal">1429</span>
-<span class="normal">1430</span>
-<span class="normal">1431</span>
-<span class="normal">1432</span>
-<span class="normal">1433</span>
-<span class="normal">1434</span>
-<span class="normal">1435</span>
-<span class="normal">1436</span>
-<span class="normal">1437</span>
-<span class="normal">1438</span>
-<span class="normal">1439</span>
-<span class="normal">1440</span>
-<span class="normal">1441</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1440</span>
+<span class="normal">1441</span>
+<span class="normal">1442</span>
+<span class="normal">1443</span>
+<span class="normal">1444</span>
+<span class="normal">1445</span>
+<span class="normal">1446</span>
+<span class="normal">1447</span>
+<span class="normal">1448</span>
+<span class="normal">1449</span>
+<span class="normal">1450</span>
+<span class="normal">1451</span>
+<span class="normal">1452</span>
+<span class="normal">1453</span>
+<span class="normal">1454</span>
+<span class="normal">1455</span>
+<span class="normal">1456</span>
+<span class="normal">1457</span>
+<span class="normal">1458</span>
+<span class="normal">1459</span>
+<span class="normal">1460</span>
+<span class="normal">1461</span>
+<span class="normal">1462</span>
+<span class="normal">1463</span>
+<span class="normal">1464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores the fine-grained (per step or per epoch) metrics to memory.</span>
@@ -3905,24 +3928,22 @@ Args:
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="n">metrics_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">metrics</span><span class="p">[</span><span class="n">metrics_name</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">custom_properties</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.commit_existing_metrics" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">commit_existing_metrics</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">commit_existing_metrics</span><span class="p">(</span><span class="n">metrics_name</span><span class="p">,</span> <span class="n">uri</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.commit_existing_metrics" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Commits existing metrics associated with the given URI to MLMD. 
 Example: 
 <div class="highlight"><pre><span></span><code>   <span class="n">artifact</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">commit_existing_metrics</span><span class="p">(</span><span class="s2">&quot;existing_metrics&quot;</span><span class="p">,</span> <span class="s2">&quot;abc123&quot;</span><span class="p">,</span> 
@@ -3935,39 +3956,9 @@ Args:
 Returns:
    Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1510</span>
-<span class="normal">1511</span>
-<span class="normal">1512</span>
-<span class="normal">1513</span>
-<span class="normal">1514</span>
-<span class="normal">1515</span>
-<span class="normal">1516</span>
-<span class="normal">1517</span>
-<span class="normal">1518</span>
-<span class="normal">1519</span>
-<span class="normal">1520</span>
-<span class="normal">1521</span>
-<span class="normal">1522</span>
-<span class="normal">1523</span>
-<span class="normal">1524</span>
-<span class="normal">1525</span>
-<span class="normal">1526</span>
-<span class="normal">1527</span>
-<span class="normal">1528</span>
-<span class="normal">1529</span>
-<span class="normal">1530</span>
-<span class="normal">1531</span>
-<span class="normal">1532</span>
-<span class="normal">1533</span>
-<span class="normal">1534</span>
-<span class="normal">1535</span>
-<span class="normal">1536</span>
-<span class="normal">1537</span>
-<span class="normal">1538</span>
-<span class="normal">1539</span>
-<span class="normal">1540</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1540</span>
 <span class="normal">1541</span>
 <span class="normal">1542</span>
 <span class="normal">1543</span>
@@ -3999,7 +3990,37 @@ Returns:
 <span class="normal">1569</span>
 <span class="normal">1570</span>
 <span class="normal">1571</span>
-<span class="normal">1572</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit_existing_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="normal">1572</span>
+<span class="normal">1573</span>
+<span class="normal">1574</span>
+<span class="normal">1575</span>
+<span class="normal">1576</span>
+<span class="normal">1577</span>
+<span class="normal">1578</span>
+<span class="normal">1579</span>
+<span class="normal">1580</span>
+<span class="normal">1581</span>
+<span class="normal">1582</span>
+<span class="normal">1583</span>
+<span class="normal">1584</span>
+<span class="normal">1585</span>
+<span class="normal">1586</span>
+<span class="normal">1587</span>
+<span class="normal">1588</span>
+<span class="normal">1589</span>
+<span class="normal">1590</span>
+<span class="normal">1591</span>
+<span class="normal">1592</span>
+<span class="normal">1593</span>
+<span class="normal">1594</span>
+<span class="normal">1595</span>
+<span class="normal">1596</span>
+<span class="normal">1597</span>
+<span class="normal">1598</span>
+<span class="normal">1599</span>
+<span class="normal">1600</span>
+<span class="normal">1601</span>
+<span class="normal">1602</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit_existing_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
 <span class="sd">    Commits existing metrics associated with the given URI to MLMD. </span>
 <span class="sd">    Example: </span>
@@ -4063,24 +4084,22 @@ Returns:
         <span class="p">)</span>
     <span class="k">return</span> <span class="n">metrics</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.create_dataslice" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">create_dataslice</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">create_dataslice</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.create_dataslice" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Creates a dataslice object.
 Once created, users can add data instances to this data slice with <a class="autorefs autorefs-internal" href="../dataslice/#cmflib.cmf.Cmf.DataSlice.add_data">add_data</a>
 method. Users are also responsible for committing data slices by calling the
@@ -4092,47 +4111,46 @@ Args:
     name: Name to identify the dataslice.</p>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-                <code><span title="cmflib.cmf.Cmf.DataSlice">DataSlice</span></code>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="cmflib.cmf.Cmf.DataSlice">DataSlice</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Instance of a newly created [DataSlice][cmflib.cmf.Cmf.DataSlice].</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1633</span>
-<span class="normal">1634</span>
-<span class="normal">1635</span>
-<span class="normal">1636</span>
-<span class="normal">1637</span>
-<span class="normal">1638</span>
-<span class="normal">1639</span>
-<span class="normal">1640</span>
-<span class="normal">1641</span>
-<span class="normal">1642</span>
-<span class="normal">1643</span>
-<span class="normal">1644</span>
-<span class="normal">1645</span>
-<span class="normal">1646</span>
-<span class="normal">1647</span>
-<span class="normal">1648</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1663</span>
+<span class="normal">1664</span>
+<span class="normal">1665</span>
+<span class="normal">1666</span>
+<span class="normal">1667</span>
+<span class="normal">1668</span>
+<span class="normal">1669</span>
+<span class="normal">1670</span>
+<span class="normal">1671</span>
+<span class="normal">1672</span>
+<span class="normal">1673</span>
+<span class="normal">1674</span>
+<span class="normal">1675</span>
+<span class="normal">1676</span>
+<span class="normal">1677</span>
+<span class="normal">1678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a dataslice object.</span>
 <span class="sd">    Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]</span>
 <span class="sd">    method. Users are also responsible for committing data slices by calling the</span>
@@ -4149,24 +4167,22 @@ Args:
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">Cmf</span><span class="o">.</span><span class="n">DataSlice</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.Cmf.update_dataslice" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">update_dataslice</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">update_dataslice</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">record</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.Cmf.update_dataslice" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Updates a dataslice record in a Parquet file with the provided custom properties.
 Example:
 <div class="highlight"><pre><span></span><code>   <span class="n">dataslice</span><span class="o">=</span><span class="n">cmf</span><span class="o">.</span><span class="n">update_dataslice</span><span class="p">(</span><span class="s2">&quot;dataslice_file.parquet&quot;</span><span class="p">,</span> <span class="s2">&quot;record_id&quot;</span><span class="p">,</span> 
@@ -4178,51 +4194,50 @@ Args:
    custom_properties: Dictionary containing custom properties to update.</p>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>None</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1658</span>
-<span class="normal">1659</span>
-<span class="normal">1660</span>
-<span class="normal">1661</span>
-<span class="normal">1662</span>
-<span class="normal">1663</span>
-<span class="normal">1664</span>
-<span class="normal">1665</span>
-<span class="normal">1666</span>
-<span class="normal">1667</span>
-<span class="normal">1668</span>
-<span class="normal">1669</span>
-<span class="normal">1670</span>
-<span class="normal">1671</span>
-<span class="normal">1672</span>
-<span class="normal">1673</span>
-<span class="normal">1674</span>
-<span class="normal">1675</span>
-<span class="normal">1676</span>
-<span class="normal">1677</span>
-<span class="normal">1678</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1688</span>
+<span class="normal">1689</span>
+<span class="normal">1690</span>
+<span class="normal">1691</span>
+<span class="normal">1692</span>
+<span class="normal">1693</span>
+<span class="normal">1694</span>
+<span class="normal">1695</span>
+<span class="normal">1696</span>
+<span class="normal">1697</span>
+<span class="normal">1698</span>
+<span class="normal">1699</span>
+<span class="normal">1700</span>
+<span class="normal">1701</span>
+<span class="normal">1702</span>
+<span class="normal">1703</span>
+<span class="normal">1704</span>
+<span class="normal">1705</span>
+<span class="normal">1706</span>
+<span class="normal">1707</span>
+<span class="normal">1708</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates a dataslice record in a Parquet file with the provided custom properties.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -4244,8 +4259,8 @@ Args:
     <span class="n">dataslice_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Path&quot;</span><span class="p">]</span>
     <span class="n">dataslice_df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
 
@@ -4253,8 +4268,7 @@ Args:
 
   </div>
 
-  </div>
-
+    </div>
 
 </div>
 
@@ -4263,14 +4277,13 @@ Args:
 
 
 
-  <div class="doc doc-contents first">
-  
+    <div class="doc doc-contents first">
+
       <p>This module contains all the public API for CMF</p>
 
-  
+
 
   <div class="doc doc-children">
-
 
 
 
@@ -4283,15 +4296,14 @@ Args:
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.cmf_init_show" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">cmf_init_show</span><span class="p">()</span></code>
+            <code class="highlight language-python"><span class="n">cmf_init_show</span><span class="p">()</span></code>
 
 <a href="#cmflib.cmf.cmf_init_show" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Initializes and shows details of the CMF command. 
 Example: 
 <div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">cmf_init_show</span><span class="p">()</span> 
@@ -4299,20 +4311,20 @@ Example:
 Returns: 
    Output from the _cmf_cmd_init function.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1922</span>
-<span class="normal">1923</span>
-<span class="normal">1924</span>
-<span class="normal">1925</span>
-<span class="normal">1926</span>
-<span class="normal">1927</span>
-<span class="normal">1928</span>
-<span class="normal">1929</span>
-<span class="normal">1930</span>
-<span class="normal">1931</span>
-<span class="normal">1932</span>
-<span class="normal">1933</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init_show</span><span class="p">():</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1956</span>
+<span class="normal">1957</span>
+<span class="normal">1958</span>
+<span class="normal">1959</span>
+<span class="normal">1960</span>
+<span class="normal">1961</span>
+<span class="normal">1962</span>
+<span class="normal">1963</span>
+<span class="normal">1964</span>
+<span class="normal">1965</span>
+<span class="normal">1966</span>
+<span class="normal">1967</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init_show</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes and shows details of the CMF command. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4325,24 +4337,22 @@ Returns:
     <span class="n">output</span><span class="o">=</span><span class="n">_cmf_cmd_init</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.cmf_init" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.cmf_init" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Initializes the CMF configuration based on the provided parameters. 
 Example:
 <div class="highlight"><pre><span></span><code>   <span class="n">cmf_init</span><span class="p">(</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> 
@@ -4372,43 +4382,9 @@ Args:
 Returns:
    Output based on the initialized repository type.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1935</span>
-<span class="normal">1936</span>
-<span class="normal">1937</span>
-<span class="normal">1938</span>
-<span class="normal">1939</span>
-<span class="normal">1940</span>
-<span class="normal">1941</span>
-<span class="normal">1942</span>
-<span class="normal">1943</span>
-<span class="normal">1944</span>
-<span class="normal">1945</span>
-<span class="normal">1946</span>
-<span class="normal">1947</span>
-<span class="normal">1948</span>
-<span class="normal">1949</span>
-<span class="normal">1950</span>
-<span class="normal">1951</span>
-<span class="normal">1952</span>
-<span class="normal">1953</span>
-<span class="normal">1954</span>
-<span class="normal">1955</span>
-<span class="normal">1956</span>
-<span class="normal">1957</span>
-<span class="normal">1958</span>
-<span class="normal">1959</span>
-<span class="normal">1960</span>
-<span class="normal">1961</span>
-<span class="normal">1962</span>
-<span class="normal">1963</span>
-<span class="normal">1964</span>
-<span class="normal">1965</span>
-<span class="normal">1966</span>
-<span class="normal">1967</span>
-<span class="normal">1968</span>
-<span class="normal">1969</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1969</span>
 <span class="normal">1970</span>
 <span class="normal">1971</span>
 <span class="normal">1972</span>
@@ -4507,7 +4483,41 @@ Returns:
 <span class="normal">2065</span>
 <span class="normal">2066</span>
 <span class="normal">2067</span>
-<span class="normal">2068</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="normal">2068</span>
+<span class="normal">2069</span>
+<span class="normal">2070</span>
+<span class="normal">2071</span>
+<span class="normal">2072</span>
+<span class="normal">2073</span>
+<span class="normal">2074</span>
+<span class="normal">2075</span>
+<span class="normal">2076</span>
+<span class="normal">2077</span>
+<span class="normal">2078</span>
+<span class="normal">2079</span>
+<span class="normal">2080</span>
+<span class="normal">2081</span>
+<span class="normal">2082</span>
+<span class="normal">2083</span>
+<span class="normal">2084</span>
+<span class="normal">2085</span>
+<span class="normal">2086</span>
+<span class="normal">2087</span>
+<span class="normal">2088</span>
+<span class="normal">2089</span>
+<span class="normal">2090</span>
+<span class="normal">2091</span>
+<span class="normal">2092</span>
+<span class="normal">2093</span>
+<span class="normal">2094</span>
+<span class="normal">2095</span>
+<span class="normal">2096</span>
+<span class="normal">2097</span>
+<span class="normal">2098</span>
+<span class="normal">2099</span>
+<span class="normal">2100</span>
+<span class="normal">2101</span>
+<span class="normal">2102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">cmf_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -4642,250 +4652,59 @@ Returns:
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Enter all arguments&quot;</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
-
 <h2 id="cmflib.cmf.metadata_push" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
+    <div class="doc doc-contents ">
+
       <p>Pushes MLMD file to CMF-server.
 Example:
 <div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;mlmd_file&quot;</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">)</span>
 </code></pre></div>
 Args:
     pipeline_name: Name of the pipeline.
-    filename: Path to the MLMD file.
+    filepath: Path to the MLMD file.
     execution_id: Optional execution ID.</p>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Response output from the _metadata_push function.</p>
-            </div>
-          </td>
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Response output from the _metadata_push function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1831</span>
-<span class="normal">1832</span>
-<span class="normal">1833</span>
-<span class="normal">1834</span>
-<span class="normal">1835</span>
-<span class="normal">1836</span>
-<span class="normal">1837</span>
-<span class="normal">1838</span>
-<span class="normal">1839</span>
-<span class="normal">1840</span>
-<span class="normal">1841</span>
-<span class="normal">1842</span>
-<span class="normal">1843</span>
-<span class="normal">1844</span>
-<span class="normal">1845</span>
-<span class="normal">1846</span>
-<span class="normal">1847</span>
-<span class="normal">1848</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes MLMD file to CMF-server.</span>
-<span class="sd">    Example:</span>
-<span class="sd">    ```python</span>
-<span class="sd">         result = metadata_push(&quot;example_pipeline&quot;, &quot;mlmd_file&quot;, &quot;3&quot;)</span>
-<span class="sd">    ```</span>
-<span class="sd">    Args:</span>
-<span class="sd">        pipeline_name: Name of the pipeline.</span>
-<span class="sd">        filename: Path to the MLMD file.</span>
-<span class="sd">        execution_id: Optional execution ID.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Response output from the _metadata_push function.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments:  pipeline_name, filename (mlmd file path) </span>
-    <span class="c1">#Optional arguments: Execution_ID</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">output</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h2 id="cmflib.cmf.metadata_pull" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
-
-<a href="#cmflib.cmf.metadata_pull" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Pulls MLMD file from CMF-server. 
-Example: 
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;execution_123&quot;</span><span class="p">)</span> 
-</code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   filename: File path to store the MLMD file. 
-   execution_id: Optional execution ID. 
-Returns: 
-   Message from the _metadata_pull function.</p>
-
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1850</span>
-<span class="normal">1851</span>
-<span class="normal">1852</span>
-<span class="normal">1853</span>
-<span class="normal">1854</span>
-<span class="normal">1855</span>
-<span class="normal">1856</span>
-<span class="normal">1857</span>
-<span class="normal">1858</span>
-<span class="normal">1859</span>
-<span class="normal">1860</span>
-<span class="normal">1861</span>
-<span class="normal">1862</span>
-<span class="normal">1863</span>
-<span class="normal">1864</span>
-<span class="normal">1865</span>
-<span class="normal">1866</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span> <span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls MLMD file from CMF-server. </span>
-<span class="sd">     Example: </span>
-<span class="sd">     ```python </span>
-<span class="sd">          result = metadata_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;execution_123&quot;) </span>
-<span class="sd">     ``` </span>
-<span class="sd">     Args: </span>
-<span class="sd">        pipeline_name: Name of the pipeline. </span>
-<span class="sd">        filename: File path to store the MLMD file. </span>
-<span class="sd">        execution_id: Optional execution ID. </span>
-<span class="sd">     Returns: </span>
-<span class="sd">        Message from the _metadata_pull function. </span>
-<span class="sd">     &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments:  pipeline_name, filename(file path to store mlmd file) </span>
-    <span class="c1">#Optional arguments: Execution_ID</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">output</span>
-</code></pre></div></td></tr></table></div>
-          </details>
-  </div>
-
-</div>
-
-
-<div class="doc doc-object doc-function">
-
-
-
-<h2 id="cmflib.cmf.artifact_pull" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
-
-<a href="#cmflib.cmf.artifact_pull" class="headerlink" title="Permanent link">&para;</a></h2>
-
-
-  <div class="doc doc-contents ">
-  
-      <p>Pulls artifacts from the initialized repository.</p>
-<p>Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
-</code></pre></div></p>
-
-
-
-  <p><span class="doc-section-title">Parameters:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Type</th>
-        <th>Description</th>
-        <th>Default</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td><code>pipeline_name</code></td>
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Name of the pipeline.</p>
-            </div>
-          </td>
-          <td>
-              <em>required</em>
-          </td>
-        </tr>
-        <tr class="doc-section-item">
-          <td><code>filename</code></td>
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Path to store artifacts.</p>
-            </div>
-          </td>
-          <td>
-                <code>&#39;./mlmd&#39;</code>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Output from the _artifact_pull function.</p>
-            </div>
-          </td>
-        </tr>
-    </tbody>
-  </table>
-
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1868</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1865</span>
+<span class="normal">1866</span>
+<span class="normal">1867</span>
+<span class="normal">1868</span>
 <span class="normal">1869</span>
 <span class="normal">1870</span>
 <span class="normal">1871</span>
@@ -4899,64 +4718,60 @@ Returns:
 <span class="normal">1879</span>
 <span class="normal">1880</span>
 <span class="normal">1881</span>
-<span class="normal">1882</span>
-<span class="normal">1883</span>
-<span class="normal">1884</span>
-<span class="normal">1885</span>
-<span class="normal">1886</span>
-<span class="normal">1887</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls artifacts from the initialized repository.</span>
-
+<span class="normal">1882</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes MLMD file to CMF-server.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
-<span class="sd">         result = artifact_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
+<span class="sd">         result = metadata_push(&quot;example_pipeline&quot;, &quot;mlmd_file&quot;, &quot;3&quot;)</span>
 <span class="sd">    ```</span>
-
 <span class="sd">    Args:</span>
 <span class="sd">        pipeline_name: Name of the pipeline.</span>
-<span class="sd">        filename: Path to store artifacts.</span>
+<span class="sd">        filepath: Path to the MLMD file.</span>
+<span class="sd">        execution_id: Optional execution ID.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Output from the _artifact_pull function.</span>
+<span class="sd">        Response output from the _metadata_push function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Required arguments: Pipeline_name</span>
-    <span class="c1"># Optional arguments: filename( path to store artifacts)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">)</span>
+    <span class="c1"># Required arguments:  pipeline_name, filepath (mlmd file path) </span>
+    <span class="c1">#Optional arguments: Execution_ID</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="cmflib.cmf.metadata_pull" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
-<h2 id="cmflib.cmf.artifact_pull_single" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span></code>
-
-<a href="#cmflib.cmf.artifact_pull_single" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#cmflib.cmf.metadata_pull" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
-      <p>Pulls a single artifact from the initialized repository. 
+    <div class="doc doc-contents ">
+
+      <p>Pulls MLMD file from CMF-server. 
 Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull_single</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact&quot;</span><span class="p">)</span> 
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;execution_123&quot;</span><span class="p">)</span> 
 </code></pre></div>
 Args: 
    pipeline_name: Name of the pipeline. 
-   filename: Path to store the artifact. 
-   artifact_name: Name of the artifact. 
-Returns:
-   Output from the _artifact_pull_single function.</p>
+   filepath: File path to store the MLMD file. 
+   execution_id: Optional execution ID. 
+Returns: 
+   Message from the _metadata_pull function.</p>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1889</span>
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1884</span>
+<span class="normal">1885</span>
+<span class="normal">1886</span>
+<span class="normal">1887</span>
+<span class="normal">1888</span>
+<span class="normal">1889</span>
 <span class="normal">1890</span>
 <span class="normal">1891</span>
 <span class="normal">1892</span>
@@ -4967,80 +4782,117 @@ Returns:
 <span class="normal">1897</span>
 <span class="normal">1898</span>
 <span class="normal">1899</span>
-<span class="normal">1900</span>
-<span class="normal">1901</span>
-<span class="normal">1902</span>
-<span class="normal">1903</span>
-<span class="normal">1904</span>
-<span class="normal">1905</span>
-<span class="normal">1906</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls a single artifact from the initialized repository. </span>
-<span class="sd">    Example: </span>
-<span class="sd">    ```python </span>
-<span class="sd">        result = artifact_pull_single(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_artifact&quot;) </span>
-<span class="sd">    ```</span>
-<span class="sd">    Args: </span>
-<span class="sd">       pipeline_name: Name of the pipeline. </span>
-<span class="sd">       filename: Path to store the artifact. </span>
-<span class="sd">       artifact_name: Name of the artifact. </span>
-<span class="sd">    Returns:</span>
-<span class="sd">       Output from the _artifact_pull_single function. </span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Required arguments: Pipeline_name</span>
-    <span class="c1"># Optional arguments: filename( path to store artifacts)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filename</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">)</span>
+<span class="normal">1900</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span> <span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls MLMD file from CMF-server. </span>
+<span class="sd">     Example: </span>
+<span class="sd">     ```python </span>
+<span class="sd">          result = metadata_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;execution_123&quot;) </span>
+<span class="sd">     ``` </span>
+<span class="sd">     Args: </span>
+<span class="sd">        pipeline_name: Name of the pipeline. </span>
+<span class="sd">        filepath: File path to store the MLMD file. </span>
+<span class="sd">        execution_id: Optional execution ID. </span>
+<span class="sd">     Returns: </span>
+<span class="sd">        Message from the _metadata_pull function. </span>
+<span class="sd">     &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments:  pipeline_name, filepath(file path to store mlmd file) </span>
+    <span class="c1">#Optional arguments: Execution_ID</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
-
 
 <div class="doc doc-object doc-function">
 
 
+<h2 id="cmflib.cmf.artifact_pull" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
 
-<h2 id="cmflib.cmf.artifact_push" class="doc doc-heading">
-          <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">()</span></code>
-
-<a href="#cmflib.cmf.artifact_push" class="headerlink" title="Permanent link">&para;</a></h2>
+<a href="#cmflib.cmf.artifact_pull" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
-  <div class="doc doc-contents ">
-  
-      <p>Pushes artifacts to the initialized repository.</p>
+    <div class="doc doc-contents ">
+
+      <p>Pulls artifacts from the initialized repository.</p>
 <p>Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">()</span>
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
 </code></pre></div></p>
 
 
-
-  <p><span class="doc-section-title">Returns:</span></p>
-  <table>
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="doc-section-item">
-          <td>
-          </td>
-          <td>
-            <div class="doc-md-description">
-              <p>Output from the _artifact_push function.</p>
-            </div>
-          </td>
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
         </tr>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code>pipeline_name</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code>filepath</code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to store artifacts.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
-          <details class="quote">
-            <summary>Source code in <code>cmflib/cmf.py</code></summary>
-            <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1908</span>
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _artifact_pull function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1902</span>
+<span class="normal">1903</span>
+<span class="normal">1904</span>
+<span class="normal">1905</span>
+<span class="normal">1906</span>
+<span class="normal">1907</span>
+<span class="normal">1908</span>
 <span class="normal">1909</span>
 <span class="normal">1910</span>
 <span class="normal">1911</span>
@@ -5052,7 +4904,151 @@ Returns:
 <span class="normal">1917</span>
 <span class="normal">1918</span>
 <span class="normal">1919</span>
-<span class="normal">1920</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_push</span><span class="p">():</span>
+<span class="normal">1920</span>
+<span class="normal">1921</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls artifacts from the initialized repository.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">         result = artifact_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pipeline_name: Name of the pipeline.</span>
+<span class="sd">        filepath: Path to store artifacts.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Output from the _artifact_pull function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Required arguments: Pipeline_name</span>
+    <span class="c1"># Optional arguments: filepath( path to store artifacts)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.artifact_pull_single" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.artifact_pull_single" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Pulls a single artifact from the initialized repository. 
+Example: 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull_single</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   filepath: Path to store the artifact. 
+   artifact_name: Name of the artifact. 
+Returns:
+   Output from the _artifact_pull_single function.</p>
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1923</span>
+<span class="normal">1924</span>
+<span class="normal">1925</span>
+<span class="normal">1926</span>
+<span class="normal">1927</span>
+<span class="normal">1928</span>
+<span class="normal">1929</span>
+<span class="normal">1930</span>
+<span class="normal">1931</span>
+<span class="normal">1932</span>
+<span class="normal">1933</span>
+<span class="normal">1934</span>
+<span class="normal">1935</span>
+<span class="normal">1936</span>
+<span class="normal">1937</span>
+<span class="normal">1938</span>
+<span class="normal">1939</span>
+<span class="normal">1940</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls a single artifact from the initialized repository. </span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">        result = artifact_pull_single(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_artifact&quot;) </span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       filepath: Path to store the artifact. </span>
+<span class="sd">       artifact_name: Name of the artifact. </span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output from the _artifact_pull_single function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Required arguments: Pipeline_name</span>
+    <span class="c1"># Optional arguments: filepath( path to store artifacts)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.artifact_push" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">()</span></code>
+
+<a href="#cmflib.cmf.artifact_push" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+      <p>Pushes artifacts to the initialized repository.</p>
+<p>Example:
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">()</span>
+</code></pre></div></p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _artifact_push function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1942</span>
+<span class="normal">1943</span>
+<span class="normal">1944</span>
+<span class="normal">1945</span>
+<span class="normal">1946</span>
+<span class="normal">1947</span>
+<span class="normal">1948</span>
+<span class="normal">1949</span>
+<span class="normal">1950</span>
+<span class="normal">1951</span>
+<span class="normal">1952</span>
+<span class="normal">1953</span>
+<span class="normal">1954</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_push</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes artifacts to the initialized repository.</span>
 
 <span class="sd">    Example:</span>
@@ -5066,8 +5062,8 @@ Returns:
     <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
-          </details>
-  </div>
+            </details>
+    </div>
 
 </div>
 
@@ -5075,7 +5071,7 @@ Returns:
 
   </div>
 
-  </div>
+    </div>
 
 </div>
 
@@ -5153,7 +5149,7 @@ Returns:
     <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.a7c05c9e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.081f42fc.min.js"></script>
       
     
   </body>
