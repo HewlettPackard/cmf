@@ -5,18 +5,18 @@ also implements APIs to query this metadata. The CMF adopts a data-first approac
 models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 ## Installation
-CMF requires 3.8 >= Python <= 3.9.<br>
+CMF requires 3.9 >= Python <= 3.11.<br>
 Create python virtual environment:
 
 === "Conda"
     ```shell
-    conda create -n cmf python=3.8
+    conda create -n cmf python=3.10
     conda activate cmf
     ```
 
 === "VirtualEnv" 
     ```shell
-    virtualenv --python=3.8 .cmf
+    virtualenv --python=3.10 .cmf
     source .cmf/bin/activate
     ```
 
@@ -35,8 +35,6 @@ Install CMF
 1. Create working directory `mkdir <workdir>`
 2. Execute `cmf init` to configure dvc remote directory, git remote url, cmf server and neo4j. Follow [here](./cmf_client/cmf_client.md#cmf-init) for more details.
 
-
-### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
 each stage performs a particular task, such as data loading,  pre-processing, ML model training and testing stages.
@@ -241,6 +239,7 @@ cmf =  cmf.Cmf(
 )
 ```
 
+### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## <a name="docker-section"></a> Use a Jupyterlab Docker environment with CMF pre-installed
 CMF has a docker-compose file which creates two docker containers,
 - JupyterLab Notebook Environment with CMF pre installed.
