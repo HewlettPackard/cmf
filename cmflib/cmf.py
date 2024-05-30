@@ -665,9 +665,6 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-        print("logging dataset")
-        logging_dir = os.getcwd()
-        print(os.getcwd())
         logging_dir = change_dir(self.cmf_init_path)
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
