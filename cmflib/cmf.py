@@ -1456,14 +1456,12 @@ class Cmf:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metrics.
         """
-        logging_dir = change_dir(self.cmf_init_path)
         if metrics_name in self.metrics:
             key = max((self.metrics[metrics_name]).keys()) + 1
             self.metrics[metrics_name][key] = custom_properties
         else:
             self.metrics[metrics_name] = {}
             self.metrics[metrics_name][1] = custom_properties
-        os.chdir(logging_dir)
 
     def commit_metrics(self, metrics_name: str):
         """ Writes the in-memory metrics to a Parquet file, commits the metrics file associated with the metrics id to DVC and Git,
@@ -1607,10 +1605,7 @@ class Cmf:
     def log_validation_output(
         self, version: str, custom_properties: t.Optional[t.Dict] = None
     ) -> object: 
-        if not os.getcwd() == self.cmf_init_path: 
-            os.chdir(self.cmf_init_path)
         uri = str(uuid.uuid1())
-        os.chdir(os.getcwd())
         return create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
