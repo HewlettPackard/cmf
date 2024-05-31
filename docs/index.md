@@ -7,20 +7,20 @@ models and performance metrics) recorded by the framework are versioned and iden
 ## Installation
 
 #### 1. Pre-Requisites:
-* 3.8>= Python <=3.9
+* 3.9>= Python <=3.11
 * Git latest version
 
 #### 2. Set up Python Virtual Environment:
 
 === "Using Conda"
     ```shell
-    conda create -n cmf python=3.8
+    conda create -n cmf python=3.10
     conda activate cmf
     ```
 
 === "Using VirtualEnv" 
     ```shell
-    virtualenv --python=3.8 .cmf
+    virtualenv --python=3.10 .cmf
     source .cmf/bin/activate
     ```
 
@@ -39,8 +39,6 @@ models and performance metrics) recorded by the framework are versioned and iden
 
 After installing CMF, proceed to configure CMF server and client. For detailed configuration instructions, refer to the [Quick start with cmf-client](./cmf_client/step-by-step.md) page.
 
-
-### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 
 ## Introduction
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
@@ -247,6 +245,7 @@ cmf =  cmf.Cmf(
 )
 ```
 
+### [Jupyter Lab docker container with CMF pre-installed](#docker-section)
 ## <a name="docker-section"></a> Use a Jupyterlab Docker environment with CMF pre-installed
 CMF has a docker-compose file which creates two docker containers,
 - JupyterLab Notebook Environment with CMF pre installed.
