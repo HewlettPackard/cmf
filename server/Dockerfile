@@ -14,8 +14,8 @@
 # limitations under the License.
 ###
 
-# Use python 3.8-slim-buster as base image.
-FROM python:3.8-slim-buster
+# Use python 3.10-slim-buster as base image.
+FROM python:3.10-slim-buster
 
 #Update the proxy if needed
 #ENV http_proxy http://web-proxy.corp.hpecorp.net:8080
