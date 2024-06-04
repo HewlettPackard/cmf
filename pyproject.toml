@@ -1,9 +1,9 @@
 [project]
 name = "cmflib"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
-	"ml-metadata==1.11.0",
-	"dvc[ssh,s3]==2.27.0",
+	"ml-metadata==1.15.0",
+	"dvc[ssh,s3]==3.51.1",
 	"pandas",
 	"retrying",
 	"pyarrow",
@@ -19,7 +19,7 @@ authors = [
 ]
 description = "Track metadata for AI pipeline"
 readme = "README.md"
-requires-python = ">=3.8,<3.10"
+requires-python = ">=3.9,<=3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: POSIX :: Linux",
