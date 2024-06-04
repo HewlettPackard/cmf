@@ -55,14 +55,23 @@ class CmdArtifactPull(CmdBase):
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
+            token_length = len(token) #calculate length of token
             bucket_name = token[2]
-            object_name = token[3] + "/" + token[4]
+            #The folder structure of artifact data has been updated due to a change in the DVC version.
+            #Previously, the structure was dvc-art/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files dvc-art/md5/23/69v2uu3jeejjeiw.
+            #Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
+            token = token[(token_length-4):]
+            object_name = "/".join(token)
             path_name = current_directory + "/" + name
             return bucket_name, object_name, path_name
         elif type == "local":
             token_length = len(token)
             download_loc = current_directory + "/" + name
-            current_dvc_loc = (token[(token_length - 2)] + "/" + token[(token_length - 1)])
+            #The folder structure of artifact data has been updated due to a change in the DVC version.
+            #Previously, the structure was local-storage/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files local-storage/md5/23/69v2uu3jeejjeiw.
+            #Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
+            token = token[(token_length-4):]
+            current_dvc_loc = "/".join(token)
             return current_dvc_loc, download_loc
         elif type == "ssh":
             token_var = token[2].split(":")
@@ -310,3 +319,4 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
+
