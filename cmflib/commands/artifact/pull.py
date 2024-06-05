@@ -31,47 +31,59 @@ from cmflib.utils.dvc_config import DvcConfig
 
 class CmdArtifactPull(CmdBase):
 
-    def split_url_pipeline(self, url: str, pipeline_name: str): 
-        if pipeline_name in url:
+    def split_url_pipeline(self, url: str, pipeline_name: str):
+       # This function takes url and pipeline_name as a input parameter and return string which contains the path from which we need to pull the artifact 
+       # url = Test-env:/home/user/local-storage/files/md5/23/6d9502e0283d91f689d7038b8508a2
+       # pipeline_name = Test-env
+
+       # checking whether pipeline name exist inside url 
+       if pipeline_name in url:
+            # if multiple element are present inside url then spliting it using ',' delimiter 
             if "," in url:
                 urls = url.split(",")
+                # iterate over each urls
                 for u in urls:
+                    # assign u to url if pipeline name exist
                     if pipeline_name in u:
                         url = u
+            # splitting url using ':' delimiter token = ["Test-env","home/user/local-storage/files/md5/23/6d9502e508a2"]
             token = url.split(":")
+            # removing 1st element from token that is pipeline name and now token looks like ["home/user/local-storage/files/md5/23/6d9502e508a2"]
             token.pop(0)
             if len(token) > 1:
+                # join that token using ':' delimiter
                 token = ":".join(token)
                 return token
+	    # return string of token
             return "".join(token)
 
     def extract_repo_args(self, type: str, name: str, url: str, current_directory: str):
-        #Extracting the repository URL, current path, bucket name, and other relevant 
-        #information from the user-supplied arguments.
-        #url = 'Test-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/06/d100ff3e04e2c>
+        # Extracting the repository URL, current path, bucket name, and other relevant 
+        # information from the user-supplied arguments.
+        # url = 'Test-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c>
         # s_url = Url without pipeline name
-        s_url = self.split_url_pipeline(url, self.args.pipeline_name)
-        token = s_url.split("/")
+        s_url = self.split_url_pipeline(url, self.args.pipeline_name) #got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
+        token = s_url.split("/") #spliting url using '/' delimiter
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
             token_length = len(token) #calculate length of token
-            bucket_name = token[2]
-            #The folder structure of artifact data has been updated due to a change in the DVC version.
-            #Previously, the structure was dvc-art/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files dvc-art/md5/23/69v2uu3jeejjeiw.
-            #Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
-            token = token[(token_length-4):]
-            object_name = "/".join(token)
+            bucket_name = token[2] # assigned 2nd position element to bucket_name
+            # The folder structure of artifact data has been updated due to a change in the DVC version.
+            # Previously, the structure was dvc-art/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files dvc-art/files/md5/23/69v2uu3jeejjeiw.
+            # Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
+            token = token[(token_length-4):] # get last 4 element inside token 
+            object_name = "/".join(token) # join token using '/' delimiter
             path_name = current_directory + "/" + name
             return bucket_name, object_name, path_name
         elif type == "local":
-            token_length = len(token)
-            download_loc = current_directory + "/" + name
-            #The folder structure of artifact data has been updated due to a change in the DVC version.
-            #Previously, the structure was local-storage/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files local-storage/md5/23/69v2uu3jeejjeiw.
-            #Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
-            token = token[(token_length-4):]
-            current_dvc_loc = "/".join(token)
+            token_length = len(token) # calculate length of token
+            download_loc = current_directory + "/" + name 
+            # The folder structure of artifact data has been updated due to a change in the DVC version.
+            # Previously, the structure was local-storage/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files local-storage/files/md5/23/69v2uu3jeejjeiw.
+            # Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
+            token = token[(token_length-4):] # get last 4 element inside token 
+            current_dvc_loc = "/".join(token) # join token using '/' delimiter
             return current_dvc_loc, download_loc
         elif type == "ssh":
             token_var = token[2].split(":")
@@ -87,21 +99,25 @@ class CmdArtifactPull(CmdBase):
             # sometimes s_url is not starting with s3:// - technically this shouldn't happen
             if s_url and s_url.startswith("s3://"):
                 url_with_bucket = s_url.split("s3://")[1]
-                # url_with_bucket = varkha-test/23/6d9502e0283d91f689d7038b8508a2
-                # Splitting the string using '/' as the delimiter
-                bucket_name, object_name = url_with_bucket.split('/', 1)
+                # url_with_bucket = mybucket/user/files/md5/23/6d9502e0283d91f689d7038b8508a2
+                # splitting the string using '/' as the delimiter
+                # bucket_name = mybucket  
+                # object_name = user/files/md5/23/6d9502e0283d91f689d7038b8508a2 
+                bucket_name, object_name = url_with_bucket.split('/', 1) 
                 download_loc =  current_directory + "/" + name if current_directory != ""  else name
-                print(download_loc)
+                #print(download_loc)
                 return bucket_name, object_name, download_loc
             else:
                 # returning bucket_name, object_name and download_loc returning as empty
                 return "", "", ""
 
     def search_artifact(self, input_dict):
-        for name, url in input_dict.items():
+        # This function takes input_dict as input artifact 
+        for name, url in input_dict.items(): 
             if not isinstance(url, str):
                 continue
-            name = name.split(":")[0]
+            # splitting name with ':' as the delimiter and store first argument inside name
+            name = name.split(":")[0] 
             file_name = name.split('/')[-1]
             if file_name == self.args.artifact_name:
                 return name, url
@@ -109,7 +125,7 @@ class CmdArtifactPull(CmdBase):
                 pass
 
     def run(self):
-        # Put a check to see whether pipline exists or not
+        # check whether the mlmd file exist or not in current directory
         pipeline_name = self.args.pipeline_name
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
@@ -122,6 +138,7 @@ class CmdArtifactPull(CmdBase):
             return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
         query = cmfquery.CmfQuery(mlmd_file_name)
 
+        # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
         identifiers = []
@@ -133,11 +150,13 @@ class CmdArtifactPull(CmdBase):
             if len(executions) > 0:
                  # converting it to dictionary
                 dict_executions = executions.to_dict("dict")
+                # append id's of executions inside identifiers
                 for id in dict_executions["id"].values():
                     identifiers.append(id)
             else:
                 print("No Executions found for " + stage + " stage.")
 
+        # created dictionary
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
             return "No executions found."
@@ -145,9 +164,9 @@ class CmdArtifactPull(CmdBase):
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
-            temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url']))
-            name_url_dict.update(temp_dict)
-        #print(name_url_dict)
+            temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
+            name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
+        # print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
 
@@ -250,6 +269,7 @@ class CmdArtifactPull(CmdBase):
             return "Done"
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
+            #print(self.args.artifact_name,"artifact name")
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
@@ -269,7 +289,6 @@ class CmdArtifactPull(CmdBase):
                         print(stmt)
             else:
                 for name, url in name_url_dict.items():
-                    #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
