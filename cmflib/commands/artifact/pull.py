@@ -32,13 +32,14 @@ from cmflib.utils.dvc_config import DvcConfig
 class CmdArtifactPull(CmdBase):
 
     def split_url_pipeline(self, url: str, pipeline_name: str):
-       # This function takes url and pipeline_name as a input parameter and return string which contains the path from which we need to pull the artifact 
+       # This function takes url and pipeline_name as a input parameter
+       # return string which contains the artifact repo path of the artifact
        # url = Test-env:/home/user/local-storage/files/md5/23/6d9502e0283d91f689d7038b8508a2
        # pipeline_name = Test-env
 
-       # checking whether pipeline name exist inside url 
+       # checking whether pipeline name exist inside url
        if pipeline_name in url:
-            # if multiple element are present inside url then spliting it using ',' delimiter 
+            # if multiple pipelines logs same artifact, then spliting them using ',' delimiter 
             if "," in url:
                 urls = url.split(",")
                 # iterate over each urls
@@ -48,44 +49,69 @@ class CmdArtifactPull(CmdBase):
                         url = u
             # splitting url using ':' delimiter token = ["Test-env","home/user/local-storage/files/md5/23/6d9502e508a2"]
             token = url.split(":")
-            # removing 1st element from token that is pipeline name and now token looks like ["home/user/local-storage/files/md5/23/6d9502e508a2"]
+            # removing 1st element from token i.e pipeline name
+            # output token will be ["home/user/local-storage/files/md5/23/6d9502e508a2"]
             token.pop(0)
             if len(token) > 1:
-                # join that token using ':' delimiter
+                # in case of metrics we have multiple ':' in its url
+                # concating remaining tokens after removing pipeline_name using ':' delimiter
                 token = ":".join(token)
                 return token
-	    # return string of token
             return "".join(token)
 
     def extract_repo_args(self, type: str, name: str, url: str, current_directory: str):
-        # Extracting the repository URL, current path, bucket name, and other relevant 
+        # Extracting the repository URL, current path, bucket name, and other relevant
         # information from the user-supplied arguments.
-        # url = 'Test-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c>
+        # url = Test-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c87bf20f0feacc9034,
+        #          Second-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c"
+
         # s_url = Url without pipeline name
-        s_url = self.split_url_pipeline(url, self.args.pipeline_name) #got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
-        token = s_url.split("/") #spliting url using '/' delimiter
+        s_url = self.split_url_pipeline(url, self.args.pipeline_name)
+
+        # got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
+        #spliting url using '/' delimiter
+        token = s_url.split("/")
+
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
-            token_length = len(token) #calculate length of token
-            bucket_name = token[2] # assigned 2nd position element to bucket_name
-            # The folder structure of artifact data has been updated due to a change in the DVC version.
-            # Previously, the structure was dvc-art/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files dvc-art/files/md5/23/69v2uu3jeejjeiw.
-            # Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
-            token = token[(token_length-4):] # get last 4 element inside token 
-            object_name = "/".join(token) # join token using '/' delimiter
+            token_length = len(token)
+
+            # assigned 2nd position element to bucket_name
+            bucket_name = token[2]
+
+            # The folder structure of artifact data has been updated due to a change in the DVC 3.0 version
+            # Previously, the structure was dvc-art/23/69v2uu3jeejjeiw
+            # but now it includes additional directories and has become files dvc-art/files/md5/23/69v2uu3jeejjeiw.
+            # Consequently, the previous logic takes only the last 2 elements from the list of tokens,
+            # but with the new structure, it needs to take the last 4 elements.
+
+            # get last 4 element inside token
+            token = token[(token_length-4):]
+
+            # join last 4 token using '/' delimiter
+            object_name = "/".join(token)
+            # output = files/md5/23/69v2uu3jeejjeiw
+
             path_name = current_directory + "/" + name
             return bucket_name, object_name, path_name
+
         elif type == "local":
-            token_length = len(token) # calculate length of token
-            download_loc = current_directory + "/" + name 
-            # The folder structure of artifact data has been updated due to a change in the DVC version.
-            # Previously, the structure was local-storage/23/69v2uu3jeejjeiw, but now it includes additional directories and has become files local-storage/files/md5/23/69v2uu3jeejjeiw.
-            # Consequently, the previous logic takes only the last 2 elements from the list of tokens, but with the new structure, it needs to take the last 4 elements.
-            token = token[(token_length-4):] # get last 4 element inside token 
-            current_dvc_loc = "/".join(token) # join token using '/' delimiter
+            token_length = len(token)
+            download_loc = current_directory + "/" + name
+
+            # local artifact repo path =  local-storage/files/md5/23/69v2uu3jeejjeiw.
+
+            # get last 4 element inside token
+            token = token[(token_length-4):]
+
+            # join last 4 token using '/' delimiter
+            current_dvc_loc = "/".join(token)
+
             return current_dvc_loc, download_loc
+
         elif type == "ssh":
+            # comments remaining
             token_var = token[2].split(":")
             host = token_var[0]
             token.pop(0)
@@ -94,6 +120,7 @@ class CmdArtifactPull(CmdBase):
             current_loc_1 = "/".join(token)
             current_loc = f"/{current_loc_1}"
             return host, current_loc, name
+
         else:
             # sometimes s_url is empty - this shouldn't happen technically
             # sometimes s_url is not starting with s3:// - technically this shouldn't happen
@@ -101,9 +128,9 @@ class CmdArtifactPull(CmdBase):
                 url_with_bucket = s_url.split("s3://")[1]
                 # url_with_bucket = mybucket/user/files/md5/23/6d9502e0283d91f689d7038b8508a2
                 # splitting the string using '/' as the delimiter
-                # bucket_name = mybucket  
-                # object_name = user/files/md5/23/6d9502e0283d91f689d7038b8508a2 
-                bucket_name, object_name = url_with_bucket.split('/', 1) 
+                # bucket_name = mybucket
+                # object_name = user/files/md5/23/6d9502e0283d91f689d7038b8508a2
+                bucket_name, object_name = url_with_bucket.split('/', 1)
                 download_loc =  current_directory + "/" + name if current_directory != ""  else name
                 #print(download_loc)
                 return bucket_name, object_name, download_loc
@@ -112,12 +139,12 @@ class CmdArtifactPull(CmdBase):
                 return "", "", ""
 
     def search_artifact(self, input_dict):
-        # This function takes input_dict as input artifact 
-        for name, url in input_dict.items(): 
+        # This function takes input_dict as input artifact
+        for name, url in input_dict.items():
             if not isinstance(url, str):
                 continue
             # splitting name with ':' as the delimiter and store first argument inside name
-            name = name.split(":")[0] 
+            name = name.split(":")[0]
             file_name = name.split('/')[-1]
             if file_name == self.args.artifact_name:
                 return name, url
