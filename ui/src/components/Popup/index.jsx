@@ -15,4 +15,4 @@ const Popup = ({ handleClose, show }) => {
 	);
 };
 
-export default index;
+export default Popup;

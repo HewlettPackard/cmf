@@ -18,6 +18,7 @@
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.css";
+import Popup from "../../components/Popup";
 const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
 
   // Default sorting order
@@ -29,6 +30,8 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
   const [expandedRow, setExpandedRow] = useState(null);
 
   const consistentColumns = [];
+
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     // Set initial sorting order when component mounts
@@ -53,6 +56,11 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
     } else {
       setExpandedRow(rowId);
     }
+  };
+
+  
+  const togglePopup = () =>{
+    setShowPopup(!showPopup);
   };
 
   return (
@@ -116,7 +124,10 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                     </td>
                     <td className="px-6 py-4">{data.id}</td>
                     <td className="px-6 py-4">{data.name}</td>
-                    <td className="px-6 py-4">{ <a href= "https://github.com/HewlettPackard/cmf/pull/179" > Click here </a>}</td>
+                    <td className="px-6 py-4">
+			<a href="#" onClick={togglePopup}>Click here</a>
+			<Popup show={showPopup} handleClose={togglePopup} />
+		    </td>
                     <td className="px-6 py-4">{data.execution_type_name}</td>
                     <td className="px-6 py-4">{data.url}</td>
                     <td className="px-6 py-4">{data.uri}</td>
