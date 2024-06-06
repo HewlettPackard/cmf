@@ -83,7 +83,10 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                   name {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
                   {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
                 </th>
-                <th scope="col" className="exe_uuid px-6 py-3">
+                <th scope="col className="url px-6 py-3"">
+		  model_card
+		</th>
+		<th scope="col" className="exe_uuid px-6 py-3">
                   execution_type_name
                 </th>
                 <th scope="col" className="url px-6 py-3">
@@ -113,6 +116,7 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                     </td>
                     <td className="px-6 py-4">{data.id}</td>
                     <td className="px-6 py-4">{data.name}</td>
+                    <td className="px-6 py-4">{ <a href= "https://github.com/HewlettPackard/cmf/pull/179" > Click here </a>}</td>
                     <td className="px-6 py-4">{data.execution_type_name}</td>
                     <td className="px-6 py-4">{data.url}</td>
                     <td className="px-6 py-4">{data.uri}</td>
