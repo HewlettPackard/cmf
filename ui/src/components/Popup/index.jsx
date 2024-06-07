@@ -1,7 +1,6 @@
 import React from 'react';
 import './index.css'; // Optional: For styling the popup
 
-
 const Popup = ({ show, artifacts, onClose }) => {
     if (!show) {
         return null;
@@ -30,7 +29,20 @@ const Popup = ({ show, artifacts, onClose }) => {
                 <button onClick={onClose} className="close-button">X</button>	
                 <button className="download-button" onClick={downloadJSON}><i class="fa fa-download"></i></button>
                 <div className="popup-content">
-                    <p>hii jjlee</p>
+                   {artifacts.length > 0 && artifacts.map((data, index) => (
+                      <div key={index} className="popup-row">
+                            <div className="popup-labels">
+                              {Object.keys(data).map((key, idx) => (
+                                     <p key={idx}>{key}:</p>
+                              ))}
+                            </div>
+                            <div className="popup-data">
+                              {Object.values(data).map((value, idx) => (
+                                    <p key={idx}>{value ? value : "Null"}</p>
+                                ))}
+                            </div>
+                   </div>
+                    ))} 
                 </div>
             </div>
         </div>

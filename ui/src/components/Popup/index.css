@@ -4,19 +4,22 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .popup {
-    background: white;
+    background-color: white;
     padding: 20px;
-    border-radius: 5px;
-    max-width: 500px;
+    border-radius: 8px;
+    max-width: 1100px;
     width: 100%;
     position: relative;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-height: 90vh; /* Ensuring it doesn't exceed the viewport */
+    overflow-y: auto; /* Ensure the popup can scroll if it still overflows */
 }
 
 .close-button {
@@ -43,4 +46,30 @@
 
 .popup-content {
     margin-top: 20px;
+}
+
+.popup-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.popup-labels, .popup-data {
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-labels {
+    flex: 1;
+    font-weight: bold;
+    background-color: #f0f0f0; /* Light gray background for labels */
+    padding: 10px;
+    border-radius: 4px 0 0 4px; /* Rounded corners for left section */
+}
+
+.popup-data {
+    flex: 2;
+    background-color: #e0f7fa; /* Light blue background for data */
+    padding: 10px;
+    border-radius: 0 4px 4px 0; /* Rounded corners for right section */
 }

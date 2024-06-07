@@ -137,8 +137,8 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                     <td className="px-6 py-4">{data.name}</td>
                     {ArtifactType === "Model" && (
                     <td className="px-6 py-4">
-                    <a href="#" onClick={handleLinkClick}>Open Popup</a>
-                    <Popup show={showPopup} artifacts={popupData} onClose={handleClosePopup} />
+                        <a href="#" onClick={handleLinkClick}>Open Popup</a>
+                        <Popup show={showPopup} artifacts={popupData} onClose={handleClosePopup} />
                     </td>
                     )}
                     <td className="px-6 py-4">{data.execution_type_name}</td>
