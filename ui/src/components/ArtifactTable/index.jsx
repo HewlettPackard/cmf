@@ -62,7 +62,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
     const handleLinkClick = () => {
         // Fetch or set the data you want to display in the popup
-        setPopupData('Here is the data to be displayed in the popup!');
+        setPopupData(artifacts);
         setShowPopup(true);
     };
 
@@ -138,7 +138,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                     {ArtifactType === "Model" && (
                     <td className="px-6 py-4">
                     <a href="#" onClick={handleLinkClick}>Open Popup</a>
-                    <Popup show={showPopup} data={popupData} onClose={handleClosePopup} />
+                    <Popup show={showPopup} artifacts={popupData} onClose={handleClosePopup} />
                     </td>
                     )}
                     <td className="px-6 py-4">{data.execution_type_name}</td>

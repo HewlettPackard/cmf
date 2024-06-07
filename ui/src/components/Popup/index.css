@@ -16,14 +16,28 @@
     border-radius: 5px;
     max-width: 500px;
     width: 100%;
+    position: relative;
 }
 
 .close-button {
-    background: red;
+    background: gray;
     color: white;
-    border: none;
+    border: 2px solid black;
+    border-radius: 50%;
     padding: 5px 10px;
     cursor: pointer;
+    position: absolute;
+    top: -11px;
+    right: -6px;
+}
+
+.download-button {
+    background: white;
+    color: dark gray;
+    border: none;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
     float: right;
 }
 
