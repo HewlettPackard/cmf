@@ -1,18 +1,21 @@
 import React from 'react';
-import './index.css';
+import './index.css'; // Optional: For styling the popup
 
-const Popup = ({ handleClose, show }) => {
-	const showHideClassName = show ? "popup display-block" : "popup display-none";
-	
-	return(
-		<div className={showHideClassName}>
-			<section className="popup-main">
-				<h2>This is a popup</h2>
-				<p>Some content for the popup</p>
-				<button onClick={handleClose}>Close</button>
-			</section>
-		</div>
-	);
+const Popup = ({ show, data, onClose }) => {
+    if (!show) {
+        return null;
+    }
+
+    return (
+        <div className="popup-overlay">
+            <div className="popup">
+                <button onClick={onClose} className="close-button">Close</button>
+                <div className="popup-content">
+                    {data}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default Popup;

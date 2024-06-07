@@ -19,10 +19,13 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 import Popup from "../../components/Popup";
-const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
+const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
   // Default sorting order
   const [sortOrder, setSortOrder] = useState("Context_Type");
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState('');
+
 
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
@@ -31,7 +34,6 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
 
   const consistentColumns = [];
 
-  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     // Set initial sorting order when component mounts
@@ -58,11 +60,17 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
     }
   };
 
-  
-  const togglePopup = () =>{
-    setShowPopup(!showPopup);
-  };
+    const handleLinkClick = () => {
+        // Fetch or set the data you want to display in the popup
+        setPopupData('Here is the data to be displayed in the popup!');
+        setShowPopup(true);
+    };
 
+    const handleClosePopup = () => {
+        setShowPopup(false);
+    };
+
+  
   return (
     <div className="container flex flex-col mx-auto p-6 mr-4">
       <div className="flex flex-col items-end m-1">
@@ -91,9 +99,12 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                   name {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
                   {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
                 </th>
-                <th scope="col className="url px-6 py-3"">
-		  model_card
-		</th>
+                {ArtifactType === "Model" && (
+                <th scope="col" className="model_card px-6 py-3">
+                  model_card
+                </th>
+                )}
+
 		<th scope="col" className="exe_uuid px-6 py-3">
                   execution_type_name
                 </th>
@@ -124,10 +135,12 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                     </td>
                     <td className="px-6 py-4">{data.id}</td>
                     <td className="px-6 py-4">{data.name}</td>
+                    {ArtifactType === "Model" && (
                     <td className="px-6 py-4">
-			<a href="#" onClick={togglePopup}>Click here</a>
-			<Popup show={showPopup} handleClose={togglePopup} />
-		    </td>
+                    <a href="#" onClick={handleLinkClick}>Open Popup</a>
+                    <Popup show={showPopup} data={popupData} onClose={handleClosePopup} />
+                    </td>
+                    )}
                     <td className="px-6 py-4">{data.execution_type_name}</td>
                     <td className="px-6 py-4">{data.url}</td>
                     <td className="px-6 py-4">{data.uri}</td>
