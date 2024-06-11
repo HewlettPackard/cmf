@@ -19,11 +19,15 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 import Popup from "../../components/Popup";
+import FastAPIClient from "../../client";
+import config from "../../config";
+
+const client = new FastAPIClient(config);
+
 const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
   // Default sorting order
   const [sortOrder, setSortOrder] = useState("Context_Type");
-  const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState('');
 
 
@@ -60,15 +64,11 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
     }
   };
 
-    const handleLinkClick = () => {
-        // Fetch or set the data you want to display in the popup
-        setPopupData(artifacts);
-        setShowPopup(true);
+    const handleLinkClick = (model_id) => {
+        client.getModelCard(model_id).then((data) => {    
+    });
     };
 
-    const handleClosePopup = () => {
-        setShowPopup(false);
-    };
 
   
   return (
@@ -137,8 +137,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                     <td className="px-6 py-4">{data.name}</td>
                     {ArtifactType === "Model" && (
                     <td className="px-6 py-4">
-                        <a href="#" onClick={handleLinkClick}>Open Popup</a>
-                        <Popup show={showPopup} artifacts={popupData} onClose={handleClosePopup} />
+                        <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(data.id); }}>Open Popup</a>
                     </td>
                     )}
                     <td className="px-6 py-4">{data.execution_type_name}</td>
