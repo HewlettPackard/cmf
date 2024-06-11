@@ -110,7 +110,11 @@ class FastAPIClient {
   }
 
   async getModelCard(modelId) {
-    return this.apiClient.get(`/model-card/${modelId}`)
+    return this.apiClient.get(`/model-card`, {
+        params: {
+          modelId: modelId,
+        },
+      })
       .then(({data}) => {
         return data;
       });

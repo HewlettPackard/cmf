@@ -66,9 +66,9 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
     const handleLinkClick = (model_id) => {
         client.getModelCard(model_id).then((data) => {    
-        setPopupData(artifacts);
-        setShowPopup(true);
-    });
+          setPopupData(data);
+          setShowPopup(true);
+      });
     };
 
     const handleClosePopup = () => {
@@ -106,7 +106,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                 </th>
                 {ArtifactType === "Model" && (
                 <th scope="col" className="model_card px-6 py-3">
-                  model_card
+                  Model_Card
                 </th>
                 )}
 
@@ -142,7 +142,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                     <td className="px-6 py-4">{data.name}</td>
                     {ArtifactType === "Model" && (
                     <td className="px-6 py-4">
-                        <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(data.id); }}>Open Popup</a>
+                        <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(data.id); }}>Open Model Card</a>
                         <Popup show={showPopup} artifacts={popupData} onClose={handleClosePopup} />
                     </td>
                     )}
