@@ -28,13 +28,13 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
   // Default sorting order
   const [sortOrder, setSortOrder] = useState("Context_Type");
-  const [popupData, setPopupData] = useState('');
-
 
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
 
   const [expandedRow, setExpandedRow] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState('');
 
   const consistentColumns = [];
 
@@ -66,9 +66,14 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
     const handleLinkClick = (model_id) => {
         client.getModelCard(model_id).then((data) => {    
+        setPopupData(artifacts);
+        setShowPopup(true);
     });
     };
 
+    const handleClosePopup = () => {
+        setShowPopup(false);
+    };
 
   
   return (
@@ -138,6 +143,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                     {ArtifactType === "Model" && (
                     <td className="px-6 py-4">
                         <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(data.id); }}>Open Popup</a>
+                        <Popup show={showPopup} artifacts={popupData} onClose={handleClosePopup} />
                     </td>
                     )}
                     <td className="px-6 py-4">{data.execution_type_name}</td>
