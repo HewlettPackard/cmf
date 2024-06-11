@@ -146,8 +146,7 @@ async def display_exec(
 @app.get("/display_artifact_lineage/{pipeline_name}")
 async def display_artifact_lineage(request: Request, pipeline_name: str):
     '''
-      This api's returns dictionary of nodes and links for given 
-      pipeline.
+      This api returns dictionary of nodes and links for given pipeline.
       response = {
                    nodes: [{id:"",name:""}],
                    links: [{source:1,target:4},{}],
@@ -170,8 +169,7 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
 @app.get("/get_execution_types/{pipeline_name}")
 async def get_execution_types(request: Request, pipeline_name: str):
     '''
-      This api's returns
-      list of execution types.
+      This api's returns list of execution types.
 
     '''
     # checks if mlmd file exists on server
@@ -304,6 +302,10 @@ async def upload_file(request:Request, pipeline_name: str = Query(..., descripti
     except Exception as e:
         return {"error": f"Failed to up load file: {e}"}
 
+@app.get("/model-card/{modelId}")
+async def model_card(request:Request, modelId: int): 
+    return "Hello, world"
+
 async def update_global_art_dict():
     global dict_of_art_ids
     output_dict = await get_all_artifact_ids(server_store_path)
@@ -316,3 +318,5 @@ async def update_global_exe_dict():
     output_dict = await get_all_exe_ids(server_store_path)
     dict_of_exe_ids = output_dict
     return
+
+
