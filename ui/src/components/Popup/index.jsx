@@ -5,8 +5,21 @@ const Popup = ({ show, artifacts, onClose }) => {
     if (!show) {
         return null;
     }
+
+    // find the uri value from artifacts
+    const findUri = () => {
+        const item = artifacts.find(entry => entry.uri);
+        return item ? item.uri : 'default';
+    }
+
+    // create filename based on uri
+    const createFilename = (uri) => {
+        return `model_card_${uri}.json`;
+    }
     
-    const downloadJSON = ( ) => {
+    const downloadJSON = () => {
+       const uri = findUri();
+       const filename = createFilename(uri);
 
        const jsonString = JSON.stringify(artifacts, null, 2);
        const blob = new Blob([jsonString], { type: 'application/json'}); 
@@ -14,7 +27,7 @@ const Popup = ({ show, artifacts, onClose }) => {
        const url = URL.createObjectURL(blob);
        const link = document.createElement('a');
        link.href = url;
-       link.download = 'popupContent.json';
+       link.download = filename;
        document.body.appendChild(link);
        link.click();
        document.body.removeChild(link);
