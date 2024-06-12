@@ -53,103 +53,85 @@ const Popup = ({ show, model_data, onClose }) => {
                                          ))}
                                       </div>
                                  </div>))}
-              <hr/> 
               </div>
           );
         case 1:
+          const exe_headers = item.length > 0 ? Object.keys(item[0]) : [];
           return (
             <div className="table-container">
+              <hr/> 
               <p>List of executions in which model has been used</p><br/>
-			<table className="table">
+                      <table className="table">
                           <thead className="thead">
                             <tr>
-                              <th scope="col">execution_id</th>
-                              <th scope="col">Type</th>
-                              <th scope="col">pipeline</th>
-                              <th scope="col">stage</th>
+                                {exe_headers.map((header, index) => (
+                                    <th scope="col" key={index}>{header}</th>
+                                ))}
                             </tr>
                           </thead>
                           <tbody className="tbody">
                             {item.length > 0 && item.map((data, i) => (
-                            <tr>
-                              <td>{data.execution_id}</td>
-                              <td>{data.Type}</td>
-                              <td>{data.pipeline}</td>
-                              <td>{data.stage}</td>
+                            <tr key={i}>
+                                {exe_headers.map((header, index) => (
+                                    <td key={index}>{data[header]}</td>
+                                ))}
                             </tr>
                             ))}
                           </tbody>
-                        </table>
-            <hr/>
+                      </table>
             </div>
           );
         case 2:
+          const input_headers = item.length > 0 ? Object.keys(item[0]) : [];
           return (
             <div className="table-container">
+              <hr/> 
               <p>List of input artifacts for the model</p><br/>
                       <table className="table">
                           <thead className="thead">
                             <tr>
-                              <th scope="col">id</th>
-                              <th scope="col">name</th>
-                              <th scope="col">type</th>
-                              <th scope="col">uri</th>
-                              <th scope="col">create_time_since_epoch</th>
-                              <th scope="col">last_update_time_since_epoch</th>
+                                {input_headers.map((header, index) => (
+                                    <th scope="col" key={index}>{header}</th>
+                                ))}
                             </tr>
                           </thead>
                           <tbody className="tbody">
                             {item.length > 0 && item.map((data, i) => (
-                            <tr>
-                              <td>{data.id}</td>
-                              <td>{data.name}</td>
-                              <td>{data.type}</td>
-                              <td>{data.uri}</td>
-                              <td>{data.custom_properties_original_create_time_since_epoch}</td>
-                              <td>{data.last_update_time_since_epoch}</td>
+                            <tr key={i}>
+                                {input_headers.map((header, index) => (
+                                    <td key={index}>{data[header]}</td>
+                                ))}
                             </tr>
                             ))}
                           </tbody>
                         </table>
-              <hr/>
             </div>
           );
        
         case 3:
+          const output_headers = item.length > 0 ? Object.keys(item[0]) : [];
           return (
             <div className="table-container">
+              <hr/>
               <p>List of output artifacts for the model</p><br/>
-                      <table className="table">
+		     <table className="table">
                           <thead className="thead">
                             <tr>
-                              <th scope="col">id</th>
-                              <th scope="col">name</th>
-                              <th scope="col">metrics_name</th>
-                              <th scope="col">type</th>
-                              <th scope="col">uri</th>
-                              <th scope="col">avg_prec</th>
-                              <th scope="col">roc_auc</th>
-                              <th scope="col">create_time_since_epoch</th>
-                              <th scope="col">last_update_time_since_epoch</th>
+                                {output_headers.map((header, index) => (
+                                    <th scope="col" key={index}>{header}</th>
+                                ))}
                             </tr>
                           </thead>
                           <tbody className="tbody">
                             {item.length > 0 && item.map((data, i) => (
-                            <tr>
-                              <td>{data.id}</td>
-                              <td>{data.name}</td>
-                              <td>{data.metrics_name}</td>
-                              <td>{data.type}</td>
-                              <td>{data.uri}</td>
-                              <td>{data.custom_properties_avg_prec}</td>
-                              <td>{data.custom_properties_roc_auc}</td>
-                              <td>{data.custom_properties_original_create_time_since_epoch}</td>
-                              <td>{data.last_update_time_since_epoch}</td>
+                            <tr key={i}>
+                                {output_headers.map((header, index) => (
+                                    <td key={index}>{data[header]}</td>
+                                ))}
                             </tr>
                             ))}
                           </tbody>
-                        </table>
-              <hr/>
+                       </table>
             </div>
           );
         default:
