@@ -13,7 +13,7 @@ Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
 **Pre-Requisites**
 
-- Python 3.8+
+- Python 3.9+
 - Git latest version
 
 **Install cmf library i.e. cmflib**
@@ -44,7 +44,7 @@ mkdir example-folder
 
 CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the [above](#create-a-folder) step.
 ```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
 ```
 Check [here](./cmf_client.md) for more details.
 

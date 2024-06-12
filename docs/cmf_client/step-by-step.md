@@ -1,4 +1,4 @@
-# Getting started with cmf
+# Quick start with cmf-client
 Common metadata framework (cmf) has the following components:
 
 - **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
@@ -6,30 +6,25 @@ Common metadata framework (cmf) has the following components:
 - **cmf-server** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. 
 - **Central Artifact Repositories** hosts the code and data. 
 
+## Install cmf library i.e. cmflib
+Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided inside the [CMF in a nutshell](../index.md) page. 
+
+## Install cmf-server
+cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
+
+Follow the instructions on the [Getting started with cmf-server](../cmf_server/cmf-server.md) page for details on how to setup a cmf-server.
+
 ## Setup a cmf-client 
 cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
 
 Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
-**Pre-Requisites**
+**Configuration**
 
-- Python 3.8+
-- Git latest version
+1. Create working directory `mkdir <workdir>`
+2. Execute `cmf init` to configure dvc remote directory, git remote url, cmf server and neo4j. Follow the [Overview](./cmf_client.md) page for more details.
 
-**Install cmf library i.e. cmflib**
-```
-pip install git+https://github.com/HewlettPackard/cmf
-```
-**OR**
-```
-pip install cmflib
-```
-Check [here](https://hewlettpackard.github.io/cmf/) for more details.
 
-## Install cmf-server
-cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
-
-Follow [here](../cmf_server/cmf-server.md) for details on how to setup a cmf-server.
 
 ## How to effectively use cmf-client?
 
@@ -42,23 +37,29 @@ mkdir example-folder
   
 **Initialize cmf**
 
-CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the [above](#create-a-folder) step.
+CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the above step.
 ```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-ip http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
-Check [here](./cmf_client.md) for more details.
+> Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.
+
+Check [Overview](./cmf_client.md) page for more details.
 
 **Check status of CMF initialization (Optional)**
 ```
 cmf init show
 ```
-Check [here](./cmf_client.md) for more details.
+Check [Overview](./cmf_client.md) page for more details.
 
 **Track metadata using cmflib**
 
-Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples) as a reference to create a new project to track metadata for ML pipelines.
+Use [Sample projects](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md) as a reference to create a new project to track metadata for ML pipelines.
 
-More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
+More information is available inside [Getting Started](https://hewlettpackard.github.io/cmf/examples/getting_started/).
+
+
+> Before pushing artifacts or metadata, ensure that the cmf server and minioS3 are up and running.
+
 
 **Push artifacts**
   
@@ -66,13 +67,13 @@ Push artifacts in the artifact repo initialised in the [Initialize cmf](#initial
 ```
 cmf artifact push 
 ```
-Check [here](./cmf_client.md) for more details.
+Check [Overview](./cmf_client.md) page for more details.
 
 **Push metadata to cmf-server**
 ```
 cmf metadata push -p 'Test-env'
 ```
-Check [here](./cmf_client.md) for more details.
+Check [Overview](./cmf_client.md) page for more details.
 
 ### cmf-client with collaborative development
 In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
@@ -83,15 +84,15 @@ Execute `cmf metadata` command in the `example_folder`.
 ```
 cmf metadata pull -p 'Test-env'
 ```
-Check [here](./cmf_client.md) for more details.
+Check [Overview](./cmf_client.md) page for more details.
 
 **Pull artifacts from the central artifact repo**
 
 Execute `cmf artifact` command in the `example_folder`.
 ```
-cmf artifact pull -p "Test-env"
+cmf artifact pull -p 'Test-env'
 ```
-Check [here](./cmf_client.md) for more details.
+Check [Overview](./cmf_client.md) page for more details.
 
 ## Flow Chart for cmf
 <img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />

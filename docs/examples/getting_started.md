@@ -4,7 +4,7 @@
 > [anaconda](https://docs.anaconda.com/anaconda/install/linux/) to manage python virtual environments.
 > This example was tested in the following environments: 
 > 
-> - `Ubuntu-22.04 with python-3.8.15`
+> - `Ubuntu-22.04 with python-3.10`
 
 This example demonstrates how CMF tracks a metadata associated with executions of various machine learning (ML) 
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
@@ -43,7 +43,7 @@ mkdir cmf_getting_started_example
 cd cmf_getting_started_example
 
 # Create and activate Python virtual environment (the Python version may need to be adjusted depending on your system)
-conda create -n cmf_getting_started_example python=3.8 
+conda create -n cmf_getting_started_example python=3.10 
 conda activate cmf_getting_started_example
 
 # Clone the CMF project from GitHub and install CMF
