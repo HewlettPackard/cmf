@@ -319,10 +319,10 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
         #df = await get_model_data(server_store_path, modelId)
         if not model_data_df.empty:
             #result_1 = model_data_df.to_json(orient="split", force_ascii=False)
-            result_1 = model_data_df.to_json(force_ascii=False)
+            result_1 = model_data_df.to_json(orient="records")
             json_payload_1 = json.loads(result_1)
         if not model_exe_df.empty:
-            result_2 = model_exe_df.to_json(orient="split")
+            result_2 = model_exe_df.to_json(orient="records")
             json_payload_2 = json.loads(result_2)
     #print("printing full json data")
     #print([json_payload_1, json_payload_2, json_payload_1])

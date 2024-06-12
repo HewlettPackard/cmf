@@ -42,7 +42,25 @@ const Popup = ({ show, model_data, onClose }) => {
                 <button onClick={onClose} className="close-button">X</button>	
                 <button className="download-button" onClick={downloadJSON}><i class="fa fa-download"></i></button>
                 <div className="popup-content">
-                    {model_data}
+                      <div>
+                          {model_data.map((item, index) => (
+                           <div key={index}>
+                                {item.length > 0 && item.map((data, i) => (
+                                     <div key={i} className="popup-row">
+                                         <div className="popup-labels">
+                                            {Object.keys(data).map((key, idx) => (
+                                                 <p key={idx}>{key}:</p>
+                                            ))}
+                                         </div>
+                                      <div className="popup-data">
+                                         {Object.values(data).map((value, idx) => (
+                                            <p key={idx}>{value ? value : "Null"}</p>
+                                         ))}
+                                      </div>
+                                 </div>))}
+                           </div>
+                         ))}
+                      </div>
                 </div>
             </div>
         </div>
