@@ -16,13 +16,14 @@ async def get_model_data(mlmdfilepath, modelId):
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
     modelName = pd.DataFrame()
+    pd.set_option('display.max_columns', None)
     # get name from id
     modelName = query.get_all_artifacts_by_ids_list([modelId])
     #print("Model Name")
     #print(modelName['name'].tolist())
     # get artifact info - we may remove this to remove redundancy as we can get from the input only 
     model_data_df = pd.DataFrame()
-    model_executions_df = pd.DataFrame()
+    model_exe_df = pd.DataFrame()
     df =  pd.DataFrame()
     # model's own data
     model_data_df = query.get_artifact(modelName['name'].tolist()[0])
@@ -30,14 +31,16 @@ async def get_model_data(mlmdfilepath, modelId):
     # df = pd.concat([df, model_data_df], sort=True, ignore_index=True)
     #model_data_df = query.get_artifact("artifacts/model/model.pkl:2baca0433368c75a11803994767649a6:3")
     # model's executions data with props and custom props
-    model_executions_df = query.get_all_executions_for_artifact(modelName['name'].tolist()[0])
-    print("colums for model_executions_df", model_executions_df.columns)
+    model_exe_df = query.get_all_executions_for_artifact(modelName['name'].tolist()[0])
+    #print("colums for model_executions_df", model_exe_df.columns)
+    model_exe_df.drop(columns=['execution_type_name'], inplace=True)
     # df = pd.concat([df, model_executions_df], sort=True, ignore_index=True)
     # model_executions_df = query.get_all_executions_for_artifact("artifacts/model/model.pkl:2baca0433368c75a11803994767649a6:3")
     # input artifacts and output artifacts with props and custom props
     # model_related_artifacts = get_all_artifacts_for_execution()
-
-    return model_data_df,model_data_df, model_data_df 
+    #print("mdoel_exe_data")
+    #print(model_exe_df)
+    return model_data_df, model_exe_df, model_data_df 
     # return model_data_df
     #print("output_df")
     #print(df)
