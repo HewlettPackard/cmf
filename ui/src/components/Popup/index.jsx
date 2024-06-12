@@ -8,7 +8,7 @@ const Popup = ({ show, model_data, onClose }) => {
 
     // find the uri value from artifacts
     const findUri = () => {
-        const item = model_data.find(entry => entry.uri);
+        const item = model_data[0].find(entry => entry.uri);
         return item ? item.uri : 'default';
     }
 
