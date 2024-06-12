@@ -39,7 +39,7 @@ const Popup = ({ show, model_data, onClose }) => {
         case 0:
           return (
             <div>
-            <p>Model's Data</p>
+            <p>Model's Data</p><br/>
             {item.length > 0 && item.map((data, i) => (
                                      <div key={i} className="popup-row">
                                          <div className="popup-labels">
@@ -52,14 +52,14 @@ const Popup = ({ show, model_data, onClose }) => {
                                             <p key={idx}>{value ? value : "Null"}</p>
                                          ))}
                                       </div>
-                                 </div>))} </div>
-
+                                 </div>))}
+              <hr/> 
+              </div>
           );
         case 1:
           return (
-            <div>
-              <hr>
-              <p>Execution's Data</p>
+            <div className="table-container">
+              <p>List of executions in which model has been used</p><br/>
 			<table className="table">
                           <thead className="thead">
                             <tr>
@@ -80,13 +80,13 @@ const Popup = ({ show, model_data, onClose }) => {
                             ))}
                           </tbody>
                         </table>
+            <hr/>
             </div>
           );
         case 2:
           return (
-            <div>
-              <hr>
-              <p>Related Artifacts</p>
+            <div className="table-container">
+              <p>List of input and output artifacts for the model</p><br/>
                       <table className="table">
                           <thead className="thead">
                             <tr>
@@ -102,7 +102,8 @@ const Popup = ({ show, model_data, onClose }) => {
                               <th scope="col">model_framework</th>
                               <th scope="col">model_name</th>
                               <th scope="col">model_type</th>
-                              <th scope="col">model_uri</th>
+                              <th scope="col">type</th>
+                              <th scope="col">uri</th>
                             </tr>
                           </thead>
                           <tbody className="tbody">
@@ -120,11 +121,13 @@ const Popup = ({ show, model_data, onClose }) => {
                               <td>{data.model_framework}</td>
                               <td>{data.model_name}</td>
                               <td>{data.model_type}</td>
-                              <td>{data.model_uri}</td>
+                              <td>{data.type}</td>
+                              <td>{data.uri}</td>
                             </tr>
                             ))}
                           </tbody>
                         </table>
+              <hr/>
             </div>
           );
         default:
