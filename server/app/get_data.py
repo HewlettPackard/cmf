@@ -37,8 +37,8 @@ async def get_model_data(mlmdfilepath, modelId):
     # input artifacts and output artifacts with props and custom props
     # model_related_artifacts = get_all_artifacts_for_execution()
 
-    # return model_data_df, model_executions_df
-    return model_data_df
+    return model_data_df,model_data_df, model_data_df 
+    # return model_data_df
     #print("output_df")
     #print(df)
     #return df

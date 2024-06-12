@@ -1,14 +1,14 @@
 import React from 'react';
 import './index.css'; // Optional: For styling the popup
 
-const Popup = ({ show, artifacts, onClose }) => {
+const Popup = ({ show, model_data, onClose }) => {
     if (!show) {
         return null;
     }
 
     // find the uri value from artifacts
     const findUri = () => {
-        const item = artifacts.find(entry => entry.uri);
+        const item = model_data.find(entry => entry.uri);
         return item ? item.uri : 'default';
     }
 
@@ -21,7 +21,7 @@ const Popup = ({ show, artifacts, onClose }) => {
        const uri = findUri();
        const filename = createFilename(uri);
 
-       const jsonString = JSON.stringify(artifacts, null, 2);
+       const jsonString = JSON.stringify(model_data, null, 2);
        const blob = new Blob([jsonString], { type: 'application/json'}); 
     
        const url = URL.createObjectURL(blob);
@@ -42,20 +42,7 @@ const Popup = ({ show, artifacts, onClose }) => {
                 <button onClick={onClose} className="close-button">X</button>	
                 <button className="download-button" onClick={downloadJSON}><i class="fa fa-download"></i></button>
                 <div className="popup-content">
-                   {artifacts.length > 0 && artifacts.map((data, index) => (
-                      <div key={index} className="popup-row">
-                            <div className="popup-labels">
-                              {Object.keys(data).map((key, idx) => (
-                                     <p key={idx}>{key}:</p>
-                              ))}
-                            </div>
-                            <div className="popup-data">
-                              {Object.values(data).map((value, idx) => (
-                                    <p key={idx}>{value ? value : "Null"}</p>
-                                ))}
-                            </div>
-                   </div>
-                    ))} 
+                    {model_data}
                 </div>
             </div>
         </div>
@@ -64,3 +51,4 @@ const Popup = ({ show, artifacts, onClose }) => {
 };
 
 export default Popup;
+
