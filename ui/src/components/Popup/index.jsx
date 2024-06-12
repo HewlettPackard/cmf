@@ -60,23 +60,23 @@ const Popup = ({ show, model_data, onClose }) => {
             <div>
               <p>Execution's Data</p>
 			<table className="table">
-                          <tbody>
-                            {Object.entries(data).map(([key, value]) => {
-                              if (
-                                !consistentColumns.includes(key) &&
-                                value != null
-                              ) {
-                                return (
-                                    <tr>
-                                      <td key={key}>{key}</td>
-                                      <td key={value}>
-                                        {value ? value : "Null"}
-                                      </td>
-                                    </tr>
-                                );
-                              }
-                              return null;
-                            })}
+                          <thead className="thead">
+                            <tr>
+                              <th scope="col">execution_id</th>
+                              <th scope="col">Type</th>
+                              <th scope="col">pipeline</th>
+                              <th scope="col">stage</th>
+                            </tr>
+                          </thead>
+                          <tbody className="tbody">
+                            {item.length > 0 && item.map((data, i) => (
+                            <tr>
+                              <td>{data.execution_id}</td>
+                              <td>{data.Type}</td>
+                              <td>{data.pipeline}</td>
+                              <td>{data.stage}</td>
+                            </tr>
+                            ))}
                           </tbody>
                         </table>
             </div>

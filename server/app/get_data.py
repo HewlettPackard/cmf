@@ -29,8 +29,10 @@ async def get_model_data(mlmdfilepath, modelId):
     modelType = df['type'].tolist()[0]
     if modelType == "Model":
         modelName = df['name'].tolist()[0]
-        if modelName == None:
+        if modelName == "":
             return model_data_df, model_exe_df, model_related_df
+    else:
+        return model_data_df, model_exe_df, model_related_df
 
     # model's own data
     model_data_df = query.get_artifact(modelName)
@@ -42,8 +44,6 @@ async def get_model_data(mlmdfilepath, modelId):
     if not model_exe_df.empty:
         model_exe_df.drop(columns=['execution_type_name', 'execution_name'], inplace=True)
         exe_ids = model_exe_df['execution_id'].tolist()
-        print("exe_ids")
-        print(exe_ids)
     else:
         # not sure what should come in else part of above 
         pass
