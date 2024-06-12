@@ -52,6 +52,7 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 10px;
+    text-align: left;
 }
 
 .popup-labels, .popup-data {
@@ -72,4 +73,5 @@
     background-color: #e0f7fa; /* Light blue background for data */
     padding: 10px;
     border-radius: 0 4px 4px 0; /* Rounded corners for right section */
+    text-align: left;
 }

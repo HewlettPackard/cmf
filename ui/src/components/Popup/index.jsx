@@ -39,7 +39,7 @@ const Popup = ({ show, model_data, onClose }) => {
         case 0:
           return (
             <div>
-            <p>"Model's Data"</p>
+            <p>Model's Data</p>
             {item.length > 0 && item.map((data, i) => (
                                      <div key={i} className="popup-row">
                                          <div className="popup-labels">
@@ -59,6 +59,26 @@ const Popup = ({ show, model_data, onClose }) => {
           return (
             <div>
               <p>Execution's Data</p>
+			<table className="table">
+                          <tbody>
+                            {Object.entries(data).map(([key, value]) => {
+                              if (
+                                !consistentColumns.includes(key) &&
+                                value != null
+                              ) {
+                                return (
+                                    <tr>
+                                      <td key={key}>{key}</td>
+                                      <td key={value}>
+                                        {value ? value : "Null"}
+                                      </td>
+                                    </tr>
+                                );
+                              }
+                              return null;
+                            })}
+                          </tbody>
+                        </table>
             </div>
           );
         case 2:
