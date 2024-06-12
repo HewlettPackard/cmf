@@ -1739,7 +1739,7 @@ class Cmf:
             """
 
             self.props[path] = {}
-            # self.props[path]['hash'] = dvc_get_hash(path)
+             self.props[path]['hash'] = dvc_get_hash(path)
             parent_path = path.rsplit("/", 1)[0]
             self.data_parent = parent_path.rsplit("/", 1)[1]
             if custom_properties:
