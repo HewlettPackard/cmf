@@ -1463,6 +1463,60 @@ class Cmf:
             self.metrics[metrics_name] = {}
             self.metrics[metrics_name][1] = custom_properties
 
+    def log_reference(self, uri: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        """Create a reference that points to an external artifact.
+
+        External artifacts are artifacts not directly managed by CMF. Examples are MLflow and AIM.
+
+        TODO: One problem here is that this external reference can reference artifacts such as Dataset and Model. How
+              do users find all models no matter what platform manages life stages of those ML models? One possible
+              solution would be to use pre-defined standard properties.
+
+        TODO: What happens if I reuse here previously defined artifact types (Dataset, Model etc.)?
+
+        Args:
+            uri: Uniform Resource Identifier for the referenced artifact. Example is mlflow:///runs/RUN_ID/model.pkl
+            event: 'input' or 'output'.
+            custom_properties: Properties associated with this artifact.
+
+        TODO: Should we enforce users provide mandatory properties (such as artifact type (like dataset)).
+        """
+        event_type = mlpb.Event.Type.INPUT if event.lower() == 'input' else mlpb.Event.Type.OUTPUT
+        existing_artifacts: t.List[mlpb.Artifact] = self.store.get_artifacts_by_uri(uri)
+        if existing_artifacts:
+            if len(existing_artifacts) != 1:
+                print(f"[WARNING] metadata database state is not valid: {len(existing_artifacts)} artifacts with "
+                      f"uri={uri} have been found.")
+            if event_type == mlpb.Event.Type.OUTPUT:
+                # TODO: What to do? Raise an exception (probably not good), or refuse to update?
+                print(f"[WARNING] metadata database state is not valid or logic error: artifact with uri={uri} exists, "
+                      f"but a stage execution wants to mark this artifact as output artifact.")
+            # TODO: What's input_name?
+            artifact = link_execution_to_artifact(
+                store=self.store, execution_id=self.execution.id, uri=uri,
+                input_name=uri, event_type=event_type
+            )
+        else:
+            # TODO: what's name?
+            artifact = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=uri,
+                type_name="Reference",
+                event_type=event_type,
+                properties={},
+                artifact_type_properties={},
+                custom_properties=custom_properties or {},
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
+
+        # TODO: this feature needs to be added after the PR that introduces callbacks. Call callbacks here. Need to
+        #       update them to work with instance of `Reference` type.
+
+        return artifact
+
     def commit_metrics(self, metrics_name: str):
         """ Writes the in-memory metrics to a Parquet file, commits the metrics file associated with the metrics id to DVC and Git,
         and stores the artifact in MLMD.
