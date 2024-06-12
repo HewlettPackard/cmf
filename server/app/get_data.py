@@ -15,42 +15,48 @@ async def get_model_data(mlmdfilepath, modelId):
 
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
-    modelName = pd.DataFrame()
-    pd.set_option('display.max_columns', None)
-    # get name from id
-    modelName = query.get_all_artifacts_by_ids_list([modelId])
-    #print("Model Name: ", modelName)
-    print("columns for Model Name: ", modelName.columns)
-    # get artifact info - we may remove this to remove redundancy as we can get from the input only 
+    # pd.set_option('display.max_columns', None)
+    df = pd.DataFrame()
+    # get artifact info - we may remove this to remove redundancy as we can get from the input only
     model_data_df = pd.DataFrame()
     model_exe_df = pd.DataFrame()
-    df =  pd.DataFrame()
-    # model's own data
-    model_data_df = query.get_artifact(modelName['name'].tolist()[0])
-    #print("model dataframe: ",model_data_df)
-    print("colums for model_data_df", model_data_df.columns)
-    # df = pd.concat([df, model_data_df], sort=True, ignore_index=True)
-    #model_data_df = query.get_artifact("artifacts/model/model.pkl:2baca0433368c75a11803994767649a6:3")
-    # model's executions data with props and custom props
-    model_exe_df = query.get_all_executions_for_artifact(modelName['name'].tolist()[0])
-    #print("colums for model_executions_df", model_exe_df.columns)
-    model_exe_df.drop(columns=['execution_type_name'], inplace=True)
-    #print("model execution Dataframe: ", model_executions_df)
-    print("colums for model_executions_df", model_exe_df.columns)
-    # model_executions_df = query.get_all_executions_for_artifact("artifacts/model/model.pkl:2baca0433368c75a11803994767649a6:3")
-    # input artifacts and output artifacts with props and custom props
-    # model_related_artifacts = get_all_artifacts_for_execution()
-    #print("mdoel_exe_data")
-    #print(model_exe_df)
-    return model_data_df, model_exe_df, model_data_df 
-    #df = get_all_artifacts_for_execution(model_executions_df['execution_id'].tolist()[0])
-    #print("df: ",df)
-    #print("df columns: ", df.columns)
+    model_related_df = pd.DataFrame()
 
-    # return model_data_df
-    #print("output_df")
-    #print(df)
-    #return df
+
+    # get name from id
+    modelName = ""
+    df = query.get_all_artifacts_by_ids_list([modelId])
+    modelType = df['type'].tolist()[0]
+    if modelType == "Model":
+        modelName = df['name'].tolist()[0]
+        if modelName == None:
+            return model_data_df, model_exe_df, model_related_df
+
+    # model's own data
+    model_data_df = query.get_artifact(modelName)
+    # model_data_df = query.get_artifact("artifacts/model/model.pkl:2baca0433368c75a11803994767649a6:3")
+
+    # model's executions data with props and custom props
+    model_exe_df = query.get_all_executions_for_artifact(modelName)
+    exe_ids = []
+    if not model_exe_df.empty:
+        model_exe_df.drop(columns=['execution_type_name', 'execution_name'], inplace=True)
+        exe_ids = model_exe_df['execution_id'].tolist()
+        print("exe_ids")
+        print(exe_ids)
+    else:
+        # not sure what should come in else part of above 
+        pass
+
+    # input artifacts and output artifacts with props and custom props
+    for id in exe_ids:
+        df = query.get_all_artifacts_for_execution(id)
+        model_related_df = pd.concat([model_related_df, df], sort=True, ignore_index=True)
+
+    if not model_related_df.empty:
+        model_related_df.drop(columns=['Commit', 'git_repo', 'url'], inplace=True)
+
+    return model_data_df, model_exe_df, model_related_df
 
 async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     '''

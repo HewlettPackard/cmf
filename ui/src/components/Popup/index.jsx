@@ -34,18 +34,13 @@ const Popup = ({ show, model_data, onClose }) => {
        URL.revokeObjectURL(url);   
     };
 
-    return (
-        <>
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
-        <div className="popup-overlay">
-            <div className="popup">
-                <button onClick={onClose} className="close-button">X</button>	
-                <button className="download-button" onClick={downloadJSON}><i class="fa fa-download"></i></button>
-                <div className="popup-content">
-                      <div>
-                          {model_data.map((item, index) => (
-                           <div key={index}>
-                                {item.length > 0 && item.map((data, i) => (
+    const renderContent = (item, index) => {
+      switch (index) {
+        case 0:
+          return (
+            <div>
+            <p>"Model's Data"</p>
+            {item.length > 0 && item.map((data, i) => (
                                      <div key={i} className="popup-row">
                                          <div className="popup-labels">
                                             {Object.keys(data).map((key, idx) => (
@@ -57,9 +52,48 @@ const Popup = ({ show, model_data, onClose }) => {
                                             <p key={idx}>{value ? value : "Null"}</p>
                                          ))}
                                       </div>
-                                 </div>))}
-                           </div>
-                         ))}
+                                 </div>))} </div>
+
+          );
+        case 1:
+          return (
+            <div>
+              <p>Execution's Data</p>
+            </div>
+          );
+        case 2:
+          return (
+            <div>
+              <p>Related Artifacts</p>
+            </div>
+          );
+        default:
+          return (
+            <div>
+              <p>Unknown item</p>
+            </div>
+          );
+      }
+  };
+
+    return (
+        <>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+        <div className="popup-overlay">
+            <div className="popup">
+                <button onClick={onClose} className="close-button">X</button>	
+                <button className="download-button" onClick={downloadJSON}><i class="fa fa-download"></i></button>
+                <div className="popup-content">
+                      <div>
+                          {model_data.length > 0 ? (
+                            model_data.map((item, index) => (
+                              <div key={index}>
+                                 {renderContent(item, index)}
+                              </div>
+                            ))
+                          ) : (
+                           <p>No items available</p>
+                          )}
                       </div>
                 </div>
             </div>
