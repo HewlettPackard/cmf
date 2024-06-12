@@ -58,6 +58,7 @@ const Popup = ({ show, model_data, onClose }) => {
         case 1:
           return (
             <div>
+              <hr>
               <p>Execution's Data</p>
 			<table className="table">
                           <thead className="thead">
@@ -84,7 +85,46 @@ const Popup = ({ show, model_data, onClose }) => {
         case 2:
           return (
             <div>
+              <hr>
               <p>Related Artifacts</p>
+                      <table className="table">
+                          <thead className="thead">
+                            <tr>
+                              <th scope="col">id</th>
+                              <th scope="col">create_time_since_epoch</th>
+                              <th scope="col">custom_properties_avg_prec</th>
+                              <th scope="col">custom_properties_original_create_time_since_epoch</th>
+                              <th scope="col">custom_properties_roc_auc</th>
+                              <th scope="col">event</th>
+                              <th scope="col">name</th>
+                              <th scope="col">last_update_time_since_epoch</th>
+                              <th scope="col">metrics_name</th>
+                              <th scope="col">model_framework</th>
+                              <th scope="col">model_name</th>
+                              <th scope="col">model_type</th>
+                              <th scope="col">model_uri</th>
+                            </tr>
+                          </thead>
+                          <tbody className="tbody">
+                            {item.length > 0 && item.map((data, i) => (
+                            <tr>
+                              <td>{data.id}</td>
+                              <td>{data.create_time_since_epoch}</td>
+                              <td>{data.custom_properties_avg_prec}</td>
+                              <td>{data.custom_properties_original_create_time_since_epoch}</td>
+                              <td>{data.custom_properties_roc_auc}</td>
+                              <td>{data.event}</td>
+                              <td>{data.name}</td>
+                              <td>{data.last_update_time_since_epoch}</td>
+                              <td>{data.metrics_name}</td>
+                              <td>{data.model_framework}</td>
+                              <td>{data.model_name}</td>
+                              <td>{data.model_type}</td>
+                              <td>{data.model_uri}</td>
+                            </tr>
+                            ))}
+                          </tbody>
+                        </table>
             </div>
           );
         default:
