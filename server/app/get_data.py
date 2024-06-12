@@ -15,13 +15,13 @@ async def get_model_data(mlmdfilepath, modelId):
 
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
-    # pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_columns', None)
     df = pd.DataFrame()
     # get artifact info - we may remove this to remove redundancy as we can get from the input only
     model_data_df = pd.DataFrame()
     model_exe_df = pd.DataFrame()
-    model_related_df = pd.DataFrame()
-
+    model_input_df = pd.DataFrame()
+    model_output_df = pd.DataFrame()
 
     # get name from id
     modelName = ""
@@ -30,13 +30,12 @@ async def get_model_data(mlmdfilepath, modelId):
     if modelType == "Model":
         modelName = df['name'].tolist()[0]
         if modelName == "":
-            return model_data_df, model_exe_df, model_related_df
+            return model_data_df, model_exe_df, model_input_df, model_output_df
     else:
-        return model_data_df, model_exe_df, model_related_df
+        return model_data_df, model_exe_df, model_input_df, model_output_df
 
     # model's own data
     model_data_df = query.get_artifact(modelName)
-    # model_data_df = query.get_artifact("artifacts/model/model.pkl:2baca0433368c75a11803994767649a6:3")
 
     # model's executions data with props and custom props
     model_exe_df = query.get_all_executions_for_artifact(modelName)
@@ -48,15 +47,19 @@ async def get_model_data(mlmdfilepath, modelId):
         # not sure what should come in else part of above 
         pass
 
-    # input artifacts and output artifacts with props and custom props
-    for id in exe_ids:
-        df = query.get_all_artifacts_for_execution(id)
-        model_related_df = pd.concat([model_related_df, df], sort=True, ignore_index=True)
+    in_art_ids =  []
+    # input artifacts
+    in_art_ids.extend(query._get_input_artifacts(exe_ids))
+    in_art_ids.remove(modelId)
+    model_input_df = query.get_all_artifacts_by_ids_list(in_art_ids)
 
-    if not model_related_df.empty:
-        model_related_df.drop(columns=['Commit', 'git_repo', 'url'], inplace=True)
+    out_art_ids = []
+    # output artifacts
+    out_art_ids.extend(query._get_output_artifacts(exe_ids))
+    out_art_ids.remove(modelId)
+    model_output_df = query.get_all_artifacts_by_ids_list(out_art_ids)
 
-    return model_data_df, model_exe_df, model_related_df
+    return model_data_df, model_exe_df, model_input_df, model_output_df
 
 async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     '''

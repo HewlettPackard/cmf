@@ -309,23 +309,28 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     json_payload_1 = ""
     json_payload_2 = ""
     json_payload_3 = ""
+    json_payload_4 = ""
     model_data_df = pd.DataFrame()
     model_exe_df = pd.DataFrame()
-    model_art_df = pd.DataFrame()
+    model_input_art_df = pd.DataFrame()
+    model_output_art_df = pd.DataFrame()
     df = pd.DataFrame()
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        model_data_df, model_exe_df, model_art_df  = await get_model_data(server_store_path, modelId)
+        model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(server_store_path, modelId)
         if not model_data_df.empty:
             result_1 = model_data_df.to_json(orient="records")
             json_payload_1 = json.loads(result_1)
         if not model_exe_df.empty:
             result_2 = model_exe_df.to_json(orient="records")
             json_payload_2 = json.loads(result_2)
-        if not model_art_df.empty:
-            result_3 = model_art_df.to_json(orient="records")
+        if not model_input_art_df.empty:
+            result_3 =  model_input_art_df.to_json(orient="records")
             json_payload_3 = json.loads(result_3)
-    return [json_payload_1, json_payload_2, json_payload_3]
+        if not model_output_art_df.empty:
+            result_4 =  model_output_art_df.to_json(orient="records")
+            json_payload_4 = json.loads(result_4)
+    return [json_payload_1, json_payload_2, json_payload_3, json_payload_4]
 
 async def update_global_art_dict():
     global dict_of_art_ids
