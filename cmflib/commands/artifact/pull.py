@@ -24,6 +24,7 @@ from cmflib.storage_backends import (
     local_artifacts,
     amazonS3_artifacts,
     sshremote_artifacts,
+    osdf_artifacts,
 )
 from cmflib.cli.command import CmdBase
 from cmflib.utils.dvc_config import DvcConfig
@@ -51,7 +52,9 @@ class CmdArtifactPull(CmdBase):
         #url = 'Test-env:/home/user/local-storage/06/d100ff3e04e2c87bf20f0feacc9034,Second-env:/home/user/local-storage/06/d100ff3e04e2c>
         # s_url = Url without pipeline name
         s_url = self.split_url_pipeline(url, self.args.pipeline_name)
+        #print(f"s_url={s_url}")
         token = s_url.split("/")
+        #print(f"token={token}")
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
@@ -73,6 +76,12 @@ class CmdArtifactPull(CmdBase):
             current_loc_1 = "/".join(token)
             current_loc = f"/{current_loc_1}"
             return host, current_loc, name
+        elif type == "osdf":
+            token_length = len(token)
+            download_loc = current_directory + "/" + name if current_directory != ""  else name
+            #current_dvc_loc = (token[(token_length - 2)] + "/" + token[(token_length - 1)])
+            #return FQDNL of where to download from, where to download to, what the artifact will be named
+            return s_url, download_loc, name
         else:
             # sometimes s_url is empty - this shouldn't happen technically
             # sometimes s_url is not starting with s3:// - technically this shouldn't happen
@@ -231,6 +240,59 @@ class CmdArtifactPull(CmdBase):
                         continue
                     args = self.extract_repo_args("ssh", name, url, current_directory)
                     stmt = sshremote_class_obj.download_artifacts(
+                        dvc_config_op,
+                        args[0], # host,
+                        current_directory,
+                        args[1], # remote_loc of the artifact
+                        args[2]  # name
+                    )
+                    print(stmt)
+            return "Done"
+        elif dvc_config_op["core.remote"] == "osdf":
+            #Regenerate Token for OSDF
+            from cmflib.utils.helper_functions import generate_osdf_token
+            from cmflib.utils.helper_functions import is_url
+            from cmflib.dvc_wrapper import dvc_add_attribute
+            from cmflib.utils.cmf_config import CmfConfig
+            #Fetch Config from CMF_Config_File
+            cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
+            cmf_config={}
+            cmf_config=CmfConfig.read_config(cmf_config_file)
+            #Regenerate password 
+            dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+            #cmf_config["password"]=dynamic_password
+            #Update Password in .dvc/config for future use
+            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            #Updating dvc_config_op data structure with new password as well since this is used in download_artifacts() below
+            dvc_config_op["remote.osdf.password"]=dynamic_password
+            #Need to write to cmfconfig with new credentials
+            #CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
+            #Now Ready to do dvc pull 
+
+            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts()
+            if self.args.artifact_name:
+                output = self.search_artifact(name_url_dict)
+                # output[0] = name
+                # output[1] = url
+                if output is None:
+                    print(f"{self.args.artifact_name} doesn't exist.")
+                else:
+                    args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
+                    stmt = osdfremote_class_obj.download_artifacts(
+                        dvc_config_op,
+                        args[0], # s_url of the artifact
+                        current_directory,
+                        args[1], # download_loc of the artifact
+                        args[2]  # name of the artifact
+                    )
+                    print(stmt)
+            else:
+                for name, url in name_url_dict.items():
+                    #print(name, url)
+                    if not isinstance(url, str):
+                        continue
+                    args = self.extract_repo_args("osdf", name, url, current_directory)
+                    stmt = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
                         current_directory,
