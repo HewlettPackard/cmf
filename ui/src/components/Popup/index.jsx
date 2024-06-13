@@ -34,6 +34,16 @@ const Popup = ({ show, model_data, onClose }) => {
        URL.revokeObjectURL(url);   
     };
 
+    const excludeColumns = ["create_time_since_epoch"]; 
+
+    const renameKey = (key) => {
+            const prefix = "custom_properties_";
+            if (key.startsWith(prefix)) {
+                 return key.slice(prefix.length);
+            }
+            return key;
+    };
+
     const renderContent = (item, index) => {
       switch (index) {
         case 0:
@@ -43,8 +53,10 @@ const Popup = ({ show, model_data, onClose }) => {
             {item.length > 0 && item.map((data, i) => (
                                      <div key={i} className="popup-row">
                                          <div className="popup-labels">
-                                            {Object.keys(data).map((key, idx) => (
-                                                 <p key={idx}>{key}:</p>
+                                            {Object.keys(data)
+                                                 .filter(key => !excludeColumns.includes(key)) 
+                                                 .map((key, idx) => (
+                                                 <p key={idx}>{renameKey(key)}:</p>
                                             ))}
                                          </div>
                                       <div className="popup-data">
@@ -81,57 +93,54 @@ const Popup = ({ show, model_data, onClose }) => {
                       </table>
             </div>
           );
-        case 2:
-          const input_headers = item.length > 0 ? Object.keys(item[0]) : [];
+        case 2:              
           return (
-            <div className="table-container">
+            <div>
               <hr/> 
               <p>List of input artifacts for the model</p><br/>
-                      <table className="table">
-                          <thead className="thead">
-                            <tr>
-                                {input_headers.map((header, index) => (
-                                    <th scope="col" key={index}>{header}</th>
-                                ))}
-                            </tr>
-                          </thead>
-                          <tbody className="tbody">
-                            {item.length > 0 && item.map((data, i) => (
-                            <tr key={i}>
-                                {input_headers.map((header, index) => (
-                                    <td key={index}>{data[header]}</td>
-                                ))}
-                            </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                       {item.length > 0 && item.map((data, i) => (
+                       <div key={i} className="popup-row">
+                               <div className="popup-labels">
+                                   {Object.keys(data)
+                                       .filter(key => !excludeColumns.includes(key)) 
+                                        .map((key, idx) => (
+                                            <p key={idx}>{renameKey(key)}:</p>
+                                        ))}
+                                </div>
+                                <div className="popup-data">
+                                     {Object.entries(data)
+                                        .filter(([key]) => !excludeColumns.includes(key))
+                                        .map(([key, value], idx) => (
+                                            <p key={idx}>{value ? value : "Null"}</p>
+                                      ))}    
+                                </div>
+                        </div>
+                        ))}
             </div>
           );
-       
         case 3:
-          const output_headers = item.length > 0 ? Object.keys(item[0]) : [];
           return (
-            <div className="table-container">
-              <hr/>
-              <p>List of output artifacts for the model</p><br/>
-		     <table className="table">
-                          <thead className="thead">
-                            <tr>
-                                {output_headers.map((header, index) => (
-                                    <th scope="col" key={index}>{header}</th>
-                                ))}
-                            </tr>
-                          </thead>
-                          <tbody className="tbody">
-                            {item.length > 0 && item.map((data, i) => (
-                            <tr key={i}>
-                                {output_headers.map((header, index) => (
-                                    <td key={index}>{data[header]}</td>
-                                ))}
-                            </tr>
-                            ))}
-                          </tbody>
-                       </table>
+            <div>
+              <hr/> 
+              <p>List of input artifacts for the model</p><br/>
+                       {item.length > 0 && item.map((data, i) => (
+                       <div key={i} className="popup-row">
+                               <div className="popup-labels">
+                                   {Object.keys(data)
+                                       .filter(key => !excludeColumns.includes(key)) 
+                                        .map((key, idx) => (
+                                            <p key={idx}>{renameKey(key)}:</p>
+                                        ))}
+                                </div>
+                                <div className="popup-data">
+                                    {Object.entries(data)
+                                        .filter(([key]) => !excludeColumns.includes(key)) 
+                                        .map(([key, value], idx) => (
+                                            <p key={idx}>{value ? value : "Null"}</p>
+                                       ))}
+                                  </div>
+                        </div>
+                        ))}
             </div>
           );
         default:
