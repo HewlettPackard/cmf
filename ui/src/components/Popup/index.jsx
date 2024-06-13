@@ -122,7 +122,7 @@ const Popup = ({ show, model_data, onClose }) => {
           return (
             <div>
               <hr/> 
-              <p>List of input artifacts for the model</p><br/>
+              <p>List of output artifacts for the model</p><br/>
                        {item.length > 0 && item.map((data, i) => (
                        <div key={i} className="popup-row">
                                <div className="popup-labels">

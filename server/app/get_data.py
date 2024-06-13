@@ -38,14 +38,17 @@ async def get_model_data(mlmdfilepath, modelId):
     model_data_df = query.get_artifact(modelName)
 
     # model's executions data with props and custom props
-    model_exe_df = query.get_all_executions_for_artifact(modelName)
+    exe_df = query.get_all_executions_for_artifact(modelName)
     exe_ids = []
-    if not model_exe_df.empty:
-        model_exe_df.drop(columns=['execution_type_name', 'execution_name'], inplace=True)
-        exe_ids = model_exe_df['execution_id'].tolist()
-    else:
-        # not sure what should come in else part of above 
-        pass
+    if not exe_df.empty:
+        exe_df.drop(columns=['execution_type_name', 'execution_name'], inplace=True)
+        exe_ids = exe_df['execution_id'].tolist()
+
+
+    if not exe_ids:
+         return model_data_df, model_exe_df, model_input_df, model_output_df
+    model_exe_df = query.get_all_executions_by_ids_list(exe_ids)
+    model_exe_df.drop(columns=['Python_Env', 'Git_Start_Commit', 'Git_End_Commit'], inplace=True)
 
     in_art_ids =  []
     # input artifacts
