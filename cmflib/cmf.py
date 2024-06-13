@@ -1479,10 +1479,13 @@ class Cmf:
            Artifact object from the ML Protocol Buffers library associated with the new metrics artifact.
         """
         logging_dir = change_dir(self.cmf_init_path)
+
+        directory_path = os.path.join( "cmf_artifacts/metrics",self.execution.properties["Execution_uuid"].string_value)
+        os.makedirs(directory_path, exist_ok=True)
         metrics_df = pd.DataFrame.from_dict(
             self.metrics[metrics_name], orient="index")
         metrics_df.index.names = ["SequenceNumber"]
-        metrics_df.to_parquet(metrics_name)
+        metrics_df.to_parquet(os.path.join(directory_path,metrics_name))
         commit_output(metrics_name, self.execution.id)
         uri = dvc_get_hash(metrics_name)
 
@@ -1765,11 +1768,14 @@ class Cmf:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
                 Example{"mean":2.5, "median":2.6}
             """
+            logging_dir = change_dir(self.writer.cmf_init_path)
+            directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
+            os.makedirs(directory_path, exist_ok=True)
             custom_props = {} if custom_properties is None else custom_properties
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
             dataslice_df.index.names = ["Path"]
-            dataslice_df.to_parquet(self.name)
+            dataslice_df.to_parquet(os.path.join(directory_path,self.name))
             existing_artifact = []
 
             commit_output(self.name, self.writer.execution.id)
@@ -1813,6 +1819,7 @@ class Cmf:
                 self.writer.driver.create_dataslice_node(
                     self.name, self.name + ":" + c_hash, c_hash, self.data_parent, props
                 )
+             os.chdir(logging_dir)
             return slice
 
         def commit_existing(self, uri: str, custom_properties: t.Optional[t.Dict] = None) -> None:
