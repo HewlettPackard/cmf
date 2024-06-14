@@ -50,22 +50,25 @@ const Popup = ({ show, model_data, onClose }) => {
           return (
             <div>
             <p>Model's Data</p><br/>
-            {item.length > 0 && item.map((data, i) => (
-                                     <div key={i} className="popup-row">
-                                         <div className="popup-labels">
-                                            {Object.keys(data)
-                                                 .filter(key => !excludeColumns.includes(key)) 
-                                                 .map((key, idx) => (
-                                                 <p key={idx}>{renameKey(key)}:</p>
-                                            ))}
-                                         </div>
-                                      <div className="popup-data">
-                                         {Object.values(data).map((value, idx) => (
+                     {item.length > 0 && item.map((data, i) => (
+                     <div key={i} className="popup-row">
+                               <div className="popup-labels">
+                                   {Object.keys(data)
+                                       .filter(key => !excludeColumns.includes(key)) 
+                                        .map((key, idx) => (
+                                            <p key={idx}>{renameKey(key)}:</p>
+                                        ))}
+                                </div>
+                                <div className="popup-data">
+                                    {Object.entries(data)
+                                        .filter(([key]) => !excludeColumns.includes(key)) 
+                                        .map(([key, value], idx) => (
                                             <p key={idx}>{value ? value : "Null"}</p>
-                                         ))}
-                                      </div>
-                                 </div>))}
-              </div>
+                                       ))}
+                                  </div>
+                     </div>
+                     ))}
+            </div>
           );
         case 1:
           const exe_headers = item.length > 0 ? Object.keys(item[0]) : [];
@@ -77,7 +80,7 @@ const Popup = ({ show, model_data, onClose }) => {
                           <thead className="thead">
                             <tr>
                                 {exe_headers.map((header, index) => (
-                                    <th scope="col" key={index}>{header}</th>
+                                    <th scope="col" key={index}>{renameKey(header)}</th>
                                 ))}
                             </tr>
                           </thead>
@@ -93,7 +96,7 @@ const Popup = ({ show, model_data, onClose }) => {
                       </table>
             </div>
           );
-        case 2:              
+        case 2: 
           return (
             <div>
               <hr/> 
@@ -108,16 +111,16 @@ const Popup = ({ show, model_data, onClose }) => {
                                         ))}
                                 </div>
                                 <div className="popup-data">
-                                     {Object.entries(data)
-                                        .filter(([key]) => !excludeColumns.includes(key))
+                                    {Object.entries(data)
+                                        .filter(([key]) => !excludeColumns.includes(key)) 
                                         .map(([key, value], idx) => (
                                             <p key={idx}>{value ? value : "Null"}</p>
-                                      ))}    
-                                </div>
+                                       ))}
+                                  </div>
                         </div>
                         ))}
             </div>
-          );
+          );          
         case 3:
           return (
             <div>

@@ -133,10 +133,9 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                 <React.Fragment key={index}>
                   <tr
                     key={index}
-                    onClick={() => toggleRow(index)}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => toggleRow(index)}>
                       {expandedRow === index ? "-" : "+"}
                     </td>
                     <td className="px-6 py-4">{data.id}</td>
