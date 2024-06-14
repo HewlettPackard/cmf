@@ -1485,9 +1485,10 @@ class Cmf:
         metrics_df = pd.DataFrame.from_dict(
             self.metrics[metrics_name], orient="index")
         metrics_df.index.names = ["SequenceNumber"]
-        metrics_df.to_parquet(os.path.join(directory_path,metrics_name))
-        commit_output(metrics_name, self.execution.id)
-        uri = dvc_get_hash(metrics_name)
+        metrics_path = os.path.join(directory_path,metrics_name)
+        metrics_df.to_parquet(metrics_path)
+        commit_output(metrics_path, self.execution.id)
+        uri = dvc_get_hash(metrics_path)
 
         if uri == "":
             print("Error in getting the dvc hash,return without logging")
@@ -1742,7 +1743,7 @@ class Cmf:
             """
 
             self.props[path] = {}
-             self.props[path]['hash'] = dvc_get_hash(path)
+            self.props[path]['hash'] = dvc_get_hash(path)
             parent_path = path.rsplit("/", 1)[0]
             self.data_parent = parent_path.rsplit("/", 1)[1]
             if custom_properties:
@@ -1775,17 +1776,18 @@ class Cmf:
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
             dataslice_df.index.names = ["Path"]
-            dataslice_df.to_parquet(os.path.join(directory_path,self.name))
+            dataslice_path = os.path.join(directory_path,self.name)
+            dataslice_df.to_parquet(dataslice_path)
             existing_artifact = []
 
-            commit_output(self.name, self.writer.execution.id)
-            c_hash = dvc_get_hash(self.name)
+            commit_output(dataslice_path, self.writer.execution.id)
+            c_hash = dvc_get_hash(dataslice_path)
             if c_hash == "":
                 print("Error in getting the dvc hash,return without logging")
                 return null
 
             dataslice_commit = c_hash
-            remote = dvc_get_url(self.name)
+            remote = dvc_get_url(dataslice_path)
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
                     self.writer.store.get_artifacts_by_uri(c_hash))
@@ -1819,7 +1821,7 @@ class Cmf:
                 self.writer.driver.create_dataslice_node(
                     self.name, self.name + ":" + c_hash, c_hash, self.data_parent, props
                 )
-             os.chdir(logging_dir)
+            os.chdir(logging_dir)
             return slice
 
         def commit_existing(self, uri: str, custom_properties: t.Optional[t.Dict] = None) -> None:
