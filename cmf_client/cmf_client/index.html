@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.25">
+      <meta name="generator" content="mkdocs-1.6.0, mkdocs-material-9.5.27">
     
     
       
@@ -143,7 +143,7 @@
       
     </form>
     <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
             Initializing search
@@ -563,6 +563,15 @@
   <a href="#cmf-init-sshremote" class="md-nav__link">
     <span class="md-ellipsis">
       cmf init sshremote
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmf-init-osdfremote" class="md-nav__link">
+    <span class="md-ellipsis">
+      cmf init osdfremote
     </span>
   </a>
   
@@ -1009,6 +1018,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cmf-init-osdfremote" class="md-nav__link">
+    <span class="md-ellipsis">
+      cmf init osdfremote
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1244,6 +1262,34 @@ Optional Arguments
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri &lt;neo4j_uri&gt;             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 </code></pre></div></p>
+<h3 id="cmf-init-osdfremote">cmf init osdfremote<a class="headerlink" href="#cmf-init-osdfremote" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>Usage: cmf init osdfremote [-h] --path [path] 
+                             --endpoint-url [endpoint_url]
+                             --access-key-id [access_key_id] 
+                             --secret-key [secret_key] 
+                             --git-remote-url[git_remote_url]  
+                             --cmf-server-url [cmf_server_url]
+                             --neo4j-user [neo4j_user]
+                             --neo4j-password [neo4j_password]
+                             --neo4j-uri [neo4j_uri]
+</code></pre></div>
+<code>cmf init osdfremote</code> configures a OSDF Origin as a cmf artifact repository.
+<div class="highlight"><pre><span></span><code>cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+</code></pre></div>
+Required Arguments
+<div class="highlight"><pre><span></span><code>  --path [path]                        Specify FQDN for OSDF origin including including port and directory path
+  --key-id [key_id]                    Specify key_id for provided private key. eg. b2d3
+  --key-path [key_path]                Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem
+  --key-issuer [key_issuer]            Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX
+  --git-remote-url [git_remote_url]    Specify git repo url. eg: https://github.com/XXX/example.git
+</code></pre></div>
+Optional Arguments
+<div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
+  --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
+  --neo4j-uri &lt;neo4j_uri&gt;             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+</code></pre></div></p>
 <h2 id="cmf-artifact">cmf artifact<a class="headerlink" href="#cmf-artifact" title="Permanent link">&para;</a></h2>
 <p><div class="highlight"><pre><span></span><code>Usage: cmf artifact [-h] {pull,push}
 </code></pre></div>
@@ -1375,7 +1421,7 @@ Required Arguments
     <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.081f42fc.min.js"></script>
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
       
     
   </body>
