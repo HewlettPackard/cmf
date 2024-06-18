@@ -37,7 +37,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     graph = False
     if os.getenv('NEO4J_URI', "") != "":
         graph = True
-    cmf_class = cmf.Cmf(filename=path_to_store, pipeline_name=pipeline_name,
+    cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,
                         graph=graph, is_server=True)
     for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
         if exec_id is None:
