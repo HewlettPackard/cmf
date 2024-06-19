@@ -1478,6 +1478,8 @@ class Cmf:
         Returns:
            Artifact object from the ML Protocol Buffers library associated with the new metrics artifact.
         """
+
+        # code for nano cmf is remaining
         logging_dir = change_dir(self.cmf_init_path)
 
         directory_path = os.path.join( "cmf_artifacts/metrics",self.execution.properties["Execution_uuid"].string_value)
@@ -1494,8 +1496,10 @@ class Cmf:
             print("Error in getting the dvc hash,return without logging")
             return null
         metrics_commit = uri
+        dvc_url = dvc_get_url(metrics_path)
+        dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         name = (
-            metrics_name
+            metrics_path
             + ":"
             + uri
             + ":"
@@ -1503,8 +1507,10 @@ class Cmf:
             + ":"
             + str(uuid.uuid1())
         )
-        # passing uri value to commit
-        custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+        # not needed as property 'name' is part of artifact 
+        # to maintain uniformity - Commit goes propeties of the artifact
+        # custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+        custom_props = {}
         metrics = create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -1513,6 +1519,15 @@ class Cmf:
             name=name,
             type_name="Step_Metrics",
             event_type=mlpb.Event.Type.OUTPUT,
+            properties={
+                # passing uri value to commit
+                "Commit": metrics_commit,
+                "url": str(dvc_url_with_pipeline),
+            },
+            artifact_type_properties={
+                "Commit": mlpb.STRING,
+                "url": mlpb.STRING,
+            },
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
@@ -1542,19 +1557,19 @@ class Cmf:
         return metrics
 
     def commit_existing_metrics(self, metrics_name: str, uri: str, custom_properties: t.Optional[t.Dict] = None):
-        """ 
+        """
         Commits existing metrics associated with the given URI to MLMD. 
-        Example: 
-        ```python 
+        Example:
+        ```python
            artifact: mlpb.Artifact = cmf.commit_existing_metrics("existing_metrics", "abc123", 
-           {"custom_key": "custom_value"}) 
-        ``` 
-        Args: 
-           metrics_name: Name of the metrics. 
-           uri: Unique identifier associated with the metrics. 
-           custom_properties: Optional custom properties for the metrics. 
+           {"custom_key": "custom_value"})
+        ```
+        Args:
+           metrics_name: Name of the metrics.
+           uri: Unique identifier associated with the metrics.
+           custom_properties: Optional custom properties for the metrics.
         Returns:
-           Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact. 
+           Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact.
         """
 
         custom_props =  {} if custom_properties is None else custom_properties
