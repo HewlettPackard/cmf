@@ -9,10 +9,20 @@ from fastapi.responses import FileResponse
 
 async def get_model_data(mlmdfilepath, modelId):
     '''
-      Args:
+      This function retrieves the necessary model data required for generating a model card.
 
-      Return:
+      Arguments:
+        mlmdfilepath (str): The file path to the metadata.
+        modelId (int): The ID of the model for which data is required.
 
+      Returns:
+        This function returns a tuple of DataFrames containing the following:
+
+        model_data_df (DataFrame): Metadata related to the model itself.
+        model_exe_df (DataFrame): Metadata of the executions in which the specified modelId was an input or output.
+        model_input_df (DataFrame): Metadata of input artifacts that led to the creation of the model.
+        model_output_df (DataFrame): Metadata of artifacts that used the model as an input.
+        The returned DataFrames provide comprehensive metadata for the specified model, aiding in the creation of detailed and accurate model cards.
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
     pd.set_option('display.max_columns', None)
@@ -53,7 +63,8 @@ async def get_model_data(mlmdfilepath, modelId):
     in_art_ids =  []
     # input artifacts
     in_art_ids.extend(query._get_input_artifacts(exe_ids))
-    in_art_ids.remove(modelId)
+    if modelId in in_art_ids:
+        in_art_ids.remove(modelId)
     model_input_df = query.get_all_artifacts_by_ids_list(in_art_ids)
 
     out_art_ids = []
