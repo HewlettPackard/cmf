@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
+from typing import List, Dict, Any
 
 from cmflib import cmfquery, cmf_merger
 from server.app.get_data import (
@@ -15,7 +16,8 @@ from server.app.get_data import (
     get_artifact_types,
     get_all_artifact_ids,
     get_all_exe_ids,
-    get_executions_by_ids
+    get_executions_by_ids,
+    get_model_data
 )
 from server.app.query_visualization import query_visualization
 from server.app.query_exec_lineage import query_exec_lineage
@@ -146,8 +148,7 @@ async def display_exec(
 @app.get("/display_artifact_lineage/{pipeline_name}")
 async def display_artifact_lineage(request: Request, pipeline_name: str):
     '''
-      This api's returns dictionary of nodes and links for given 
-      pipeline.
+      This api returns dictionary of nodes and links for given pipeline.
       response = {
                    nodes: [{id:"",name:""}],
                    links: [{source:1,target:4},{}],
@@ -170,8 +171,7 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
 @app.get("/get_execution_types/{pipeline_name}")
 async def get_execution_types(request: Request, pipeline_name: str):
     '''
-      This api's returns
-      list of execution types.
+      This api's returns list of execution types.
 
     '''
     # checks if mlmd file exists on server
@@ -304,6 +304,34 @@ async def upload_file(request:Request, pipeline_name: str = Query(..., descripti
     except Exception as e:
         return {"error": f"Failed to up load file: {e}"}
 
+@app.get("/model-card")
+async def model_card(request:Request, modelId: int, response_model=List[Dict[str, Any]]):
+    json_payload_1 = ""
+    json_payload_2 = ""
+    json_payload_3 = ""
+    json_payload_4 = ""
+    model_data_df = pd.DataFrame()
+    model_exe_df = pd.DataFrame()
+    model_input_art_df = pd.DataFrame()
+    model_output_art_df = pd.DataFrame()
+    df = pd.DataFrame()
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(server_store_path, modelId)
+        if not model_data_df.empty:
+            result_1 = model_data_df.to_json(orient="records")
+            json_payload_1 = json.loads(result_1)
+        if not model_exe_df.empty:
+            result_2 = model_exe_df.to_json(orient="records")
+            json_payload_2 = json.loads(result_2)
+        if not model_input_art_df.empty:
+            result_3 =  model_input_art_df.to_json(orient="records")
+            json_payload_3 = json.loads(result_3)
+        if not model_output_art_df.empty:
+            result_4 =  model_output_art_df.to_json(orient="records")
+            json_payload_4 = json.loads(result_4)
+    return [json_payload_1, json_payload_2, json_payload_3, json_payload_4]
+
 async def update_global_art_dict():
     global dict_of_art_ids
     output_dict = await get_all_artifact_ids(server_store_path)
@@ -316,3 +344,5 @@ async def update_global_exe_dict():
     output_dict = await get_all_exe_ids(server_store_path)
     dict_of_exe_ids = output_dict
     return
+
+

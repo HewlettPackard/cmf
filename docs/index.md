@@ -7,7 +7,7 @@ models and performance metrics) recorded by the framework are versioned and iden
 ## Installation
 
 #### 1. Pre-Requisites:
-* 3.9>= Python <=3.10
+* 3.9>= Python <3.11
 * Git latest version
 
 #### 2. Set up Python Virtual Environment:

@@ -108,6 +108,19 @@ class FastAPIClient {
       console.error(error);
     }
   }
+
+  async getModelCard(modelId) {
+    return this.apiClient.get(`/model-card`, {
+        params: {
+          modelId: modelId,
+        },
+      })
+      .then(({data}) => {
+        return data;
+      });
+  }
+
 }
+
 
 export default FastAPIClient;
