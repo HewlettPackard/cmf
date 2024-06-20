@@ -1556,7 +1556,7 @@ class Cmf:
         os.chdir(logging_dir)
         return metrics
 
-    def commit_existing_metrics(self, metrics_name: str, uri: str, custom_properties: t.Optional[t.Dict] = None):
+    def commit_existing_metrics(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
         """
         Commits existing metrics associated with the given URI to MLMD. 
         Example:
@@ -1571,7 +1571,6 @@ class Cmf:
         Returns:
            Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact.
         """
-
         custom_props =  {} if custom_properties is None else custom_properties
         c_hash = uri.strip()
         existing_artifact = []
@@ -1594,6 +1593,15 @@ class Cmf:
                 name=metrics_name,
                 type_name="Step_Metrics",
                 event_type=mlpb.Event.Type.OUTPUT,
+                properties={
+                    # passing uri value to commit
+                    "Commit": props.get("Commit", ""),
+                    "url": props.get("url", ""),
+                },
+                artifact_type_properties={
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
+                },
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )

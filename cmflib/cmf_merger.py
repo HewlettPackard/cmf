@@ -69,7 +69,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                 artifact_name = (event["artifact"]["name"].split(":"))[0]
                 custom_props = event["artifact"]["custom_properties"]
                 props = event["artifact"]["properties"]
-                print(props,'props')
+                # print(props,'props')
                 uri = event["artifact"]["uri"]
                 if artifact_type == "Dataset" and event_type == 3:
                     cmf_class.log_dataset_with_version(
@@ -110,7 +110,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                     dataslice = cmf_class.create_dataslice(event["artifact"]["name"])
                     dataslice.commit_existing(uri, props, custom_props)
                 elif artifact_type == "Step_Metrics":
-                    cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, custom_props)
+                    cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, props, custom_props)
                 else:
                     pass
 
