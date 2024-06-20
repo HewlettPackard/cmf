@@ -173,9 +173,11 @@ const Popup = ({ show, model_data, onClose }) => {
       />
       <div className="popup-overlay">
         <div className="popup">
-          <button onClick={onClose} className="close-button">
-            X
-          </button>
+        <div className="popup-border">
+            <button onClick={onClose} className="close-button">
+             X
+            </button>
+        </div>
           <button className="download-button" onClick={downloadJSON}>
             <i className="fa fa-download"></i>
           </button>

@@ -10,6 +10,13 @@
     align-items: center;
 }
 
+.popup-border {
+  position: sticky;
+  top: 0;
+  right: 0;
+  z-index: 10; /* Ensure it stays on top of the popup */
+}
+
 .popup {
     background-color: white;
     padding: 20px;
@@ -30,8 +37,9 @@
     padding: 5px 10px;
     cursor: pointer;
     position: absolute;
-    top: -11px;
-    right: -6px;
+    top: -18px;
+    right: -19px;
+    z-index: 10;
 }
 
 .download-button {
@@ -39,8 +47,8 @@
     color: dark gray;
     border: none;
     cursor: pointer;
-    width: 30px;
-    height: 30px;
+    width: 84px;
+    height: 55px;
     float: right;
 }
 
