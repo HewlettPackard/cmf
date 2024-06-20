@@ -132,6 +132,7 @@ class Cmf:
         config.sqlite.filename_uri = filepath
         self.store = metadata_store.MetadataStore(config)
         self.filepath = filepath
+        self.dataslice_path = None
         self.child_context = None
         self.execution = None
         self.execution_name = ""
@@ -1481,7 +1482,6 @@ class Cmf:
 
         # code for nano cmf is remaining
         logging_dir = change_dir(self.cmf_init_path)
-
         directory_path = os.path.join( "cmf_artifacts/metrics",self.execution.properties["Execution_uuid"].string_value)
         os.makedirs(directory_path, exist_ok=True)
         metrics_df = pd.DataFrame.from_dict(
@@ -1699,6 +1699,9 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
+        name = os.path.join(self.dataslice_path, name)
+        print("read_dataslice")
+        print("name: ", name)
         df = pd.read_parquet(name)
         return df
 
@@ -1719,6 +1722,9 @@ class Cmf:
         Returns:
            None
         """
+        name = os.path.join(self.dataslice_path, name)
+        print("update_dataslice")
+        print("name: ", name)
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
         temp_dict[record].update(custom_properties)
@@ -1786,7 +1792,9 @@ class Cmf:
             """
             logging_dir = change_dir(self.writer.cmf_init_path)
             directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
+            self.writer.dataslice_path = directory_path
             os.makedirs(directory_path, exist_ok=True)
+            # code to make this compatible with the nano-cmf is missing
             custom_props = {} if custom_properties is None else custom_properties
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
@@ -1802,58 +1810,69 @@ class Cmf:
                 return null
 
             dataslice_commit = c_hash
-            remote = dvc_get_url(dataslice_path)
+            url = dvc_get_url(dataslice_path)
+            dvc_url_with_pipeline = f"{self.writer.parent_context.name}:{url}"
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
                 print("Adding to existing data slice")
+                # Haven't added event type in this if cond, is it not needed??
                 slice = link_execution_to_input_artifact(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     uri=c_hash,
-                    input_name=self.name + ":" + c_hash,
+                    input_name=dataslice_path + ":" + c_hash,
                 )
             else:
-                props = {
-                    "Commit": dataslice_commit,  # passing c_hash value to commit
-                    "git_repo": git_repo,
-                    "Remote": remote,
-                }
-                props.update(custom_props)
                 slice = create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     context_id=self.writer.child_context.id,
                     uri=c_hash,
-                    name=self.name + ":" + c_hash,
+                    name=dataslice_path + ":" + c_hash,
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
-                    custom_properties=props,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(dataslice_commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
+                    custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
             if self.writer.graph:
                 self.writer.driver.create_dataslice_node(
-                    self.name, self.name + ":" + c_hash, c_hash, self.data_parent, props
+                    self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, props
                 )
             os.chdir(logging_dir)
             return slice
 
-        def commit_existing(self, uri: str, custom_properties: t.Optional[t.Dict] = None) -> None:
+        # commit existing dataslice to server
+        def commit_existing(self, uri: str, name: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
             custom_props = {} if custom_properties is None else custom_properties
             c_hash = uri
             dataslice_commit = c_hash
             existing_artifact = []
+            print("printing props inside commit_existing")
+            print(props)
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
                 print("Adding to existing data slice")
+                # Haven't added event type in this if cond, is it not needed??
                 slice = link_execution_to_input_artifact(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     uri=c_hash,
-                    input_name=self.name
+                    input_name=self.name,
                 )
             else:
                 slice = create_new_artifact_event_and_attribution(
@@ -1864,6 +1883,16 @@ class Cmf:
                     name=self.name,
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
+                    properties={
+                        "git_repo": props.get("git_repo", ""),
+                        "Commit": str(dataslice_commit),
+                        "url": props.get("url", " "),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
                     custom_properties=custom_properties,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
