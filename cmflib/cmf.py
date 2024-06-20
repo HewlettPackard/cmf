@@ -1708,8 +1708,6 @@ class Cmf:
         """Reads the dataslice"""
         # To do checkout if not there
         name = os.path.join(self.dataslice_path, name)
-        print("read_dataslice")
-        print("name: ", name)
         df = pd.read_parquet(name)
         return df
 
@@ -1731,14 +1729,11 @@ class Cmf:
            None
         """
         name = os.path.join(self.dataslice_path, name)
-        print("update_dataslice")
-        print("name: ", name)
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
         temp_dict[record].update(custom_properties)
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient="index")
         dataslice_df.index.names = ["Path"]
-        print("dataslice_df.index.names= ",dataslice_df.index.names )
         dataslice_df.to_parquet(name)
 
     class DataSlice:
@@ -1799,7 +1794,6 @@ class Cmf:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
                 Example{"mean":2.5, "median":2.6}
             """
-            print("inside dataslice fresh commit function ")
             logging_dir = change_dir(self.writer.cmf_init_path)
             directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
             self.writer.dataslice_path = directory_path
@@ -1809,7 +1803,6 @@ class Cmf:
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
             dataslice_df.index.names = ["Path"]
-            print("dataslice_df.index.names=", dataslice_df.index.names)
             dataslice_path = os.path.join(directory_path,self.name)
             dataslice_df.to_parquet(dataslice_path)
             existing_artifact = []
@@ -1868,11 +1861,8 @@ class Cmf:
         # commit existing dataslice to server
         def commit_existing(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
             custom_props = {} if custom_properties is None else custom_properties
-            c_hash = uri
-            dataslice_commit = c_hash
+            c_hash = uri.strip()
             existing_artifact = []
-            print("printing props inside commit_existing")
-            print(props)
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
                     self.writer.store.get_artifacts_by_uri(c_hash))
@@ -1896,7 +1886,7 @@ class Cmf:
                     event_type=mlpb.Event.Type.OUTPUT,
                     properties={
                         "git_repo": props.get("git_repo", ""),
-                        "Commit": str(dataslice_commit),
+                        "Commit": props.get("Commit", ""),
                         "url": props.get("url", " "),
                     },
                     artifact_type_properties={
