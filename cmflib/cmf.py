@@ -1738,6 +1738,7 @@ class Cmf:
         temp_dict[record].update(custom_properties)
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient="index")
         dataslice_df.index.names = ["Path"]
+        print("dataslice_df.index.names= ",dataslice_df.index.names )
         dataslice_df.to_parquet(name)
 
     class DataSlice:
@@ -1798,6 +1799,7 @@ class Cmf:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
                 Example{"mean":2.5, "median":2.6}
             """
+            print("inside dataslice fresh commit function ")
             logging_dir = change_dir(self.writer.cmf_init_path)
             directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
             self.writer.dataslice_path = directory_path
@@ -1807,6 +1809,7 @@ class Cmf:
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
             dataslice_df.index.names = ["Path"]
+            print("dataslice_df.index.names=", dataslice_df.index.names)
             dataslice_path = os.path.join(directory_path,self.name)
             dataslice_df.to_parquet(dataslice_path)
             existing_artifact = []
@@ -1863,7 +1866,7 @@ class Cmf:
             return slice
 
         # commit existing dataslice to server
-        def commit_existing(self, uri: str, name: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
+        def commit_existing(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
             custom_props = {} if custom_properties is None else custom_properties
             c_hash = uri
             dataslice_commit = c_hash
