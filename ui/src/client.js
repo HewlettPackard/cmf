@@ -84,6 +84,14 @@ class FastAPIClient {
     });
   }
 
+  async getExecTreeLineage(pipeline,uuid) {
+      return this.apiClient.get(`/display_tree_lineage/${uuid}/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
+
+
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
       .get(`/display_executions/${pipelineName}`, {
