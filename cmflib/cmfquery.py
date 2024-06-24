@@ -617,7 +617,6 @@ class CmfQuery(object):
                 list_exec.append(self.store.get_executions_by_id(exec))
         return list_exec
 
-    # this function name needs to be changed as it is returning the parent execution ids only
     def get_one_hop_parent_executions_ids(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
         """Get parent execution ids for given execution id
         Args: 
@@ -627,7 +626,6 @@ class CmfQuery(object):
         Return:
            Returns parent executions for given id
         """
-        # getting input artifacts ids for given execution_d
         artifacts: t.Optional = self._get_input_artifacts(execution_id)
         if not artifacts:
             return None
@@ -639,7 +637,6 @@ class CmfQuery(object):
             exe_ids.extend(ids)
         return exe_ids
 
-    # this is duplicate to an already existing function
     def get_executions_with_execution_ids(self, exe_ids: t.List[int]):
         """For list of execution ids it returns df with "id,Execution_type_name, Execution_uuid"
         Args:

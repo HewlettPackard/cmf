@@ -243,7 +243,7 @@ const ExecutionTree = ({ data }) => {
   }, [data]);
 
   return (
-    <div ref={chartContainerRef} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+    <div ref={chartContainerRef} style={{ justifyContent: 'center', alignItems: 'center', overflow: 'auto' }}>
       {chart}
     </div>
   );

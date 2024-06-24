@@ -32,7 +32,7 @@ const client = new FastAPIClient(config);
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifacts','Execution','Exec_temp'];
+  const LineageTypes=['Artifacts','Execution','Tangled_Exec'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData]=useState(null);
@@ -197,13 +197,13 @@ const Lineage = () => {
                 <LineageArtifacts key={lineageArtifactsKey} data={executionData} />
                 </div>
                 )}
-                {selectedPipeline !== null && selectedLineageType === "Exec_temp" && execDropdownData !== null   &&(
+                {selectedPipeline !== null && selectedLineageType === "Tangled_Exec" && execDropdownData !== null   &&(
                 <div>
                 <ExecutionDropdownTemp data={execDropdownData} exec_type={selectedExecutionType} handleTreeClick= {handleTreeClick}/>        
                 </div>
                 )}
-                {selectedPipeline !== null && selectedLineageType === "Exec_temp" && execDropdownData !== null  && executionData !== null &&(
-                <div>
+                {selectedPipeline !== null && selectedLineageType === "Tangled_Exec" && execDropdownData !== null  && executionData !== null &&(
+                <div style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <ExecutionTree key={lineageArtifactsKey} data={executionData} />
                 </div>
                 )}
