@@ -23,19 +23,21 @@ import Footer from "../../components/Footer";
 import LineageSidebar from "../../components/LineageSidebar";
 import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
+import TangledTree from "../../components/TangledTree";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
 const client = new FastAPIClient(config);
 
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifacts','Execution'];
+  const LineageTypes=['Artifacts','Execution','Artifact_Tree'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData]=useState(null);
   const [executionData, setExecutionData]=useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
   const [execDropdownData,setExecDropdownData] = useState([]);
+  const [artitreeData, setArtiTreeData]=useState(null);
 
   // fetching list of pipelines
   useEffect(() => {
@@ -59,29 +61,39 @@ const Lineage = () => {
   const handlePipelineClick = (pipeline) => {
     setLineageData(null);
     setExecutionData(null); 
+    setArtiTreeData(null);
     setSelectedPipeline(pipeline);
     // when pipeline is updated we need to update the lineage selection too
     // this is also not needed as selectedLineage has default value
     // setSelectedLineageType(LineageTypes[0]);
      if (selectedPipeline) {
-       if (selectedLineageType === "Artifacts") {
+       if (selectedLineageType === "Artifacts") {	
           //call artifact lineage as it is default
           fetchArtifactLineage(pipeline);
        }
+       else if (selectedLineageType === "Execution") {
+          fetchExecutionTypes(pipeline, selectedLineageType);
+       }
        else {
-          fetchExecutionTypes(pipeline);
-       }}
+          
+          fetchArtifactTree(pipeline, selectedLineageType);
+      }}
+       
   };
 
   const handleLineageTypeClick = (lineageType) => {
     setLineageData(null);
     setExecutionData(null);
+    setArtiTreeData(null);
     setSelectedLineageType(lineageType);
     if (lineageType === "Artifacts") {
       fetchArtifactLineage(selectedPipeline);
     }
+    else if (lineageType === "Execution") {
+      fetchExecutionTypes(selectedPipeline, lineageType);
+    }
     else {
-      fetchExecutionTypes(selectedPipeline);
+      fetchArtifactTree(selectedPipeline, lineageType);
     }
   };  
 
@@ -94,6 +106,16 @@ const Lineage = () => {
         setLineageData(data);
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
+  };
+
+  const fetchArtifactTree = (pipelineName,lineageType) => {
+    client.getArtiTreeLineage(pipelineName,lineageType).then((data) => {    
+    console.log(data,"fetchArtifact");
+    if (data === null) { 
+        setArtiTreeData(null);
+    }
+    setArtiTreeData(data);
+    });
   };
 
   const fetchExecutionTypes = (pipelineName) => {
@@ -168,6 +190,11 @@ const Lineage = () => {
                 {selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null  && executionData !== null &&(
                 <div>
                 <LineageArtifacts key={lineageArtifactsKey} data={executionData} />
+                </div>
+                )}
+                {selectedPipeline !== null && selectedLineageType === "Artifact_Tree" && artitreeData !== null &&(
+                <div style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <TangledTree key={lineageArtifactsKey} data={artitreeData} />
                 </div>
                 )}
             </div>
