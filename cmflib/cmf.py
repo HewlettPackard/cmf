@@ -123,22 +123,22 @@ class Cmf:
 					else  os.getcwd()
 
         logging_dir = change_dir(self.cmf_init_path)
+        temp_store = ""
         if is_server is False:
             Cmf.__prechecks()
-            self.store = SqlliteStore({"filename":filename})
+            temp_store = SqlliteStore({"filename":filepath})
         else:
             config_dict = get_postgres_config()
-            self.store = PostgresStore(config_dict)
+            temp_store = PostgresStore(config_dict)
+        print("temp_store type", type(temp_store))
         if custom_properties is None:
             custom_properties = {}
         if not pipeline_name:
             # assign folder name as pipeline name 
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
-        #config = mlpb.ConnectionConfig()
-        #config.sqlite.filename_uri = filepath
-        #self.store = metadata_store.MetadataStore(config)
-        self.store.connect()
+        self.store = temp_store.connect()
+        print("self.store = ", self.store)
         self.filepath = filepath
         self.child_context = None
         self.execution = None
