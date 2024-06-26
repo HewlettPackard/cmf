@@ -15,7 +15,20 @@
 ###
 
 version: '3.8'
+
 services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: xxxx
+      POSTGRES_PASSWORD: xxxx
+      POSTGRES_DB: xxxx
+    ports:
+      - "5432:5432"
+    volumes:
+      - /home/xxxx/cmf-server/data/postgres_data:/var/lib/postgresql/data
+
   tensorboard:
     image: tensorflow/tensorflow
     command: tensorboard --logdir /logs --host 0.0.0.0
@@ -25,6 +38,7 @@ services:
     # directory path should be updated as per user's environment
       - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
     container_name: tensorboard
+
   server:
     image: server:latest
     # both the directory paths should be updated as per user's environment
