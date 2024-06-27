@@ -31,7 +31,8 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     # print(type(pipeline_name))
     stage = {}
     if cmd == "push":
-        data = create_original_time_since_epoch(mlmd_data)
+        # data = create_original_time_since_epoch(mlmd_data)
+        data = mlmd_data
     else:
         data = mlmd_data
     graph = False
