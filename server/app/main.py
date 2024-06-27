@@ -322,7 +322,7 @@ async def display_artifact_types(request: Request):
 async def display_list_of_pipelines(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
+        query = cmfquery.CmfQuery(server_store_path, True)
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
