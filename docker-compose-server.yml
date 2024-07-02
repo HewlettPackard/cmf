@@ -28,6 +28,11 @@ services:
       - "5432:5432"
     volumes:
       - /home/xxxx/cmf-server/data/postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   tensorboard:
     image: tensorflow/tensorflow
@@ -38,6 +43,7 @@ services:
     # directory path should be updated as per user's environment
       - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
     container_name: tensorboard
+
 
   server:
     image: server:latest
@@ -62,6 +68,9 @@ services:
       test: if [ -n $IP ]; then curl -f http://$IP:8080; else curl -f http://$hostname:8080; fi
       interval: 15s
       retries: 32
+    depends_on:
+      postgres:
+        condition: service_healthy
     
   ui:
     image: ui:latest

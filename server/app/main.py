@@ -27,7 +27,7 @@ from pathlib import Path
 import os
 import json
 
-server_store_path = "/cmf-server/data/mlmd"
+server_store_path = "/cmf-server/data/postgres_data"
 
 #global variables
 dict_of_art_ids = {}
@@ -87,7 +87,7 @@ async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
     req_info = await info.json()
-    status = await create_unique_executions(req_info)
+    status = await create_unique_executions(server_store_path, req_info)
     if status == "version_update":
         # Raise an HTTPException with status code 422
         raise HTTPException(status_code=422, detail="version_update")
