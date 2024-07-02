@@ -27,7 +27,7 @@ from pathlib import Path
 import os
 import json
 
-server_store_path = "/cmf-server/data/mlmd"
+server_store_path = "/cmf-server/data/postgres_data"
 
 #global variables
 dict_of_art_ids = {}

@@ -205,7 +205,7 @@ def get_artifact_types():
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-async def create_unique_executions(req_info):
+async def create_unique_executions(server_store_path, req_info):
     mlmd_data = json.loads(req_info["json_payload"])
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
