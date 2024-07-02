@@ -19,10 +19,10 @@ def truncate_artifact_name(my_str):
     temp=":".join(temp)
     return temp
 
-def query_visualization(mlmd_path, pipeline_name, dict_of_art_ids):
+def query_visualization(pipeline_name, dict_of_art_ids):
     art_name_id = {}
     artifact_name_list = []
-    query = cmfquery.CmfQuery(mlmd_path)
+    query = cmfquery.CmfQuery(is_server=True)
     node_id_name_list = []
     pipeline_id=query.get_pipeline_id(pipeline_name)
     for type_, df in dict_of_art_ids[pipeline_name].items():

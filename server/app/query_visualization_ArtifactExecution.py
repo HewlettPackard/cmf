@@ -10,9 +10,9 @@ import random
 import warnings
 
 warnings.filterwarnings("ignore")
-def query_visualization_ArtifactExecution(mlmd_path, pipeline_name):
+def query_visualization_ArtifactExecution(pipeline_name):
     file_path="/cmf-server/data/static/data.json"
-    query = cmfquery.CmfQuery(mlmd_path)
+    query = cmfquery.CmfQuery(is_server=True)
     stages = query.get_pipeline_stages(pipeline_name)
     node_id_name_list=[]
     link_src_trgt_list=[]

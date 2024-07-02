@@ -26,7 +26,6 @@ import typing as t
 # This import is needed for jupyterlab environment
 import dvc
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import (
     dvc_get_url,
     dvc_get_hash,
@@ -41,6 +40,8 @@ from cmflib.dvc_wrapper import (
     git_commit,
 )
 from cmflib import graph_wrapper
+from cmflib.store.sqllite_store import SqlliteStore
+from cmflib.store.postgres import PostgresStore 
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
@@ -99,12 +100,12 @@ class Cmf:
 
     # pylint: disable=too-many-instance-attributes
     # Reading CONFIG_FILE variable
-    cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
-    if os.path.exists(cmf_config):
-        attr_dict = CmfConfig.read_config(cmf_config)
-        __neo4j_uri = attr_dict.get("neo4j-uri", "")
-        __neo4j_password = attr_dict.get("neo4j-password", "")
-        __neo4j_user = attr_dict.get("neo4j-user", "")
+    #cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+    #if os.path.exists(cmf_config):
+    #    attr_dict = CmfConfig.read_config(cmf_config)
+    #    __neo4j_uri = attr_dict.get("neo4j-uri", "")
+    #    __neo4j_password = attr_dict.get("neo4j-password", "")
+    #    __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(
         self,
@@ -120,17 +121,22 @@ class Cmf:
 					else  os.getcwd()
 
         logging_dir = change_dir(self.cmf_init_path)
+        temp_store = ""
         if is_server is False:
             Cmf.__prechecks()
+            temp_store = SqlliteStore({"filename":filepath})
+        else:
+            config_dict = get_postgres_config()
+            temp_store = PostgresStore(config_dict)
+        print("temp_store type", type(temp_store))
         if custom_properties is None:
             custom_properties = {}
         if not pipeline_name:
             # assign folder name as pipeline name 
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
-        config = mlpb.ConnectionConfig()
-        config.sqlite.filename_uri = filepath
-        self.store = metadata_store.MetadataStore(config)
+        self.store = temp_store.connect()
+        print("self.store = ", self.store)
         self.filepath = filepath
         self.child_context = None
         self.execution = None
