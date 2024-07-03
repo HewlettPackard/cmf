@@ -25,6 +25,9 @@ from server.app.query_artifact_tree_lineage import query_artifact_tree_lineage
 from pathlib import Path
 import os
 import json
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from ml_metadata.proto import metadata_store_pb2 as mlpb
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -344,7 +347,6 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     model_exe_df = pd.DataFrame()
     model_input_art_df = pd.DataFrame()
     model_output_art_df = pd.DataFrame()
-    df = pd.DataFrame()
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
         model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(server_store_path, modelId)
