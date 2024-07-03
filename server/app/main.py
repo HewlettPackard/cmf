@@ -5,8 +5,8 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
-
-from cmflib import cmfquery, cmf_merger
+import time 
+from cmflib import cmfquery, cmfquery_temp, cmf_merger
 from server.app.get_data import (
     get_artifacts,
     get_lineage_data,
@@ -22,6 +22,9 @@ from server.app.query_exec_lineage import query_exec_lineage
 from pathlib import Path
 import os
 import json
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from ml_metadata.proto import metadata_store_pb2 as mlpb
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -71,25 +74,58 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 @app.get("/")
 async def read_root(request: Request):
     return {"cmf-server"}
 
+@app.get("/execute_async")
+async def execute_async(request: Request):
+    loop = asyncio.get_running_loop()
+    executor = ThreadPoolExecutor()
+    query = cmfquery_temp.CmfQuery(server_store_path)
+#    pipeline_id = query.get_pipeline_id("huggingface_leaderboard")  # Or however you determine the pipeline_id
+#    for i in range(1000000):
+#        print(i)
+    await asyncio.sleep(10)
+    artifacts = await query.async_get_artifacts(loop, executor)
+    return artifacts
+
+def artifact_to_dict(art: mlpb.Context) -> dict:
+    print(art)
+    return {
+        "name": art,
+        # Add other fields as needed
+    }
 
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
+    s_time_r = time.time()
     req_info = await info.json()
+    e_time_r = time.time()
+    time_r = e_time_r - s_time_r
+    print("Time taken for req_info: ",time_r)
+    s_time_s = time.time()
     status = await create_unique_executions(server_store_path, req_info)
+    e_time_s = time.time()
+    time_s = e_time_s - s_time_s
+    print("Time taken for status: ",time_s)
     if status == "version_update":
         # Raise an HTTPException with status code 422
         raise HTTPException(status_code=422, detail="version_update")
     # async function
+    s_time_gart = time.time()
     await update_global_art_dict()
+    e_time_gart = time.time()
+    time_global_art = e_time_gart - s_time_gart
+    print("Time taken for update global art dict: ",time_global_art)
+    s_time_gexe = time.time()
     await update_global_exe_dict()
+    e_time_gexe = time.time()
+    time_global_exe = e_time_gexe - s_time_gexe
+    print("Time taken for update global execution dict: ",time_global_exe)
     return {"status": status, "data": req_info}
 
 
