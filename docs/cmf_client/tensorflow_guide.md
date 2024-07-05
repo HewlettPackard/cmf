@@ -30,6 +30,6 @@
      ```
 
 10. Go to the CMF server and navigate to the TensorBoard tab. You will see an interface similar to the following image.
-    ![image](https://h-huang.github.io/tutorials/_images/tensorboard_scalars.png)
+    ![image](./assets/Tensorboard.png)
 
 ---
