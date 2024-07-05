@@ -3,7 +3,7 @@
 ```
 Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,osdfremote,show}
 ```
-`cmf init` initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and remote OSDF directory are the options available. Additionally, user can provide cmf-server url.
+`cmf init` initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available. Additionally, user can provide cmf-server url.
 ### cmf init show
 ```
 Usage: cmf init show
@@ -288,7 +288,7 @@ Optional Arguments
 ```
 Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_name]
 ```
-`cmf metadata push` Export local mlmd's metadata in json format to a json file.
+`cmf metadata push` export local mlmd's metadata in json format to a json file.
 ```
 cmf metadata push -p 'pipeline-name' -j "/path/to/json-file-name" -f "/path/to/mlmd-file-name"
 ```
