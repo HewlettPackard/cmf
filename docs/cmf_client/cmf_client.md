@@ -252,7 +252,7 @@ Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
-cmf metadata pull -p 'pipeline-name' -f "/path/to/mlmd-file-name"
+cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name'
 ```
 Required Arguments
 ```
@@ -270,7 +270,7 @@ Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t 
 ```
 `cmf metadata push` command pushes the metadata file from the local machine to the cmf-server.
 ```
-cmf metadata push -p 'pipeline-name' -f "/path/to/mlmd-file-name" -t "/path/to/tensorboard-log"
+cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -t '/path/to/tensorboard-log'
 ```
 Required Arguments
 ```
@@ -290,7 +290,7 @@ Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_
 ```
 `cmf metadata push` export local mlmd's metadata in json format to a json file.
 ```
-cmf metadata push -p 'pipeline-name' -j "/path/to/json-file-name" -f "/path/to/mlmd-file-name"
+cmf metadata push -p 'pipeline-name' -j '/path/to/json-file-name' -f '/path/to/mlmd-file-name'
 ```
 Required Arguments
 ```

@@ -26,7 +26,7 @@
 
 9. Push the generated MLMD and TensorFlow log files to the CMF server using the following command:
      ```bash
-     cmf metadata push -p "pipeline-name" -t "tensorboard-log-file-name"
+     cmf metadata push -p 'pipeline-name' -t 'tensorboard-log-file-name'
      ```
 
 10. Go to the CMF server and navigate to the TensorBoard tab. You will see an interface similar to the following image.
