@@ -19,6 +19,14 @@ import sys
 import subprocess
 import json
 
+def is_url(url)-> bool:
+    from urllib.parse import urlparse
+    try:
+        result = urlparse(url)
+        return all([result.scheme, result.netloc])
+    except ValueError:
+        return False
+
 def is_git_repo():
     git_dir = os.path.join(os.getcwd(), '.git')
     print("git_dir", git_dir)
@@ -80,3 +88,47 @@ def list_conda_packages_json():
         return f"Error: {e.stderr}"
 
 
+# Generate SciToken dynamically 
+def generate_osdf_token(key_id, key_path, key_issuer) -> str:
+
+    #for SciToken Generation & Validation
+    import scitokens
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.backends import default_backend
+
+    dynamic_pass="" #Initialize Blank dynamic Password
+
+    #Read Private Key using load_pem_private_key() method 
+    if not os.path.exists(key_path):
+        print(f"File {key_path} does not exist.")
+        return dynamic_pass
+
+    try:
+        with open(key_path, "r") as file_pointer:
+            private_key_contents = file_pointer.read()
+
+        loaded_private_key = serialization.load_pem_private_key(
+            private_key_contents.encode(),
+            password=None, # Assumes Private key. Update this if password is used for Private Key
+            backend=default_backend()
+        )
+
+        if is_url(key_issuer):
+            token = scitokens.SciToken(key=loaded_private_key, key_id=key_id) #Generate SciToken
+            #token.update_claims({"iss": key_issuer, "scope": "write:/ read:/", "aud": "NRP", "sub": "NRP"})
+            token.update_claims({"scope": "write:/ read:/", "aud": "NRP", "sub": "NRP"}) #TODO: Figure out how to supply these as input params
+
+            # Serialize the token to a string
+            token_ser = token.serialize(issuer=key_issuer) 
+            #Key_issuer is something like ""https://t.nationalresearchplatform.org/fdp"
+
+            #Stringify token_str
+            token_str=token_ser.decode()
+            dynamic_pass="Bearer "+ token_str
+        else:
+            print(f"{key_issuer} is not a valid URL.")
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+
+    return dynamic_pass

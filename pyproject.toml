@@ -13,6 +13,8 @@ dependencies = [
 	"click",
 	"minio",
 	"paramiko",
+	"scitokens", 
+	"cryptography",
 ]
 authors = [
   { name="Hewlett Packard Enterprise"},
