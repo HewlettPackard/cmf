@@ -25,9 +25,6 @@ from server.app.query_artifact_tree_lineage import query_artifact_tree_lineage
 from pathlib import Path
 import os
 import json
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from ml_metadata.proto import metadata_store_pb2 as mlpb
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -123,6 +120,7 @@ async def display_exec(
     ):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
+        print(dict_of_exe_ids,type(dict_of_exe_ids))
         exe_ids_initial = dict_of_exe_ids[pipeline_name]
         # Apply filtering if provided
         if filter_by and filter_value:
@@ -366,15 +364,24 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
 
 async def update_global_art_dict():
     global dict_of_art_ids
+<<<<<<< HEAD
     execution_ids = await async_api(get_all_exe_ids, server_store_path)
     output_dict = await async_api(get_all_artifact_ids, server_store_path, execution_ids)
+=======
+    execution_ids = await async_get_all_exe_ids(server_store_path)
+    output_dict = await async_get_all_artifact_ids(server_store_path, execution_ids)
+>>>>>>> adding changes with run in threadpool
     dict_of_art_ids = output_dict
     return
 
 
 async def update_global_exe_dict():
     global dict_of_exe_ids
+<<<<<<< HEAD
     output_dict = await async_api(get_all_exe_ids, server_store_path)
+=======
+    output_dict = await async_get_all_exe_ids(server_store_path)
+>>>>>>> adding changes with run in threadpool
     dict_of_exe_ids = output_dict
     return
 

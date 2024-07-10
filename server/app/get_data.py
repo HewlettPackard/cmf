@@ -91,12 +91,10 @@ def get_executions_by_ids(mlmdfilepath,  exe_ids) -> pd.DataFrame:
     Returns:
      returns dataframe of executions using execution_ids.
     '''
-
     query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
     executions = query.get_all_executions_by_ids_list(exe_ids)
     df = pd.concat([df, executions], sort=True, ignore_index=True)
-    #df=df.drop('name',axis=1)
     return df
 
 def get_all_exe_ids(mlmdfilepath) -> t.Dict:

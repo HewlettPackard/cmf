@@ -1,6 +1,11 @@
 import pandas as pd
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from typing import List
+from cmflib.mlmd_objects import CONTEXT_LIST
 from cmflib import cmfquery
 import warnings
+import asyncio
 
 warnings.filterwarnings("ignore")
 
@@ -46,5 +51,8 @@ def query_visualization(mlmd_path, pipeline_name, dict_of_art_ids):
         "links" : new_list
     }
     return data
+
+#async def async_query_visualization( loop: asyncio.AbstractEventLoop, executor: ThreadPoolExecutor,mlmd_path, pipeline_name,dict_of_art_ids) :
+#        return await loop.run_in_executor(executor, query_visualization,mlmd_path, pipeline_name,dict_of_art_ids)
 
 #print(query_visualization("/home/chobey/repair_lineage/testenv/example-get-started/mlmd","Test-env"))
