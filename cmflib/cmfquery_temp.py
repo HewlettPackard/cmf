@@ -2,10 +2,12 @@ import json
 import logging
 import typing as t
 import pandas as pd
+import time
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from fastapi.concurrency import run_in_threadpool
 from typing import List
 from cmflib.mlmd_objects import CONTEXT_LIST
 
@@ -33,7 +35,14 @@ class CmfQuery(object):
         Returns:
             List of all artifact names.
         """
+        time.sleep(100)
         return [artifact.name for artifact in self.store.get_artifacts()]
 
-    async def async_get_artifacts(self, loop: asyncio.AbstractEventLoop, executor: ThreadPoolExecutor) -> List[mlpb.Context]:
+    async def async_get_artifacts(self) :
+        return await run_in_threadpool(self.get_all_artifacts)
+"""
+
+
+    async def async_get_artifacts(self) -> List[mlpb.Context]:
         return await loop.run_in_executor(executor, self.get_all_artifacts)
+"""

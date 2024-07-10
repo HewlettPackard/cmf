@@ -9,12 +9,12 @@ import time
 from cmflib import cmfquery, cmfquery_temp, cmf_merger
 from server.app.get_data import (
     get_artifacts,
-    get_lineage_data,
-    create_unique_executions,
+    async_get_lineage_data,
+    async_create_unique_executions,
     get_mlmd_from_server,
     get_artifact_types,
-    get_all_artifact_ids,
-    get_all_exe_ids,
+    async_get_all_artifact_ids,
+    async_get_all_exe_ids,
     get_executions_by_ids
 )
 from server.app.query_visualization import query_visualization
@@ -37,10 +37,10 @@ async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
     if os.path.exists(server_store_path):
-        # loaded artifact ids into memory
-        dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
-        dict_of_exe_ids = await get_all_exe_ids(server_store_path)
+        dict_of_exe_ids = await async_get_all_exe_ids(server_store_path)
+        # loaded artifact ids into memory
+        dict_of_art_ids = await async_get_all_artifact_ids(server_store_path, dict_of_exe_ids)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -78,56 +78,19 @@ app.add_middleware(
 async def read_root(request: Request):
     return {"cmf-server"}
 
-@app.get("/execute_async")
-async def execute_async(request: Request):
-    loop = asyncio.get_running_loop()
-    executor = ThreadPoolExecutor()
-    query = cmfquery_temp.CmfQuery(server_store_path)
-#    pipeline_id = query.get_pipeline_id("huggingface_leaderboard")  # Or however you determine the pipeline_id
-#    for i in range(1000000):
-#        print(i)
-    await asyncio.sleep(10)
-    artifacts = await query.async_get_artifacts(loop, executor)
-    return artifacts
-
-def artifact_to_dict(art: mlpb.Context) -> dict:
-    print(art)
-    return {
-        "name": art,
-        # Add other fields as needed
-    }
-
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
 async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
-    s_time_r = time.time()
     req_info = await info.json()
-    e_time_r = time.time()
-    time_r = e_time_r - s_time_r
-    print("Time taken for req_info: ",time_r)
-    s_time_s = time.time()
-    status = await create_unique_executions(server_store_path, req_info)
-    e_time_s = time.time()
-    time_s = e_time_s - s_time_s
-    print("Time taken for status: ",time_s)
+    status = await async_create_unique_executions(server_store_path, req_info)
     if status == "version_update":
         # Raise an HTTPException with status code 422
         raise HTTPException(status_code=422, detail="version_update")
-    # async function
-    s_time_gart = time.time()
     await update_global_art_dict()
-    e_time_gart = time.time()
-    time_global_art = e_time_gart - s_time_gart
-    print("Time taken for update global art dict: ",time_global_art)
-    s_time_gexe = time.time()
     await update_global_exe_dict()
-    e_time_gexe = time.time()
-    time_global_exe = e_time_gexe - s_time_gexe
-    print("Time taken for update global execution dict: ",time_global_exe)
     return {"status": status, "data": req_info}
-
 
 # api to get mlmd file from cmf-server
 @app.get("/mlmd_pull/{pipeline_name}", response_class=HTMLResponse)
@@ -156,6 +119,7 @@ async def display_exec(
     ):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
+        print(dict_of_exe_ids,type(dict_of_exe_ids))
         exe_ids_initial = dict_of_exe_ids[pipeline_name]
         # Apply filtering if provided
         if filter_by and filter_value:
@@ -191,11 +155,10 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
 
     '''
     # checks if mlmd file exists on server
- 
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=await get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            response=await async_get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -342,13 +305,14 @@ async def upload_file(request:Request, pipeline_name: str = Query(..., descripti
 
 async def update_global_art_dict():
     global dict_of_art_ids
-    output_dict = await get_all_artifact_ids(server_store_path)
+    execution_ids = await async_get_all_exe_ids(server_store_path)
+    output_dict = await async_get_all_artifact_ids(server_store_path, execution_ids)
     dict_of_art_ids = output_dict
     return
 
 
 async def update_global_exe_dict():
     global dict_of_exe_ids
-    output_dict = await get_all_exe_ids(server_store_path)
+    output_dict = await async_get_all_exe_ids(server_store_path)
     dict_of_exe_ids = output_dict
     return
