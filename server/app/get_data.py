@@ -4,7 +4,7 @@ import json
 import os
 from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
-
+from fastapi.concurrency import run_in_threadpool
 
 async def get_model_data(mlmdfilepath, modelId):
     '''
@@ -87,17 +87,79 @@ async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     Returns:
      returns dataframe of executions using execution_ids.
     '''
-    query = cmfquery.CmfQuery(mlmdfilepath)
-    df = pd.DataFrame()
-    executions = query.get_all_executions_by_ids_list(exe_ids)
-    df = pd.concat([df, executions], sort=True, ignore_index=True)
+    def _get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
+        query = cmfquery.CmfQuery(mlmdfilepath)
+        df = pd.DataFrame()
+        executions = query.get_all_executions_by_ids_list(exe_ids)
+        df = pd.concat([df, executions], sort=True, ignore_index=True)
     #df=df.drop('name',axis=1)
-    return df
+        return df
+    return await run_in_threadpool(_get_executions_by_ids, mlmdfilepath, pipeline_name, exe_ids)
 
+'''
 async def get_all_exe_ids(mlmdfilepath):
+    async def _get_all_exe_ids(mlmdfilepath):
+        #Returns:
+        #    returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
+        query = cmfquery.CmfQuery(mlmdfilepath)
+        execution_ids = {}
+        names = query.get_pipeline_names()
+        for name in names:
+            df = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
+            stages = query.get_pipeline_stages(name)
+            for stage in stages:
+                executions = query.get_all_executions_in_stage(stage)
+                df = pd.concat([df, executions], sort=True, ignore_index=True)
+        # check if df is empty return just pipeline_name: {}
+        # if df is not empty return dictionary with pipeline_name as key 
+        # and df with id, context_type, uuid, context_ID as value.
+            if not df.empty:
+                execution_ids[name] = df[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
+            else:
+                execution_ids[name] = pd.DataFrame()
+        return execution_ids
+    return await run_in_threadpool(_get_all_exe_ids,mlmdfilepath)
+
+async def get_all_artifact_ids(mlmdfilepath):
+    async def _get_all_artifact_ids(mlmdfilepath):
+    # following is a dictionary of dictionary
+    # First level dictionary key is pipeline_name
+    # First level dicitonary value is nested dictionary
+    # Nested dictionary key is type i.e. Dataset, Model, etc.
+    # Nested dictionary value is ids i.e. set of integers
+        artifact_ids = {}
+        query = cmfquery.CmfQuery(mlmdfilepath)
+        names = query.get_pipeline_names()
+        execution_ids = await get_all_exe_ids(mlmdfilepath)
+        for name in names:
+            df = pd.DataFrame()
+            if not execution_ids.get(name).empty:
+                exe_ids = execution_ids[name]['id'].tolist()
+                for id in exe_ids:
+                    artifacts = query.get_all_artifacts_for_execution(id)
+                    df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+            #acknowledging pipeline exist even if df is empty. 
+                if df.empty:
+                    artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
+                else:
+                    df.sort_values("id", inplace=True)
+                    df.drop_duplicates(subset="id", keep='first', inplace=True)
+                    artifact_ids[name] = {}
+                    for art_type in df['type']:
+                        filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
+                        artifact_ids[name][art_type] = filtered_values
+        # if execution_ids is empty create dictionary with key as pipeline name
+        # and value as empty df
+            else:
+                artifact_ids[name] = pd.DataFrame()
+        return artifact_ids
+    return await run_in_threadpool(_get_all_artifact_ids,mlmdfilepath)
+'''
+
+def get_all_exe_ids(mlmdfilepath):
     '''
     Returns:
-        returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
+    returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
     execution_ids = {}
@@ -117,7 +179,7 @@ async def get_all_exe_ids(mlmdfilepath):
             execution_ids[name] = pd.DataFrame()
     return execution_ids
 
-async def get_all_artifact_ids(mlmdfilepath):
+def get_all_artifact_ids(mlmdfilepath, execution_ids):
     # following is a dictionary of dictionary
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
@@ -126,7 +188,6 @@ async def get_all_artifact_ids(mlmdfilepath):
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
-    execution_ids = await get_all_exe_ids(mlmdfilepath)
     for name in names:
         df = pd.DataFrame()
         if not execution_ids.get(name).empty:
@@ -149,6 +210,14 @@ async def get_all_artifact_ids(mlmdfilepath):
         else:
             artifact_ids[name] = pd.DataFrame()
     return artifact_ids
+
+async def async_get_all_exe_ids(mlmdfilepath):
+    return await run_in_threadpool(get_all_exe_ids, mlmdfilepath)
+
+async def async_get_all_artifact_ids(mlmdfilepath, execution_ids):   
+    return await run_in_threadpool(get_all_artifact_ids, mlmdfilepath, execution_ids)
+
+
 
 async def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
@@ -188,7 +257,7 @@ def get_artifact_types(mlmdfilepath):
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-async def create_unique_executions(server_store_path, req_info):
+def create_unique_executions(server_store_path, req_info):
     mlmd_data = json.loads(req_info["json_payload"])
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
@@ -239,6 +308,8 @@ async def create_unique_executions(server_store_path, req_info):
             status='success'
     return status
 
+async def async_create_unique_executions(server_store_path, req_info):
+    return await run_in_threadpool(create_unique_executions,server_store_path, req_info)
 
 async def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
     query = cmfquery.CmfQuery(server_store_path)
@@ -266,7 +337,7 @@ async def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-async def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
+def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
         lineage_data = query_visualization(server_store_path, pipeline_name, dict_of_art_ids)
@@ -286,3 +357,5 @@ async def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,
         lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data
 
+async def async_get_lineage_data(mlmdfilepath, pipeline_name,type,dict_of_art_ids,dict_of_exe_id):
+    return await run_in_threadpool(get_lineage_data, mlmdfilepath, pipeline_name,type,dict_of_art_ids,dict_of_exe_id)
