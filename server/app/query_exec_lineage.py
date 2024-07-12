@@ -2,8 +2,9 @@ from cmflib import cmfquery
 import pandas as pd
 import itertools
 from ml_metadata.proto.metadata_store_pb2 import Value
+from fastapi.concurrency import run_in_threadpool
 
-async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
+def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
     data = {}
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
@@ -40,5 +41,8 @@ async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_typ
         "links" : new_list
     }
     return data
+
+async def async_query_exec_lineage(mlmdfilepath, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
+    return await run_in_threadpool(query_exec_lineage, mlmdfilepath, pipeline_name, dict_of_exe_ids, exec_type, uuid_server)
 
 #query_exec_lineage("/home/chobey/cmf-server/data/mlmd", "Test-env",data,"Evaluate")
