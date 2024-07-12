@@ -1,31 +1,27 @@
 # cmf-server api's
-from fastapi import FastAPI, Request, status, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
-
-from cmflib import cmfquery, cmf_merger
-
-import time 
-from cmflib import cmfquery, cmfquery_temp, cmf_merger
+from cmflib import cmfquery
 from server.app.get_data import (
-    get_artifacts,
+    async_get_artifacts,
     async_get_lineage_data,
     async_create_unique_executions,
-    get_mlmd_from_server,
-    get_artifact_types,
-    get_model_data,
+    async_get_mlmd_from_server,
+    async_get_artifact_types,
     async_get_all_artifact_ids,
     async_get_all_exe_ids,
-    get_executions_by_ids
+    get_executions_by_ids,
+    get_model_data
 )
 from server.app.query_visualization import query_visualization
-from server.app.query_exec_lineage import query_exec_lineage
-from server.app.query_tangled_lineage import query_tangled_lineage
-from server.app.query_artifact_tree_lineage import query_artifact_tree_lineage
+
+
+from server.app.query_exec_lineage import async_query_exec_lineage
 from pathlib import Path
 import os
 import json
@@ -106,7 +102,7 @@ async def mlmd_pull(info: Request, pipeline_name: str):
     req_info = await info.json()
     if os.path.exists(server_store_path):
         #json_payload values can be json data, NULL or no_exec_id.
-        json_payload= await get_mlmd_from_server(server_store_path, pipeline_name, req_info['exec_id'])
+        json_payload= await async_get_mlmd_from_server(server_store_path, pipeline_name, req_info['exec_id'])
     else:
         print("No mlmd file submitted.")
         json_payload = ""
@@ -126,7 +122,6 @@ async def display_exec(
     ):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        print(dict_of_exe_ids,type(dict_of_exe_ids))
         exe_ids_initial = dict_of_exe_ids[pipeline_name]
         # Apply filtering if provided
         if filter_by and filter_value:
@@ -203,7 +198,7 @@ async def display_exec_lineage(request: Request, pipeline_name: str, uuid: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, uuid)
+            response = await async_query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, uuid)
     else:
         response = None
     return response
@@ -268,7 +263,7 @@ async def display_artifact(
         if total_items < end_idx:
             end_idx = total_items
         artifact_id_list = list(art_ids)[start_idx:end_idx]
-        artifact_df = await get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
+        artifact_df = await async_get_artifacts(server_store_path, pipeline_name, art_type, artifact_id_list)
         data_paginated = artifact_df
         #data_paginated is returned None if artifact df is None or {}
         #it will load empty page, without this condition it will load 
@@ -311,7 +306,7 @@ async def display_arti_tree_lineage(request: Request, pipeline_name: str)-> List
 async def display_artifact_types(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        artifact_types = get_artifact_types(server_store_path)
+        artifact_types = await async_get_artifact_types(server_store_path)
         return artifact_types
     else:
         artifact_types = ""
