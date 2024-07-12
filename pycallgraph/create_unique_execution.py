@@ -8,11 +8,14 @@ import typing as t
 import json, glob
 import os
 
+<<<<<<< HEAD
 mlmdfilePath="/home/ayesha/cmf-server/data/mlmd"
 pipeline_name="Test-env"
 query = cmfquery.CmfQuery(mlmdfilePath)
 req_info = query.dumptojson(pipeline_name)
 info = json.loads(req_info)
+=======
+>>>>>>> Added pycallgraph for each function
 
 
 def create_unique_executions(server_store_path, req_info):
@@ -78,7 +81,14 @@ def create_unique_exe() -> None:
     with PyCallGraph(output=graphviz, config=config):
         mlmdfilePath="/home/ayesha/cmf-server/data/mlmd"
         pipeline_name="Test-env"
+<<<<<<< HEAD
         print(create_unique_executions(mlmdfilePath, info))
+=======
+        query = cmfquery.CmfQuery(mlmdfilePath)
+        req_info = query.dumptojson(pipeline_name)
+        info = json.loads(req_info)
+        create_unique_executions(mlmdfilePath, info)
+>>>>>>> Added pycallgraph for each function
 
 if __name__ == '__main__':
     create_unique_exe()
