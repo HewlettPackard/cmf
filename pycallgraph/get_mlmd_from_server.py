@@ -47,10 +47,7 @@ def get_mlmd() -> None:
         mlmdfilePath="/home/ayesha/cmf-server/data/mlmd"
         pipeline_name="Test-env"
         jsonInfo = get_mlmd_from_server(mlmdfilePath, pipeline_name, None)
-<<<<<<< HEAD
         print(jsonInfo)
-=======
->>>>>>> Added pycallgraph for each function
 
 if __name__ == '__main__':
     get_mlmd()
