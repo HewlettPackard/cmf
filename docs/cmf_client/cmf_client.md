@@ -177,7 +177,39 @@ Optional Arguments
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
-
+### cmf init osdfremote 
+```
+Usage: cmf init osdfremote [-h] --path [path] 
+                             --endpoint-url [endpoint_url]
+                             --access-key-id [access_key_id] 
+                             --secret-key [secret_key] 
+                             --git-remote-url[git_remote_url]  
+                             --cmf-server-url [cmf_server_url]
+                             --neo4j-user [neo4j_user]
+                             --neo4j-password [neo4j_password]
+                             --neo4j-uri [neo4j_uri]
+```
+`cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
+```
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```
+Required Arguments
+```
+  --path [path]                        Specify FQDN for OSDF origin including including port and directory path
+  --key-id [key_id]                    Specify key_id for provided private key. eg. b2d3
+  --key-path [key_path]                Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem
+  --key-issuer [key_issuer]            Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX
+  --git-remote-url [git_remote_url]    Specify git repo url. eg: https://github.com/XXX/example.git
+```
+Optional Arguments
+```
+  -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
+  --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
+  --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+                        
+```
 ## cmf artifact
 ```
 Usage: cmf artifact [-h] {pull,push}

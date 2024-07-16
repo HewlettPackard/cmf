@@ -18,7 +18,6 @@ import subprocess
 import os
 import sys
 
-
 def fix_subparsers(subparsers):
     subparsers.required = True
     subparsers.dest = "cmd"
@@ -74,5 +73,3 @@ def check_minio_server(dvc_config_op):
             return exception
         except S3Error as exception:
             return exception
-
-

@@ -23,18 +23,33 @@ import time
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
+from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.utils.helper_functions import is_url
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_push
-
+from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.utils.cmf_config import CmfConfig
 
 class CmdArtifactPush(CmdBase):
     def run(self):
         result = ""
-        dvc_config_op = DvcConfig.get_dvc_config()
+        dvc_config_op = DvcConfig.get_dvc_config(
+        cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
+        cmf_config={}
+        cmf_config=CmfConfig.read_config(cmf_config_file)
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             return out_msg
-
+        if dvc_config_op["core.remote"] == "osdf":
+            #print("key_id="+cmf_config["osdf-key_id"])       
+            dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+            #print("Dynamic Password"+dynamic_password)
+            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
+            result = dvc_push()
+            #print(result)
+            return result
+        
         current_directory = os.getcwd()
         # Default path of mlmd file
         mlmd_file_name = "./mlmd"
