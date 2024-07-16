@@ -72,7 +72,7 @@ const Lineage = () => {
           fetchArtifactLineage(pipeline);
        }
        else {
-          fetchExecutionTypes(pipeline);
+          fetchExecutionTypes(pipeline, selectedLineageType);
        }}
   };
 
@@ -118,7 +118,7 @@ const Lineage = () => {
             fetchExecutionLineage(pipelineName, exec_type,uuid);
             }
         else {
-            fetchExecTree(selectedPipeline,uuid);
+            fetchExecTree(pipelineName,uuid);
             }
         }
 
