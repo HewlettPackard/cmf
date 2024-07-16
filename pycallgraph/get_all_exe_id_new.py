@@ -8,19 +8,6 @@ import typing as t
 import json, glob
 import os
 
-   
-# writing new functions to remove multiple calls to cmfquery functions or ml-metadata functions
-def get_all_executions_in_pipeline(pipeline_name, q):
-    df = pd.DataFrame()
-    pipeline_id = q.get_pipeline_id(pipeline_name)
-    for stage in q._get_stages(pipeline_id):
-        for execution in q._get_executions(stage.id):
-           ex_as_df: pd.DataFrame = q._transform_to_dataframe(
-               execution, {"id": execution.id, "name": execution.name}
-           )
-           df = pd.concat([df, ex_as_df], sort=True, ignore_index=True)
-    return df
-
 
 def get_all_exe_ids(mlmdfilepath):
     '''
@@ -33,7 +20,7 @@ def get_all_exe_ids(mlmdfilepath):
     names = query.get_pipeline_names()
     for name in names:
         df = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
-        executions = get_all_executions_in_pipeline(name, query)
+        executions = query.get_all_executions_in_pipeline(name)
         df = pd.concat([df, executions], sort=True, ignore_index=True)
     # check if df is empty return just pipeline_name: {}
     # if df is not empty return dictionary with pipeline_name as key 

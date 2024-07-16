@@ -837,6 +837,20 @@ class CmfQuery(object):
         df = pd.read_parquet(name)
         return df
 
+
+    # writing new functions to remove multiple calls to cmfquery functions or ml-metadata functions
+    def get_all_executions_in_pipeline(self, pipeline_name):
+        df = pd.DataFrame()
+        pipeline_id = self.get_pipeline_id(pipeline_name)
+        for stage in self._get_stages(pipeline_id):
+            for execution in self._get_executions(stage.id):
+               ex_as_df: pd.DataFrame = self._transform_to_dataframe(
+                   execution, {"id": execution.id, "name": execution.name}
+               )
+               df = pd.concat([df, ex_as_df], sort=True, ignore_index=True)
+        return df
+
+
     def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
         Args:
