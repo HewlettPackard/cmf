@@ -33,7 +33,7 @@ from cmflib.utils.cmf_config import CmfConfig
 class CmdArtifactPush(CmdBase):
     def run(self):
         result = ""
-        dvc_config_op = DvcConfig.get_dvc_config(
+        dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
         cmf_config={}
         cmf_config=CmfConfig.read_config(cmf_config_file)
@@ -41,7 +41,7 @@ class CmdArtifactPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             return out_msg
         if dvc_config_op["core.remote"] == "osdf":
-            #print("key_id="+cmf_config["osdf-key_id"])       
+            #print("key_id="+cmf_config["osdf-key_id"])
             dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
@@ -49,7 +49,7 @@ class CmdArtifactPush(CmdBase):
             result = dvc_push()
             #print(result)
             return result
-        
+
         current_directory = os.getcwd()
         # Default path of mlmd file
         mlmd_file_name = "./mlmd"
