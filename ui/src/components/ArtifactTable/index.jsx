@@ -18,7 +18,13 @@
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.css";
-const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
+import Popup from "../../components/Popup";
+import FastAPIClient from "../../client";
+import config from "../../config";
+
+const client = new FastAPIClient(config);
+
+const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
   // Default sorting order
   const [sortOrder, setSortOrder] = useState("Context_Type");
@@ -27,8 +33,11 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
   const [filterValue, setFilterValue] = useState("");
 
   const [expandedRow, setExpandedRow] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState('');
 
   const consistentColumns = [];
+
 
   useEffect(() => {
     // Set initial sorting order when component mounts
@@ -55,6 +64,19 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
     }
   };
 
+    const handleLinkClick = (model_id) => {
+        client.getModelCard(model_id).then((data) => {    
+          console.log(data);
+          setPopupData(data);
+          setShowPopup(true);
+      });
+    };
+
+    const handleClosePopup = () => {
+        setShowPopup(false);
+    };
+
+  
   return (
     <div className="container flex flex-col mx-auto p-6 mr-4">
       <div className="flex flex-col items-end m-1">
@@ -83,7 +105,13 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                   name {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
                   {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
                 </th>
-                <th scope="col" className="exe_uuid px-6 py-3">
+                {ArtifactType === "Model" && (
+                <th scope="col" className="model_card px-6 py-3">
+                  Model_Card
+                </th>
+                )}
+
+		<th scope="col" className="exe_uuid px-6 py-3">
                   execution_type_name
                 </th>
                 <th scope="col" className="url px-6 py-3">
@@ -105,14 +133,19 @@ const ArtifactTable = ({ artifacts, onSort, onFilter }) => {
                 <React.Fragment key={index}>
                   <tr
                     key={index}
-                    onClick={() => toggleRow(index)}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4" onClick={() => toggleRow(index)}>
                       {expandedRow === index ? "-" : "+"}
                     </td>
                     <td className="px-6 py-4">{data.id}</td>
                     <td className="px-6 py-4">{data.name}</td>
+                    {ArtifactType === "Model" && (
+                    <td className="px-6 py-4">
+                        <a href="#" onClick={(e) => { e.preventDefault(); handleLinkClick(data.id); }}>Open Model Card</a>
+                        <Popup show={showPopup} model_data={popupData} onClose={handleClosePopup} />
+                    </td>
+                    )}
                     <td className="px-6 py-4">{data.execution_type_name}</td>
                     <td className="px-6 py-4">{data.url}</td>
                     <td className="px-6 py-4">{data.uri}</td>
