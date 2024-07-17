@@ -34,8 +34,8 @@ def get_mlmd() -> None:
     graphviz = GraphvizOutput(output_file='mlmd_from_server_new.png')
     with PyCallGraph(output=graphviz, config=config):
         mlmdfilePath="/home/ayesha/cmf-server/data/mlmd"
-        pipeline_name="Test-env1"
-        jsonInfo = get_mlmd_from_server(mlmdfilePath, pipeline_name, 6)
+        pipeline_name="Test-env"
+        jsonInfo = get_mlmd_from_server(mlmdfilePath, pipeline_name, None)
         print(jsonInfo)
 
 if __name__ == '__main__':

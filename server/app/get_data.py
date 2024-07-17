@@ -197,13 +197,10 @@ async def create_unique_executions(server_store_path, req_info):
     list_executions_exists = []
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
-        stages = query.get_pipeline_stages(pipeline_name)
-        for stage in stages:
-            executions = []
-            executions = query.get_all_executions_in_stage(stage)
-            for i in executions.index:
-                for uuid in executions['Execution_uuid'][i].split(","):
-                    executions_server.append(uuid)
+        executions = query.get_all_executions_in_pipeline(pipeline)
+        for i in executions.index:
+            for uuid in executions['Execution_uuid'][i].split(","):
+                executions_server.append(uuid)
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:

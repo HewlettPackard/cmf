@@ -8,10 +8,8 @@ import typing as t
 import json, glob
 import os
 
-mlmdfilePath="/home/ayesha/cmf-server/data/mlmd"
-pipeline_name="Test-env"
-query = cmfquery.CmfQuery(mlmdfilePath)
-req_info = query.dumptojson(pipeline_name)
+query = cmfquery.CmfQuery("/home/ayesha/cmf-server/data/mlmd")
+req_info = query.dumptojson("Test-env")
 info = json.loads(req_info)
 
 
@@ -24,13 +22,10 @@ def create_unique_executions(server_store_path, req_info):
         list_executions_exists = []
         if os.path.exists(server_store_path):
             query = cmfquery.CmfQuery(server_store_path)
-            stages = query.get_pipeline_stages(pipeline_name)
-            for stage in stages:
-                executions = []
-                executions = query.get_all_executions_in_stage(stage)
-                for i in executions.index:
-                    for uuid in executions['Execution_uuid'][i].split(","):
-                        executions_server.append(uuid)
+            executions = query.get_all_executions_in_pipeline(pipeline_name)
+            for i in executions.index:
+                for uuid in executions['Execution_uuid'][i].split(","):
+                    executions_server.append(uuid)
             executions_client = []
             for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
                 for j in i["executions"]:
@@ -74,7 +69,7 @@ def create_unique_exe() -> None:
                                                    "logging.*", "absl.*", "typing.*", "threading.*", "sre_compile.*", "sre_parse.*", "codecs.*",
                                                    "warnings.*", "os.*", "subprocess.*", "<lambda>", "encodings.*", "gzip.*", "genericpath.*", 
                                                    "_process_posts", "enum.*", "uuid.*", "xml.*", "pandas.*", "numpy.*"])
-    graphviz = GraphvizOutput(output_file='create_unique_exe.png')
+    graphviz = GraphvizOutput(output_file='create_unique_exe_new.png')
     with PyCallGraph(output=graphviz, config=config):
         mlmdfilePath="/home/ayesha/cmf-server/data/mlmd"
         pipeline_name="Test-env"
