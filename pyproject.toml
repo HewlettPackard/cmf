@@ -21,7 +21,7 @@ authors = [
 ]
 description = "Track metadata for AI pipeline"
 readme = "README.md"
-requires-python = ">=3.9,<=3.10"
+requires-python = ">=3.9,<3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: POSIX :: Linux",
