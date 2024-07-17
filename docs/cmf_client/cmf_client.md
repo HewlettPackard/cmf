@@ -34,12 +34,12 @@ Required Arguments
   --endpoint-url [endpoint_url]         Specify the endpoint url of minio UI.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
-  --cmf-server-url [cmf_server_url]     Specify cmf-server url. (default: http://127.0.0.1:80)
   --git-remote-url [git_remote_url]     Specify git repo url.
 ```
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -65,12 +65,12 @@ cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.c
 Required Arguments
 ```
   --path [path]                         Specify local directory path.
-  --cmf-server-url [cmf_server_url]     Specify cmf-server url. (default: http://127.0.0.1:80)
   --git-remote-url [git_remote_url]     Specify git repo url.
 ```
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -135,12 +135,12 @@ Required Arguments
   --url [url]                           Specify bucket url.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
-  --cmf-server-url [cmf_server_url]     Specify cmf-server url. (default: http://127.0.0.1:80)
   --git-remote-url [git_remote_url]     Specify git repo url.
 ```
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --session-token                     Specify session token. (default: )
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
