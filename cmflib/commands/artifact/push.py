@@ -60,7 +60,7 @@ class CmdArtifactPush(CmdBase):
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
- 
+
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
 
@@ -92,13 +92,12 @@ class CmdArtifactPush(CmdBase):
             artifacts = query.get_all_artifacts_for_execution(
                  identifier
             )  # getting all artifacts with id
+            # dropping artifact with type 'metrics' as metrics doesn't have physical file
+            artifacts = artifacts[artifacts['type'] != 'Metrics']
+            # adding .dvc at the end of every file as it is needed for pull
+            artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
             names.extend(artifacts['name'].tolist())
-        file_set = set()
-        for name in names:
-            temp = f"{name.split(':')[0]}.dvc"
-            if temp == "metrics.dvc":
-                continue
-            file_set.add(temp)
+        file_set = set(names)
         result = dvc_push(list(file_set))
         return result
 
