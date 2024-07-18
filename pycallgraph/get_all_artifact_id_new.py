@@ -10,7 +10,6 @@ import os
 from get_all_exe_id_new import get_all_exe_ids
 
 
-
 def get_all_artifact_ids(mlmdfilepath):
     # following is a dictionary of dictionary
     # First level dictionary key is pipeline_name
@@ -22,21 +21,17 @@ def get_all_artifact_ids(mlmdfilepath):
         names = query.get_pipeline_names()
         execution_ids = get_all_exe_ids(mlmdfilepath)
         for name in names:
-            df = pd.DataFrame()
+            artifacts = pd.DataFrame()
             if not execution_ids.get(name).empty:
                 exe_ids = execution_ids[name]['id'].tolist()
-                for id in exe_ids:
-                    artifacts = query.get_all_artifacts_for_execution(id)
-                    df = pd.concat([df, artifacts], sort=True, ignore_index=True)
+                artifacts = query.get_all_artifacts_for_executions(exe_ids)
             #acknowledging pipeline exist even if df is empty. 
-                if df.empty:
+                if artifacts.empty:
                     artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
                 else:
-                    df.sort_values("id", inplace=True)
-                    df.drop_duplicates(subset="id", keep='first', inplace=True)
                     artifact_ids[name] = {}
-                    for art_type in df['type']:
-                        filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
+                    for art_type in artifacts['type']:
+                        filtered_values = artifacts.loc[artifacts['type'] == art_type, ['id', 'name']]
                         artifact_ids[name][art_type] = filtered_values
         # if execution_ids is empty create dictionary with key as pipeline name
         # and value as empty df
@@ -51,7 +46,7 @@ def get_artifact_id() -> None:
                                                    "logging.*", "absl.*", "typing.*", "threading.*", "sre_compile.*", "sre_parse.*", "codecs.*", 
                                                    "warnings.*", "os.*", "subprocess.*", "<lambda>", "encodings.*", "gzip.*", "genericpath.*",
                                                    "_process_posts", "enum.*", "uuid.*", "xml.*", "pandas.*", "numpy.*"])
-    graphviz = GraphvizOutput(output_file='artifact_id.png')
+    graphviz = GraphvizOutput(output_file='artifact_id_new.png')
     with PyCallGraph(output=graphviz, config=config):
         mlmdfilePath="/home/sharvark/cmf-server/data/mlmd"
         artifactId=get_all_artifact_ids(mlmdfilePath)

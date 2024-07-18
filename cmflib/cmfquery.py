@@ -839,7 +839,13 @@ class CmfQuery(object):
 
 
     # writing new functions to remove multiple calls to cmfquery functions or ml-metadata functions
-    def get_all_executions_in_pipeline(self, pipeline_name):
+    def get_all_executions_in_pipeline(self, pipeline_name: str) -> pd.DataFrame:
+        """Return executions of the given pipeline as pandas data frame.
+        Args:
+            pipeline_name:- pipeline name
+        Returns:
+            Data frame with all executions associated with the given pipeline.
+        """
         df = pd.DataFrame()
         pipeline_id = self.get_pipeline_id(pipeline_name)
         for stage in self._get_stages(pipeline_id):
@@ -848,6 +854,28 @@ class CmfQuery(object):
                    execution, {"id": execution.id, "name": execution.name}
                )
                df = pd.concat([df, ex_as_df], sort=True, ignore_index=True)
+        return df
+
+    def get_all_artifacts_for_executions(self, execution_ids: t.List[int]) -> pd.DataFrame:
+        """Return all artifacts for the list of given executions.
+
+        Args:
+            execution_ids: List of Execution identifiers.
+        Return:
+            Data frame containing artifacts for the list of given executions.
+        """
+        df = pd.DataFrame()
+        pd.set_option('display.max_columns', None)
+        # set of artifact ids for list of given execution ids
+        artifact_ids = set(
+            event.artifact_id
+            for event in self.store.get_events_by_execution_ids(set(execution_ids))
+            )
+        artifacts = self.store.get_artifacts_by_id(list(artifact_ids))
+        for artifact in artifacts:
+             df = pd.concat(
+                    [df, self.get_artifact_df(artifact)], sort=True, ignore_index=True
+             )
         return df
 
 
