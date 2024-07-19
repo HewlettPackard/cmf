@@ -1312,7 +1312,14 @@ Optional Arguments
 <p><div class="highlight"><pre><span></span><code>Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 </code></pre></div>
 <code>cmf artifact push</code> command push artifacts from the user's local machine to the user configured artifact repository.
-<div class="highlight"><pre><span></span><code>cmf artifact push  
+<div class="highlight"><pre><span></span><code>cmf artifact push -p &#39;pipeline_name&#39;
+</code></pre></div>
+Required Arguments
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+</code></pre></div>
+Optional Arguments
+<div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
+  -f [file_name],--file-name [file_name]                Specify mlmd file name.
 </code></pre></div></p>
 <h2 id="cmf-metadata">cmf metadata<a class="headerlink" href="#cmf-metadata" title="Permanent link">&para;</a></h2>
 <p><div class="highlight"><pre><span></span><code>Usage: cmf metadata [-h] {pull,push}
