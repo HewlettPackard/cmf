@@ -65,7 +65,7 @@ More information is available inside [Getting Started](https://hewlettpackard.gi
   
 Push artifacts in the artifact repo initialised in the [Initialize cmf](#initialize-cmf) step.
 ```
-cmf artifact push 
+cmf artifact push -p 'Test-env'
 ```
 Check [Overview](./cmf_client.md) page for more details.
 

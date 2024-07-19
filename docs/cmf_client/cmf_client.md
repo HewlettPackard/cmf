@@ -239,7 +239,16 @@ Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 ```
 `cmf artifact push` command push artifacts from the user's local machine to the user configured artifact repository.
 ```
-cmf artifact push  
+cmf artifact push -p 'pipeline_name'
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+  -f [file_name],--file-name [file_name]                Specify mlmd file name.
 ```
 ## cmf metadata
 ```
