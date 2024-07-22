@@ -295,7 +295,7 @@ Click the terminal icon<br>
 cd example-get-started
 cmf init local --path /home/user/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 sh test_script.sh
-cmf artifact push
+cmf artifact push -p 'Test-env'
 ```
 The above steps will run a pre coded example pipeline and the metadata is stored in a file named "mlmd".<br>
 The artifacts created will be pushed to configured dvc remote (default: /home/dvc_remote)<br>

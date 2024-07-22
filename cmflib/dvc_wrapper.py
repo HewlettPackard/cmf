@@ -18,7 +18,7 @@ import os
 import subprocess
 import dvc.api
 import dvc.exceptions
-
+from typing import List, Optional
 
 def check_git_remote() -> bool:
     process = ""
@@ -429,20 +429,39 @@ def dvc_get_config() -> str:
 
 
 # dvc push
-def dvc_push() -> str:
+def dvc_push(file_list: Optional[List[str]] = None) -> str:
     commit = ""
-    try:
-        process = subprocess.Popen(['dvc', 'push'],
+    if file_list is None:
+       try:
+           process = subprocess.Popen(['dvc', 'push'],
+                                  stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+           output, errs = process.communicate()
+           commit = output.strip()
+
+       except Exception as err:
+           print(f"Unexpected {err}, {type(err)}")
+           if isinstance(object, subprocess.Popen):
+              process.kill()
+              outs, errs = process.communicate()
+              print(f"Unexpected {outs}")
+              print(f"Unexpected {errs}")
+
+    else:
+        file_list.insert(0, 'dvc')
+        file_list.insert(1, 'push')
+        try:
+            process = subprocess.Popen(file_list,
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
-        output, errs = process.communicate()
-        commit = output.strip()
+            output, errs = process.communicate()
+            commit = output.strip()
 
-    except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
-        if isinstance(object, subprocess.Popen):
-           process.kill()
-           outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+        except Exception as err:
+           print(f"Unexpected {err}, {type(err)}")
+           if isinstance(object, subprocess.Popen):
+              process.kill()
+              outs, errs = process.communicate()
+              print(f"Unexpected {outs}")
+              print(f"Unexpected {errs}")
     return commit
