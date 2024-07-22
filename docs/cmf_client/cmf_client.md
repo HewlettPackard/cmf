@@ -135,13 +135,13 @@ Required Arguments
   --url [url]                           Specify bucket url.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
+  --session-token                       Specify session token. (default: )
   --git-remote-url [git_remote_url]     Specify git repo url.
 ```
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
-  --session-token                     Specify session token. (default: )
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -171,7 +171,7 @@ Required Arguments
 ```
 Optional Arguments
 ```
-  -h, --help  show this help message and exit
+  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
@@ -221,7 +221,7 @@ Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] -a [artifact_nam
 ```
 `cmf artifact pull` command pull artifacts from the user configured repository to the user's local machine.
 ```
-cmf artifact pull -p 'pipeline-name' 
+cmf artifact pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -a 'artifact-name'
 ```
 Required Arguments
 ```
@@ -239,7 +239,7 @@ Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 ```
 `cmf artifact push` command push artifacts from the user's local machine to the user configured artifact repository.
 ```
-cmf artifact push -p 'pipeline_name'
+cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name'
 ```
 Required Arguments
 ```
@@ -261,7 +261,7 @@ Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
-cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name'
+cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id'
 ```
 Required Arguments
 ```
@@ -279,7 +279,7 @@ Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t 
 ```
 `cmf metadata push` command pushes the metadata file from the local machine to the cmf-server.
 ```
-cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -t '/path/to/tensorboard-log'
+cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t '/path/to/tensorboard-log'
 ```
 Required Arguments
 ```
