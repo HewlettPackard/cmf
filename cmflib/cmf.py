@@ -64,8 +64,8 @@ from cmflib.cmf_commands_wrapper import (
     _init_local,
     _init_minioS3,
     _init_amazonS3,
-    _init_sshremote
-
+    _init_sshremote,
+    _metadata_export,
 )
 
 class Cmf:
@@ -1862,7 +1862,7 @@ class Cmf:
 #                print(last)
 #                os.symlink(str(index), slicedir + "/ " + last)
 
-def metadata_push(pipeline_name,filepath,execution_id: str = ""):
+def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):
     """ Pushes MLMD file to CMF-server.
     Example:
     ```python
@@ -1872,16 +1872,17 @@ def metadata_push(pipeline_name,filepath,execution_id: str = ""):
         pipeline_name: Name of the pipeline.
         filepath: Path to the MLMD file.
         execution_id: Optional execution ID.
+        tensorboard_path: Path to tensorboard logs.
 
     Returns:
         Response output from the _metadata_push function.
     """
-    # Required arguments:  pipeline_name, filepath (mlmd file path) 
-    #Optional arguments: Execution_ID
-    output = _metadata_push(pipeline_name,filepath, execution_id)
+    # Required arguments:  pipeline_name
+    # Optional arguments: Execution_ID, filepath (mlmd file path, tensorboard_path
+    output = _metadata_push(pipeline_name, filepath, execution_id, tensorboard_path)
     return output
 
-def metadata_pull(pipeline_name,filepath ="./mlmd", execution_id: str = ""):
+def metadata_pull(pipeline_name: str, filepath = "./mlmd", execution_id: str = ""):
     """ Pulls MLMD file from CMF-server. 
      Example: 
      ```python 
@@ -1894,12 +1895,30 @@ def metadata_pull(pipeline_name,filepath ="./mlmd", execution_id: str = ""):
      Returns: 
         Message from the _metadata_pull function. 
      """
-    # Required arguments:  pipeline_name, filepath(file path to store mlmd file) 
-    #Optional arguments: Execution_ID
-    output = _metadata_pull(pipeline_name,filepath, execution_id)
+    # Required arguments:  pipeline_name 
+    #Optional arguments: Execution_ID, filepath(file path to store mlmd file) 
+    output = _metadata_pull(pipeline_name, filepath, execution_id)
     return output
 
-def artifact_pull(pipeline_name,filepath="./mlmd"):
+def metadata_export(pipeline_name: str, jsonfilepath: str = "", filepath = "./mlmd"):
+    """ Export local mlmd's metadata in json format to a json file. 
+     Example: 
+     ```python 
+          result = metadata_pull("example_pipeline", "./jsonfile", "./mlmd_directory") 
+     ``` 
+     Args: 
+        pipeline_name: Name of the pipeline. 
+        jsonfilepath: File path of json file. 
+        filepath: File path to store the MLMD file. 
+     Returns: 
+        Message from the _metadata_pull function. 
+     """
+    # Required arguments:  pipeline_name 
+    #Optional arguments: jsonfilepath, filepath(file path to store mlmd file) 
+    output = _metadata_export(pipeline_name, jsonfilepath, filepath)
+    return output
+
+def artifact_pull(pipeline_name: str, filepath = "./mlmd"):
     """ Pulls artifacts from the initialized repository.
 
     Example:
@@ -1910,17 +1929,16 @@ def artifact_pull(pipeline_name,filepath="./mlmd"):
     Args:
         pipeline_name: Name of the pipeline.
         filepath: Path to store artifacts.
-
     Returns:
         Output from the _artifact_pull function.
     """
 
     # Required arguments: Pipeline_name
     # Optional arguments: filepath( path to store artifacts)
-    output = _artifact_pull(pipeline_name,filepath)
+    output = _artifact_pull(pipeline_name, filepath)
     return output
 
-def artifact_pull_single(pipeline_name,filepath,artifact_name):
+def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
     """ Pulls a single artifact from the initialized repository. 
     Example: 
     ```python 
@@ -1935,22 +1953,25 @@ def artifact_pull_single(pipeline_name,filepath,artifact_name):
     """
 
     # Required arguments: Pipeline_name
-    # Optional arguments: filepath( path to store artifacts)
-    output = _artifact_pull_single(pipeline_name,filepath,artifact_name)
+    # Optional arguments: filepath( path to store artifacts), artifact_name
+    output = _artifact_pull_single(pipeline_name, filepath, artifact_name)
     return output
 
-def artifact_push():
+def artifact_push(pipeline_name: str, filepath = "./mlmd"):
     """ Pushes artifacts to the initialized repository.
 
     Example:
     ```python
-         result = artifact_push()
+         result = artifact_push("example_pipeline", "./mlmd_directory")
     ```
-
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the artifact. 
     Returns:
         Output from the _artifact_push function.
     """
-    output = _artifact_push()
+
+    output = _artifact_push(pipeline_name, filepath)
     return output
 
 def cmf_init_show():
@@ -1966,20 +1987,21 @@ def cmf_init_show():
     output=_cmf_cmd_init()
     return output
 
-def cmf_init(type: str="",
-        path: str="",
-        git_remote_url: str="",
+def cmf_init(type: str = "",
+        path: str = "",
+        git_remote_url: str = "",
         cmf_server_url: str = "",
         neo4j_user: str = "",
         neo4j_password: str = "",
         neo4j_uri: str = "",
-        url: str="",
-        endpoint_url: str="",
-        access_key_id: str="",
-        secret_key: str="",
-        user: str="",
-        password: str="",
-        port: int=0
+        url: str = "",
+        endpoint_url: str = "",
+        access_key_id: str = "",
+        secret_key: str = "",
+        session_token: str = "",
+        user: str = "",
+        password: str = "",
+        port: int = 0
          ):
 
     """ Initializes the CMF configuration based on the provided parameters. 
@@ -2006,6 +2028,7 @@ def cmf_init(type: str="",
        endpoint_url: Endpoint URL for MinioS3.
        access_key_id: Access key ID for MinioS3 or AmazonS3.
        secret_key: Secret key for MinioS3 or AmazonS3. 
+       session_token: Session token for AmazonS3.
        user: SSH remote username.
        password: SSH remote password. 
        port: SSH remote port
@@ -2013,31 +2036,31 @@ def cmf_init(type: str="",
        Output based on the initialized repository type.
     """
 
-    if type=="":
+    if type == "":
         return print("Error: Type is not provided")
     if type not in ["local","minioS3","amazonS3","sshremote"]:
         return print("Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote"]))
 
-    if neo4j_user!="" and  neo4j_password != "" and neo4j_uri != "":
+    if neo4j_user != "" and  neo4j_password != "" and neo4j_uri != "":
         pass
     elif neo4j_user == "" and  neo4j_password == "" and neo4j_uri == "":
         pass
     else:
         return print("Error: Enter all neo4j parameters.") 
 
-    args={'path':path,
-        'git_remote_url':git_remote_url,
-       'url':url,
-        'endpoint_url':endpoint_url,
-        'access_key_id':access_key_id,
-        'secret_key':secret_key,
-        'user':user,
-        'password':password,
+    args={'path': path,
+        'git_remote_url': git_remote_url,
+        'url': url,
+        'endpoint_url': endpoint_url,
+        'access_key_id': access_key_id,
+        'secret_key': secret_key,
+        'user': user,
+        'password': password,
         }
 
-    status_args=non_related_args(type,args)
+    status_args=non_related_args(type, args)
 
-    if type=="local" and path!= "" and  git_remote_url!= "" :
+    if type == "local" and path != "" and  git_remote_url != "" :
         """Initialize local repository"""
         output = _init_local(
             path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
@@ -2046,7 +2069,7 @@ def cmf_init(type: str="",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
          
-    elif type=="minioS3" and url!= "" and endpoint_url!= "" and access_key_id!= "" and secret_key!= "" and git_remote_url!= "":
+    elif type == "minioS3" and url != "" and endpoint_url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize minioS3 repository"""
         output = _init_minioS3(
             url,
@@ -2063,12 +2086,13 @@ def cmf_init(type: str="",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
 
-    elif type=="amazonS3" and url!= "" and access_key_id!= "" and secret_key!= "" and git_remote_url!= "":
+    elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize amazonS3 repository"""
         output = _init_amazonS3(
             url,
             access_key_id,
             secret_key,
+            session_token,
             git_remote_url,
             cmf_server_url,
             neo4j_user,
@@ -2080,7 +2104,7 @@ def cmf_init(type: str="",
 
         return output
 
-    elif type=="sshremote" and path !="" and user!="" and port!=0 and password!="" and git_remote_url!="":
+    elif type == "sshremote" and path != "" and user != "" and port != 0 and password != "" and git_remote_url != "":
         """Initialize sshremote repository"""
         output = _init_sshremote(
             path,
@@ -2102,14 +2126,16 @@ def cmf_init(type: str="",
         print("Error: Enter all arguments")
 
 
-def non_related_args(type:str,args:dict):
-    available_args=[i for i,j in args.items() if j!=""]
-    local=["path","git_remote_url"]
-    minioS3=["url","endpoint_url","access_key_id","secret_key","git_remote_url"]
-    amazonS3=["url","access_key_id","secret_key","git_remote_url"]
-    sshremote=["path","user","port","password","git_remote_url"]
 
-    dict_repository_args={"local":local,"minioS3":minioS3,"amazonS3":amazonS3,"sshremote":sshremote}
+
+def non_related_args(type : str, args : dict):
+    available_args=[i for i, j in args.items() if j != ""]
+    local=["path", "git_remote_url"]
+    minioS3=["url", "endpoint_url", "access_key_id", "secret_key", "git_remote_url"]
+    amazonS3=["url", "access_key_id", "secret_key", "git_remote_url"]
+    sshremote=["path", "user", "port", "password", "git_remote_url"]
+
+    dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote}
     
     for repo,arg in dict_repository_args.items():
         if repo ==type:

@@ -63,4 +63,18 @@ def add_parser(subparsers, parent_parser):
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
+    required_arguments = parser.add_argument_group("required arguments")
+
+    required_arguments.add_argument(
+        "-p",
+        "--pipeline_name",
+        required=True,
+        help="Specify Pipeline name.",
+        metavar="<pipeline_name>",
+    )
+
+    parser.add_argument(
+        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+    )
+
     parser.set_defaults(func=CmdArtifactPush)
