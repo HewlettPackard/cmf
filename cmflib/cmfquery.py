@@ -646,13 +646,11 @@ class CmfQuery(object):
         """
         df = pd.DataFrame()
         executions = self.store.get_executions_by_id(exe_ids)
-        count = 0
-        for exe in executions:
+        for count, exe in enumerate(executions):
             temp_dict = {}
             temp_dict['id'] = exe_ids[count]
             d1 = self._transform_to_dataframe(exe, temp_dict)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
-            count +=1
         df.drop_duplicates()
         df = df[["id", "Execution_type_name","Execution_uuid"]]
         return df
