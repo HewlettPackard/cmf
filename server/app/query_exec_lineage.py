@@ -1,9 +1,8 @@
 from cmflib import cmfquery
 import pandas as pd
-from fastapi.concurrency import run_in_threadpool
 from typing import Dict
 
-async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict: 
+def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict: 
     """
     Creates data of executions for forced_directed_graph.
     Parameters:
@@ -59,8 +58,5 @@ async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, uuid_ser
         "links" : new_list
     }
     return data
-
-async def async_query_exec_lineage(mlmdfilepath, pipeline_name, dict_of_exe_ids, uuid_server):
-    return await run_in_threadpool(query_exec_lineage, mlmdfilepath, pipeline_name, dict_of_exe_ids, uuid_server)
 
 #query_exec_lineage("/home/chobey/cmf-server/data/mlmd", "Test-env",data,"Evaluate")

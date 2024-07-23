@@ -1,9 +1,8 @@
-import os
 from cmflib import cmfquery
 from collections import deque, defaultdict
 import pandas as pd
 
-async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
+def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
     df=dict_of_exe_id[pipeline_name]
