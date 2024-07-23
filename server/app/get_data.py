@@ -6,7 +6,6 @@ import typing as t
 from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
 from fastapi.concurrency import run_in_threadpool
-import time
 
 async def get_model_data(mlmdfilepath, modelId):
     '''
@@ -156,7 +155,6 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     df = pd.DataFrame()
-    time.sleep(30)
     for name in names:
         if name == pipeline_name:
             df = query.get_all_artifacts_by_ids_list(artifact_ids)
