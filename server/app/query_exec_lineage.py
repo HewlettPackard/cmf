@@ -42,7 +42,4 @@ def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uui
     }
     return data
 
-async def async_query_exec_lineage(mlmdfilepath, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
-    return await run_in_threadpool(query_exec_lineage, mlmdfilepath, pipeline_name, dict_of_exe_ids, exec_type, uuid_server)
-
 #query_exec_lineage("/home/chobey/cmf-server/data/mlmd", "Test-env",data,"Evaluate")
