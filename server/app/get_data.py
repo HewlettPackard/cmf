@@ -5,11 +5,8 @@ import os
 from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
 from fastapi.responses import FileResponse
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 from fastapi.concurrency import run_in_threadpool
 import time
-
 
 async def get_model_data(mlmdfilepath, modelId):
     '''
@@ -81,6 +78,9 @@ async def get_model_data(mlmdfilepath, modelId):
     model_output_df = query.get_all_artifacts_by_ids_list(out_art_ids)
 
     return model_data_df, model_exe_df, model_input_df, model_output_df
+
+async def async_api(function_to_async, mlmdfilepath, *argv):
+    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
 
 async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     '''
@@ -217,17 +217,10 @@ def get_all_artifact_ids(mlmdfilepath, execution_ids):
             artifact_ids[name] = pd.DataFrame()
     return artifact_ids
 
-async def async_get_all_exe_ids(mlmdfilepath):
-    return await run_in_threadpool(get_all_exe_ids, mlmdfilepath)
-
-async def async_get_all_artifact_ids(mlmdfilepath, execution_ids):   
-    return await run_in_threadpool(get_all_artifact_ids, mlmdfilepath, execution_ids)
-
 def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     df = pd.DataFrame()
-    time.sleep(30)
     for name in names:
         if name == pipeline_name:
             df = query.get_all_artifacts_by_ids_list(artifact_ids)
@@ -257,16 +250,10 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
             tempout = json.loads(result)
             return tempout
 
-async def async_get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
-    return await run_in_threadpool(get_artifacts, mlmdfilepath, pipeline_name, art_type, artifact_ids)
-
 def get_artifact_types(mlmdfilepath):
     query = cmfquery.CmfQuery(mlmdfilepath)
     artifact_types = query.get_all_artifact_types()
     return artifact_types
-
-async def async_get_artifact_types(mlmdfilepath):
-    return await run_in_threadpool(get_artifact_types, mlmdfilepath)
 
 def create_unique_executions(server_store_path, req_info):
     mlmd_data = json.loads(req_info["json_payload"])
@@ -320,9 +307,6 @@ def create_unique_executions(server_store_path, req_info):
             status='success'
     return status
 
-async def async_create_unique_executions(server_store_path, req_info):
-    return await run_in_threadpool(create_unique_executions,server_store_path, req_info)
-
 def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
     query = cmfquery.CmfQuery(server_store_path)
     execution_flag = 0
@@ -349,9 +333,6 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
         json_payload = "NULL"
     return json_payload
 
-async def async_get_mlmd_from_server(mlmdfilepath, pipeline_name, exec_id):
-    return await run_in_threadpool(get_mlmd_from_server, mlmdfilepath, pipeline_name, exec_id)
-
 def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
@@ -372,5 +353,3 @@ def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_o
         lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data
 
-async def async_get_lineage_data(mlmdfilepath, pipeline_name,type,dict_of_art_ids,dict_of_exe_id):
-    return await run_in_threadpool(get_lineage_data, mlmdfilepath, pipeline_name,type,dict_of_art_ids,dict_of_exe_id)

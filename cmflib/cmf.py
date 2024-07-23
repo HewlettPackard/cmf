@@ -309,6 +309,40 @@ class Cmf:
             )
         return ctx
 
+    def update_context(
+        self,
+        type_name: str,
+        context_name: str,
+        context_id: int,
+        custom_properties: t.Optional[t.Dict] = None
+    ) -> mlpb.Context:
+        print("inside update_create_context")
+        self.context = self.store.get_context_by_type_and_name(type_name, context_name)
+#        self.context = self.store.get_contexts_by_id([context_id])
+        print(type(self.context))
+        print(self.context)
+        print(self.context.custom_properties,"custom")
+        if self.context is None:
+            print("Error - no context id")
+            return
+
+        if custom_properties:
+            for key, value in custom_properties.items():
+                if isinstance(value, int):
+                    self.context.custom_properties[key].int_value = value
+                else:
+                    self.context.custom_properties[key].string_value = str(
+                        value)
+        context = mlpb.Context(
+            name=context_name,
+            type_id=self.context.type_id,
+            properties=self.context.properties,
+            custom_properties=self.context.custom_properties,
+        )        
+        print(context,type(context),"##############")
+        self.store.put_contexts([context])
+        return context_id
+
     def create_execution(
         self,
         execution_type: str,
@@ -447,6 +481,7 @@ class Cmf:
             Returns:
                 Execution object from ML Metadata library associated with the updated execution for this stage.
         """
+        print("inside update execution")
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
             print("Error - no execution id")

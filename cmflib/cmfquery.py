@@ -362,6 +362,7 @@ class CmfQuery(object):
         Returns:
             List of all pipeline names.
         """
+        print("Im inside get_pipeline_names")
         return [ctx.name for ctx in self._get_pipelines()]
 
     def get_pipeline_id(self, pipeline_name: str) -> int:
