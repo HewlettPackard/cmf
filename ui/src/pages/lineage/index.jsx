@@ -25,7 +25,7 @@ import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
 import ExecutionTree from "../../components/ExecutionTree";
-import ExecutionDropdownTemp from "../../components/ExecutionDropdownTemp";
+import ExecutionTangledDropdown from "../../components/ExecutionTangledDropdown";
 
 const client = new FastAPIClient(config);
 
@@ -199,7 +199,7 @@ const Lineage = () => {
                 )}
                 {selectedPipeline !== null && selectedLineageType === "Tangled_Exec" && execDropdownData !== null   &&(
                 <div>
-                <ExecutionDropdownTemp data={execDropdownData} exec_type={selectedExecutionType} handleTreeClick= {handleTreeClick}/>        
+                <ExecutionTangledDropdown data={execDropdownData} exec_type={selectedExecutionType} handleTreeClick= {handleTreeClick}/>        
                 </div>
                 )}
                 {selectedPipeline !== null && selectedLineageType === "Tangled_Exec" && execDropdownData !== null  && executionData !== null &&(

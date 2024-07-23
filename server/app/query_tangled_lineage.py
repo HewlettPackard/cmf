@@ -13,7 +13,6 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     execution_id=result["id"].tolist() 
     parents_set = set()
     queue = deque()  
-    pd.set_option("display.max_columns", None)
     df = pd.DataFrame()
 
     parents = query.get_one_hop_parent_executions_ids(execution_id,pipeline_id) #list if parent execution ids     
@@ -41,10 +40,12 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     result_dict = df.set_index('id')['name_uuid'].to_dict()   # {"id" : "name_uuid"} for example {"2":"Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f"}
  
     data_organized = topological_sort(dict_parents,result_dict) # it will use topological sort to create data from parents to child pattern
+    """
+    data_organized format
     [[{'id': 'Prepare_d09f', 'parents': []}],  
     [{'id': 'Featurize_fae6', 'parents': ['Prepare_d09f']}], 
     [{'id': 'Train_7fe7', 'parents': ['Featurize_fae6']}]]
-    
+    """
     return data_organized
 
 def topological_sort(input_data,execution_id_dict):

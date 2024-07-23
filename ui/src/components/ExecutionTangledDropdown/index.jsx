@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from "react";
 
-const ExecutionDropdownTemp = ({data,exec_type,handleTreeClick}) => {
+const ExecutionTangledDropdown = ({data,exec_type,handleTreeClick}) => {
    const [selectedExecutionType, setSelectedExecutionType] = useState('');
 
    useEffect(() => {
@@ -33,5 +33,5 @@ const ExecutionDropdownTemp = ({data,exec_type,handleTreeClick}) => {
   );
 };
 
-export default ExecutionDropdownTemp;
+export default ExecutionTangledDropdown;
 
