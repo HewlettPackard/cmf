@@ -137,7 +137,7 @@ def _cmf_cmd_init():
     print(msg)
     return msg
 
-def _init_local(path,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_local(path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -162,7 +162,7 @@ def _init_local(path,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo
     return msg
 
 
-def _init_minioS3(url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_minioS3(url, endpoint_url, access_key_id, secret_key, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -192,7 +192,7 @@ def _init_minioS3(url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_s
     print(msg)
     return msg
     
-def _init_amazonS3(url,access_key_id,secret_key,session_token,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -222,7 +222,7 @@ def _init_amazonS3(url,access_key_id,secret_key,session_token,git_remote_url,cmf
     print(msg)
     return msg
 
-def _init_sshremote(path,user,port,password,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -252,7 +252,7 @@ def _init_sshremote(path,user,port,password,git_remote_url,cmf_server_url,neo4j_
     print(msg)
     return msg
 
-def _init_osdfremote(path,key_id,key_path,key_issuer,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_osdfremote(path, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",

@@ -57,6 +57,7 @@ from cmflib.utils.helper_functions import get_python_env, change_dir
 from cmflib.cmf_commands_wrapper import (
     _metadata_push,
     _metadata_pull,
+    _metadata_export,
     _artifact_pull,
     _artifact_push,
     _artifact_pull_single,
@@ -65,7 +66,7 @@ from cmflib.cmf_commands_wrapper import (
     _init_minioS3,
     _init_amazonS3,
     _init_sshremote,
-    _metadata_export,
+    _init_osdfremote,
 )
 
 class Cmf:
@@ -2001,7 +2002,11 @@ def cmf_init(type: str = "",
         session_token: str = "",
         user: str = "",
         password: str = "",
-        port: int = 0
+        port: int = 0,
+        osdf_path: str = "",
+        key_id: str = "",
+        key_path: str = "",
+        key_issuer: str = "",
          ):
 
     """ Initializes the CMF configuration based on the provided parameters. 
@@ -2038,8 +2043,8 @@ def cmf_init(type: str = "",
 
     if type == "":
         return print("Error: Type is not provided")
-    if type not in ["local","minioS3","amazonS3","sshremote"]:
-        return print("Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote"]))
+    if type not in ["local","minioS3","amazonS3","sshremote","osdfremote"]:
+        return print("Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote","osdfremote"]))
 
     if neo4j_user != "" and  neo4j_password != "" and neo4j_uri != "":
         pass
@@ -2056,6 +2061,10 @@ def cmf_init(type: str = "",
         'secret_key': secret_key,
         'user': user,
         'password': password,
+        'osdf_path': osdf_path,
+        'key_id': key_id,
+        'key_path': key_path, 
+        'key-issuer': key_issuer,
         }
 
     status_args=non_related_args(type, args)
@@ -2122,10 +2131,26 @@ def cmf_init(type: str = "",
 
         return output
 
+    elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != 0 and key_issuer != "" and git_remote_url != "":
+        """Initialize osdfremote repository"""
+        output = _init_osdfremote(
+            osdf_path,
+            key_id,
+            key_path,
+            key_issuer,
+            git_remote_url,
+            cmf_server_url,
+            neo4j_user,
+            neo4j_password,
+            neo4j_uri,
+        )
+        if status_args != []:
+            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+
+        return output
+
     else:
         print("Error: Enter all arguments")
-
-
 
 
 def non_related_args(type : str, args : dict):
@@ -2134,6 +2159,8 @@ def non_related_args(type : str, args : dict):
     minioS3=["url", "endpoint_url", "access_key_id", "secret_key", "git_remote_url"]
     amazonS3=["url", "access_key_id", "secret_key", "git_remote_url"]
     sshremote=["path", "user", "port", "password", "git_remote_url"]
+    osdfremote=["osdf_path", "key_id", "key_path", "key-issuer", "git_remote_url"]
+
 
     dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote}
     
