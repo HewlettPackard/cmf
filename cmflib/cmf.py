@@ -1040,6 +1040,7 @@ class Cmf:
         # If connecting to an existing artifact - The name of the artifact is
         # used as path/steps/key
         model_uri = path + ":" + c_hash
+        print(model_uri)
         dvc_url = dvc_get_url(path, False)
         url = dvc_url
         url_with_pipeline = f"{self.parent_context.name}:{url}"
@@ -1065,7 +1066,7 @@ class Cmf:
                 input_name=model_uri,
                 event_type=event_type,
             )
-            model_uri = artifact.name
+            model_uri =  model_uri + ":" + str(self.execution.id)
         else:
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             model_uri = model_uri + ":" + str(self.execution.id)

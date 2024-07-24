@@ -29,9 +29,9 @@ services:
     image: server:latest
     # both the directory paths should be updated as per user's environment
     volumes:
-      - /home/royann/cmf-server/data:/cmf-server/data
-      - /home/royann/cmf-server/data/static:/cmf-server/data/static
-      - /home/royann/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
+      - /home/xxxx/cmf-server/data:/cmf-server/data
+      - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
+      - /home/xxxx/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
     container_name: cmf-server
     build:     
       context: ./
@@ -39,7 +39,7 @@ services:
     restart: always
     environment:
       MYIP: ${IP:-127.0.0.1}
-      HOSTNAME: ai02.labs.hpecorp.net
+      HOSTNAME: ${hostname:-localhost}
     ports:
       - "8080:80"
     expose:
@@ -58,7 +58,7 @@ services:
     restart: always
     environment:
       REACT_APP_MY_IP: ${IP}
-      REACT_APP_MY_HOSTNAME: ai02.labs.hpecorp.net
+      REACT_APP_MY_HOSTNAME: ${hostname}
     ports:
       - "3000:3000"
     expose:
