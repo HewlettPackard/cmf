@@ -103,14 +103,13 @@ async def get_all_exe_ids(mlmdfilepath):
     execution_ids = {}
     names = query.get_pipeline_names()
     for name in names:
-        df = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
+        executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
         executions = query.get_all_executions_in_pipeline(name)
-        df = pd.concat([df, executions], sort=True, ignore_index=True)
         # check if df is empty return just pipeline_name: {}
         # if df is not empty return dictionary with pipeline_name as key
         # and df with id, context_type, uuid, context_ID as value.
-        if not df.empty:
-            execution_ids[name] = df[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
+        if not executions.empty:
+            execution_ids[name] = executions[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
         else:
             execution_ids[name] = pd.DataFrame()
     return execution_ids
@@ -132,7 +131,7 @@ async def get_all_artifact_ids(mlmdfilepath):
             exe_ids = execution_ids[name]['id'].tolist()
             artifacts = query.get_all_artifacts_for_executions(exe_ids)
             #acknowledging pipeline exist even if df is empty. 
-            if df.empty:
+            if artifacts.empty:
                 artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
             else:
                 artifact_ids[name] = {}
