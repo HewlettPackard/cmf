@@ -44,6 +44,8 @@ from cmflib import graph_wrapper
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
+    get_or_create_context_with_type,
+    update_context_custom_properties,
     associate_child_to_parent_context,
     create_new_execution_in_existing_run_context,
     link_execution_to_artifact,
@@ -314,10 +316,18 @@ class Cmf:
         type_name: str,
         context_name: str,
         context_id: int,
+        properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None
     ) -> mlpb.Context:
         print("inside update_create_context")
-        self.context = self.store.get_context_by_type_and_name(type_name, context_name)
+        self.context = get_or_create_context_with_type(
+                           self.store, 
+                           context_name, 
+                           type_name, 
+                           properties, 
+                           type_properties = None,
+                           custom_properties = custom_properties
+                       )
 #        self.context = self.store.get_contexts_by_id([context_id])
         print(type(self.context))
         print(self.context)
@@ -333,15 +343,14 @@ class Cmf:
                 else:
                     self.context.custom_properties[key].string_value = str(
                         value)
-        context = mlpb.Context(
-            name=context_name,
-            type_id=self.context.type_id,
-            properties=self.context.properties,
-            custom_properties=self.context.custom_properties,
+        updated_context = update_context_custom_properties(
+            self.store,
+            context_id,
+            context_name,
+            self.context.properties,
+            self.context.custom_properties,
         )        
-        print(context,type(context),"##############")
-        self.store.put_contexts([context])
-        return context_id
+        return updated_context
 
     def create_execution(
         self,
@@ -1670,7 +1679,9 @@ class Cmf:
           Returns: 
              None 
         """
-
+        print("#############")
+        print(type(artifact),"type artifact")
+        print("#############")
         for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
