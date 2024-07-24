@@ -1040,7 +1040,6 @@ class Cmf:
         # If connecting to an existing artifact - The name of the artifact is
         # used as path/steps/key
         model_uri = path + ":" + c_hash
-        print(model_uri)
         dvc_url = dvc_get_url(path, False)
         url = dvc_url
         url_with_pipeline = f"{self.parent_context.name}:{url}"
