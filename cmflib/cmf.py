@@ -2059,6 +2059,7 @@ def cmf_init(type: str = "",
         'endpoint_url': endpoint_url,
         'access_key_id': access_key_id,
         'secret_key': secret_key,
+        'session_token': session_token,
         'user': user,
         'password': password,
         'osdf_path': osdf_path,
@@ -2157,7 +2158,7 @@ def non_related_args(type : str, args : dict):
     available_args=[i for i, j in args.items() if j != ""]
     local=["path", "git_remote_url"]
     minioS3=["url", "endpoint_url", "access_key_id", "secret_key", "git_remote_url"]
-    amazonS3=["url", "access_key_id", "secret_key", "git_remote_url"]
+    amazonS3=["url", "access_key_id", "secret_key", "session_token", "git_remote_url"]
     sshremote=["path", "user", "port", "password", "git_remote_url"]
     osdfremote=["osdf_path", "key_id", "key_path", "key-issuer", "git_remote_url"]
 
