@@ -46,7 +46,7 @@ generate_dataset()
 
 # Note - metadata is stored in a file called "mlmd". It is a sqlite file.
 # To delete earlier metadata, delete this mlmd file.
-metawriter = cmf.Cmf(filename="mlmd", pipeline_name="dvc")
+metawriter = cmf.Cmf(filepath="mlmd", pipeline_name="Test-env")
 _ = metawriter.create_context(pipeline_stage="Prepare")
 _ = metawriter.create_execution(execution_type="Prepare")
 
@@ -69,6 +69,7 @@ for i in range(1, 3, 1):
 
 # Reading the files in the slice.
 df: pd.DataFrame = metawriter.read_dataslice(name="slice-1")
+print("printing dataslice_path = ", metawriter.dataslice_path)
 record = ""
 row_content = None
 for label, content in df.iterrows():
@@ -87,11 +88,3 @@ print("After update")
 for label, content in df.iterrows():
     if label == record:
         print(content)
-# cleanup
-folder_path = os.path.join(os.getcwd(), folder_path)
-if os.path.exists(folder_path):
-    rmtree(folder_path)
-
-dvc_file = folder_path + ".dvc"
-if os.path.exists(dvc_file):
-    os.remove(dvc_file)
