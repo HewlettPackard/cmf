@@ -1870,7 +1870,12 @@ class Cmf:
                     name=dataslice_path + ":" + c_hash,
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
-                    properties=props,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(dataslice_commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
                     artifact_type_properties={
                         "git_repo": mlpb.STRING,
                         "Commit": mlpb.STRING,
