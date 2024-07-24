@@ -21,6 +21,7 @@ from server.app.get_data import (
 )
 from server.app.query_visualization import query_visualization
 from server.app.query_exec_lineage import query_exec_lineage
+from server.app.query_tangled_lineage import query_tangled_lineage
 from pathlib import Path
 import os
 import json
@@ -40,6 +41,7 @@ async def lifespan(app: FastAPI):
         dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
         dict_of_exe_ids = await get_all_exe_ids(server_store_path)
+
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -161,6 +163,7 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response=await get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            #response = null
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -202,6 +205,22 @@ async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: 
             response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
     else:
         response = None
+    return response
+    
+@app.get("/display_tree_lineage/{uuid}/{pipeline_name}")
+async def display_tree_lineage(request: Request,uuid, pipeline_name: str):
+    '''
+      returns dictionary of nodes and links for given execution_type.
+      response = {
+                   nodes: [{id:"",name:"",execution_uuid:""}],
+                   links: [{source:1,target:4},{}],
+                 } 
+    '''
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response = await query_tangled_lineage(server_store_path, pipeline_name, dict_of_exe_ids,uuid)
     return response
 
 # api to display artifacts available in mlmd

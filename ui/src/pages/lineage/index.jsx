@@ -24,12 +24,15 @@ import LineageSidebar from "../../components/LineageSidebar";
 import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
+import ExecutionTree from "../../components/ExecutionTree";
+import ExecutionTangledDropdown from "../../components/ExecutionTangledDropdown";
+
 const client = new FastAPIClient(config);
 
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifacts','Execution'];
+  const LineageTypes=['Artifacts','Execution','Tangled_Exec'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifacts');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData]=useState(null);
@@ -69,7 +72,7 @@ const Lineage = () => {
           fetchArtifactLineage(pipeline);
        }
        else {
-          fetchExecutionTypes(pipeline);
+          fetchExecutionTypes(pipeline, selectedLineageType);
        }}
   };
 
@@ -80,8 +83,11 @@ const Lineage = () => {
     if (lineageType === "Artifacts") {
       fetchArtifactLineage(selectedPipeline);
     }
+    else if (lineageType === "Execution") {
+      fetchExecutionTypes(selectedPipeline, lineageType);
+    }
     else {
-      fetchExecutionTypes(selectedPipeline);
+      fetchExecutionTypes(selectedPipeline, lineageType);
     }
   };  
 
@@ -96,18 +102,24 @@ const Lineage = () => {
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
-  const fetchExecutionTypes = (pipelineName) => {
+  const fetchExecutionTypes = (pipelineName, lineageType) => {
     client.getExecutionTypes(pipelineName).then((data) => {    
         if (data === null ) {
            setExecDropdownData(null);
         }
         else {
         setExecDropdownData(data);
-        setSelectedExecutionType(data[0]);
-        const typeParts = data[0].split('/');
-        const exec_type = typeParts[1].split('_')[0];
-        const uuid= typeParts[1].split('_').slice(-1)[0];
-        fetchExecutionLineage(pipelineName, exec_type,uuid);
+        setSelectedExecutionType(data[0]);     // data[0] = "Prepare_3f45"
+        // method used such that even with multiple "_" it will get right execution_name and uuid
+        const last_underscore_index = data[0].lastIndexOf('_'); 
+        const exec_type = data[0].substring(0, last_underscore_index);   // Prepare
+        const uuid= (data[0].split("_").pop());     // 3f45
+        if (lineageType === "Execution") {
+            fetchExecutionLineage(pipelineName, exec_type,uuid);
+            }
+        else {
+            fetchExecTree(pipelineName,uuid);
+            }
         }
 
     });
@@ -117,11 +129,20 @@ const Lineage = () => {
   // used for execution drop down
   const handleExecutionClick = (executionType) => {
     setExecutionData(null);
+    
     setSelectedExecutionType(executionType);
-    const typeParts = executionType.split('/');
-    const type = typeParts[1].split('_')[0];
-    const uuid= typeParts[1].split('_').slice(-1)[0];
-    fetchExecutionLineage(selectedPipeline, type,uuid);
+    const last_underscore_index = executionType.lastIndexOf('_');
+    const exec_type = executionType.substring(0, last_underscore_index);
+    const uuid= (executionType.split("_").pop());
+    fetchExecutionLineage(selectedPipeline, exec_type,uuid);
+  };  
+
+  // used for execution drop down
+  const handleTreeClick = (executionType) => {
+    setExecutionData(null);
+    setSelectedExecutionType(executionType);
+    const uuid= (executionType.split("_").pop());
+    fetchExecTree(selectedPipeline, uuid);
   };  
 
   const fetchExecutionLineage = (pipelineName, type,uuid) => {
@@ -130,6 +151,12 @@ const Lineage = () => {
           setExecutionData(null);
       }
       setExecutionData(data);
+    });
+  };
+
+  const fetchExecTree = (pipelineName,exec_type) => {
+    client.getExecTreeLineage(pipelineName,exec_type).then((data) => {    
+    setExecutionData(data);
     });
   };
 
@@ -170,6 +197,18 @@ const Lineage = () => {
                 <LineageArtifacts key={lineageArtifactsKey} data={executionData} />
                 </div>
                 )}
+                {selectedPipeline !== null && selectedLineageType === "Tangled_Exec" && execDropdownData !== null   &&(
+                <div>
+                <ExecutionTangledDropdown data={execDropdownData} exec_type={selectedExecutionType} handleTreeClick= {handleTreeClick}/>        
+                </div>
+                )}
+                {selectedPipeline !== null && selectedLineageType === "Tangled_Exec" && execDropdownData !== null  && executionData !== null &&(
+                <div style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <ExecutionTree key={lineageArtifactsKey} data={executionData} />
+                </div>
+                )}
+
+
             </div>
           </div>
         </div>
