@@ -23,8 +23,6 @@ from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
 import functools
-import uuid
-
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
     if value is None:
@@ -218,6 +216,7 @@ def create_context_with_type(
         properties=properties,
         custom_properties=custom_properties,
     )
+    print(type(context),"context#######")
     context.id = store.put_contexts([context])[0]
     return context
 

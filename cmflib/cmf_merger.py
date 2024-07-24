@@ -76,8 +76,6 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                     )
                 except Exception as e:
                     print(f"Error in merge_created_context")
-#                    traceback.print_exc()
-
                 try:
                     _ = cmf_class.merge_created_execution(
                         execution["properties"]["Context_Type"],
@@ -92,7 +90,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         execution["custom_properties"] 
                     )
                 except Exception as e:
-                    print(f"Error in merge_created_execution")
+                    print(f"Error in merge_created_execution {e}")
 
                 for event in execution["events"]:  # Iterates over all the events
                     artifact_type = event["artifact"]["type"]
