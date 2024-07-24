@@ -617,6 +617,44 @@ class CmfQuery(object):
                 list_exec.append(self.store.get_executions_by_id(exec))
         return list_exec
 
+    def get_one_hop_parent_executions_ids(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
+        """Get parent execution ids for given execution id
+        Args: 
+           execution_id : Execution id for which parent execution are required
+                          It is passed in list, for example execution_id: [1]  
+           pipeline_id : Pipeline id
+        Return:
+           Returns parent executions for given id
+        """
+        artifacts: t.Optional = self._get_input_artifacts(execution_id)
+        if not artifacts:
+            return None
+
+        exe_ids = []
+
+        for id in artifacts:
+            ids = self._get_executions_by_output_artifact_id(id, pipeline_id)
+            exe_ids.extend(ids)
+        return exe_ids
+
+    def get_executions_with_execution_ids(self, exe_ids: t.List[int]):
+        """For list of execution ids it returns df with "id,Execution_type_name, Execution_uuid"
+        Args:
+            execution ids: List of execution ids.
+        Return:
+            ["id","Execution_type_name","Execution_uuid"]
+        """
+        df = pd.DataFrame()
+        executions = self.store.get_executions_by_id(exe_ids)
+        for count, exe in enumerate(executions):
+            temp_dict = {}
+            temp_dict['id'] = exe_ids[count]
+            d1 = self._transform_to_dataframe(exe, temp_dict)
+            df = pd.concat([df, d1], sort=True, ignore_index=True)
+        df.drop_duplicates()
+        df = df[["id", "Execution_type_name","Execution_uuid"]]
+        return df
+
     def get_one_hop_child_executions(self, execution_id: t.List[int]) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.
 
