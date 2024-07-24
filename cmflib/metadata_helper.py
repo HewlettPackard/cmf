@@ -123,6 +123,17 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
         context_type.id = store.put_context_type(context_type)  # Returns ID
         return context_type
 
+def update_context_custom_properties(store,context_id, context_name, properties, custom_properties):
+
+        context = metadata_store_pb2.Context(
+            id = context_id,
+            name=context_name,
+            properties=properties,
+            custom_properties=custom_properties,
+        )
+        print(context,type(context),"##############")
+        store.put_contexts([context])
+        return context
 
 def create_artifact_with_type(
         store,
@@ -209,6 +220,7 @@ def create_context_with_type(
         properties=properties,
         custom_properties=custom_properties,
     )
+    print(type(context),"context#######")
     context.id = store.put_contexts([context])[0]
     return context
 

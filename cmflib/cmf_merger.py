@@ -19,6 +19,8 @@ import os
 from cmflib import cmf
 import traceback
 from ml_metadata.errors import AlreadyExistsError
+from ml_metadata.metadata_store import metadata_store
+from ml_metadata.proto import metadata_store_pb2 as mlpb
 
 def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     try:
@@ -36,7 +38,9 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
         graph = False
         if os.getenv('NEO4J_URI', "") != "":
             graph = True
-
+        config = mlpb.ConnectionConfig()
+        config.sqlite.filename_uri = path_to_store
+        store = metadata_store.MetadataStore(config)
         cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,
                             graph=graph, is_server=True)
 
@@ -60,11 +64,11 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                     )
                 except AlreadyExistsError as e:
                     print("AlreadyExistsError in merge_created_context")
-                    print(type(stage["type"]),type(stage["name"]),"stage")
                     _ = cmf_class.update_context(
                         str(stage["type"]),
                         str(stage["name"]),
                         stage["id"],
+                        stage["properties"],
                         {"new context":"value"}
                     )
                 except Exception as e:
@@ -80,7 +84,6 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         execution["name"]
                     )
                 except AlreadyExistsError as e:
-                    print("#######"+str(execution["id"])+","+execution["name"]+"#######")
                     _ = cmf_class.update_execution(
                         execution["id"],
                         {"new_new":"value_value"} 
@@ -109,6 +112,11 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                                 )
                             except AlreadyExistsError as e:
                                 print("AlreadyExistsError in log_dataset_with_version_input")
+                                artifacts = store.get_artifacts_by_id([event["artifact"]["id"]])
+                                cmf_class.update_existing_artifact(
+                                    artifacts,
+                                    custom_properties = {"new_artifact": "new_value"}
+                                ) 
                             except Exception as e:
                                 print(f"Error in log_dataset_with_version (input)")
 #                                traceback.print_exc()
