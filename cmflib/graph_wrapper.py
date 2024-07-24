@@ -307,13 +307,17 @@ class GraphDriver:
         custom_properties["uri"] = uri
         custom_properties["pipeline_id"] = str(pipeline_id)
         custom_properties["pipeline_name"] = pipeline_name
-        syntax_str = "MERGE (a:Model {"  # + str(props) + ")"
+        syntax_str = "MERGE (a:Model {uri:\"" + uri + "\"}) SET "
+  # + str(props) + ")"
         for k, v in custom_properties.items():
             k = re.sub('\W+', '', k)
+            props_str = "a." + k + \
+                " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
-        syntax_str = syntax_str.rstrip(syntax_str[-1])
-        syntax_str = syntax_str + "})"
+        syntax_str = syntax_str + props_str
+        syntax_str = syntax_str.rstrip(",")
         syntax_str = syntax_str + " RETURN ID(a) as node_id"
+        print(syntax_str)
         return syntax_str
 
     @staticmethod

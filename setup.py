@@ -16,6 +16,10 @@ setup(
         install_requires=["ml-metadata==1.15.0",
                           "dvc[ssh,s3]==3.51.1", "pandas", "retrying", "pyarrow", "neo4j", \
                             "scikit-learn", "tabulate", "click", "minio", "paramiko", "scitokens", "cryptography"],  # add any additional packages that
+
+        dependency_links=[
+        "https://github.com/google/ml-metadata"
+        ],
         # needs to be installed along with your package. Eg: 'caer'
 
         keywords=['python', 'first package'],
