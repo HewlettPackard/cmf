@@ -149,7 +149,8 @@ Optional Arguments
 ### cmf init sshremote
 ```
 Usage: cmf init sshremote [-h] --path [path] 
-                               --user [user] --port [port]
+                               --user [user]
+                               --port [port]
                                --password [password]  
                                --git-remote-url [git_remote_url] 
                                --cmf-server-url [cmf_server_url]
@@ -180,9 +181,9 @@ Optional Arguments
 ### cmf init osdfremote 
 ```
 Usage: cmf init osdfremote [-h] --path [path] 
-                             --endpoint-url [endpoint_url]
-                             --access-key-id [access_key_id] 
-                             --secret-key [secret_key] 
+                             --key-id [key_id]
+                             --key-path [key_path] 
+                             --key-issuer [key_issuer] 
                              --git-remote-url[git_remote_url]  
                              --cmf-server-url [cmf_server_url]
                              --neo4j-user [neo4j_user]
@@ -297,9 +298,9 @@ Optional Arguments
 ```
 Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_name]
 ```
-`cmf metadata push` export local mlmd's metadata in json format to a json file.
+`cmf metadata export` export local mlmd's metadata in json format to a json file.
 ```
-cmf metadata push -p 'pipeline-name' -j '/path/to/json-file-name' -f '/path/to/mlmd-file-name'
+cmf metadata export -p 'pipeline-name' -j '/path/to/json-file-name' -f '/path/to/mlmd-file-name'
 ```
 Required Arguments
 ```
