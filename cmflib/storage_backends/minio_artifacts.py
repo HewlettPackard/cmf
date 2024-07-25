@@ -80,7 +80,6 @@ class MinioArtifacts:
                     formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                     temp_download_loc = f"{download_loc}/{relpath}"
                     temp_object_name = f"{repo_path}/{formatted_md5}"
-                    #obj = fs.get_file(temp_current_loc, temp_download_loc)
                     obj = client.fget_object(bucket_name, temp_object_name, temp_download_loc)
                     if obj:
                         print(f"object {temp_object_name} downloaded at {temp_download_loc}.")

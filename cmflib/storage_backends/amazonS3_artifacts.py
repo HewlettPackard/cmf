@@ -45,6 +45,7 @@ class AmazonS3Artifacts:
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
 
             response = ""
+
             """"
             if object_name ends with .dir - it is a directory.
             we download .dir object with 'temp_dir' and remove 
@@ -75,7 +76,7 @@ class AmazonS3Artifacts:
                 for file_info in tracked_files:
                     relpath = file_info['relpath']
                     md5_val = file_info['md5']
-                    # file_path =  /home/user/datatslice/example-get-started/test/artifacts/raw_data
+                    # download_loc =  /home/user/datatslice/example-get-started/test/artifacts/raw_data
                     # md5_val = a237457aa730c396e5acdbc5a64c8453
                     # we need a2/37457aa730c396e5acdbc5a64c8453
                     formatted_md5 = md5_val[:2] + '/' + md5_val[2:]

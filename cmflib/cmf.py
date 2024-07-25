@@ -1478,8 +1478,10 @@ class Cmf:
         Returns:
            Artifact object from the ML Protocol Buffers library associated with the new metrics artifact.
         """
-        # code for nano cmf is remaining
-         # Assigning current file name as stage and execution name
+
+        logging_dir = change_dir(self.cmf_init_path)
+        # code for nano cmf
+        # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
         name_without_extension = os.path.splitext(file_name)[0]
@@ -1493,7 +1495,7 @@ class Cmf:
             self.create_execution(execution_type=name_without_extension)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-        logging_dir = change_dir(self.cmf_init_path)
+        
         directory_path = os.path.join( "cmf_artifacts/metrics",self.execution.properties["Execution_uuid"].string_value)
         os.makedirs(directory_path, exist_ok=True)
         metrics_df = pd.DataFrame.from_dict(
@@ -1807,7 +1809,9 @@ class Cmf:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
                 Example{"mean":2.5, "median":2.6}
             """
-            # need to understand whether doing this before or after the change_dir will make a difference
+
+            logging_dir = change_dir(self.writer.cmf_init_path)
+            # code for nano cmf
             # Assigning current file name as stage and execution name
             current_script = sys.argv[0]
             file_name = os.path.basename(current_script)
@@ -1822,7 +1826,6 @@ class Cmf:
                 self.writer.create_execution(execution_type=name_without_extension)
                 assert self.writer.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-            logging_dir = change_dir(self.writer.cmf_init_path)
             directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
             self.writer.dataslice_path = directory_path
             os.makedirs(directory_path, exist_ok=True)

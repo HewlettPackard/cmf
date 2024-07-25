@@ -41,6 +41,11 @@ class LocalArtifacts:
 
             response = ""
 
+            """"
+            if object_name ends with .dir - it is a directory.
+            we download .dir object with 'temp_dir' and remove 
+            this after all the files from this .dir object is downloaded.
+            """
             if object_name.endswith('.dir'):
                 # in case of .dir, download_loc is a absolute path for a folder
                 os.makedirs(download_loc, mode=0o777, exist_ok=True)
