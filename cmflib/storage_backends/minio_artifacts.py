@@ -41,7 +41,6 @@ class MinioArtifacts:
 
             response = ""
 
-
             """"
             if object_name ends with .dir - it is a directory.
             we download .dir object with 'temp_dir' and remove 
@@ -53,9 +52,9 @@ class MinioArtifacts:
 
                 # download .dir object
                 temp_dir = f"{download_loc}/temp_dir"
-                response = client.download_file(bucket_name, object_name, temp_dir)
+                response = client.fget_object(bucket_name, object_name, temp_dir)
 
-                with open(download_loc, 'r') as file:
+                with open(temp_dir, 'r') as file:
                     tracked_files = eval(file.read())
 
                 # removing temp_dir
