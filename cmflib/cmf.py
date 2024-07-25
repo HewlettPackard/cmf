@@ -132,7 +132,6 @@ class Cmf:
         config.sqlite.filename_uri = filepath
         self.store = metadata_store.MetadataStore(config)
         self.filepath = filepath
-        self.dataslice_path = None
         self.child_context = None
         self.execution = None
         self.execution_name = ""
@@ -1722,7 +1721,7 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
-        name = os.path.join(self.dataslice_path, name)
+        name = name
         df = pd.read_parquet(name)
         return df
 
@@ -1743,7 +1742,7 @@ class Cmf:
         Returns:
            None
         """
-        name = os.path.join(self.dataslice_path, name)
+        name = name
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
         temp_dict[record].update(custom_properties)
@@ -1827,7 +1826,6 @@ class Cmf:
                 assert self.writer.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
             directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
-            self.writer.dataslice_path = directory_path
             os.makedirs(directory_path, exist_ok=True)
             custom_props = {} if custom_properties is None else custom_properties
             git_repo = git_get_repo()

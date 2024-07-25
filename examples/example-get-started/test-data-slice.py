@@ -69,7 +69,6 @@ for i in range(1, 3, 1):
 
 # Reading the files in the slice.
 df: pd.DataFrame = metawriter.read_dataslice(name="slice-1")
-print("printing dataslice_path = ", metawriter.dataslice_path)
 record = ""
 row_content = None
 for label, content in df.iterrows():
