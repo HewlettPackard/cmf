@@ -38,11 +38,10 @@ async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
     if os.path.exists(server_store_path):
-        # loaded artifact ids into memory
-        dict_of_art_ids = await get_all_artifact_ids(server_store_path)
         # loaded execution ids with names into memory
         dict_of_exe_ids = await get_all_exe_ids(server_store_path)
-
+        # loaded artifact ids into memory
+        dict_of_art_ids = await get_all_artifact_ids(server_store_path, dict_of_exe_ids)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -88,13 +87,14 @@ async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
     req_info = await info.json()
+    pipeline_name = req_info["pipeline_name"]
     status = await create_unique_executions(server_store_path, req_info)
     if status == "version_update":
         # Raise an HTTPException with status code 422
         raise HTTPException(status_code=422, detail="version_update")
     # async function
-    await update_global_art_dict()
-    await update_global_exe_dict()
+    await update_global_exe_dict(pipeline_name)
+    await update_global_art_dict(pipeline_name)
     return {"status": status, "data": req_info}
 
 
@@ -371,17 +371,23 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
             json_payload_4 = json.loads(result_4)
     return [json_payload_1, json_payload_2, json_payload_3, json_payload_4]
 
-async def update_global_art_dict():
+async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
-    output_dict = await get_all_artifact_ids(server_store_path)
-    dict_of_art_ids = output_dict
+    output_dict = await get_all_artifact_ids(server_store_path, dict_of_exe_ids)
+    if pipeline_name in dict_of_art_ids:
+        dict_of_art_ids[pipeline_name].update(output_dict[pipeline_name])
+    else:
+        dict_of_art_ids[pipeline_name] = output_dict[pipeline_name]
     return
 
 
-async def update_global_exe_dict():
+async def update_global_exe_dict(pipeline_name):
     global dict_of_exe_ids
     output_dict = await get_all_exe_ids(server_store_path)
-    dict_of_exe_ids = output_dict
+    if pipeline_name in dict_of_exe_ids:
+        dict_of_exe_ids[pipeline_name].update(output_dict[pipeline_name])
+    else:
+        dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]
     return
 
 

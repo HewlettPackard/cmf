@@ -115,7 +115,7 @@ async def get_all_exe_ids(mlmdfilepath):
     return execution_ids
 
 
-async def get_all_artifact_ids(mlmdfilepath):
+async def get_all_artifact_ids(mlmdfilepath, execution_ids):
     # following is a dictionary of dictionaries
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
@@ -124,7 +124,6 @@ async def get_all_artifact_ids(mlmdfilepath):
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
     names = query.get_pipeline_names()
-    execution_ids = await get_all_exe_ids(mlmdfilepath)
     for name in names:
         artifacts = pd.DataFrame()
         if not execution_ids.get(name).empty:
