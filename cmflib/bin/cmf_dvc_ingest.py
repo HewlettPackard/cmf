@@ -63,6 +63,7 @@ args
     execution_exist : True if it exeist, False otherwise
     metawrite: cmf object 
 """
+tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
 def ingest_metadata(execution_lineage:str, metadata:dict, metawriter:cmf.Cmf, command:str = "") :
     pipeline_name, context_name, execution = get_cmf_hierarchy(execution_lineage)
 
@@ -77,9 +78,12 @@ def ingest_metadata(execution_lineage:str, metadata:dict, metawriter:cmf.Cmf, co
         if k == "deps":
             for dep in v:
                 metawriter.log_dataset_with_version(dep["path"], dep["md5"], "input")
+                if dep["path"] not in tracked:
+                    metawriter.log_dataset(dep["path"], 'input')
         if k == "outs":
             for out in v:
                 metawriter.log_dataset_with_version(out["path"], out["md5"], "output")
+                tracked[out["path"]] = True
 
 def find_location(string, elements):
     for index, element in enumerate(elements):
