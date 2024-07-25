@@ -1721,7 +1721,8 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
-        name = name
+        directory_path = os.path.join("cmf_artifacts/dataslices",self.execution.properties["Execution_uuid"].string_value)
+        name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         return df
 
@@ -1742,7 +1743,8 @@ class Cmf:
         Returns:
            None
         """
-        name = name
+        directory_path = os.path.join("cmf_artifacts/dataslices", self.execution.properties["Execution_uuid"].string_value)
+        name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
         temp_dict[record].update(custom_properties)
