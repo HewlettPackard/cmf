@@ -94,28 +94,37 @@ async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     #df=df.drop('name',axis=1)
     return df
 
-async def get_all_exe_ids(mlmdfilepath):
+
+async def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
     '''
     Returns:
         returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
     execution_ids = {}
-    names = query.get_pipeline_names()
-    for name in names:
-        executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
-        executions = query.get_all_executions_in_pipeline(name)
-        # check if df is empty return just pipeline_name: {}
-        # if df is not empty return dictionary with pipeline_name as key
-        # and df with id, context_type, uuid, context_ID as value.
+    executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
+    if pipeline_name:
+        executions = query.get_all_executions_in_pipeline(pipeline_name)
         if not executions.empty:
-            execution_ids[name] = executions[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
+            execution_ids[pipeline_name] = executions[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
         else:
-            execution_ids[name] = pd.DataFrame()
+            execution_ids[pipeline_name] = pd.DataFrame()
+    else:
+        names = query.get_pipeline_names()
+        for name in names:
+            executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
+            executions = query.get_all_executions_in_pipeline(name)
+            # check if df is empty return just pipeline_name: {}
+            # if df is not empty return dictionary with pipeline_name as key
+            # and df with id, context_type, uuid, context_ID as value.
+            if not executions.empty:
+                execution_ids[name] = executions[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
+            else:
+                execution_ids[name] = pd.DataFrame()
     return execution_ids
 
 
-async def get_all_artifact_ids(mlmdfilepath, execution_ids):
+async def get_all_artifact_ids(mlmdfilepath, execution_ids, pipeline_name: str = None):
     # following is a dictionary of dictionaries
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
@@ -123,25 +132,43 @@ async def get_all_artifact_ids(mlmdfilepath, execution_ids):
     # Nested dictionary value is a pandas df with id and artifact name
     artifact_ids = {}
     query = cmfquery.CmfQuery(mlmdfilepath)
-    names = query.get_pipeline_names()
-    for name in names:
-        artifacts = pd.DataFrame()
-        if not execution_ids.get(name).empty:
-            exe_ids = execution_ids[name]['id'].tolist()
+    artifacts = pd.DataFrame()
+    if pipeline_name:
+        if not execution_ids.get(pipeline_name).empty:
+            exe_ids = execution_ids[pipeline_name]['id'].tolist()
             artifacts = query.get_all_artifacts_for_executions(exe_ids)
             #acknowledging pipeline exist even if df is empty. 
             if artifacts.empty:
-                artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
+                artifact_ids[pipeline_name] = pd.DataFrame()   # { pipeline_name: {empty df} }
             else:
-                artifact_ids[name] = {}
+                artifact_ids[pipeline_name] = {}
                 for art_type in artifacts['type']:
                     filtered_values = artifacts.loc[artifacts['type'] == art_type, ['id', 'name']]
-                    artifact_ids[name][art_type] = filtered_values
+                    artifact_ids[pipeline_name][art_type] = filtered_values
         # if execution_ids is empty then create dictionary with key as pipeline name
         # and value as empty df
         else:
-            artifact_ids[name] = pd.DataFrame()
+            artifact_ids[pipeline_name] = pd.DataFrame()
+    else:
+        names = query.get_pipeline_names()
+        for name in names:
+            if not execution_ids.get(name).empty:
+                exe_ids = execution_ids[name]['id'].tolist()
+                artifacts = query.get_all_artifacts_for_executions(exe_ids)
+                #acknowledging pipeline exist even if df is empty. 
+                if artifacts.empty:
+                    artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
+                else:
+                    artifact_ids[name] = {}
+                    for art_type in artifacts['type']:
+                        filtered_values = artifacts.loc[artifacts['type'] == art_type, ['id', 'name']]
+                        artifact_ids[name][art_type] = filtered_values
+            # if execution_ids is empty then create dictionary with key as pipeline name
+            # and value as empty df
+            else:
+                artifact_ids[name] = pd.DataFrame()
     return artifact_ids
+
 
 async def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)

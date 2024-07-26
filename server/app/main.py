@@ -373,7 +373,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
-    output_dict = await get_all_artifact_ids(server_store_path, dict_of_exe_ids)
+    output_dict = await get_all_artifact_ids(server_store_path, dict_of_exe_ids, pipeline_name)
     if pipeline_name in dict_of_art_ids:
         dict_of_art_ids[pipeline_name].update(output_dict[pipeline_name])
     else:
@@ -383,7 +383,7 @@ async def update_global_art_dict(pipeline_name):
 
 async def update_global_exe_dict(pipeline_name):
     global dict_of_exe_ids
-    output_dict = await get_all_exe_ids(server_store_path)
+    output_dict = await get_all_exe_ids(server_store_path, pipeline_name)
     if pipeline_name in dict_of_exe_ids:
         dict_of_exe_ids[pipeline_name].update(output_dict[pipeline_name])
     else:
