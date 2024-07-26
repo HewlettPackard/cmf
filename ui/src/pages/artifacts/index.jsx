@@ -60,6 +60,7 @@ const Artifacts = () => {
     setArtifacts(null);
     setSelectedPipeline(pipeline);
     setActivePage(1);
+    fetchArtifacts(pipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
   };
 
   const handleArtifactTypeClick = (artifactType) => {
