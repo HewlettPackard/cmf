@@ -70,6 +70,13 @@ class FastAPIClient {
     });
   }
 
+  async getArtiTreeLineage(pipeline,lineagetype) {
+      return this.apiClient.get(`/display_arti_tree_lineage/${lineagetype}/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
+
   async getExecutionTypes(pipeline) {
       return this.apiClient.get(`/get_execution_types/${pipeline}`)
       .then(({ data }) => {

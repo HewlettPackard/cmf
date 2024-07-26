@@ -22,6 +22,7 @@ from server.app.get_data import (
 from server.app.query_visualization import query_visualization
 from server.app.query_exec_lineage import query_exec_lineage
 from server.app.query_tangled_lineage import query_tangled_lineage
+from server.app.query_artifact_tree_lineage import query_artifact_tree_lineage
 from pathlib import Path
 import os
 import json
@@ -285,6 +286,23 @@ async def display_artifact(
             "total_items": 0,
             "items": None
         }
+
+@app.get("/display_arti_tree_lineage/{lineagetype}/{pipeline_name}")
+async def display_arti_tree_lineage(request: Request,lineagetype, pipeline_name: str):
+    '''
+      returns dictionary of nodes and links for given execution_type.
+      response = {
+                   nodes: [{id:"",name:"",execution_uuid:""}],
+                   links: [{source:1,target:4},{}],
+                 } 
+    '''
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids,lineagetype)
+            #response = "null"
+    return response
 
 #This api's returns list of artifact types.
 @app.get("/display_artifact_types")
