@@ -216,7 +216,7 @@ def create_context_with_type(
         properties=properties,
         custom_properties=custom_properties,
     )
-    print(type(context),"context#######")
+    #print(type(context),"context#######")
     context.id = store.put_contexts([context])[0]
     return context
 

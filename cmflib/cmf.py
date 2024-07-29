@@ -1713,16 +1713,14 @@ class Cmf:
              custom_properties: Dictionary containing custom properties to update. 
           Returns: 
              None 
-        """
-        print("#############")
-        print(type(artifact),"type artifact")
-        print("#############")
+       """
         for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
+        
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
@@ -1816,7 +1814,7 @@ class Cmf:
                 should already be versioned.
             Example:
                 ```python
-                dataslice.add_data(f"data/raw_data/{j}.xml)
+                #dataslice.add_data(f"data/raw_data/{j}.xml)
                 ```
             Args:
                 path: Name to identify the file to be added to the dataslice.
