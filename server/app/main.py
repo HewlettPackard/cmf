@@ -19,10 +19,10 @@ from server.app.get_data import (
     get_executions_by_ids,
     get_model_data
 )
-from server.app.query_visualization import query_visualization
-from server.app.query_exec_lineage import query_exec_lineage
-from server.app.query_tangled_lineage import query_tangled_lineage
-from server.app.query_artifact_tree_lineage import query_artifact_tree_lineage
+from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
+from server.app.query_execution_lineage_d3force import query_execution_lineage_d3force
+from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
+from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from pathlib import Path
 import os
 import json
@@ -112,8 +112,8 @@ async def mlmd_pull(info: Request, pipeline_name: str):
     return json_payload
 
 # api to display executions available in mlmd
-@app.get("/display_executions/{pipeline_name}")
-async def display_exec(
+@app.get("/executions/{pipeline_name}")
+async def executions(
     request: Request,
     pipeline_name: str,
     page: int = Query(1, description="Page number", gt=0),
@@ -148,8 +148,8 @@ async def display_exec(
     else:
         return
 
-@app.get("/display_artifact_lineage/{pipeline_name}")
-async def display_artifact_lineage(request: Request, pipeline_name: str):
+@app.get("/artifact-lineage/force-directed-graph/{pipeline_name}")
+async def artifact_lineage(request: Request, pipeline_name: str):
     '''
       This api returns dictionary of nodes and links for given pipeline.
       response = {
@@ -172,8 +172,8 @@ async def display_artifact_lineage(request: Request, pipeline_name: str):
     else:
         return None
 
-@app.get("/get_execution_types/{pipeline_name}")
-async def get_execution_types(request: Request, pipeline_name: str):
+@app.get("/list-of-executions/{pipeline_name}")
+async def list_of_executions(request: Request, pipeline_name: str):
     '''
       This api's returns list of execution types.
 
@@ -190,8 +190,8 @@ async def get_execution_types(request: Request, pipeline_name: str):
     else:
         return None
 
-@app.get("/display_exec_lineage/{pipeline_name}/{uuid}")
-async def display_exec_lineage(request: Request, pipeline_name: str, uuid: str):
+@app.get("/execution-lineage/force-directed-graph/{exec_type}/{pipeline_name}/{uuid}")
+async def execution_lineage(request: Request, exec_type: str, pipeline_name: str, uuid: str):
     '''
       returns dictionary of nodes and links for given execution_type.
       response = {
@@ -203,13 +203,13 @@ async def display_exec_lineage(request: Request, pipeline_name: str, uuid: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, uuid)
+            response = await query_execution_lineage_d3force(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
     else:
         response = None
     return response
     
-@app.get("/display_tree_lineage/{uuid}/{pipeline_name}")
-async def display_tree_lineage(request: Request,uuid, pipeline_name: str):
+@app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
+async def execution_lineage(request: Request,uuid, pipeline_name: str):
     '''
       returns dictionary of nodes and links for given execution_type.
       response = {
@@ -221,12 +221,12 @@ async def display_tree_lineage(request: Request,uuid, pipeline_name: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_tangled_lineage(server_store_path, pipeline_name, dict_of_exe_ids,uuid)
+            response = await query_execution_lineage_d3tree(server_store_path, pipeline_name, dict_of_exe_ids,uuid)
     return response
 
 # api to display artifacts available in mlmd
-@app.get("/display_artifacts/{pipeline_name}/{type}")
-async def display_artifact(
+@app.get("/artifacts/{pipeline_name}/{type}")
+async def artifacts(
     request: Request,
     pipeline_name: str,
     type: str,   # type = artifact type
@@ -302,13 +302,12 @@ async def display_arti_tree_lineage(request: Request, pipeline_name: str)-> List
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids)        
-
+            response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids)
     return response
 
 #This api's returns list of artifact types.
-@app.get("/display_artifact_types")
-async def display_artifact_types(request: Request):
+@app.get("/artifact_types")
+async def artifact_types(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
         artifact_types = get_artifact_types(server_store_path)
@@ -318,8 +317,8 @@ async def display_artifact_types(request: Request):
         return
 
 
-@app.get("/display_pipelines")
-async def display_list_of_pipelines(request: Request):
+@app.get("/pipelines")
+async def pipelines(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)

@@ -2,8 +2,9 @@ from cmflib import cmfquery, cmf_merger
 import pandas as pd
 import json
 import os
-from server.app.query_visualization import query_visualization
-from server.app.query_visualization_execution import query_visualization_execution
+from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
+from server.app.query_list_of_executions import query_list_of_executions
+from fastapi.responses import FileResponse
 
 
 async def get_model_data(mlmdfilepath, modelId):
@@ -276,7 +277,7 @@ async def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_
 async def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
-        lineage_data = query_visualization(server_store_path, pipeline_name, dict_of_art_ids)
+        lineage_data = query_artifact_lineage_d3force(server_store_path, pipeline_name, dict_of_art_ids)
         '''
         returns dictionary of nodes and links for artifact lineage.
         lineage_data= {
@@ -285,7 +286,7 @@ async def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,
                       }
         '''
     elif type=="Execution":
-        lineage_data = query_visualization_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+        lineage_data = query_list_of_executions(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
         '''
         returns list of execution types for specific pipeline.
         '''
