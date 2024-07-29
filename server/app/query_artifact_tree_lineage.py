@@ -3,19 +3,21 @@ from cmflib import cmfquery
 from collections import deque, defaultdict
 import pandas as pd
 import json
+from typing import List, Dict, Any
 
-async def query_artifact_tree_lineage(mlmd_path,pipeline_name, dict_of_art_ids,lineagetype):
+async def query_artifact_tree_lineage(mlmd_path: str,pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
     id_name = {}
     child_parent_artifact_id = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         for index, row in df.iterrows():
-            id_name[row["id"]] = modify_arti_name(row["name"])
-            parent_artifacts = query.get_all_parent_artifacts(row["name"])
-            child_parent_artifact_id[row["id"]] = []
-            if not parent_artifacts.empty:
-                child_parent_artifact_id[row["id"]] = list(parent_artifacts["id"])
+            #creating a dictionary of id and artifact name {id:artifact name}          
+            id_name[row["id"]] = modify_arti_name(row["name"])   
+            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts(row["name"])  # get immediate artifacts     
+            child_parent_artifact_id[row["id"]] = []      # empty dict for artifact with no parent artifact
+            if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts             
+                child_parent_artifact_id[row["id"]] = list(one_hop_parent_artifacts["id"])
     data_organized = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
@@ -52,10 +54,9 @@ def topological_sort(input_data,artifact_name_id_dict):
     return output_data
 
 def modify_arti_name(arti_name):
-    if "metrics" in arti_name:
+    if "metrics" in arti_name:   # for metrics metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
         name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
     else:
-        name = arti_name.split("artifacts/")[1].rsplit(":", 1)[0] + ":" + arti_name.rsplit(":", 1)[1][:4]
+        name = arti_name.split("artifacts/")[1].rsplit(":", 1)[0] + ":" + arti_name.rsplit(":", 1)[1][:4]  # artifacts/parsed/train.tsv:32b715ef0d71ff4c9e61f55b09c15e75 -> parsed/train.tsv
     return name
 
-#query_artifact_tree_lineage("/home/chobey/cmf-server/data/mlmd","Test-env",data,'Artifact_Tree')
