@@ -1,10 +1,9 @@
 from cmflib import cmfquery, cmf_merger
 import pandas as pd
-import json,glob
+import json
 import os
 from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
-from fastapi.responses import FileResponse
 
 
 async def get_model_data(mlmdfilepath, modelId):
