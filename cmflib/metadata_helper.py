@@ -131,7 +131,7 @@ def update_context_custom_properties(store,context_id, context_name, properties,
             properties=properties,
             custom_properties=custom_properties,
         )
-        print(context,type(context),"##############")
+        #print(context,type(context),"##############")
         store.put_contexts([context])
         return context
 
@@ -220,7 +220,7 @@ def create_context_with_type(
         properties=properties,
         custom_properties=custom_properties,
     )
-    print(type(context),"context#######")
+    #print(type(context),"context#######")
     context.id = store.put_contexts([context])[0]
     return context
 
