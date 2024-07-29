@@ -56,7 +56,9 @@ def topological_sort(input_data,artifact_name_id_dict):
 def modify_arti_name(arti_name):
     if "metrics" in arti_name:   # for metrics metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
         name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
-    else:
+    elif arti_name.startswith("artifacts")  :
         name = arti_name.split("artifacts/")[1].rsplit(":", 1)[0] + ":" + arti_name.rsplit(":", 1)[1][:4]  # artifacts/parsed/train.tsv:32b715ef0d71ff4c9e61f55b09c15e75 -> parsed/train.tsv
+    else:
+        name = arti_name
     return name
 
