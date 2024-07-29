@@ -319,7 +319,7 @@ class Cmf:
         properties: t.Optional[t.Dict] = None,
         custom_properties: t.Optional[t.Dict] = None
     ) -> mlpb.Context:
-        print("inside update_create_context")
+        #print("inside update_create_context")
         self.context = get_or_create_context_with_type(
                            self.store, 
                            context_name, 
@@ -329,9 +329,9 @@ class Cmf:
                            custom_properties = custom_properties
                        )
 #        self.context = self.store.get_contexts_by_id([context_id])
-        print(type(self.context))
-        print(self.context)
-        print(self.context.custom_properties,"custom")
+        #print(type(self.context))
+        #print(self.context)
+        #print(self.context.custom_properties,"custom")
         if self.context is None:
             print("Error - no context id")
             return
@@ -1678,16 +1678,14 @@ class Cmf:
              custom_properties: Dictionary containing custom properties to update. 
           Returns: 
              None 
-        """
-        print("#############")
-        print(type(artifact),"type artifact")
-        print("#############")
+       """
         for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
+        
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
@@ -1777,7 +1775,7 @@ class Cmf:
                 should already be versioned.
             Example:
                 ```python
-                dataslice.add_data(f"data/raw_data/{j}.xml)
+                #dataslice.add_data(f"data/raw_data/{j}.xml)
                 ```
             Args:
                 path: Name to identify the file to be added to the dataslice.

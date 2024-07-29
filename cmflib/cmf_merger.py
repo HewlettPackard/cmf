@@ -63,7 +63,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         custom_properties=stage["custom_properties"],
                     )
                 except AlreadyExistsError as e:
-                    print("AlreadyExistsError in merge_created_context")
+                    #print("AlreadyExistsError in merge_created_context")
                     _ = cmf_class.update_context(
                         str(stage["type"]),
                         str(stage["name"]),
@@ -111,14 +111,14 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                                     custom_properties=custom_props,
                                 )
                             except AlreadyExistsError as e:
-                                print("AlreadyExistsError in log_dataset_with_version_input")
-                                artifacts = store.get_artifacts_by_id([event["artifact"]["id"]])
+                                #print("AlreadyExistsError in log_dataset_with_version_input")
+                                artifact = store.get_artifacts_by_uri(uri)
                                 cmf_class.update_existing_artifact(
-                                    artifacts,
-                                    custom_properties = {"new_artifact": "new_value"}
+                                    artifact[0],
+                                    custom_properties={"new_data":"new_value"},
                                 ) 
                             except Exception as e:
-                                print(f"Error in log_dataset_with_version (input)")
+                                print(f"Error in log_dataset_with_version (input)" , e)
 #                                traceback.print_exc()
 
 
@@ -129,10 +129,15 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                                     uri,
                                     "output",
                                     props,
-                                    custom_properties=custom_props,
+                                    custom_properties={"new_data":"new_value"},
                                 )
                             except AlreadyExistsError as e:
-                                print("AlreadyExistsError in log_dataset_with_version_output")
+                                #print("AlreadyExistsError in log_dataset_with_version_output")
+                                artifact = store.get_artifacts_by_uri(uri)
+                                cmf_class.update_existing_artifact(
+                                    artifact[0],
+                                    custom_properties={"new_data":"new_value"},
+                                ) 
                             except Exception as e:
                                 print(f"Error in log_dataset_with_version (output)")
 #                                traceback.print_exc()
@@ -150,7 +155,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                             except ValueError as e:
                                 print("ValueError in log_model_with_version_input")
                             except AlreadyExistsError as e:
-                                print("AlreadyExistsError in log_model_with_version_input")
+                                #print("AlreadyExistsError in log_model_with_version_input")
+                                artifact = store.get_artifacts_by_uri(uri)
+                                cmf_class.update_existing_artifact(
+                                    artifact[0],
+                                    custom_properties= {"new_model": "new_value"},
+                                )
                             except Exception as e:
                                 print(f"Error in log_model_with_version (input)")
 #                                traceback.print_exc()
@@ -165,7 +175,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                                     custom_properties=custom_props,
                                 )
                             except AlreadyExistsError as e:
-                                print("AlreadyExistsError in log_model_with_version_output")
+                                #print("AlreadyExistsError in log_model_with_version_output")
+                                artifact = store.get_artifacts_by_uri(uri)
+                                cmf_class.update_existing_artifact(
+                                    artifact[0],
+                                    custom_properties= {"new_model": "new_value"},
+                                )
                             except Exception as e:
                                 print(f"Error in log_model_with_version (output)")
 #                                traceback.print_exc()
@@ -175,6 +190,11 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                                 cmf_class.log_execution_metrics_from_client(event["artifact"]["name"], custom_props)
                             except AlreadyExistsError as e:
                                 print("AlreadyExistsError in log_execution_metrics_from_client")
+                                artifact = store.get_artifacts_by_uri(uri)
+                                cmf_class.update_existing_artifact(
+                                    artifact[0],
+                                    custom_properties={"new_metrics":"new_value"},
+                                ) 
                             except Exception as e:
                                 print(f"Error in log_execution_metrics_from_client (output): {e}")
                                 traceback.print_exc()
