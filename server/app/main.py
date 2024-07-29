@@ -6,9 +6,6 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
-
-from cmflib import cmfquery, cmf_merger
-
 import time 
 from cmflib import cmfquery, cmfquery_temp, cmf_merger
 from server.app.get_data import (
@@ -22,6 +19,7 @@ from server.app.get_data import (
     get_executions_by_ids,
     async_api,
     get_model_data
+
 )
 from server.app.query_visualization import query_visualization
 from server.app.query_exec_lineage import query_exec_lineage
