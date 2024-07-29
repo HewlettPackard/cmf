@@ -287,8 +287,8 @@ async def artifacts(
             "items": None
         }
 
-@app.get("/display_arti_tree_lineage/{pipeline_name}")
-async def display_arti_tree_lineage(request: Request, pipeline_name: str)-> List[List[Dict[str, Any]]]:
+@app.get("/artifact-lineage/tangled-tree/{lineagetype}/{pipeline_name}")
+async def artifact_lineage(request: Request,lineagetype, pipeline_name: str):
     '''
       Returns:
       A nested list of dictionaries with 'id' and 'parents' keys.
@@ -302,7 +302,8 @@ async def display_arti_tree_lineage(request: Request, pipeline_name: str)-> List
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids)
+            response = await query_artifact_lineage_d3tree(server_store_path, pipeline_name, dict_of_art_ids,lineagetype)
+            #response = "null"
     return response
 
 #This api's returns list of artifact types.

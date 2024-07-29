@@ -1,26 +1,25 @@
-import os, re
+import os
 from cmflib import cmfquery
 from collections import deque, defaultdict
 import pandas as pd
 import json
-from typing import List, Dict, Any
 
-async def query_artifact_tree_lineage(mlmd_path: str,pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
+async def query_artifact_lineage_d3tree(mlmd_path,pipeline_name, dict_of_art_ids,lineagetype):
     query = cmfquery.CmfQuery(mlmd_path)
+    pipeline_id = query.get_pipeline_id(pipeline_name)
     id_name = {}
     child_parent_artifact_id = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         for index, row in df.iterrows():
-            #creating a dictionary of id and artifact name {id:artifact name}       
-            id_name[row["id"]] = modify_arti_name(row["name"],type_)   
-            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts(row["name"])  # get immediate artifacts     
-            child_parent_artifact_id[row["id"]] = []      # assign empty dict for artifact with no parent artifact
-            if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts             
-                child_parent_artifact_id[row["id"]] = list(one_hop_parent_artifacts["id"])
+            id_name[row["id"]] = modify_arti_name(row["name"])
+            parent_artifacts = query.get_all_parent_artifacts(row["name"])
+            child_parent_artifact_id[row["id"]] = []
+            if not parent_artifacts.empty:
+                child_parent_artifact_id[row["id"]] = list(parent_artifacts["id"])
     data_organized = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
-def topological_sort(input_data,artifact_name_id_dict) -> List[Dict]:
+def topological_sort(input_data,artifact_name_id_dict):
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -52,32 +51,11 @@ def topological_sort(input_data,artifact_name_id_dict) -> List[Dict]:
     output_data= list(parent_dict.values()) 
     return output_data
 
-def modify_arti_name(arti_name, type):
-    # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
-    try:
-        name = ""
-        if type == "Metrics" :   # Example metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
-            name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
-        elif type == "Model":
-            #first split on ':' then on '/' to get name. Example 'Test-env/prepare:uuid:32' -> prepare_uuid
-            name = arti_name.split(':')[-3].split("/")[-1] + ":" + arti_name.split(':')[-2][:4]
-        elif type == "Dataset":
-            # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
-            name = arti_name.split(':')[-2] .split("/")[-1]  
-        elif type == "Dataslice":
-            # cmf_artifacts/dataslices/ecd6dcde-4f3b-11ef-b8cd-f71a4cc9ba38/slice-1:e77e3466872898fcf2fa22a3752bc1ca
-            dataslice_part1 = arti_name.split("/",1)[1] #remove cmf_artifacts/
-            # dataslices/ecd6dcde-4f3b-11ef-b8cd-f71a4cc9ba38/slice-1 + : + e77e
-            name = dataslice_part1.rsplit(":",-1)[0] + ":" + dataslice_part1.rsplit(":",-1)[-1][:4]
-        elif type == "Step_Metrics":
-            #cmf_artifacts/metrics/1a86b01c-4da9-11ef-b8cd-f71a4cc9ba38/training_metrics:d7c32a3f4fce4888c905de07ba253b6e:3:2029c720-4da9-11ef-b8cd-f71a4cc9ba38
-            step_new = arti_name.split("/",1)[1]     #remove cmf_artifacts/
-            step_metrics_part2 = arti_name.rsplit(":")
-            # metrics/1a86b01c-4da9-11ef-b8cd-f71a4cc9ba38/training_metrics: + d7c3 + : +3 + : + 2029
-            name = step_new.rsplit(":",-3)[0] + ":" + step_metrics_part2[-3][:4] + ":" + step_metrics_part2[-2] + ":" + step_metrics_part2[-1][:4]
-        else:
-            name = arti_name  
-    except Exception as e:
-        print(f"Error parsing artifact name: {e}")
-        name = arti_name  # Fallback to the original arti_name in case of error
+def modify_arti_name(arti_name):
+    if "metrics" in arti_name:
+        name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
+    else:
+        name = arti_name.split("artifacts/")[1].rsplit(":", 1)[0] + ":" + arti_name.rsplit(":", 1)[1][:4]
     return name
+
+#query_artifact_tree_lineage("/home/chobey/cmf-server/data/mlmd","Test-env",data,'Artifact_Tree')
