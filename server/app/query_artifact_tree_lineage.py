@@ -7,21 +7,20 @@ from typing import List, Dict, Any
 
 async def query_artifact_tree_lineage(mlmd_path: str,pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
     query = cmfquery.CmfQuery(mlmd_path)
-    pipeline_id = query.get_pipeline_id(pipeline_name)
     id_name = {}
     child_parent_artifact_id = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         for index, row in df.iterrows():
-            #creating a dictionary of id and artifact name {id:artifact name}          
-            id_name[row["id"]] = modify_arti_name(row["name"])   
+            #creating a dictionary of id and artifact name {id:artifact name}       
+            id_name[row["id"]] = modify_arti_name(row["name"],type_)   
             one_hop_parent_artifacts = query.get_one_hop_parent_artifacts(row["name"])  # get immediate artifacts     
-            child_parent_artifact_id[row["id"]] = []      # empty dict for artifact with no parent artifact
+            child_parent_artifact_id[row["id"]] = []      # assign empty dict for artifact with no parent artifact
             if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts             
                 child_parent_artifact_id[row["id"]] = list(one_hop_parent_artifacts["id"])
     data_organized = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
-def topological_sort(input_data,artifact_name_id_dict):
+def topological_sort(input_data,artifact_name_id_dict) -> List[Dict]:
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -53,12 +52,17 @@ def topological_sort(input_data,artifact_name_id_dict):
     output_data= list(parent_dict.values()) 
     return output_data
 
-def modify_arti_name(arti_name):
-    if "metrics" in arti_name:   # for metrics metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
+def modify_arti_name(arti_name, type):
+    # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
+    name = ""
+    if type == "Metrics" :   # Example metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
         name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
-    elif arti_name.startswith("artifacts")  :
-        name = arti_name.split("artifacts/")[1].rsplit(":", 1)[0] + ":" + arti_name.rsplit(":", 1)[1][:4]  # artifacts/parsed/train.tsv:32b715ef0d71ff4c9e61f55b09c15e75 -> parsed/train.tsv
+    elif type == "Model":
+        #first split on ':' then on '/' to get name. Example 'Test-env/prepare:uuid:32' -> prepare_uuid
+        name = arti_name.split(':')[-3].split("/")[-1] + ":" + arti_name.split(':')[-2][:4]
+    elif type == "Dataset":
+        # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
+        name = arti_name.split(':')[-2].split("/")[-1]  
     else:
-        name = arti_name
+        name = arti_name  
     return name
-
