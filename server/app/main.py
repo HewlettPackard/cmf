@@ -16,7 +16,7 @@ from server.app.get_data import (
     get_artifact_types,
     get_all_artifact_ids,
     get_all_exe_ids,
-    get_executions_by_ids,
+    get_executions,
     get_model_data
 )
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
@@ -138,7 +138,7 @@ async def executions(
         if total_items < end_idx:
             end_idx = total_items
         exe_ids_list = exe_ids[start_idx:end_idx]
-        executions_df = await get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
+        executions_df = await get_executions(server_store_path, pipeline_name, exe_ids_list)
         temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {

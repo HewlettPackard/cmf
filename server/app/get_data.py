@@ -78,7 +78,7 @@ async def get_model_data(mlmdfilepath, modelId):
 
     return model_data_df, model_exe_df, model_input_df, model_output_df
 
-async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
+async def get_executions(mlmdfilepath, pipeline_name, exe_ids):
     '''
     Args:
      mlmdfilepath: mlmd file path.
@@ -115,6 +115,7 @@ async def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
         for name in names:
             executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
             executions = query.get_all_executions_in_pipeline(name)
+            print("get_all_executions_in_pipeline output : ",executions.columns)
             # check if df is empty return just pipeline_name: {}
             # if df is not empty return dictionary with pipeline_name as key
             # and df with id, context_type, uuid, context_ID as value.
@@ -173,36 +174,34 @@ async def get_all_artifact_ids(mlmdfilepath, execution_ids, pipeline_name: str =
 
 async def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
-    names = query.get_pipeline_names()  # getting all pipeline names in mlmd
     df = pd.DataFrame()
-    for name in names:
-        if name == pipeline_name:
-            df = query.get_all_artifacts_by_ids_list(artifact_ids)
-            if len(df) == 0:
-                return
-            df = df.drop_duplicates()
-            art_names = df['name'].tolist()
-            name_dict = {}
-            name_list = []
-            exec_type_name_list = []
-            exe_type_name = pd.DataFrame()
-            for name in art_names:
-                executions = query.get_all_executions_for_artifact(name)
-                exe_type_name = pd.concat([exe_type_name, executions], ignore_index=True)
-                execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
-                execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
-                execution_type_name_str = ',\n '.join(map(str, execution_type_name))
-                name_list.append(name)
-                exec_type_name_list.append(execution_type_name_str)
-            name_dict['name'] = name_list
-            name_dict['execution_type_name'] = exec_type_name_list
-            name_df = pd.DataFrame(name_dict)
-            merged_df = df.merge(name_df, on='name', how='left')
-            merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
-            merged_df = merged_df.loc[merged_df["type"] == art_type]
-            result = merged_df.to_json(orient="records")
-            tempout = json.loads(result)
-            return tempout
+    if (query.get_pipeline_id(pipeline_name) != -1):
+        df = query.get_all_artifacts_by_ids_list(artifact_ids)
+        if len(df) == 0:
+            return
+        df = df.drop_duplicates()
+        art_names = df['name'].tolist()
+        name_dict = {}
+        name_list = []
+        exec_type_name_list = []
+        exe_type_name = pd.DataFrame()
+        for name in art_names:
+            executions = query.get_all_executions_for_artifact(name)
+            exe_type_name = pd.concat([exe_type_name, executions], ignore_index=True)
+            execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
+            execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
+            execution_type_name_str = ',\n '.join(map(str, execution_type_name))
+            name_list.append(name)
+            exec_type_name_list.append(execution_type_name_str)
+        name_dict['name'] = name_list
+        name_dict['execution_type_name'] = exec_type_name_list
+        name_df = pd.DataFrame(name_dict)
+        merged_df = df.merge(name_df, on='name', how='left')
+        merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+        merged_df = merged_df.loc[merged_df["type"] == art_type]
+        result = merged_df.to_json(orient="records")
+        tempout = json.loads(result)
+        return tempout
 
 def get_artifact_types(mlmdfilepath):
     query = cmfquery.CmfQuery(mlmdfilepath)
@@ -218,7 +217,7 @@ async def create_unique_executions(server_store_path, req_info):
     list_executions_exists = []
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
-        executions = query.get_all_executions_in_pipeline(pipeline)
+        executions = query.get_all_executions_in_pipeline(pipeline_name)
         for i in executions.index:
             for uuid in executions['Execution_uuid'][i].split(","):
                 executions_server.append(uuid)
