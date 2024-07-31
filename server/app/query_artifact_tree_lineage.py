@@ -54,15 +54,19 @@ def topological_sort(input_data,artifact_name_id_dict) -> List[Dict]:
 
 def modify_arti_name(arti_name, type):
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
-    name = ""
-    if type == "Metrics" :   # Example metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
-        name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
-    elif type == "Model":
-        #first split on ':' then on '/' to get name. Example 'Test-env/prepare:uuid:32' -> prepare_uuid
-        name = arti_name.split(':')[-3].split("/")[-1] + ":" + arti_name.split(':')[-2][:4]
-    elif type == "Dataset":
-        # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
-        name = arti_name.split(':')[-2].split("/")[-1]  
-    else:
-        name = arti_name  
+    try:
+        name = ""
+        if type == "Metrics" :   # Example metrics:4ebdc980-1e7c-11ef-b54c-25834a9c665c:388 -> metrics:4ebd:388
+            name = f"{arti_name.split(':')[0]}:{arti_name.split(':')[1][:4]}:{arti_name.split(':')[2]}"
+        elif type == "Model":
+            #first split on ':' then on '/' to get name. Example 'Test-env/prepare:uuid:32' -> prepare_uuid
+            name = arti_name.split(':')[-3].split("/")[-1] + ":" + arti_name.split(':')[-2][:4]
+        elif type == "Dataset":
+            # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
+            name = arti_name.split(':')[-2].split("/")[-1]  
+        else:
+            name = arti_name  
+    except Exception as e:
+        print(f"Error parsing artifact name: {e}")
+        name = arti_name  # Fallback to the original arti_name in case of error
     return name
