@@ -1,4 +1,40 @@
-# cmf
+# CMF
+CMF (Common Metadata Framework) collects and stores information associated with Machine Learning (ML) pipelines. It also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML models and performance metrics) recorded by the framework are versioned and identified by their content hash.
+
+## Installation
+
+#### 1. Pre-Requisites:
+* Supported Operating Systems: Linux/Ubuntu/Debian
+* 3.9>= Python <3.11
+* Git latest version
+
+#### 2. Set up Python Virtual Environment:
+
+Using Conda:
+
+    conda create -n cmf python=3.10
+    conda activate cmf
+
+Using VirtualEnv:
+
+    virtualenv --python=3.10 .cmf
+    source .cmf/bin/activate
+
+
+#### 3. Install CMF client:
+
+Latest version form GitHub:
+ 
+    pip install git+https://github.com/HewlettPackard/cmf
+  
+Stable version form PyPI
+     
+    pip install cmflib
+   
+#### 4. Install CMF server:
+
+Follow the instructions on the [Getting started with cmf-server](./docs/cmf_server/cmf-server.md) page for details on how to setup a cmf-server.
+
 ## Common Metadata Framework
 [Getting Started](https://hewlettpackard.github.io/cmf/)<br><br>
 [Detailed documentation of the API's](https://hewlettpackard.github.io/cmf/api/public/cmf) <br> 
