@@ -79,7 +79,7 @@ const Lineage = () => {
        }
        else {
           
-          fetchArtifactTree(pipeline, selectedLineageType);
+          fetchArtifactTree(pipeline);
       }}
   };
 
@@ -95,7 +95,7 @@ const Lineage = () => {
       fetchExecutionTypes(selectedPipeline, lineageType);
     }
     else {
-      fetchArtifactTree(selectedPipeline, lineageType);
+      fetchArtifactTree(selectedPipeline);
     }
   };  
 
@@ -110,9 +110,8 @@ const Lineage = () => {
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
-  const fetchArtifactTree = (pipelineName,lineageType) => {
-    client.getArtiTreeLineage(pipelineName,lineageType).then((data) => {    
-    console.log(data,"fetchArtifact");
+  const fetchArtifactTree = (pipelineName) => {
+    client.getArtiTreeLineage(pipelineName).then((data) => {    
     if (data === null) { 
         setArtiTreeData(null);
     }

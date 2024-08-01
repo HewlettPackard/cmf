@@ -287,21 +287,23 @@ async def display_artifact(
             "items": None
         }
 
-@app.get("/display_arti_tree_lineage/{lineagetype}/{pipeline_name}")
-async def display_arti_tree_lineage(request: Request,lineagetype, pipeline_name: str):
+@app.get("/display_arti_tree_lineage/{pipeline_name}")
+async def display_arti_tree_lineage(request: Request, pipeline_name: str)-> List[List[Dict[str, Any]]]:
     '''
-      returns dictionary of nodes and links for given execution_type.
-      response = {
-                   nodes: [{id:"",name:"",execution_uuid:""}],
-                   links: [{source:1,target:4},{}],
-                 } 
+      Returns:
+      A nested list of dictionaries with 'id' and 'parents' keys.
+      response = [
+        [{'id': 'data.xml.gz:236d', 'parents': []}],
+        [{'id': 'parsed/train.tsv:32b7', 'parents': ['data.xml.gz:236d']}, 
+        ]
     '''
     # checks if mlmd file exists on server
+    response = None
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids,lineagetype)
-            #response = "null"
+            response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids)        
+
     return response
 
 #This api's returns list of artifact types.
