@@ -646,7 +646,6 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
-
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
@@ -679,7 +678,7 @@ class Cmf:
 
         if c_hash == "":
             print("Error in getting the dvc hash,return without logging")
-            return null
+            return
 
         dataset_commit = c_hash
         dvc_url = dvc_get_url(url)
@@ -1033,7 +1032,7 @@ class Cmf:
 
         if c_hash == "":
             print("Error in getting the dvc hash,return without logging")
-            return null
+            return
 
         model_commit = c_hash
 
@@ -1478,20 +1477,42 @@ class Cmf:
         Returns:
            Artifact object from the ML Protocol Buffers library associated with the new metrics artifact.
         """
+
         logging_dir = change_dir(self.cmf_init_path)
+        # code for nano cmf
+        # Assigning current file name as stage and execution name
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        name_without_extension = os.path.splitext(file_name)[0]
+        # create context if not already created
+        if not self.child_context:
+            self.create_context(pipeline_stage=name_without_extension)
+            assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
+
+        # create execution if not already created
+        if not self.execution:
+            self.create_execution(execution_type=name_without_extension)
+            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+
+        
+        directory_path = os.path.join( "cmf_artifacts/metrics",self.execution.properties["Execution_uuid"].string_value)
+        os.makedirs(directory_path, exist_ok=True)
         metrics_df = pd.DataFrame.from_dict(
             self.metrics[metrics_name], orient="index")
         metrics_df.index.names = ["SequenceNumber"]
-        metrics_df.to_parquet(metrics_name)
-        commit_output(metrics_name, self.execution.id)
-        uri = dvc_get_hash(metrics_name)
+        metrics_path = os.path.join(directory_path,metrics_name)
+        metrics_df.to_parquet(metrics_path)
+        commit_output(metrics_path, self.execution.id)
+        uri = dvc_get_hash(metrics_path)
 
         if uri == "":
             print("Error in getting the dvc hash,return without logging")
-            return null
+            return
         metrics_commit = uri
+        dvc_url = dvc_get_url(metrics_path)
+        dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         name = (
-            metrics_name
+            metrics_path
             + ":"
             + uri
             + ":"
@@ -1499,8 +1520,10 @@ class Cmf:
             + ":"
             + str(uuid.uuid1())
         )
-        # passing uri value to commit
-        custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+        # not needed as property 'name' is part of artifact 
+        # to maintain uniformity - Commit goes propeties of the artifact
+        # custom_props = {"Name": metrics_name, "Commit": metrics_commit}
+        custom_props = {}
         metrics = create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -1509,6 +1532,15 @@ class Cmf:
             name=name,
             type_name="Step_Metrics",
             event_type=mlpb.Event.Type.OUTPUT,
+            properties={
+                # passing uri value to commit
+                "Commit": metrics_commit,
+                "url": str(dvc_url_with_pipeline),
+            },
+            artifact_type_properties={
+                "Commit": mlpb.STRING,
+                "url": mlpb.STRING,
+            },
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
@@ -1537,20 +1569,20 @@ class Cmf:
         os.chdir(logging_dir)
         return metrics
 
-    def commit_existing_metrics(self, metrics_name: str, uri: str, custom_properties: t.Optional[t.Dict] = None):
-        """ 
-        Commits existing metrics associated with the given URI to MLMD. 
-        Example: 
-        ```python 
-           artifact: mlpb.Artifact = cmf.commit_existing_metrics("existing_metrics", "abc123", 
-           {"custom_key": "custom_value"}) 
-        ``` 
-        Args: 
-           metrics_name: Name of the metrics. 
-           uri: Unique identifier associated with the metrics. 
-           custom_properties: Optional custom properties for the metrics. 
+    def commit_existing_metrics(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
+        """
+        Commits existing metrics associated with the given URI to MLMD.
+        Example:
+        ```python
+           artifact: mlpb.Artifact = cmf.commit_existing_metrics("existing_metrics", "abc123",
+           {"custom_key": "custom_value"})
+        ```
+        Args:
+           metrics_name: Name of the metrics.
+           uri: Unique identifier associated with the metrics.
+           custom_properties: Optional custom properties for the metrics.
         Returns:
-           Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact. 
+           Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact.
         """
 
         custom_props =  {} if custom_properties is None else custom_properties
@@ -1575,6 +1607,15 @@ class Cmf:
                 name=metrics_name,
                 type_name="Step_Metrics",
                 event_type=mlpb.Event.Type.OUTPUT,
+                properties={
+                    # passing uri value to commit
+                    "Commit": props.get("Commit", ""),
+                    "url": props.get("url", ""),
+                },
+                artifact_type_properties={
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
+                },
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
@@ -1680,6 +1721,8 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
+        directory_path = os.path.join("cmf_artifacts/dataslices",self.execution.properties["Execution_uuid"].string_value)
+        name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         return df
 
@@ -1700,6 +1743,8 @@ class Cmf:
         Returns:
            None
         """
+        directory_path = os.path.join("cmf_artifacts/dataslices", self.execution.properties["Execution_uuid"].string_value)
+        name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
         temp_dict[record].update(custom_properties)
@@ -1739,7 +1784,7 @@ class Cmf:
             """
 
             self.props[path] = {}
-            # self.props[path]['hash'] = dvc_get_hash(path)
+            self.props[path]['hash'] = dvc_get_hash(path)
             parent_path = path.rsplit("/", 1)[0]
             self.data_parent = parent_path.rsplit("/", 1)[1]
             if custom_properties:
@@ -1765,59 +1810,94 @@ class Cmf:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
                 Example{"mean":2.5, "median":2.6}
             """
+
+            logging_dir = change_dir(self.writer.cmf_init_path)
+            # code for nano cmf
+            # Assigning current file name as stage and execution name
+            current_script = sys.argv[0]
+            file_name = os.path.basename(current_script)
+            name_without_extension = os.path.splitext(file_name)[0]
+            # create context if not already created
+            if not self.writer.child_context:
+                self.writer.create_context(pipeline_stage=name_without_extension)
+                assert self.writer.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
+
+            # create execution if not already created
+            if not self.writer.execution:
+                self.writer.create_execution(execution_type=name_without_extension)
+                assert self.writer.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+
+            directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
+            os.makedirs(directory_path, exist_ok=True)
             custom_props = {} if custom_properties is None else custom_properties
             git_repo = git_get_repo()
             dataslice_df = pd.DataFrame.from_dict(self.props, orient="index")
             dataslice_df.index.names = ["Path"]
-            dataslice_df.to_parquet(self.name)
+            dataslice_path = os.path.join(directory_path,self.name)
+            dataslice_df.to_parquet(dataslice_path)
             existing_artifact = []
 
-            commit_output(self.name, self.writer.execution.id)
-            c_hash = dvc_get_hash(self.name)
+            commit_output(dataslice_path, self.writer.execution.id)
+            c_hash = dvc_get_hash(dataslice_path)
             if c_hash == "":
                 print("Error in getting the dvc hash,return without logging")
-                return null
+                return
 
             dataslice_commit = c_hash
-            remote = dvc_get_url(self.name)
+            url = dvc_get_url(dataslice_path)
+            dvc_url_with_pipeline = f"{self.writer.parent_context.name}:{url}"
             if c_hash and c_hash.strip():
                 existing_artifact.extend(
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
                 print("Adding to existing data slice")
+                # Haven't added event type in this if cond, is it not needed??
                 slice = link_execution_to_input_artifact(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     uri=c_hash,
-                    input_name=self.name + ":" + c_hash,
+                    input_name=dataslice_path + ":" + c_hash,
                 )
             else:
-                props = {
-                    "Commit": dataslice_commit,  # passing c_hash value to commit
-                    "git_repo": git_repo,
-                    "Remote": remote,
-                }
-                props.update(custom_props)
+                props={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(dataslice_commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
                 slice = create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     context_id=self.writer.child_context.id,
                     uri=c_hash,
-                    name=self.name + ":" + c_hash,
+                    name=dataslice_path + ":" + c_hash,
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
-                    custom_properties=props,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(dataslice_commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
+                    custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
             if self.writer.graph:
                 self.writer.driver.create_dataslice_node(
-                    self.name, self.name + ":" + c_hash, c_hash, self.data_parent, props
+                    self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, props
                 )
+            os.chdir(logging_dir)
             return slice
 
-        def commit_existing(self, uri: str, custom_properties: t.Optional[t.Dict] = None) -> None:
+        # commit existing dataslice to server
+        def commit_existing(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
             custom_props = {} if custom_properties is None else custom_properties
-            c_hash = uri
+            c_hash = uri.strip()
             dataslice_commit = c_hash
             existing_artifact = []
             if c_hash and c_hash.strip():
@@ -1825,11 +1905,12 @@ class Cmf:
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
                 print("Adding to existing data slice")
+                 # Haven't added event type in this if cond, is it not needed??
                 slice = link_execution_to_input_artifact(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
                     uri=c_hash,
-                    input_name=self.name
+                    input_name=self.name,
                 )
             else:
                 slice = create_new_artifact_event_and_attribution(
@@ -1840,6 +1921,16 @@ class Cmf:
                     name=self.name,
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
+                    properties={
+                        "git_repo": props.get("git_repo", ""),
+                        "Commit": props.get("Commit", ""),
+                        "url": props.get("url", " "),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
                     custom_properties=custom_properties,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
