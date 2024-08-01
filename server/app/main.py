@@ -288,7 +288,7 @@ async def display_artifact(
         }
 
 @app.get("/display_arti_tree_lineage/{pipeline_name}")
-async def display_arti_tree_lineage(request: Request, pipeline_name: str):
+async def display_arti_tree_lineage(request: Request, pipeline_name: str)-> List[List[Dict[str, Any]]]:
     '''
       Returns:
       A nested list of dictionaries with 'id' and 'parents' keys.
@@ -298,12 +298,12 @@ async def display_arti_tree_lineage(request: Request, pipeline_name: str):
         ]
     '''
     # checks if mlmd file exists on server
+    response = None
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response = await query_artifact_tree_lineage(server_store_path, pipeline_name, dict_of_art_ids)        
-        else:
-            response = "null"
+
     return response
 
 #This api's returns list of artifact types.
