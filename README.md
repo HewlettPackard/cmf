@@ -4,9 +4,13 @@ CMF (Common Metadata Framework) collects and stores information associated with 
 ## Installation
 
 #### 1. Pre-Requisites:
-* Supported Operating Systems: Linux/Ubuntu/Debian
-* 3.9>= Python <3.11
-* Git latest version
+<b>
+    <ul>
+        <li>Supported Operating Systems: Linux/Ubuntu/Debian</li>
+        <li>3.9 >= Python < 3.11</li>
+        <li>Git latest version</li>
+    </ul>
+</b>
 
 #### 2. Set up Python Virtual Environment:
 
@@ -14,7 +18,7 @@ Using Conda:
 
     conda create -n cmf python=3.10
     conda activate cmf
-
+<p align="center">OR</p>
 Using VirtualEnv:
 
     virtualenv --python=3.10 .cmf
@@ -22,7 +26,6 @@ Using VirtualEnv:
 
 
 #### 3. Install CMF client:
-
 Latest version form GitHub:
  
     pip install git+https://github.com/HewlettPackard/cmf
