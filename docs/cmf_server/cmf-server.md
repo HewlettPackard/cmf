@@ -88,8 +88,8 @@ There are two ways to start cmf server -
    ```
    `Note` - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
    
-5. Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
-   pre-requisite - `mkdir /home/<user>/cmf-server/data/static`
+5. Launch a new docker container using the image with directory /home/user/cmf-server/data mounted.
+   `Pre-requisite: mkdir /home/<user>/cmf-server/data/static`
    ```
    Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data:/cmf-server/data [image_name]
    ```
