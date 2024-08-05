@@ -13,26 +13,37 @@ CMF (Common Metadata Framework) collects and stores information associated with 
 </b>
 
 #### 2. Set up Python Virtual Environment:
-
-Using Conda:
-
+<details>
+    <summary>Using Conda:</summary>
+    
     conda create -n cmf python=3.10
     conda activate cmf
-<p align="center">OR</p>
-Using VirtualEnv:
+    
+</details>
+
+<details>
+    <summary>Using VirtualEnv:</summary>
 
     virtualenv --python=3.10 .cmf
     source .cmf/bin/activate
+    
+</details>
 
 
 #### 3. Install CMF client:
-Latest version form GitHub:
- 
+<details>
+    <summary>Latest version form GitHub:</summary>
+    
     pip install git+https://github.com/HewlettPackard/cmf
-  
-Stable version form PyPI
-     
+    
+</details>
+
+<details>
+    <summary>Stable version form PyPI:</summary>
+
     pip install cmflib
+    
+</details>
    
 #### 4. Install CMF server:
 
