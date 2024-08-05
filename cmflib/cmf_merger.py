@@ -23,6 +23,7 @@ from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
+
 def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     try:
         mlmd_data = json.loads(mlmd_json)
@@ -44,7 +45,6 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
         store = metadata_store.MetadataStore(config)
         cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,
                             graph=graph, is_server=True)
-
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
             if exec_id is None:
                 list_executions = [execution for execution in stage["executions"]]
