@@ -115,7 +115,6 @@ async def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
         for name in names:
             executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
             executions = query.get_all_executions_in_pipeline(name)
-            print("get_all_executions_in_pipeline output : ",executions.columns)
             # check if df is empty return just pipeline_name: {}
             # if df is not empty return dictionary with pipeline_name as key
             # and df with id, context_type, uuid, context_ID as value.

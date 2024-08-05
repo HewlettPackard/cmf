@@ -877,7 +877,21 @@ class CmfQuery(object):
                     [df, self.get_artifact_df(artifact)], sort=True, ignore_index=True
              )
         return df
-
+    
+    def get_one_hop_parent_artifacts_with_id(self, artifact_id: int) -> pd.DataFrame:
+        """Return input artifacts for the execution that produced the given artifact.
+        Args:
+            artifact_id: Artifact Id.
+            artifact_name: Artifact name
+        Returns:
+            Data frame containing immediate parent artifacts of given artifact/artifacts.
+        """
+        df = pd.DataFrame()
+        input_artifact_ids: t.List[int] = self._get_input_artifacts(self._get_executions_by_output_artifact_id(artifact_id))
+        df = self._as_pandas_df(self.store.get_artifacts_by_id(input_artifact_ids), 
+                lambda _artifact: self.get_artifact_df(_artifact)
+                )
+        return df
 
     def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
