@@ -91,16 +91,16 @@ There are two ways to start cmf server -
 5. Launch a new docker container using the image with directory /home/<user>/cmf-server/data/static mounted.
    pre-requisite - `mkdir /home/<user>/cmf-server/data/static`
    ```
-   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data/static:/cmf-server/data/static [image_name]
+   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data:/cmf-server/data [image_name]
    ```
    Example:
    ```
-   docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data/static:/cmf-server/data/static myimage
+   docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data:/cmf-server/data myimage
    ```
    
 6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
    ```
-   cd /cmf/ui
+   cd cmf/ui
    ```
    
 7. Execute the below-mentioned command to create a `ui-server` docker image.
