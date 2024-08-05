@@ -84,7 +84,7 @@ There are two ways to start cmf server -
    ```
    Example:
    ```
-   docker build -t myimage -f ./Dockerfile ../
+   docker build -t server_image -f ./Dockerfile ../
    ```
    `Note` - `'../'`  represents the [Build context](https://docs.docker.com/build/building/context/) for the docker image.
    
@@ -95,7 +95,7 @@ There are two ways to start cmf server -
    ```
    Example:
    ```
-   docker run --name mycontainer -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data:/cmf-server/data myimage
+   docker run --name myserver -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data:/cmf-server/data server_image
    ```
    
 6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
@@ -109,16 +109,16 @@ There are two ways to start cmf server -
    ```
    Example:
    ```
-   docker build -t uiimage -f ./Dockerfile ./
+   docker build -t ui_image -f ./Dockerfile ./
    ```
    
 8. Launch a new docker container using the image with directory
    ```
-   Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 [image_name]
+   Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 [image_name]
    ```
    Example:
    ```
-   docker run --name mycontainer -p 0.0.0.0:3000:3000 uiimage
+   docker run --name myui -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 ui_image
    ```
       Note:
       If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
