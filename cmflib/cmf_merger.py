@@ -22,6 +22,7 @@ from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
+
 def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
     try:
         mlmd_data = json.loads(mlmd_json)
@@ -43,7 +44,6 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
         store = metadata_store.MetadataStore(config)
         cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,
                             graph=graph, is_server=True)
-
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
             if exec_id is None:
                 list_executions = [execution for execution in stage["executions"]]
@@ -101,124 +101,52 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                     uri = event["artifact"]["uri"]
 
                     try:
-                        if artifact_type == "Dataset" and event_type == 3:
-                            try:
-                                cmf_class.log_dataset_with_version(
-                                    artifact_name,
-                                    uri,
-                                    "input",
-                                    props,
-                                    custom_properties=custom_props,
-                                )
-                            except AlreadyExistsError as e:
-                                #print("AlreadyExistsError in log_dataset_with_version_input")
-                                artifact = store.get_artifacts_by_uri(uri)
-                                cmf_class.update_existing_artifact(
-                                    artifact[0],
-                                    custom_properties={"new_data":"new_value"},
-                                ) 
-                            except Exception as e:
-                                print(f"Error in log_dataset_with_version (input)" , e)
-#                                traceback.print_exc()
-
-
-                        elif artifact_type == "Dataset" and event_type == 4:
-                            try:
-                                cmf_class.log_dataset_with_version(
-                                    artifact_name,
-                                    uri,
-                                    "output",
-                                    props,
-                                    custom_properties={"new_data":"new_value"},
-                                )
-                            except AlreadyExistsError as e:
-                                #print("AlreadyExistsError in log_dataset_with_version_output")
-                                artifact = store.get_artifacts_by_uri(uri)
-                                cmf_class.update_existing_artifact(
-                                    artifact[0],
-                                    custom_properties={"new_data":"new_value"},
-                                ) 
-                            except Exception as e:
-                                print(f"Error in log_dataset_with_version (output)")
-#                                traceback.print_exc()
-
-
+                        if artifact_type == "Dataset":  
+                            if event_type == 3 :
+                                event_io = "input" 
+                            else:
+                                event_io = "output"                  
+                            cmf_class.log_dataset_with_version(
+                                artifact_name,
+                                uri,
+                                event_io,
+                                props,
+                                custom_properties=custom_props,
+                            )
                         elif artifact_type == "Model" and event_type == 3:
+                            if event_type == 3 :
+                                event_io = "input" 
+                            else:
+                                event_io = "output"
                             props["uri"] = uri
-                            try:
-                                cmf_class.log_model_with_version(
-                                    path=artifact_name,
-                                    event="input",
-                                    props=props,
-                                    custom_properties=custom_props,
-                                )
-                            except ValueError as e:
-                                print("ValueError in log_model_with_version_input")
-                            except AlreadyExistsError as e:
-                                #print("AlreadyExistsError in log_model_with_version_input")
-                                artifact = store.get_artifacts_by_uri(uri)
-                                cmf_class.update_existing_artifact(
-                                    artifact[0],
-                                    custom_properties= {"new_model": "new_value"},
-                                )
-                            except Exception as e:
-                                print(f"Error in log_model_with_version (input)")
-#                                traceback.print_exc()
-
-                        elif artifact_type == "Model" and event_type == 4:
-                            props["uri"] = uri
-                            try:
-                                cmf_class.log_model_with_version(
-                                    path=artifact_name,
-                                    event="output",
-                                    props=props,
-                                    custom_properties=custom_props,
-                                )
-                            except AlreadyExistsError as e:
-                                #print("AlreadyExistsError in log_model_with_version_output")
-                                artifact = store.get_artifacts_by_uri(uri)
-                                cmf_class.update_existing_artifact(
-                                    artifact[0],
-                                    custom_properties= {"new_model": "new_value"},
-                                )
-                            except Exception as e:
-                                print(f"Error in log_model_with_version (output)")
-#                                traceback.print_exc()
-
+                            cmf_class.log_model_with_version(
+                                path=artifact_name,
+                                event= event_io,
+                                props=props,
+                                custom_properties=custom_props,
+                            )
                         elif artifact_type == "Metrics":
-                            try:
-                                cmf_class.log_execution_metrics_from_client(event["artifact"]["name"], custom_props)
-                            except AlreadyExistsError as e:
-                                print("AlreadyExistsError in log_execution_metrics_from_client")
-                                artifact = store.get_artifacts_by_uri(uri)
-                                cmf_class.update_existing_artifact(
-                                    artifact[0],
-                                    custom_properties={"new_metrics":"new_value"},
-                                ) 
-                            except Exception as e:
-                                print(f"Error in log_execution_metrics_from_client (output): {e}")
-                                traceback.print_exc()
-
-                        elif artifact_type == "Dataslice":
-                            try:
-                                dataslice = cmf_class.create_dataslice(event["artifact"]["name"])
-                                dataslice.commit_existing(uri, custom_props)
-                            except Exception as e:
-                                print(f"Error in create_dataslice (output): {e}")
-                            except AlreadyExistsError as e:
-                                print("AlreadyExistsError in create_dataslice")
-#                                traceback.print_exc()
-                        elif artifact_type == "Step_Metrics":
-                            try:
-                                cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, custom_props)
-                            except Exception as e:
-                                print(f"Error in commit_existing_metrics (output): {e}")
-                                traceback.print_exc()
+                            cmf_class.log_execution_metrics_from_client(event["artifact"]["name"], custom_props)
+                        elif artifact_type == "Dataslice":            
+                            dataslice = cmf_class.create_dataslice(event["artifact"]["name"])
+                            dataslice.commit_existing(uri, custom_props)                    
+                        elif artifact_type == "Step_Metrics":                          
+                            cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, custom_props)
                         else:
                             pass
+                    except AlreadyExistsError as e:
+                                #print("AlreadyExistsError in log_dataset_with_version_input")                                
+                        if artifact_type == "Dataset" or artifact_type == "Model" or artifact_type == "Metrics": 
+                                print("already exist errror")        
+                                artifact = store.get_artifacts_by_uri(uri)
+                                cmf_class.update_existing_artifact(
+                                    artifact[0],
+                                    custom_properties={artifact_type:"new_value"},
+                                ) 
                     except Exception as e:
-                        print(f"Error processing event {event}: {e}")
-                        traceback.print_exc()
+                        if artifact_type == "Dataset" or artifact_type == "Model" or artifact_type == "Metrics":
+                            print(f"Error in log_{artifact_type}_with_version" , e)
+#                       traceback.print_exc()
     except Exception as e:
         print(f"An error occurred in parse_json_to_mlmd: {e}")
         traceback.print_exc()
