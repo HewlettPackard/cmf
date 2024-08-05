@@ -55,6 +55,9 @@ server_store_path = "/cmf-server/data/mlmd"
 my_ip = os.environ.get("MYIP", "127.0.0.1")
 hostname = os.environ.get('HOSTNAME', "localhost")
 
+print(my_ip)
+print(hostname)
+
 #checking if IP or Hostname is provided,initializing url accordingly.
 if my_ip != "127.0.0.1":
     url="http://"+my_ip+":3000"
@@ -79,7 +82,6 @@ app.add_middleware(
 @app.get("/")
 async def read_root(request: Request):
     return {"cmf-server"}
-
 
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
@@ -164,7 +166,7 @@ async def artifact_lineage(request: Request, pipeline_name: str):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response=await get_lineage_data(server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
-            #response = null
+            #response = None
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -389,5 +391,3 @@ async def update_global_exe_dict(pipeline_name):
     else:
         dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]
     return
-
-

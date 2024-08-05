@@ -840,7 +840,7 @@ class CmfQuery(object):
 
     # writing new functions to remove multiple calls to cmfquery functions or ml-metadata functions
     def get_all_executions_in_pipeline(self, pipeline_name: str) -> pd.DataFrame:
-        """Return executions of the given pipeline as pandas data frame.
+        """Return all executions of the given pipeline as pandas data frame.
         Args:
             pipeline_name:- pipeline name
         Returns:
@@ -865,7 +865,6 @@ class CmfQuery(object):
             Data frame containing artifacts for the list of given executions.
         """
         df = pd.DataFrame()
-        pd.set_option('display.max_columns', None)
         # set of artifact ids for list of given execution ids
         artifact_ids = set(
             event.artifact_id
@@ -881,8 +880,7 @@ class CmfQuery(object):
     def get_one_hop_parent_artifacts_with_id(self, artifact_id: int) -> pd.DataFrame:
         """Return input artifacts for the execution that produced the given artifact.
         Args:
-            artifact_id: Artifact Id.
-            artifact_name: Artifact name
+            artifact_id: Artifact id.
         Returns:
             Data frame containing immediate parent artifacts of given artifact/artifacts.
         """
