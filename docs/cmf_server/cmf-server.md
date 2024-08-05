@@ -63,7 +63,7 @@ There are two ways to start cmf server -
 
 > It is neccessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling latest cmf code from git.
 
- ***<h3 align="center">OR</h3>***
+ **<h3 align="center">OR</h3>**
 
 ## Using `docker run` command
 
@@ -91,11 +91,11 @@ There are two ways to start cmf server -
 5. Launch a new docker container using the image with directory /home/user/cmf-server/data mounted.
    `Pre-requisite: mkdir /home/<user>/cmf-server/data/static`
    ```
-   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data:/cmf-server/data [image_name]
+   Usage: docker run --name [container_name] -p 0.0.0.0:8080:80 -v /home/<user>/cmf-server/data:/cmf-server/data -e MYIP=XX.XX.XX.XX [image_name]
    ```
    Example:
    ```
-   docker run --name myserver -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data:/cmf-server/data server_image
+   docker run --name cmf-server -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data:/cmf-server/data -e MYIP=0.0.0.0 server_image
    ```
    
 6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
@@ -112,13 +112,13 @@ There are two ways to start cmf server -
    docker build -t ui_image -f ./Dockerfile ./
    ```
    
-8. Launch a new docker container using the image with directory
+8. Launch a new docker container for UI.
    ```
-   Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 [image_name]
+   Usage: docker run --name [container_name] -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=XX.XX.XX.XX [image_name]
    ```
    Example:
    ```
-   docker run --name myui -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 ui_image
+   docker run --name ui-server -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 ui_image
    ```
       Note:
       If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
