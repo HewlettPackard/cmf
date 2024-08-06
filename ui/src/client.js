@@ -70,6 +70,13 @@ class FastAPIClient {
     });
   }
 
+  async getArtiTreeLineage(pipeline) {
+      return this.apiClient.get(`/display_arti_tree_lineage/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
+
   async getExecutionTypes(pipeline) {
       return this.apiClient.get(`/get_execution_types/${pipeline}`)
       .then(({ data }) => {
@@ -83,6 +90,14 @@ class FastAPIClient {
       return data;
     });
   }
+
+  async getExecTreeLineage(pipeline,uuid) {
+      return this.apiClient.get(`/display_tree_lineage/${uuid}/${pipeline}`)
+      .then(({ data }) => {
+      return data;
+    });
+  }
+
 
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient

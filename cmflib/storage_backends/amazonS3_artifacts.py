@@ -37,12 +37,57 @@ class AmazonS3Artifacts:
                 aws_session_token=session_token
             )
             s3.head_bucket(Bucket=bucket_name)
+
             dir_path = ""
             if "/" in download_loc:
                 dir_path, _ = download_loc.rsplit("/", 1)
             if dir_path != "":
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
-            response = s3.download_file(bucket_name, object_name, download_loc)
+
+            response = ""
+
+            """"
+            if object_name ends with .dir - it is a directory.
+            we download .dir object with 'temp_dir' and remove 
+            this after all the files from this .dir object is downloaded.
+            """
+            if object_name.endswith('.dir'):
+                # in case of .dir, download_loc is a absolute path for a folder
+                os.makedirs(download_loc, mode=0o777, exist_ok=True)
+
+                # download .dir object
+                temp_dir = f"{download_loc}/temp_dir"
+                response = s3.download_file(bucket_name, object_name, temp_dir)
+
+                with open(temp_dir, 'r') as file:
+                    tracked_files = eval(file.read())
+
+                # removing temp_dir
+                if os.path.exists(temp_dir):
+                    os.remove(temp_dir)
+
+                """
+                object_name =  files/md5/c9/d8fdacc0d942cf8d7d95b6301cfb97.dir
+                contains the path of the .dir on the artifact repo
+                we need to remove the hash of the .dir from the object_name
+                which will leave us with the artifact repo path
+                """
+                repo_path = "/".join(object_name.split("/")[:-2])
+                for file_info in tracked_files:
+                    relpath = file_info['relpath']
+                    md5_val = file_info['md5']
+                    # download_loc =  /home/user/datatslice/example-get-started/test/artifacts/raw_data
+                    # md5_val = a237457aa730c396e5acdbc5a64c8453
+                    # we need a2/37457aa730c396e5acdbc5a64c8453
+                    formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
+                    temp_download_loc = f"{download_loc}/{relpath}"
+                    temp_object_name = f"{repo_path}/{formatted_md5}"
+                    obj = s3.download_file(bucket_name, temp_object_name, temp_download_loc)
+                    if obj == None:
+                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+            else:
+                # download objects which are file
+                response = s3.download_file(bucket_name, object_name, download_loc)
             if response == None:
                 return f"{object_name} downloaded at {download_loc}"
             return response
