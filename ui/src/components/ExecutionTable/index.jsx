@@ -19,10 +19,10 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ExecutionTable = ({ executions, onSort, onFilter }) => {
+const ExecutionTable = ({ executions, onSort, onFilter, sortField, sortOrder }) => {
 
   // Default sorting order
-  const [sortOrder, setSortOrder] = useState("Context_Type");
+  const [sortedData, setSortedData] = useState([]);
 
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
@@ -32,14 +32,21 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   const consistentColumns = [];
 
   useEffect(() => {
-    // Set initial sorting order when component mounts
-    setSortOrder("asc");
-  }, []);
+    if (executions) {
+      const sorted = [...executions].sort((a, b) => {
+        if (sortOrder === "asc") {
+          return a[sortField] > b[sortField] ? 1 : -1;
+        } else {
+          return a[sortField] < b[sortField] ? 1 : -1;
+        }
+      });
+      setSortedData(sorted);
+    }
+  }, [executions, sortField, sortOrder]);
 
-  const handleSort = () => {
-    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
-    setSortOrder(newSortOrder);
-    onSort("Context_Type", newSortOrder); // Notify parent component about sorting change
+  const handleSort = (field) => {
+    const newSortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
+    onSort(field, newSortOrder);
   };
 
   const handleFilterChange = (event) => {
@@ -85,7 +92,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                 <th scope="col" className="px-6 py-3"></th>
                 <th
                   scope="col"
-                  onClick={handleSort}
+                  onClick={() => handleSort("Context_Type")}
                   className="px-6 py-3 Context_Type"
                 >
                   Context_Type {sortOrder === "asc" && <span className="arrow">&#8593;</span>}

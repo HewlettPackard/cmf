@@ -24,13 +24,10 @@ import config from "../../config";
 
 const client = new FastAPIClient(config);
 
-const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
+const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   // Default sorting order
   const [sortOrder, setSortOrder] = useState("Context_Type");
-
-  // Local filter value state
-  const [filterValue, setFilterValue] = useState("");
 
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -48,12 +45,6 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
     onSort("name", newSortOrder); // Notify parent component about sorting change
-  };
-
-  const handleFilterChange = (event) => {
-    const value = event.target.value;
-    setFilterValue(value);
-    onFilter("name", value); // Notify parent component about filter change
   };
 
   const toggleRow = (rowId) => {
@@ -79,15 +70,6 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
   
   return (
     <div className="container flex flex-col mx-auto p-6 mr-4">
-      <div className="flex flex-col items-end m-1">
-        <input
-          type="text"
-          value={filterValue}
-          onChange={handleFilterChange}
-          placeholder="Filter by Name"
-          className="w-64 px-1 border-2 border-gray"
-        />
-      </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200 border-4">

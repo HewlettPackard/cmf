@@ -55,7 +55,6 @@ const Executions = () => {
 
   useEffect(() => {
     if (selectedPipeline) {
-      setExecutions(null);
       fetchExecutions(selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue);
     }
   }, [selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue]);
@@ -96,6 +95,7 @@ const Executions = () => {
   const handleSort = (newSortField, newSortOrder) => {
     setSortField(newSortField);
     setSortOrder(newSortOrder);
+    fetchExecutions(selectedPipeline, activePage, newSortField, newSortOrder, filterBy, filterValue);
   };
 
   const handleFilter = (field, value) => {
@@ -118,7 +118,7 @@ const Executions = () => {
           <div className="container justify-center items-center mx-auto px-4">
             <div className="container">
               {selectedPipeline !== null && executions !== null && (
-                <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
+                <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter} sortField={sortField} sortOrder={sortOrder}/>
               )}
             </div>
             <div>
