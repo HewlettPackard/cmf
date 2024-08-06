@@ -39,7 +39,7 @@ class CmdArtifactPush(CmdBase):
         cmf_config=CmfConfig.read_config(cmf_config_file)
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
-            return out_msg
+            return "MinioS3 server failed to start!!!"
         if dvc_config_op["core.remote"] == "osdf":
             #print("key_id="+cmf_config["osdf-key_id"])
             dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
@@ -100,7 +100,7 @@ class CmdArtifactPush(CmdBase):
         file_set = set(names)
         result = dvc_push(list(file_set))
         return result
-
+      
 def add_parser(subparsers, parent_parser):
     HELP = "Push artifacts to the user configured artifact repo."
 

@@ -65,6 +65,9 @@ def train(input_dir: str, output_dir: str) -> None:
     with open(model_file, "wb") as fd:
         pickle.dump(clf, fd)
 
+    _ = metawriter.log_metric("training_metrics", {"train_loss": 10})
+    _ = metawriter.commit_metrics("training_metrics")
+
     _ = metawriter.log_model(
         path=model_file, event="output", model_framework="SKlearn", model_type="RandomForestClassifier",
         model_name="RandomForestClassifier:default"
