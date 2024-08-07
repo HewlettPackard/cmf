@@ -55,9 +55,6 @@ server_store_path = "/cmf-server/data/mlmd"
 my_ip = os.environ.get("MYIP", "127.0.0.1")
 hostname = os.environ.get('HOSTNAME', "localhost")
 
-print(my_ip)
-print(hostname)
-
 #checking if IP or Hostname is provided,initializing url accordingly.
 if my_ip != "127.0.0.1":
     url="http://"+my_ip+":3000"

@@ -618,7 +618,7 @@ class CmfQuery(object):
                 list_exec.append(self.store.get_executions_by_id(exec))
         return list_exec
 
-    def get_one_hop_parent_executions_ids(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
+    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: str = None) -> t.List[int]:
         """Get parent execution ids for given execution id
         Args: 
            execution_id : Execution id for which parent execution are required
@@ -627,13 +627,13 @@ class CmfQuery(object):
         Return:
            Returns parent executions for given id
         """
-        artifacts: t.Optional = self._get_input_artifacts(execution_id)
-        if not artifacts:
+        artifact_ids: t.Optional = self._get_input_artifacts(execution_ids)
+        if not artifact_ids:
             return None
 
         exe_ids = []
 
-        for id in artifacts:
+        for id in artifact_ids:
             ids = self._get_executions_by_output_artifact_id(id, pipeline_id)
             exe_ids.extend(ids)
         return exe_ids
