@@ -62,7 +62,8 @@ const ArtifactTypeSidebar = ({ artifactTypes, handleArtifactTypeClick, onFilter}
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          marginBottom: "1rem",
+          marginBottom: "0.5rem",
+          marginTop: "0.5rem",
         }}
       >
         <input
