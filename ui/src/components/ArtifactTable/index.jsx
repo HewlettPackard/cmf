@@ -27,7 +27,8 @@ const client = new FastAPIClient(config);
 const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   // Default sorting order
-  const [sortOrder, setSortOrder] = useState("Context_Type");
+  const [sortOrder, setSortOrder] = useState(onSort);
+  const [sortedData, setSortedData] = useState([]);  
 
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -38,13 +39,20 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   useEffect(() => {
     // Set initial sorting order when component mounts
-    setSortOrder("asc");
-  }, []);
+    setSortedData([...artifacts]);
+  }, [artifacts]);
 
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
-    onSort("name", newSortOrder); // Notify parent component about sorting change
+    const sorted = [...artifacts].sort((a, b) => {
+        if(newSortOrder === "asc"){
+            return a.name.localeCompare(b.name);
+        }else{
+            return b.name.localeCompare(a.name);        
+        }
+    });
+    setSortedData(sorted); // Notify parent component about sorting change
   };
 
   const toggleRow = (rowId) => {
@@ -111,7 +119,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {artifacts.length > 0 && artifacts.map((data, index) => (
+              {sortedData.length > 0 && sortedData.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}

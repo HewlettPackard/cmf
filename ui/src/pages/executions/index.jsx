@@ -118,7 +118,7 @@ const Executions = () => {
           <div className="container justify-center items-center mx-auto px-4">
             <div className="container">
               {selectedPipeline !== null && executions !== null && (
-                <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter} sortField={sortField} sortOrder={sortOrder}/>
+                <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter} />
               )}
             </div>
             <div>

@@ -19,9 +19,10 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ExecutionTable = ({ executions, onSort, onFilter, sortField, sortOrder }) => {
+const ExecutionTable = ({ executions, onSort, onFilter}) => {
 
-  // Default sorting order
+// Default sorting order
+  const [sortOrder, setSortOrder] = useState(onSort);
   const [sortedData, setSortedData] = useState([]);
 
   // Local filter value state
@@ -32,21 +33,22 @@ const ExecutionTable = ({ executions, onSort, onFilter, sortField, sortOrder }) 
   const consistentColumns = [];
 
   useEffect(() => {
-    if (executions) {
-      const sorted = [...executions].sort((a, b) => {
-        if (sortOrder === "asc") {
-          return a[sortField] > b[sortField] ? 1 : -1;
-        } else {
-          return a[sortField] < b[sortField] ? 1 : -1;
-        }
-      });
-      setSortedData(sorted);
-    }
-  }, [executions, sortField, sortOrder]);
+    // Set initial sorting order when component mounts
+    setSortedData([...executions]);
+  }, [executions]);
 
-  const handleSort = (field) => {
-    const newSortOrder = sortField === field && sortOrder === "asc" ? "desc" : "asc";
-    onSort(field, newSortOrder);
+
+  const handleSort = () => {
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newSortOrder);
+    const sorted = [...executions].sort((a, b) => {
+        if(newSortOrder === "asc"){
+            return a.Context_Type.localeCompare(b.Context_Type);
+        }else{
+            return b.Context_Type.localeCompare(a.Context_Type);
+        }
+    });
+    setSortedData(sorted); // Notify parent component about sorting change
   };
 
   const handleFilterChange = (event) => {
@@ -92,7 +94,7 @@ const ExecutionTable = ({ executions, onSort, onFilter, sortField, sortOrder }) 
                 <th scope="col" className="px-6 py-3"></th>
                 <th
                   scope="col"
-                  onClick={() => handleSort("Context_Type")}
+                  onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
                   Context_Type {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
@@ -113,7 +115,7 @@ const ExecutionTable = ({ executions, onSort, onFilter, sortField, sortOrder }) 
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {executions.map((data, index) => (
+              {sortedData.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}
