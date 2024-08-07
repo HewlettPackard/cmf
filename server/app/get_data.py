@@ -6,7 +6,10 @@ import typing as t
 from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
 from fastapi.concurrency import run_in_threadpool
+import threading
+from collections import defaultdict
 
+lock = threading.Lock()
 async def get_model_data(mlmdfilepath, modelId):
     '''
       This function retrieves the necessary model data required for generating a model card.
@@ -189,6 +192,8 @@ def get_artifact_types(mlmdfilepath) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
+pipeline_locks = {}
+lock_counts = defaultdict(int)
 def create_unique_executions(server_store_path, req_info) -> str:
     """
     Creates list of unique executions by checking if they already exist on server or not.
@@ -205,51 +210,71 @@ def create_unique_executions(server_store_path, req_info) -> str:
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
     pipeline_name = pipeline["name"]
-    executions_server = []
-    list_executions_exists = []
-    if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
-        stages = query.get_pipeline_stages(pipeline_name)
-        print("got pipeline stages")
-        for stage in stages:
-            executions = []
-            executions = query.get_all_executions_in_stage(stage)
-            for i in executions.index:
-                for uuid in executions['Execution_uuid'][i].split(","):
-                    executions_server.append(uuid)
-        executions_client = []
-        for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
-            for j in i["executions"]:
-                if j['name'] != "": #If executions have name , they are reusable executions
-                    continue       #which needs to be merged in irrespective of whether already
-                                   #present or not so that new artifacts associated with it gets in.
-                if 'Execution_uuid' in j['properties']:
-                    for uuid in j['properties']['Execution_uuid'].split(","):
-                        executions_client.append(uuid)
-                else:
-                    # mlmd push is failed here
-                    status="version_update"
-                    return status
-        if executions_server != []:
-            list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
-        for i in mlmd_data["Pipeline"]:
-            for stage in i['stages']:
-                for cmf_exec in stage['executions'][:]:
-                    uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
-                    for uuid in uuids:
-                        if uuid in list_executions_exists:
-                            stage['executions'].remove(cmf_exec)
+    if not pipeline_name:
+        return {"error": "Pipeline name is required"}
+    if pipeline_name not in pipeline_locks:
+        pipeline_locks[pipeline_name] = threading.Lock()
+    pipeline_lock = pipeline_locks[pipeline_name]
+    lock_counts[pipeline_name] += 1 
+    pipeline_lock.acquire()
+    try:
+        executions_server = []
+        list_executions_exists = []
 
+        if os.path.exists(server_store_path):
+            query = cmfquery.CmfQuery(server_store_path)
+            stages = query.get_pipeline_stages(pipeline_name)
+            print("got pipeline stages")
+            for stage in stages:
+                print(stage,"stage")
+                executions = []
+                executions = query.get_all_executions_in_stage(stage)
+                for i in executions.index:
+                    for uuid in executions['Execution_uuid'][i].split(","):
+                        executions_server.append(uuid)
+            executions_client = []
+            for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
+                for j in i["executions"]:
+                    if j['name'] != "": #If executions have name , they are reusable executions
+                        continue       #which needs to be merged in irrespective of whether already
+                                    #present or not so that new artifacts associated with it gets in.
+                    if 'Execution_uuid' in j['properties']:
+                        for uuid in j['properties']['Execution_uuid'].split(","):
+                            executions_client.append(uuid)
+                    else:
+                        # mlmd push is failed here
+                        status="version_update"
+                        return status
+            if executions_server != []:
+                list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
+            for i in mlmd_data["Pipeline"]:
+                for stage in i['stages']:
+                    for cmf_exec in stage['executions'][:]:
+                        uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+                        for uuid in uuids:
+                            if uuid in list_executions_exists:
+                                stage['executions'].remove(cmf_exec)
+
+            for i in mlmd_data["Pipeline"]:
+                i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
         for i in mlmd_data["Pipeline"]:
-            i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
-    for i in mlmd_data["Pipeline"]:
-        if len(i['stages']) == 0 :
-            status="exists"
-        else:
-            cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
-            )
-            status='success'
+            if len(i['stages']) == 0 :
+                status="exists"
+                print(status,"status")
+            else:
+                print("pipeline inside else part ")
+                cmf_merger.parse_json_to_mlmd(
+                    json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+                )
+                status='success'
+       
+    finally:
+        pipeline_lock.release()
+        lock_counts[pipeline_name] -= 1  # Decrement the reference count
+        if lock_counts[pipeline_name] == 0:
+            del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
+            del lock_counts[pipeline_name]
+    
     return status
 
 def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
