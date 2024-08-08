@@ -248,7 +248,11 @@ def commit_output(folder: str, execution_id: str) -> str:
             
         # To-Do : Parse the output and report if error
         output, errs = process.communicate()
+        if process.returncode != 0:
+            raise Exception(f'DVC add/import-url failed, Check if DVC is tracking parent directory: {errs}')
+        
         commit = output.strip()
+
         if os.path.exists(os.getcwd() + '/' + folder):
             process = subprocess.Popen(['git', 'add', folder + '.dvc'],
                                     stdout=subprocess.PIPE,
@@ -258,7 +262,9 @@ def commit_output(folder: str, execution_id: str) -> str:
                                         stdout=subprocess.PIPE,
                                         universal_newlines=True)
         # To-Do : Parse the output and report if error
-        _, _ = process.communicate(timeout=60)
+        output, errs = process.communicate(timeout=60)
+        if process.returncode != 0:
+            raise Exception(f"Git add failed, Check gitignore: {errs}")
         # process = subprocess.Popen(
         #     [
         #         'git',
