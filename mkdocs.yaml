@@ -92,6 +92,8 @@ nav:
       - dvc minio backend: cmf_client/minio-server.md
   - Server:
       - Getting started with cmf-server: cmf_server/cmf-server.md
+  - TensorBoard:
+      - Getting started with tensorboard: cmf_client/tensorflow_guide.md
   - Public API:
       - CMF: api/public/cmf.md
       - DataSlice: api/public/dataslice.md

@@ -70,8 +70,8 @@ class FastAPIClient {
     });
   }
 
-  async getArtiTreeLineage(pipeline,lineagetype) {
-      return this.apiClient.get(`/display_arti_tree_lineage/${lineagetype}/${pipeline}`)
+  async getArtiTreeLineage(pipeline) {
+      return this.apiClient.get(`/display_arti_tree_lineage/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
