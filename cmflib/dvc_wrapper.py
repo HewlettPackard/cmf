@@ -238,22 +238,24 @@ def commit_output(folder: str, execution_id: str) -> str:
     process = ""
     try:
         if os.path.exists(os.getcwd() + '/' + folder):
+            sub_dir_file = True
             process = subprocess.Popen(['dvc', 'add', folder],
                                     stdout=subprocess.PIPE,
                                     universal_newlines=True)
         else:
+            sub_dir_file = False
             process = subprocess.Popen(['dvc', 'import-url', '--to-remote', folder],
                                 stdout=subprocess.PIPE,
                                 universal_newlines=True)
             
-        # To-Do : Parse the output and report if error
         output, errs = process.communicate()
+        
         if process.returncode != 0:
             raise Exception(f'DVC add/import-url failed, Check if DVC is tracking parent directory: {errs}')
         
         commit = output.strip()
 
-        if os.path.exists(os.getcwd() + '/' + folder):
+        if sub_dir_file:
             process = subprocess.Popen(['git', 'add', folder + '.dvc'],
                                     stdout=subprocess.PIPE,
                                     universal_newlines=True)
@@ -261,31 +263,13 @@ def commit_output(folder: str, execution_id: str) -> str:
             process = subprocess.Popen(['git', 'add', folder.split('/')[-1] + '.dvc'],
                                         stdout=subprocess.PIPE,
                                         universal_newlines=True)
-        # To-Do : Parse the output and report if error
+        
+        
         output, errs = process.communicate(timeout=60)
+        
         if process.returncode != 0:
             raise Exception(f"Git add failed, Check gitignore: {errs}")
-        # process = subprocess.Popen(
-        #     [
-        #         'git',
-        #         'commit',
-        #         '-m ' +
-        #         'commiting dvc metadata file for ' +
-        #         str(folder) +
-        #         "-" +
-        #         str(execution_id)],
-        #     stdout=subprocess.PIPE,
-        #     universal_newlines=True)
-        # 
-        # output, errs = process.communicate(timeout=60)
-        # commit = output.strip()
-        # 
-        # process = subprocess.Popen(['git', 'log', folder + '.dvc'],
-        #                            stdout=subprocess.PIPE,
-        #                            universal_newlines=True)
-        # To-Do : Parse the output and report if error
-        # output, errs = process.communicate(timeout=60)
-        # commit = output.splitlines()[0].strip()
+        
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
