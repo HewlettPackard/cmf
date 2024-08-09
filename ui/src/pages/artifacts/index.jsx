@@ -57,7 +57,6 @@ const Artifacts = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
-    setArtifacts(null);
     setSelectedPipeline(pipeline);
     setActivePage(1);
     fetchArtifacts(pipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
@@ -146,12 +145,13 @@ const Artifacts = () => {
                 <ArtifactTypeSidebar
                   artifactTypes={artifactTypes}
                   handleArtifactTypeClick={handleArtifactTypeClick}
+                  onFilter={handleFilter}
                 />
               )}
             </div>
             <div className="container">
               {selectedPipeline !== null && selectedArtifactType !== null && artifacts !== null && artifacts !== {} && (
-                <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort} onFilter={handleFilter}/>
+                <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort}/>
               )}
               <div>
                 {artifacts !== null && totalItems > 0 && (

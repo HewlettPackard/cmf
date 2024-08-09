@@ -19,10 +19,11 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ExecutionTable = ({ executions, onSort, onFilter }) => {
+const ExecutionTable = ({ executions, onSort, onFilter}) => {
 
-  // Default sorting order
-  const [sortOrder, setSortOrder] = useState("Context_Type");
+// Default sorting order
+  const [sortOrder, setSortOrder] = useState(onSort);
+  const [sortedData, setSortedData] = useState([]);
 
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
@@ -33,13 +34,21 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
 
   useEffect(() => {
     // Set initial sorting order when component mounts
-    setSortOrder("asc");
-  }, []);
+    setSortedData([...executions]);
+  }, [executions]);
+
 
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
-    onSort("Context_Type", newSortOrder); // Notify parent component about sorting change
+    const sorted = [...executions].sort((a, b) => {
+        if(newSortOrder === "asc"){
+            return a.Context_Type.localeCompare(b.Context_Type);
+        }else{
+            return b.Context_Type.localeCompare(a.Context_Type);
+        }
+    });
+    setSortedData(sorted); // Notify parent component about sorting change
   };
 
   const handleFilterChange = (event) => {
@@ -62,7 +71,8 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          marginBottom: "1rem",
+          marginBottom: "0.5rem",
+          marginTop: "0.5rem",
         }}
       >
         <input
@@ -106,7 +116,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {executions.map((data, index) => (
+              {sortedData.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}
