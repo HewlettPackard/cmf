@@ -128,11 +128,9 @@ const Lineage = () => {
         setExecDropdownData(data);
         setSelectedExecutionType(data[0]);     // data[0] = "Prepare_3f45"
         // method used such that even with multiple "_" it will get right execution_name and uuid
-        const last_underscore_index = data[0].lastIndexOf('_'); 
-        const exec_type = data[0].substring(0, last_underscore_index);   // Prepare
         const uuid= (data[0].split("_").pop());     // 3f45
         if (lineageType === "Execution") {
-            fetchExecutionLineage(pipelineName, exec_type,uuid);
+            fetchExecutionLineage(pipelineName, uuid);
             }
         else {
             fetchExecTree(pipelineName,uuid);
@@ -148,10 +146,8 @@ const Lineage = () => {
     setExecutionData(null);
     
     setSelectedExecutionType(executionType);
-    const last_underscore_index = executionType.lastIndexOf('_');
-    const exec_type = executionType.substring(0, last_underscore_index);
     const uuid= (executionType.split("_").pop());
-    fetchExecutionLineage(selectedPipeline, exec_type,uuid);
+    fetchExecutionLineage(selectedPipeline, uuid);
   };  
 
   // used for execution drop down
@@ -162,8 +158,8 @@ const Lineage = () => {
     fetchExecTree(selectedPipeline, uuid);
   };  
 
-  const fetchExecutionLineage = (pipelineName, type,uuid) => {
-    client.getExecutionLineage(pipelineName,type,uuid).then((data) => {    
+  const fetchExecutionLineage = (pipelineName,uuid) => {
+    client.getExecutionLineage(pipelineName,uuid).then((data) => {    
       if (data === null) {
           setExecutionData(null);
       }

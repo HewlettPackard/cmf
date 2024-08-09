@@ -18,6 +18,7 @@ import json
 import logging
 import typing as t
 from enum import Enum
+from google.protobuf.json_format import MessageToDict
 
 import pandas as pd
 from ml_metadata.metadata_store import metadata_store
@@ -637,19 +638,22 @@ class CmfQuery(object):
             exe_ids.extend(ids)
         return exe_ids
 
-    def get_executions_with_execution_ids(self, exe_ids: t.List[int]):
+    def get_executions_with_execution_ids(self, exe_ids: t.List[int]) -> pd.DataFrame:
         """For list of execution ids it returns df with "id,Execution_type_name, Execution_uuid"
         Args:
             execution ids: List of execution ids.
         Return:
-            ["id","Execution_type_name","Execution_uuid"]
+            df["id","Execution_type_name","Execution_uuid"]
         """
         df = pd.DataFrame()
         executions = self.store.get_executions_by_id(exe_ids)
-        for count, exe in enumerate(executions):
+        execution_id = {}
+        for exe in executions:
             temp_dict = {}
-            temp_dict['id'] = exe_ids[count]
-            d1 = self._transform_to_dataframe(exe, temp_dict)
+            # To get execution_id, exe list[mlmd.proto.execution] is converted to dict using MessageToDict
+            execution_id = MessageToDict(exe, including_default_value_fields=False, preserving_proto_field_name=True)
+            temp_dict['id'] = int(execution_id['id'])
+            d1 = self._transform_to_dataframe(exe, temp_dict)       # df {id:,executions}
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         df.drop_duplicates()
         df = df[["id", "Execution_type_name","Execution_uuid"]]

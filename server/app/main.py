@@ -190,8 +190,8 @@ async def get_execution_types(request: Request, pipeline_name: str):
     else:
         return None
 
-@app.get("/display_exec_lineage/{exec_type}/{pipeline_name}/{uuid}")
-async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: str, uuid: str):
+@app.get("/display_exec_lineage/{pipeline_name}/{uuid}")
+async def display_exec_lineage(request: Request, pipeline_name: str, uuid: str):
     '''
       returns dictionary of nodes and links for given execution_type.
       response = {
@@ -203,7 +203,7 @@ async def display_exec_lineage(request: Request, exec_type: str, pipeline_name: 
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
+            response = await query_exec_lineage(server_store_path, pipeline_name, dict_of_exe_ids, uuid)
     else:
         response = None
     return response
