@@ -68,6 +68,23 @@ RUN pip install /cmf-server/dist/*
 # Copy the app file from server to cmf-server/server
 COPY ./server/app /cmf-server/server/app
 
+# Declare an ARG variable with a default value
+ARG POSTGRES_DB
+ARG POSTGRES_USER
+ARG POSTGRES_PASSWORD
+
+# Use the ARG variable in your Dockerfile
+RUN echo "The value of POSTGRES_DB is ${POSTGRES_DB}"
+Run echo "The value of POSTGRES_USER: ${POSTGRES_USER}"
+Run echo "The value of POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
+
+#Env variable
+ENV MY_VAR=${MY_VAR}
+ENV POSTGRES_DB=${POSTGRES_DB}
+ENV POSTGRES_USER=${POSTGRES_USER}
+ENV POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+
 # Run the server with uvicorn
 CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "80"]
 
