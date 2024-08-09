@@ -1,9 +1,9 @@
 # Getting started with cmf-client commands
 ## cmf init
 ```
-Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,show}
+Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,osdfremote,show}
 ```
-`cmf init` initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket and SSH Remote directory are the options available. Additionally, user can provide cmf-server url.
+`cmf init` initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available. Additionally, user can provide cmf-server url.
 ### cmf init show
 ```
 Usage: cmf init show
@@ -42,7 +42,7 @@ Optional Arguments
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
-  --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
                         
 
 ```
@@ -73,7 +73,7 @@ Optional Arguments
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
-  --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
 ### cmf init amazonS3
 Before setting up, obtain AWS temporary security credentials using the AWS Security Token Service (STS). These credentials are short-term and can last from minutes to hours. They are dynamically generated and provided to trusted users upon request, and expire after use. Users with appropriate permissions can request new credentials before or upon expiration. For further information, refer to the  [Temporary security credentials in IAM](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html) page.
@@ -135,21 +135,22 @@ Required Arguments
   --url [url]                           Specify bucket url.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
+  --session-token                       Specify session token. (default: )
   --git-remote-url [git_remote_url]     Specify git repo url.
 ```
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
-  --session-token                     Specify session token. (default: )
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
-  --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
 ### cmf init sshremote
 ```
 Usage: cmf init sshremote [-h] --path [path] 
-                               --user [user] --port [port]
+                               --user [user]
+                               --port [port]
                                --password [password]  
                                --git-remote-url [git_remote_url] 
                                --cmf-server-url [cmf_server_url]
@@ -171,18 +172,18 @@ Required Arguments
 ```
 Optional Arguments
 ```
-  -h, --help  show this help message and exit
+  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
-  --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
 ### cmf init osdfremote 
 ```
 Usage: cmf init osdfremote [-h] --path [path] 
-                             --endpoint-url [endpoint_url]
-                             --access-key-id [access_key_id] 
-                             --secret-key [secret_key] 
+                             --key-id [key_id]
+                             --key-path [key_path] 
+                             --key-issuer [key_issuer] 
                              --git-remote-url[git_remote_url]  
                              --cmf-server-url [cmf_server_url]
                              --neo4j-user [neo4j_user]
@@ -207,7 +208,7 @@ Optional Arguments
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
-  --neo4j-uri <neo4j_uri>             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
                         
 ```
 ## cmf artifact
@@ -217,11 +218,11 @@ Usage: cmf artifact [-h] {pull,push}
 `cmf artifact` pull or push artifacts from or to the user configured artifact repository, respectively.
 ### cmf artifact pull
 ```
-Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] [-a <artifact_name>]
+Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] -a [artifact_name]
 ```
 `cmf artifact pull` command pull artifacts from the user configured repository to the user's local machine.
 ```
-cmf artifact pull -p 'pipeline-name' 
+cmf artifact pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -a 'artifact-name'
 ```
 Required Arguments
 ```
@@ -230,7 +231,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit
-  -a <artifact_name>, --artifact_name <artifact_name>   Specify artifact name only; don't use folder name or absolute path.
+  -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name only; don't use folder name or absolute path.
   -f [file_name],--file-name [file_name]                Specify mlmd file name.
 ```
 ### cmf artifact push
@@ -239,7 +240,7 @@ Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
 ```
 `cmf artifact push` command push artifacts from the user's local machine to the user configured artifact repository.
 ```
-cmf artifact push -p 'pipeline_name'
+cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name'
 ```
 Required Arguments
 ```
@@ -252,16 +253,16 @@ Optional Arguments
 ```
 ## cmf metadata
 ```
-Usage: cmf metadata [-h] {pull,push}
+Usage: cmf metadata [-h] {pull,push,export}
 ```
-`cmf metadata` push or pull the metadata file to and from the cmf-server, respectively.
+`cmf metadata` push, pull or export the metadata file to and from the cmf-server, respectively.
 ### cmf metadata pull
 ```
 Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
-cmf metadata pull -p 'pipeline-name' -f "/path/to/mlmd-file-name"
+cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id'
 ```
 Required Arguments
 ```
@@ -275,11 +276,11 @@ Optional Arguments
 ```
 ### cmf metadata push
 ```
-Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
+Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
 ```
 `cmf metadata push` command pushes the metadata file from the local machine to the cmf-server.
 ```
-cmf metadata push -p 'pipeline-name' -f "/path/to/mlmd-file-name"
+cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t '/path/to/tensorboard-log'
 ```
 Required Arguments
 ```
@@ -288,7 +289,27 @@ Required Arguments
 
 Optional Arguments
 ```
-  -h, --help                                    show this help message and exit
-  -f [file_name], --file_name [file_name]       Specify mlmd file name.
-  -e [exec_id], --execution [exec_id]           Specify execution id.
+  -h, --help                                         show this help message and exit
+  -f [file_name],   --file_name [file_name]          Specify mlmd file name.
+  -e [exec_id],     --execution [exec_id]            Specify execution id.
+  -t [tensorboard], --tensorboard [tensorboard]      Specify path to tensorboard logs for the pipeline.
+```
+### cmf metadata export
+```
+Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_name]
+```
+`cmf metadata export` export local mlmd's metadata in json format to a json file.
+```
+cmf metadata export -p 'pipeline-name' -j '/path/to/json-file-name' -f '/path/to/mlmd-file-name'
+```
+Required Arguments
+```
+-p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
+```
+
+Optional Arguments
+```
+  -h, --help                                               show this help message and exit
+  -f [file_name],      --file_name [file_name]             Specify mlmd file name.
+  -j [json_file_name], --json_file_name [json_file_name]   Specify json file name with full path.
 ```
