@@ -70,10 +70,10 @@ class CmdMetadataPull(CmdBase):
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
         # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
-        if output.content.decode() == "NULL":
+        if output.content.decode() == None:
             return "Pipeline name " + self.args.pipeline_name + " doesn't exist."
         elif output.content.decode() == "no_exec_id":
-            return "Error: Execution id is not present in mlmd."
+            return f"Error: Execution id {exec_id} is not present in mlmd."
         elif output.content:
             try:
                 cmf_merger.parse_json_to_mlmd(

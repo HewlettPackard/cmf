@@ -77,14 +77,14 @@ class CmdMetadataPush(CmdBase):
                             execution_flag = 1
                             # calling mlmd_push api to push mlmd file to cmf-server
                             response = server_interface.call_mlmd_push(
-                                json_payload, url, exec_id
+                                json_payload, url, exec_id, self.args.pipeline_name
                             )
                             break
                 if execution_flag == 0:
                     return "Given execution is not found in mlmd."
             else:
                 exec_id = None
-                response = server_interface.call_mlmd_push(json_payload, url, exec_id)
+                response = server_interface.call_mlmd_push(json_payload, url, exec_id, self.args.pipeline_name)
             status_code = response.status_code
             if status_code == 200 and response.json()['status']=="success":
                 print("mlmd is successfully pushed.")

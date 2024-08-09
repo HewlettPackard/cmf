@@ -19,7 +19,7 @@ def truncate_artifact_name(my_str):
     temp=":".join(temp)
     return temp
 
-def query_visualization(mlmd_path, pipeline_name, dict_of_art_ids):
+def query_artifact_lineage_d3force(mlmd_path, pipeline_name, dict_of_art_ids):
     art_name_id = {}
     artifact_name_list = []
     query = cmfquery.CmfQuery(mlmd_path)

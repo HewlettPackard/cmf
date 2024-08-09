@@ -1,9 +1,33 @@
-import os
+import time, json
 from cmflib import cmfquery
 from collections import deque, defaultdict
 import pandas as pd
 
-async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
+class UniqueQueue:
+    def __init__(self):
+        self.queue = deque()
+        self.seen = set()
+    
+    def enqueue(self, value):
+        if value not in self.seen:
+            self.queue.append(value)
+            self.seen.add(value)
+    
+    def dequeue(self):
+        if self.queue:
+            value = self.queue.popleft()
+            self.seen.remove(value)
+            return value
+        raise IndexError("dequeue from an empty queue")
+    
+    def __len__(self):
+        return len(self.queue)
+    
+    def __contains__(self, value):
+        return value in self.seen
+
+
+async def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_exe_id, uuid):
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
     df=dict_of_exe_id[pipeline_name]
@@ -12,33 +36,34 @@ async def query_tangled_lineage(mlmd_path,pipeline_name, dict_of_exe_id,uuid):
     result = df[df['Execution_uuid'].str[:4] == uuid]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
     execution_id=result["id"].tolist() 
     parents_set = set()
-    queue = deque()  
+    queue = UniqueQueue()
     df = pd.DataFrame()
 
-    parents = query.get_one_hop_parent_executions_ids(execution_id,pipeline_id) #list if parent execution ids     
+
+    parents = query.get_one_hop_parent_executions_ids(execution_id, pipeline_id) #list of parent execution ids
     dict_parents = {}
     if parents == None:
         parents = []
     dict_parents[execution_id[0]] = list(set(parents))  # [2] = [1,2,3,4] list of parent id
     parents_set.add(execution_id[0])     #created so that we can directly find execuions using execution ids
     for i in set(parents):
-        queue.append(i)
+        queue.enqueue(i)
         parents_set.add(i)
+
     while len(queue) > 0:
-        exe_id = queue.popleft()
-        parents = query.get_one_hop_parent_executions_ids([exe_id],pipeline_id)
+        exe_id = queue.dequeue()
+        parents = query.get_one_hop_parent_executions_ids([exe_id], pipeline_id)
         if parents == None:
             parents = [] 
         dict_parents[exe_id] = list(set(parents))
         for i in set(parents):
-            queue.append(i)
+            queue.enqueue(i)
             parents_set.add(i)
-
+    
     df = query.get_executions_with_execution_ids(list(parents_set))  # for execution_id get executions(complete df with all data of executions)
-
     df['name_uuid'] = df['Execution_type_name'] + '_' + df['Execution_uuid'] 
     result_dict = df.set_index('id')['name_uuid'].to_dict()   # {"id" : "name_uuid"} for example {"2":"Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f"}
- 
+
     data_organized = topological_sort(dict_parents,result_dict) # it will use topological sort to create data from parents to child pattern
     """
     data_organized format

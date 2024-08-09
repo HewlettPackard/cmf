@@ -1,26 +1,26 @@
-import os, re
+import time
 from cmflib import cmfquery
 from collections import deque, defaultdict
-import pandas as pd
-import json
+#from get_data import get_all_artifact_ids, get_all_exe_ids
 from typing import List, Dict, Any
 
-async def query_artifact_tree_lineage(mlmd_path: str,pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
+async def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
     query = cmfquery.CmfQuery(mlmd_path)
     id_name = {}
     child_parent_artifact_id = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         for index, row in df.iterrows():
-            #creating a dictionary of id and artifact name {id:artifact name}       
-            id_name[row["id"]] = modify_arti_name(row["name"],type_)   
-            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts(row["name"])  # get immediate artifacts     
-            child_parent_artifact_id[row["id"]] = []      # assign empty dict for artifact with no parent artifact
+            #creating a dictionary of id and artifact name {id:artifact name}
+            artifact_id = row['id']  # This will be an integer
+            id_name[artifact_id] = modify_arti_name(row["name"], type_)
+            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id(artifact_id)  # get immediate artifacts     
+            child_parent_artifact_id[artifact_id] = []      # assign empty dict for artifact with no parent artifact
             if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts             
-                child_parent_artifact_id[row["id"]] = list(one_hop_parent_artifacts["id"])
+                child_parent_artifact_id[artifact_id] = list(one_hop_parent_artifacts["id"])
     data_organized = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
-def topological_sort(input_data,artifact_name_id_dict) -> List[Dict]:
+def topological_sort(input_data, artifact_name_id_dict) -> List[Dict]:
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -81,3 +81,6 @@ def modify_arti_name(arti_name, type):
         print(f"Error parsing artifact name: {e}")
         name = arti_name  # Fallback to the original arti_name in case of error
     return name
+
+
+

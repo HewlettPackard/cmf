@@ -18,9 +18,9 @@ import requests
 import json
 
 # This function posts mlmd data to mlmd_push api on cmf-server
-def call_mlmd_push(json_payload, url, exec_id):
+def call_mlmd_push(json_payload, url, exec_id, pipeline_name):
     url_to_pass = f"{url}/mlmd_push"
-    json_data = {"id": exec_id, "json_payload": json_payload}
+    json_data = {"id": exec_id, "json_payload": json_payload, "pipeline_name": pipeline_name}
     response = requests.post(url_to_pass, json=json_data)  # Post request
     # print("Status code -", response.status_code)
     return response
