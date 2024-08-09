@@ -22,7 +22,9 @@ from enum import Enum
 import pandas as pd
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from typing import List
 from cmflib.mlmd_objects import CONTEXT_LIST
 
 __all__ = ["CmfQuery"]
@@ -360,6 +362,7 @@ class CmfQuery(object):
         Returns:
             List of all pipeline names.
         """
+        print("Im inside get_pipeline_names")
         return [ctx.name for ctx in self._get_pipelines()]
 
     def get_pipeline_id(self, pipeline_name: str) -> int:
@@ -504,6 +507,9 @@ class CmfQuery(object):
             List of all artifact names.
         """
         return [artifact.name for artifact in self.store.get_artifacts()]
+
+    async def async_get_artifacts(self, loop: asyncio.AbstractEventLoop, executor: ThreadPoolExecutor) -> List[mlpb.Context]:
+        return await loop.run_in_executor(executor, self.get_all_artifacts)
 
     get_artifact_names = get_all_artifacts
 

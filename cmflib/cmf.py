@@ -44,6 +44,8 @@ from cmflib import graph_wrapper
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
+    get_or_create_context_with_type,
+    update_context_custom_properties,
     associate_child_to_parent_context,
     create_new_execution_in_existing_run_context,
     link_execution_to_artifact,
@@ -309,6 +311,47 @@ class Cmf:
             )
         return ctx
 
+    def update_context(
+        self,
+        type_name: str,
+        context_name: str,
+        context_id: int,
+        properties: t.Optional[t.Dict] = None,
+        custom_properties: t.Optional[t.Dict] = None
+    ) -> mlpb.Context:
+        #print("inside update_create_context")
+        self.context = get_or_create_context_with_type(
+                           self.store, 
+                           context_name, 
+                           type_name, 
+                           properties, 
+                           type_properties = None,
+                           custom_properties = custom_properties
+                       )
+#        self.context = self.store.get_contexts_by_id([context_id])
+        #print(type(self.context))
+        #print(self.context)
+        #print(self.context.custom_properties,"custom")
+        if self.context is None:
+            print("Error - no context id")
+            return
+
+        if custom_properties:
+            for key, value in custom_properties.items():
+                if isinstance(value, int):
+                    self.context.custom_properties[key].int_value = value
+                else:
+                    self.context.custom_properties[key].string_value = str(
+                        value)
+        updated_context = update_context_custom_properties(
+            self.store,
+            context_id,
+            context_name,
+            self.context.properties,
+            self.context.custom_properties,
+        )        
+        return updated_context
+
     def create_execution(
         self,
         execution_type: str,
@@ -447,6 +490,7 @@ class Cmf:
             Returns:
                 Execution object from ML Metadata library associated with the updated execution for this stage.
         """
+        print("inside update execution")
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
             print("Error - no execution id")
@@ -1675,14 +1719,14 @@ class Cmf:
              custom_properties: Dictionary containing custom properties to update. 
           Returns: 
              None 
-        """
-
+       """
         for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
+        
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
@@ -1776,7 +1820,7 @@ class Cmf:
                 should already be versioned.
             Example:
                 ```python
-                dataslice.add_data(f"data/raw_data/{j}.xml)
+                #dataslice.add_data(f"data/raw_data/{j}.xml)
                 ```
             Args:
                 path: Name to identify the file to be added to the dataslice.

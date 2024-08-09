@@ -2,8 +2,9 @@ from cmflib import cmfquery
 import pandas as pd
 import itertools
 from ml_metadata.proto.metadata_store_pb2 import Value
+from fastapi.concurrency import run_in_threadpool
 
-async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
+def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
     data = {}
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
