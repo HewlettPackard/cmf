@@ -62,14 +62,16 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         pipeline_stage=stage['name'],
                         custom_properties=stage["custom_properties"],
                     )
-                except AlreadyExistsError as e:
-                    #print("AlreadyExistsError in merge_created_context")
-                    _ = cmf_class.update_context(
+                except AlreadyExistsError as e:     
+                    #This error may occur when 2 same pipelines are pushed at same time
+                    # As both pipelines will be unable to fetch data from server so will create context raising this error
+                    # updating custom properties if context already exists
+                    _ = cmf_class.update_context(                  
                         str(stage["type"]),
                         str(stage["name"]),
                         stage["id"],
                         stage["properties"],
-                        {"new context":"value"}
+                        custom_properties=stage["custom_properties"]
                     )
                 except Exception as e:
                     print(f"Error in merge_created_context")
@@ -86,11 +88,10 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                 except AlreadyExistsError as e:
                     _ = cmf_class.update_execution(
                         execution["id"],
-                        {"new_new":"value_value"} 
+                        execution["custom_properties"] 
                     )
                 except Exception as e:
                     print(f"Error in merge_created_execution")
-#                    traceback.print_exc()
 
                 for event in execution["events"]:  # Iterates over all the events
                     artifact_type = event["artifact"]["type"]
@@ -137,7 +138,6 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                     except AlreadyExistsError as e:
                                 #print("AlreadyExistsError in log_dataset_with_version_input")                                
                         if artifact_type == "Dataset" or artifact_type == "Model" or artifact_type == "Metrics": 
-                                print("already exist errror")        
                                 artifact = store.get_artifacts_by_uri(uri)
                                 cmf_class.update_existing_artifact(
                                     artifact[0],

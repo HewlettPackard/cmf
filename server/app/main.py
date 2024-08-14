@@ -1,13 +1,13 @@
 # cmf-server api's
-from fastapi import FastAPI, Request, status, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
 import time 
-from cmflib import cmfquery, cmfquery_temp, cmf_merger
+from cmflib import cmfquery
 from server.app.get_data import (
     get_artifacts,
     get_lineage_data,
@@ -21,12 +21,12 @@ from server.app.get_data import (
     get_model_data
 
 )
-from server.app.query_visualization import query_visualization
 from server.app.query_exec_lineage import query_exec_lineage
+from server.app.query_tangled_lineage import query_tangled_lineage
+from server.app.query_artifact_tree_lineage import query_artifact_tree_lineage
 from pathlib import Path
 import os
 import json
-from ml_metadata.proto import metadata_store_pb2 as mlpb
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -90,8 +90,9 @@ async def mlmd_push(info: Request):
     if status == "version_update":
         # Raise an HTTPException with status code 422
         raise HTTPException(status_code=422, detail="version_update")
-    await update_global_art_dict()
-    await update_global_exe_dict()
+    if status != "exists":
+        await update_global_art_dict()
+        await update_global_exe_dict()
     return {"status": status, "data": req_info}
 
 # api to get mlmd file from cmf-server
@@ -134,7 +135,7 @@ async def display_exec(
         if total_items < end_idx:
             end_idx = total_items
         exe_ids_list = exe_ids[start_idx:end_idx]
-        executions_df = await get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
+        executions_df = await async_api(get_executions_by_ids, server_store_path, exe_ids_list)
         temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {

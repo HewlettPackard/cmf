@@ -1,15 +1,20 @@
 from cmflib import cmfquery, cmf_merger
 import pandas as pd
-import json,glob
+import json
 import os
+import typing as t
 from server.app.query_visualization import query_visualization
 from server.app.query_visualization_execution import query_visualization_execution
-from fastapi.responses import FileResponse
 from fastapi.concurrency import run_in_threadpool
 import threading
 from collections import defaultdict
+import datetime
+import time
 
-lock = threading.Lock()
+lock = threading.Lock() 
+pipeline_locks = {}          # Dictionary to store entry of pipeline inside lock   {pipeline_name : pipeline_lock}
+lock_counts = defaultdict(int)   # count will  increament if pipeline enters and decrements when exists {pipeline_name: count}
+
 async def get_model_data(mlmdfilepath, modelId):
     '''
       This function retrieves the necessary model data required for generating a model card.
@@ -84,7 +89,7 @@ async def get_model_data(mlmdfilepath, modelId):
 async def async_api(function_to_async, mlmdfilepath, *argv):
     return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
 
-async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
+def get_executions_by_ids(mlmdfilepath,  exe_ids) -> pd.DataFrame:
     '''
     Args:
      mlmdfilepath: mlmd file path.
@@ -94,77 +99,15 @@ async def get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
     Returns:
      returns dataframe of executions using execution_ids.
     '''
-    def _get_executions_by_ids(mlmdfilepath, pipeline_name, exe_ids):
-        print(pipeline_name)
-        query = cmfquery.CmfQuery(mlmdfilepath)
-        df = pd.DataFrame()
-        executions = query.get_all_executions_by_ids_list(exe_ids)
-        df = pd.concat([df, executions], sort=True, ignore_index=True)
+
+    query = cmfquery.CmfQuery(mlmdfilepath)
+    df = pd.DataFrame()
+    executions = query.get_all_executions_by_ids_list(exe_ids)
+    df = pd.concat([df, executions], sort=True, ignore_index=True)
     #df=df.drop('name',axis=1)
-        return df
-    return await run_in_threadpool(_get_executions_by_ids, mlmdfilepath, pipeline_name, exe_ids)
+    return df
 
-'''
-async def get_all_exe_ids(mlmdfilepath):
-    async def _get_all_exe_ids(mlmdfilepath):
-        #Returns:
-        #    returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
-        query = cmfquery.CmfQuery(mlmdfilepath)
-        execution_ids = {}
-        names = query.get_pipeline_names()
-        for name in names:
-            df = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
-            stages = query.get_pipeline_stages(name)
-            for stage in stages:
-                executions = query.get_all_executions_in_stage(stage)
-                df = pd.concat([df, executions], sort=True, ignore_index=True)
-        # check if df is empty return just pipeline_name: {}
-        # if df is not empty return dictionary with pipeline_name as key 
-        # and df with id, context_type, uuid, context_ID as value.
-            if not df.empty:
-                execution_ids[name] = df[['id', 'Context_Type', 'Execution_uuid', 'Context_ID']]
-            else:
-                execution_ids[name] = pd.DataFrame()
-        return execution_ids
-    return await run_in_threadpool(_get_all_exe_ids,mlmdfilepath)
-
-async def get_all_artifact_ids(mlmdfilepath):
-    async def _get_all_artifact_ids(mlmdfilepath):
-    # following is a dictionary of dictionary
-    # First level dictionary key is pipeline_name
-    # First level dicitonary value is nested dictionary
-    # Nested dictionary key is type i.e. Dataset, Model, etc.
-    # Nested dictionary value is ids i.e. set of integers
-        artifact_ids = {}
-        query = cmfquery.CmfQuery(mlmdfilepath)
-        names = query.get_pipeline_names()
-        execution_ids = await get_all_exe_ids(mlmdfilepath)
-        for name in names:
-            df = pd.DataFrame()
-            if not execution_ids.get(name).empty:
-                exe_ids = execution_ids[name]['id'].tolist()
-                for id in exe_ids:
-                    artifacts = query.get_all_artifacts_for_execution(id)
-                    df = pd.concat([df, artifacts], sort=True, ignore_index=True)
-            #acknowledging pipeline exist even if df is empty. 
-                if df.empty:
-                    artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
-                else:
-                    df.sort_values("id", inplace=True)
-                    df.drop_duplicates(subset="id", keep='first', inplace=True)
-                    artifact_ids[name] = {}
-                    for art_type in df['type']:
-                        filtered_values = df.loc[df['type'] == art_type, ['id', 'name']]
-                        artifact_ids[name][art_type] = filtered_values
-        # if execution_ids is empty create dictionary with key as pipeline name
-        # and value as empty df
-            else:
-                artifact_ids[name] = pd.DataFrame()
-        return artifact_ids
-    return await run_in_threadpool(_get_all_artifact_ids,mlmdfilepath)
-'''
-
-def get_all_exe_ids(mlmdfilepath):
+def get_all_exe_ids(mlmdfilepath) -> t.Dict:
     '''
     Returns:
     returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
@@ -187,10 +130,9 @@ def get_all_exe_ids(mlmdfilepath):
             execution_ids[name] = pd.DataFrame()
     return execution_ids
 
-def get_all_artifact_ids(mlmdfilepath, execution_ids):
+def get_all_artifact_ids(mlmdfilepath, execution_ids) -> t.Dict:
     # following is a dictionary of dictionary
-    # First level dictionary key is pipeline_name
-    # First level dicitonary value is nested dictionary
+    # First level dictionary key is pipeline_name and value is nested dictionary
     # Nested dictionary key is type i.e. Dataset, Model, etc.
     # Nested dictionary value is ids i.e. set of integers
     artifact_ids = {}
@@ -252,35 +194,42 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
             tempout = json.loads(result)
             return tempout
 
-def get_artifact_types(mlmdfilepath):
+def get_artifact_types(mlmdfilepath) -> t.List[str]:
     query = cmfquery.CmfQuery(mlmdfilepath)
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-pipeline_locks = {}
-lock_counts = defaultdict(int)
-def create_unique_executions(server_store_path, req_info):
+
+def create_unique_executions(server_store_path: str, req_info) -> str:
+    """
+    Creates list of unique executions by checking if they already exist on server or not.
+    locking is introduced lock to avoid data corruption on server, 
+    when multiple similar pipelines pushed on server at same time.
+    Args:
+       server_store_path = mlmd file path on server
+    Returns:
+       Status of parse_json_to_mlmd
+           "exists": if execution already exists on cmf-server
+           "success": execution pushed successfully on cmf-server 
+    """
     mlmd_data = json.loads(req_info["json_payload"])
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
     pipeline_name = pipeline["name"]
     if not pipeline_name:
         return {"error": "Pipeline name is required"}
-    if pipeline_name not in pipeline_locks:
+    if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
         pipeline_locks[pipeline_name] = threading.Lock()
-    pipeline_lock = pipeline_locks[pipeline_name]
-    lock_counts[pipeline_name] += 1 
-    pipeline_lock.acquire()
+    pipeline_lock = pipeline_locks[pipeline_name]   
+    lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
+    pipeline_lock.acquire()        # starting lock
     try:
         executions_server = []
         list_executions_exists = []
-
         if os.path.exists(server_store_path):
             query = cmfquery.CmfQuery(server_store_path)
             stages = query.get_pipeline_stages(pipeline_name)
-            print("got pipeline stages")
             for stage in stages:
-                print(stage,"stage")
                 executions = []
                 executions = query.get_all_executions_in_stage(stage)
                 for i in executions.index:
@@ -314,24 +263,21 @@ def create_unique_executions(server_store_path, req_info):
         for i in mlmd_data["Pipeline"]:
             if len(i['stages']) == 0 :
                 status="exists"
-                print(status,"status")
             else:
-                print("pipeline inside else part ")
                 cmf_merger.parse_json_to_mlmd(
                     json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
                 )
                 status='success'
-       
-    finally:
-        pipeline_lock.release()
-        lock_counts[pipeline_name] -= 1  # Decrement the reference count
-        if lock_counts[pipeline_name] == 0:
+    finally:                       # cleanup of variables used for locking
+        pipeline_lock.release()        
+        lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
+        if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
             del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
             del lock_counts[pipeline_name]
     
     return status
 
-def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
+def get_mlmd_from_server(server_store_path, pipeline_name, exec_id) :
     query = cmfquery.CmfQuery(server_store_path)
     execution_flag = 0
     # checks if given execution_id present in mlmd
@@ -358,7 +304,6 @@ def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
     return json_payload
 
 def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
-    query = cmfquery.CmfQuery(server_store_path)
     if type=="Artifacts":
         lineage_data = query_visualization(server_store_path, pipeline_name, dict_of_art_ids)
         '''

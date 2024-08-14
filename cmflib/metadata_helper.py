@@ -68,7 +68,7 @@ def connect_to_mlmd() -> metadata_store.MetadataStore:
     raise RuntimeError('Could not connect to the Metadata store.')
 
 
-def get_artifacts_by_id(store, artifact_id: [int]) -> List[metadata_store_pb2.Artifact]:
+def get_artifacts_by_id(store, artifact_id: List[int]) -> List[metadata_store_pb2.Artifact]:
     try:
         artifacts = store.get_artifacts_by_id(artifact_id)
         return artifacts
@@ -124,14 +124,12 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
         return context_type
 
 def update_context_custom_properties(store,context_id, context_name, properties, custom_properties):
-
         context = metadata_store_pb2.Context(
             id = context_id,
             name=context_name,
             properties=properties,
             custom_properties=custom_properties,
         )
-        #print(context,type(context),"##############")
         store.put_contexts([context])
         return context
 
@@ -220,7 +218,6 @@ def create_context_with_type(
         properties=properties,
         custom_properties=custom_properties,
     )
-    #print(type(context),"context#######")
     context.id = store.put_contexts([context])[0]
     return context
 
@@ -399,7 +396,7 @@ def create_new_execution_in_existing_run_context(
         git_start_commit: str = None,
         git_end_commit: str = "",
         python_env: str = "",
-        custom_properties: {} = None,
+        custom_properties: dict = None,
         create_new_execution:bool = True
 ) -> metadata_store_pb2.Execution:
     mlmd_custom_properties = {}
