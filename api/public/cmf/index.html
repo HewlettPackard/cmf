@@ -1322,8 +1322,7 @@ Args:
 
                   <details class="quote">
                     <summary>Source code in <code>cmflib/cmf.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">109</span>
-<span class="normal">110</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">110</span>
 <span class="normal">111</span>
 <span class="normal">112</span>
 <span class="normal">113</span>
@@ -1376,7 +1375,8 @@ Args:
 <span class="normal">160</span>
 <span class="normal">161</span>
 <span class="normal">162</span>
-<span class="normal">163</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<span class="normal">163</span>
+<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
         <span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -1482,8 +1482,7 @@ Example:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">229</span>
-<span class="normal">230</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
 <span class="normal">231</span>
 <span class="normal">232</span>
 <span class="normal">233</span>
@@ -1522,7 +1521,8 @@ Example:
 <span class="normal">266</span>
 <span class="normal">267</span>
 <span class="normal">268</span>
-<span class="normal">269</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_context</span><span class="p">(</span>
+<span class="normal">269</span>
+<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_context</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Context</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Create&#39;s a  context(stage).</span>
@@ -1606,8 +1606,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">271</span>
-<span class="normal">272</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
 <span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
@@ -1645,7 +1644,8 @@ Returns:
 <span class="normal">307</span>
 <span class="normal">308</span>
 <span class="normal">309</span>
-<span class="normal">310</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">merge_created_context</span><span class="p">(</span>
+<span class="normal">310</span>
+<span class="normal">311</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">merge_created_context</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Context</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Merge created context.</span>
@@ -1762,8 +1762,7 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
-<span class="normal">313</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
 <span class="normal">316</span>
@@ -1872,7 +1871,8 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
 <span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
-<span class="normal">422</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_execution</span><span class="p">(</span>
+<span class="normal">422</span>
+<span class="normal">423</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_execution</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">execution_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -2024,8 +2024,7 @@ Example
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">424</span>
-<span class="normal">425</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">425</span>
 <span class="normal">426</span>
 <span class="normal">427</span>
 <span class="normal">428</span>
@@ -2096,7 +2095,8 @@ Example
 <span class="normal">493</span>
 <span class="normal">494</span>
 <span class="normal">495</span>
-<span class="normal">496</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_execution</span><span class="p">(</span>
+<span class="normal">496</span>
+<span class="normal">497</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_execution</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates an existing execution.</span>
@@ -2205,8 +2205,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">624</span>
-<span class="normal">625</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">625</span>
 <span class="normal">626</span>
 <span class="normal">627</span>
 <span class="normal">628</span>
@@ -2361,7 +2360,8 @@ Returns:
 <span class="normal">777</span>
 <span class="normal">778</span>
 <span class="normal">779</span>
-<span class="normal">780</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset</span><span class="p">(</span>
+<span class="normal">780</span>
+<span class="normal">781</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2557,8 +2557,7 @@ Example:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">831</span>
-<span class="normal">832</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">832</span>
 <span class="normal">833</span>
 <span class="normal">834</span>
 <span class="normal">835</span>
@@ -2692,7 +2691,8 @@ Example:
 <span class="normal">963</span>
 <span class="normal">964</span>
 <span class="normal">965</span>
-<span class="normal">966</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset_with_version</span><span class="p">(</span>
+<span class="normal">966</span>
+<span class="normal">967</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_dataset_with_version</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2868,8 +2868,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 969</span>
-<span class="normal"> 970</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 970</span>
 <span class="normal"> 971</span>
 <span class="normal"> 972</span>
 <span class="normal"> 973</span>
@@ -3038,7 +3037,8 @@ Returns:
 <span class="normal">1136</span>
 <span class="normal">1137</span>
 <span class="normal">1138</span>
-<span class="normal">1139</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model</span><span class="p">(</span>
+<span class="normal">1139</span>
+<span class="normal">1140</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3255,8 +3255,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1142</span>
-<span class="normal">1143</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1143</span>
 <span class="normal">1144</span>
 <span class="normal">1145</span>
 <span class="normal">1146</span>
@@ -3396,7 +3395,8 @@ Returns:
 <span class="normal">1280</span>
 <span class="normal">1281</span>
 <span class="normal">1282</span>
-<span class="normal">1283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model_with_version</span><span class="p">(</span>
+<span class="normal">1283</span>
+<span class="normal">1284</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_model_with_version</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -3571,8 +3571,7 @@ Example:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1285</span>
-<span class="normal">1286</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1286</span>
 <span class="normal">1287</span>
 <span class="normal">1288</span>
 <span class="normal">1289</span>
@@ -3645,7 +3644,8 @@ Example:
 <span class="normal">1356</span>
 <span class="normal">1357</span>
 <span class="normal">1358</span>
-<span class="normal">1359</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics_from_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+<span class="normal">1359</span>
+<span class="normal">1360</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics_from_client</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                                      <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Logs execution metrics from a client.</span>
 <span class="sd">        Data from pre-existing metrics from client side is used to create identical metrics on server side. </span>
@@ -3754,8 +3754,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1362</span>
-<span class="normal">1363</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1363</span>
 <span class="normal">1364</span>
 <span class="normal">1365</span>
 <span class="normal">1366</span>
@@ -3829,7 +3828,8 @@ Returns:
 <span class="normal">1434</span>
 <span class="normal">1435</span>
 <span class="normal">1436</span>
-<span class="normal">1437</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics</span><span class="p">(</span>
+<span class="normal">1437</span>
+<span class="normal">1438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_execution_metrics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Log the metadata associated with the execution (coarse-grained tracking).</span>
@@ -3939,8 +3939,7 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1439</span>
-<span class="normal">1440</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1440</span>
 <span class="normal">1441</span>
 <span class="normal">1442</span>
 <span class="normal">1443</span>
@@ -3963,7 +3962,8 @@ Args:
 <span class="normal">1460</span>
 <span class="normal">1461</span>
 <span class="normal">1462</span>
-<span class="normal">1463</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span>
+<span class="normal">1463</span>
+<span class="normal">1464</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">log_metric</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores the fine-grained (per step or per epoch) metrics to memory.</span>
@@ -4019,8 +4019,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1572</span>
-<span class="normal">1573</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1573</span>
 <span class="normal">1574</span>
 <span class="normal">1575</span>
 <span class="normal">1576</span>
@@ -4090,7 +4089,8 @@ Returns:
 <span class="normal">1640</span>
 <span class="normal">1641</span>
 <span class="normal">1642</span>
-<span class="normal">1643</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit_existing_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">props</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="normal">1643</span>
+<span class="normal">1644</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit_existing_metrics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">uri</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">props</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Commits existing metrics associated with the given URI to MLMD.</span>
 <span class="sd">    Example:</span>
@@ -4214,8 +4214,7 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1704</span>
-<span class="normal">1705</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1705</span>
 <span class="normal">1706</span>
 <span class="normal">1707</span>
 <span class="normal">1708</span>
@@ -4229,7 +4228,8 @@ Args:
 <span class="normal">1716</span>
 <span class="normal">1717</span>
 <span class="normal">1718</span>
-<span class="normal">1719</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
+<span class="normal">1719</span>
+<span class="normal">1720</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a dataslice object.</span>
 <span class="sd">    Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]</span>
 <span class="sd">    method. Users are also responsible for committing data slices by calling the</span>
@@ -4296,8 +4296,7 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1731</span>
-<span class="normal">1732</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1732</span>
 <span class="normal">1733</span>
 <span class="normal">1734</span>
 <span class="normal">1735</span>
@@ -4318,7 +4317,8 @@ Args:
 <span class="normal">1750</span>
 <span class="normal">1751</span>
 <span class="normal">1752</span>
-<span class="normal">1753</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+<span class="normal">1753</span>
+<span class="normal">1754</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">update_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates a dataslice record in a Parquet file with the provided custom properties.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -4396,18 +4396,18 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2047</span>
-<span class="normal">2048</span>
-<span class="normal">2049</span>
-<span class="normal">2050</span>
-<span class="normal">2051</span>
-<span class="normal">2052</span>
-<span class="normal">2053</span>
-<span class="normal">2054</span>
-<span class="normal">2055</span>
-<span class="normal">2056</span>
-<span class="normal">2057</span>
-<span class="normal">2058</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init_show</span><span class="p">():</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2069</span>
+<span class="normal">2070</span>
+<span class="normal">2071</span>
+<span class="normal">2072</span>
+<span class="normal">2073</span>
+<span class="normal">2074</span>
+<span class="normal">2075</span>
+<span class="normal">2076</span>
+<span class="normal">2077</span>
+<span class="normal">2078</span>
+<span class="normal">2079</span>
+<span class="normal">2080</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init_show</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes and shows details of the CMF command. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4429,7 +4429,7 @@ Returns:
 
 
 <h2 id="cmflib.cmf.cmf_init" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">session_token</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">osdf_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_issuer</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.cmf_init" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -4459,6 +4459,7 @@ Args:
    endpoint_url: Endpoint URL for MinioS3.
    access_key_id: Access key ID for MinioS3 or AmazonS3.
    secret_key: Secret key for MinioS3 or AmazonS3. 
+   session_token: Session token for AmazonS3.
    user: SSH remote username.
    password: SSH remote password. 
    port: SSH remote port
@@ -4467,29 +4468,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2060</span>
-<span class="normal">2061</span>
-<span class="normal">2062</span>
-<span class="normal">2063</span>
-<span class="normal">2064</span>
-<span class="normal">2065</span>
-<span class="normal">2066</span>
-<span class="normal">2067</span>
-<span class="normal">2068</span>
-<span class="normal">2069</span>
-<span class="normal">2070</span>
-<span class="normal">2071</span>
-<span class="normal">2072</span>
-<span class="normal">2073</span>
-<span class="normal">2074</span>
-<span class="normal">2075</span>
-<span class="normal">2076</span>
-<span class="normal">2077</span>
-<span class="normal">2078</span>
-<span class="normal">2079</span>
-<span class="normal">2080</span>
-<span class="normal">2081</span>
-<span class="normal">2082</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2082</span>
 <span class="normal">2083</span>
 <span class="normal">2084</span>
 <span class="normal">2085</span>
@@ -4600,20 +4579,77 @@ Returns:
 <span class="normal">2190</span>
 <span class="normal">2191</span>
 <span class="normal">2192</span>
-<span class="normal">2193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="normal">2193</span>
+<span class="normal">2194</span>
+<span class="normal">2195</span>
+<span class="normal">2196</span>
+<span class="normal">2197</span>
+<span class="normal">2198</span>
+<span class="normal">2199</span>
+<span class="normal">2200</span>
+<span class="normal">2201</span>
+<span class="normal">2202</span>
+<span class="normal">2203</span>
+<span class="normal">2204</span>
+<span class="normal">2205</span>
+<span class="normal">2206</span>
+<span class="normal">2207</span>
+<span class="normal">2208</span>
+<span class="normal">2209</span>
+<span class="normal">2210</span>
+<span class="normal">2211</span>
+<span class="normal">2212</span>
+<span class="normal">2213</span>
+<span class="normal">2214</span>
+<span class="normal">2215</span>
+<span class="normal">2216</span>
+<span class="normal">2217</span>
+<span class="normal">2218</span>
+<span class="normal">2219</span>
+<span class="normal">2220</span>
+<span class="normal">2221</span>
+<span class="normal">2222</span>
+<span class="normal">2223</span>
+<span class="normal">2224</span>
+<span class="normal">2225</span>
+<span class="normal">2226</span>
+<span class="normal">2227</span>
+<span class="normal">2228</span>
+<span class="normal">2229</span>
+<span class="normal">2230</span>
+<span class="normal">2231</span>
+<span class="normal">2232</span>
+<span class="normal">2233</span>
+<span class="normal">2234</span>
+<span class="normal">2235</span>
+<span class="normal">2236</span>
+<span class="normal">2237</span>
+<span class="normal">2238</span>
+<span class="normal">2239</span>
+<span class="normal">2240</span>
+<span class="normal">2241</span>
+<span class="normal">2242</span>
+<span class="normal">2243</span>
+<span class="normal">2244</span>
+<span class="normal">2245</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">cmf_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">neo4j_user</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">neo4j_password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">neo4j_uri</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">endpoint_url</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">access_key_id</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">secret_key</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">user</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">0</span>
+        <span class="n">url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">endpoint_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">access_key_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">secret_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">session_token</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">user</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">password</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">osdf_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">key_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">key_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">key_issuer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
          <span class="p">):</span>
 
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes the CMF configuration based on the provided parameters. </span>
@@ -4640,6 +4676,7 @@ Returns:
 <span class="sd">       endpoint_url: Endpoint URL for MinioS3.</span>
 <span class="sd">       access_key_id: Access key ID for MinioS3 or AmazonS3.</span>
 <span class="sd">       secret_key: Secret key for MinioS3 or AmazonS3. </span>
+<span class="sd">       session_token: Session token for AmazonS3.</span>
 <span class="sd">       user: SSH remote username.</span>
 <span class="sd">       password: SSH remote password. </span>
 <span class="sd">       port: SSH remote port</span>
@@ -4647,31 +4684,36 @@ Returns:
 <span class="sd">       Output based on the initialized repository type.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Type is not provided&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span><span class="s2">&quot;minioS3&quot;</span><span class="p">,</span><span class="s2">&quot;amazonS3&quot;</span><span class="p">,</span><span class="s2">&quot;sshremote&quot;</span><span class="p">]:</span>
-        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Type value is undefined&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">type</span><span class="o">+</span><span class="s2">&quot;.Expected: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;local&quot;</span><span class="p">,</span><span class="s2">&quot;minioS3&quot;</span><span class="p">,</span><span class="s2">&quot;amazonS3&quot;</span><span class="p">,</span><span class="s2">&quot;sshremote&quot;</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;local&quot;</span><span class="p">,</span><span class="s2">&quot;minioS3&quot;</span><span class="p">,</span><span class="s2">&quot;amazonS3&quot;</span><span class="p">,</span><span class="s2">&quot;sshremote&quot;</span><span class="p">,</span><span class="s2">&quot;osdfremote&quot;</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Type value is undefined&quot;</span><span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">+</span><span class="nb">type</span><span class="o">+</span><span class="s2">&quot;.Expected: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;local&quot;</span><span class="p">,</span><span class="s2">&quot;minioS3&quot;</span><span class="p">,</span><span class="s2">&quot;amazonS3&quot;</span><span class="p">,</span><span class="s2">&quot;sshremote&quot;</span><span class="p">,</span><span class="s2">&quot;osdfremote&quot;</span><span class="p">]))</span>
 
-    <span class="k">if</span> <span class="n">neo4j_user</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">neo4j_password</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">neo4j_uri</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">neo4j_user</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">neo4j_password</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">neo4j_uri</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">elif</span> <span class="n">neo4j_user</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">neo4j_password</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">neo4j_uri</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
         <span class="k">pass</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Enter all neo4j parameters.&quot;</span><span class="p">)</span> 
 
-    <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;path&#39;</span><span class="p">:</span><span class="n">path</span><span class="p">,</span>
-        <span class="s1">&#39;git_remote_url&#39;</span><span class="p">:</span><span class="n">git_remote_url</span><span class="p">,</span>
-       <span class="s1">&#39;url&#39;</span><span class="p">:</span><span class="n">url</span><span class="p">,</span>
-        <span class="s1">&#39;endpoint_url&#39;</span><span class="p">:</span><span class="n">endpoint_url</span><span class="p">,</span>
-        <span class="s1">&#39;access_key_id&#39;</span><span class="p">:</span><span class="n">access_key_id</span><span class="p">,</span>
-        <span class="s1">&#39;secret_key&#39;</span><span class="p">:</span><span class="n">secret_key</span><span class="p">,</span>
-        <span class="s1">&#39;user&#39;</span><span class="p">:</span><span class="n">user</span><span class="p">,</span>
-        <span class="s1">&#39;password&#39;</span><span class="p">:</span><span class="n">password</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;path&#39;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+        <span class="s1">&#39;git_remote_url&#39;</span><span class="p">:</span> <span class="n">git_remote_url</span><span class="p">,</span>
+        <span class="s1">&#39;url&#39;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span>
+        <span class="s1">&#39;endpoint_url&#39;</span><span class="p">:</span> <span class="n">endpoint_url</span><span class="p">,</span>
+        <span class="s1">&#39;access_key_id&#39;</span><span class="p">:</span> <span class="n">access_key_id</span><span class="p">,</span>
+        <span class="s1">&#39;secret_key&#39;</span><span class="p">:</span> <span class="n">secret_key</span><span class="p">,</span>
+        <span class="s1">&#39;session_token&#39;</span><span class="p">:</span> <span class="n">session_token</span><span class="p">,</span>
+        <span class="s1">&#39;user&#39;</span><span class="p">:</span> <span class="n">user</span><span class="p">,</span>
+        <span class="s1">&#39;password&#39;</span><span class="p">:</span> <span class="n">password</span><span class="p">,</span>
+        <span class="s1">&#39;osdf_path&#39;</span><span class="p">:</span> <span class="n">osdf_path</span><span class="p">,</span>
+        <span class="s1">&#39;key_id&#39;</span><span class="p">:</span> <span class="n">key_id</span><span class="p">,</span>
+        <span class="s1">&#39;key_path&#39;</span><span class="p">:</span> <span class="n">key_path</span><span class="p">,</span> 
+        <span class="s1">&#39;key-issuer&#39;</span><span class="p">:</span> <span class="n">key_issuer</span><span class="p">,</span>
         <span class="p">}</span>
 
-    <span class="n">status_args</span><span class="o">=</span><span class="n">non_related_args</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">status_args</span><span class="o">=</span><span class="n">non_related_args</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="n">path</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">git_remote_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="p">:</span>
+    <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">git_remote_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize local repository&quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">_init_local</span><span class="p">(</span>
             <span class="n">path</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="p">,</span> <span class="n">neo4j_uri</span>
@@ -4680,7 +4722,7 @@ Returns:
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
 
-    <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;minioS3&quot;</span> <span class="ow">and</span> <span class="n">url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">endpoint_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">access_key_id</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">secret_key</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;minioS3&quot;</span> <span class="ow">and</span> <span class="n">url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">endpoint_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">access_key_id</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">secret_key</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize minioS3 repository&quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">_init_minioS3</span><span class="p">(</span>
             <span class="n">url</span><span class="p">,</span>
@@ -4697,12 +4739,13 @@ Returns:
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
 
-    <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;amazonS3&quot;</span> <span class="ow">and</span> <span class="n">url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">access_key_id</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">secret_key</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span><span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;amazonS3&quot;</span> <span class="ow">and</span> <span class="n">url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">access_key_id</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">secret_key</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize amazonS3 repository&quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">_init_amazonS3</span><span class="p">(</span>
             <span class="n">url</span><span class="p">,</span>
             <span class="n">access_key_id</span><span class="p">,</span>
             <span class="n">secret_key</span><span class="p">,</span>
+            <span class="n">session_token</span><span class="p">,</span>
             <span class="n">git_remote_url</span><span class="p">,</span>
             <span class="n">cmf_server_url</span><span class="p">,</span>
             <span class="n">neo4j_user</span><span class="p">,</span>
@@ -4714,13 +4757,31 @@ Returns:
 
         <span class="k">return</span> <span class="n">output</span>
 
-    <span class="k">elif</span> <span class="nb">type</span><span class="o">==</span><span class="s2">&quot;sshremote&quot;</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">user</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">port</span><span class="o">!=</span><span class="mi">0</span> <span class="ow">and</span> <span class="n">password</span><span class="o">!=</span><span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span><span class="o">!=</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;sshremote&quot;</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">user</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">port</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">password</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize sshremote repository&quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">_init_sshremote</span><span class="p">(</span>
             <span class="n">path</span><span class="p">,</span>
             <span class="n">user</span><span class="p">,</span>
             <span class="n">port</span><span class="p">,</span>
             <span class="n">password</span><span class="p">,</span>
+            <span class="n">git_remote_url</span><span class="p">,</span>
+            <span class="n">cmf_server_url</span><span class="p">,</span>
+            <span class="n">neo4j_user</span><span class="p">,</span>
+            <span class="n">neo4j_password</span><span class="p">,</span>
+            <span class="n">neo4j_uri</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">status_args</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output</span>
+
+    <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;osdfremote&quot;</span> <span class="ow">and</span> <span class="n">osdf_path</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">key_id</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">key_path</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">key_issuer</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">git_remote_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize osdfremote repository&quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">_init_osdfremote</span><span class="p">(</span>
+            <span class="n">osdf_path</span><span class="p">,</span>
+            <span class="n">key_id</span><span class="p">,</span>
+            <span class="n">key_path</span><span class="p">,</span>
+            <span class="n">key_issuer</span><span class="p">,</span>
             <span class="n">git_remote_url</span><span class="p">,</span>
             <span class="n">cmf_server_url</span><span class="p">,</span>
             <span class="n">neo4j_user</span><span class="p">,</span>
@@ -4744,7 +4805,7 @@ Returns:
 
 
 <h2 id="cmflib.cmf.metadata_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -4758,7 +4819,8 @@ Example:
 Args:
     pipeline_name: Name of the pipeline.
     filepath: Path to the MLMD file.
-    execution_id: Optional execution ID.</p>
+    execution_id: Optional execution ID.
+    tensorboard_path: Path to tensorboard logs.</p>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -4784,8 +4846,7 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1956</span>
-<span class="normal">1957</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1957</span>
 <span class="normal">1958</span>
 <span class="normal">1959</span>
 <span class="normal">1960</span>
@@ -4801,7 +4862,9 @@ Args:
 <span class="normal">1970</span>
 <span class="normal">1971</span>
 <span class="normal">1972</span>
-<span class="normal">1973</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1973</span>
+<span class="normal">1974</span>
+<span class="normal">1975</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes MLMD file to CMF-server.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -4811,13 +4874,14 @@ Args:
 <span class="sd">        pipeline_name: Name of the pipeline.</span>
 <span class="sd">        filepath: Path to the MLMD file.</span>
 <span class="sd">        execution_id: Optional execution ID.</span>
+<span class="sd">        tensorboard_path: Path to tensorboard logs.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Response output from the _metadata_push function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments:  pipeline_name, filepath (mlmd file path) </span>
-    <span class="c1">#Optional arguments: Execution_ID</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
+    <span class="c1"># Required arguments:  pipeline_name</span>
+    <span class="c1"># Optional arguments: Execution_ID, filepath (mlmd file path, tensorboard_path</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4849,9 +4913,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1975</span>
-<span class="normal">1976</span>
-<span class="normal">1977</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1977</span>
 <span class="normal">1978</span>
 <span class="normal">1979</span>
 <span class="normal">1980</span>
@@ -4865,7 +4927,9 @@ Returns:
 <span class="normal">1988</span>
 <span class="normal">1989</span>
 <span class="normal">1990</span>
-<span class="normal">1991</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span> <span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1991</span>
+<span class="normal">1992</span>
+<span class="normal">1993</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls MLMD file from CMF-server. </span>
 <span class="sd">     Example: </span>
 <span class="sd">     ```python </span>
@@ -4878,9 +4942,9 @@ Returns:
 <span class="sd">     Returns: </span>
 <span class="sd">        Message from the _metadata_pull function. </span>
 <span class="sd">     &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments:  pipeline_name, filepath(file path to store mlmd file) </span>
-    <span class="c1">#Optional arguments: Execution_ID</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
+    <span class="c1"># Required arguments:  pipeline_name </span>
+    <span class="c1">#Optional arguments: Execution_ID, filepath(file path to store mlmd file) </span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">execution_id</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4919,6 +4983,7 @@ Returns:
           <tr class="doc-section-item">
             <td><code>pipeline_name</code></td>
             <td>
+                  <code>str</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4944,51 +5009,30 @@ Returns:
           </tr>
       </tbody>
     </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Output from the _artifact_pull function.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+      <p>Returns:
+    Output from the _artifact_pull function.</p>
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1993</span>
-<span class="normal">1994</span>
-<span class="normal">1995</span>
-<span class="normal">1996</span>
-<span class="normal">1997</span>
-<span class="normal">1998</span>
-<span class="normal">1999</span>
-<span class="normal">2000</span>
-<span class="normal">2001</span>
-<span class="normal">2002</span>
-<span class="normal">2003</span>
-<span class="normal">2004</span>
-<span class="normal">2005</span>
-<span class="normal">2006</span>
-<span class="normal">2007</span>
-<span class="normal">2008</span>
-<span class="normal">2009</span>
-<span class="normal">2010</span>
-<span class="normal">2011</span>
-<span class="normal">2012</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2013</span>
+<span class="normal">2014</span>
+<span class="normal">2015</span>
+<span class="normal">2016</span>
+<span class="normal">2017</span>
+<span class="normal">2018</span>
+<span class="normal">2019</span>
+<span class="normal">2020</span>
+<span class="normal">2021</span>
+<span class="normal">2022</span>
+<span class="normal">2023</span>
+<span class="normal">2024</span>
+<span class="normal">2025</span>
+<span class="normal">2026</span>
+<span class="normal">2027</span>
+<span class="normal">2028</span>
+<span class="normal">2029</span>
+<span class="normal">2030</span>
+<span class="normal">2031</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls artifacts from the initialized repository.</span>
 
 <span class="sd">    Example:</span>
@@ -4999,14 +5043,13 @@ Returns:
 <span class="sd">    Args:</span>
 <span class="sd">        pipeline_name: Name of the pipeline.</span>
 <span class="sd">        filepath: Path to store artifacts.</span>
-
 <span class="sd">    Returns:</span>
 <span class="sd">        Output from the _artifact_pull function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Required arguments: Pipeline_name</span>
     <span class="c1"># Optional arguments: filepath( path to store artifacts)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5038,24 +5081,24 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2014</span>
-<span class="normal">2015</span>
-<span class="normal">2016</span>
-<span class="normal">2017</span>
-<span class="normal">2018</span>
-<span class="normal">2019</span>
-<span class="normal">2020</span>
-<span class="normal">2021</span>
-<span class="normal">2022</span>
-<span class="normal">2023</span>
-<span class="normal">2024</span>
-<span class="normal">2025</span>
-<span class="normal">2026</span>
-<span class="normal">2027</span>
-<span class="normal">2028</span>
-<span class="normal">2029</span>
-<span class="normal">2030</span>
-<span class="normal">2031</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2033</span>
+<span class="normal">2034</span>
+<span class="normal">2035</span>
+<span class="normal">2036</span>
+<span class="normal">2037</span>
+<span class="normal">2038</span>
+<span class="normal">2039</span>
+<span class="normal">2040</span>
+<span class="normal">2041</span>
+<span class="normal">2042</span>
+<span class="normal">2043</span>
+<span class="normal">2044</span>
+<span class="normal">2045</span>
+<span class="normal">2046</span>
+<span class="normal">2047</span>
+<span class="normal">2048</span>
+<span class="normal">2049</span>
+<span class="normal">2050</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls a single artifact from the initialized repository. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -5070,8 +5113,8 @@ Returns:
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Required arguments: Pipeline_name</span>
-    <span class="c1"># Optional arguments: filepath( path to store artifacts)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span><span class="n">filepath</span><span class="p">,</span><span class="n">artifact_name</span><span class="p">)</span>
+    <span class="c1"># Optional arguments: filepath( path to store artifacts), artifact_name</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -5083,7 +5126,7 @@ Returns:
 
 
 <h2 id="cmflib.cmf.artifact_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">()</span></code>
+            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -5092,57 +5135,46 @@ Returns:
 
       <p>Pushes artifacts to the initialized repository.</p>
 <p>Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">()</span>
-</code></pre></div></p>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Output from the _artifact_push function.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   filepath: Path to store the artifact. 
+Returns:
+    Output from the _artifact_push function.</p>
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2033</span>
-<span class="normal">2034</span>
-<span class="normal">2035</span>
-<span class="normal">2036</span>
-<span class="normal">2037</span>
-<span class="normal">2038</span>
-<span class="normal">2039</span>
-<span class="normal">2040</span>
-<span class="normal">2041</span>
-<span class="normal">2042</span>
-<span class="normal">2043</span>
-<span class="normal">2044</span>
-<span class="normal">2045</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_push</span><span class="p">():</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2052</span>
+<span class="normal">2053</span>
+<span class="normal">2054</span>
+<span class="normal">2055</span>
+<span class="normal">2056</span>
+<span class="normal">2057</span>
+<span class="normal">2058</span>
+<span class="normal">2059</span>
+<span class="normal">2060</span>
+<span class="normal">2061</span>
+<span class="normal">2062</span>
+<span class="normal">2063</span>
+<span class="normal">2064</span>
+<span class="normal">2065</span>
+<span class="normal">2066</span>
+<span class="normal">2067</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes artifacts to the initialized repository.</span>
 
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
-<span class="sd">         result = artifact_push()</span>
+<span class="sd">         result = artifact_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
 <span class="sd">    ```</span>
-
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       filepath: Path to store the artifact. </span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Output from the _artifact_push function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">()</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
