@@ -8,8 +8,13 @@ from server.app.query_visualization_execution import query_visualization_executi
 from fastapi.concurrency import run_in_threadpool
 import threading
 from collections import defaultdict
+import datetime
+import time
 
-lock = threading.Lock()
+lock = threading.Lock() 
+pipeline_locks = {}          # Dictionary to store entry of pipeline inside lock   {pipeline_name : pipeline_lock}
+lock_counts = defaultdict(int)   # count will  increament if pipeline enters and decrements when exists {pipeline_name: count}
+
 async def get_model_data(mlmdfilepath, modelId):
     '''
       This function retrieves the necessary model data required for generating a model card.
@@ -212,21 +217,18 @@ def create_unique_executions(server_store_path, req_info) -> str:
     pipeline_name = pipeline["name"]
     if not pipeline_name:
         return {"error": "Pipeline name is required"}
-    if pipeline_name not in pipeline_locks:
+    if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
         pipeline_locks[pipeline_name] = threading.Lock()
-    pipeline_lock = pipeline_locks[pipeline_name]
-    lock_counts[pipeline_name] += 1 
-    pipeline_lock.acquire()
+    pipeline_lock = pipeline_locks[pipeline_name]   
+    lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
+    pipeline_lock.acquire()        # starting lock
     try:
         executions_server = []
         list_executions_exists = []
-
         if os.path.exists(server_store_path):
             query = cmfquery.CmfQuery(server_store_path)
             stages = query.get_pipeline_stages(pipeline_name)
-            print("got pipeline stages")
             for stage in stages:
-                print(stage,"stage")
                 executions = []
                 executions = query.get_all_executions_in_stage(stage)
                 for i in executions.index:
@@ -260,24 +262,21 @@ def create_unique_executions(server_store_path, req_info) -> str:
         for i in mlmd_data["Pipeline"]:
             if len(i['stages']) == 0 :
                 status="exists"
-                print(status,"status")
             else:
-                print("pipeline inside else part ")
                 cmf_merger.parse_json_to_mlmd(
                     json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
                 )
                 status='success'
-       
-    finally:
-        pipeline_lock.release()
-        lock_counts[pipeline_name] -= 1  # Decrement the reference count
-        if lock_counts[pipeline_name] == 0:
+    finally:                       # cleanup of variables used for locking
+        pipeline_lock.release()        
+        lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
+        if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
             del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
             del lock_counts[pipeline_name]
     
     return status
 
-def get_mlmd_from_server(server_store_path, pipeline_name, exec_id):
+def get_mlmd_from_server(server_store_path, pipeline_name, exec_id) :
     query = cmfquery.CmfQuery(server_store_path)
     execution_flag = 0
     # checks if given execution_id present in mlmd

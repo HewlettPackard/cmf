@@ -133,7 +133,7 @@ async def display_exec(
         if total_items < end_idx:
             end_idx = total_items
         exe_ids_list = exe_ids[start_idx:end_idx]
-        executions_df = await get_executions_by_ids(server_store_path, pipeline_name, exe_ids_list)
+        executions_df = await async_api(get_executions_by_ids, server_store_path, exe_ids_list)
         temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {

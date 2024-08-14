@@ -18,7 +18,6 @@ import json
 import os
 from cmflib import cmf
 import traceback
-import traceback
 from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb

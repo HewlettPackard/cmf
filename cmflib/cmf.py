@@ -485,7 +485,6 @@ class Cmf:
             Returns:
                 Execution object from ML Metadata library associated with the updated execution for this stage.
         """
-        print("inside update execution")
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
             print("Error - no execution id")
