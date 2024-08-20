@@ -1,29 +1,47 @@
 from cmflib import cmfquery
 import pandas as pd
-import itertools
-from ml_metadata.proto.metadata_store_pb2 import Value
+from typing import Dict
 
-async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
+async def query_exec_lineage(mlmd_path, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict: 
+    """
+    Creates data of executions for forced_directed_graph.
+    Parameters:
+        mlmd_path: cmf-server path.
+        pipeline_name: Name of pipeline.
+        dict_of_exe_ids: Dict of execution data, [id,Context_Type,Execution_uuid, Context_ID].
+        uuid_server: first four characters of uuid, example: fb0e.
+    Returns:
+        Returns dictionary of nodes and links.
+        {
+        "nodes" : node_id_name_list,
+        "links" : [{1:2},{2:3}]
+         }
+    """
     data = {}
+    df=dict_of_exe_ids[pipeline_name]
+    #finding Context_Type by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid_server ('u3tr')  
+    result = df[df['Execution_uuid'].str[:4] == uuid_server]  ##result = df[id: "1","Execution_type_name", "Execution_uuid"]
+    exec_type = result["Context_Type"] 
+
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
     node_id_name_list = []
     link_src_trgt_list = []
     host_id = None
     for id, context_type, uuid in zip(dict_of_exe_ids[pipeline_name]["id"], dict_of_exe_ids[pipeline_name]["Context_Type"], dict_of_exe_ids[pipeline_name]["Execution_uuid"]):
-        truncated_uuid = uuid.split("_")[0][:4]
-        # this condition is failing that's why we are unable to assign id to host_id
-        if (context_type + "_" + truncated_uuid) == (pipeline_name + "/" + exec_type + "_" + uuid_server):
+        truncated_uuid = uuid.split("_")[0][:4]    # first 4 characters of uuid example fb0e
+        # comparing exec_type fetched from server with the one in dict_of_exe_ids and getting host_id of exec_type
+        if (context_type + "_" + truncated_uuid) == (exec_type.to_list()[0] + "_" + uuid_server):
             host_id = id
             node_id_name_list.append({"id":host_id, "name":(context_type.split("/")[-1] + "_" + uuid.split("-")[0][:4]), "color":"#16B8E9"})
     #exec=query.get_one_hop_parent_executions([host_id],pipeline_id)
     exec_new = None
-    if host_id is None:
+    if host_id is None:  #if host_id is None then return {}
         return data
-    exec_new = query.get_all_parent_executions_by_id([host_id], pipeline_id)
-    if exec_new is None:
+    exec_new = query.get_all_parent_executions_by_id([host_id], pipeline_id) 
+    if exec_new is None:  # if execution has no parent executions return {}
         return data
-    for i in exec_new[0]:
+    for i in exec_new[0]: # appending id, name, exec_uuid to node_id_name_list
         id = i[0]
         name = i[1]
         exec_uuid = i[2]

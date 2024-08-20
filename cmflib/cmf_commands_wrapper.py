@@ -17,7 +17,7 @@
 from cmflib import cli
 
 
-def _metadata_push(pipeline_name, file_name, execution_id):
+def _metadata_push(pipeline_name, file_name, execution_id, tensorboard):
     cli_args = cli.parse_args(
             [
                "metadata",
@@ -27,7 +27,9 @@ def _metadata_push(pipeline_name, file_name, execution_id):
                "-f",
                file_name,
                "-e",
-               execution_id
+               execution_id,
+               "-t",
+               tensorboard
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -45,7 +47,24 @@ def _metadata_pull(pipeline_name, file_name, execution_id):
                "-f",
                file_name,
                "-e",
-               execution_id
+               execution_id,
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+
+def _metadata_export(pipeline_name, json_file_name, file_name):
+    cli_args = cli.parse_args(
+            [
+               "metadata",
+               "export",
+               "-p",
+               pipeline_name,
+               "-j",
+               json_file_name,
+               "-f",
+               file_name,
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -53,12 +72,15 @@ def _metadata_pull(pipeline_name, file_name, execution_id):
     print(msg)
     return msg
 
-def _artifact_push():
+def _artifact_push(pipeline_name, file_name):
     cli_args = cli.parse_args(
             [
                "artifact",
                "push",
-
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -77,7 +99,6 @@ def _artifact_pull(pipeline_name, file_name):
                pipeline_name,
                "-f",
                file_name,
-
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -85,7 +106,7 @@ def _artifact_pull(pipeline_name, file_name):
     print(msg)
     return msg
 
-def _artifact_pull_single(pipeline_name, file_name,artifact_name):
+def _artifact_pull_single(pipeline_name, file_name, artifact_name):
     cli_args = cli.parse_args(
             [
                "artifact",
@@ -96,7 +117,6 @@ def _artifact_pull_single(pipeline_name, file_name,artifact_name):
                file_name,
                "-a",
                artifact_name,
-
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -117,7 +137,7 @@ def _cmf_cmd_init():
     print(msg)
     return msg
 
-def _init_local(path,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_local(path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -142,7 +162,7 @@ def _init_local(path,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo
     return msg
 
 
-def _init_minioS3(url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_minioS3(url, endpoint_url, access_key_id, secret_key, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -172,17 +192,19 @@ def _init_minioS3(url,endpoint_url,access_key_id,secret_key,git_remote_url,cmf_s
     print(msg)
     return msg
     
-def _init_amazonS3(url,access_key_id,secret_key,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
                "amazonS3",
                "--url",
-               url ,  
+               url,
                "--access-key-id",
                access_key_id,
                "--secret-key",
                secret_key,
+               "--session-token",
+               session_token,
                "--git-remote-url",
                git_remote_url,
                "--cmf-server-url",
@@ -200,7 +222,7 @@ def _init_amazonS3(url,access_key_id,secret_key,git_remote_url,cmf_server_url,ne
     print(msg)
     return msg
 
-def _init_sshremote(path,user,port,password,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
@@ -230,7 +252,7 @@ def _init_sshremote(path,user,port,password,git_remote_url,cmf_server_url,neo4j_
     print(msg)
     return msg
 
-def _init_osdfremote(path,key_id,key_path,key_issuer,git_remote_url,cmf_server_url,neo4j_user,neo4j_password,neo4j_uri):
+def _init_osdfremote(path, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
