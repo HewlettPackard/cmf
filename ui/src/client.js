@@ -70,8 +70,8 @@ class FastAPIClient {
     });
   }
 
-  async getArtiTreeLineage(pipeline,lineagetype) {
-      return this.apiClient.get(`/artifact-lineage/tangled-tree/${lineagetype}/${pipeline}`)
+  async getArtiTreeLineage(pipeline) {
+      return this.apiClient.get(`/artifact-lineage/tangled-tree/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
@@ -84,8 +84,8 @@ class FastAPIClient {
     });
   }
 
-  async getExecutionLineage(pipeline,exec_type,uuid) {
-      return this.apiClient.get(`/execution-lineage/force-directed-graph/${exec_type}/${pipeline}/${uuid}`)
+  async getExecutionLineage(pipeline, uuid) {
+      return this.apiClient.get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
       .then(({ data }) => {
       return data;
     });

@@ -2,7 +2,21 @@ from cmflib import cmfquery
 import pandas as pd
 from typing import Dict
 
-async def query_execution_lineage_d3force(mlmd_path, pipeline_name, dict_of_exe_ids, exec_type, uuid_server):
+async def query_execution_lineage_d3force(mlmd_path, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict:
+    """
+    Creates data of executions for forced_directed_graph.
+    Parameters:
+        mlmd_path: cmf-server path.
+        pipeline_name: Name of pipeline.
+        dict_of_exe_ids: Dict of execution data, [id,Context_Type,Execution_uuid, Context_ID].
+        uuid_server: first four characters of uuid, example: fb0e.
+    Returns:
+        Returns dictionary of nodes and links.
+        {
+        "nodes" : node_id_name_list,
+        "links" : [{1:2},{2:3}]
+         }
+    """
     data = {}
     df=dict_of_exe_ids[pipeline_name]
     #finding Context_Type by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid_server ('u3tr')  

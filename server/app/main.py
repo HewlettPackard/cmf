@@ -189,8 +189,8 @@ async def list_of_executions(request: Request, pipeline_name: str):
     else:
         return None
 
-@app.get("/execution-lineage/force-directed-graph/{exec_type}/{pipeline_name}/{uuid}")
-async def execution_lineage(request: Request, exec_type: str, pipeline_name: str, uuid: str):
+@app.get("/execution-lineage/force-directed-graph/{pipeline_name}/{uuid}")
+async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
     '''
       returns dictionary of nodes and links for given execution_type.
       response = {
@@ -202,7 +202,7 @@ async def execution_lineage(request: Request, exec_type: str, pipeline_name: str
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_execution_lineage_d3force(server_store_path, pipeline_name, dict_of_exe_ids, exec_type, uuid)
+            response = await query_execution_lineage_d3force(server_store_path, pipeline_name, dict_of_exe_ids, uuid)
     else:
         response = None
     return response
@@ -286,8 +286,8 @@ async def artifacts(
             "items": None
         }
 
-@app.get("/artifact-lineage/tangled-tree/{lineagetype}/{pipeline_name}")
-async def artifact_lineage(request: Request,lineagetype, pipeline_name: str):
+@app.get("/artifact-lineage/tangled-tree/{pipeline_name}")
+async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Dict[str, Any]]]:
     '''
       Returns:
       A nested list of dictionaries with 'id' and 'parents' keys.
@@ -301,7 +301,7 @@ async def artifact_lineage(request: Request,lineagetype, pipeline_name: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_artifact_lineage_d3tree(server_store_path, pipeline_name, dict_of_art_ids,lineagetype)
+            response = await query_artifact_lineage_d3tree(server_store_path, pipeline_name, dict_of_art_ids)
             #response = "null"
     return response
 
