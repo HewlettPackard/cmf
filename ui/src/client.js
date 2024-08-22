@@ -41,7 +41,7 @@ class FastAPIClient {
 
   async getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) {
     return this.apiClient
-      .get(`/display_artifacts/${pipelineName}/${type}`, {
+      .get(`/artifacts/${pipelineName}/${type}`, {
         params: {
           page: page,
           sort_field: sortField,
@@ -57,42 +57,42 @@ class FastAPIClient {
 
   async getArtifactTypes() {
     return this.apiClient
-      .get(`/display_artifact_types`)
+      .get(`/artifact_types`)
       .then(({ data }) => {
         return data;
       });
   }
 
   async getArtifactLineage(pipeline) {
-      return this.apiClient.get(`/display_artifact_lineage/${pipeline}`)
+      return this.apiClient.get(`/artifact-lineage/force-directed-graph/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
   }
 
   async getArtiTreeLineage(pipeline) {
-      return this.apiClient.get(`/display_arti_tree_lineage/${pipeline}`)
+      return this.apiClient.get(`/artifact-lineage/tangled-tree/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
   }
 
   async getExecutionTypes(pipeline) {
-      return this.apiClient.get(`/get_execution_types/${pipeline}`)
+      return this.apiClient.get(`/list-of-executions/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
   }
 
   async getExecutionLineage(pipeline, uuid) {
-      return this.apiClient.get(`/display_exec_lineage/${pipeline}/${uuid}`)
+      return this.apiClient.get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
       .then(({ data }) => {
       return data;
     });
   }
 
   async getExecTreeLineage(pipeline,uuid) {
-      return this.apiClient.get(`/display_tree_lineage/${uuid}/${pipeline}`)
+      return this.apiClient.get(`/execution-lineage/tangled-tree/${uuid}/${pipeline}`)
       .then(({ data }) => {
       return data;
     });
@@ -101,7 +101,7 @@ class FastAPIClient {
 
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
-      .get(`/display_executions/${pipelineName}`, {
+      .get(`/executions/${pipelineName}`, {
         params: {
           page: page,
           sort_field: sortField,
@@ -117,7 +117,7 @@ class FastAPIClient {
 
   async getPipelines(value) {
    try {
-      const { data } = await this.apiClient.get(`/display_pipelines`);
+      const { data } = await this.apiClient.get(`/pipelines`);
       return data;
     } catch (error) {
       console.error(error);
