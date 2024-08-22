@@ -24,13 +24,11 @@ import config from "../../config";
 
 const client = new FastAPIClient(config);
 
-const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
+const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   // Default sorting order
-  const [sortOrder, setSortOrder] = useState("Context_Type");
-
-  // Local filter value state
-  const [filterValue, setFilterValue] = useState("");
+  const [sortOrder, setSortOrder] = useState(onSort);
+  const [sortedData, setSortedData] = useState([]);  
 
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -41,19 +39,20 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
 
   useEffect(() => {
     // Set initial sorting order when component mounts
-    setSortOrder("asc");
-  }, []);
+    setSortedData([...artifacts]);
+  }, [artifacts]);
 
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
-    onSort("name", newSortOrder); // Notify parent component about sorting change
-  };
-
-  const handleFilterChange = (event) => {
-    const value = event.target.value;
-    setFilterValue(value);
-    onFilter("name", value); // Notify parent component about filter change
+    const sorted = [...artifacts].sort((a, b) => {
+        if(newSortOrder === "asc"){
+            return a.name.localeCompare(b.name);
+        }else{
+            return b.name.localeCompare(a.name);        
+        }
+    });
+    setSortedData(sorted); // Notify parent component about sorting change
   };
 
   const toggleRow = (rowId) => {
@@ -79,15 +78,6 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
   
   return (
     <div className="container flex flex-col mx-auto p-6 mr-4">
-      <div className="flex flex-col items-end m-1">
-        <input
-          type="text"
-          value={filterValue}
-          onChange={handleFilterChange}
-          placeholder="Filter by Name"
-          className="w-64 px-1 border-2 border-gray"
-        />
-      </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200 border-4">
@@ -102,8 +92,8 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
                   onClick={handleSort}
                   className="name px-6 py-3"
                 >
-                  name {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
-                  {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
+                  name {sortOrder === "asc" && <span className="cursor-pointer">&#8593;</span>}
+                  {sortOrder === "desc" && <span className="cursor-pointer">&#8595;</span>}
                 </th>
                 {ArtifactType === "Model" && (
                 <th scope="col" className="model_card px-6 py-3">
@@ -129,13 +119,13 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort, onFilter }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {artifacts.length > 0 && artifacts.map((data, index) => (
+              {sortedData.length > 0 && sortedData.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4" onClick={() => toggleRow(index)}>
+                    <td className="px-6 py-4 cursor-pointer" onClick={() => toggleRow(index)}>
                       {expandedRow === index ? "-" : "+"}
                     </td>
                     <td className="px-6 py-4">{data.id}</td>

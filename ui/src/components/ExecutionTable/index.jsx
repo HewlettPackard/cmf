@@ -19,27 +19,34 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ExecutionTable = ({ executions, onSort, onFilter }) => {
+const ExecutionTable = ({ executions, onSort, onFilter}) => {
 
-  // Default sorting order
-  const [sortOrder, setSortOrder] = useState("Context_Type");
-
+// Default sorting order
+  const [sortOrder, setSortOrder] = useState(onSort);
+  const [sortedData, setSortedData] = useState([]);
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
-
   const [expandedRow, setExpandedRow] = useState(null);
 
   const consistentColumns = [];
 
   useEffect(() => {
     // Set initial sorting order when component mounts
-    setSortOrder("asc");
-  }, []);
+    setSortedData([...executions]);
+  }, [executions]);
+
 
   const handleSort = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
-    onSort("Context_Type", newSortOrder); // Notify parent component about sorting change
+    const sorted = [...executions].sort((a, b) => {
+        if(newSortOrder === "asc"){
+            return a.Context_Type.localeCompare(b.Context_Type);
+        }else{
+            return b.Context_Type.localeCompare(a.Context_Type);
+        }
+    });
+    setSortedData(sorted); // Notify parent component about sorting change
   };
 
   const handleFilterChange = (event) => {
@@ -62,7 +69,8 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          marginBottom: "1rem",
+          marginBottom: "0.5rem",
+          marginTop: "0.5rem",
         }}
       >
         <input
@@ -88,8 +96,8 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                   onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  Context_Type {sortOrder === "asc" && <span className="arrow">&#8593;</span>}
-                  {sortOrder === "desc" && <span className="arrow">&#8595;</span>}
+                  Context_Type {sortOrder === "asc" && <span className="cursor-pointer">&#8593;</span>}
+                  {sortOrder === "desc" && <span className="cursor-pointer">&#8595;</span>}
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
@@ -106,14 +114,14 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-              {executions.map((data, index) => (
+              {sortedData.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr
                     key={index}
                     onClick={() => toggleRow(index)}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td classname="px-6 py-4">
+                    <td className="px-6 py-4 cursor-pointer">
                       {expandedRow === index ? "-" : "+"}
                     </td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
