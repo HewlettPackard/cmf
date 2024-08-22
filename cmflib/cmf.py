@@ -1724,7 +1724,7 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
-        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.string_value.split(',')[0], DATASLICE_PATH)
+        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         return df
