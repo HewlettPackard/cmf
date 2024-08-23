@@ -120,7 +120,7 @@ const Executions = () => {
             pipelines={pipelines}
             handlePipelineClick={handlePipelineClick}
           />
-          <div className="container justify-center items-center mx-auto px-4">
+          <div className="container justify-center items-center px-4">
             {loading ? (<Loader/>):(
               <div className="container">
                 {selectedPipeline !== null && executions !== null && (

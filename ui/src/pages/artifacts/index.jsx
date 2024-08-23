@@ -149,7 +149,7 @@ const Artifacts = () => {
             pipelines={pipelines}
             handlePipelineClick={handlePipelineClick}
           />
-          <div className="container justify-center items-center mx-auto px-4">
+          <div className="container justify-center items-center px-4">
             <div className="flex flex-col">
               {selectedPipeline !== null && (
                 <ArtifactTypeSidebar

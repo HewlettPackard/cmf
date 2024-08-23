@@ -77,7 +77,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   
   return (
-    <div className="container flex flex-col mx-auto p-6 mr-4">
+    <div className="container flex flex-col">
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200 border-4">
