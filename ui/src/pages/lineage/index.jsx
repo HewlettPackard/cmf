@@ -34,14 +34,14 @@ const client = new FastAPIClient(config);
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes=['Artifact_Tree', 'Execution_Tree'];
+  const LineageTypes = ['Artifact_Tree', 'Execution_Tree'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifact_Tree');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
-  const [lineageData, setLineageData]=useState(null);
-  const [executionData, setExecutionData]=useState(null);
+  const [lineageData, setLineageData] = useState(null);
+  const [executionData, setExecutionData] = useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
   const [execDropdownData,setExecDropdownData] = useState([]);
-  const [artitreeData, setArtiTreeData]=useState(null);
+  const [artitreeData, setArtiTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // fetching list of pipelines
@@ -119,11 +119,11 @@ const Lineage = () => {
   const fetchArtifactTree = (pipelineName) => {
     setLoading(true);
     client.getArtiTreeLineage(pipelineName).then((data) => {    
-    if (data === null) { 
-        setArtiTreeData(null);
-    }
-    setArtiTreeData(data);
-    setLoading(false);    
+      if (data === null) { 
+          setArtiTreeData(null);
+      }
+      setArtiTreeData(data);
+      setLoading(false);
     });
   };
 
@@ -145,7 +145,7 @@ const Lineage = () => {
             fetchExecTree(pipelineName,uuid);
             }
         }
-      setLoading(false);
+        setLoading(false);
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
@@ -167,10 +167,10 @@ const Lineage = () => {
     fetchExecTree(selectedPipeline, uuid);
   };  
 
-  const fetchExecutionLineage = (pipelineName, type, uuid) => {
+  const fetchExecutionLineage = (pipelineName,uuid) => {
     setLoading(true);
-    client.getExecutionLineage(pipelineName,type,uuid).then((data) => {    
-    if (data === null) {
+    client.getExecutionLineage(pipelineName,uuid).then((data) => {    
+      if (data === null) {
           setExecutionData(null);
       }
       setExecutionData(data);
@@ -181,8 +181,8 @@ const Lineage = () => {
   const fetchExecTree = (pipelineName,exec_type) => {
     setLoading(true);
     client.getExecTreeLineage(pipelineName,exec_type).then((data) => {    
-    setExecutionData(data);
-    setLoading(false);
+      setExecutionData(data);
+      setLoading(false);
     });
   };
 
@@ -210,33 +210,33 @@ const Lineage = () => {
              )}
             </div>
             <div className="container">
-              { loading && <Loader/> }
+              { loading && <Loader /> }
               {!loading && selectedPipeline !== null && selectedLineageType === "Artifacts" && lineageData !== null && (
-                <LineageArtifacts key={lineageArtifactsKey}  data={lineageData}/>
+                <LineageArtifacts key={lineageArtifactsKey}  data={lineageData} />
               )}
               {!loading && selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null  && executionData !== null &&(
                 <div>
-                <ExecutionDropdown data={execDropdownData} exec_type={selectedExecutionType} handleExecutionClick= {handleExecutionClick}/>        
+                  <ExecutionDropdown data={execDropdownData} exec_type={selectedExecutionType} handleExecutionClick= {handleExecutionClick} />
                 </div>
               )}
               {!loading && selectedPipeline !== null && selectedLineageType === "Execution" && execDropdownData !== null  && executionData !== null &&(
                 <div>
-                <LineageArtifacts key={lineageArtifactsKey} data={executionData} />
+                  <LineageArtifacts key={lineageArtifactsKey} data={executionData} />
                 </div>
               )}
-              {!loading && selectedPipeline !== null && selectedLineageType === "Tangled_Execution" && execDropdownData !== null   &&(
+              {!loading && selectedPipeline !== null && selectedLineageType === "Execution_Tree" && execDropdownData !== null   &&(
                 <div>
-                <ExecutionTangledDropdown data={execDropdownData} exec_type={selectedExecutionType} handleTreeClick= {handleTreeClick}/>        
+                  <ExecutionTangledDropdown data={execDropdownData} exec_type={selectedExecutionType} handleTreeClick= {handleTreeClick} />
                 </div>
               )}
-              {!loading && selectedPipeline !== null && selectedLineageType === "Tangled_Execution" && execDropdownData !== null  && executionData !== null &&(
+              {!loading && selectedPipeline !== null && selectedLineageType === "Execution_Tree" && execDropdownData !== null  && executionData !== null &&(
                 <div style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <ExecutionTree key={lineageArtifactsKey} data={executionData} />
+                  <ExecutionTree key={lineageArtifactsKey} data={executionData} />
                 </div>
               )}
               {!loading && selectedPipeline !== null && selectedLineageType === "Artifact_Tree" && artitreeData !== null &&(
                 <div style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <TangledTree key={lineageArtifactsKey} data={artitreeData} />
+                  <TangledTree key={lineageArtifactsKey} data={artitreeData} />
                 </div>
               )}
             </div>
