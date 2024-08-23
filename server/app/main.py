@@ -384,7 +384,9 @@ async def update_global_exe_dict(pipeline_name):
     global dict_of_exe_ids
     output_dict = await get_all_exe_ids(server_store_path, pipeline_name)
     if pipeline_name in dict_of_exe_ids:
-        dict_of_exe_ids[pipeline_name].update(output_dict[pipeline_name])
+        dict_of_exe_ids[pipeline_name] = pd.concat([dict_of_exe_ids[pipeline_name], output_dict[pipeline_name]], ignore_index=True)
+        dict_of_exe_ids[pipeline_name] = dict_of_exe_ids[pipeline_name].drop_duplicates(subset=['id'], keep='first')
+
     else:
         dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]
     return
