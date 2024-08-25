@@ -7,6 +7,9 @@ from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
 from cmflib import cmfquery
+import asyncio
+import threading
+from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
     get_lineage_data,
@@ -32,7 +35,8 @@ server_store_path = "/cmf-server/data/mlmd"
 
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
-
+pipeline_locks = {}
+lock_counts = defaultdict(int)
 #lifespan used to prevent multiple loading and save time for visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -87,14 +91,27 @@ async def mlmd_push(info: Request):
     print("......................")
     req_info = await info.json()
     pipeline_name = req_info["pipeline_name"]
-    status = await async_api(create_unique_executions, server_store_path, req_info)
-    if status == "version_update":
-        # Raise an HTTPException with status code 422
-        raise HTTPException(status_code=422, detail="version_update")
-    if status != "exists":
-    # async function
-        await update_global_exe_dict(pipeline_name)
-        await update_global_art_dict(pipeline_name)
+    if not pipeline_name:
+        return {"error": "Pipeline name is required"}
+    if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
+        pipeline_locks[pipeline_name] = asyncio.Lock()
+    pipeline_lock = pipeline_locks[pipeline_name]   
+    lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
+    async with pipeline_lock:
+        try:
+            status = await async_api(create_unique_executions, server_store_path, req_info)
+            if status == "version_update":
+                # Raise an HTTPException with status code 422
+                raise HTTPException(status_code=422, detail="version_update")
+            if status != "exists":
+            # async function
+                await update_global_exe_dict(pipeline_name)
+                await update_global_art_dict(pipeline_name)
+        finally:
+            lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
+            if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
+                del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
+                del lock_counts[pipeline_name]
     return {"status": status, "data": req_info}
 
 # api to get mlmd file from cmf-server

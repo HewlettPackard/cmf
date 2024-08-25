@@ -4,16 +4,8 @@ import json
 import os
 import typing as t
 from fastapi.concurrency import run_in_threadpool
-import threading
-from collections import defaultdict
-import datetime
-import time
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
-
-lock = threading.Lock() 
-pipeline_locks = {}          # Dictionary to store entry of pipeline inside lock   {pipeline_name : pipeline_lock}
-lock_counts = defaultdict(int)   # count will  increament if pipeline enters and decrements when exists {pipeline_name: count}
 
 async def get_model_data(mlmdfilepath, modelId):
     '''
@@ -217,8 +209,6 @@ def get_artifact_types(mlmdfilepath) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-pipeline_locks = {}
-lock_counts = defaultdict(int)
 def create_unique_executions(server_store_path, req_info) -> str:
     """
     Creates list of unique executions by checking if they already exist on server or not.
@@ -237,60 +227,48 @@ def create_unique_executions(server_store_path, req_info) -> str:
     pipeline_name = pipeline["name"]
     if not pipeline_name:
         return {"error": "Pipeline name is required"}
-    if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
-        pipeline_locks[pipeline_name] = threading.Lock()
-    pipeline_lock = pipeline_locks[pipeline_name]   
-    lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
-    pipeline_lock.acquire()        # starting lock
-    try:
-        executions_server = []
-        list_executions_exists = []
-        if os.path.exists(server_store_path):
-            query = cmfquery.CmfQuery(server_store_path)
-            executions = query.get_all_executions_in_pipeline(pipeline_name)
-            for i in executions.index:
-                for uuid in executions['Execution_uuid'][i].split(","):
-                    executions_server.append(uuid)
-            executions_client = []
-            for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
-                for j in i["executions"]:
-                    if j['name'] != "": #If executions have name , they are reusable executions
-                        continue       #which needs to be merged in irrespective of whether already
-                                    #present or not so that new artifacts associated with it gets in.
-                    if 'Execution_uuid' in j['properties']:
-                        for uuid in j['properties']['Execution_uuid'].split(","):
-                            executions_client.append(uuid)
-                    else:
-                        # mlmd push is failed here
-                        status="version_update"
-                        return status
-            if executions_server != []:
-                list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
-            for i in mlmd_data["Pipeline"]:
-                for stage in i['stages']:
-                    for cmf_exec in stage['executions'][:]:
-                        uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
-                        for uuid in uuids:
-                            if uuid in list_executions_exists:
-                                stage['executions'].remove(cmf_exec)
-
-            for i in mlmd_data["Pipeline"]:
-                i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
+    executions_server = []
+    list_executions_exists = []
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        executions = query.get_all_executions_in_pipeline(pipeline_name)
+        for i in executions.index:
+            for uuid in executions['Execution_uuid'][i].split(","):
+                executions_server.append(uuid)
+        executions_client = []
+        for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
+            for j in i["executions"]:
+                if j['name'] != "": #If executions have name , they are reusable executions
+                    continue       #which needs to be merged in irrespective of whether already
+                                #present or not so that new artifacts associated with it gets in.
+                if 'Execution_uuid' in j['properties']:
+                    for uuid in j['properties']['Execution_uuid'].split(","):
+                        executions_client.append(uuid)
+                else:
+                    # mlmd push is failed here
+                    status="version_update"
+                    return status
+        if executions_server != []:
+            list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
         for i in mlmd_data["Pipeline"]:
-            if len(i['stages']) == 0 :
-                status="exists"
-            else:
-                cmf_merger.parse_json_to_mlmd(
-                    json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
-                )
-                status='success'
-    finally:                       # cleanup of variables used for locking
-        pipeline_lock.release()        
-        lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
-        if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
-            del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
-            del lock_counts[pipeline_name]
-    
+            for stage in i['stages']:
+                for cmf_exec in stage['executions'][:]:
+                    uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+                    for uuid in uuids:
+                        if uuid in list_executions_exists:
+                            stage['executions'].remove(cmf_exec)
+
+        for i in mlmd_data["Pipeline"]:
+            i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
+    for i in mlmd_data["Pipeline"]:
+        if len(i['stages']) == 0 :
+            status="exists"
+        else:
+            cmf_merger.parse_json_to_mlmd(
+                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+            )
+            status='success'
+
     return status
 
 
