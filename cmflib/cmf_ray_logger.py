@@ -57,4 +57,4 @@ class CmfRayLogger(Callback):
         trial_config = trial.config
         trial_result = trial.last_result
 
-        print(f"An error occured with Trial {trial_id}, Not commiting anything commiting last results to cmf")
+        print(f"An error occured with Trial {trial_id}, Not commiting anything to cmf")
