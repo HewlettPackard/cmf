@@ -374,7 +374,9 @@ async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
     output_dict = await get_all_artifact_ids(server_store_path, dict_of_exe_ids, pipeline_name)
     if pipeline_name in dict_of_art_ids:
-        dict_of_art_ids[pipeline_name].update(output_dict[pipeline_name])
+        for key in dict_of_art_ids[pipeline_name]:
+            if key in output_dict[pipeline_name]:
+                dict_of_art_ids[pipeline_name][key] = pd.concat([dict_of_art_ids[pipeline_name][key], output_dict[pipeline_name][key]]).drop_duplicates()
     else:
         dict_of_art_ids[pipeline_name] = output_dict[pipeline_name]
     return
