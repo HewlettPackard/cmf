@@ -963,10 +963,10 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 
                   <details class="quote">
                     <summary>Source code in <code>cmflib/cmf.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1763</span>
-<span class="normal">1764</span>
-<span class="normal">1765</span>
-<span class="normal">1766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1766</span>
+<span class="normal">1767</span>
+<span class="normal">1768</span>
+<span class="normal">1769</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="n">writer</span>
@@ -1008,10 +1008,7 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1771</span>
-<span class="normal">1772</span>
-<span class="normal">1773</span>
-<span class="normal">1774</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1774</span>
 <span class="normal">1775</span>
 <span class="normal">1776</span>
 <span class="normal">1777</span>
@@ -1029,7 +1026,10 @@ Args:
 <span class="normal">1789</span>
 <span class="normal">1790</span>
 <span class="normal">1791</span>
-<span class="normal">1792</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span>
+<span class="normal">1792</span>
+<span class="normal">1793</span>
+<span class="normal">1794</span>
+<span class="normal">1795</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">add_data</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add data to create the dataslice.</span>
@@ -1080,10 +1080,7 @@ Example:</p>
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1802</span>
-<span class="normal">1803</span>
-<span class="normal">1804</span>
-<span class="normal">1805</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1805</span>
 <span class="normal">1806</span>
 <span class="normal">1807</span>
 <span class="normal">1808</span>
@@ -1173,7 +1170,10 @@ Example:</p>
 <span class="normal">1892</span>
 <span class="normal">1893</span>
 <span class="normal">1894</span>
-<span class="normal">1895</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">1895</span>
+<span class="normal">1896</span>
+<span class="normal">1897</span>
+<span class="normal">1898</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Commit the dataslice.</span>
 <span class="sd">    The created dataslice is versioned and added to underneath data versioning software.</span>
 <span class="sd">    Example:</span>
@@ -1201,7 +1201,7 @@ Example:</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="o">=</span><span class="n">name_without_extension</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create execution for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
 
-    <span class="n">directory_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span> <span class="s2">&quot;cmf_artifacts/dataslices&quot;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;Execution_uuid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">string_value</span><span class="p">)</span>
+    <span class="n">directory_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">ARTIFACTS_PATH</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;Execution_uuid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">string_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">DATASLICE_PATH</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">custom_props</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">custom_properties</span>
     <span class="n">git_repo</span> <span class="o">=</span> <span class="n">git_get_repo</span><span class="p">()</span>
