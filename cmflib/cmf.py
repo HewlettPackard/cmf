@@ -1498,7 +1498,7 @@ class Cmf:
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
         
-        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], METRICS_PATH)
+        directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.METRICS_PATH)
         os.makedirs(directory_path, exist_ok=True)
         metrics_df = pd.DataFrame.from_dict(
             self.metrics[metrics_name], orient="index")
@@ -1724,7 +1724,7 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
-        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], DATASLICE_PATH)
+        directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         return df
@@ -1746,7 +1746,7 @@ class Cmf:
         Returns:
            None
         """
-        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], DATASLICE_PATH)
+        directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
