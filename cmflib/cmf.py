@@ -101,6 +101,9 @@ class Cmf:
     # pylint: disable=too-many-instance-attributes
     # Reading CONFIG_FILE variable
     cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+    ARTIFACTS_PATH = "cmf_artifacts"
+    DATASLICE_PATH = "dataslice"
+    METRICS_PATH = "metrics"
     if os.path.exists(cmf_config):
         attr_dict = CmfConfig.read_config(cmf_config)
         __neo4j_uri = attr_dict.get("neo4j-uri", "")
@@ -357,6 +360,7 @@ class Cmf:
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
         """
+        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
@@ -368,7 +372,6 @@ class Cmf:
 
         # Initializing the execution related fields
 
-        logging_dir = change_dir(self.cmf_init_path)
         self.metrics = {}
         self.input_artifacts = []
         self.execution_label_props = {}
@@ -647,6 +650,7 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
@@ -665,7 +669,6 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-        logging_dir = change_dir(self.cmf_init_path)
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -999,6 +1002,7 @@ class Cmf:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
 
+        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
@@ -1018,7 +1022,6 @@ class Cmf:
         # If the model already exist , then we just link the existing model to the execution
         # We do not update the model properties . 
         # We need to append the new properties to the existing model properties
-        logging_dir = change_dir(self.cmf_init_path)
         if custom_properties is None:
             custom_properties = {}
         custom_props = {} if custom_properties is None else custom_properties
@@ -1379,6 +1382,7 @@ class Cmf:
         Returns:
               Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
+        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
@@ -1393,8 +1397,6 @@ class Cmf:
             self.create_execution(execution_type=name_without_extension)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-
-        logging_dir = change_dir(self.cmf_init_path)
         custom_props = {} if custom_properties is None else custom_properties
         uri = str(uuid.uuid1())
         metrics_name = metrics_name + ":" + uri + ":" + str(self.execution.id)
@@ -1496,7 +1498,7 @@ class Cmf:
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
         
-        directory_path = os.path.join( "cmf_artifacts/metrics",self.execution.properties["Execution_uuid"].string_value)
+        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], METRICS_PATH)
         os.makedirs(directory_path, exist_ok=True)
         metrics_df = pd.DataFrame.from_dict(
             self.metrics[metrics_name], orient="index")
@@ -1722,7 +1724,7 @@ class Cmf:
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
         # To do checkout if not there
-        directory_path = os.path.join("cmf_artifacts/dataslices",self.execution.properties["Execution_uuid"].string_value)
+        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         return df
@@ -1744,7 +1746,7 @@ class Cmf:
         Returns:
            None
         """
-        directory_path = os.path.join("cmf_artifacts/dataslices", self.execution.properties["Execution_uuid"].string_value)
+        directory_path = os.path.join(ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
         temp_dict = df.to_dict("index")
@@ -1828,7 +1830,7 @@ class Cmf:
                 self.writer.create_execution(execution_type=name_without_extension)
                 assert self.writer.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-            directory_path = os.path.join( "cmf_artifacts/dataslices",self.writer.execution.properties["Execution_uuid"].string_value)
+            directory_path = os.path.join(self.writer.ARTIFACTS_PATH, self.writer.execution.properties["Execution_uuid"].string_value.split(',')[0], self.writer.DATASLICE_PATH)
             os.makedirs(directory_path, exist_ok=True)
             custom_props = {} if custom_properties is None else custom_properties
             git_repo = git_get_repo()
