@@ -618,7 +618,7 @@ class CmfQuery(object):
                 list_exec.append(self.store.get_executions_by_id(exec))
         return list_exec
 
-    def get_one_hop_parent_executions_ids(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
+    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: str = None) -> t.List[int]:
         """Get parent execution ids for given execution id
         Args: 
            execution_id : Execution id for which parent execution are required
@@ -627,13 +627,13 @@ class CmfQuery(object):
         Return:
            Returns parent executions for given id
         """
-        artifacts: t.Optional = self._get_input_artifacts(execution_id)
-        if not artifacts:
+        artifact_ids: t.Optional = self._get_input_artifacts(execution_ids)
+        if not artifact_ids:
             return None
 
         exe_ids = []
 
-        for id in artifacts:
+        for id in artifact_ids:
             ids = self._get_executions_by_output_artifact_id(id, pipeline_id)
             exe_ids.extend(ids)
         return exe_ids
@@ -835,6 +835,60 @@ class CmfQuery(object):
         """Reads the data slice."""
         # To do checkout if not there
         df = pd.read_parquet(name)
+        return df
+
+
+    # writing new functions to remove multiple calls to cmfquery functions or ml-metadata functions
+    def get_all_executions_in_pipeline(self, pipeline_name: str) -> pd.DataFrame:
+        """Return all executions of the given pipeline as pandas data frame.
+        Args:
+            pipeline_name:- pipeline name
+        Returns:
+            Data frame with all executions associated with the given pipeline.
+        """
+        df = pd.DataFrame()
+        pipeline_id = self.get_pipeline_id(pipeline_name)
+        for stage in self._get_stages(pipeline_id):
+            for execution in self._get_executions(stage.id):
+               ex_as_df: pd.DataFrame = self._transform_to_dataframe(
+                   execution, {"id": execution.id, "name": execution.name}
+               )
+               df = pd.concat([df, ex_as_df], sort=True, ignore_index=True)
+        return df
+
+    def get_all_artifacts_for_executions(self, execution_ids: t.List[int]) -> pd.DataFrame:
+        """Return all artifacts for the list of given executions.
+
+        Args:
+            execution_ids: List of Execution identifiers.
+        Return:
+            Data frame containing artifacts for the list of given executions.
+        """
+        df = pd.DataFrame()
+        # set of artifact ids for list of given execution ids
+        artifact_ids = set(
+            event.artifact_id
+            for event in self.store.get_events_by_execution_ids(set(execution_ids))
+            )
+        artifacts = self.store.get_artifacts_by_id(list(artifact_ids))
+        for artifact in artifacts:
+             df = pd.concat(
+                    [df, self.get_artifact_df(artifact)], sort=True, ignore_index=True
+             )
+        return df
+    
+    def get_one_hop_parent_artifacts_with_id(self, artifact_id: int) -> pd.DataFrame:
+        """Return input artifacts for the execution that produced the given artifact.
+        Args:
+            artifact_id: Artifact id.
+        Returns:
+            Data frame containing immediate parent artifacts of given artifact/artifacts.
+        """
+        df = pd.DataFrame()
+        input_artifact_ids: t.List[int] = self._get_input_artifacts(self._get_executions_by_output_artifact_id(artifact_id))
+        df = self._as_pandas_df(self.store.get_artifacts_by_id(input_artifact_ids), 
+                lambda _artifact: self.get_artifact_df(_artifact)
+                )
         return df
 
     def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:

@@ -53,13 +53,13 @@ function DashboardHeader() {
       >
         <div className="text-xl font-semibold lg:flex-grow">
           <Link
-            to="/display_artifacts"
+            to="/artifacts"
             className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
           >
             Artifacts
           </Link>
           <Link
-            to="/display_executions"
+            to="/executions"
             className="block mt-4 lg:inline-block lg:mt-0 text-slate-200  hover:text-white mx-4"
           >
             Executions
