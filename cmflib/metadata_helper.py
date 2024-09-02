@@ -121,7 +121,7 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
         context_type.id = store.put_context_type(context_type)  # Returns ID
         return context_type
 
-def update_context_custom_properties(store,context_id, context_name, properties, custom_properties):
+def update_context_custom_properties(store, context_id, context_name: str, properties: dict, custom_properties: dict) -> metadata_store_pb2.Context:
         context = metadata_store_pb2.Context(
             id = context_id,
             name=context_name,

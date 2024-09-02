@@ -78,10 +78,11 @@ async def get_model_data(mlmdfilepath, modelId):
 
     return model_data_df, model_exe_df, model_input_df, model_output_df
 
-async def async_api(function_to_async, mlmdfilepath, *argv):
+#Converts sync functions to async
+async def async_api(function_to_async, mlmdfilepath: str, *argv):
     return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
 
-def get_executions(mlmdfilepath, pipeline_name, exe_ids):
+def get_executions(mlmdfilepath: str, pipeline_name, exe_ids) -> pd.DataFrame:
     '''
     Args:
      mlmdfilepath: mlmd file path.
@@ -99,7 +100,7 @@ def get_executions(mlmdfilepath, pipeline_name, exe_ids):
     return df
 
 
-def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
+def get_all_exe_ids(mlmdfilepath: str, pipeline_name: str) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
     returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
@@ -128,7 +129,7 @@ def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
     return execution_ids
 
 
-def get_all_artifact_ids(mlmdfilepath, execution_ids, pipeline_name: str = None):
+def get_all_artifact_ids(mlmdfilepath: str, execution_ids, pipeline_name: str = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
     # following is a dictionary of dictionaries
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary

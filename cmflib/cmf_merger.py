@@ -21,33 +21,40 @@ import traceback
 from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
+from typing import Union
 
-
-def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
+def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[str, int]) -> Union[str, None]:
     try:
         mlmd_data = json.loads(mlmd_json)
         pipelines = mlmd_data["Pipeline"]
         pipeline = pipelines[0]
         pipeline_name = pipeline["name"]
         stage = {}
-
-        if cmd == "push":
+        
+        # When the command is "push", add the original_time_since_epoch to the custom_properties in the metadata while pulling mlmd no need
+        if cmd == "push":   
             data = create_original_time_since_epoch(mlmd_data)
         else:
             data = mlmd_data
 
         graph = False
-        if os.getenv('NEO4J_URI', "") != "":
+        # if cmf is configured with 'neo4j' make graph True.
+        if os.getenv('NEO4J_URI', "") != "":   
             graph = True
+
+        # Initialize the connection configuration and metadata store
         config = mlpb.ConnectionConfig()
         config.sqlite.filename_uri = path_to_store
         store = metadata_store.MetadataStore(config)
-        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,
+
+        # Initialize the cmf class with pipeline_name and graph_status
+        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph, is_server=True)
+        
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
-            if exec_id is None:
+            if exec_id is None:  #if exec_id is None we pass all the executions.
                 list_executions = [execution for execution in stage["executions"]]
-            elif exec_id is not None:
+            elif exec_id is not None:  # elif exec_id is not None, we pass executions for that specific id.
                 list_executions = [
                     execution
                     for execution in stage["executions"]
@@ -63,8 +70,8 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         custom_properties=stage["custom_properties"],
                     )
                 except AlreadyExistsError as e:
-                    #This error may occur when 2 same pipelines are pushed at same time
-                    # As both pipelines will be unable to fetch data from server so will create context raising this error
+                    # Handle the case where the context already exists, possibly due to concurrent pushes.
+                    # As both pipelines will be unable to fetch data from server 
                     # updating custom properties if context already exists
                     _ = cmf_class.update_context(
                         str(stage["type"]),
@@ -134,15 +141,13 @@ def parse_json_to_mlmd(mlmd_json, path_to_store, cmd, exec_id):
                         else:
                             pass
                     except AlreadyExistsError as e:
-                                #print("AlreadyExistsError in log_dataset_with_version_input")                                
-                        if artifact_type == "Dataset" or artifact_type == "Model" or artifact_type == "Metrics": 
-                                artifact = store.get_artifacts_by_uri(uri)
-                                cmf_class.update_existing_artifact(
-                                    artifact[0],
-                                    custom_properties={artifact_type:"new_value"},
-                                ) 
+                            # if same pipeline is pushed twice at same time, update custom_properties using 2nd pipeline
+                            artifact = store.get_artifacts_by_uri(uri)
+                            cmf_class.update_existing_artifact(
+                                artifact[0],
+                                custom_properties=custom_props,
+                            ) 
                     except Exception as e:
-                        if artifact_type == "Dataset" or artifact_type == "Model" or artifact_type == "Metrics":
                             print(f"Error in log_{artifact_type}_with_version" , e)
     except Exception as e:
         print(f"An error occurred in parse_json_to_mlmd: {e}")

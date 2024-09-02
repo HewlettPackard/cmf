@@ -1,7 +1,7 @@
 import pandas as pd
 from cmflib import cmfquery
 import warnings
-
+import typing as t
 
 warnings.filterwarnings("ignore")
 
@@ -13,7 +13,7 @@ def truncate_artifact_name(my_str):
     temp=":".join(temp)
     return temp
 
-def query_artifact_lineage_d3force(mlmd_path, pipeline_name, dict_of_art_ids):
+def query_artifact_lineage_d3force(mlmd_path: str, pipeline_name: str, dict_of_art_ids: t.Dict[str, t.Dict[str, pd.DataFrame]]) -> dict:
     art_name_id = {}
     artifact_name_list = []
     query = cmfquery.CmfQuery(mlmd_path)
@@ -47,8 +47,5 @@ def query_artifact_lineage_d3force(mlmd_path, pipeline_name, dict_of_art_ids):
         "links" : new_list
     }
     return data
-
-#async def async_query_visualization( loop: asyncio.AbstractEventLoop, executor: ThreadPoolExecutor,mlmd_path, pipeline_name,dict_of_art_ids) :
-#        return await loop.run_in_executor(executor, query_visualization,mlmd_path, pipeline_name,dict_of_art_ids)
 
 #print(query_visualization("/home/chobey/repair_lineage/testenv/example-get-started/mlmd","Test-env"))
