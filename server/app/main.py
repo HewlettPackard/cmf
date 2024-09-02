@@ -299,7 +299,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
     # checks if mlmd file exists on server
     response = None
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
+        query = cmfquery.CmfQuery(is_server=True)
         if (pipeline_name in query.get_pipeline_names()):
             response = await query_artifact_lineage_d3tree(pipeline_name, dict_of_art_ids)
             #response = "null"

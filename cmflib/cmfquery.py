@@ -14,6 +14,7 @@
 # limitations under the License.
 ###
 import abc
+import os
 import json
 import logging
 import typing as t
@@ -119,7 +120,15 @@ class CmfQuery(object):
 
     def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
         if is_server:
-            config_dict = get_postgres_config()
+            IP = os.getenv('MYIP')
+            POSTGRES_DB = os.getenv('POSTGRES_DB')
+            POSTGRES_USER = os.getenv('POSTGRES_USER')
+            POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+            print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
+            print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
+            print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
+            print(f"The value of POSTGRES_HOST: {IP}")
+            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_PASSWORD}
             temp_store = PostgresStore(config_dict)
         else:
             temp_store = SqlliteStore({"filename":filepath})

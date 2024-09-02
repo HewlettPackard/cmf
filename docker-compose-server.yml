@@ -19,9 +19,9 @@ services:
     image: postgres:13
     container_name: postgres
     environment:
-      POSTGRES_USER: xxxx
-      POSTGRES_PASSWORD: xxxx
-      POSTGRES_DB: xxxx
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - "5432:5432"
     volumes:
@@ -53,15 +53,14 @@ services:
     container_name: cmf-server
     build:     
       context: ./
-      args:
-        POSTGRES_DB : $${POSTGRES_DB}
-        POSTGRES_USER: $${POSTGRES_USER}
-        POSTGRES_PASSWORD: $${POSTGRES_PASSWORD}
       dockerfile: ./server/Dockerfile
     restart: always
     environment:
       MYIP: ${IP:-127.0.0.1}
       HOSTNAME: ${hostname:-localhost}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "8080:80"
     expose:
@@ -91,3 +90,4 @@ services:
     depends_on:
       server:
         condition: service_healthy
+

@@ -205,14 +205,14 @@ def get_artifact_types():
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-async def create_unique_executions(server_store_path, req_info):
+async def create_unique_executions(req_info):
     mlmd_data = json.loads(req_info["json_payload"])
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
     pipeline_name = pipeline["name"]
     executions_server = []
     list_executions_exists = []
-    if os.path.exists("/cmf-server/data/mlmd"):
+    if os.path.exists("/cmf-server/data/postgres_data"):
         query = cmfquery.CmfQuery(is_server=True)
         executions = query.get_all_executions_in_pipeline(pipeline_name)
         for i in executions.index:

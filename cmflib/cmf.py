@@ -130,7 +130,15 @@ class Cmf:
             Cmf.__prechecks()
             temp_store = SqlliteStore({"filename":filepath})
         else:
-            config_dict = get_postgres_config()
+            IP = os.getenv('MYIP')
+            POSTGRES_DB = os.getenv('POSTGRES_DB')
+            POSTGRES_USER = os.getenv('POSTGRES_USER')
+            POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+            print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
+            print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
+            print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
+            print(f"The value of POSTGRES_HOST: {IP}")
+            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_PASSWORD}
             temp_store = PostgresStore(config_dict)
         print("temp_store type", type(temp_store))
         if custom_properties is None:
