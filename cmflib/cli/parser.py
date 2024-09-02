@@ -20,11 +20,11 @@ import logging
 import os
 import sys
 
-from cmflib.commands import artifact, metadata, init
+from cmflib.commands import artifact, metadata, init, list
 
 from cmflib.cli import CmfParserError
 
-COMMANDS = [artifact, metadata, init]
+COMMANDS = [artifact, metadata, init, list]
 
 
 def _find_parser(parser, cmd_cls):

@@ -67,6 +67,7 @@ from cmflib.cmf_commands_wrapper import (
     _init_amazonS3,
     _init_sshremote,
     _init_osdfremote,
+    _list_pipelines,
 )
 
 class Cmf:
@@ -2262,4 +2263,23 @@ def non_related_args(type : str, args : dict):
         if repo ==type:
             non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
     return non_related_args
+
+def list_pipelines(filepath = "./mlmd"):
+    """ Display list of piplines for current mlmd.
+
+    Example:
+    ```python
+         result = _list_pipelines("./mlmd_directory")
+    ```
+
+    Args:
+        filepath: File path to store the MLMD file. 
+    Returns:
+        Output from the _list_pipelines function.
+    """
+
+    # Optional arguments: filepath( path to store the MLMD file)
+    output = _list_pipelines(filepath)
+    return output
+
 

@@ -282,3 +282,16 @@ def _init_osdfremote(path, key_id, key_path, key_issuer, git_remote_url, cmf_ser
     print(msg)
     return msg
     
+def _list_pipelines(file_name):
+    cli_args = cli.parse_args(
+            [
+               "list",
+               "pipelines",
+               "-f",
+               file_name,
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
