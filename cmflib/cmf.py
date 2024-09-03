@@ -68,6 +68,7 @@ from cmflib.cmf_commands_wrapper import (
     _init_sshremote,
     _init_osdfremote,
     _list_pipelines,
+    _list_executions,
 )
 
 class Cmf:
@@ -2283,3 +2284,21 @@ def list_pipelines(filepath = "./mlmd"):
     return output
 
 
+def list_executions(pipeline_name: str, filepath = "./mlmd", execution_id: str = ""):
+    """ Display list of executions for given pipeline.
+    Example: 
+    ```python 
+        result = list_executions("example_pipeline", "./mlmd_directory", "example_execution_id") 
+    ```
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the mlmd file. 
+       execution_id: Executions for particular execution id. 
+    Returns:
+       Output from the _list_executions function. 
+    """
+
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath( path to store mlmd file), execution_id
+    output = _list_executions(pipeline_name, filepath, execution_id)
+    return output

@@ -295,3 +295,22 @@ def _list_pipelines(file_name):
     msg = cmd.do_run()
     print(msg)
     return msg
+
+def _list_executions(pipeline_name, file_name, execution_id):
+    cli_args = cli.parse_args(
+            [
+               "list",
+               "executions",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-e",
+               execution_id,
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
