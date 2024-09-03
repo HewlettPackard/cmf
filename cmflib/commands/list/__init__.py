@@ -16,10 +16,10 @@
 
 import argparse
 
-from cmflib.commands.list import pipelines, executions
+from cmflib.commands.list import pipelines, executions, artifacts
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [pipelines, executions]
+SUB_COMMANDS = [pipelines, executions, artifacts]
 
 # This parser adds positional argumets to the main parser
 def add_parser(subparsers, parent_parser):

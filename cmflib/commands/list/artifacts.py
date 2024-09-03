@@ -16,12 +16,11 @@
 
 import argparse
 import os
-import pandas as pd
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 
-class CmdListExecutions(CmdBase):
+class CmdListArtifacts(CmdBase):
     def run(self):
         current_directory = os.getcwd()
         # default path for mlmd file name
@@ -37,37 +36,28 @@ class CmdListExecutions(CmdBase):
         # Creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
 
-        df = query.get_all_executions_in_pipeline(self.args.pipeline_name)
-
-        # If dataframe is empty that means pipeline name is not exist
-        if df.empty:
-            df = "Pipeline does not exist.."
-        else:
-            # If the new mlmd came[not in the case of Test-env] which is not pushed inside server,
-            # it doesn't exist column named with "Python_Env"
-            if "Python_Env" in df.columns:
-                # Dropping Python_Env column
-                df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers
-            pd.set_option('display.max_rows', None)  # Set to None to display all rows
-            pd.set_option('display.max_columns', None)  # Set to None to display all columns
-            if self.args.execution_id:
+        df = query.get_all_artifacts_by_context(self.args.pipeline_name)
+        if not df.empty:
+            if self.args.artifact_id:
                 try:
-                    if int(self.args.execution_id) in list(df['id']): # Converting series to list 
-                        df = df.query(f'id == {int(self.args.execution_id)}')
+                    if int(self.args.artifact_id) in list(df['id']): # Converting series to list 
+                        df = df.query(f'id == {int(self.args.artifact_id)}')
                     else:
-                        df = "Execution id does not exist.."    
+                        df = "Artifact id does not exist.."
                 except:
-                        df = "Execution id does not exist.."    
+                        df = "Artifact id does not exist.."
+        else:
+            df = "Pipeline does not exist..."
         return df
 
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = "Display list of executions in current cmf configuration"
+    ARTIFACT_LIST_HELP = "Display list of artifacts in current cmf configuration"
 
     parser = subparsers.add_parser(
-        "executions",
+        "artifacts",
         parents=[parent_parser],
-        description="Display executions",
-        help=EXECUTION_LIST_HELP,
+        description="Display artifacts",
+        help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -86,10 +76,10 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-e", 
-        "--execution_id", 
-        help="Specify execution id.", 
-        metavar="<exe_id>",
+        "-a", 
+        "--artifact_id", 
+        help="Specify artifact id.", 
+        metavar="<artifact_id>",
     )
 
-    parser.set_defaults(func=CmdListExecutions)
+    parser.set_defaults(func=CmdListArtifacts)

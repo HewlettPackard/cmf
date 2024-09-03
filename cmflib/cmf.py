@@ -69,6 +69,7 @@ from cmflib.cmf_commands_wrapper import (
     _init_osdfremote,
     _list_pipelines,
     _list_executions,
+    _list_artifacts,
 )
 
 class Cmf:
@@ -2288,7 +2289,7 @@ def list_executions(pipeline_name: str, filepath = "./mlmd", execution_id: str =
     """ Display list of executions for given pipeline.
     Example: 
     ```python 
-        result = list_executions("example_pipeline", "./mlmd_directory", "example_execution_id") 
+        result = _list_executions("example_pipeline", "./mlmd_directory", "example_execution_id") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
@@ -2301,4 +2302,23 @@ def list_executions(pipeline_name: str, filepath = "./mlmd", execution_id: str =
     # Required arguments: pipeline_name
     # Optional arguments: filepath( path to store mlmd file), execution_id
     output = _list_executions(pipeline_name, filepath, execution_id)
+    return output
+
+def list_artifacts(pipeline_name: str, filepath = "./mlmd", artifact_id: str = ""):
+    """ Display list of artifacts for given pipeline.
+    Example: 
+    ```python 
+        result = _list_artifacts("example_pipeline", "./mlmd_directory", "example_artifact_id") 
+    ```
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the mlmd file. 
+       artifact_id: Artifacts for particular artifact id. 
+    Returns:
+       Output from the _list_artifacts function. 
+    """
+
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath( path to store mlmd file), artifact_id
+    output = _list_artifacts(pipeline_name, filepath, artifact_id)
     return output

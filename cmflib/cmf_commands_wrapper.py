@@ -314,3 +314,21 @@ def _list_executions(pipeline_name, file_name, execution_id):
     print(msg)
     return msg
 
+def _list_artifacts(pipeline_name, file_name, artifact_id):
+    cli_args = cli.parse_args(
+            [
+               "list",
+               "executions",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-a",
+               artifact_id,
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
