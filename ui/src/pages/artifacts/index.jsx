@@ -64,7 +64,10 @@ const Artifacts = () => {
   };
 
   const handleArtifactTypeClick = (artifactType) => {
-    setArtifacts(null);
+    console.log(selectedArtifactType,artifactType) 
+    if (artifactType !== selectedArtifactType) {
+      setArtifacts(null);      
+    }
     setSelectedArtifactType(artifactType);
     setActivePage(1);
   };

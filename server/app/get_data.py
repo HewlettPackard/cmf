@@ -100,7 +100,7 @@ def get_executions(mlmdfilepath: str, pipeline_name, exe_ids) -> pd.DataFrame:
     return df
 
 
-def get_all_exe_ids(mlmdfilepath: str, pipeline_name: str) -> t.Dict[str, pd.DataFrame]:
+def get_all_exe_ids(mlmdfilepath: str, pipeline_name: str = None) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
     returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
