@@ -19,6 +19,7 @@ import os
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
+from tabulate import tabulate
 
 class CmdListArtifacts(CmdBase):
     def run(self):
@@ -48,7 +49,9 @@ class CmdListArtifacts(CmdBase):
                         df = "Artifact id does not exist.."
         else:
             df = "Pipeline does not exist..."
-        return df
+
+        return tabulate(df, df.columns, tablefmt='grid')
+        # return df
 
 def add_parser(subparsers, parent_parser):
     ARTIFACT_LIST_HELP = "Display list of artifacts in current cmf configuration"

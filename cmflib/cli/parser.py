@@ -16,9 +16,6 @@
 
 """Main parser for the cmf cli"""
 import argparse
-import logging
-import os
-import sys
 
 from cmflib.commands import artifact, metadata, init, list
 
