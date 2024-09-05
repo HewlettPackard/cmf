@@ -124,17 +124,17 @@ class CmfQuery(object):
             POSTGRES_DB = os.getenv('POSTGRES_DB')
             POSTGRES_USER = os.getenv('POSTGRES_USER')
             POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-            print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
-            print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
-            print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
-            print(f"The value of POSTGRES_HOST: {IP}")
+            #print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
+            #print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
+            #print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
+            #print(f"The value of POSTGRES_HOST: {IP}")
             config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_PASSWORD}
             temp_store = PostgresStore(config_dict)
         else:
             temp_store = SqlliteStore({"filename":filepath})
-        print("temp_store type", type(temp_store))
+        #print("temp_store type", type(temp_store))
         self.store = temp_store.connect()
-        print("self.store = ", self.store)
+        #print("self.store = ", self.store)
 
     @staticmethod
     def _copy(

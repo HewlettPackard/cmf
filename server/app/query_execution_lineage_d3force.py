@@ -1,12 +1,11 @@
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 import pandas as pd
 from typing import Dict
 
-async def query_execution_lineage_d3force(pipeline_name, dict_of_exe_ids, uuid_server) -> Dict:
+async def query_execution_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict:
     """
     Creates data of executions for forced_directed_graph.
     Parameters:
-        mlmd_path: cmf-server path.
         pipeline_name: Name of pipeline.
         dict_of_exe_ids: Dict of execution data, [id,Context_Type,Execution_uuid, Context_ID].
         uuid_server: first four characters of uuid, example: fb0e.
@@ -22,8 +21,6 @@ async def query_execution_lineage_d3force(pipeline_name, dict_of_exe_ids, uuid_s
     #finding Context_Type by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid_server ('u3tr')  
     result = df[df['Execution_uuid'].str[:4] == uuid_server]  ##result = df[id: "1","Execution_type_name", "Execution_uuid"]
     exec_type = result["Context_Type"] 
-
-    query = cmfquery.CmfQuery(is_server=True)
 
     pipeline_id = query.get_pipeline_id(pipeline_name)
     node_id_name_list = []

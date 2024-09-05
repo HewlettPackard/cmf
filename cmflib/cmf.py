@@ -102,6 +102,7 @@ class Cmf:
     # pylint: disable=too-many-instance-attributes
     # Reading CONFIG_FILE variable
     #cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+    PYTHON_ENV_PATH = "python_env"
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
@@ -134,13 +135,13 @@ class Cmf:
             POSTGRES_DB = os.getenv('POSTGRES_DB')
             POSTGRES_USER = os.getenv('POSTGRES_USER')
             POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-            print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
-            print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
-            print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
-            print(f"The value of POSTGRES_HOST: {IP}")
+            #print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
+            #print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
+            #print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
+            #print(f"The value of POSTGRES_HOST: {IP}")
             config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_PASSWORD}
             temp_store = PostgresStore(config_dict)
-        print("temp_store type", type(temp_store))
+        #print("temp_store type", type(temp_store))
         if custom_properties is None:
             custom_properties = {}
         if not pipeline_name:
@@ -148,7 +149,7 @@ class Cmf:
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
         self.store = temp_store.connect()
-        print("self.store = ", self.store)
+        #print("self.store = ", self.store)
         self.filepath = filepath
         self.child_context = None
         self.execution = None
@@ -393,7 +394,8 @@ class Cmf:
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
-        python_env=get_python_env()
+        # for every execution, need to log python env as an artifact
+        #log_python_env()
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
@@ -407,7 +409,6 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
-            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
@@ -576,7 +577,6 @@ class Cmf:
         # print(custom_props)
         git_repo = properties.get("Git_Repo", "")
         git_start_commit = properties.get("Git_Start_Commit", "")
-        python_env = properties.get("Python_Env", "")
         #name = properties.get("Name", "")
         create_new_execution = True
         execution_name = execution_type
@@ -597,7 +597,6 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
-            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution
         )

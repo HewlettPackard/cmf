@@ -1,13 +1,13 @@
 # cmf-server api's
 from fastapi import FastAPI, Request, status, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
 
-from cmflib import cmfquery, cmf_merger
+from cmflib.cmfquery import CmfQuery
 from server.app.get_data import (
     get_artifacts,
     get_lineage_data,
@@ -29,6 +29,9 @@ import json
 
 server_store_path = "/cmf-server/data/postgres_data"
 
+#if os.path.exists(server_store_path):
+query = CmfQuery(is_server=True)
+
 #global variables
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
@@ -40,9 +43,9 @@ async def lifespan(app: FastAPI):
     global dict_of_exe_ids
     if os.path.exists(server_store_path):
         # loaded execution ids with names into memory
-        dict_of_exe_ids = await get_all_exe_ids()
+        dict_of_exe_ids = await get_all_exe_ids(query)
         # loaded artifact ids into memory
-        dict_of_art_ids = await get_all_artifact_ids(dict_of_exe_ids)
+        dict_of_art_ids = await get_all_artifact_ids(query, dict_of_exe_ids)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -87,7 +90,7 @@ async def mlmd_push(info: Request):
     print("......................")
     req_info = await info.json()
     pipeline_name = req_info["pipeline_name"]
-    status = await create_unique_executions(req_info)
+    status = await create_unique_executions(req_info, query)
     if status == "version_update":
         # Raise an HTTPException with status code 422
         raise HTTPException(status_code=422, detail="version_update")
@@ -104,7 +107,7 @@ async def mlmd_pull(info: Request, pipeline_name: str):
     req_info = await info.json()
     if os.path.exists(server_store_path):
         #json_payload values can be json data, NULL or no_exec_id.
-        json_payload= await get_mlmd_from_server(pipeline_name, req_info['exec_id'])
+        json_payload= await get_mlmd_from_server(query, pipeline_name, req_info['exec_id'])
     else:
         print("No mlmd file submitted.")
         json_payload = ""
@@ -123,7 +126,7 @@ async def executions(
     filter_value: str = Query(None, description="Filter value"),
     ):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
+    if os.path.exists(server_store_path) and pipeline_name in dict_of_exe_ids:
         exe_ids_initial = dict_of_exe_ids[pipeline_name]
         # Apply filtering if provided
         if filter_by and filter_value:
@@ -137,7 +140,7 @@ async def executions(
         if total_items < end_idx:
             end_idx = total_items
         exe_ids_list = exe_ids[start_idx:end_idx]
-        executions_df = await get_executions(pipeline_name, exe_ids_list)
+        executions_df = await get_executions(query, pipeline_name, exe_ids_list)
         temp = executions_df.to_json(orient="records")
         executions_parsed = json.loads(temp)
         return {
@@ -160,9 +163,8 @@ async def artifact_lineage(request: Request, pipeline_name: str):
     # checks if mlmd file exists on server
  
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(is_server=True)
         if (pipeline_name in query.get_pipeline_names()):
-            response=await get_lineage_data(pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            response=await get_lineage_data(query, pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
             #response = None
             return response
         else:
@@ -179,9 +181,8 @@ async def list_of_executions(request: Request, pipeline_name: str):
     '''
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(is_server=True)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await get_lineage_data(pipeline_name,"Execution",dict_of_art_ids,dict_of_exe_ids)
+            response = await get_lineage_data(pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."
@@ -200,9 +201,8 @@ async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
     '''
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(is_server=True)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_execution_lineage_d3force(pipeline_name, dict_of_exe_ids, uuid)
+            response = await query_execution_lineage_d3force(query, pipeline_name, dict_of_exe_ids, uuid)
     else:
         response = None
     return response
@@ -218,9 +218,8 @@ async def execution_lineage(request: Request,uuid, pipeline_name: str):
     '''
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_execution_lineage_d3tree(server_store_path, pipeline_name, dict_of_exe_ids,uuid)
+            response = await query_execution_lineage_d3tree(query, pipeline_name, dict_of_exe_ids,uuid)
     return response
 
 # api to display artifacts available in mlmd
@@ -267,7 +266,7 @@ async def artifacts(
         if total_items < end_idx:
             end_idx = total_items
         artifact_id_list = list(art_ids)[start_idx:end_idx]
-        artifact_df = await get_artifacts(pipeline_name, art_type, artifact_id_list)
+        artifact_df = await get_artifacts(query, pipeline_name, art_type, artifact_id_list)
         data_paginated = artifact_df
         #data_paginated is returned None if artifact df is None or {}
         #it will load empty page, without this condition it will load
@@ -299,9 +298,9 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
     # checks if mlmd file exists on server
     response = None
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(is_server=True)
+
         if (pipeline_name in query.get_pipeline_names()):
-            response = await query_artifact_lineage_d3tree(pipeline_name, dict_of_art_ids)
+            response = await query_artifact_lineage_d3tree(query, pipeline_name, dict_of_art_ids)
             #response = "null"
     return response
 
@@ -310,7 +309,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
 async def artifact_types(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        artifact_types = get_artifact_types()
+        artifact_types = get_artifact_types(query)
         return artifact_types
     else:
         artifact_types = ""
@@ -321,7 +320,6 @@ async def artifact_types(request: Request):
 async def pipelines(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(is_server=True)
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
@@ -355,7 +353,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     df = pd.DataFrame()
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(modelId)
+        model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(query, modelId)
         if not model_data_df.empty:
             result_1 = model_data_df.to_json(orient="records")
             json_payload_1 = json.loads(result_1)
@@ -372,7 +370,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
-    output_dict = await get_all_artifact_ids(server_store_path, dict_of_exe_ids, pipeline_name)
+    output_dict = await get_all_artifact_ids(query, dict_of_exe_ids, pipeline_name)
     # type(dict_of_exe_ids[pipeline_name]) = Dict[ <class 'pandas.core.frame.DataFrame'> ]
     dict_of_art_ids[pipeline_name]=output_dict[pipeline_name]
     return
@@ -380,7 +378,7 @@ async def update_global_art_dict(pipeline_name):
 
 async def update_global_exe_dict(pipeline_name):
     global dict_of_exe_ids
-    output_dict = await get_all_exe_ids(server_store_path, pipeline_name)
+    output_dict = await get_all_exe_ids(query, pipeline_name)
     # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
     return

@@ -1,18 +1,10 @@
-import itertools
-import re
-import networkx as nx
-from networkx.drawing.nx_agraph import graphviz_layout
-import pandas as pd
-from cmflib import cmfquery
-import dvc
-import json
-import random
+
+from cmflib.cmfquery import CmfQuery
 import warnings
 
 warnings.filterwarnings("ignore")
-def query_visualization_ArtifactExecution(pipeline_name):
+def query_visualization_ArtifactExecution(query: CmfQuery, pipeline_name):
     file_path="/cmf-server/data/static/data.json"
-    query = cmfquery.CmfQuery(is_server=True)
     stages = query.get_pipeline_stages(pipeline_name)
     node_id_name_list=[]
     link_src_trgt_list=[]
@@ -25,7 +17,7 @@ def query_visualization_ArtifactExecution(pipeline_name):
             print("___________________")
             for i in range(len(artifacts)):
                 node_id_name={}
-                link_src_trgt_={}
+                link_src_trgt={}
                 node_id_name["id"]=artifacts.loc[i, "id"]
                 node_id_name["name"]=artifacts.loc[i, "name"]
                 id_and_name = (node_id_name['id'], node_id_name['name'])
@@ -36,7 +28,7 @@ def query_visualization_ArtifactExecution(pipeline_name):
                     link_src_trgt["source"]=stage
                     link_src_trgt["target"]=artifacts.loc[i,"id"]
     for stage in stages:
-        id_list=[100:200]
+        #id_list=[100:200]
         node_id_name["id"]
 #            for i in artifacts:
 #                print(i['name'])
