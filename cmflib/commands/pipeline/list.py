@@ -20,7 +20,7 @@ import os
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 
-class CmdListPipeline(CmdBase):
+class CmdPipelineList(CmdBase):
     def run(self):
         current_directory = os.getcwd()
         # default path for mlmd file name
@@ -42,15 +42,15 @@ def add_parser(subparsers, parent_parser):
     PIPELINE_LIST_HELP = "Display list of pipelines in current cmf configuration"
 
     parser = subparsers.add_parser(
-        "pipelines",
+        "list",
         parents=[parent_parser],
-        description="Display pipelines",
+        description="Display pipeline list",
         help=PIPELINE_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-
+    
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>",
     )
 
-    parser.set_defaults(func=CmdListPipeline)
+    parser.set_defaults(func=CmdPipelineList)

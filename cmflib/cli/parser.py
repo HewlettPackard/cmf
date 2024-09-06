@@ -17,11 +17,11 @@
 """Main parser for the cmf cli"""
 import argparse
 
-from cmflib.commands import artifact, metadata, init, list
+from cmflib.commands import artifact, metadata, init, executions, pipeline
 
 from cmflib.cli import CmfParserError
 
-COMMANDS = [artifact, metadata, init, list]
+COMMANDS = [artifact, metadata, init, executions, pipeline]
 
 
 def _find_parser(parser, cmd_cls):

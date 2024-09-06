@@ -16,19 +16,19 @@
 
 import argparse
 
-from cmflib.commands.list import pipelines, executions, artifacts
+from cmflib.commands.executions import list
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [pipelines, executions, artifacts]
+SUB_COMMANDS = [list]
 
 # This parser adds positional argumets to the main parser
 def add_parser(subparsers, parent_parser):
-    LIST_HELP = "Command for list of pipelines/executions/artifacts."
+    LIST_HELP = "Command for list of executions."
 
     list_parser = subparsers.add_parser(
-        "list", 
+        "executions", 
         parents=[parent_parser],
-        description="Display List of pipelines, executions ids or artifacts ids as per current cmf configuration",
+        description="Display List of executions as per current cmf configuration",
         help=LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

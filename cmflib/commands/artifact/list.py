@@ -16,12 +16,28 @@
 
 import argparse
 import os
+import pandas as pd
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
-from tabulate import tabulate
 
-class CmdListArtifacts(CmdBase):
+class CmdArtifactsList(CmdBase):
+    def update_dataframe(self, df):
+        for c in df.columns:
+            if c.startswith('custom_properties_'):
+                df.rename(columns = {c:c.replace('custom_properties_','')}, inplace = True)
+            else:
+                df = df.drop(c, axis = 1)
+        return df
+
+    def search_artifact(self, df):
+        for index, row in df.iterrows():
+            name = row['name'].split(":")[0]
+            file_name = name.split('/')[-1]
+            if file_name == self.args.artifact_name:
+                return row['id']
+        return -1
+
     def run(self):
         current_directory = os.getcwd()
         # default path for mlmd file name
@@ -38,28 +54,32 @@ class CmdListArtifacts(CmdBase):
         query = cmfquery.CmfQuery(mlmd_file_name)
 
         df = query.get_all_artifacts_by_context(self.args.pipeline_name)
+
         if not df.empty:
-            if self.args.artifact_id:
-                try:
-                    if int(self.args.artifact_id) in list(df['id']): # Converting series to list 
-                        df = df.query(f'id == {int(self.args.artifact_id)}')
-                    else:
-                        df = "Artifact id does not exist.."
-                except:
-                        df = "Artifact id does not exist.."
+            if self.args.artifact_name:
+                artifact_id = self.search_artifact(df)
+                if(artifact_id != -1):
+                    df = df.query(f'id == {int(artifact_id)}')
+                else:
+                    df = "Artifact name does not exist.."
         else:
             df = "Pipeline does not exist..."
 
-        return tabulate(df, df.columns, tablefmt='grid')
-        # return df
+        if not isinstance(df, str):
+            if self.args.long:
+                pd.set_option('display.max_rows', None)  # Set to None to display all rows
+                pd.set_option('display.max_columns', None)  # Set to None to display all columns
+            else:
+                df = self.update_dataframe(df)
+        return df
 
 def add_parser(subparsers, parent_parser):
     ARTIFACT_LIST_HELP = "Display list of artifacts in current cmf configuration"
 
     parser = subparsers.add_parser(
-        "artifacts",
+        "list",
         parents=[parent_parser],
-        description="Display artifacts",
+        description="Display list of artifacts",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -80,9 +100,16 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-a", 
-        "--artifact_id", 
-        help="Specify artifact id.", 
-        metavar="<artifact_id>",
+        "--artifact_name", 
+        help="Specify artifact name.", 
+        metavar="<artifact_name>",
     )
 
-    parser.set_defaults(func=CmdListArtifacts)
+    parser.add_argument(
+        "-l", 
+        "--long", 
+        action='store_true',
+        help="Specify in which format you want to saw execution[By default short]",
+    )
+
+    parser.set_defaults(func=CmdArtifactsList)

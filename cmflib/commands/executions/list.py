@@ -21,7 +21,16 @@ import pandas as pd
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 
-class CmdListExecutions(CmdBase):
+class CmdExecutionsList(CmdBase):
+    def update_dataframe(self, df):
+        # This function return dataframe with custom_properties_ only. 
+        for c in df.columns:
+           if c.startswith('custom_properties_'):
+               df.rename(columns = {c:c.replace('custom_properties_','')}, inplace = True)
+           else:
+               df = df.drop(c, axis = 1)
+        return df
+    
     def run(self):
         current_directory = os.getcwd()
         # default path for mlmd file name
@@ -48,8 +57,6 @@ class CmdListExecutions(CmdBase):
             if "Python_Env" in df.columns:
                 # Dropping Python_Env column
                 df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers
-            pd.set_option('display.max_rows', None)  # Set to None to display all rows
-            pd.set_option('display.max_columns', None)  # Set to None to display all columns
             if self.args.execution_id:
                 try:
                     if int(self.args.execution_id) in list(df['id']): # Converting series to list 
@@ -57,16 +64,23 @@ class CmdListExecutions(CmdBase):
                     else:
                         df = "Execution id does not exist.."    
                 except:
-                        df = "Execution id does not exist.."    
-        return df
+                        df = "Execution id does not exist.."   
 
+            if not isinstance(df, str):
+                if self.args.long:
+                    pd.set_option('display.max_rows', None)  # Set to None to display all rows
+                    pd.set_option('display.max_columns', None)  # Set to None to display all columns
+                else:
+                    df = self.update_dataframe(df) 
+        return df
+    
 def add_parser(subparsers, parent_parser):
     EXECUTION_LIST_HELP = "Display list of executions in current cmf configuration"
 
     parser = subparsers.add_parser(
-        "executions",
+        "list",
         parents=[parent_parser],
-        description="Display executions",
+        description="Display list of executions",
         help=EXECUTION_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -91,5 +105,12 @@ def add_parser(subparsers, parent_parser):
         help="Specify execution id.", 
         metavar="<exe_id>",
     )
+    
+    parser.add_argument(
+        "-l",
+        "--long", 
+        action='store_true',
+        help="Display detailed summary about executions[By default it is short].", 
+    )
 
-    parser.set_defaults(func=CmdListExecutions)
+    parser.set_defaults(func=CmdExecutionsList)
