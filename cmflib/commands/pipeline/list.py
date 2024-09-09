@@ -39,12 +39,12 @@ class CmdPipelineList(CmdBase):
         return [pipeline.name for pipeline in query._get_pipelines()]
 
 def add_parser(subparsers, parent_parser):
-    PIPELINE_LIST_HELP = "Display list of pipelines in current cmf configuration"
+    PIPELINE_LIST_HELP = "Display list of pipelines as present in current mlmd"
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display pipeline list",
+        description="Display list of pipeline",
         help=PIPELINE_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

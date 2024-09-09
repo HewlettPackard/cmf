@@ -67,9 +67,9 @@ from cmflib.cmf_commands_wrapper import (
     _init_amazonS3,
     _init_sshremote,
     _init_osdfremote,
-    _list_pipelines,
-    _list_executions,
-    _list_artifacts,
+    _artifact_list,
+    _pipeline_list,
+    _execution_list,
 )
 
 class Cmf:
@@ -2266,59 +2266,63 @@ def non_related_args(type : str, args : dict):
             non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
     return non_related_args
 
-def list_pipelines(filepath = "./mlmd"):
-    """ Display list of piplines for current mlmd.
+
+def pipeline_list(filepath = "./mlmd"):
+    """ Display list of pipline for current mlmd.
 
     Example:
     ```python
-         result = _list_pipelines("./mlmd_directory")
+         result = _pipeline_list("./mlmd_directory")
     ```
 
     Args:
         filepath: File path to store the MLMD file. 
     Returns:
-        Output from the _list_pipelines function.
+        Output from the _pipeline_list function.
     """
 
     # Optional arguments: filepath( path to store the MLMD file)
-    output = _list_pipelines(filepath)
+    output = _pipeline_list(filepath)
     return output
 
 
-def list_executions(pipeline_name: str, filepath = "./mlmd", execution_id: str = ""):
-    """ Display list of executions for given pipeline.
+def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = "", long = True):
+    """ Display list of execution for given pipeline.
     Example: 
     ```python 
-        result = _list_executions("example_pipeline", "./mlmd_directory", "example_execution_id") 
+        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id", "long") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file. 
        execution_id: Executions for particular execution id. 
+       long: Detailed summary regarding execution.
     Returns:
-       Output from the _list_executions function. 
+       Output from the _execution_list function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), execution_id
-    output = _list_executions(pipeline_name, filepath, execution_id)
+    # Optional arguments: filepath( path to store mlmd file), execution_id, long
+    output = _execution_list(pipeline_name, filepath, execution_id, long)
     return output
 
-def list_artifacts(pipeline_name: str, filepath = "./mlmd", artifact_id: str = ""):
-    """ Display list of artifacts for given pipeline.
+
+def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = "", long = True):
+    """ Display list of artifact for given pipeline.
     Example: 
     ```python 
-        result = _list_artifacts("example_pipeline", "./mlmd_directory", "example_artifact_id") 
+        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name", "long") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file. 
-       artifact_id: Artifacts for particular artifact id. 
+       artifact_name: Artifacts for particular artifact name. 
+       long: Detailed summary regarding artifact.
     Returns:
-       Output from the _list_artifacts function. 
+       Output from the _artifact_list function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), artifact_id
-    output = _list_artifacts(pipeline_name, filepath, artifact_id)
+    # Optional arguments: filepath( path to store mlmd file), artifact_name, long
+    output = _artifact_list(pipeline_name, filepath, artifact_name, long)
     return output

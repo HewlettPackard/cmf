@@ -74,12 +74,12 @@ class CmdArtifactsList(CmdBase):
         return df
 
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Display list of artifacts in current cmf configuration"
+    ARTIFACT_LIST_HELP = "Display list of artifact as present in current mlmd"
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display list of artifacts",
+        description="Display artifact list",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -109,7 +109,7 @@ def add_parser(subparsers, parent_parser):
         "-l", 
         "--long", 
         action='store_true',
-        help="Specify in which format you want to saw execution[By default short]",
+        help="Display detailed summary of artifact",
     )
 
     parser.set_defaults(func=CmdArtifactsList)

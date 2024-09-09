@@ -16,25 +16,25 @@
 
 import argparse
 
-from cmflib.commands.executions import list
+from cmflib.commands.execution import list
 from cmflib.cli.utils import *
 
 SUB_COMMANDS = [list]
 
 # This parser adds positional argumets to the main parser
 def add_parser(subparsers, parent_parser):
-    LIST_HELP = "Command for list of executions."
+    LIST_HELP = "Command to list executions."
 
     list_parser = subparsers.add_parser(
         "executions", 
         parents=[parent_parser],
-        description="Display List of executions as per current cmf configuration",
+        description="Display list of executions as present in current mlmd",
         help=LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     list_subparsers = list_parser.add_subparsers(
-        dest="cmd", help="Use `cmf metadata CMD --help` for " "command-specific help."
+        dest="cmd", help="Use `cmf execution CMD --help` for " "command-specific help."
     )
 
     fix_subparsers(list_subparsers)
