@@ -13,22 +13,18 @@
       
       
       
-        <link rel="prev" href="../../examples/getting_started/">
       
       
-        <link rel="next" href="../components/">
-      
-      
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.34">
     
     
       
-        <title>Overview - CMF</title>
+        <title>cmflib.cmf_ray_logger.CmfRayLogger - CMF</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.35f28582.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.35f28582.min.css">
       
       
 
@@ -47,11 +43,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../extra.css">
+      <link rel="stylesheet" href="../../../extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -70,7 +66,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#architecture-overview" class="md-skip">
+        <a href="#cmflibcmf_ray_loggercmfraylogger" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +82,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href="../../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +102,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Overview
+              cmflib.cmf_ray_logger.CmfRayLogger
             
           </span>
         </div>
@@ -193,7 +189,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href="../../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -223,7 +219,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -243,7 +239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/step-by-step/" class="md-nav__link">
+      <a href="../../../cmf_client/step-by-step/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -298,7 +294,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/getting_started/" class="md-nav__link">
+      <a href="../../../examples/getting_started/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -323,19 +319,17 @@
       
   
   
-    
   
   
-  
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
@@ -349,7 +343,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             Architecture
@@ -360,19 +354,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../architecture/overview/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -381,7 +366,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -394,7 +378,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../components/" class="md-nav__link">
+      <a href="../../../architecture/components/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -415,7 +399,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../advantages/" class="md-nav__link">
+      <a href="../../../architecture/advantages/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -478,7 +462,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/cmf_client/" class="md-nav__link">
+      <a href="../../../cmf_client/cmf_client/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -499,7 +483,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/step-by-step/" class="md-nav__link">
+      <a href="../../../cmf_client/step-by-step/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -520,7 +504,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/minio-server/" class="md-nav__link">
+      <a href="../../../cmf_client/minio-server/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -583,7 +567,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_server/cmf-server/" class="md-nav__link">
+      <a href="../../../cmf_server/cmf-server/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -646,7 +630,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/tensorflow_guide/" class="md-nav__link">
+      <a href="../../../cmf_client/tensorflow_guide/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -709,7 +693,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmf/" class="md-nav__link">
+      <a href="../cmf/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -730,7 +714,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/dataslice/" class="md-nav__link">
+      <a href="../dataslice/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -751,7 +735,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmfquery/" class="md-nav__link">
+      <a href="../cmfquery/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -814,7 +798,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../common-metadata-ontology/readme/" class="md-nav__link">
+      <a href="../../../common-metadata-ontology/readme/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -868,37 +852,66 @@
                   
 
 
-<h1 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">&para;</a></h1>
-<p>Interactions in data pipelines can be complex. The Different stages in the pipeline, (which may not be next to each 
-other) may have to interact to produce or transform artifacts. As the artifacts navigates and undergo transformations 
-through this pipeline, it can take a complicated path, which might also involve bidirectional movement across these 
-stages.
-Also, there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the
-metrics at a subsequent stage.  It is important to track the metadata across a pipeline to provide features like, 
-lineage tracking, provenance and reproducibility.  </p>
-<p>The tracking of metadata through these complex pipelines have multiple challenges, some of them being,  </p>
+<h1 id="cmflibcmf_ray_loggercmfraylogger">cmflib.cmf_ray_logger.CmfRayLogger<a class="headerlink" href="#cmflibcmf_ray_loggercmfraylogger" title="Permanent link">&para;</a></h1>
+<h1 id="cmfraylogger-user-guide">CmfRayLogger User Guide<a class="headerlink" href="#cmfraylogger-user-guide" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The <code>CmfRayLogger</code> class is designed to log Ray Tune metrics for the CMF (Common Metadata Framework). It tracks the performance and outputs of trials during the tuning process, directly linking metrics to stages of your CMF pipeline.</p>
+<h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Each stage in the pipeline could be executed in a different datacenter or an edge site having intermittent connection 
-  to the core datacenter.   </li>
-<li>Each stage in the pipeline could be possibly managed by different teams.  </li>
-<li>The artifacts (input or output) needs to be uniquely identified across different sites and across multiple pipelines. </li>
+<li>Ensure both <code>cmf</code> and <code>raytune</code> are installed on your system to use the <code>CmfRayLogger</code>.</li>
 </ul>
-<p>Common metadata framework (CMF) addresses the problems associated with tracking of pipeline metadata from distributed 
-sites and tracks code, data and metadata together for end-to-end traceability.   </p>
-<p>The framework automatically tracks the code version as one of the metadata for an execution. Additionally, the data 
-artifacts are also versioned automatically using a data versioning framework (like DVC) and the metadata regarding the
-data version is stored along with the code. The framework stores the Git commit id of the metadata file associated with 
-the artifact and content hash of the artifact as metadata. The framework provides API’s to track the hyperparameters and
-other metadata of pipelines.  Therefore, from the metadata stored, users can zero in on the hyperparameters, code 
-version and the artifact version used for the experiment. </p>
-<p>Identifying the artifacts by content hash allows the framework, to uniquely identify an artifact anywhere in the 
-distributed sites. This enables the metadata from the distributed sites to be precisely merged to a central repository,
-thereby providing a single global metadata from the distributed sites.   </p>
-<p>On this backbone, we build the Git like experience for metadata, enabling users to push their local metadata to the 
-remote repository, where it is merged to create the global metadata and pull metadata from the global metadata to the 
-local, to create a local view, which would contain only the metadata of interest. </p>
-<p>The framework can be used to track various types of pipelines such as data pipelines or AI pipelines.</p>
-<p><img src="./../../assets/framework.png" alt="CMF Framework" style="display: block; margin: 0 auto" /></p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>To use <code>CmfRayLogger</code>, import it in your Python script:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmf</span> <span class="kn">import</span> <span class="n">cmf_ray_logger</span>
+</code></pre></div>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<h3 id="initialization">Initialization<a class="headerlink" href="#initialization" title="Permanent link">&para;</a></h3>
+<p>Create an instance of CmfRayLogger by providing the following parameters:</p>
+<ul>
+<li>pipeline_name: A string representing the name of the CMF pipeline.</li>
+<li>file_path: The file path to the metadata file associated with the CMF pipeline.</li>
+<li>pipeline_stage: The name of the current stage of the CMF pipeline.</li>
+</ul>
+<p>Example of instantiation:
+<div class="highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="p">)</span>
+</code></pre></div></p>
+<h2 id="integration-with-ray-tune">Integration with Ray Tune<a class="headerlink" href="#integration-with-ray-tune" title="Permanent link">&para;</a></h2>
+<p>After initializing the logger, it should be passed to Ray Tune’s <code>tune.run</code> method via the <code>callbacks</code> parameter. This setup allows <code>CmfRayLogger</code> to log metrics for each trial based on the pipeline configuration and trial execution details.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">ray</span> <span class="kn">import</span> <span class="n">tune</span>
+
+<span class="c1"># Example configuration for Ray Tune</span>
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Your configuration details</span>
+<span class="p">}</span>
+
+<span class="n">tune</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="o">&lt;</span><span class="n">your_trainable</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
+<p>During each trial, <code>CmfRayLogger</code> will automatically create a CMF object with attributes set as <code>pipeline_name</code>, <code>pipeline_stage</code>, and the CMF execution as <code>trial_id</code>. It captures the trial's output and logs it under the metric key <code>'Output'</code>.</p>
+<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
+<p>Here is a complete example of how to use <code>CmfRayLogger</code> with Ray Tune:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmf</span> <span class="kn">import</span> <span class="n">cmf_ray_logger</span>
+<span class="kn">from</span> <span class="nn">ray</span> <span class="kn">import</span> <span class="n">tune</span>
+
+<span class="c1"># Initialize the logger</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="s2">&quot;ExamplePipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/metadata.json&quot;</span><span class="p">,</span> <span class="s2">&quot;Stage1&quot;</span><span class="p">)</span>
+
+<span class="c1"># Configuration for tuning</span>
+<span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># Configuration details</span>
+<span class="p">}</span>
+
+<span class="c1"># Execute the tuning process</span>
+<span class="n">tune</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>
+    <span class="o">&lt;</span><span class="n">your_trainable</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+    <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div>
 
 
 
@@ -971,10 +984,10 @@ local, to create a local view, which would contain only the metadata of interest
     </div>
     
     
-    <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.07f07601.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.56dfad97.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.56dfad97.min.js"></script>
       
     
   </body>
