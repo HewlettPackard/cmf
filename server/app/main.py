@@ -385,7 +385,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
     output_dict = await async_api(get_all_artifact_ids, server_store_path, dict_of_exe_ids, pipeline_name)
-    # type(dict_of_exe_ids[pipeline_name]) = Dict[ <class 'pandas.core.frame.DataFrame'> ]
+    # type(dict_of_art_ids[pipeline_name]) = Dict[ <class 'pandas.core.frame.DataFrame'> ]
     dict_of_art_ids[pipeline_name]=output_dict[pipeline_name]
     return
 
