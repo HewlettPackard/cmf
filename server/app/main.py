@@ -140,7 +140,7 @@ async def executions(
     filter_value: str = Query(None, description="Filter value"),
     ):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
+    if os.path.exists(server_store_path) and pipeline_name in dict_of_exe_ids:
         exe_ids_initial = dict_of_exe_ids[pipeline_name]
         # Apply filtering if provided
         if filter_by and filter_value:
