@@ -30,7 +30,9 @@ const client = new FastAPIClient(config);
 const Artifacts = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [pipelines, setPipelines] = useState([]);
-  const [artifacts, setArtifacts] = useState([]);
+  // undefined state is to check whether artifacts data is set
+  // null state of artifacts we display No Data 
+  const [artifacts, setArtifacts] = useState([undefined]);    
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
@@ -57,16 +59,17 @@ const Artifacts = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
-    setArtifacts(null);
+    if (selectedPipeline !== pipeline) {     // this condition sets page as null.
+      setArtifacts(null);
+    }
     setSelectedPipeline(pipeline);
     setActivePage(1);
-    fetchArtifacts(pipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
+
   };
 
   const handleArtifactTypeClick = (artifactType) => {
-    console.log(selectedArtifactType,artifactType) 
-    if (artifactType !== selectedArtifactType) {
-      setArtifacts(null);      
+    if (selectedArtifactType !== artifactType) {   // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
+      setArtifacts(null);
     }
     setSelectedArtifactType(artifactType);
     setActivePage(1);
@@ -75,7 +78,7 @@ const Artifacts = () => {
   const fetchArtifactTypes = () => {
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
-      handleArtifactTypeClick(types[0]);
+      fetchArtifacts(selectedPipeline, types[0], activePage, sortField, sortOrder, filterBy, filterValue);
     });
   };
 
@@ -87,17 +90,20 @@ const Artifacts = () => {
   }, [selectedPipeline]);
 
   const fetchArtifacts = (pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) => {
+    setArtifacts(undefined)
+    // if data then set artifacts with that data else set it null.
     client.getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
       setArtifacts(data.items);
       setTotalItems(data.total_items);
-    });
+    })
+    .catch(() => setArtifacts(null));
   };
 
   useEffect(() => {
     if (selectedPipeline && selectedArtifactType) {
       fetchArtifacts(selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
     }
-  }, [selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue]);
+  }, [selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue]);
 
   const handlePageClick = (page) => {
     setActivePage(page);
@@ -153,12 +159,16 @@ const Artifacts = () => {
               )}
             </div>
             <div className="container">
-              {selectedPipeline !== null && selectedArtifactType !== null && artifacts !== null && artifacts !== {} && (
-                <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort} onFilter={handleFilter}/>
-              )}
-              <div>
-                {artifacts !== null && totalItems > 0 && (
-                  <>
+              {selectedPipeline !== null && selectedArtifactType !== null ? ( artifacts === undefined ? (
+                <div>Loading....</div>
+              ): artifacts === null || artifacts.length === 0 ? (
+                <div>No Data</div>
+              ):(
+                <>
+                <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort} onFilter={handleFilter}/>                            
+              
+                {totalItems > 0 && (
+                  <div className="pagination">
                     <button
                       onClick={handlePrevClick}
                       disabled={activePage === 1}
@@ -231,11 +241,13 @@ const Artifacts = () => {
                     >
                       Next
                     </button>
-                  </>
+                  </div>
                 )}
+              </>
+              ) 
+            ): null}
               </div>
             </div>
-          </div>
         </div>
         <Footer />
       </section>
