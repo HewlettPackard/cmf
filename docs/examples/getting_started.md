@@ -68,16 +68,24 @@ cd ./example-get-started
 ```
 ### cmf init
 <pre>
-Usage: cmf init minioS3 [-h] --url [url] 
-                             --endpoint-url [endpoint_url]
-                             --access-key-id [access_key_id] 
-                             --secret-key [secret_key] 
-                             --git-remote-url[git_remote_url]  
-                             --cmf-server-url [cmf_server_url]
-                             --neo4j-user [neo4j_user]
-                             --neo4j-password [neo4j_password]
-                             --neo4j-uri [neo4j_uri]
+Usage: cmf init minioS3 [-h] --cmf-server-url [cmf_server_url] [required]
+                             --path [local_storage_path] [required]
+                             --git-remote-url[git_remote_url] [required]
+                             --url [url] [optional]
+                             --endpoint-url [endpoint_url] [optional]
+                             --access-key-id [access_key_id] [optional]
+                             --secret-key [secret_key] [optional]
+                             --neo4j-user [neo4j_user] [optional]
+                             --neo4j-password [neo4j_password] [optional]
+                             --neo4j-uri [neo4j_uri] [optional]
 </pre>
+### Example Commands
+#### Local or Development Setup
+```shell
+cmf init local --path ./ --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080
+```
+> Replace 'x.x.x.x' with your system's cmf-server IP or url.
+#### MinIO S3 Setup
 ```shell
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
