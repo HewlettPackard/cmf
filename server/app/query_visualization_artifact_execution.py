@@ -28,29 +28,34 @@ class UniqueQueue:
         return value in self.seen
     
 
-async def query_visualization_artifact_execution(mlmd_path, pipeline_name, dict_art_id, dict_exe_id):
-    dict_result = {}
-    dict_output = {}
-    
+async def query_visualization_artifact_execution(mlmd_path: str, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
+    arti_exe_dict = {} # Used to map artifact and execution ids with artifact and execution names
+    dict_output = {}   # Used to establish parent-child relationship between artifacts and executions
+
     query = cmfquery.CmfQuery(mlmd_path)
     df = dict_exe_id[pipeline_name]
     
-    # Mapping execution id with name[Context_Type+:+uuid] for eg: Test-env/Train:bb79
-    for i,row in df.iterrows():
-        dict_result["e_"+str(row['id'])] = "execution_name_"+row['Context_Type']+":"+row['Execution_uuid'][:4]  #Mapping execution id with execution name
+    # Mapping execution id with execution name
+    # Here appending execution id with "execution_name_" which will helpful in gui side to differentiate artifact and execution names
+    for i,df_row in df.iterrows():
+        arti_exe_dict["e_"+str(df_row['id'])] = "execution_name_"+df_row['Context_Type']+":"+df_row['Execution_uuid'][:4]  
     
     for type_, df in dict_art_id[pipeline_name].items():
-        for index, row in df.iterrows():
-            # Featching executions based on artifact name which is in dict
-            data = query.get_all_executions_for_artifact(row['name'])
+        for df_index, df_row in df.iterrows():
+            # Featching executions based on artifact id 
+            data = query.get_all_executions_for_artifact_id(df_row['id'])
             
-            dict_result["a_"+str(row['id'])] = "artifact_name_"+modify_artifact_name(row['name'], type_)  #Mapping artifact id with artifact name
+            # Mapping artifact id with artifact name
+            # Here appending artifact id with "artifact_name_" which will helpful in gui side to differentiate artifact and execution names
+            arti_exe_dict["a_"+str(df_row['id'])] = "artifact_name_"+modify_artifact_name(df_row['name'], type_)  
             
             # To check whether any artifact is given as output to any executions or not
+            # This is helpful to define starting point of tree
             output_flag =  False
+
             if not data.empty:
-                for index, row1 in data.iterrows():
-                    '''Trying to create pattern like that:
+                for data_index, data_row in data.iterrows():
+                    '''Trying to create pattern like this:
                     data=  [ 
                         [{'id': 'data.xml.gz', 'parents': []} ],
                         [{'id': 'prepare', 'parents': ['data.xml.gz']} ],    artifact is passed as a input to executions
@@ -67,30 +72,29 @@ async def query_visualization_artifact_execution(mlmd_path, pipeline_name, dict_
                     Here the logic is if type is input then we need to specify executions as a id and artifacts as parents
                     otherwise we need to specify artifacts as id and executions as parents'''
 
-                    if row1['Type'] == "INPUT":
-                        # if same key present then append respective values to that key
-                        if 'e_'+str(row1['execution_id']) in dict_output.keys():
-                            dict_output['e_'+str(row1['execution_id'])].append("a_"+str(row['id']))
+                    if data_row['Type'] == "INPUT":
+                        # if same key present then append respective values of that key otherwise create new key value pair
+                        if 'e_'+str(data_row['execution_id']) in dict_output.keys():
+                            dict_output['e_'+str(data_row['execution_id'])].append("a_"+str(df_row['id']))
                         else:
-                            dict_output['e_'+str(row1['execution_id'])] =  ["a_"+str(row['id'])]
+                            dict_output['e_'+str(data_row['execution_id'])] =  ["a_"+str(df_row['id'])]
                     else:
-                        if 'a_'+str(row['id']) in dict_output.keys():
-                            dict_output['a_'+str(row['id'])].append("e_"+str(row1['execution_id']))
+                        if 'a_'+str(df_row['id']) in dict_output.keys():
+                            dict_output['a_'+str(df_row['id'])].append("e_"+str(data_row['execution_id']))
                         else:
-                            dict_output['a_'+str(row['id'])]=["e_"+str(row1['execution_id'])]
+                            dict_output['a_'+str(df_row['id'])]=["e_"+str(data_row['execution_id'])]
                         output_flag = True
             else:
-                dict_output["a_"+str(row['id'])] = []
+                dict_output["a_"+str(df_row['id'])] = []
             
-            # If artifact is not taken as output by any executions then make parents of artifact to []
+            # If artifact is not taken as output by any executions then make parents of that given artifact to empty
             if(not output_flag):
-                dict_output["a_"+str(row['id'])] = []
-            
+                dict_output["a_"+str(df_row['id'])] = []
 
-    data_organized = topological_sort(dict_output, dict_result)
+    data_organized = topological_sort(dict_output, arti_exe_dict)
     return data_organized
 
-def topological_sort(input_data, execution_id_dict):
+def topological_sort(input_data: dict, arti_exe_dict: dict) -> list:
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -121,12 +125,12 @@ def topological_sort(input_data, execution_id_dict):
             parents = tuple(sorted(input_data[id_val]))
             # {tuple(parents): {'id':execution_name,'parents':["exec_1","exec_2","exec_3"]}
             # append id,parents to key with same parents to get all child in same list
-            parent_dict[parents].append({'id':execution_id_dict[id_val],'parents': [execution_id_dict[parent] for parent in input_data[id_val]]})
+            parent_dict[parents].append({'id':arti_exe_dict[id_val],'parents': [arti_exe_dict[parent] for parent in input_data[id_val]]})
     output_data= list(parent_dict.values()) 
     return output_data
 
 
-def modify_artifact_name(artifact_name: str, type: str):
+def modify_artifact_name(artifact_name: str, type: str) -> str:
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
     try:
         name = ""
@@ -136,8 +140,12 @@ def modify_artifact_name(artifact_name: str, type: str):
             #first split on ':' then on '/' to get name. Example 'Test-env/prepare:uuid:32' -> prepare_uuid
             name = artifact_name.split(':')[-3].split("/")[-1] + ":" + artifact_name.split(':')[-2][:4]
         elif type == "Dataset":
-            # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
-            name = artifact_name.split(':')[-2] .split("/")[-1]  
+            if "raw_data" in artifact_name:
+                # Example artifacts/raw_data:ee7a79a76326c4a307297880943.. -> data.xml.gz:ee7a
+                name = artifact_name.split('/')[-1][0:13] 
+            else:
+                # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
+                name = artifact_name.split(':')[-2] .split("/")[-1]  
         elif type == "Dataslice":
             # cmf_artifacts/dataslices/ecd6dcde-4f3b-11ef-b8cd-f71a4cc9ba38/slice-1:e77e3466872898fcf2fa22a3752bc1ca
             dataslice_part1 = artifact_name.split("/",1)[1] #remove cmf_artifacts/

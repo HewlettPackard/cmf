@@ -170,7 +170,7 @@ const renderChart = (data, options = {}) => {
           }
         `}
       </style>
-      <svg width={svg_width * 10} height={tangled_height + textPadding * 10}>
+      <svg width={svg_width} height={tangled_height + textPadding * 10}>
         {tangleLayout.bundles.map((b, i) => {
           let d = b.links
             .map(
@@ -200,6 +200,8 @@ const renderChart = (data, options = {}) => {
             strokeWidth = 12;  
             label = n.id.replace('execution_name_', '');  
           } else {  
+            strokeColor = 'teal';
+            strokeWidth = 12;  
             label = n.id.replace('artifact_name_', ''); 
           }
 
