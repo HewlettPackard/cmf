@@ -63,11 +63,11 @@ def modify_arti_name(arti_name, type):
             name = arti_name.split(':')[-3].split("/")[-1] + ":" + arti_name.split(':')[-2][:4]
         elif type == "Dataset":
             if "raw_data" in arti_name:
-                # Example artifacts/raw_data:ee7a79a76326c4a307297880943.. -> data.xml.gz:ee7a
-                name = arti_name.split('/')[-1][0:13] 
+                # Example artifacts/raw_data:ee7a79a76326c4a307297880943.. -> raw_data:ee7a
+                name = arti_name.split(':')[0].split("/")[-1]+ ":" + arti_name.split(':')[-1][:4] 
             else:
-                # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz 
-                name = arti_name.split(':')[-2] .split("/")[-1] 
+                # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz:236d 
+                name = arti_name.rsplit(':')[0] .split("/")[-1] + ":" +  arti_name.split(':')[-1][:4]
         elif type == "Dataslice":
             # cmf_artifacts/dataslices/ecd6dcde-4f3b-11ef-b8cd-f71a4cc9ba38/slice-1:e77e3466872898fcf2fa22a3752bc1ca
             dataslice_part1 = arti_name.split("/",1)[1] #remove cmf_artifacts/

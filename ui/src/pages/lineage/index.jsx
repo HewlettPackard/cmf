@@ -93,17 +93,19 @@ const Lineage = () => {
     setArtiTreeData(null);
     setArtiExeTreeData(null);
     setSelectedLineageType(lineageType);
-    if (lineageType === "Artifacts") {
-      fetchArtifactLineage(selectedPipeline);
-    }
-    else if (lineageType === "Execution" || lineageType === "Execution_Tree" ) {
-      fetchExecutionTypes(selectedPipeline, lineageType);
-    }
-    else if (lineageType === "Artifact_Execution_Tree"){
-      fetchArtiExeTree(selectedPipeline);
-    }
-    else {
-      fetchArtifactTree(selectedPipeline);
+    if (selectedPipeline != null){
+      if (lineageType === "Artifacts") {
+        fetchArtifactLineage(selectedPipeline);
+      }
+      else if (lineageType === "Execution" || lineageType === "Execution_Tree") {
+        fetchExecutionTypes(selectedPipeline, lineageType);
+      }
+      else if (lineageType === "Artifact_Execution_Tree"){
+        fetchArtiExeTree(selectedPipeline);
+      }
+      else {
+        fetchArtifactTree(selectedPipeline);
+      }
     }
   };  
 
