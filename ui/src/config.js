@@ -19,7 +19,7 @@ import runtimeEnv from "@mars/heroku-js-runtime-env";
 let url = "";
 let url_without_port = "";
 const env = runtimeEnv();
-if (process.env.REACT_APP_MY_IP !== "127.0.0.1") {
+if (process.env.REACT_APP_MY_IP !== "127.0.0.1" && process.env.REACT_APP_MY_IP !=="") {
     url = "http://" + process.env.REACT_APP_MY_IP + ":8080";
     url_without_port = "http://" + process.env.REACT_APP_MY_IP
 }
