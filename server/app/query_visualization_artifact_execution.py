@@ -4,30 +4,6 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-class UniqueQueue:
-    def __init__(self):
-        self.queue = deque()
-        self.seen = set()
-    
-    def enqueue(self, value):
-        if value not in self.seen:
-            self.queue.append(value)
-            self.seen.add(value)
-    
-    def dequeue(self):
-        if self.queue:
-            value = self.queue.popleft()
-            self.seen.remove(value)
-            return value
-        raise IndexError("dequeue from an empty queue")
-    
-    def __len__(self):
-        return len(self.queue)
-    
-    def __contains__(self, value):
-        return value in self.seen
-    
-
 async def query_visualization_artifact_execution(mlmd_path: str, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
     arti_exe_dict = {} # Used to map artifact and execution ids with artifact and execution names
     dict_output = {}   # Used to establish parent-child relationship between artifacts and executions
