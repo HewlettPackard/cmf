@@ -1,4 +1,3 @@
-import time, json
 from cmflib import cmfquery
 from collections import deque, defaultdict
 import pandas as pd
@@ -27,7 +26,7 @@ class UniqueQueue:
         return value in self.seen
 
 
-async def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_exe_id, uuid):
+def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_exe_id, uuid):
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
     df=dict_of_exe_id[pipeline_name]

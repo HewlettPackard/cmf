@@ -4,7 +4,7 @@ from collections import deque, defaultdict
 #from get_data import get_all_artifact_ids, get_all_exe_ids
 from typing import List, Dict, Any
 
-async def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
+def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_art_ids: dict) -> List[List[Dict[str, Any]]]:
     query = cmfquery.CmfQuery(mlmd_path)
     id_name = {}
     child_parent_artifact_id = {}
