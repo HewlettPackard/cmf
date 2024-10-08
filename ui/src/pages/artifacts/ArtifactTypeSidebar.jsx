@@ -29,11 +29,14 @@ const ArtifactTypeSidebar = ({ artifactTypes, handleArtifactTypeClick, onFilter}
   useEffect(() => {
     handleClick(artifactTypes[0]);
     // eslint-disable-next-line     
+  }, []);
+  useEffect(() => {
+    setClickedArtifactType(artifactTypes[0])
+    // eslint-disable-next-line     
   }, [artifactTypes]);
-
   const handleClick = (artifactType) => {
-   setClickedArtifactType(artifactType);
-   handleArtifactTypeClick(artifactType);
+    setClickedArtifactType(artifactType);
+    handleArtifactTypeClick(artifactType);
   };
 
   const handleFilterChange = (event) => {

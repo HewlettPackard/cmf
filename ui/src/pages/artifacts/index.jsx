@@ -31,7 +31,9 @@ const client = new FastAPIClient(config);
 const Artifacts = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [pipelines, setPipelines] = useState([]);
-  const [artifacts, setArtifacts] = useState([]);
+  // undefined state is to check whether artifacts data is set
+  // null state of artifacts we display No Data 
+  const [artifacts, setArtifacts] = useState([undefined]);    
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
@@ -63,13 +65,18 @@ const Artifacts = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
+    if (selectedPipeline !== pipeline) {     // this condition sets page as null.
+      setArtifacts(null);
+    }
     setSelectedPipeline(pipeline);
     setActivePage(1);
-    fetchArtifacts(pipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
+
   };
 
   const handleArtifactTypeClick = (artifactType) => {
-    setArtifacts(null);
+    if (selectedArtifactType !== artifactType) {   // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
+      setArtifacts(null);
+    }
     setSelectedArtifactType(artifactType);
     setActivePage(1);
   };
@@ -78,8 +85,8 @@ const Artifacts = () => {
     setLoading(true);
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
-      handleArtifactTypeClick(types[0]);
-      setLoading(false);
+      setLoading(false)
+      fetchArtifacts(selectedPipeline, types[0], activePage, sortField, sortOrder, filterBy, filterValue);
     });
   };
 
@@ -91,19 +98,22 @@ const Artifacts = () => {
   }, [selectedPipeline]);
 
   const fetchArtifacts = (pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) => {
+    setArtifacts(undefined)
+    // if data then set artifacts with that data else set it null.
     setLoading(true);
     client.getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
       setArtifacts(data.items);
       setTotalItems(data.total_items);
       setLoading(false);
-    });
+    })
+    .catch(() => setArtifacts(null));
   };
 
   useEffect(() => {
     if (selectedPipeline && selectedArtifactType) {
       fetchArtifacts(selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
     }
-  }, [selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue]);
+  }, [selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue]);
 
   const handlePageClick = (page) => {
     setActivePage(page);
