@@ -204,7 +204,7 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-async def create_unique_executions(req_info, query: CmfQuery) -> str:
+def create_unique_executions(query: CmfQuery, req_info) -> str:
     """
     Creates list of unique executions by checking if they already exist on server or not.
     locking is introduced lock to avoid data corruption on server, 

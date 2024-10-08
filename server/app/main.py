@@ -22,8 +22,6 @@ from server.app.get_data import (
     get_model_data
 
 )
-from server.app.query_artifact_lineage_d3force import 
-
 from server.app.query_execution_lineage_d3force import query_execution_lineage_d3force
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
@@ -102,7 +100,7 @@ async def mlmd_push(info: Request):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, req_info, query)
+            status = await async_api(create_unique_executions, query, req_info)
             if status == "version_update":
                 # Raise an HTTPException with status code 422
                 raise HTTPException(status_code=422, detail="version_update")
