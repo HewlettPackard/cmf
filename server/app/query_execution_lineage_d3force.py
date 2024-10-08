@@ -2,7 +2,7 @@ from cmflib.cmfquery import CmfQuery
 import pandas as pd
 from typing import Dict
 
-async def query_execution_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict:
+def query_execution_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_exe_ids, uuid_server) -> Dict:
     """
     Creates data of executions for forced_directed_graph.
     Parameters:

@@ -1,6 +1,7 @@
 import pandas as pd
 from cmflib.cmfquery import CmfQuery
 import warnings
+import typing as t
 
 warnings.filterwarnings("ignore")
 
@@ -12,7 +13,7 @@ def truncate_artifact_name(my_str):
     temp=":".join(temp)
     return temp
 
-def query_artifact_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_art_ids):
+def query_artifact_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_art_ids: t.Dict[str, t.Dict[str, pd.DataFrame]]) -> dict:
     art_name_id = {}
     artifact_name_list = []
     node_id_name_list = []

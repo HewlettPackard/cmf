@@ -20,13 +20,11 @@ import logging
 import typing as t
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
-
 import pandas as pd
 #from ml_metadata.metadata_store import metadata_store
 from cmflib.store.sqllite_store import SqlliteStore
 from cmflib.store.postgres import PostgresStore
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-
 from cmflib.mlmd_objects import CONTEXT_LIST
 
 __all__ = ["CmfQuery"]
