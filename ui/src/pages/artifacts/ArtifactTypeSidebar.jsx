@@ -22,15 +22,17 @@ import "./index.css";
 const ArtifactTypeSidebar = ({ artifactTypes, handleArtifactTypeClick }) => {
 
   const [clickedArtifactType, setClickedArtifactType] = useState(artifactTypes[0]);
-
   useEffect(() => {
     handleClick(artifactTypes[0]);
     // eslint-disable-next-line     
+  }, []);
+  useEffect(() => {
+    setClickedArtifactType(artifactTypes[0])
+    // eslint-disable-next-line     
   }, [artifactTypes]);
-
   const handleClick = (artifactType) => {
-   setClickedArtifactType(artifactType);
-   handleArtifactTypeClick(artifactType);
+    setClickedArtifactType(artifactType);
+    handleArtifactTypeClick(artifactType);
   };
 
   return (
