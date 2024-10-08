@@ -21,7 +21,7 @@ import pandas as pd
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 
-class CmdExecutionsList(CmdBase):
+class CmdExecutionList(CmdBase):
     def update_dataframe(self, df):
         # This function return dataframe with custom_properties_ only. 
         for c in df.columns:
@@ -75,7 +75,7 @@ class CmdExecutionsList(CmdBase):
         return df
     
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = "Display list of executions in current cmf configuration"
+    EXECUTION_LIST_HELP = "Display list of executions as present in current mlmd"
 
     parser = subparsers.add_parser(
         "list",
@@ -110,7 +110,7 @@ def add_parser(subparsers, parent_parser):
         "-l",
         "--long", 
         action='store_true',
-        help="Display detailed summary about executions[By default it is short].", 
+        help="Display detailed summary of executions.", 
     )
 
-    parser.set_defaults(func=CmdExecutionsList)
+    parser.set_defaults(func=CmdExecutionList)
