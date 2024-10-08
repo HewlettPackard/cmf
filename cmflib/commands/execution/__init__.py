@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2024) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -16,27 +16,28 @@
 
 import argparse
 
-from cmflib.commands.artifact import pull, push, list
+from cmflib.commands.execution import list
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [pull, push, list]
+SUB_COMMANDS = [list]
 
-# This parser adds positional arguments to the main parser
+# This parser adds positional argumets to the main parser
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_HELP = "Command for artifact pull/push/list."
+    LIST_HELP = "Command to list executions."
 
-    artifact_parser = subparsers.add_parser(
-        "artifact",
+    list_parser = subparsers.add_parser(
+        "executions", 
         parents=[parent_parser],
-        description="Pull, Push or List artifacts as per current cmf configuration.",
-        help=ARTIFACT_HELP,
+        description="Display list of executions as present in current mlmd",
+        help=LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
-    artifact_subparsers = artifact_parser.add_subparsers(
-        dest="cmd", help="Use `cmf artifact CMD --help` for " "command-specific help."
+    list_subparsers = list_parser.add_subparsers(
+        dest="cmd", help="Use `cmf execution CMD --help` for " "command-specific help."
     )
 
-    fix_subparsers(artifact_subparsers)
+    fix_subparsers(list_subparsers)
     for cmd in SUB_COMMANDS:
-        cmd.add_parser(artifact_subparsers, parent_parser)
+        cmd.add_parser(list_subparsers, parent_parser)
+

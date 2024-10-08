@@ -16,7 +16,6 @@
 
 import subprocess
 import os
-import sys
 
 def fix_subparsers(subparsers):
     subparsers.required = True

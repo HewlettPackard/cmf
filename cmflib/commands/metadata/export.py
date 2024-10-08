@@ -28,8 +28,6 @@ class CmdMetadataExport(CmdBase):
 
         current_directory = os.getcwd()
         full_path_to_dump = ""
-        data = ""
-        mlmd_data = ""
 
         mlmd_file_name = "./mlmd"
 
