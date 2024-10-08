@@ -5,7 +5,7 @@ from cmflib import cmf
 class CmfRayLogger(Callback):
     #id_count = 1
     
-    def __init__(self, pipeline_name, file_path, pipeline_stage):
+    def __init__(self, pipeline_name, file_path, pipeline_stage, data_dir = None):
         """
         pipeline_name: The name of the CMF Pipelibe
         file_path: The path to metadata file
@@ -16,6 +16,7 @@ class CmfRayLogger(Callback):
         self.pipeline_stage = pipeline_stage
         self.cmf_obj = {}
         self.cmf_run = {}
+        self.data_dir = data_dir
 
     def on_trial_start(self, iteration, trials, trial, **info):
         trial_id = trial.trial_id
@@ -28,6 +29,8 @@ class CmfRayLogger(Callback):
                                             custom_properties = {'Configuration': trial_config})
         #self.execution_id[trial_id] = CmfRayLogger.id_count
         #CmfRayLogger.id_count+=1
+        if self.data_dir:
+            _ = self.cmf_obj[trial_id].log_dataset(url = str(self.data_dir), event = "input")
 
     def on_trial_result(self, iteration, trials, trial, result, **info):
         trial_id = trial.trial_id
@@ -57,6 +60,11 @@ class CmfRayLogger(Callback):
         _ = self.cmf_obj[trial_id].commit_metrics(f"Trial_{trial_id}_metrics")
         _ = self.cmf_obj[trial_id].log_execution_metrics(metrics_name = f"Trial_{trial_id}_Result",
                                       custom_properties = {'Result': trial_result})
+        
+        if 'model_path' in trial_result:
+            _ = self.cmf_obj[trial_id].log_model(path = trial_result['model_path'], 
+                                                 event = 'input', 
+                                                 model_name = f"{trial_id}_model")
         
     def on_trial_error(self, iteration, trials, trial, **info):
         trial_id = trial.trial_id
