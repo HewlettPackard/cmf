@@ -68,18 +68,32 @@ cd ./example-get-started
 ```
 ### cmf init
 <pre>
-Usage: cmf init minioS3 [-h] --url [url] 
-                             --endpoint-url [endpoint_url]
-                             --access-key-id [access_key_id] 
-                             --secret-key [secret_key] 
-                             --git-remote-url[git_remote_url]  
-                             --cmf-server-url [cmf_server_url]
-                             --neo4j-user [neo4j_user]
-                             --neo4j-password [neo4j_password]
-                             --neo4j-uri [neo4j_uri]
+Usage: cmf init local [-h] --path [path] -
+                           --git-remote-url [git_remote_url]
+                           --cmf-server-url [cmf_server_url]
+                           --neo4j-user [neo4j_user]
+                           --neo4j-password [neo4j_password]
+                           --neo4j-uri [neo4j_uri]
 </pre>
-```shell
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+`cmf init local` initialises local directory as a cmf artifact repository.
+```
+cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```
+
+> Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage
+
+Required Arguments
+```
+  --path [path]                         Specify local directory path.
+  --git-remote-url [git_remote_url]     Specify git repo url.
+```
+Optional Arguments
+```
+  -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
+  --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
 Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
 
