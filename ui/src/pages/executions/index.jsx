@@ -37,7 +37,7 @@ const Executions = () => {
   // Default sort field
   const [sortField, setSortField] = useState("Context_Type");
   // Default sort order
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState(null);
   // Default filter field
   const [filterBy, setFilterBy] = useState(null);
   // Default filter value

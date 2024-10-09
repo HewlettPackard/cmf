@@ -43,7 +43,10 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
   }, [artifacts]);
 
   const handleSort = () => {
-    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    // Initially all data is in mixed format 
+    // After the data is in asc order
+    // then it is in desc order
+    const newSortOrder = sortOrder === "desc" ? "asc" : sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
     const sorted = [...artifacts].sort((a, b) => {
         if(newSortOrder === "asc"){
@@ -54,6 +57,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
     });
     setSortedData(sorted); // Notify parent component about sorting change
   };
+
 
   const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
@@ -74,7 +78,16 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
     const handleClosePopup = () => {
         setShowPopup(false);
     };
-
+    
+    const renderArrow = () => {
+      if (sortOrder === "desc"){
+        return <span className="cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
+      } else if (sortOrder === "asc"){
+        return <span className="cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
+      } else{
+        return <span className="cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
+      }
+    }
   
   return (
     <div className="container flex flex-col">
@@ -92,8 +105,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                   onClick={handleSort}
                   className="name px-6 py-3"
                 >
-                  name {sortOrder === "asc" && <span className="cursor-pointer">&#8593;</span>}
-                  {sortOrder === "desc" && <span className="cursor-pointer">&#8595;</span>}
+                  name {renderArrow()}
                 </th>
                 {ArtifactType === "Model" && (
                 <th scope="col" className="model_card px-6 py-3">

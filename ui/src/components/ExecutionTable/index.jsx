@@ -37,7 +37,7 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
 
 
   const handleSort = () => {
-    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    const newSortOrder = sortOrder === "desc" ? "asc" : sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
     const sorted = [...executions].sort((a, b) => {
         if(newSortOrder === "asc"){
@@ -62,6 +62,16 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
       setExpandedRow(rowId);
     }
   };
+
+  const renderArrow = () => {
+    if (sortOrder === "desc"){
+      return <span className="cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
+    } else if (sortOrder === "asc"){
+      return <span className="cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
+    } else{
+      return <span className="cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
+    }
+  }  
 
   return (
     <div className="flex flex-col">
@@ -96,8 +106,7 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
                   onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  Context_Type {sortOrder === "asc" && <span className="cursor-pointer">&#8593;</span>}
-                  {sortOrder === "desc" && <span className="cursor-pointer">&#8595;</span>}
+                  Context_Type {renderArrow()}
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
