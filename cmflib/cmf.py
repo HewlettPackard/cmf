@@ -20,6 +20,7 @@ import uuid
 import re
 import os
 import sys
+import yaml
 import pandas as pd
 import typing as t
 
@@ -103,7 +104,7 @@ class Cmf:
     # pylint: disable=too-many-instance-attributes
     # Reading CONFIG_FILE variable
     #cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
-    PYTHON_ENV_PATH = "python_env"
+    # what if we follow the same procedure as dataslice/metrics 
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
@@ -431,8 +432,7 @@ class Cmf:
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
-        # for every execution, need to log python env as an artifact
-        #log_python_env()
+
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
@@ -453,7 +453,9 @@ class Cmf:
         if uuids:
             self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
         else:
-            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())            
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())          
+
+
         self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
@@ -463,7 +465,7 @@ class Cmf:
         self.execution_label_props["Execution_Name"] = (
             execution_type + ":" + str(self.execution.id)
         )
-        
+
         self.execution_label_props["execution_command"] = cmd
         if self.graph:
             self.driver.create_execution_node(
@@ -474,6 +476,35 @@ class Cmf:
             self.execution.id,
             custom_props,
         )
+
+        import hashlib
+        output = get_python_env()
+
+        # Convert the string to bytes (utf-8 encoding)
+        byte_content = output.encode('utf-8')
+
+        # Create an MD5 hash object
+        md5_hash = hashlib.md5()
+
+        # Update the hash with the byte content
+        md5_hash.update(byte_content)
+
+        # Return the hexadecimal digest
+        hash_for_op = md5_hash.hexdigest()
+
+        directory_path = self.ARTIFACTS_PATH
+        os.makedirs(directory_path, exist_ok=True)
+        python_env_file_path = os.path.join(directory_path, f"{hash_for_op}_python_env.yaml")
+
+        # create file if it doesn't exists
+        if not os.path.exists(python_env_file_path):
+            print(f"{python_env_file_path} doesn't exists!!")
+            with open(python_env_file_path, 'w') as yaml_file:
+                #file.write(output)
+                 yaml.dump(output, yaml_file, default_flow_style=False)
+    
+        # link the artifact to execution if it exists and creates artifact if it doesn't
+        self.log_python_env(python_env_file_path)
         os.chdir(logging_dir)
         return self.execution
 
@@ -670,10 +701,203 @@ class Cmf:
             )
         return self.execution
 
+    # what is the reason behind creating this function
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")
         return commit_dvc_lock_file(file_path, self.execution.id)
+
+    def log_python_env(
+            self,
+            url: str,
+        ) -> mlpb.Artifact:
+            "Used to log the python packages of involved in the current execution"
+
+            '''
+            print("Printing name of log_python_env = ", url) # cmf_artifacts/python_env.yaml 
+            commit_output(url, self.execution.id)
+            c_hash = dvc_get_hash(url)
+
+            new_url = f'cmf_artifacts/{c_hash}_python.yml'
+
+            # check whether 
+
+            # Check if the new file already exists
+            if not os.path.exists(new_url):
+                # Rename the original file
+                os.rename(url, new_url)
+                print(f"Renamed '{url}' to '{new_url}'")
+            else:
+                os.remove(url)
+                print(f"File '{new_url}' already exists. No changes made. and {url} is deleted")
+
+
+            url = new_url
+            '''
+            git_repo = git_get_repo()
+            #name = re.split("/", url)[-1]
+            existing_artifact = []
+
+            commit_output(url, self.execution.id)
+            c_hash = dvc_get_hash(url)
+
+            if c_hash == "":
+                print("Error in getting the dvc hash,return without logging")
+                return
+
+            dataset_commit = c_hash
+            dvc_url = dvc_get_url(url)
+            dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
+            url = url + ":" + c_hash
+            if c_hash and c_hash.strip:
+                existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
+
+            if existing_artifact and len(existing_artifact) != 0:
+                existing_artifact = existing_artifact[0]
+                uri = c_hash
+                print("i am here")
+                artifact = link_execution_to_artifact(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    uri=uri,
+                    input_name=url,
+                    event_type=mlpb.Event.Type.OUTPUT,
+                )
+            else:
+                uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
+                artifact = create_new_artifact_event_and_attribution(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    context_id=self.child_context.id,
+                    uri=uri,
+                    name=url,
+                    type_name="Environment",
+                    event_type=mlpb.Event.Type.OUTPUT,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(dataset_commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
+                    milliseconds_since_epoch=int(time.time() * 1000),
+                )
+            self.execution_label_props["git_repo"] = git_repo
+            self.execution_label_props["Commit"] = dataset_commit
+
+
+            '''
+            if self.graph:
+                self.driver.create_env_node(
+                    name,
+                    url,
+                    uri,
+                    "output"
+                    self.execution.id,
+                    self.parent_context,
+                )
+
+                child_artifact = {
+                    "Name": name,
+                    "Path": url,
+                    "URI": uri,
+                    "Event": "output",
+                    "Execution_Name": self.execution_name,
+                    "Type": "Environment",
+                    "Execution_Command": self.execution_command,
+                    "Pipeline_Id": self.parent_context.id,
+                    "Pipeline_Name": self.parent_context.name,
+                }
+                ## Varkha - Why do we create relationships in case when event type is output
+                self.driver.create_artifact_relationships(
+                    self.input_artifacts, child_artifact, self.execution_label_props
+                )
+                '''
+            return artifact
+    '''
+    def log_python_env_1(
+            self,
+            url: str,
+        ) -> mlpb.Artifact:
+            "Used to log the python packages of involved in the current execution"
+
+            print("Printing name of log_python_env = ", url)
+            git_repo = git_get_repo()
+
+            commit_output(url, self.execution.id)
+            c_hash = dvc_get_hash(url)
+
+            if c_hash == "":
+                print("Error in getting the dvc hash,return without logging")
+                return
+
+            dataset_commit = c_hash
+            dvc_url = dvc_get_url(url)
+            dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
+            name = (url + ":" + c_hash + ":" + str(self.execution.id))
+
+            ## cmf_artifacts/uuid/python_env/python_env.yaml - only hash matters in DVC - will test this 
+            ## artifact already exist .. 
+            ## Varkha - This will be situtaion if i am going to create new file for every execution - what to do in following scenario
+            # To Do - What happens when uri is the same but names are different - this won't in this situtaion
+
+           
+            artifact = create_new_artifact_event_and_attribution(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    context_id=self.child_context.id,
+                    uri=c_hash,
+                    name=name,
+                    type_name="Environment",
+                    event_type=mlpb.Event.Type.OUTPUT,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(dataset_commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
+                    milliseconds_since_epoch=int(time.time() * 1000),
+                )
+            self.execution_label_props["git_repo"] = git_repo
+            self.execution_label_props["Commit"] = dataset_commit
+
+            if self.graph:
+                self.driver.create_env_node(
+                    name,
+                    url,
+                    uri,
+                    "output"
+                    self.execution.id,
+                    self.parent_context,
+                )
+
+                child_artifact = {
+                    "Name": name,
+                    "Path": url,
+                    "URI": uri,
+                    "Event": "output",
+                    "Execution_Name": self.execution_name,
+                    "Type": "Environment",
+                    "Execution_Command": self.execution_command,
+                    "Pipeline_Id": self.parent_context.id,
+                    "Pipeline_Name": self.parent_context.name,
+                }
+                ## Varkha - Why do we create relationships in case when event type is output
+                self.driver.create_artifact_relationships(
+                    self.input_artifacts, child_artifact, self.execution_label_props
+                )
+            return artifact
+    '''
+
 
     def log_dataset(
         self,
@@ -2005,6 +2229,7 @@ class Cmf:
 #                first, middle, last = str(index).split("/")
 #                print(last)
 #                os.symlink(str(index), slicedir + "/ " + last)
+
 
 def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):
     """ Pushes MLMD file to CMF-server.
