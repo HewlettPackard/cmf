@@ -58,10 +58,10 @@ def check_minio_server(dvc_config_op):
     from minio.error import S3Error
 
     if dvc_config_op["core.remote"] == "minio":
-        endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
+        endpoint = dvc_config_op["remote.minio.endpointurl"][:7]   # http:// has 7 total no of character so we are using slicing 
         access_key = dvc_config_op["remote.minio.access_key_id"]
         secret_key = dvc_config_op["remote.minio.secret_access_key"]
-        bucket_name = dvc_config_op["remote.minio.url"].split("s3://")[1]
+        bucket_name = dvc_config_op["remote.minio.url"][:5]  # s3:// has 5 total no of character so we are using slicing
         try:
             client = Minio(
                 endpoint, access_key=access_key, secret_key=secret_key, secure=False
