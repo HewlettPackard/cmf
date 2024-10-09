@@ -1,4 +1,5 @@
-from cmflib import cmfquery, cmf_merger
+from cmflib import cmf_merger
+from cmflib.cmfquery import CmfQuery
 import pandas as pd
 import json
 import os
@@ -7,12 +8,15 @@ from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
 
-async def get_model_data(mlmdfilepath, modelId):
+#Converts sync functions to async
+async def async_api(function_to_async, mlmdfilepath: str, *argv):
+    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
+
+async def get_model_data(query: CmfQuery, modelId: int):
     '''
       This function retrieves the necessary model data required for generating a model card.
 
       Arguments:
-        mlmdfilepath (str): The file path to the metadata.
         modelId (int): The ID of the model for which data is required.
 
       Returns:
@@ -24,7 +28,6 @@ async def get_model_data(mlmdfilepath, modelId):
         model_output_df (DataFrame): Metadata of artifacts that used the model as an input.
         The returned DataFrames provide comprehensive metadata for the specified model, aiding in the creation of detailed and accurate model cards.
     '''
-    query = cmfquery.CmfQuery(mlmdfilepath)
     pd.set_option('display.max_columns', None)
     model_data_df = pd.DataFrame()
     model_exe_df = pd.DataFrame()
@@ -78,34 +81,27 @@ async def get_model_data(mlmdfilepath, modelId):
 
     return model_data_df, model_exe_df, model_input_df, model_output_df
 
-#Converts sync functions to async
-async def async_api(function_to_async, mlmdfilepath: str, *argv):
-    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
 
-def get_executions(mlmdfilepath: str, pipeline_name, exe_ids) -> pd.DataFrame:
+def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:
     '''
     Args:
-     mlmdfilepath: mlmd file path.
      pipeline_name: name of the pipeline.
      exe_ids: list of execution ids.
 
     Returns:
      returns dataframe of executions using execution_ids.
     '''
-
-    query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
     executions = query.get_all_executions_by_ids_list(exe_ids)
     df = pd.concat([df, executions], sort=True, ignore_index=True)
     return df
 
 
-def get_all_exe_ids(mlmdfilepath: str, pipeline_name: str = None) -> t.Dict[str, pd.DataFrame]:
+def get_all_exe_ids(query: CmfQuery, pipeline_name: str = None) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
     returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
     '''
-    query = cmfquery.CmfQuery(mlmdfilepath)
     execution_ids = {}
     executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
     if pipeline_name:
@@ -128,15 +124,14 @@ def get_all_exe_ids(mlmdfilepath: str, pipeline_name: str = None) -> t.Dict[str,
                 execution_ids[name] = pd.DataFrame()
     return execution_ids
 
-
-def get_all_artifact_ids(mlmdfilepath: str, execution_ids, pipeline_name: str = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
+def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
     # following is a dictionary of dictionaries
+
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
     # Nested dictionary key is type i.e. Dataset, Model, etc.
     # Nested dictionary value is a pandas df with id and artifact name
     artifact_ids = {}
-    query = cmfquery.CmfQuery(mlmdfilepath)
     artifacts = pd.DataFrame()
     if pipeline_name:
         if not execution_ids.get(pipeline_name).empty:
@@ -174,8 +169,8 @@ def get_all_artifact_ids(mlmdfilepath: str, execution_ids, pipeline_name: str = 
                 artifact_ids[name] = pd.DataFrame()
     return artifact_ids
 
-def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
-    query = cmfquery.CmfQuery(mlmdfilepath)
+
+def get_artifacts(query: CmfQuery, pipeline_name, art_type, artifact_ids):
     df = pd.DataFrame()
     if (query.get_pipeline_id(pipeline_name) != -1):
         df = query.get_all_artifacts_by_ids_list(artifact_ids)
@@ -205,12 +200,11 @@ def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
         tempout = json.loads(result)
         return tempout
 
-def get_artifact_types(mlmdfilepath) -> t.List[str]:
-    query = cmfquery.CmfQuery(mlmdfilepath)
+def get_artifact_types(query: CmfQuery) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-def create_unique_executions(server_store_path, req_info) -> str:
+def create_unique_executions(query: CmfQuery, req_info) -> str:
     """
     Creates list of unique executions by checking if they already exist on server or not.
     locking is introduced lock to avoid data corruption on server, 
@@ -230,8 +224,7 @@ def create_unique_executions(server_store_path, req_info) -> str:
         return {"error": "Pipeline name is required"}
     executions_server = []
     list_executions_exists = []
-    if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
+    if os.path.exists("/cmf-server/data/postgres_data"):
         executions = query.get_all_executions_in_pipeline(pipeline_name)
         for i in executions.index:
             for uuid in executions['Execution_uuid'][i].split(","):
@@ -262,19 +255,21 @@ def create_unique_executions(server_store_path, req_info) -> str:
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
     for i in mlmd_data["Pipeline"]:
+        print("i am going inside")
         if len(i['stages']) == 0 :
             status="exists"
         else:
+            print("i am here")
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+                json.dumps(mlmd_data), "", "push", req_info["id"]
             )
             status='success'
 
     return status
 
 
-def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: str):
-    query = cmfquery.CmfQuery(server_store_path)
+def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_id: str):
+    execution_flag = 0
     json_payload = None
     df = pd.DataFrame()
     if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
@@ -287,9 +282,10 @@ def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: st
         json_payload = query.dumptojson(pipeline_name, exec_id)
     return json_payload
 
-def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
+
+def get_lineage_data(query: CmfQuery, pipeline_name,type, dict_of_art_ids, dict_of_exe_ids):
     if type=="Artifacts":
-        lineage_data = query_artifact_lineage_d3force(server_store_path, pipeline_name, dict_of_art_ids)
+        lineage_data = query_artifact_lineage_d3force(query, pipeline_name, dict_of_art_ids)
         '''
         returns dictionary of nodes and links for artifact lineage.
         lineage_data= {
@@ -298,11 +294,12 @@ def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_o
                       }
         '''
     elif type=="Execution":
-        lineage_data = query_list_of_executions(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+        lineage_data = query_list_of_executions(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+
         '''
         returns list of execution types for specific pipeline.
         '''
     else:
-        lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
+        lineage_data = query_visualization_ArtifactExecution(query, pipeline_name)
     return lineage_data
 

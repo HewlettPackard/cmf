@@ -18,6 +18,7 @@ import os
 import sys
 import subprocess
 import json
+import yaml
 
 def is_url(url)-> bool:
     from urllib.parse import urlparse
@@ -45,22 +46,68 @@ def get_python_env()-> str:
     if is_conda_installed():
         import conda
         # List all installed packages and their versions
-        data = list_conda_packages_json()
-        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data]
-        installed_packages =  transformed_result
-        packages = f"Conda: Python {python_version}: {installed_packages}"
+        conda_packages = list_conda_packages_json()
+        installed_packages = [f"{pkg['name']}=={pkg['version']}" for pkg in conda_packages]
+        env_info = {
+            'Package Manager': 'Conda',
+            'Python Version': python_version,
+            'Installed Packages': installed_packages
+        }
     else:
-        # pip
+        # Fallback to pip if conda is not available
         try:
             from pip._internal.operations import freeze
-
             # List all installed packages and their versions
             installed_packages_generator = freeze.freeze()
+            print(type(installed_packages_generator))
             installed_packages = list(installed_packages_generator)
-            packages = f"Python {python_version}: {installed_packages}"
+            env_info = yaml.dump(installed_packages)
+            #env_info = f"Python {python_version}: {installed_packages}"
         except ImportError:
             print("Pip is not installed.")
-    return packages
+
+    # Convert the result to YAML
+    yaml_output = yaml.dump(env_info, sort_keys=False)
+    return yaml_output
+
+'''
+def get_python_env() -> str:
+    """Return Python environment information including version and installed packages in YAML format."""
+    python_version = sys.version
+    installed_packages = {}
+
+    # Check if conda is installed
+    if is_conda_installed():
+        import conda
+        # List all installed Conda packages
+        conda_packages = list_conda_packages_json()
+        installed_packages = {pkg['name']: pkg['version'] for pkg in conda_packages}
+        env_info = {
+            'Package Manager': 'Conda',
+            'Python Version': python_version,
+            'Installed Packages': installed_packages
+        }
+    else:
+        # Fallback to pip if Conda is not available
+        try:
+            from pip._internal.operations import freeze
+            # List all installed pip packages
+            installed_packages_generator = freeze.freeze()
+            installed_packages = {pkg.split('==')[0]: pkg.split('==')[1] for pkg in installed_packages_generator}
+            env_info = {
+                'Package Manager': 'Pip',
+                'Python Version': python_version,
+                'Installed Packages': installed_packages
+            }
+        except ImportError:
+            env_info = {
+                'Error': 'Pip is not installed, and Conda is not available.'
+            }
+
+    # Convert the result to YAML
+    yaml_output = yaml.dump(env_info, sort_keys=False)
+    return yaml_output
+'''
 
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
@@ -68,24 +115,23 @@ def change_dir(cmf_init_path):
         os.chdir(cmf_init_path)
     return logging_dir
 
-def is_conda_installed():
+
+def is_conda_installed() -> bool:
+    """Check if Conda is installed by running 'conda --version'."""
     try:
-        import conda
-        # Run the 'conda --version' command and capture the output
-        subprocess.run(['conda', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.run(["conda", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return True
-    except subprocess.CalledProcessError:
-        return False
-    except ImportError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         return False
 
 
-def list_conda_packages_json():
+def list_conda_packages_json() -> list:
+    """Return a list of installed Conda packages and their versions."""
     try:
-        result = subprocess.run(['conda', 'list', '--json'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        result = subprocess.run(["conda", "list", "--json"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return json.loads(result.stdout)
-    except subprocess.CalledProcessError as e:
-        return f"Error: {e.stderr}"
+    except (subprocess.CalledProcessError, json.JSONDecodeError):
+        return []
 
 
 # Generate SciToken dynamically 

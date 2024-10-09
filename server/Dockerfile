@@ -31,13 +31,6 @@ RUN mkdir -p /cmf-server/data/static
 # folder for tensorboard logs
 RUN mkdir -p /cmf-server/data/tensorboard-logs
 
-# libraries required for lineage
-RUN apt-get update -y && apt-get install -y libzbar-dev 
-
-RUN apt-get install -y build-essential
-
-RUN apt-get install -y python3-dev
-
 # library required for curl command
 
 RUN apt-get install -y gcc
@@ -46,9 +39,6 @@ RUN apt-get update -y && apt-get install -y curl
 
 # Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
-
-# library required for lineage
-RUN apt-get install -y graphviz graphviz-dev 
 
 # Install requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
