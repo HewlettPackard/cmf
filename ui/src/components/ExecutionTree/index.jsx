@@ -116,7 +116,6 @@ const constructTangleLayout = (levels, options = {}) => {
     l.xt = l.target.x;
     l.yt = l.target.y + l.target.bundles_index[l.bundle.id].i * metro_d - (l.target.bundles.length * metro_d) / 2 + metro_d / 2;
     l.xb = l.bundle.x;
-    l.yb = l.bundle.y;
     l.xs = l.source.x;
     l.ys = l.source.y;
   });
@@ -130,7 +129,7 @@ const constructTangleLayout = (levels, options = {}) => {
   links.forEach(l => {
     l.yt = l.target.y + l.target.bundles_index[l.bundle.id].i * metro_d - (l.target.bundles.length * metro_d) / 2 + metro_d / 2;
     l.ys = l.source.y;
-    l.c1 = l.source.level - l.target.level > 1 ? Math.min(options.bigc, l.xb - l.xt, l.yb - l.yt) - c : c;
+    l.c1 = c;
     l.c2 = c;
   });
 

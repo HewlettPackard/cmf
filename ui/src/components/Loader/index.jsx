@@ -15,19 +15,14 @@
 ***/
 
 
-import React from "react";
+import React from 'react';
+import './index.css'; 
 
-function Loader() {
-  return (
-    <div className="flex justify-center items-center h-screen w-screen bg-white">
-      <img
-        src="https://thumbs.gfycat.com/HugeDeliciousArchaeocete-max-1mb.gif"
-        alt="Test data"
-        width={"auto"}
-        height={"auto"}
-      />
-    </div>
-  );
-}
+const Loader = () => (
+  <div className="loader-container">
+    <div className="loader"></div>
+  </div>
+);
 
 export default Loader;
+
