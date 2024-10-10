@@ -65,11 +65,11 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
 
   const renderArrow = () => {
     if (sortOrder === "desc"){
-      return <span className="cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
+      return <span className="text-2xl cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
     } else if (sortOrder === "asc"){
-      return <span className="cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
+      return <span className="text-2xl cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
     } else{
-      return <span className="cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
+      return <span className="text-2xl cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
     }
   }  
 
@@ -106,7 +106,7 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
                   onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  Context_Type {renderArrow()}
+                  Context_Type&nbsp; {renderArrow()}
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution

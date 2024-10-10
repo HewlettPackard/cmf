@@ -81,11 +81,11 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
     
     const renderArrow = () => {
       if (sortOrder === "desc"){
-        return <span className="cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
+        return <span className="text-2xl cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
       } else if (sortOrder === "asc"){
-        return <span className="cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
+        return <span className="text-2xl cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
       } else{
-        return <span className="cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
+        return <span className="text-2xl cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
       }
     }
   
@@ -105,7 +105,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                   onClick={handleSort}
                   className="name px-6 py-3"
                 >
-                  name {renderArrow()}
+                  name&nbsp; {renderArrow()}
                 </th>
                 {ArtifactType === "Model" && (
                 <th scope="col" className="model_card px-6 py-3">
