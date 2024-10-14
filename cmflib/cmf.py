@@ -56,7 +56,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
 from cmflib.cmf_commands_wrapper import (
     _metadata_push,
     _metadata_pull,
@@ -477,31 +477,21 @@ class Cmf:
             custom_props,
         )
 
-        import hashlib
-        output = get_python_env()
-
-        # Convert the string to bytes (utf-8 encoding)
-        byte_content = output.encode('utf-8')
-
-        # Create an MD5 hash object
-        md5_hash = hashlib.md5()
-
-        # Update the hash with the byte content
-        md5_hash.update(byte_content)
-
-        # Return the hexadecimal digest
-        hash_for_op = md5_hash.hexdigest()
+        env_output = get_python_env()
+        md5_hash = get_md5_hash(env_output)
 
         directory_path = self.ARTIFACTS_PATH
         os.makedirs(directory_path, exist_ok=True)
-        python_env_file_path = os.path.join(directory_path, f"{hash_for_op}_python_env.yaml")
+        python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.yaml")
 
         # create file if it doesn't exists
         if not os.path.exists(python_env_file_path):
             print(f"{python_env_file_path} doesn't exists!!")
-            with open(python_env_file_path, 'w') as yaml_file:
+            with open(python_env_file_path, 'w') as file:
                 #file.write(output)
-                 yaml.dump(output, yaml_file, default_flow_style=False)
+                env_info = yaml.dump(env_output)
+                file.write(env_info)
+
     
         # link the artifact to execution if it exists and creates artifact if it doesn't
         self.log_python_env(python_env_file_path)

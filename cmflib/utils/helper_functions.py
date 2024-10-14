@@ -37,7 +37,7 @@ def is_git_repo():
     else:
         return
 
-
+'''
 def get_python_env()-> str:
     installed_packages = ""
     python_version = sys.version
@@ -67,48 +67,99 @@ def get_python_env()-> str:
             print("Pip is not installed.")
 
     # Convert the result to YAML
-    yaml_output = yaml.dump(env_info, sort_keys=False)
-    return yaml_output
+    #yaml_output = yaml.dump(env_info, sort_keys=False)
+    return env_info
 
 '''
-def get_python_env() -> str:
-    """Return Python environment information including version and installed packages in YAML format."""
-    python_version = sys.version
-    installed_packages = {}
+def get_python_env(env_name='cmf'):
+    # what this is supposed to return 
+    try:
+        # Check if the environment is conda
+        if is_conda_installed():  # If conda is installed and the command succeeds
+            import conda
+            # Conda environment
+            print("Detected conda environment. Exporting environment.yml...")
 
-    # Check if conda is installed
-    if is_conda_installed():
-        import conda
-        # List all installed Conda packages
-        conda_packages = list_conda_packages_json()
-        installed_packages = {pkg['name']: pkg['version'] for pkg in conda_packages}
-        env_info = {
-            'Package Manager': 'Conda',
-            'Python Version': python_version,
-            'Installed Packages': installed_packages
-        }
-    else:
-        # Fallback to pip if Conda is not available
-        try:
-            from pip._internal.operations import freeze
-            # List all installed pip packages
-            installed_packages_generator = freeze.freeze()
-            installed_packages = {pkg.split('==')[0]: pkg.split('==')[1] for pkg in installed_packages_generator}
-            env_info = {
-                'Package Manager': 'Pip',
-                'Python Version': python_version,
-                'Installed Packages': installed_packages
-            }
-        except ImportError:
-            env_info = {
-                'Error': 'Pip is not installed, and Conda is not available.'
+            # Step 1: Get the list of conda packages
+            conda_packages = subprocess.check_output(['conda', 'list', '--export']).decode('utf-8').splitlines()
+
+            # Step 2: Get the list of pip packages
+            pip_packages = subprocess.check_output(['pip', 'freeze']).decode('utf-8').splitlines()
+
+            # Step 3: Get the list of channels from the current conda environment
+            channels_raw = subprocess.check_output(['conda', 'config', '--show', 'channels']).decode('utf-8').splitlines()
+
+            # Filter out lines that start with 'channels:' and any empty or commented lines
+            channels = [line.strip().lstrip('- ').strip() for line in channels_raw if line and not line.startswith('channels:') and not line.startswith('#')]
+
+            # Step 4: Create a YAML structure for the environment
+            env_data = {
+                'name': env_name,  # Name the environment
+                'channels': channels,  # Add the cleaned channels list
+                'dependencies': [],
             }
 
-    # Convert the result to YAML
-    yaml_output = yaml.dump(env_info, sort_keys=False)
-    return yaml_output
-'''
+            # Add conda packages to dependencies
+            for package in conda_packages:
+                if not package.startswith('#') and len(package.strip()) > 0:
+                    env_data['dependencies'].append(package)
 
+            # Add pip packages under a pip section in dependencies
+            if pip_packages:
+                pip_section = {'pip': pip_packages}
+                env_data['dependencies'].append(pip_section)
+
+            print(env_data)
+
+            return env_data
+
+            # Step 5: Write the YAML file
+            #with open('conda_environment.yml', 'w') as yaml_file:
+            #    yaml.dump(env_data, yaml_file)
+
+            #print("environment.yml file created successfully.")
+
+        else:
+            # If not conda, assume virtualenv/pip
+            print("Detected virtualenv/pip environment. Exporting requirements.txt...")
+
+            # Step 1: Get the list of pip packages
+            pip_packages = subprocess.check_output(['pip', 'freeze']).decode('utf-8').splitlines()
+
+            #print the output
+            print(pip_packages)
+
+            return pip_packages
+
+            # Step 2: Write the pip packages to a requirements.txt file
+            #with open('pip_requirements.txt', 'w') as txt_file:
+            #    for package in pip_packages:
+            #        txt_file.write(f"{package}\n")
+
+            #print("requirements.txt file created successfully.")
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+
+    return
+
+def get_md5_hash(output):
+        import hashlib
+
+        # Convert the string to bytes (utf-8 encoding)
+        byte_content = output.encode('utf-8')
+
+        # Create an MD5 hash object
+        md5_hash = hashlib.md5()
+
+        # Update the hash with the byte content
+        md5_hash.update(byte_content)
+
+        # Return the hexadecimal digest
+        hash_for_op = md5_hash.hexdigest()
+
+        return hash_for_op
+        
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
     if not logging_dir == cmf_init_path:
