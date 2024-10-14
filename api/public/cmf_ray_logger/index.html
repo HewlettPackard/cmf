@@ -16,7 +16,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -871,10 +871,12 @@
 <li>pipeline_name: A string representing the name of the CMF pipeline.</li>
 <li>file_path: The file path to the metadata file associated with the CMF pipeline.</li>
 <li>pipeline_stage: The name of the current stage of the CMF pipeline.</li>
+<li>data_dir (optional): A directory path where trial data should be logged. If the path is within the CMF directory, it should be relative. If it is outside, it must be an absolute path. Default vale is <code>None</code>.</li>
 </ul>
 <p>Example of instantiation:
-<div class="highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="p">)</span>
-</code></pre></div></p>
+<div class="highlight"><pre><span></span><code><span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_path</span><span class="p">,</span> <span class="n">pipeline_stage</span><span class="o">.</span> <span class="n">data_dir</span><span class="p">)</span>
+</code></pre></div>
+Here, the <code>data_dir</code> argument is used to log the dataset at the start of each trial. Ensure that this path is relative if within the CMF directory and absolute if external to the CMF directory.</p>
 <h2 id="integration-with-ray-tune">Integration with Ray Tune<a class="headerlink" href="#integration-with-ray-tune" title="Permanent link">&para;</a></h2>
 <p>After initializing the logger, it should be passed to Ray Tune’s <code>tune.run</code> method via the <code>callbacks</code> parameter. This setup allows <code>CmfRayLogger</code> to log metrics for each trial based on the pipeline configuration and trial execution details.</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">ray</span> <span class="kn">import</span> <span class="n">tune</span>
@@ -890,15 +892,24 @@
     <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]</span>
 <span class="p">)</span>
 </code></pre></div>
+<h2 id="model-logging">Model Logging<a class="headerlink" href="#model-logging" title="Permanent link">&para;</a></h2>
+<p><code>CmfRayLogger</code> can now log the model during trials. To enable this, the <code>train.report</code> method must include a special key: <code>"model_path"</code>. The value of <code>"model_path"</code> should be a relative path pointing to the saved model within the CMF directory.</p>
+<p>Important: Ensure that the <code>"model_path"</code> is relative, as the DVC wrapper expects all paths nested within the CMF directory to be relative.
+<div class="highlight"><pre><span></span><code><span class="n">train</span><span class="o">.</span><span class="n">report</span><span class="p">({</span>
+    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s2">&quot;model_path&quot;</span><span class="p">:</span> <span class="s2">&quot;models/example_model.pth&quot;</span>
+<span class="p">})</span>
+</code></pre></div></p>
 <h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">&para;</a></h2>
-<p>During each trial, <code>CmfRayLogger</code> will automatically create a CMF object with attributes set as <code>pipeline_name</code>, <code>pipeline_stage</code>, and the CMF execution as <code>trial_id</code>. It captures the trial's output and logs it under the metric key <code>'Output'</code>.</p>
+<p>During each trial, <code>CmfRayLogger</code> will automatically create a CMF object with attributes set as <code>pipeline_name</code>, <code>pipeline_stage</code>, and the CMF execution as <code>trial_id</code>. It captures the trial's output and logs it under the metric key <code>'Output'</code>. Additionally, it logs the dataset at the start of each trial (if data_dir is specified) and logs the model based on the <code>"model_path"</code> key in <code>train.report</code>.</p>
 <h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h2>
 <p>Here is a complete example of how to use <code>CmfRayLogger</code> with Ray Tune:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">from</span> <span class="nn">cmf</span> <span class="kn">import</span> <span class="n">cmf_ray_logger</span>
 <span class="kn">from</span> <span class="nn">ray</span> <span class="kn">import</span> <span class="n">tune</span>
 
 <span class="c1"># Initialize the logger</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="s2">&quot;ExamplePipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/metadata.json&quot;</span><span class="p">,</span> <span class="s2">&quot;Stage1&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="s2">&quot;ExamplePipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/metadata.json&quot;</span><span class="p">,</span> <span class="s2">&quot;Stage1&quot;</span><span class="p">,</span> <span class="s2">&quot;path/to/data_dir&quot;</span><span class="p">)</span>
 
 <span class="c1"># Configuration for tuning</span>
 <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
@@ -911,6 +922,13 @@
     <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
     <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">logger</span><span class="p">]</span>
 <span class="p">)</span>
+
+<span class="c1"># Reporting within your trainable function</span>
+<span class="n">train</span><span class="o">.</span><span class="n">report</span><span class="p">({</span>
+    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s2">&quot;model_path&quot;</span><span class="p">:</span> <span class="s2">&quot;path/to/models/example_model.pth&quot;</span>
+<span class="p">})</span>
 </code></pre></div>
 
 
