@@ -18,8 +18,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
-import sys
 
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import (
@@ -27,7 +25,6 @@ from cmflib.dvc_wrapper import (
     git_checkout_new_branch,
     git_initial_commit,
     git_add_remote,
-    check_git_repo,
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,

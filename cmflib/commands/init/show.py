@@ -17,9 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
 
-from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.dvc_wrapper import dvc_get_config

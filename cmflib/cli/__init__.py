@@ -14,8 +14,6 @@
 # limitations under the License.
 ###
 
-import sys
-
 
 class CmfParserError(Exception):
     """Base class for CLI parser errors."""
