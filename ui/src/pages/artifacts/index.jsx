@@ -24,6 +24,7 @@ import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
 import ArtifactTypeSidebar from "./ArtifactTypeSidebar";
+import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
 
@@ -41,16 +42,21 @@ const Artifacts = () => {
   // Default sort field
   const [sortField, setSortField] = useState("name");
   // Default sort order
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState(null);
   // Default filter field
   const [filterBy, setFilterBy] = useState(null);
   // Default filter value
   const [filterValue, setFilterValue] = useState(null);
+  // Default loader value
+  const [loading, setLoading] = useState(true);
+
 
   const fetchPipelines = () => {
+    setLoading(true);
     client.getPipelines("").then((data) => {
       setPipelines(data);
       setSelectedPipeline(data[0]);
+      setLoading(false);
     });
   };
 
@@ -76,8 +82,10 @@ const Artifacts = () => {
   };
 
   const fetchArtifactTypes = () => {
+    setLoading(true);
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
+      setLoading(false)
       fetchArtifacts(selectedPipeline, types[0], activePage, sortField, sortOrder, filterBy, filterValue);
     });
   };
@@ -92,9 +100,11 @@ const Artifacts = () => {
   const fetchArtifacts = (pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) => {
     setArtifacts(undefined)
     // if data then set artifacts with that data else set it null.
+    setLoading(true);
     client.getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
       setArtifacts(data.items);
       setTotalItems(data.total_items);
+      setLoading(false);
     })
     .catch(() => setArtifacts(null));
   };
@@ -149,105 +159,100 @@ const Artifacts = () => {
             pipelines={pipelines}
             handlePipelineClick={handlePipelineClick}
           />
-          <div className="container justify-center items-center mx-auto px-4">
+          <div className="container justify-center items-center px-4">
             <div className="flex flex-col">
               {selectedPipeline !== null && (
                 <ArtifactTypeSidebar
                   artifactTypes={artifactTypes}
                   handleArtifactTypeClick={handleArtifactTypeClick}
+                  onFilter={handleFilter}
                 />
               )}
             </div>
-            <div className="container">
-              {selectedPipeline !== null && selectedArtifactType !== null ? ( artifacts === undefined ? (
-                <div>Loading....</div>
-              ): artifacts === null || artifacts.length === 0 ? (
-                <div>No Data</div>
-              ):(
-                <>
-                <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort} onFilter={handleFilter}/>                            
-              
-                {totalItems > 0 && (
-                  <div className="pagination">
-                    <button
-                      onClick={handlePrevClick}
-                      disabled={activePage === 1}
-                      className={clickedButton === "prev" ? "active" : ""}
-                    >
-                      Previous
-                    </button>
-                    {Array.from({ length: Math.ceil(totalItems / 5) }).map(
-                      (_, index) => {
-                        const pageNumber = index + 1;
-                        if (
-                          pageNumber === 1 ||
-                          pageNumber === Math.ceil(totalItems / 5)
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageClick(pageNumber)}
-                              className={
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          (activePage <= 3 && pageNumber <= 6) ||
-                          (activePage >= Math.ceil(totalItems / 5) - 2 &&
-                            pageNumber >= Math.ceil(totalItems / 5) - 5) ||
-                          Math.abs(pageNumber - activePage) <= 2
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageClick(pageNumber)}
-                              className={
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active"
-                                  : ""
-                              }
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          (pageNumber === 2 && activePage > 3) ||
-                          (pageNumber === Math.ceil(totalItems / 5) - 1 &&
-                            activePage < Math.ceil(totalItems / 5) - 3)
-                        ) {
-                          return (
-                            <span
-                              key={`ellipsis-${pageNumber}`}
-                              className="ellipsis"
-                            >
-                              ...
-                            </span>
-                          );
+              { loading? (<Loader/>):( 
+                <div className="container">
+                  {selectedPipeline !== null && selectedArtifactType !== null && artifacts !== null && artifacts !== {} && (
+                    <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort} onFilter={handleFilter}/>
+                  )}
+                  {artifacts !== null && totalItems > 0 && (
+                    <>
+                      <button
+                        onClick={handlePrevClick}
+                        disabled={activePage === 1}
+                        className={clickedButton === "prev" ? "active" : ""}
+                      >
+                        Previous
+                      </button>
+                      {Array.from({ length: Math.ceil(totalItems / 5) }).map(
+                        (_, index) => {
+                          const pageNumber = index + 1;
+                          if (
+                            pageNumber === 1 ||
+                            pageNumber === Math.ceil(totalItems / 5)
+                          ) {
+                            return (
+                              <button
+                                key={pageNumber}
+                                onClick={() => handlePageClick(pageNumber)}
+                                className={
+                                  activePage === pageNumber &&
+                                  clickedButton === "page"
+                                    ? "active"
+                                    : ""
+                                }
+                              >
+                                {pageNumber}
+                              </button>
+                            );
+                          } else if (
+                            (activePage <= 3 && pageNumber <= 6) ||
+                            (activePage >= Math.ceil(totalItems / 5) - 2 &&
+                              pageNumber >= Math.ceil(totalItems / 5) - 5) ||
+                            Math.abs(pageNumber - activePage) <= 2
+                          ) {
+                            return (
+                              <button
+                                key={pageNumber}
+                                onClick={() => handlePageClick(pageNumber)}
+                                className={
+                                  activePage === pageNumber &&
+                                  clickedButton === "page"
+                                    ? "active"
+                                    : ""
+                                }
+                              >
+                                {pageNumber}
+                              </button>
+                            );
+                          } else if (
+                            (pageNumber === 2 && activePage > 3) ||
+                            (pageNumber === Math.ceil(totalItems / 5) - 1 &&
+                              activePage < Math.ceil(totalItems / 5) - 3)
+                          ) {
+                            return (
+                              <span
+                                key={`ellipsis-${pageNumber}`}
+                                className="ellipsis"
+                              >
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
                         }
-                        return null;
-                      }
-                    )}
-                    <button
-                      onClick={handleNextClick}
-                      disabled={activePage === Math.ceil(totalItems / 5)}
-                      className={clickedButton === "next" ? "active" : ""}
-                    >
-                      Next
-                    </button>
-                  </div>
-                )}
-              </>
-              ) 
-            ): null}
-              </div>
-            </div>
+                      )}
+                      <button
+                        onClick={handleNextClick}
+                        disabled={activePage === Math.ceil(totalItems / 5)}
+                        className={clickedButton === "next" ? "active" : ""}
+                      >
+                        Next
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+          </div>
         </div>
         <Footer />
       </section>
