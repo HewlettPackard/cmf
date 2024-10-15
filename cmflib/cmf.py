@@ -479,9 +479,9 @@ class Cmf:
 
         directory_path = self.ARTIFACTS_PATH
         os.makedirs(directory_path, exist_ok=True)
-        pip_packages = get_python_env()
-        if isinstance(pip_packages, list):
-            output = f"{pip_packages}\n"
+        packages = get_python_env()
+        if isinstance(packages, list):
+            output = f"{packages}\n"
             md5_hash = get_md5_hash(output)
             print(md5_hash)
             python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.txt")
@@ -489,19 +489,19 @@ class Cmf:
             if not os.path.exists(python_env_file_path):
                 print(f"{python_env_file_path} doesn't exists!!")
                 with open(python_env_file_path, 'w') as file:
-                    for package in pip_packages:
+                    for package in packages:
                         file.write(f"{package}\n")
 
         else:
             # in case output is dict
-            env_output = yaml.dump(env_output)
+            env_output = yaml.dump(packages)
             md5_hash = get_md5_hash(env_output)
             python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.yaml")
             # create file if it doesn't exists
             if not os.path.exists(python_env_file_path):
                 print(f"{python_env_file_path} doesn't exists!!")
                 with open(python_env_file_path, 'w') as file:
-                    file.write(env_output)
+                    file.write(packages)
 
     
         # link the artifact to execution if it exists and creates artifact if it doesn't

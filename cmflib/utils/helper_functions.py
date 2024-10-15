@@ -76,7 +76,6 @@ def get_python_env(env_name='cmf'):
     try:
         # Check if the environment is conda
         if is_conda_installed():  # If conda is installed and the command succeeds
-            import conda
             # Conda environment
             print("Detected conda environment. Exporting environment.yml...")
 
