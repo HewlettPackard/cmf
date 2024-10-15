@@ -144,21 +144,21 @@ def get_python_env(env_name='cmf'):
     return
 
 def get_md5_hash(output):
-        import hashlib
+    import hashlib
 
-        # Convert the string to bytes (utf-8 encoding)
-        byte_content = output.encode('utf-8')
+    # Convert the string to bytes (utf-8 encoding)
+    byte_content = output.encode('utf-8')
 
-        # Create an MD5 hash object
-        md5_hash = hashlib.md5()
+    # Create an MD5 hash object
+    md5_hash = hashlib.md5()
 
-        # Update the hash with the byte content
-        md5_hash.update(byte_content)
+    # Update the hash with the byte content
+    md5_hash.update(byte_content)
 
-        # Return the hexadecimal digest
-        hash_for_op = md5_hash.hexdigest()
+    # Return the hexadecimal digest
+    hash_for_op = md5_hash.hexdigest()
 
-        return hash_for_op
+    return hash_for_op
         
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
