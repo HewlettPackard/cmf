@@ -497,7 +497,7 @@ class Cmf:
 
         else:
             # in case output is dict
-            env_output = yaml.dump(packages)
+            env_output = yaml.dump(packages, sort_keys=False)
             md5_hash = get_md5_hash(env_output)
             python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.yaml")
             # create file if it doesn't exists
@@ -804,6 +804,7 @@ class Cmf:
     def log_python_env_on_server(
             self,
             url: str,
+            uri: str,
         ) -> mlpb.Artifact:
             "Used to log the python packages involved in the current execution"
 
