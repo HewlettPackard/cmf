@@ -16,10 +16,8 @@
 
 #!/usr/bin/env python3
 import argparse
-import json
 import os
 from cmflib import cmf_merger
-from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
@@ -44,12 +42,9 @@ class CmdMetadataPull(CmdBase):
 
         current_directory = os.getcwd()
         full_path_to_dump = ""
-        data = ""
         cmd = "pull"
-        mlmd_data = ""
         status = 0
         exec_id = None
-        execution_flag = 0
         if self.args.file_name:  # setting directory where mlmd file will be dumped
             if not os.path.isdir(self.args.file_name):
                 temp = os.path.dirname(self.args.file_name)
