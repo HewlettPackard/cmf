@@ -77,6 +77,7 @@ def parse(input_file: str, output_dir: str) -> None:
 
     _ = metawriter.log_dataset(output_ds.train, "output")
     _ = metawriter.log_dataset(output_ds.test, "output")
+    metawriter.finalize()
 
 
 @click.command()

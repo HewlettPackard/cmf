@@ -472,3 +472,23 @@ def dvc_push(file_list: Optional[List[str]] = None) -> str:
               print(f"Unexpected {outs}")
               print(f"Unexpected {errs}")
     return commit
+
+
+# Change the existing remote repo url
+def git_modify_remote_url(git_url) -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'remote', 'set-url', 'cmf_origin', f"{git_url}"],
+                                   stdout=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        commit = output.strip()
+
+    except Exception as err:
+        print(f"Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           print(f"Unexpected {outs}")
+           print(f"Unexpected {errs}")
+    return commit

@@ -87,3 +87,5 @@ print("After update")
 for label, content in df.iterrows():
     if label == record:
         print(content)
+
+metawriter.finalize()
