@@ -37,47 +37,11 @@ def is_git_repo():
     else:
         return
 
-'''
-def get_python_env()-> str:
-    installed_packages = ""
-    python_version = sys.version
-    packages = ""
-    # check if conda is installed
-    if is_conda_installed():
-        import conda
-        # List all installed packages and their versions
-        conda_packages = list_conda_packages_json()
-        installed_packages = [f"{pkg['name']}=={pkg['version']}" for pkg in conda_packages]
-        env_info = {
-            'Package Manager': 'Conda',
-            'Python Version': python_version,
-            'Installed Packages': installed_packages
-        }
-    else:
-        # Fallback to pip if conda is not available
-        try:
-            from pip._internal.operations import freeze
-            # List all installed packages and their versions
-            installed_packages_generator = freeze.freeze()
-            print(type(installed_packages_generator))
-            installed_packages = list(installed_packages_generator)
-            env_info = yaml.dump(installed_packages)
-            #env_info = f"Python {python_version}: {installed_packages}"
-        except ImportError:
-            print("Pip is not installed.")
-
-    # Convert the result to YAML
-    #yaml_output = yaml.dump(env_info, sort_keys=False)
-    return env_info
-
-'''
 def get_python_env(env_name='cmf'):
     # what this is supposed to return 
     try:
         # Check if the environment is conda
         if is_conda_installed():  # If conda is installed and the command succeeds
-            # Conda environment
-            print("Detected conda environment. Exporting environment.yml...")
 
             # Step 1: Get the list of conda packages
             conda_packages = subprocess.check_output(['conda', 'list', '--export']).decode('utf-8').splitlines()
@@ -108,15 +72,7 @@ def get_python_env(env_name='cmf'):
                 pip_section = {'pip': pip_packages}
                 env_data['dependencies'].append(pip_section)
 
-            print(env_data)
-
             return env_data
-
-            # Step 5: Write the YAML file
-            #with open('conda_environment.yml', 'w') as yaml_file:
-            #    yaml.dump(env_data, yaml_file)
-
-            #print("environment.yml file created successfully.")
 
         else:
             # If not conda, assume virtualenv/pip
@@ -125,17 +81,7 @@ def get_python_env(env_name='cmf'):
             # Step 1: Get the list of pip packages
             pip_packages = subprocess.check_output(['pip', 'freeze']).decode('utf-8').splitlines()
 
-            #print the output
-            print(pip_packages)
-
             return pip_packages
-
-            # Step 2: Write the pip packages to a requirements.txt file
-            #with open('pip_requirements.txt', 'w') as txt_file:
-            #    for package in pip_packages:
-            #        txt_file.write(f"{package}\n")
-
-            #print("requirements.txt file created successfully.")
 
     except Exception as e:
         print(f"An error occurred: {e}")

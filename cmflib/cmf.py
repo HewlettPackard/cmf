@@ -501,9 +501,8 @@ class Cmf:
             if not os.path.exists(python_env_file_path):
                 print(f"{python_env_file_path} doesn't exists!!")
                 with open(python_env_file_path, 'w') as file:
-                    file.write(packages)
+                    file.write(env_output)
 
-    
         # link the artifact to execution if it exists and creates artifact if it doesn't
         self.log_python_env(python_env_file_path)
         os.chdir(logging_dir)
@@ -700,6 +699,8 @@ class Cmf:
                 self.execution.id,
                 custom_props,
             )
+
+        # link the artifact to execution if it exists and creates artifact if it doesn't
         return self.execution
 
     # what is the reason behind creating this function
@@ -712,31 +713,10 @@ class Cmf:
             self,
             url: str,
         ) -> mlpb.Artifact:
-            "Used to log the python packages of involved in the current execution"
+            "Used to log the python packages involved in the current execution"
 
-            '''
-            print("Printing name of log_python_env = ", url) # cmf_artifacts/python_env.yaml 
-            commit_output(url, self.execution.id)
-            c_hash = dvc_get_hash(url)
-
-            new_url = f'cmf_artifacts/{c_hash}_python.yml'
-
-            # check whether 
-
-            # Check if the new file already exists
-            if not os.path.exists(new_url):
-                # Rename the original file
-                os.rename(url, new_url)
-                print(f"Renamed '{url}' to '{new_url}'")
-            else:
-                os.remove(url)
-                print(f"File '{new_url}' already exists. No changes made. and {url} is deleted")
-
-
-            url = new_url
-            '''
             git_repo = git_get_repo()
-            #name = re.split("/", url)[-1]
+            name = re.split("/", url)[-1]
             existing_artifact = []
 
             commit_output(url, self.execution.id)
@@ -790,14 +770,13 @@ class Cmf:
             self.execution_label_props["git_repo"] = git_repo
             self.execution_label_props["Commit"] = dataset_commit
 
-
-            '''
+            
             if self.graph:
                 self.driver.create_env_node(
                     name,
                     url,
                     uri,
-                    "output"
+                    "output",
                     self.execution.id,
                     self.parent_context,
                 )
@@ -813,21 +792,21 @@ class Cmf:
                     "Pipeline_Id": self.parent_context.id,
                     "Pipeline_Name": self.parent_context.name,
                 }
-                ## Varkha - Why do we create relationships in case when event type is output
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
-                '''
+            
             return artifact
-    '''
-    def log_python_env_1(
+
+    def log_python_env_on_server(
             self,
             url: str,
         ) -> mlpb.Artifact:
-            "Used to log the python packages of involved in the current execution"
+            "Used to log the python packages involved in the current execution"
 
-            print("Printing name of log_python_env = ", url)
             git_repo = git_get_repo()
+            name = re.split("/", url)[-1]
+            existing_artifact = []
 
             commit_output(url, self.execution.id)
             c_hash = dvc_get_hash(url)
@@ -839,20 +818,29 @@ class Cmf:
             dataset_commit = c_hash
             dvc_url = dvc_get_url(url)
             dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
-            name = (url + ":" + c_hash + ":" + str(self.execution.id))
+            url = url + ":" + c_hash
+            if c_hash and c_hash.strip:
+                existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
-            ## cmf_artifacts/uuid/python_env/python_env.yaml - only hash matters in DVC - will test this 
-            ## artifact already exist .. 
-            ## Varkha - This will be situtaion if i am going to create new file for every execution - what to do in following scenario
-            # To Do - What happens when uri is the same but names are different - this won't in this situtaion
-
-           
-            artifact = create_new_artifact_event_and_attribution(
+            if existing_artifact and len(existing_artifact) != 0:
+                existing_artifact = existing_artifact[0]
+                uri = c_hash
+                print("i am here")
+                artifact = link_execution_to_artifact(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    uri=uri,
+                    input_name=url,
+                    event_type=mlpb.Event.Type.OUTPUT,
+                )
+            else:
+                uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
+                artifact = create_new_artifact_event_and_attribution(
                     store=self.store,
                     execution_id=self.execution.id,
                     context_id=self.child_context.id,
-                    uri=c_hash,
-                    name=name,
+                    uri=uri,
+                    name=url,
                     type_name="Environment",
                     event_type=mlpb.Event.Type.OUTPUT,
                     properties={
@@ -871,12 +859,13 @@ class Cmf:
             self.execution_label_props["git_repo"] = git_repo
             self.execution_label_props["Commit"] = dataset_commit
 
+            
             if self.graph:
                 self.driver.create_env_node(
                     name,
                     url,
                     uri,
-                    "output"
+                    "output",
                     self.execution.id,
                     self.parent_context,
                 )
@@ -892,13 +881,11 @@ class Cmf:
                     "Pipeline_Id": self.parent_context.id,
                     "Pipeline_Name": self.parent_context.name,
                 }
-                ## Varkha - Why do we create relationships in case when event type is output
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
+            
             return artifact
-    '''
-
 
     def log_dataset(
         self,
