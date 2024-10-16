@@ -118,8 +118,7 @@ class CmdArtifactPull(CmdBase):
             host = host_with_port[0]
             # Update token list by removing the first three items
             # token = ['home', 'user', 'ssh-storage', 'files', 'md5', '23', '6d9502e0283d91f689d7038b8508a2']
-            token = token[3:]
-            current_loc = '/' + '/'.join(token)
+            current_loc = '/' + '/'.join(token[3:])
             return host, current_loc, name
         
         elif type == "osdf":
