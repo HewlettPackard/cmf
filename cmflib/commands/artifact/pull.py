@@ -132,7 +132,7 @@ class CmdArtifactPull(CmdBase):
             # sometimes s_url is empty - this shouldn't happen technically
             # sometimes s_url is not starting with s3:// - technically this shouldn't happen
             if s_url and s_url.startswith("s3://"):
-                url_with_bucket = s_url[:5]
+                url_with_bucket = s_url.split("s3://")[1]
                 # url_with_bucket = mybucket/user/files/md5/23/6d9502e0283d91f689d7038b8508a2
                 # splitting the string using '/' as the delimiter
                 # bucket_name = mybucket
