@@ -28,6 +28,7 @@ class MinioArtifacts:
         object_name: str,
         download_loc: str,
     ):
+        # dvc_config_op["remote.minio.endpointurl"] = http://XX.XX.XX.XX:9000
         endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
         access_key = dvc_config_op["remote.minio.access_key_id"]
         secret_key = dvc_config_op["remote.minio.secret_access_key"]
