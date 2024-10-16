@@ -23,6 +23,7 @@ import ExecutionTable from "../../components/ExecutionTable";
 import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
+import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
 
@@ -36,26 +37,29 @@ const Executions = () => {
   // Default sort field
   const [sortField, setSortField] = useState("Context_Type");
   // Default sort order
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState(null);
   // Default filter field
   const [filterBy, setFilterBy] = useState(null);
   // Default filter value
   const [filterValue, setFilterValue] = useState(null);
+  // Default value for loader
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPipelines();
   }, []);
 
   const fetchPipelines = () => {
+    setLoading(true);
     client.getPipelines("").then((data) => {
       setPipelines(data);
       setSelectedPipeline(data[0]);
+      setLoading(false);
     });
   };
 
   useEffect(() => {
     if (selectedPipeline) {
-      setExecutions(null);
       fetchExecutions(selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue);
     }
   }, [selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue]);
@@ -96,6 +100,7 @@ const Executions = () => {
   const handleSort = (newSortField, newSortOrder) => {
     setSortField(newSortField);
     setSortOrder(newSortOrder);
+    fetchExecutions(selectedPipeline, activePage, newSortField, newSortOrder, filterBy, filterValue);
   };
 
   const handleFilter = (field, value) => {
@@ -115,90 +120,92 @@ const Executions = () => {
             pipelines={pipelines}
             handlePipelineClick={handlePipelineClick}
           />
-          <div className="container justify-center items-center mx-auto px-4">
-            <div className="container">
-              {selectedPipeline !== null && executions !== null && (
-                <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
-              )}
-            </div>
-            <div>
-              {executions !== null && totalItems > 0 && (
-                <>
-                  <button
-                    onClick={handlePrevClick}
-                    disabled={activePage === 1}
-                    className={clickedButton === "prev" ? "active" : ""}
-                  >
-                    Previous
-                  </button>
-                  {Array.from({ length: Math.ceil(totalItems / 5) }).map(
-                    (_, index) => {
-                      const pageNumber = index + 1;
-                      if (
-                        pageNumber === 1 ||
-                        pageNumber === Math.ceil(totalItems / 5)
-                      ) {
-                        return (
-                          <button
-                            key={pageNumber}
-                            onClick={() => handlePageClick(pageNumber)}
-                            className={
-                              activePage === pageNumber &&
-                              clickedButton === "page"
-                                ? "active"
-                                : ""
-                            }
-                          >
-                            {pageNumber}
-                          </button>
-                        );
-                      } else if (
-                        (activePage <= 3 && pageNumber <= 6) ||
-                        (activePage >= Math.ceil(totalItems / 5) - 2 &&
-                          pageNumber >= Math.ceil(totalItems / 5) - 5) ||
-                        Math.abs(pageNumber - activePage) <= 2
-                      ) {
-                        return (
-                          <button
-                            key={pageNumber}
-                            onClick={() => handlePageClick(pageNumber)}
-                            className={
-                              activePage === pageNumber &&
-                              clickedButton === "page"
-                                ? "active"
-                                : ""
-                            }
-                          >
-                            {pageNumber}
-                          </button>
-                        );
-                      } else if (
-                        (pageNumber === 2 && activePage > 3) ||
-                        (pageNumber === Math.ceil(totalItems / 5) - 1 &&
-                          activePage < Math.ceil(totalItems / 5) - 3)
-                      ) {
-                        return (
-                          <span
-                            key={`ellipsis-${pageNumber}`}
-                            className="ellipsis"
-                          >
-                            ...
-                          </span>
-                        );
-                      }
-                      return null;
-                    }
+          <div className="container justify-center items-center px-4">
+            {loading ? (<Loader/>):(
+              <div className="container">
+                {selectedPipeline !== null && executions !== null && (
+                  <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
+                )}
+                <div>
+                  {executions !== null && totalItems > 0 && (
+                    <>
+                      <button
+                        onClick={handlePrevClick}
+                        disabled={activePage === 1}
+                        className={clickedButton === "prev" ? "active" : ""}
+                        >
+                        Previous
+                      </button>
+                      {Array.from({ length: Math.ceil(totalItems / 5) }).map(
+                        (_, index) => {
+                          const pageNumber = index + 1;
+                          if (
+                            pageNumber === 1 ||
+                            pageNumber === Math.ceil(totalItems / 5)
+                          ) {
+                            return (
+                              <button
+                                key={pageNumber}
+                                onClick={() => handlePageClick(pageNumber)}
+                                className={
+                                  activePage === pageNumber &&
+                                  clickedButton === "page"
+                                    ? "active"
+                                    : ""
+                                }
+                              >
+                                {pageNumber}
+                              </button>
+                            );
+                          } else if (
+                            (activePage <= 3 && pageNumber <= 6) ||
+                            (activePage >= Math.ceil(totalItems / 5) - 2 &&
+                              pageNumber >= Math.ceil(totalItems / 5) - 5) ||
+                            Math.abs(pageNumber - activePage) <= 2
+                          ) {
+                            return (
+                              <button
+                                key={pageNumber}
+                                onClick={() => handlePageClick(pageNumber)}
+                                className={
+                                  activePage === pageNumber &&
+                                  clickedButton === "page"
+                                    ? "active"
+                                    : ""
+                                }
+                              >
+                                {pageNumber}
+                              </button>
+                            );
+                          } else if (
+                            (pageNumber === 2 && activePage > 3) ||
+                            (pageNumber === Math.ceil(totalItems / 5) - 1 &&
+                            activePage < Math.ceil(totalItems / 5) - 3)
+                          ) {
+                            return (
+                              <span
+                              key={`ellipsis-${pageNumber}`}
+                              className="ellipsis"
+                              >
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        }
+                      )}
+                      <button
+                        onClick={handleNextClick}
+                        disabled={activePage === Math.ceil(totalItems / 5)}
+                        className={clickedButton === "next" ? "active" : ""}
+                        >
+                        Next
+                      </button>
+                    </>
                   )}
-                  <button
-                    onClick={handleNextClick}
-                    disabled={activePage === Math.ceil(totalItems / 5)}
-                    className={clickedButton === "next" ? "active" : ""}
-                  >
-                    Next
-                  </button>
-                </>
-              )}
-            </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <Footer />

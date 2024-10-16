@@ -1,13 +1,7 @@
-import itertools
-import re
-import networkx as nx
-from networkx.drawing.nx_agraph import graphviz_layout
 import pandas as pd
 from cmflib import cmfquery
-import dvc
-import json
-import random
 import warnings
+import typing as t
 
 warnings.filterwarnings("ignore")
 
@@ -19,7 +13,7 @@ def truncate_artifact_name(my_str):
     temp=":".join(temp)
     return temp
 
-def query_artifact_lineage_d3force(mlmd_path, pipeline_name, dict_of_art_ids):
+def query_artifact_lineage_d3force(mlmd_path: str, pipeline_name: str, dict_of_art_ids: t.Dict[str, t.Dict[str, pd.DataFrame]]) -> dict:
     art_name_id = {}
     artifact_name_list = []
     query = cmfquery.CmfQuery(mlmd_path)

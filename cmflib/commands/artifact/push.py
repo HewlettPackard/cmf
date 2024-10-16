@@ -17,8 +17,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
-import time
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -93,10 +91,11 @@ class CmdArtifactPush(CmdBase):
                  identifier
             )  # getting all artifacts with id
             # dropping artifact with type 'metrics' as metrics doesn't have physical file
-            artifacts = artifacts[artifacts['type'] != 'Metrics']
-            # adding .dvc at the end of every file as it is needed for pull
-            artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
-            names.extend(artifacts['name'].tolist())
+            if not artifacts.empty:
+                artifacts = artifacts[artifacts['type'] != 'Metrics']
+                # adding .dvc at the end of every file as it is needed for pull
+                artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
+                names.extend(artifacts['name'].tolist())
         file_set = set(names)
         result = dvc_push(list(file_set))
         return result
