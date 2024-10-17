@@ -99,7 +99,11 @@ class CmdArtifactPull(CmdBase):
 
         elif type == "local":
             token_length = len(token)
-            download_loc = current_directory + "/" + name
+            if name.startswith("cmf_artifacts") or name.startswith("artifacts"):
+                download_loc = current_directory + "/" + name
+            else:
+                # Incase of external artifact
+                download_loc = current_directory + "/" + name.split("/")[-1]
 
             # local artifact repo path =  local-storage/files/md5/23/69v2uu3jeejjeiw.
 
@@ -255,7 +259,6 @@ class CmdArtifactPull(CmdBase):
                     print(stmt)
             else:
                 for name, url in name_url_dict.items():
-                    #print(name, url)
                     if not isinstance(url, str):
                         continue
                     local_args = self.extract_repo_args("local", name, url, current_directory)
@@ -286,7 +289,6 @@ class CmdArtifactPull(CmdBase):
                     print(stmt)
             else:
                 for name, url in name_url_dict.items():
-                    #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("ssh", name, url, current_directory)
