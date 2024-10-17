@@ -22,15 +22,15 @@ services:
       - "6006:6006"
     volumes:
     # directory path should be updated as per user's environment
-      - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
+      - $HOME/cmf-server/data/tensorboard-logs:/logs
     container_name: tensorboard
   server:
     image: server:latest
     # both the directory paths should be updated as per user's environment
     volumes:
-      - /home/xxxx/cmf-server/data:/cmf-server/data
-      - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
-      - /home/xxxx/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
+      - $HOME/cmf-server/data:/cmf-server/data
+      - $HOME/cmf-server/data/static:/cmf-server/data/static
+      - $HOME/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
     container_name: cmf-server
     build:     
       context: ./
