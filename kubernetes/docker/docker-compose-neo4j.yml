@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  neo4j:
+    image: neo4j:latest
+    container_name: testneo4j
+    ports:
+      - "7474:7474"   # HTTP port
+      - "7687:7687"   # Bolt port
+    volumes:
+      - $HOME/neo4j/data:/data        # Data storage
+      - $HOME/neo4j/logs:/logs        # Log storage
+      - $HOME/neo4j/import:/var/lib/neo4j/import   # Import folder
+      - $HOME/neo4j/plugins:/plugins  # Plugins folder
+    environment:
+      - NEO4J_AUTH=${neo4j_user}/${neo4j_password}     # Username and password
+    restart: unless-stopped
+
