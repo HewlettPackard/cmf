@@ -2097,6 +2097,7 @@ def cmf_init(type: str = "",
         password: str = "",
         port: int = 0,
         osdf_path: str = "",
+        osdf_cache: str = "",
         key_id: str = "",
         key_path: str = "",
         key_issuer: str = "",
@@ -2129,7 +2130,12 @@ def cmf_init(type: str = "",
        session_token: Session token for AmazonS3.
        user: SSH remote username.
        password: SSH remote password. 
-       port: SSH remote port
+       port: SSH remote port.
+       osdf_path: OSDF Origin Path.
+       osdf_cache: OSDF Cache Path (Optional).
+       key_id: OSDF Key ID.
+       key_path: OSDF Private Key Path.
+       key_issuer: OSDF Key Issuer URL.
     Returns:
        Output based on the initialized repository type.
     """
@@ -2156,6 +2162,7 @@ def cmf_init(type: str = "",
         'user': user,
         'password': password,
         'osdf_path': osdf_path,
+        'osdf_cache': osdf_cache,
         'key_id': key_id,
         'key_path': key_path, 
         'key-issuer': key_issuer,
@@ -2225,10 +2232,11 @@ def cmf_init(type: str = "",
 
         return output
 
-    elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != 0 and key_issuer != "" and git_remote_url != "":
+    elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != "" and key_issuer != "" and git_remote_url != "":
         """Initialize osdfremote repository"""
         output = _init_osdfremote(
             osdf_path,
+            osdf_cache,
             key_id,
             key_path,
             key_issuer,
@@ -2253,10 +2261,10 @@ def non_related_args(type : str, args : dict):
     minioS3=["url", "endpoint_url", "access_key_id", "secret_key", "git_remote_url"]
     amazonS3=["url", "access_key_id", "secret_key", "session_token", "git_remote_url"]
     sshremote=["path", "user", "port", "password", "git_remote_url"]
-    osdfremote=["osdf_path", "key_id", "key_path", "key-issuer", "git_remote_url"]
+    osdfremote=["osdf_path", "osdf_cache", "key_id", "key_path", "key-issuer", "git_remote_url"]
 
 
-    dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote}
+    dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote, "osdfremote": osdfremote}
     
     for repo,arg in dict_repository_args.items():
         if repo ==type:

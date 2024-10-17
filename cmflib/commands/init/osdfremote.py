@@ -103,6 +103,7 @@ class CmdInitOSDFRemote(CmdBase):
 
         attr_dict = {}
         attr_dict["path"] = self.args.path
+        attr_dict["cache"] = self.args.cache
         attr_dict["key_id"] = self.args.key_id
         attr_dict["key_path"] = self.args.key_path
         attr_dict["key_issuer"] = self.args.key_issuer
@@ -129,6 +130,14 @@ def add_parser(subparsers, parent_parser):
         help="Specify FQDN for OSDF directory path including port and path",
         metavar="<path>",
         default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--cache",
+        help="Specify FQDN for OSDF cache path including port and path. For Ex. https://osdf-director.osg-htc.org/nrp/fdp/",
+        metavar="<cache>",
+        #default="https://osdf-director.osg-htc.org/nrp/fdp/",
+        default="",
     )
 
     required_arguments.add_argument(
