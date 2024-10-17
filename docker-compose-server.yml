@@ -40,6 +40,7 @@ services:
   tensorboard:
     image: tensorflow/tensorflow
     container_name: tensorboard
+    container_name: tensorboard
     command: tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
     volumes:
       - ${CMF_DATA_DIR:-./data}/tensorboard-logs:/logs
