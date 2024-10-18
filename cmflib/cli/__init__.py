@@ -53,6 +53,7 @@ def main(argv=None):
     try:
         args = parse_args(argv)
         cmd = args.func(args)
+        print(cmd)
         msg = cmd.do_run()
         print(msg)
     except CmfParserError:
@@ -61,3 +62,4 @@ def main(argv=None):
         print("Interrupted by the user")
     except Exception as e:
         print(e)
+        return 

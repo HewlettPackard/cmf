@@ -32,6 +32,9 @@ from cmflib.utils.dvc_config import DvcConfig
 
 class CmdArtifactPull(CmdBase):
 
+    def __init__(self, args):
+        self.args = args
+
     def split_url_pipeline(self, url: str, pipeline_name: str):
        # This function takes url and pipeline_name as a input parameter
        # return string which contains the artifact repo path of the artifact
@@ -158,6 +161,7 @@ class CmdArtifactPull(CmdBase):
                 pass
 
     def run(self):
+        print("inside artifact pull run command")
         # check whether the mlmd file exist or not in current directory
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
@@ -206,6 +210,7 @@ class CmdArtifactPull(CmdBase):
         if type(output) is not dict:
             return output
         dvc_config_op = output
+        print("dvc_config_output: ", dvc_config_op)
 
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts()

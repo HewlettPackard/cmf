@@ -29,6 +29,9 @@ from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
 
 class CmdArtifactPush(CmdBase):
+    def __init__(self, args):
+        self.args = args
+
     def run(self):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()

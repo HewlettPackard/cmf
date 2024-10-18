@@ -26,6 +26,9 @@ from cmflib.utils.cmf_config import CmfConfig
 
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
+    def __init__(self, args):
+        self.args = args
+
     def run(self):
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"

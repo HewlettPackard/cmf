@@ -16,10 +16,10 @@
 
 import argparse
 
-from cmflib.commands.repo import push
+from cmflib.commands.repo import push, pull
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [push]
+SUB_COMMANDS = [push, pull]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
