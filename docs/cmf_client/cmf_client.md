@@ -1,4 +1,11 @@
 # Getting started with cmf-client commands
+
+# cmf 
+```
+Usage: cmf [-h] {init, artifact, metadata, executions, pipeline}
+```
+The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, executions, pipeline and metadata.
+
 ## cmf init
 ```
 Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,osdfremote,show}
@@ -9,7 +16,6 @@ Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,osdfremote,show}
 Usage: cmf init show
 ```
 `cmf init show` displays current cmf configuration.
-
 ### cmf init minioS3 
 ```
 Usage: cmf init minioS3 [-h] --url [url] 
@@ -43,8 +49,6 @@ Optional Arguments
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
-                        
-
 ```
 ### cmf init local
 ```
@@ -211,11 +215,12 @@ Optional Arguments
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
                         
 ```
+
 ## cmf artifact
 ```
-Usage: cmf artifact [-h] {pull,push}
+Usage: cmf artifact [-h] {pull,push,list}
 ```
-`cmf artifact` pull or push artifacts from or to the user configured artifact repository, respectively.
+`cmf artifact` pull, push or list artifacts from or to the user configured artifact repository, respectively.
 ### cmf artifact pull
 ```
 Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] -a [artifact_name]
@@ -230,9 +235,9 @@ Required Arguments
 ```
 Optional Arguments
 ```
-  -h, --help                                            show this help message and exit
+  -h, --help                                            show this help message and exit.
   -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name only; don't use folder name or absolute path.
-  -f [file_name],--file-name [file_name]                Specify mlmd file name.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
 ```
 ### cmf artifact push
 ```
@@ -249,8 +254,28 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
-  -f [file_name],--file-name [file_name]                Specify mlmd file name.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
 ```
+### cmf artifact list
+```
+Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] -l
+```
+`cmf artifact list` command display list of artifacts.
+```
+cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' -l
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name.
+  -l, --long                                            Specify in which format you want to saw artifacts[By default short].
+```
+
 ## cmf metadata
 ```
 Usage: cmf metadata [-h] {pull,push,export}
@@ -270,8 +295,8 @@ Required Arguments
 ```
 Optional Arguments
 ```
--h, --help                                  show this help message and exit
--e [exec_id], --execution [exec_id]         Specify execution id
+-h, --help                                  show this help message and exit.
+-e [exec_id], --execution [exec_id]         Specify execution id.
 -f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
 ```
 ### cmf metadata push
@@ -286,12 +311,11 @@ Required Arguments
 ```
 -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
 ```
-
 Optional Arguments
 ```
-  -h, --help                                         show this help message and exit
-  -f [file_name],   --file_name [file_name]          Specify mlmd file name.
-  -e [exec_id],     --execution [exec_id]            Specify execution id.
+  -h, --help                                         show this help message and exit.
+  -f [file_name], --file_name [file_name]            Specify mlmd file name.
+  -e [exec_id], --execution [exec_id]                Specify execution id.
   -t [tensorboard], --tensorboard [tensorboard]      Specify path to tensorboard logs for the pipeline.
 ```
 ### cmf metadata export
@@ -306,10 +330,53 @@ Required Arguments
 ```
 -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
 ```
-
 Optional Arguments
 ```
-  -h, --help                                               show this help message and exit
-  -f [file_name],      --file_name [file_name]             Specify mlmd file name.
+  -h, --help                                               show this help message and exit.
+  -f [file_name], --file_name [file_name]                  Specify mlmd file name.
   -j [json_file_name], --json_file_name [json_file_name]   Specify json file name with full path.
+```
+
+## cmf executions
+```
+Usage: cmf executions [-h] {list}
+```
+`cmf executions` list executions from or to the user configured repository.
+### cmf executions list
+```
+Usage: cmf executions list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] -l
+```
+`cmf executions list` command display list of executions in current cmf configuration.
+```
+cmf executions list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' -l
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -e [exe_id], --execution_id [exe_id]                  Specify execution id.
+  -l, --long                                            Specify in which format you want to saw execution[By default short].
+```
+
+## cmf pipeline
+```
+Usage: cmf pipeline [-h] {list}
+```
+`cmf pipeline` command to display list of pipelines.
+### cmf pipeline list
+```
+Usage: cmf pipeline list [-h] -f [file_name]
+```
+`cmf pipeline list` command display list of pipelines in current cmf configuration.
+```
+cmf pipeline list -f '/path/to/mlmd-file-name'
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
 ```
