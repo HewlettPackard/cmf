@@ -106,11 +106,12 @@ class CmdArtifactPush(CmdBase):
             elif os.path.isabs(file):
                     file = re.split("/",file)[-1]
                     file = os.path.join(os.getcwd(), file)
-                    final_list.append(file)
+                    if os.path.exists(file):
+                        final_list.append(file)
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        print("file_set = ", final_list)
+        #print("file_set = ", final_list)
         result = dvc_push(list(final_list))
         return result
       
