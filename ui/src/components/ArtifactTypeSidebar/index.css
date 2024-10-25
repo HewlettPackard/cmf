@@ -52,6 +52,3 @@ button {
   text-wrap: wrap;
   word-wrap: break-word;
 }
-.content-tabs {
-  flex-grow: 1;
-}

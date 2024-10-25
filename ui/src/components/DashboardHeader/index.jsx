@@ -25,8 +25,8 @@ function DashboardHeader() {
   let displayButton;
 
   return (
-    <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200">
-      <div className="flex items-center flex-shrink-0 text-slate-200 mr-6 ">
+    <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200 mb-1">
+      <div className="flex items-center flex-shrink-0 mr-6 ">
         <NavLink
           to="/"
           className="cmf-server font-semibold text-2xl tracking-tight"
@@ -58,28 +58,28 @@ function DashboardHeader() {
         <div className="text-xl font-semibold lg:flex-grow">
           <NavLink
             to="/artifacts"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
             activeClassName="active"
           >
             Artifacts
           </NavLink>
           <NavLink
             to="/executions"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200  hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
             activeClassName="active"
           >
             Executions
           </NavLink>
           <NavLink
             to="/display_lineage"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
             activeClassName="active"
           >
             Lineage
           </NavLink>
           <NavLink
             to="/tensorboard"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
             activeClassName="active"
           >
             TensorBoard

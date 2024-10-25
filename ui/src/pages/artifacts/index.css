@@ -13,6 +13,7 @@ body {
 .bloc-tabs {
   display: flexs;
 }
+/*
 .tabs {
   padding: 15px;
   text-align: center;
@@ -44,3 +45,4 @@ body {
   height: 5px;
   background: rgb(88, 147, 241);
 }
+*/

@@ -40,7 +40,7 @@ const Home = () => {
         style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
-        <div className="container justify-center items-center mx-auto px-50">
+        <div className="container justify-start items-start mx-auto px-50">
           <table className="table-auto">
             <thead className="bg-gray-100">
               <tr>

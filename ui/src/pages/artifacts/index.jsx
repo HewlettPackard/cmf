@@ -202,7 +202,7 @@ const Artifacts = () => {
             />
           </div>
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
-            <div className="flex flex-col">
+            <div className="flex flex-col w-full">
               {selectedPipeline !== null && (
                 <ArtifactTypeSidebar
                   artifactTypes={artifactTypes}

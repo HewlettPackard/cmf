@@ -40,7 +40,7 @@ code {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #555;
+  background: #f4f4f4f4;
 }
 
 /* Handle */
