@@ -11,7 +11,7 @@
   left: 50%;
   transform: translate(-50%, -50%); /* Center the loader */
   border: 8px solid #f3f3f3; 
-  border-top: 8px solid #3498db; 
+  border-top: 8px solid #01A982; 
   border-radius: 50%;
   width: 100px; /* Size of the loader */
   height: 100px; /* Size of the loader */

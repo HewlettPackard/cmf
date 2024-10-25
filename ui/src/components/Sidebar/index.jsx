@@ -36,20 +36,22 @@ const Sidebar = ({ pipelines, handlePipelineClick }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-140 bg-gray-100 pt-4 pr-4 pb-6">
-      <h1 className="px-6 pb-6 text-sm font-bold text-center text-gray-500 uppercase"> List of Pipelines </h1>
+    <div className="flex flex-col ">
+      <h1 className="px-2 py-4 text-base font-bold text-center border-b-4 border-black  uppercase"> List of Pipelines </h1>
+      <div className="sidebar">
       <ul>
         {pipelines.map((pipeline, index) => (
           <li key={index}> 
-             <button 
-                key={pipeline}
-                className={ toggleState  === index ? "tabs active-tabs" : "tabs"}
+             <a 
+                href = "#"
+                className={ toggleState  === index ? "side-tabs side-active-tabs" : "side-tabs"}
                      onClick={() => handleClick(pipeline, index)}>
                       {pipeline} 
-             </button>
+             </a>
           </li>
         ))}
       </ul>
+      </div>
     </div>
   );
 };

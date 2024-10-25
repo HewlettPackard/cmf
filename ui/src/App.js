@@ -25,7 +25,7 @@ import "./App.css";
 
 function App() {
   return (
-    <div className="App bg-white max-w-screen ">
+    <div className="App bg-white">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />

@@ -21,6 +21,7 @@ body {
   font-size: 30px;
 }
 
+
 .bloc-tabs {
   display: flexs;
 }
@@ -59,6 +60,8 @@ button {
   border: none;
   padding: 10px 24px;
 }
+
+
 .content-tabs {
   flex-grow: 1;
 }
@@ -85,3 +88,21 @@ button {
 .active-content {
   display: block;
 }
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-select {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  border: 2px solid black;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+

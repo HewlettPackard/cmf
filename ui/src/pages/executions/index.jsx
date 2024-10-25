@@ -21,7 +21,7 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import ExecutionTable from "../../components/ExecutionTable";
 import Footer from "../../components/Footer";
-import "./index.css";
+import "./index.module.css";
 import Sidebar from "../../components/Sidebar";
 import Loader from "../../components/Loader";
 
@@ -111,18 +111,23 @@ const Executions = () => {
   return (
     <>
       <section
-        className="flex flex-col bg-white"
+        className="flex flex-col bg-white min-h-screen"
         style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
-        <div className="flex flex-row">
+        <div className="flex flex-row flex-grow">
+        <div className= "sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
           <Sidebar
             pipelines={pipelines}
             handlePipelineClick={handlePipelineClick}
+            className= "flex-grow"
           />
-          <div className="container justify-center items-center px-4">
-            {loading ? (<Loader/>):(
-              <div className="container">
+          </div>
+          <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
+            {loading ? (<div className="flex-grow flex justify-center items-center">
+                  <Loader />
+                </div>):( 
+              <div>
                 {selectedPipeline !== null && executions !== null && (
                   <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
                 )}

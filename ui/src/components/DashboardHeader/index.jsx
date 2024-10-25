@@ -15,8 +15,8 @@
 ***/
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { NavLink } from "react-router-dom";
+import "./index.css";
 
 function DashboardHeader() {
   // STATE WHICH WE WILL USE TO TOGGLE THE MENU ON HAMBURGER BUTTON PRESS
@@ -25,13 +25,16 @@ function DashboardHeader() {
   let displayButton;
 
   return (
-    <nav className="flex items-center justify-between flex-wrap bg-gray-500 p-6">
+    <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200">
       <div className="flex items-center flex-shrink-0 text-slate-200 mr-6 ">
-        <a href="/" className="font-semibold text-2xl pl-4 tracking-tight">
+        <NavLink 
+          to="/" 
+          className="cmf-server font-semibold text-2xl tracking-tight"
+          activeClassName="active">
           CMF SERVER
-        </a>
+        </NavLink>
       </div>
-      <div className="block lg:hidden">
+      <div className="block lg:hidden" >
         <button
           className="flex items-center px-3 py-2 border rounded text-black border-teal-400 hover:text-white hover:border-white"
           onClick={() => setToggleMenu(!toggleMenu)}
@@ -52,35 +55,39 @@ function DashboardHeader() {
         } flex-grow lg:flex lg:items-center lg:w-auto`}
       >
         <div className="text-xl font-semibold lg:flex-grow">
-          <Link
+          <NavLink
             to="/artifacts"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            activeClassName="active"
           >
             Artifacts
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/executions"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200  hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200  hover:text-white mx-4"
+            activeClassName="active"
           >
             Executions
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/display_lineage"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            activeClassName="active"
           >
             Lineage
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/tensorboard"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            activeClassName="active"
           >
            TensorBoard
-          </Link>
+          </NavLink>
           <a
             href={"https://hewlettpackard.github.io/cmf/api/public/cmf/"}
             target={"_blank"}
             rel={"noreferrer"}
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
           >
             API Docs
           </a>

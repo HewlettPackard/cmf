@@ -90,12 +90,12 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
     }
   
   return (
-    <div className="container flex flex-col">
+    <div className="flex flex-col mx-auto p-2 mr-4">
       <div className="overflow-x-auto">
-        <div className="p-1.5 w-full inline-block align-middle">
-          <table className="min-w-full divide-y divide-gray-200 border-4">
-            <thead className="bg-gray-100">
-              <tr className="text-xs font-bold text-left text-gray-500 uppercase">
+        <div className="p-1.5 inline-block align-middle">
+          <table className="divide-y divide-gray-200 border-4">
+            <thead>
+              <tr className="text-xs font-bold font-sans text-left text-black uppercase">
                 <th scope="col" className="id px-6 py-3"></th>
                 <th scope="col" className="id px-6 py-3">
                   id

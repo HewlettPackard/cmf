@@ -20,7 +20,7 @@ import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
-import LineageSidebar from "../../components/LineageSidebar";
+import Sidebar from "../../components/Sidebar";
 import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import TangledTree from "../../components/TangledTree";
@@ -189,18 +189,20 @@ const Lineage = () => {
   return (
     <>
       <section
-        className="flex flex-col bg-white"
+        className="flex flex-col bg-white min-h-screen"
         style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
 
-        <div className="container">
-          <div className="flex flex-row">
-            <LineageSidebar
+          <div className="flex flex-grow" style={{padding:'1px'}}>
+          <div className= "sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+            <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}
+              className= "flex-grow"
             />
-          <div className="container justify-center items-center mx-auto px-4">
+            </div>
+            <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
             <div className="flex flex-col">
              {selectedPipeline !== null && (
                 <LineageTypeSidebar
@@ -209,8 +211,10 @@ const Lineage = () => {
                 />
              )}
             </div>
-            <div className="container">
-              { loading && <Loader /> }
+              { loading && (
+                <div className="flex-grow flex justify-center items-center">
+                  <Loader />
+                </div>)}
               {!loading && selectedPipeline !== null && selectedLineageType === "Artifacts" && lineageData !== null && (
                 <LineageArtifacts key={lineageArtifactsKey}  data={lineageData} />
               )}
@@ -241,8 +245,6 @@ const Lineage = () => {
               )}
             </div>
           </div>
-        </div>
-       </div>
         <Footer />
       </section>
     </>

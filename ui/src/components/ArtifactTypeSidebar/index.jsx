@@ -49,7 +49,7 @@ const ArtifactTypeSidebar = ({ artifactTypes, handleArtifactTypeClick, onFilter}
   return (
     <>
     <div className="flex justify-between border-b border-gray-200">
-      <div className="flex flex-row">
+      <div className="artifacttype-tabs flex flex-row ">
         {artifactTypes.map((artifactType, index) => (
             <button key={artifactType}
                   className={ clickedArtifactType  === artifactType
@@ -67,6 +67,7 @@ const ArtifactTypeSidebar = ({ artifactTypes, handleArtifactTypeClick, onFilter}
             justifyContent: "flex-end",
             marginBottom: "0.5rem",
             marginTop: "0.5rem",
+            fontfamily: "Arial,sans-serif",
           }}
         >
           <input
