@@ -1,19 +1,18 @@
 /***
-* Copyright (2023) Hewlett Packard Enterprise Development LP
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* You may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***/
-
+ * Copyright (2023) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
 
 import React, { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
@@ -60,15 +59,45 @@ const Executions = () => {
 
   useEffect(() => {
     if (selectedPipeline) {
-      fetchExecutions(selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue);
+      fetchExecutions(
+        selectedPipeline,
+        activePage,
+        sortField,
+        sortOrder,
+        filterBy,
+        filterValue,
+      );
     }
-  }, [selectedPipeline, activePage, sortField, sortOrder, filterBy, filterValue]);
+  }, [
+    selectedPipeline,
+    activePage,
+    sortField,
+    sortOrder,
+    filterBy,
+    filterValue,
+  ]);
 
-  const fetchExecutions = (pipelineName, page, sortField, sortOrder, filterBy, filterValue) => {
-    client.getExecutions(pipelineName, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
-      setExecutions(data.items);
-      setTotalItems(data.total_items);
-    });
+  const fetchExecutions = (
+    pipelineName,
+    page,
+    sortField,
+    sortOrder,
+    filterBy,
+    filterValue,
+  ) => {
+    client
+      .getExecutions(
+        pipelineName,
+        page,
+        sortField,
+        sortOrder,
+        filterBy,
+        filterValue,
+      )
+      .then((data) => {
+        setExecutions(data.items);
+        setTotalItems(data.total_items);
+      });
   };
 
   const handlePipelineClick = (pipeline) => {
@@ -100,7 +129,14 @@ const Executions = () => {
   const handleSort = (newSortField, newSortOrder) => {
     setSortField(newSortField);
     setSortOrder(newSortOrder);
-    fetchExecutions(selectedPipeline, activePage, newSortField, newSortOrder, filterBy, filterValue);
+    fetchExecutions(
+      selectedPipeline,
+      activePage,
+      newSortField,
+      newSortOrder,
+      filterBy,
+      filterValue,
+    );
   };
 
   const handleFilter = (field, value) => {
@@ -116,20 +152,26 @@ const Executions = () => {
       >
         <DashboardHeader />
         <div className="flex flex-row flex-grow">
-        <div className= "sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
-          <Sidebar
-            pipelines={pipelines}
-            handlePipelineClick={handlePipelineClick}
-            className= "flex-grow"
-          />
+          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+            <Sidebar
+              pipelines={pipelines}
+              handlePipelineClick={handlePipelineClick}
+              className="flex-grow"
+            />
           </div>
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
-            {loading ? (<div className="flex-grow flex justify-center items-center">
-                  <Loader />
-                </div>):( 
+            {loading ? (
+              <div className="flex-grow flex justify-center items-center">
+                <Loader />
+              </div>
+            ) : (
               <div>
                 {selectedPipeline !== null && executions !== null && (
-                  <ExecutionTable executions={executions} onSort={handleSort} onFilter={handleFilter}/>
+                  <ExecutionTable
+                    executions={executions}
+                    onSort={handleSort}
+                    onFilter={handleFilter}
+                  />
                 )}
                 <div>
                   {executions !== null && totalItems > 0 && (
@@ -138,7 +180,7 @@ const Executions = () => {
                         onClick={handlePrevClick}
                         disabled={activePage === 1}
                         className={clickedButton === "prev" ? "active" : ""}
-                        >
+                      >
                         Previous
                       </button>
                       {Array.from({ length: Math.ceil(totalItems / 5) }).map(
@@ -185,25 +227,25 @@ const Executions = () => {
                           } else if (
                             (pageNumber === 2 && activePage > 3) ||
                             (pageNumber === Math.ceil(totalItems / 5) - 1 &&
-                            activePage < Math.ceil(totalItems / 5) - 3)
+                              activePage < Math.ceil(totalItems / 5) - 3)
                           ) {
                             return (
                               <span
-                              key={`ellipsis-${pageNumber}`}
-                              className="ellipsis"
+                                key={`ellipsis-${pageNumber}`}
+                                className="ellipsis"
                               >
                                 ...
                               </span>
                             );
                           }
                           return null;
-                        }
+                        },
                       )}
                       <button
                         onClick={handleNextClick}
                         disabled={activePage === Math.ceil(totalItems / 5)}
                         className={clickedButton === "next" ? "active" : ""}
-                        >
+                      >
                         Next
                       </button>
                     </>

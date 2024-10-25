@@ -1,27 +1,25 @@
 /***
-* Copyright (2023) Hewlett Packard Enterprise Development LP
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* You may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***/
-
+ * Copyright (2023) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
 
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ExecutionTable = ({ executions, onSort, onFilter}) => {
-
-// Default sorting order
+const ExecutionTable = ({ executions, onSort, onFilter }) => {
+  // Default sorting order
   const [sortOrder, setSortOrder] = useState(onSort);
   const [sortedData, setSortedData] = useState([]);
   // Local filter value state
@@ -35,16 +33,16 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
     setSortedData([...executions]);
   }, [executions]);
 
-
   const handleSort = () => {
-    const newSortOrder = sortOrder === "desc" ? "asc" : sortOrder === "asc" ? "desc" : "asc";
+    const newSortOrder =
+      sortOrder === "desc" ? "asc" : sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
     const sorted = [...executions].sort((a, b) => {
-        if(newSortOrder === "asc"){
-            return a.Context_Type.localeCompare(b.Context_Type);
-        }else{
-            return b.Context_Type.localeCompare(a.Context_Type);
-        }
+      if (newSortOrder === "asc") {
+        return a.Context_Type.localeCompare(b.Context_Type);
+      } else {
+        return b.Context_Type.localeCompare(a.Context_Type);
+      }
     });
     setSortedData(sorted); // Notify parent component about sorting change
   };
@@ -64,14 +62,14 @@ const ExecutionTable = ({ executions, onSort, onFilter}) => {
   };
 
   const renderArrow = () => {
-    if (sortOrder === "desc"){
-      return <span className="text-2xl cursor-pointer">&#8595;</span> //data is in desc order ---> ↓
-    } else if (sortOrder === "asc"){
-      return <span className="text-2xl cursor-pointer">&#8593;</span> //data is in asc order ----> ↑
-    } else{
-      return <span className="text-2xl cursor-pointer">&#8597;</span> //data is in initial order -----------> ↕
+    if (sortOrder === "desc") {
+      return <span className="text-2xl cursor-pointer">&#8595;</span>; //data is in desc order ---> ↓
+    } else if (sortOrder === "asc") {
+      return <span className="text-2xl cursor-pointer">&#8593;</span>; //data is in asc order ----> ↑
+    } else {
+      return <span className="text-2xl cursor-pointer">&#8597;</span>; //data is in initial order -----------> ↕
     }
-  }  
+  };
 
   return (
     <div className="flex flex-col">

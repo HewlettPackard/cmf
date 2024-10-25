@@ -21,7 +21,6 @@ body {
   font-size: 30px;
 }
 
-
 .bloc-tabs {
   display: flexs;
 }
@@ -60,7 +59,6 @@ button {
   border: none;
   padding: 10px 24px;
 }
-
 
 .content-tabs {
   flex-grow: 1;
@@ -105,4 +103,3 @@ button {
   cursor: pointer;
   transition: border-color 0.3s ease;
 }
-

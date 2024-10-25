@@ -1,18 +1,18 @@
 /***
-* Copyright (2023) Hewlett Packard Enterprise Development LP
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* You may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***/
+ * Copyright (2023) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
 
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
@@ -27,14 +27,15 @@ function DashboardHeader() {
   return (
     <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200">
       <div className="flex items-center flex-shrink-0 text-slate-200 mr-6 ">
-        <NavLink 
-          to="/" 
+        <NavLink
+          to="/"
           className="cmf-server font-semibold text-2xl tracking-tight"
-          activeClassName="active">
+          activeClassName="active"
+        >
           CMF SERVER
         </NavLink>
       </div>
-      <div className="block lg:hidden" >
+      <div className="block lg:hidden">
         <button
           className="flex items-center px-3 py-2 border rounded text-black border-teal-400 hover:text-white hover:border-white"
           onClick={() => setToggleMenu(!toggleMenu)}
@@ -81,7 +82,7 @@ function DashboardHeader() {
             className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
             activeClassName="active"
           >
-           TensorBoard
+            TensorBoard
           </NavLink>
           <a
             href={"https://hewlettpackard.github.io/cmf/api/public/cmf/"}

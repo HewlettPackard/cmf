@@ -21,7 +21,7 @@ body {
   font-size: 30px;
 }
 
-.h1{
+.h1 {
   font-family: Arial, sans-serif;
   color: black;
 }
@@ -33,7 +33,7 @@ body {
 .side-tabs {
   display: block; /* Make <a> elements block-level */
   padding: 4px;
-  font-family: Arial,sans-serif;
+  font-family: Arial, sans-serif;
   margin-top: 2px;
   color: black; /* Text color */
   text-decoration: none; /* Remove underline */
@@ -42,11 +42,17 @@ body {
   word-wrap: break-word; /* Fallback for older browsers */
   white-space: normal; /* Ensure normal white-space handling */
   border-radius: 4px; /* Optional: Add some border radius */
-  transition: background-color 0.3s, color 0.3s; /* Smooth transitions */
+  transition:
+    background-color 0.3s,
+    color 0.3s; /* Smooth transitions */
 }
 
 .side-active-tabs {
-  background-color: rgb(255, 255, 255); /* Active tab background color (white) */
+  background-color: rgb(
+    255,
+    255,
+    255
+  ); /* Active tab background color (white) */
   color: black; /* Active tab text color (black) */
   margin-top: 2px;
 }
@@ -55,7 +61,6 @@ body {
   background-color: white; /* Background color on hover (white) */
   color: black; /* Text color on hover (black) */
 }
-
 
 .content-tabs {
   flex-grow: 1;

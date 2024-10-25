@@ -12,7 +12,6 @@ body {
 
 .flex-container {
   display: flex;
-  
 }
 
 .flex-container > div {
