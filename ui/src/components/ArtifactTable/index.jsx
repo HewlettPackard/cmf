@@ -78,13 +78,38 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   const renderArrow = () => {
     if (sortOrder === "desc") {
-      return <span className="text-2xl cursor-pointer">&#8595;</span>; //data is in desc order ---> ↓
+      return (
+        <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+          </svg>
+        </span>
+      ); //data is in desc order ---> ↓
     } else if (sortOrder === "asc") {
-      return <span className="text-2xl cursor-pointer">&#8593;</span>; //data is in asc order ----> ↑
+      return (
+        <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+          </svg>
+        </span>
+      ); //data is in asc order ----> ↑
     } else {
-      return <span className="text-2xl cursor-pointer">&#8597;</span>; //data is in initial order -----------> ↕
+      return (
+        <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-up" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5m-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5"/>
+          </svg>
+        </span>
+      ); //data is in initial order -----------> ↓↑
     }
   };
+
+  // Creating Date time from create_time_since_epoch time[it is in millisecond]
+  const createDateTime = (epoch_time) => {
+    // Creating object of Date class
+    const date_time = new Date(epoch_time);
+    return date_time.toLocaleString();
+  }
 
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
@@ -98,20 +123,23 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                   id
                 </th>
                 <th scope="col" onClick={handleSort} className="name px-6 py-3">
-                  name&nbsp; {renderArrow()}
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    name {renderArrow()}
+                  </span>
                 </th>
                 {ArtifactType === "Model" && (
                   <th scope="col" className="model_card px-6 py-3">
                     Model_Card
                   </th>
                 )}
-
                 <th scope="col" className="exe_uuid px-6 py-3">
                   execution_type_name
                 </th>
-                <th scope="col" className="url px-6 py-3">
-                  Url
-                </th>
+                {ArtifactType !== "Metrics" && (
+                  <th scope="col" className="url px-6 py-3">
+                    Url
+                  </th>
+                )}
                 <th scope="col" className="uri px-6 py-3">
                   Uri
                 </th>
@@ -120,6 +148,9 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                 </th>
                 <th scope="col" className="commit px-6 py-3">
                   Commit
+                </th>
+                <th scope="col" className="date_and_time px-6 py-3">
+                  Date_and_Time
                 </th>
               </tr>
             </thead>
@@ -158,10 +189,13 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                         </td>
                       )}
                       <td className="px-6 py-4">{data.execution_type_name}</td>
-                      <td className="px-6 py-4">{data.url}</td>
+                      {ArtifactType !== "Metrics" &&
+                        (<td className="px-6 py-4">{data.url}</td>)
+                      }
                       <td className="px-6 py-4">{data.uri}</td>
                       <td className="px-6 py-4">{data.git_repo}</td>
                       <td className="px-6 py-4">{data.Commit}</td>
+                      <td className="px-6 py-4">{createDateTime(data.create_time_since_epoch)}</td>
                     </tr>
                     {expandedRow === index && (
                       <tr>
