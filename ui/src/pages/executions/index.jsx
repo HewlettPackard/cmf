@@ -194,12 +194,12 @@ const Executions = () => {
                               <button
                                 key={pageNumber}
                                 onClick={() => handlePageClick(pageNumber)}
-                                className={
+                                className={`pagination-button ${
                                   activePage === pageNumber &&
                                   clickedButton === "page"
                                     ? "active"
                                     : ""
-                                }
+                                }`}
                               >
                                 {pageNumber}
                               </button>
@@ -214,12 +214,12 @@ const Executions = () => {
                               <button
                                 key={pageNumber}
                                 onClick={() => handlePageClick(pageNumber)}
-                                className={
+                                className={`pagination-button ${
                                   activePage === pageNumber &&
                                   clickedButton === "page"
                                     ? "active"
                                     : ""
-                                }
+                                }`}
                               >
                                 {pageNumber}
                               </button>

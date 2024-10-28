@@ -233,7 +233,7 @@ const Artifacts = () => {
                     <button
                       onClick={handlePrevClick}
                       disabled={activePage === 1}
-                      className={clickedButton === "prev" ? "active" : ""}
+                      className={clickedButton === "prev" ? "active-page" : ""}
                     >
                       Previous
                     </button>
@@ -248,12 +248,12 @@ const Artifacts = () => {
                             <button
                               key={pageNumber}
                               onClick={() => handlePageClick(pageNumber)}
-                              className={
+                              className={`pagination-button ${
                                 activePage === pageNumber &&
                                 clickedButton === "page"
-                                  ? "active"
+                                  ? "active-page"
                                   : ""
-                              }
+                              }`}
                             >
                               {pageNumber}
                             </button>
@@ -268,12 +268,12 @@ const Artifacts = () => {
                             <button
                               key={pageNumber}
                               onClick={() => handlePageClick(pageNumber)}
-                              className={
+                              className={`pagination-button ${
                                 activePage === pageNumber &&
                                 clickedButton === "page"
-                                  ? "active"
+                                  ? "active-page"
                                   : ""
-                              }
+                              }`}
                             >
                               {pageNumber}
                             </button>
@@ -298,7 +298,7 @@ const Artifacts = () => {
                     <button
                       onClick={handleNextClick}
                       disabled={activePage === Math.ceil(totalItems / 5)}
-                      className={clickedButton === "next" ? "active" : ""}
+                      className={clickedButton === "next" ? "active-page" : ""}
                     >
                       Next
                     </button>

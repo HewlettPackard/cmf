@@ -19,6 +19,7 @@ import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
+import "./home.module.css";
 
 const client = new FastAPIClient(config);
 
@@ -42,11 +43,11 @@ const Home = () => {
         <DashboardHeader />
         <div className="container justify-start items-start mx-auto px-50">
           <table className="table-auto">
-            <thead className="bg-gray-100">
+            <thead className="bg-gray-100 text-center">
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-xs font-bold text-left text-gray-500 uppercase "
+                  className="px-6 py-3 text-s  font-bold text-black uppercase "
                 >
                   List of Pipelines
                 </th>
@@ -55,7 +56,7 @@ const Home = () => {
             <tbody className="divide-y divide-gray-200">
               {pipelines.map((data, i) => (
                 <tr key={i}>
-                  <td> {data} </td>
+                  <td className="text-center"> {data} </td>
                 </tr>
               ))}
             </tbody>

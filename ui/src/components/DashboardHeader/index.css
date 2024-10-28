@@ -20,7 +20,8 @@
   background-color: #f4f4f4f4;
 }
 
-.cmf-server {
+.cmf-server,
+.cmf-server.active .cmf-server.hover {
   background-color: #01a982; /* Change background color on hover */
   cursor: pointer; /* Change cursor to pointer */
   color: black;
