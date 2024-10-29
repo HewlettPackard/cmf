@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cmf-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cmf-server
+  template:
+    metadata:
+      labels:
+        app: cmf-server
+    spec:
+      containers:
+      - name: cmf-server
+        image: localhost:5000/cmf-server:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /cmf-server/data
+          name: server-data
+        - mountPath: /cmf-server/data/static
+          name: server-static
+        - mountPath: /cmf-server/data/tensorboard-logs
+          name: tensorboard-logs
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: server-data
+        persistentVolumeClaim:
+          claimName: pvc-server-data
+      - name: server-static
+        persistentVolumeClaim:
+          claimName: pvc-server-static
+      - name: tensorboard-logs
+        persistentVolumeClaim:
+          claimName: pvc-tensorboard-logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cmf-server
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+  selector:
+    app: cmf-server
