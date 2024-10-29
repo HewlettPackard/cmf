@@ -11,4 +11,4 @@ sudo rm $HOME/cmf-server -rf
 
 docker-compose -f docker-compose-neo4j.yml down
 docker-compose -f docker-compose-minio.yml down
-docker-compose -f docker-compose-server.yml down
+docker-compose -f ../../docker-compose-server.yml down
