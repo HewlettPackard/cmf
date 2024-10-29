@@ -150,7 +150,7 @@ const Lineage = () => {
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
-  // Decreases number of split
+  // Extract uuid from execution_type_name "Prepare_3f45" ---> "3f45"
   const extractUuid = (data) => {
     return data.split("_").pop();
   }
