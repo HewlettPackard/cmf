@@ -112,13 +112,12 @@ const constructTangleLayout = (levels, options = {}) => {
     i += l.length;
   });
 
+  // establish the basic structure and position
   links.forEach(l => {
     l.xt = l.target.x;
     l.yt = l.target.y + l.target.bundles_index[l.bundle.id].i * metro_d - (l.target.bundles.length * metro_d) / 2 + metro_d / 2;
     l.xb = l.bundle.x;
-    l.yb = l.bundle.y;
     l.xs = l.source.x;
-    l.ys = l.source.y;
   });
 
   var y_negative_offset = 0;
@@ -127,10 +126,11 @@ const constructTangleLayout = (levels, options = {}) => {
     l.forEach(n => (n.y -= y_negative_offset));
   });
 
+  // Fine tune the visual appearance of link (how the links need to display in svg)
   links.forEach(l => {
     l.yt = l.target.y + l.target.bundles_index[l.bundle.id].i * metro_d - (l.target.bundles.length * metro_d) / 2 + metro_d / 2;
     l.ys = l.source.y;
-    l.c1 = l.source.level - l.target.level > 1 ? Math.min(options.bigc, l.xb - l.xt, l.yb - l.yt) - c : c;
+    l.c1 = c;
     l.c2 = c;
   });
 
@@ -151,10 +151,12 @@ const renderChart = (data, options = {}) => {
   options.background_color ||= 'white'; // Default background color
 
   const tangleLayout = constructTangleLayout(_.cloneDeep(data), options);
+
   tangled_width = tangleLayout.layout.width;
   tangled_height = tangleLayout.layout.height;
   const textPadding = 12;
   const labelOffset = 4;
+  const svg_width = (tangled_width + textPadding * 10) < 1000 ? `${tangled_width + textPadding * 50}` : `${tangled_width + textPadding * 10}`; 
   return (
     <>
       <style>
@@ -171,7 +173,7 @@ const renderChart = (data, options = {}) => {
           }
         `}
       </style>
-      <svg width={tangled_width + textPadding * 10} height={tangled_height + textPadding * 10}>
+      <svg width={svg_width} height={tangled_height + textPadding * 10}>
         {tangleLayout.bundles.map((b, i) => {
           let d = b.links
             .map(

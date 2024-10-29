@@ -17,8 +17,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
-import time
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
