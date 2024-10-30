@@ -27,6 +27,7 @@ import TangledTree from "../../components/TangledTree";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
 import ExecutionTree from "../../components/ExecutionTree";
 import ExecutionTangledDropdown from "../../components/ExecutionTangledDropdown";
+import ArtifactExecutionTangledTree from "../../components/ArtifactExecutionTangledTree";
 import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
@@ -34,14 +35,15 @@ const client = new FastAPIClient(config);
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes = ['Artifact_Tree', 'Execution_Tree'];
+  const LineageTypes=['Artifact_Tree', 'Execution_Tree', 'Artifact_Execution_Tree'];
   const [selectedLineageType, setSelectedLineageType] = useState('Artifact_Tree');
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData] = useState(null);
   const [executionData, setExecutionData] = useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
   const [execDropdownData,setExecDropdownData] = useState([]);
-  const [artitreeData, setArtiTreeData] = useState(null);
+  const [artitreeData, setArtiTreeData]=useState(null);
+  const [artiexetreeData, setArtiExeTreeData]=useState(null);
   const [loading, setLoading] = useState(true);
 
   // fetching list of pipelines
@@ -81,8 +83,10 @@ const Lineage = () => {
        else if (selectedLineageType === "Execution" || selectedLineageType === "Execution_Tree") {
           fetchExecutionTypes(pipeline, selectedLineageType);
        }
+       else if (selectedLineageType === "Artifact_Execution_Tree"){
+        fetchArtiExeTree(pipeline);
+       }
        else {
-          
           fetchArtifactTree(pipeline);
       }}
   };
@@ -91,15 +95,21 @@ const Lineage = () => {
     setLineageData(null);
     setExecutionData(null);
     setArtiTreeData(null);
+    setArtiExeTreeData(null);
     setSelectedLineageType(lineageType);
-    if (lineageType === "Artifacts") {
-      fetchArtifactLineage(selectedPipeline);
-    }
-    else if (lineageType === "Execution" || lineageType === "Execution_Tree" ) {
-      fetchExecutionTypes(selectedPipeline, lineageType);
-    }
-    else {
-      fetchArtifactTree(selectedPipeline);
+    if (selectedPipeline != null){
+      if (lineageType === "Artifacts") {
+        fetchArtifactLineage(selectedPipeline);
+      }
+      else if (lineageType === "Execution" || lineageType === "Execution_Tree") {
+        fetchExecutionTypes(selectedPipeline, lineageType);
+      }
+      else if (lineageType === "Artifact_Execution_Tree"){
+        fetchArtiExeTree(selectedPipeline);
+      }
+      else {
+        fetchArtifactTree(selectedPipeline);
+      }
     }
   };  
 
@@ -108,7 +118,7 @@ const Lineage = () => {
     setLoading(true);
     client.getArtifactLineage(pipelineName).then((data) => {    
         if (data === null) { 
-        setLineageData(null);
+          setLineageData(null);
         }
         setLineageData(data);
         setLoading(false);
@@ -126,6 +136,15 @@ const Lineage = () => {
       setLoading(false);
     });
   };
+
+  const fetchArtiExeTree = (pipelineName) => {
+    client.getArtiExeTreeLineage(pipelineName).then((data) => {
+      if (data === null) {
+        setArtiExeTreeData(null);
+      }
+      setArtiExeTreeData(data);
+    });
+  }
 
   const fetchExecutionTypes = (pipelineName, lineageType) => {
     setLoading(true);
@@ -233,12 +252,17 @@ const Lineage = () => {
                 <div style={{ justifyContent: 'center', alignItems: 'center' }}>
                   <ExecutionTree key={lineageArtifactsKey} data={executionData} />
                 </div>
-              )}
-              {!loading && selectedPipeline !== null && selectedLineageType === "Artifact_Tree" && artitreeData !== null &&(
-                <div style={{ justifyContent: 'center', alignItems: 'center' }}>
-                  <TangledTree key={lineageArtifactsKey} data={artitreeData} />
+                )}
+                {selectedPipeline !== null && selectedLineageType === "Artifact_Tree" && artitreeData !== null &&(
+                <div style={{ justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+                <TangledTree key={lineageArtifactsKey} data={artitreeData} />
                 </div>
-              )}
+                )}
+                {selectedPipeline !== null && selectedLineageType === "Artifact_Execution_Tree" && artiexetreeData !== null &&(
+                <div style={{ justifyContent: 'center', alignItems: 'center' }}>
+                <ArtifactExecutionTangledTree key={lineageArtifactsKey} data={artiexetreeData} />
+                </div>
+                )}
             </div>
           </div>
         </div>
