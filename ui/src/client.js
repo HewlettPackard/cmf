@@ -109,14 +109,14 @@ class FastAPIClient {
       });
   }
 
-  async getExecutions(
-    pipelineName,
-    page,
-    sortField,
-    sortOrder,
-    filterBy,
-    filterValue,
-  ) {
+  async getArtiExeTreeLineage(pipeline) {
+    return this.apiClient.get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
+    .then(({ data }) => {
+      return data;
+    }); 
+  }
+
+  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
       .get(`/executions/${pipelineName}`, {
         params: {

@@ -84,6 +84,7 @@ const Artifacts = () => {
     setLoading(true);
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
+      setSelectedArtifactType(types[0]);
       setLoading(false);
       fetchArtifacts(
         selectedPipeline,

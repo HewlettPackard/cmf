@@ -27,6 +27,7 @@ from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3f
 from server.app.query_execution_lineage_d3force import query_execution_lineage_d3force
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
+from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
 from pathlib import Path
 import os
 import json
@@ -355,6 +356,7 @@ async def upload_file(request:Request, pipeline_name: str = Query(..., descripti
     except Exception as e:
         return {"error": f"Failed to up load file: {e}"}
 
+
 @app.get("/model-card")
 async def model_card(request:Request, modelId: int, response_model=List[Dict[str, Any]]):
     json_payload_1 = ""
@@ -381,6 +383,18 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
             result_4 =  model_output_art_df.to_json(orient="records")
             json_payload_4 = json.loads(result_4)
     return [json_payload_1, json_payload_2, json_payload_3, json_payload_4]
+
+
+@app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
+async def artifact_execution_lineage(request: Request, pipeline_name: str):
+    #  checks if mlmd file exists on server
+    response = None
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response = await query_visualization_artifact_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+    return response
+
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
