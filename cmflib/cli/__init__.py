@@ -53,7 +53,6 @@ def main(argv=None):
     try:
         args = parse_args(argv)
         cmd = args.func(args)
-        print(cmd)
         msg = cmd.do_run()
         print(msg)
     except CmfParserError:

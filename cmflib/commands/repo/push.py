@@ -21,6 +21,7 @@ import subprocess
 import requests
 
 from cmflib.cli.command import CmdBase
+from cmflib import cmfquery
 from cmflib.dvc_wrapper import dvc_get_config, git_get_repo, git_checkout_new_branch
 from cmflib.commands.artifact.push import CmdArtifactPush
 from cmflib.commands.metadata.push import CmdMetadataPush
@@ -52,7 +53,7 @@ class CmdRepoPush(CmdBase):
         url = url.split("/")
         # whether branch exists in git repo or not
         if self.branch_exists(url[-2], url[-1], "mlmd"):
-            print("branch exists")
+            # print("branch exists")
             # pull the code
             # push the code
             stdout, stderr, returncode = self.run_command("git pull cmf_origin mlmd")
@@ -94,58 +95,22 @@ class CmdRepoPush(CmdBase):
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
         else:
+            # creating cmfquery object
+            query = cmfquery.CmfQuery(mlmd_file_name)
+            # Put a check to see whether pipline exists or not
+            pipeline_name = self.args.pipeline_name
+            if not query.get_pipeline_id(pipeline_name) > 0:
+                return f"ERROR: Pipeline {pipeline_name} doesn't exist!!"
+            
             print("Executing cmf artifact push command..")
             artifact_push_instance = CmdArtifactPush(self.args)
-            artifact_push_instance.run()
-            
-            # try:
-            #     print("Executing cmf metadata push command..")
-            #     artifact_push_instance = CmdMetadataPush(self.args)
-            #     artifact_push_instance.run()
-            # except:
-            #     return
-
-            # print("Execution git push command..")
-
-            # self.git_push()
-            return "done successfully"
-        
-            # print("")  
-        
-        # else:
-        #     return "file name is not present..."  
-        
-        # file name not exists
-        # check whether current branch is mlmd or not
-        # if "mlmd" in self.run_command("git branch")[0]:    
-        #     url = git_get_repo()
-        #     url = url.split("/")
-        #     if self.branch_exists(url[-2], url[-1], "mlmd"):
-        #         # pull the code
-        #         # push the code
-        #         stdout, stderr, returncode = self.run_command("git pull cmf_origin mlmd")
-        #         # print(returncode+"1")
-        #         if returncode != 0:
-        #             return f"Error pulling changes: {stderr}"
-        
-        #         stdout, stderr, returncode = self.run_command("git push -u cmf_origin mlmd")
-        #         if returncode != 0:
-        #             return f"Error pushing changes: {stderr}"
-
-        #         return "Successfully pushed and pulled changes!"
-        #     else:
-        #         # push the code
-        #         stdout, stderr, returncode = self.run_command("git push -u cmf_origin mlmd")
-        #         if returncode != 0:
-        #             return f"Error pushing changes: {stderr}"
-        #         return "Successfully pushed and pulled changes!"
-        # else:
-        #     if self.args.file_name:
-        #         git_checkout_new_branch(self.args.file_name)
-        #     else:
-        #         git_checkout_new_branch("mlmd")
-        #     return "Checking out new branch"
-    
+            if artifact_push_instance.run():
+                print("Executing cmf metadata push command..")
+                metadata_push_instance = CmdMetadataPush(self.args)
+                if metadata_push_instance.run():
+                    print("Execution git push command..")
+                    return self.git_push()
+         
 
 def add_parser(subparsers, parent_parser):
     PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipelines."

@@ -26,7 +26,7 @@ from cmflib.commands.artifact.pull import CmdArtifactPull
 from cmflib.commands.metadata.pull import CmdMetadataPull
 
 
-class CmdRepoPush(CmdBase):
+class CmdRepoPull(CmdBase):
     def __init__(self, args):
         self.args = args
     
@@ -46,8 +46,23 @@ class CmdRepoPush(CmdBase):
         if res.status_code == 200:
             return True
         return False
-
-
+    
+    def git_pull(self):
+        url = git_get_repo()
+        url = url.split("/")
+        # whether branch exists in git repo or not
+        if self.branch_exists(url[-2], url[-1], "mlmd"):
+            print("branch exists")
+            # git pull
+            print("git pull started...")
+            stdout, stderr, returncode = self.run_command("git pull cmf_origin mlmd")
+            print(stdout)
+            if returncode != 0:
+                return f"Error pulling changes: {stderr}"
+            return stdout
+        else:
+            return "mlmd branch is not exists in github..."
+        
     def run(self):
         # check whether dvc is configured or not
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
@@ -62,43 +77,26 @@ class CmdRepoPush(CmdBase):
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
             current_directory = os.path.dirname(mlmd_file_name)
+        
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
-    
-        # artifcat pull
-        print("artifact pull started...")
-        instance_of_artifact = CmdArtifactPull(self.args)
-        instance_of_artifact.run()
-
-        # metadata pull
-        print("metadata pull started...")
-        instance_of_metadata = CmdMetadataPull(self.args)
-        instance_of_metadata.run()
-
-        url = git_get_repo()
-        url = url.split("/")
-        # whether branch exists in git repo or not
-        if self.branch_exists(url[-2], url[-1], "mlmd"):
-            print("branch exists")
-            # git pull
-            print("git pull started...")
-            stdout, stderr, returncode = self.run_command("git pull cmf_origin mlmd")
-            # print(returncode+"1")
-            print(stdout)
-            if returncode != 0:
-                return f"Error pulling changes: {stderr}"
-            return stdout
         else:
-            return "mlmd branch is not exists in github..."
+            instance_of_artifact = CmdArtifactPull(self.args)
+            if instance_of_artifact.run():
+                print("metadata pull started...")
+                instance_of_metadata = CmdMetadataPull(self.args)
+                if instance_of_metadata.run():
+                    return self.git_pull()
+
 
 def add_parser(subparsers, parent_parser):
-    PUSH_HELP = "Pull user-generated mlmd to server to create one single mlmd file for all the pipelines."
+    PULL_HELP = "Pull user-generated mlmd to server to create one single mlmd file for all the pipelines."
 
     parser = subparsers.add_parser(
         "pull",
         parents=[parent_parser],
         description="Pull user's mlmd to cmf-server.",
-        help=PUSH_HELP,
+        help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
@@ -127,4 +125,4 @@ def add_parser(subparsers, parent_parser):
         "-a", "--artifact_name", help="Specify artifact name.", metavar="<artifact_name>"
     )
 
-    parser.set_defaults(func=CmdRepoPush)
+    parser.set_defaults(func=CmdRepoPull)
