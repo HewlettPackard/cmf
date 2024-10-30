@@ -55,4 +55,3 @@ def topological_sort(input_data, artifact_name_id_dict) -> List[Dict]:
 
 
 
-
