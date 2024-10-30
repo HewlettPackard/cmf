@@ -108,7 +108,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
   const createDateTime = (epoch_time) => {
     // Creating object of Date class
     const date_time = new Date(epoch_time);
-    return date_time.toLocaleString();
+    return date_time.toUTCString();
   }
 
   return (
@@ -129,11 +129,11 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                 </th>
                 {ArtifactType === "Model" && (
                   <th scope="col" className="model_card px-6 py-3">
-                    Model_Card
+                    Model Card
                   </th>
                 )}
                 <th scope="col" className="exe_uuid px-6 py-3">
-                  execution_type_name
+                  execution type name
                 </th>
                 {ArtifactType !== "Metrics" && (
                   <th scope="col" className="url px-6 py-3">
@@ -144,13 +144,13 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                   Uri
                 </th>
                 <th scope="col" className="git_repo px-6 py-3">
-                  Git_Repo
+                  Git Repo
                 </th>
                 <th scope="col" className="commit px-6 py-3">
                   Commit
                 </th>
                 <th scope="col" className="date_and_time px-6 py-3">
-                  Date_and_Time
+                  Date & Time
                 </th>
               </tr>
             </thead>

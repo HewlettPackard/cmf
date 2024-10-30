@@ -142,7 +142,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
           type="text"
           value={filterValue}
           onChange={handleFilterChange}
-          placeholder="Filter by Context_Type"
+          placeholder="Filter by Context Type"
           style={{
             marginRight: "1rem",
             padding: "0.5rem",
@@ -161,23 +161,21 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                   onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  <span
-                    style={{ display: "inline-flex", alignItems: "center" }}
-                  >
-                    Context_Type {renderArrow()}
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    Context Type {renderArrow()}
                   </span>
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
                 </th>
                 <th scope="col" className="px-6 py-3 Git_Repo">
-                  Git_Repo
+                  Git Repo
                 </th>
                 <th scope="col" className="px-6 py-3 Git_Start_Commit">
-                  Git_Start_Commit
+                  Git Start Commit
                 </th>
                 <th scope="col" className="px-6 py-3 Pipeline_Type">
-                  Pipeline_Type
+                  Pipeline Type
                 </th>
               </tr>
             </thead>
