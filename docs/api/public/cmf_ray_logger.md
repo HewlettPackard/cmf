@@ -13,7 +13,7 @@ The `CmfRayLogger` class is designed to log Ray Tune metrics for the CMF (Common
 To use `CmfRayLogger`, import it in your Python script:
 
 ```python
-from cmf import cmf_ray_logger
+from cmflib import cmf_ray_logger
 ```
 
 ## Usage
@@ -73,7 +73,7 @@ During each trial, `CmfRayLogger` will automatically create a CMF object with at
 Here is a complete example of how to use `CmfRayLogger` with Ray Tune:
 
 ```Python
-from cmf import cmf_ray_logger
+from cmflib import cmf_ray_logger
 from ray import tune
 
 # Initialize the logger
