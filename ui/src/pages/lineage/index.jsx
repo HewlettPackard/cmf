@@ -39,8 +39,7 @@ const Lineage = () => {
     "Execution_Tree",
     "Artifact_Execution_Tree",
   ];
-  const [selectedLineageType, setSelectedLineageType] =
-    useState("Artifact_Tree");
+  const [selectedLineageType, setSelectedLineageType] = useState("Artifact_Tree");
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData] = useState(null);
   const [executionData, setExecutionData] = useState(null);
