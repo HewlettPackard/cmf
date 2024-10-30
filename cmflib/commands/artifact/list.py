@@ -121,7 +121,7 @@ class CmdArtifactsList(CmdBase):
 
         df = query.get_all_artifacts_by_context(self.args.pipeline_name)
         if df.empty:
-            df = "Pipeline name doesn't exists..."
+            return "Pipeline name doesn't exists..."
         else:
             if self.args.artifact_name:
                 artifact_ids = self.search_artifact(df)
@@ -158,19 +158,18 @@ class CmdArtifactsList(CmdBase):
                 else:
                     return "Artifact name does not exist.."
 
-        if not isinstance(df, str):
-            if self.args.long:
-                df = self.update_dataframe(df, True)
-                if len(df.columns) > 7:
-                    df=df.iloc[:,:7]
-                
-                # Replacing column name 
-                # For eg: custom_properties_avg_prec ---> avg_prec  
-                self.display_table(df, 14, True)
-            else:
-                df = self.update_dataframe(df, False)
-                self.display_table(df, 25, True)
-            return "Done"
+        if self.args.long:
+            df = self.update_dataframe(df, True)
+            if len(df.columns) > 7:
+                df=df.iloc[:,:7]
+            
+            # Replacing column name 
+            # For eg: custom_properties_avg_prec ---> avg_prec  
+            self.display_table(df, 14, True)
+        else:
+            df = self.update_dataframe(df, False)
+            self.display_table(df, 25, True)
+        return "Done"
 
 def add_parser(subparsers, parent_parser):
     ARTIFACT_LIST_HELP = "Display list of artifact as present in current mlmd"

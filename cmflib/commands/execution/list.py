@@ -104,7 +104,7 @@ class CmdExecutionList(CmdBase):
 
         # If dataframe is empty that means pipeline name is not exist
         if df.empty:
-            df = "Pipeline does not exist.."
+            return "Pipeline does not exist.."
         else:
             # If the new mlmd came[not in the case of Test-env] which is not pushed inside server,
             # it doesn't exist column named with "Python_Env"
@@ -134,19 +134,17 @@ class CmdExecutionList(CmdBase):
                         print()
                         return "Done"
                 else:
-                    df = "Execution id does not exist.."    
+                    return "Execution id does not exist.."    
                 
-            if not isinstance(df, str):
-                if self.args.long:
-                    df = self.update_dataframe(df, True)
-                    if len(df.columns) > 7:
-                        df=df.iloc[:,:7]
-                    self.display_table(df, 15, True)
-                else:
-                    df = self.update_dataframe(df, False)
-                    self.display_table(df, 25, True) 
-                df = "Done"
-        return df
+            if self.args.long:
+                df = self.update_dataframe(df, True)
+                if len(df.columns) > 7:
+                    df=df.iloc[:,:7]
+                self.display_table(df, 15, True)
+            else:
+                df = self.update_dataframe(df, False)
+                self.display_table(df, 25, True) 
+            return "Done"
     
 def add_parser(subparsers, parent_parser):
     EXECUTION_LIST_HELP = "Display list of executions as present in current mlmd"
