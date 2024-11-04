@@ -39,18 +39,22 @@ class CmdPipelineList(CmdBase):
         return [pipeline.name for pipeline in query._get_pipelines()]
 
 def add_parser(subparsers, parent_parser):
-    PIPELINE_LIST_HELP = "Display list of pipelines as present in current mlmd"
+    PIPELINE_LIST_HELP = "Displays all pipeline names that exist inside the specified MLMD file."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display list of pipeline",
+        description="Displays all pipeline names that exist inside the specified MLMD file.",
         help=PIPELINE_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>",
+        "-f", 
+        "--file_name", 
+        help='''Provide the absolute or relative path to the MLMD file. 
+        If the file is present in cwd, this is not needed.''', 
+        metavar="<file_name>",
     )
 
     parser.set_defaults(func=CmdPipelineList)

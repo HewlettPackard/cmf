@@ -28,7 +28,7 @@ def add_parser(subparsers, parent_parser):
     list_parser = subparsers.add_parser(
         "pipeline", 
         parents=[parent_parser],
-        description="Display list of pipelines as present in current mlmd",
+        description="Display list of pipelines as present in current mlmd.",
         help=LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

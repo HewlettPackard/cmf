@@ -26,38 +26,55 @@ from cmflib.dvc_wrapper import dvc_get_config
 class CmdExecutionList(CmdBase):
 
     def update_dataframe(self, df, is_long):
-        # This function used to modify datafram to fit inside table   
-        if is_long:
-            # If the option is long then all columns need to take
-            updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if not (col == "id" or col == "Context_Type")]
-            df = df[updated_columns]
-        else:
-            # If the option is not long then few selective columns will take with custom_properties, 
-            # if number of column is greater than 5 then it only use 5 columns. 
-            updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if col.startswith('custom_properties_')]
-            df = df[updated_columns]
-            if len(df.columns) > 5:
-                df=df.iloc[:,:5]
+        """
+        Updates the dataframe to fit the specified table format based on the length option.
 
-        return df
+        Parameters:
+        - df: DataFrame to be updated.
+        - is_long: Boolean indicating whether to use long format.
+
+        Returns:
+        - Updated DataFrame with selected columns.
+        """
+        # Select columns based on the length option:
+        # If is_long is True, include all columns with 'id' and 'Context_Type' as the first two columns.
+        # If is_long is False, include 'id', 'Context_Type', and up to 5 columns starting with 'custom_properties_'.
+        if is_long:
+            updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if not (col == "id" or col == "Context_Type")]
+        else:
+            updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if col.startswith('custom_properties_')]
+            # Limit to a maximum of 5 columns if there are more
+            if len(updated_columns) > 5:
+                updated_columns = updated_columns[:5]
+
+        return df[updated_columns]
     
-    def display_table(self, df, char_size, is_custom_props):
-        if is_custom_props:
-            # Replacing column name 
-            # For eg: custom_properties_avg_prec ---> avg_prec  
+    
+    def display_table(self, df, char_size, is_custom_prop):
+        """
+        Displays the dataframe in a table format, optionally renaming columns and wrapping text.
+
+        Parameters:
+        - df: DataFrame to display.
+        - char_size: Character width for text wrapping.
+        - is_custom_prop: Boolean indicating if custom properties are used.
+        """
+        if is_custom_prop:
+            # Rename columns by removing the 'custom_properties_' prefix 
             df = df.rename(columns = lambda x: x.replace("custom_properties_", "") if x.startswith("custom_properties_") else x)
         
-        # Wrapping text to fit inside each cell of table
+        # Wrapping text in object columns
         for col in df.select_dtypes(include=['object']).columns:
             df[col] = df[col].apply(lambda x: textwrap.fill(x, width=char_size) if isinstance(x, str) else x)
-                        
+
         total_records = len(df)
-        start_index = 0  # Initialize outside the loop
+        start_index = 0  
 
         while True:
             end_index = start_index + 20
             records_per_page = df.iloc[start_index:end_index]
-
+            
+            # Display the table
             table = tabulate(
                 records_per_page,
                 headers=df.columns,
@@ -66,17 +83,17 @@ class CmdExecutionList(CmdBase):
             )
             print(table)
 
-            # Check if we've reached the end
+            # Check if we've reached the end of the records
             if end_index >= total_records:
                 print("\nEnd of records.")
                 break
 
-            # Ask the user for input
+            # Ask the user for input to navigate pages
             user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
             if user_input == 'q':
                 break
             
-            # Update indices for the next page
+            # Update start index for the next page
             start_index = end_index
 
     def run(self):
@@ -102,28 +119,30 @@ class CmdExecutionList(CmdBase):
 
         df = query.get_all_executions_in_pipeline(self.args.pipeline_name)
 
-        # If dataframe is empty that means pipeline name is not exist
+        # Check if the DataFrame is empty, indicating the pipeline name does not exist
         if df.empty:
             return "Pipeline does not exist.."
         else:
-            # If the new mlmd came[not in the case of Test-env] which is not pushed inside server,
-            # it doesn't exist column named with "Python_Env"
+            # Drop the 'Python_Env' column if it exists in the DataFrame
             if "Python_Env" in df.columns:
-                # Dropping Python_Env column
                 df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers
+            # Process execution ID if provided
             if self.args.execution_id:
-                if int(self.args.execution_id) in list(df['id']): # Converting series to list 
+                if self.args.execution_id.isdigit():
+                    if int(self.args.execution_id) in list(df['id']): # Converting series to list 
                         df = df.query(f'id == {int(self.args.execution_id)}')
-                        
                         df = self.update_dataframe(df, True)
+
+                        # Wrap text in object columns to fit within 30 characters
                         for col in df.select_dtypes(include=['object']).columns:
                             df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
-                        # setting default index as a id
+                        
+                        # Set 'id' as the DataFrame index and transpose it for display
                         df.set_index("id", inplace=True)
-                        # T is used to transpose the dataframe
-                        # Resetting index and assigning name to that index
                         df = df.T.reset_index()
-                        df.columns.values[0] = 'id'
+                        df.columns.values[0] = 'id'  # Rename the first column back to 'id'
+
+                        # Display the filtered DataFrame as a formatted table
                         table = tabulate(
                             df,
                             headers=df.columns,
@@ -133,9 +152,12 @@ class CmdExecutionList(CmdBase):
                         print(table)
                         print()
                         return "Done"
+                    else:
+                        return "Execution id does not exist.."  
                 else:
-                    return "Execution id does not exist.."    
-                
+                    return "Execution id does not exist.."  
+
+            # Update and display the full DataFrame based on the long option      
             if self.args.long:
                 df = self.update_dataframe(df, True)
                 if len(df.columns) > 7:
@@ -147,12 +169,12 @@ class CmdExecutionList(CmdBase):
             return "Done"
     
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = "Display list of executions as present in current mlmd"
+    EXECUTION_LIST_HELP = "Lists all executions with details from the specified MLMD file."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display list of executions",
+        description="Lists all executions with details from the specified MLMD file.",
         help=EXECUTION_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -163,18 +185,21 @@ def add_parser(subparsers, parent_parser):
         "-p", 
         "--pipeline_name", 
         required=True,
-        help="Specify pipeline name.", 
+        help="Specify the name of the pipeline.", 
         metavar="<pipeline_name>", 
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>",
+        "-f", 
+        "--file_name", 
+        help="Provide the absolute or relative path to the file. If the file is present in cwd, this is not needed.", 
+        metavar="<file_name>",
     )
 
     parser.add_argument(
         "-e", 
         "--execution_id", 
-        help="Specify execution id.", 
+        help="Display detailed information for provided execution ID in a table format.", 
         metavar="<exe_id>",
     )
     
@@ -182,7 +207,8 @@ def add_parser(subparsers, parent_parser):
         "-l",
         "--long", 
         action='store_true',
-        help="Display detailed summary of executions.", 
+        help='''Display 20 records per page with a table of 7 columns. 
+        Without this option, all records display in 5 columns with a limit of 20 records per page.''',
     )
 
     parser.set_defaults(func=CmdExecutionList)

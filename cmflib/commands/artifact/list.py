@@ -26,36 +26,54 @@ from cmflib.dvc_wrapper import dvc_get_config
 
 class CmdArtifactsList(CmdBase):
     def update_dataframe(self, df, is_long):
-        # This function used to modify datafram to fit inside table   
+        """
+        Updates the dataframe to fit the specified table format based on the length option.
+
+        Parameters:
+        - df: DataFrame to be updated.
+        - is_long: Boolean indicating whether to use long format.
+
+        Returns:
+        - Updated DataFrame with selected columns.
+        """
+        # Select columns based on the length option:
+        # If is_long is True, include all columns with 'id' and 'name' as the first two columns.
+        # If is_long is False, include 'id', 'name', and up to 5 columns starting with 'custom_properties_'.
         if is_long:
-            # If the option is long then all columns need to take
             updated_columns = ["id", "name"] + [ col for col in df.columns if not (col == "id" or col == "name")]
-            df = df[updated_columns]
         else:
-            # If the option is not long then few selective columns will take with custom_properties, 
-            # if number of column is greater than 5 then it only use 5 columns. 
             updated_columns = ["id", "name"] + [ col for col in df.columns if col.startswith('custom_properties_')]
-            df = df[updated_columns]
-            if len(df.columns) > 5:
-                df=df.iloc[:,:5]
-        return df
+            # Limit to a maximum of 5 columns if there are more
+            if len(updated_columns) > 5:
+                updated_columns = updated_columns[:5]
+
+        return df[updated_columns]
     
     def display_table(self, df, char_size, is_custom_prop):
+        """
+        Displays the dataframe in a table format, optionally renaming columns and wrapping text.
+
+        Parameters:
+        - df: DataFrame to display.
+        - char_size: Character width for text wrapping.
+        - is_custom_prop: Boolean indicating if custom properties are used.
+        """
         if is_custom_prop:
-            # Replacing column name 
-            # For eg: custom_properties_avg_prec ---> avg_prec  
+            # Rename columns by removing the 'custom_properties_' prefix 
             df = df.rename(columns = lambda x: x.replace("custom_properties_", "") if x.startswith("custom_properties_") else x)
         
+        # Wrapping text in object columns
         for col in df.select_dtypes(include=['object']).columns:
             df[col] = df[col].apply(lambda x: textwrap.fill(x, width=char_size) if isinstance(x, str) else x)
 
         total_records = len(df)
-        start_index = 0  # Initialize outside the loop
+        start_index = 0  
 
         while True:
             end_index = start_index + 20
             records_per_page = df.iloc[start_index:end_index]
-
+            
+            # Display the table
             table = tabulate(
                 records_per_page,
                 headers=df.columns,
@@ -64,42 +82,46 @@ class CmdArtifactsList(CmdBase):
             )
             print(table)
 
-            # Check if we've reached the end
+            # Check if we've reached the end of the records
             if end_index >= total_records:
                 print("\nEnd of records.")
                 break
 
-            # Ask the user for input
+            # Ask the user for input to navigate pages
             user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
             if user_input == 'q':
                 break
             
-            # Update indices for the next page
+            # Update start index for the next page
             start_index = end_index 
 
 
     def search_artifact(self, df):
-        matched_ids = []
-        for index, row in df.iterrows():
-            # the artifact name is this format artifacts/features/test.pkl:12345heyewuswjwi
-            # we compare whether the user given artifact name is inbetween following
-            # 1. artifacts/features/test.pkl 2. test.pkl
+        """
+        Searches for the specified artifact name in the DataFrame and returns matching IDs.
 
-            # print(row['name'])
-            # in case of multiple same names--> we need to store all artifcat ids
-            artifact_name =  row['name'].split(":")[0]
-            if self.args.artifact_name == artifact_name:
+        Parameters:
+        - df: DataFrame to search within.
+
+        Returns:
+        - List of matching IDs or -1 if no matches are found.
+        """
+        matched_ids = []
+        artifact_name = self.args.artifact_name.strip()
+        for index, row in df.iterrows():
+            # Extract the base name from the row
+            name =  row['name'].split(":")[0]
+            if artifact_name == name:
                 matched_ids.append(row['id'])
-            elif self.args.artifact_name == artifact_name.split('/')[-1]:
+            elif artifact_name == name.split('/')[-1]:
                 matched_ids.append(row['id'])
         
-        # the matched_ids is empty 
         if len(matched_ids) != 0:
             return matched_ids
         return -1
 
     def run(self):
-        # cmf/dvc configured or not
+        # check if 'cmf' is configured
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = dvc_get_config()
         if len(result) == 0:
@@ -116,33 +138,33 @@ class CmdArtifactsList(CmdBase):
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
 
-        # Creating cmfquery object
+        # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
+        pipeline_name = self.args.pipeline_name.strip()
 
-        df = query.get_all_artifacts_by_context(self.args.pipeline_name)
+        df = query.get_all_artifacts_by_context(pipeline_name)
         if df.empty:
             return "Pipeline name doesn't exists..."
         else:
+            # If artifact name is provided, search for matching IDs
             if self.args.artifact_name:
                 artifact_ids = self.search_artifact(df)
                 if(artifact_ids != -1):
-                    # If multiple artifact name exists with same name 
+                    # multiple artifact name exists with same name 
                     for artifact_id in artifact_ids:
-                        # Extracting data based on ID
-                        filtered_data = df.loc[df['id'] == artifact_id]
-                        
+                        filtered_data = df.loc[df['id'] == artifact_id]    
                         filtered_data = self.update_dataframe(filtered_data, True)
                         
+                         # Wrap text in object columns
                         for col in filtered_data.select_dtypes(include=['object']).columns:
                             filtered_data[col] = filtered_data[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
 
-                        # setting default index as a id
+                        # Set 'id' as the index and transpose the DataFrame
                         filtered_data.set_index("id", inplace=True)
-                        # T is used to transpose the dataframe
-                        # Resetting index and assigning name to that index
                         filtered_data = filtered_data.T.reset_index()
                         filtered_data.columns.values[0] = 'id'
 
+                        # Display the filtered data
                         table = tabulate(
                             filtered_data,
                             headers=filtered_data.columns,
@@ -157,14 +179,12 @@ class CmdArtifactsList(CmdBase):
                     return "End of records.."
                 else:
                     return "Artifact name does not exist.."
-
+        
+        # Update and display the full DataFrame based on the length option
         if self.args.long:
             df = self.update_dataframe(df, True)
             if len(df.columns) > 7:
                 df=df.iloc[:,:7]
-            
-            # Replacing column name 
-            # For eg: custom_properties_avg_prec ---> avg_prec  
             self.display_table(df, 14, True)
         else:
             df = self.update_dataframe(df, False)
@@ -172,12 +192,12 @@ class CmdArtifactsList(CmdBase):
         return "Done"
 
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Display list of artifact as present in current mlmd"
+    ARTIFACT_LIST_HELP = "Displays all artifacts with details from the specified MLMD file."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display artifact list",
+        description="Displays all artifacts with details from the specified MLMD file.",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -188,18 +208,22 @@ def add_parser(subparsers, parent_parser):
         "-p", 
         "--pipeline_name", 
         required=True,
-        help="Specify pipeline name.", 
+        help="Specify the name of the pipeline.", 
         metavar="<pipeline_name>", 
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>",
+        "-f", 
+        "--file_name", 
+        help='''Provide the absolute or relative path to the MLMD file. 
+        If the file is present in the current working directory, this is not needed.''', 
+        metavar="<file_name>",
     )
 
     parser.add_argument(
         "-a", 
         "--artifact_name", 
-        help="Specify artifact name.", 
+        help="Display detailed information about the specified artifact in a table format.", 
         metavar="<artifact_name>",
     )
 
@@ -207,7 +231,8 @@ def add_parser(subparsers, parent_parser):
         "-l", 
         "--long", 
         action='store_true',
-        help="Display detailed summary of artifact",
+        help='''Display 20 records per page with a table of 7 columns. 
+        Without this option, all records display in 5 columns with a limit of 20 records per page.''',
     )
 
     parser.set_defaults(func=CmdArtifactsList)
