@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tensorboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tensorboard
+  template:
+    metadata:
+      labels:
+        app: tensorboard
+    spec:
+      initContainers:
+      - name: wait-for-cmf-server
+        image: busybox
+        command: ['sh', '-c', 'until nc -z cmf-service 8080; do echo waiting for cmf-service; sleep 2; done;']
+      containers:
+      - name: tensorboard
+        image: tensorflow/tensorflow
+        command: ["tensorboard", "--logdir", "/logs", "--host", "0.0.0.0"]
+        ports:
+        - containerPort: 6006
+        volumeMounts:
+        - mountPath: /logs
+          name: tensorboard-logs
+      volumes:
+      - name: tensorboard-logs
+        persistentVolumeClaim:
+          claimName: pvc-tensorboard-logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorboard-service
+spec:
+  selector:
+    app: tensorboard
+  ports:
+  - protocol: TCP
+    port: 6006
+    targetPort: 6006
+  type: LoadBalancer

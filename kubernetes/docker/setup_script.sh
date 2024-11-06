@@ -17,21 +17,35 @@
 
 #setup cmf server
 
-export IP="192.168.30.116"
+export IP=$MYIP
 export hostname=""
 
-docker-compose --verbose -f ../../docker-compose-server.yml up -d
+original_docker_file="../../server/Dockerfile"
+new_docker_file="../../server/Dockerfile_new"
+cp "$original_docker_file" "$new_docker_file"
+sed -i 's/--port, "80"/--port, "8080"/g' "$new_docker_file"
+
+original_compose_file="../../docker-compose-server.yml"
+new_compose_file="../../docker-compose-server-new.yml"
+cp "$original_compose_file" "$new_compose_file"
+sed -i 's/8080:80/8080:8080/g' "$new_compose_file"
+sed -i 's/dockerfile: ./server\/Dockerfile/dockerfile: ../server\/Dockerfile-new/g' "$new_compose_file"
+
+docker-compose --verbose -f $new_compose_file build
+rm $new_docker_file
+rm $new_compose_file
+
 
 #setup minio server
 export bucket_name="dvc-art"
 export access_key_id="minioadmin"
 export secret_key="minioadmin"
 
-docker-compose --verbose -f docker-compose-minio.yml up -d
+docker-compose --verbose -f docker-compose-minio.yml build
 
 #setup neo4j serverA
 #
 export neo4j_user="neo4j"
 export neo4j_password="test1234"
 
-docker-compose --verbose -f docker-compose-neo4j.yml up -d
+docker-compose --verbose -f docker-compose-neo4j.yml build

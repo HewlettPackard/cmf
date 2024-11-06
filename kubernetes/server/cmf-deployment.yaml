@@ -1,22 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cmf-server
+  name: cmf-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cmf-server
+      app: cmf
   template:
     metadata:
       labels:
-        app: cmf-server
+        app: cmf
     spec:
       containers:
       - name: cmf-server
         image: localhost:5000/cmf-server:latest
         ports:
-        - containerPort: 80
+        - containerPort: 8080 # CMF server port
+        env:
+        - name: MYIP
+          value: "192.168.30.116"
         volumeMounts:
         - mountPath: /cmf-server/data
           name: server-data
@@ -27,9 +30,20 @@ spec:
         readinessProbe:
           httpGet:
             path: /
-            port: 80
+            port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
+        # Add resources and volume mounts if needed 
+      - name: cmf-ui
+        image: localhost:5000/cmf-ui:latest
+        ports:
+        - containerPort: 3000 # CMF UI port
+        # Add resources and volume mounts if needed
+        env:
+        - name: REACT_APP_MY_IP
+          value: "192.168.30.116"
+        - name: REACT_APP_MY_HOSTNAME
+          value: ""
       volumes:
       - name: server-data
         persistentVolumeClaim:
@@ -44,12 +58,15 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cmf-server
+  name: cmf-service
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
-  - port: 80
-    targetPort: 80
-    nodePort: 30080
+  - name: cmf-server-port
+    port: 8080 # External port for CMF Server access
+    targetPort: 8080 # CMF server container port
+  - name: cmf-ui-port
+    port: 3000 # External port for CMF UI access
+    targetPort: 3000 # CMF UI container port
   selector:
-    app: cmf-server
+    app: cmf
