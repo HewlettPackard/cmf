@@ -169,12 +169,12 @@ class CmdExecutionList(CmdBase):
             return "Done"
     
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = "Lists all executions with details from the specified MLMD file."
+    EXECUTION_LIST_HELP = " Display all executions with detailed information from the specified MLMD file."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Lists all executions with details from the specified MLMD file.",
+        description=" display all executions with detailed information from the specified MLMD file.",
         help=EXECUTION_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -185,21 +185,21 @@ def add_parser(subparsers, parent_parser):
         "-p", 
         "--pipeline_name", 
         required=True,
-        help="Specify the name of the pipeline.", 
+        help="Specify pipeline name.", 
         metavar="<pipeline_name>", 
     )
 
     parser.add_argument(
         "-f", 
         "--file_name", 
-        help="Provide the absolute or relative path to the file. If the file is present in cwd, this is not needed.", 
+        help="Specify the absolute or relative path to the MLMD file.",
         metavar="<file_name>",
     )
 
     parser.add_argument(
         "-e", 
         "--execution_id", 
-        help="Display detailed information for provided execution ID in a table format.", 
+        help="Specify the execution id to retrieve detailed information of that execution, displayed in a table format.",
         metavar="<exe_id>",
     )
     
@@ -207,8 +207,8 @@ def add_parser(subparsers, parent_parser):
         "-l",
         "--long", 
         action='store_true',
-        help='''Display 20 records per page with a table of 7 columns. 
-        Without this option, all records display in 5 columns with a limit of 20 records per page.''',
+        help='''Specify to display 20 records per page in a table with 7 columns. 
+                By default, records are displayed in 5 columns with a limit of 20 records per page.'''
     )
 
     parser.set_defaults(func=CmdExecutionList)

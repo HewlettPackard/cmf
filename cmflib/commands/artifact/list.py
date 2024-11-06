@@ -95,7 +95,6 @@ class CmdArtifactsList(CmdBase):
             # Update start index for the next page
             start_index = end_index 
 
-
     def search_artifact(self, df):
         """
         Searches for the specified artifact name in the DataFrame and returns matching IDs.
@@ -107,7 +106,7 @@ class CmdArtifactsList(CmdBase):
         - List of matching IDs or -1 if no matches are found.
         """
         matched_ids = []
-        artifact_name = self.args.artifact_name.strip()
+        artifact_name = self.args.artifact_name[0].strip()
         for index, row in df.iterrows():
             # Extract the base name from the row
             name =  row['name'].split(":")[0]
@@ -128,26 +127,47 @@ class CmdArtifactsList(CmdBase):
             return msg
         
         current_directory = os.getcwd()
-        # default path for mlmd file name
-        mlmd_file_name = "./mlmd"
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
+        if not self.args.file_name:         # if self.args.file_name is None or an empty list ([]), 
+            mlmd_file_name = "./mlmd"       # default path for mlmd file name.
+        elif len(self.args.file_name) > 1:  # if the user provided more than one file name. 
+            return "Error: You can only provide one file name using the -f flag."
+        elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
+            return "Error: Missing File name"
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
+        
+        current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
+            return f"Error: {mlmd_file_name} doesn't exists in {current_directory} directory."
 
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
-        pipeline_name = self.args.pipeline_name.strip()
 
+        # pipeline name is present or not ---> not existst or further proccessing
+        # pipeline name is -f "" ---> specify pipeline name
+        # pipeline name is multiple like -f "" -f "" ---> only one pipeline name option need to be enter
+        
+        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
+             return "Error: You can only provide one pipeline name using the -p flag."
+        
+        pipeline_name = self.args.pipeline_name[0].strip()
         df = query.get_all_artifacts_by_context(pipeline_name)
         if df.empty:
             return "Pipeline name doesn't exists..."
         else:
             # If artifact name is provided, search for matching IDs
-            if self.args.artifact_name:
+            # artifact name is present or not ---> not existst or further proccessing
+            # artifact name is -f "" ---> specify artifact name
+            # artifact name is multiple like -f "" -f "" ---> only one artifact name option need to be enter
+            if not self.args.artifact_name:         # if self.args.artifact_name is None or an empty list ([]), 
+                pass
+            elif len(self.args.artifact_name) > 1:  # if the user provided more than one artifact_name. 
+                return "Error: You can only provide one artifact name using the -a flag."
+            elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
+                return "Error: Missing artifact name"
+            else:
                 artifact_ids = self.search_artifact(df)
                 if(artifact_ids != -1):
                     # multiple artifact name exists with same name 
@@ -192,7 +212,7 @@ class CmdArtifactsList(CmdBase):
         return "Done"
 
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Displays all artifacts with details from the specified MLMD file."
+    ARTIFACT_LIST_HELP = "Displays all artifacts with detailed information from the specified MLMD file."
 
     parser = subparsers.add_parser(
         "list",
@@ -208,22 +228,24 @@ def add_parser(subparsers, parent_parser):
         "-p", 
         "--pipeline_name", 
         required=True,
-        help="Specify the name of the pipeline.", 
+        action="append",
+        help="Specify pipeline name.", 
         metavar="<pipeline_name>", 
     )
 
     parser.add_argument(
         "-f", 
-        "--file_name", 
-        help='''Provide the absolute or relative path to the MLMD file. 
-        If the file is present in the current working directory, this is not needed.''', 
+        "--file_name",
+        action="append",
+        help="Specify the absolute or relative path to the MLMD file.", 
         metavar="<file_name>",
     )
 
     parser.add_argument(
         "-a", 
         "--artifact_name", 
-        help="Display detailed information about the specified artifact in a table format.", 
+        action="append",
+        help="Specify the artifact name to display detailed information about the specified name in a table format.", 
         metavar="<artifact_name>",
     )
 
@@ -231,8 +253,8 @@ def add_parser(subparsers, parent_parser):
         "-l", 
         "--long", 
         action='store_true',
-        help='''Display 20 records per page with a table of 7 columns. 
-        Without this option, all records display in 5 columns with a limit of 20 records per page.''',
+        help='''Specify to display 20 records per page in a table with 7 columns. 
+                By default, records are displayed in 5 columns with a limit of 20 records per page.''',
     )
 
     parser.set_defaults(func=CmdArtifactsList)

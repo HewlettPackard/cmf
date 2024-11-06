@@ -44,7 +44,7 @@ def add_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Displays all pipeline names that exist inside the specified MLMD file.",
+        description="Displays a list of pipeline names from the available mlmd file.",
         help=PIPELINE_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -52,8 +52,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-f", 
         "--file_name", 
-        help='''Provide the absolute or relative path to the MLMD file. 
-        If the file is present in cwd, this is not needed.''', 
+        help="Provide the absolute or relative path to the MLMD file.", 
         metavar="<file_name>",
     )
 
