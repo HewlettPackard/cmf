@@ -40,12 +40,12 @@ code {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f4f4f4f4;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: rgb(13 148 136);
+  background: #555;
 }
 
 /* Handle on hover */
