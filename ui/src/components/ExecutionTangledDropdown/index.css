@@ -1,21 +1,23 @@
 .dropdown {
-   position: relative;
-   display: inline-block;
+  position: relative;
+  display: inline-block;
+  margin-top: 2px;
+  border: 2px;
+  border-radius: 4px;
 }
 
 .dropdown-select {
-   appearance: none;
-   padding: 8px 16px;
-   font-size: 14px;
-   border: 1px solid #ccc;
-   border-radius: 4px;
-   outline: none;
-   cursor: pointer;
-   transition: border-color 0.3s ease;
+  appearance: none;
+  padding: 8px 16px;
+  font-size: 14px;
+  border: 1px solid black;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
 }
 
 .dropdown-select:hover,
 .dropdown-select:focus {
   border-color: #4a90e2;
 }
-
