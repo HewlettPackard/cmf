@@ -139,7 +139,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[s
                         elif artifact_type == "Step_Metrics":                          
                             cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, custom_props)
                         elif artifact_type == "Environment":
-                            cmf_class.log_python_env_on_server(artifact_name, uri)
+                            cmf_class.log_python_env_on_server(artifact_name, uri, props)
                         else:
                             pass
                     except AlreadyExistsError as e:

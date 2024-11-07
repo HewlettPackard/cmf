@@ -76,8 +76,6 @@ def get_python_env(env_name='cmf'):
 
         else:
             # If not conda, assume virtualenv/pip
-            print("Detected virtualenv/pip environment. Exporting requirements.txt...")
-
             # Step 1: Get the list of pip packages
             pip_packages = subprocess.check_output(['pip', 'freeze']).decode('utf-8').splitlines()
 

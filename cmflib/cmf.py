@@ -172,6 +172,7 @@ class Cmf:
         os.chdir(logging_dir)
 
     @staticmethod
+    # function used to load neo4j params for cmf client
     def __load_neo4j_params():
          cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
          if os.path.exists(cmf_config):
@@ -182,6 +183,7 @@ class Cmf:
 
 
     @staticmethod
+    # function used to load neo4j params for cmf-server
     def __get_neo4j_server_config():
         Cmf.__neo4j_uri = os.getenv('NEO4J_URI', "")
         Cmf.__neo4j_user = os.getenv('NEO4J_USER_NAME', "")
@@ -470,11 +472,10 @@ class Cmf:
         if isinstance(packages, list):
             output = f"{packages}\n"
             md5_hash = get_md5_hash(output)
-            print(md5_hash)
-            python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.txt")
+            python_env_file_path = os.path.join(directory_path, f"python_env_{md5_hash}.txt")
             # create file if it doesn't exists
             if not os.path.exists(python_env_file_path):
-                print(f"{python_env_file_path} doesn't exists!!")
+                #print(f"{python_env_file_path} doesn't exists!!")
                 with open(python_env_file_path, 'w') as file:
                     for package in packages:
                         file.write(f"{package}\n")
@@ -483,10 +484,10 @@ class Cmf:
             # in case output is dict
             env_output = yaml.dump(packages, sort_keys=False)
             md5_hash = get_md5_hash(env_output)
-            python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.yaml")
+            python_env_file_path = os.path.join(directory_path, f"python_env_{md5_hash}.yaml")
             # create file if it doesn't exists
             if not os.path.exists(python_env_file_path):
-                print(f"{python_env_file_path} doesn't exists!!")
+                #print(f"{python_env_file_path} doesn't exists!!")
                 with open(python_env_file_path, 'w') as file:
                     file.write(env_output)
 
@@ -690,7 +691,6 @@ class Cmf:
         # link the artifact to execution if it exists and creates artifact if it doesn't
         return self.execution
 
-    # what is the reason behind creating this function
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")
@@ -713,7 +713,7 @@ class Cmf:
                 print("Error in getting the dvc hash,return without logging")
                 return
 
-            dataset_commit = c_hash
+            commit = c_hash
             dvc_url = dvc_get_url(url)
             dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
             url = url + ":" + c_hash
@@ -723,7 +723,6 @@ class Cmf:
             if existing_artifact and len(existing_artifact) != 0:
                 existing_artifact = existing_artifact[0]
                 uri = c_hash
-                print("i am here")
                 artifact = link_execution_to_artifact(
                     store=self.store,
                     execution_id=self.execution.id,
@@ -744,7 +743,7 @@ class Cmf:
                     properties={
                         "git_repo": str(git_repo),
                         # passing c_hash value to commit
-                        "Commit": str(dataset_commit),
+                        "Commit": str(commit),
                         "url": str(dvc_url_with_pipeline),
                     },
                     artifact_type_properties={
@@ -754,8 +753,11 @@ class Cmf:
                     },
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
+            custom_props = {}
+            custom_props["git_repo"] = git_repo
+            custom_props["Commit"] = commit
             self.execution_label_props["git_repo"] = git_repo
-            self.execution_label_props["Commit"] = dataset_commit
+            self.execution_label_props["Commit"] = commit
 
             
             if self.graph:
@@ -766,6 +768,7 @@ class Cmf:
                     "output",
                     self.execution.id,
                     self.parent_context,
+                    custom_props,
                 )
 
                 child_artifact = {
@@ -789,31 +792,21 @@ class Cmf:
             self,
             url: str,
             uri: str,
+            props: t.Optional[t.Dict] = None,
         ) -> mlpb.Artifact:
             "Used to log the python packages involved in the current execution"
 
-            git_repo = git_get_repo()
-            name = re.split("/", url)[-1]
+            git_repo = props.get("git_repo", "")
+            name = url
             existing_artifact = []
-
-            commit_output(url, self.execution.id)
-            c_hash = dvc_get_hash(url)
-
-            if c_hash == "":
-                print("Error in getting the dvc hash,return without logging")
-                return
-
-            dataset_commit = c_hash
-            dvc_url = dvc_get_url(url)
-            dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
+            c_hash = uri
+            commit = props.get("Commit", "")
             url = url + ":" + c_hash
             if c_hash and c_hash.strip:
                 existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
             if existing_artifact and len(existing_artifact) != 0:
                 existing_artifact = existing_artifact[0]
-                uri = c_hash
-                print("i am here")
                 artifact = link_execution_to_artifact(
                     store=self.store,
                     execution_id=self.execution.id,
@@ -834,8 +827,8 @@ class Cmf:
                     properties={
                         "git_repo": str(git_repo),
                         # passing c_hash value to commit
-                        "Commit": str(dataset_commit),
-                        "url": str(dvc_url_with_pipeline),
+                        "Commit": str(commit),
+                        "url": props.get("url", ""),
                     },
                     artifact_type_properties={
                         "git_repo": mlpb.STRING,
@@ -844,10 +837,12 @@ class Cmf:
                     },
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
+            custom_props = {}
+            custom_props["git_repo"] = git_repo
+            custom_props["Commit"] = commit
             self.execution_label_props["git_repo"] = git_repo
-            self.execution_label_props["Commit"] = dataset_commit
+            self.execution_label_props["Commit"] = commit
 
-            
             if self.graph:
                 self.driver.create_env_node(
                     name,
@@ -856,6 +851,7 @@ class Cmf:
                     "output",
                     self.execution.id,
                     self.parent_context,
+                    custom_props,
                 )
 
                 child_artifact = {
@@ -1348,7 +1344,7 @@ class Cmf:
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        # custom_properties["Commit"] = model_commit
+        custom_properties["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
         #To DO model nodes should be similar to dataset nodes when we create neo4j
         if self.graph:
@@ -1493,8 +1489,8 @@ class Cmf:
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        # custom_properties["Commit"] = model_commit
-        # custom_props["url"] = url
+        custom_properties["Commit"] = props.get("Commit", "")
+        custom_props["url"] = url
         self.execution_label_props["Commit"] = props.get("Commit", "")
         if self.graph:
             self.driver.create_model_node(
@@ -1571,6 +1567,8 @@ class Cmf:
         existing_artifacts = self.store.get_artifacts_by_uri(uri)
 
         existing_artifact = existing_artifacts[0] if existing_artifacts else None
+        # Didn't understand this, 
+        # and in case of step_metrics should we follow this logic or dataset's logic or does it even matter
         if not existing_artifact or \
            ((existing_artifact) and not
             (existing_artifact.name == new_metrics_name)):  #we need to add the artifact otherwise its already there 
@@ -1587,6 +1585,7 @@ class Cmf:
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
+            
             if self.graph:
                 # To do create execution_links
                 self.driver.create_metrics_node(
@@ -1797,8 +1796,12 @@ class Cmf:
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
+
+        custom_props["Commit"] = metrics_commit
+        self.execution_label_props["Commit"] = metrics_commit
+
         if self.graph:
-            self.driver.create_metrics_node(
+            self.driver.create_step_metrics_node(
                 name,
                 uri,
                 "output",
@@ -1811,7 +1814,7 @@ class Cmf:
                 "URI": uri,
                 "Event": "output",
                 "Execution_Name": self.execution_name,
-                "Type": "Metrics",
+                "Type": "Step_Metrics",
                 "Execution_Command": self.execution_command,
                 "Pipeline_Id": self.parent_context.id,
             }
@@ -1872,8 +1875,13 @@ class Cmf:
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
+        
+        metrics_commit = props.get("Commit", "")
+        custom_props["Commit"] = metrics_commit
+        self.execution_label_props["Commit"] = metrics_commit
+
         if self.graph:
-            self.driver.create_metrics_node(
+            self.driver.create_step_metrics_node(
                 metrics_name,
                 uri,
                 "output",
@@ -1886,7 +1894,7 @@ class Cmf:
                 "URI": uri,
                 "Event": "output",
                 "Execution_Name": self.execution_name,
-                "Type": "Metrics",
+                "Type": "Step_Metrics",
                 "Execution_Command": self.execution_command,
                 "Pipeline_Id": self.parent_context.id,
             }
@@ -2112,12 +2120,6 @@ class Cmf:
                     input_name=dataslice_path + ":" + c_hash,
                 )
             else:
-                props={
-                        "git_repo": str(git_repo),
-                        # passing c_hash value to commit
-                        "Commit": str(dataslice_commit),
-                        "url": str(dvc_url_with_pipeline),
-                    },
                 slice = create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
@@ -2140,9 +2142,14 @@ class Cmf:
                     custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
+
+            custom_props["git_repo"] = git_repo
+            custom_props["Commit"] = dataslice_commit
+            self.writer.execution_label_props["git_repo"] = git_repo
+            self.writer.execution_label_props["Commit"] = dataslice_commit
             if self.writer.graph:
                 self.writer.driver.create_dataslice_node(
-                    self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, props
+                    self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, custom_props
                 )
             os.chdir(logging_dir)
             return slice
@@ -2184,12 +2191,14 @@ class Cmf:
                         "Commit": mlpb.STRING,
                         "url": mlpb.STRING,
                     },
-                    custom_properties=custom_properties,
+                    custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
+            custom_props["git_repo"] = props.get("git_repo", "")
+            custom_props["Commit"] = props.get("Commit", "")
             if self.writer.graph:
                 self.writer.driver.create_dataslice_node(
-                    self.name, self.name, c_hash, self.data_parent, custom_properties
+                    self.name, self.name, c_hash, self.data_parent, custom_props
                 )
             return slice
 
