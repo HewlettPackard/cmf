@@ -94,7 +94,7 @@ class CmdArtifactPush(CmdBase):
             if not artifacts.empty:
                 artifacts = artifacts[artifacts['type'] != 'Metrics']
                 # adding .dvc at the end of every file as it is needed for pull
-                artifacts['name'] = artifacts['name'].apply(lambda name: name.split(':')[0])
+                artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
                 names.extend(artifacts['name'].tolist())
         file_set = set(names)
         result = dvc_push(list(file_set))
