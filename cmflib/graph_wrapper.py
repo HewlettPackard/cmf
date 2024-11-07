@@ -93,7 +93,6 @@ class GraphDriver:
                             pipeline_context: mlpb.Context, custom_properties=None):
         if custom_properties is None:
             custom_properties = {}
-        print("custom_properties = ", custom_properties)
         pipeline_id = pipeline_context.id
         pipeline_name = pipeline_context.name
         dataset_syntax = self._create_env_syntax(

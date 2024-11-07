@@ -104,16 +104,9 @@ class Cmf:
     """
 
     # pylint: disable=too-many-instance-attributes
-    # Reading CONFIG_FILE variable
-    #cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
-    #if os.path.exists(cmf_config):
-    #    attr_dict = CmfConfig.read_config(cmf_config)
-    #    __neo4j_uri = attr_dict.get("neo4j-uri", "")
-    #    __neo4j_password = attr_dict.get("neo4j-password", "")
-    #    __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(
         self,
