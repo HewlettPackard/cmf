@@ -139,6 +139,7 @@ class Cmf:
         self.execution_name = ""
         self.execution_command = ""
         self.metrics = {}
+        # why have we created this list
         self.input_artifacts = []
         self.execution_label_props = {}
         self.graph = graph
@@ -721,7 +722,7 @@ class Cmf:
                     execution_id=self.execution.id,
                     uri=uri,
                     input_name=url,
-                    event_type=mlpb.Event.Type.OUTPUT,
+                    event_type=mlpb.Event.Type.INPUT,
                 )
             else:
                 uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
@@ -732,7 +733,7 @@ class Cmf:
                     uri=uri,
                     name=url,
                     type_name="Environment",
-                    event_type=mlpb.Event.Type.OUTPUT,
+                    event_type=mlpb.Event.Type.INPUT,
                     properties={
                         "git_repo": str(git_repo),
                         # passing c_hash value to commit
@@ -752,33 +753,30 @@ class Cmf:
             self.execution_label_props["git_repo"] = git_repo
             self.execution_label_props["Commit"] = commit
 
-            
             if self.graph:
                 self.driver.create_env_node(
                     name,
                     url,
                     uri,
-                    "output",
+                    "input",
                     self.execution.id,
                     self.parent_context,
                     custom_props,
                 )
-
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": "output",
-                    "Execution_Name": self.execution_name,
-                    "Type": "Environment",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
+                self.input_artifacts.append(
+                    {
+                        "Name": name,
+                        "Path": url,
+                        "URI": uri,
+                        "Event": "input",
+                        "Execution_Name": self.execution_name,
+                        "Type": "Environment",
+                        "Execution_Command": self.execution_command,
+                        "Pipeline_Id": self.parent_context.id,
+                        "Pipeline_Name": self.parent_context.name,
+                    }
                 )
-            
+                self.driver.create_execution_links(uri, name, "Environment")
             return artifact
 
     def log_python_env_on_server(
@@ -805,7 +803,7 @@ class Cmf:
                     execution_id=self.execution.id,
                     uri=uri,
                     input_name=url,
-                    event_type=mlpb.Event.Type.OUTPUT,
+                    event_type=mlpb.Event.Type.INPUT,
                 )
             else:
                 uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
@@ -816,7 +814,7 @@ class Cmf:
                     uri=uri,
                     name=url,
                     type_name="Environment",
-                    event_type=mlpb.Event.Type.OUTPUT,
+                    event_type=mlpb.Event.Type.INPUT,
                     properties={
                         "git_repo": str(git_repo),
                         # passing c_hash value to commit
@@ -835,33 +833,31 @@ class Cmf:
             custom_props["Commit"] = commit
             self.execution_label_props["git_repo"] = git_repo
             self.execution_label_props["Commit"] = commit
-
+            
             if self.graph:
                 self.driver.create_env_node(
                     name,
                     url,
                     uri,
-                    "output",
+                    "input",
                     self.execution.id,
                     self.parent_context,
                     custom_props,
                 )
-
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": "output",
-                    "Execution_Name": self.execution_name,
-                    "Type": "Environment",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
+                self.input_artifacts.append(
+                    {
+                        "Name": name,
+                        "Path": url,
+                        "URI": uri,
+                        "Event": "input",
+                        "Execution_Name": self.execution_name,
+                        "Type": "Environment",
+                        "Execution_Command": self.execution_command,
+                        "Pipeline_Id": self.parent_context.id,
+                        "Pipeline_Name": self.parent_context.name,
+                    }
                 )
-            
+                self.driver.create_execution_links(uri, name, "Environment")
             return artifact
 
     def log_dataset(
