@@ -24,8 +24,22 @@ from cmflib.cli.command import CmdBase
 
 # This class export local mlmd data to a json file
 class CmdMetadataExport(CmdBase):
+    def create_full_path(self, current_directory):
+        if not os.path.isdir(self.args.json_file_name):
+            temp = os.path.dirname(self.args.json_file_name)
+            current_directory = './'
+            if temp != "":
+                current_directory = temp
+            if os.path.exists(current_directory):
+                full_path_to_dump  = self.args.json_file_name
+                print(full_path_to_dump)
+                return full_path_to_dump
+            else:
+                return f"{current_directory} doesn't exists."
+        else:
+            return "Provide path with file name."
+        
     def run(self):
-
         current_directory = os.getcwd()
         full_path_to_dump = ""
 
@@ -40,22 +54,6 @@ class CmdMetadataExport(CmdBase):
         if not os.path.exists(mlmd_file_name):
             return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
 
-
-        # setting directory where mlmd file will be dumped
-        if self.args.json_file_name:
-            if not os.path.isdir(self.args.json_file_name):
-                temp = os.path.dirname(self.args.json_file_name)
-                if temp != "":
-                    current_directory = temp
-                if os.path.exists(current_directory):
-                    full_path_to_dump  = self.args.json_file_name
-                else:
-                    return f"{current_directory} doesn't exists."
-            else:
-                return "Provide path with file name."
-        else:
-            full_path_to_dump = os.getcwd() + f"/{self.args.pipeline_name}.json"
-
         # initialising cmfquery class
         query = cmfquery.CmfQuery(mlmd_file_name)
 
@@ -63,6 +61,29 @@ class CmdMetadataExport(CmdBase):
         pipeline = query.get_pipeline_id(self.args.pipeline_name)
 
         if pipeline > 0:
+            # setting directory where mlmd file will be dumped
+            if self.args.json_file_name:  #json file name given
+                self.args.json_file_name = self.args.json_file_name+".json" #added .json extention to json file name
+                if os.path.exists(self.args.json_file_name): #file name present in respective path
+                    userRespone = input("File name already exists do you want to continue press yes/no: ")
+                    if userRespone.lower() == "yes":    # overwrite file name
+                        full_path_to_dump = self.create_full_path(current_directory)
+                    else:
+                        return "Process exit."
+                else:  #file name not present in respective path
+                    full_path_to_dump = self.create_full_path(current_directory)
+            else: 
+                # If the file name is already present in cwd with a.json name
+                # when user enter command like -> cmf metadata export -p "" -j "a.json" then it will overwite the file 
+                if os.path.exists(f"{self.args.pipeline_name}.json"): #file name present in respective path
+                    userRespone = input("File name already exists do you want to continue press yes/no: ")
+                    if userRespone.lower() == "yes":    # overwrite file name
+                        full_path_to_dump = os.getcwd() + f"/{self.args.pipeline_name}.json"
+                    else:
+                        return "Process exit."
+                else:  #file name not present in respective path
+                    full_path_to_dump = os.getcwd() + f"/{self.args.pipeline_name}.json"
+
             # pulling data from local mlmd file
             json_payload = query.dumptojson(self.args.pipeline_name,None)
 
