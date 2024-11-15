@@ -260,7 +260,7 @@ Optional Arguments
 ```
 Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] -l
 ```
-`cmf artifact list` command displays all artifacts with detailed information from the specified MLMD file.
+`cmf artifact list` command displays all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
 ```
 cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' -l
 ```
@@ -271,10 +271,9 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
-  -f [file_name], --file-name [file_name]               Specify the absolute or relative path to the MLMD file. 
-  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the specified name in a table format.
-  -l, --long                                            Specify to display 20 records per page in a table with 7 columns. 
-                                                        By default, records are displayed in 5 columns with a limit of 20 records per page.
+  -f [file_name], --file-name [file_name]               Specify the absolute or relative path for the input MLMD file. 
+  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.
+  -l, --long                                            Use to display 20 records per page in a table with 7 columns.                                                     
 ```
 
 ## cmf metadata
@@ -334,22 +333,22 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                               show this help message and exit.
-  -f [file_name], --file_name [file_name]                  Specify the absolute or relative path to the MLMD file.
-  -j [json_file_name], --json_file_name [json_file_name]   Specify json file name with full path.
+  -f [file_name], --file_name [file_name]                  Specify the absolute or relative path for the input MLMD file.
+  -j [json_file_name], --json_file_name [json_file_name]   Specify output json file name with full path.
 ```
 
-## cmf executions
+## cmf execution
 ```
-Usage: cmf executions [-h] {list}
+Usage: cmf execution [-h] {list}
 ```
-`cmf executions` Command to display all executions with detailed information from the specified MLMD file.
+`cmf execution` command displays all executions with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
 ### cmf executions list
 ```
-Usage: cmf executions list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] -l
+Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] -l
 ```
-`cmf executions list` Command to display all executions with detailed information from the specified MLMD file.
+`cmf execution list` Command to display all executions with detailed information from the specified MLMD file.
 ```
-cmf executions list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' -l
+cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' -l
 ```
 Required Arguments
 ```
@@ -358,27 +357,26 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path to the MLMD file.
-  -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve detailed information of that execution, displayed in a table format.
-  -l, --long                                            Specify to display 20 records per page in a table with 7 columns. 
-                                                        By default, records are displayed in 5 columns with a limit of 20 records per page.
+  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+  -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
+  -l, --long                                            Use to display 20 records per page in a table with 7 columns. 
 ```
 
 ## cmf pipeline
 ```
 Usage: cmf pipeline [-h] {list}
 ```
-`cmf pipeline` command to display list of pipeline names.
+`cmf pipeline` command displays a list of pipeline name(s) from the available mlmd file.
 ### cmf pipeline list
 ```
 Usage: cmf pipeline list [-h] -f [file_name]
 ```
-`cmf pipeline list` command displays a list of pipeline names from the available mlmd file.
+`cmf pipeline list` command displays a list of pipeline name(s) from the available mlmd file.
 ```
 cmf pipeline list -f '/path/to/mlmd-file-name'
 ```
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path to the MLMD file.
+  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
 ```
