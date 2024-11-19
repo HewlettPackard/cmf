@@ -2305,7 +2305,7 @@ def non_related_args(type : str, args : dict):
 
 
 def pipeline_list(filepath = "./mlmd"):
-    """ Display list of pipline for current mlmd.
+    """ Display a list of pipeline name(s) from the available mlmd file.
 
     Example:
     ```python
@@ -2324,7 +2324,8 @@ def pipeline_list(filepath = "./mlmd"):
 
 
 def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = "", long = True):
-    """ Display list of execution for given pipeline.
+    """ Display all executions with detailed information from the specified MLMD file. 
+        By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
     Example: 
     ```python 
         result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id", "long") 
@@ -2345,7 +2346,7 @@ def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = 
 
 
 def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = "", long = True):
-    """ Display list of artifact for given pipeline.
+    """ Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
     Example: 
     ```python 
         result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name", "long") 

@@ -23,12 +23,12 @@ SUB_COMMANDS = [list]
 
 # This parser adds positional argumets to the main parser
 def add_parser(subparsers, parent_parser):
-    LIST_HELP = "Command to list pipeline."
+    LIST_HELP = "Display a list of pipeline name(s) from the available mlmd file."
 
     list_parser = subparsers.add_parser(
         "pipeline", 
         parents=[parent_parser],
-        description="Display list of pipelines as present in current mlmd.",
+        description="Display a list of pipeline name(s) from the available mlmd file.",
         help=LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

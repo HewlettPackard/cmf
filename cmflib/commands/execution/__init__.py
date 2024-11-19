@@ -23,12 +23,12 @@ SUB_COMMANDS = [list]
 
 # This parser adds positional argumets to the main parser
 def add_parser(subparsers, parent_parser):
-    LIST_HELP = "Command to list executions."
+    LIST_HELP = "Display all executions with detailed information from the specified MLMD file."
 
     list_parser = subparsers.add_parser(
-        "executions", 
+        "execution", 
         parents=[parent_parser],
-        description="Display list of executions as present in current mlmd.",
+        description="Display all executions with detailed information from the specified MLMD file.",
         help=LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

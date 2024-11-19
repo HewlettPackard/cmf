@@ -2,9 +2,9 @@
 
 # cmf 
 ```
-Usage: cmf [-h] {init, artifact, metadata, executions, pipeline}
+Usage: cmf [-h] {init, artifact, metadata, execution, pipeline}
 ```
-The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, executions, pipeline and metadata.
+The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
 
 ## cmf init
 ```
