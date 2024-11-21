@@ -195,7 +195,7 @@ def merge_created_execution(
     return self.execution
 
 
-def log_python_env_on_server(
+def log_python_env_from_client(
         self,
         url: str,
         uri: str,
@@ -641,12 +641,12 @@ def log_execution_metrics_from_client(self, metrics_name: str,
 
 
 
-def commit_existing_metrics(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
+def log_metrics_from_client(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
     """
     Commits existing metrics associated with the given URI to MLMD.
     Example:
     ```python
-        artifact: mlpb.Artifact = cmf.commit_existing_metrics("existing_metrics", "abc123",
+        artifact: mlpb.Artifact = cmf.log_metrics_from_client("existing_metrics", "abc123",
         {"custom_key": "custom_value"})
     ```
     Args:
@@ -720,7 +720,7 @@ def commit_existing_metrics(self, metrics_name: str, uri: str, props: t.Optional
     return metrics
 
 # commit existing dataslice to server
-def commit_existing(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
+def log_dataslice_from_client(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
     custom_props = {} if custom_properties is None else custom_properties
     c_hash = uri.strip()
     dataslice_commit = c_hash
