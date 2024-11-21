@@ -16,6 +16,7 @@
 
 import os
 from dvc.api import DVCFileSystem
+from cmflib.commands.error_handling import handle_error
 
 class LocalArtifacts():
     """
