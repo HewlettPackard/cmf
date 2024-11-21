@@ -17,6 +17,7 @@
 import os
 from minio import Minio
 from minio.error import S3Error
+from cmflib.commands.error_handling import handle_error
 
 
 class MinioArtifacts:
@@ -37,7 +38,8 @@ class MinioArtifacts:
             )
             found = client.bucket_exists(bucket_name)
             if not found:
-                return "Bucket doesn't exists"
+                #return "Bucket doesn't exists"
+                handle_error(return_code = 9)
 
             response = ""
 

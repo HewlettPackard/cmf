@@ -28,7 +28,7 @@ from cmflib.storage_backends import (
 )
 from cmflib.cli.command import CmdBase
 from cmflib.utils.dvc_config import DvcConfig
-
+from cmflib.cmf_exception_handling import MissingRequiredArgument, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, ArtifactNotFound
 
 class CmdArtifactPull(CmdBase):
 
@@ -166,10 +166,13 @@ class CmdArtifactPull(CmdBase):
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
             current_directory = os.path.dirname(mlmd_file_name)
+        if self.args.pipeline_name == "":
+            raise MissingRequiredArgument
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
+            raise FileNotFound(mlmd_file_name)
         query = cmfquery.CmfQuery(mlmd_file_name)
-
+        if not query.get_pipeline_id(self.args.pipeline_name) > 0:
+            raise MissingRequiredArgument(self.args.pipeline_name)
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
@@ -191,7 +194,7 @@ class CmdArtifactPull(CmdBase):
         # created dictionary
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
-            return "No executions found."
+            raise ExecutionsNotFound()
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
@@ -214,7 +217,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
                     stmt = minio_class_obj.download_artifacts(
@@ -246,7 +249,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     local_args = self.extract_repo_args("local", output[0], output[1], current_directory)
                     stmt = local_class_obj.download_artifacts(
@@ -273,7 +276,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     args = self.extract_repo_args("ssh", output[0], output[1], current_directory)
                     stmt = sshremote_class_obj.download_artifacts(
@@ -326,7 +329,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
                     stmt = osdfremote_class_obj.download_artifacts(
@@ -360,7 +363,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
                     if args[0] and args[1] and args[2]:
