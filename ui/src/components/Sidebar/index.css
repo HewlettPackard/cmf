@@ -15,50 +15,53 @@ body {
 }
 
 .flex-container > div {
-  background-color: #f1f1f1;
+  background-color: white;
   margin: 10px;
   padding: 20px;
   font-size: 30px;
 }
 
-.bloc-tabs {
-  display: flexs;
-}
-.tabs {
-  padding: 8px;
-  text-align: center;
-  width: 100%;
-  background: rgba(128, 128, 128, 0.075);
-  cursor: pointer;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.274);
-  box-sizing: content-box;
-  position: relative;
-  outline: none;
-}
-.tabs:not(:last-child) {
-  border-right: 1px solid rgba(0, 0, 0, 0.274);
+.h1 {
+  font-family: Arial, sans-serif;
+  color: black;
 }
 
-.active-tabs {
-  background: white;
-  border-bottom: 1px solid transparent;
-}
-.active-tabs::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% + 2px);
-  height: 5px;
-  background: rgb(88, 147, 241);
+.sidebar {
+  background-color: #f4f4f4f4;
 }
 
-button {
-  border: none;
-  padding: 10px 24px;
+.side-tabs {
+  display: block; /* Make <a> elements block-level */
+  padding: 4px;
+  font-family: Arial, sans-serif;
+  margin-top: 2px;
+  color: black; /* Text color */
+  text-decoration: none; /* Remove underline */
+  background-color: transparent; /* Default background */
+  overflow-wrap: break-word; /* Enable word wrapping */
+  word-wrap: break-word; /* Fallback for older browsers */
+  white-space: normal; /* Ensure normal white-space handling */
+  border-radius: 4px; /* Optional: Add some border radius */
+  transition:
+    background-color 0.3s,
+    color 0.3s; /* Smooth transitions */
 }
+
+.side-active-tabs {
+  background-color: rgb(
+    255,
+    255,
+    255
+  ); /* Active tab background color (white) */
+  color: black; /* Active tab text color (black) */
+  margin-top: 2px;
+}
+
+.side-tabs:hover {
+  background-color: white; /* Background color on hover (white) */
+  color: black; /* Text color on hover (black) */
+}
+
 .content-tabs {
   flex-grow: 1;
 }

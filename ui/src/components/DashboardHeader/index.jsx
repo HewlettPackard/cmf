@@ -1,22 +1,22 @@
 /***
-* Copyright (2023) Hewlett Packard Enterprise Development LP
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* You may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***/
+ * Copyright (2023) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
 
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-
+import { NavLink } from "react-router-dom";
+import "./index.css";
 
 function DashboardHeader() {
   // STATE WHICH WE WILL USE TO TOGGLE THE MENU ON HAMBURGER BUTTON PRESS
@@ -25,11 +25,15 @@ function DashboardHeader() {
   let displayButton;
 
   return (
-    <nav className="flex items-center justify-between flex-wrap bg-gray-500 p-6">
-      <div className="flex items-center flex-shrink-0 text-slate-200 mr-6 ">
-        <a href="/" className="font-semibold text-2xl pl-4 tracking-tight">
+    <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200 mb-1">
+      <div className="flex items-center flex-shrink-0 mr-6 ">
+        <NavLink
+          to="/"
+          className="cmf-server font-semibold text-2xl tracking-tight"
+          activeClassName="active"
+        >
           CMF SERVER
-        </a>
+        </NavLink>
       </div>
       <div className="block lg:hidden">
         <button
@@ -52,35 +56,39 @@ function DashboardHeader() {
         } flex-grow lg:flex lg:items-center lg:w-auto`}
       >
         <div className="text-xl font-semibold lg:flex-grow">
-          <Link
+          <NavLink
             to="/artifacts"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
+            activeClassName="active"
           >
             Artifacts
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/executions"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200  hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
+            activeClassName="active"
           >
             Executions
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/display_lineage"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
+            activeClassName="active"
           >
             Lineage
-          </Link>
-          <Link
+          </NavLink>
+          <NavLink
             to="/tensorboard"
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
+            activeClassName="active"
           >
-           TensorBoard
-          </Link>
+            TensorBoard
+          </NavLink>
           <a
             href={"https://hewlettpackard.github.io/cmf/api/public/cmf/"}
             target={"_blank"}
             rel={"noreferrer"}
-            className="block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
           >
             API Docs
           </a>
