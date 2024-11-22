@@ -16,7 +16,8 @@
 
 import os
 from dvc.api import DVCFileSystem
-from cmflib.commands.error_handling import handle_error
+from cmflib.cmf_exception_handling import CmfException
+from cmflib.cmf_success_codes import StatusCodes
 
 class LocalArtifacts:
     def download_artifacts(
@@ -39,6 +40,7 @@ class LocalArtifacts:
                 dir_path, _ = download_loc.rsplit("/", 1)
             if dir_path != "":
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
+            status_code = StatusCodes()
 
             response = ""
 
@@ -83,8 +85,9 @@ class LocalArtifacts:
             else:
                 response = fs.get_file(object_name, download_loc)
             if response == None:  # get_file() returns none when file gets downloaded.
-                stmt = f"object {object_name} downloaded at {download_loc}."
-                return stmt
+                return_code, stmt = status_code.get_message(int(2),object_name=object_name,download_loc=download_loc)
+
+                return return_code,stmt
         except TypeError as exception:
             return exception
         except Exception as exception:

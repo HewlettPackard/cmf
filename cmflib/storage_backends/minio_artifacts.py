@@ -18,7 +18,8 @@ import os
 from minio import Minio
 from minio.error import S3Error
 from cmflib.commands.error_handling import handle_error
-
+from cmflib.cmf_success_codes import StatusCodes
+from cmflib.cmf_exception_handling import BucketNotFound
 
 class MinioArtifacts:
     def download_artifacts(
@@ -38,9 +39,9 @@ class MinioArtifacts:
             )
             found = client.bucket_exists(bucket_name)
             if not found:
-                #return "Bucket doesn't exists"
-                handle_error(return_code = 9)
+                raise BucketNotFound()
 
+            status_code = StatusCodes()
             response = ""
 
             """"
@@ -48,7 +49,9 @@ class MinioArtifacts:
             we download .dir object with 'temp_dir' and remove 
             this after all the files from this .dir object is downloaded.
             """
+            #print("inside download arti")
             if object_name.endswith('.dir'):
+                print("inside if loop")
                 # in case of .dir, download_loc is a absolute path for a folder
                 os.makedirs(download_loc, mode=0o777, exist_ok=True)
 
@@ -72,6 +75,7 @@ class MinioArtifacts:
                 repo_path = object_name.split("/")
                 repo_path = repo_path[:len(repo_path)-2]
                 repo_path = "/".join(repo_path)
+                count_failed = 0
                 for file_info in tracked_files:
                     relpath = file_info['relpath']
                     md5_val = file_info['md5']
@@ -85,16 +89,26 @@ class MinioArtifacts:
                     if obj:
                         print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                     else:
+                        count_failed += 1
                         print(f"object {temp_object_name} is not downloaded.")
+                    if count_failed == 0:   # if count_failed is 0 it means all the objects of directory are downloaded
+                        response = True
+                    else:                   # if count_failed is greater than 0 it means some artifacts or all are not downloaded
+                        response  = False
             else:
+                print("inside else loop")
                 response = client.fget_object(bucket_name, object_name, download_loc)
             if response:
-                stmt = f"object {object_name} downloaded at {download_loc}."
-                return stmt
+                print("insdie if reponse ")
+                #stmt = f"object {object_name} downloaded at {download_loc}."
+                return_code, stmt = status_code.get_message(int(2),object_name=object_name,download_loc=download_loc)
+                return return_code, stmt
             else:
-                return f"object {object_name} is not downloaded."
-
+                print("insdie else reponse ")
+                return_code, stmt = status_code.get_message(int(22),object_name=object_name)
+                return return_code, stmt
         except TypeError as exception:
+            #print("inside ")
             return exception
         except S3Error as exception:
             return exception

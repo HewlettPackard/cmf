@@ -227,21 +227,27 @@ class CmdArtifactPull(CmdBase):
                         minio_args[1], # object_name
                         minio_args[2], # path_name
                     )
-                    print(stmt)
+                    return stmt
             else:
+                count_download_started = 0
+                count_download_completed = 0
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
                     minio_args = self.extract_repo_args("minio", name, url, current_directory)
-                    stmt = minio_class_obj.download_artifacts(
+                    count_download_started += 1
+                    return_code, stmt = minio_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
                         minio_args[0], # bucket_name
                         minio_args[1], # object_name
                         minio_args[2], # path_name
                     )
-                    print(stmt)
-            return "Done"
+                    if return_code == 2:
+                        count_download_completed += 1
+                    
+                temp = f"files downloaded = {count_download_completed }. Files failed to download = {count_download_started - count_download_completed}"
+                return temp
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts()
             if self.args.artifact_name:
@@ -357,7 +363,6 @@ class CmdArtifactPull(CmdBase):
             return "Done"
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
-            #print(self.args.artifact_name,"artifact name")
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
