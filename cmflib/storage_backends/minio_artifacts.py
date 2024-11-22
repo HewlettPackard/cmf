@@ -17,12 +17,7 @@
 import os
 from minio import Minio
 from minio.error import S3Error
-<<<<<<< HEAD
 from cmflib.cmf_exception_handling import BucketNotFound
-=======
-from cmflib.commands.error_handling import handle_error
-
->>>>>>> a74dc78 (adding cmf exception and success code classes)
 
 class MinioArtifacts:
 
@@ -122,18 +117,6 @@ class MinioArtifacts:
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/temp_dir"
         try:
-<<<<<<< HEAD
-            # Download the .dir file containing metadata about tracked files.
-=======
-            client = Minio(
-                endpoint, access_key=access_key, secret_key=secret_key, secure=False
-            )
-            found = client.bucket_exists(bucket_name)
-            if not found:
-                #return "Bucket doesn't exists"
-                handle_error(return_code = 9)
->>>>>>> a74dc78 (adding cmf exception and success code classes)
-
             response = self.client.fget_object(bucket_name, object_name, temp_dir)
                 
             with open(temp_dir, 'r') as file:
@@ -142,7 +125,6 @@ class MinioArtifacts:
             # removing temp_dir
             if os.path.exists(temp_dir):
                 os.remove(temp_dir)
-
             """
             object_name =  files/md5/c9/d8fdacc0d942cf8d7d95b6301cfb97.dir
             contains the path of the .dir on the artifact repo
@@ -171,6 +153,7 @@ class MinioArtifacts:
                         files_downloaded +=1
                         print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                     else:
+                        count_failed += 1
                         print(f"object {temp_object_name} is not downloaded.")
                 except Exception as e:
                     print(f"object {temp_object_name} is not downloaded.")
