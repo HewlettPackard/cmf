@@ -17,6 +17,11 @@
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.module.css";
+import FastAPIClient from "../../client";
+import config from "../../config";
+import PythonEnvPopup from "../../components/PythonEnvPopup";
+
+const client = new FastAPIClient(config);
 
 const ExecutionTable = ({ executions, onSort, onFilter }) => {
   // Default sorting order
@@ -25,6 +30,9 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
   const [expandedRow, setExpandedRow] = useState(null);
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState("");
 
   const consistentColumns = [];
 
@@ -59,6 +67,20 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     } else {
       setExpandedRow(rowId);
     }
+  };
+
+  
+  const handleLinkClick = (file_name) => {
+    setShowPopup(true);
+    client.getPythonEnv("/home/sharvark/cmf-server/data/env/python_env_4619b71f780f0c6f369de6b3d1872289.txt").then((data) => {
+      console.log(data);
+      setPopupData(data);
+      setShowPopup(true);
+    });
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
   };
 
   const renderArrow = () => {
@@ -168,6 +190,9 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
                 </th>
+                <th scope="col" className="px-6 py-3 Execution">
+                  Python Env
+                </th>
                 <th scope="col" className="px-6 py-3 Git_Repo">
                   Git Repo
                 </th>
@@ -192,6 +217,22 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     </td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
                     <td className="px-6 py-4">{data.Execution}</td>
+                    <td className="px-6 py-4">
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleLinkClick("");
+                            }}
+                          >
+                            Click for Env Details
+                          </a>
+                          <PythonEnvPopup
+                            show={showPopup}
+                            python_env={popupData}
+                            onClose={handleClosePopup}
+                          />
+                    </td>
                     <td className="px-6 py-4">{data.Git_Repo}</td>
                     <td className="px-6 py-4">{data.Git_Start_Commit}</td>
                     <td className="px-6 py-4">{data.Pipeline_Type}</td>

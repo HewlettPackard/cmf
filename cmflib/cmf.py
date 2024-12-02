@@ -385,7 +385,7 @@ class Cmf:
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
-        python_env=get_python_env()
+
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
@@ -399,7 +399,6 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
-            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
@@ -456,6 +455,11 @@ class Cmf:
 
         # link the artifact to execution if it exists and creates artifact if it doesn't
         self.log_python_env(python_env_file_path)
+        new_custom_props = {}
+        new_custom_props["Python_env"] = python_env_file_path
+        print("new custom props = ", new_custom_props )
+        self.update_execution(self.execution.id, new_custom_props)
+        print(self.execution)
         os.chdir(logging_dir)
         return self.execution
 

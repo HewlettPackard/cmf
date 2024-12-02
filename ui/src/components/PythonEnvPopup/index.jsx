@@ -1,12 +1,12 @@
 import React from "react";
 import "./index.css"; // Optional: For styling the popup
 
-const Popup = ({ show, model_data, onClose }) => {
+const PythonEnvPopup = ({ show, python_env, onClose }) => {
   if (!show) {
     return null;
   }
 
-  // find the uri value from artifacts
+  /* find the uri value from artifacts
   const findUri = () => {
     const item = model_data[0].find((entry) => entry.uri);
     return item ? item.uri : "default";
@@ -163,7 +163,7 @@ const Popup = ({ show, model_data, onClose }) => {
           </div>
         );
     }
-  };
+  };*/
 
   return (
     <>
@@ -178,18 +178,9 @@ const Popup = ({ show, model_data, onClose }) => {
               X
             </button>
           </div>
-          <button className="download-button" onClick={downloadJSON}>
-            <i className="fa fa-download"></i>
-          </button>
           <div className="popup-content">
             <div>
-              {model_data.length > 0 ? (
-                model_data.map((item, index) => (
-                  <div key={index}>{renderContent(item, index)}</div>
-                ))
-              ) : (
-                <p>No items available</p>
-              )}
+                {python_env}
             </div>
           </div>
         </div>
@@ -198,4 +189,4 @@ const Popup = ({ show, model_data, onClose }) => {
   );
 };
 
-export default Popup;
+export default PythonEnvPopup;
