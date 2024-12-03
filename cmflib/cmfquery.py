@@ -126,7 +126,7 @@ class CmfQuery(object):
             #print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
             #print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
             #print(f"The value of POSTGRES_HOST: {IP}")
-            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_PASSWORD}
+            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
             temp_store = PostgresStore(config_dict)
         else:
             temp_store = SqlliteStore({"filename":filepath})

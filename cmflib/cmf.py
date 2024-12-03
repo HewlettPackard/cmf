@@ -144,7 +144,7 @@ class Cmf:
             #print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
             #print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
             #print(f"The value of POSTGRES_HOST: {IP}")
-            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_PASSWORD}
+            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
             temp_store = PostgresStore(config_dict)
         #print("temp_store type", type(temp_store))
         if custom_properties is None:
