@@ -33,7 +33,16 @@
   background-color: #1a365d;
   border-color: #1a365d;
 }
+
 .arrow {
   font-weight: bold;
   font-size: 1.2em; /* Adjust the size as needed */
+}
+
+td {
+  text-align: left;
+}
+
+thead {
+  background-color: #f4f4f4f4;
 }

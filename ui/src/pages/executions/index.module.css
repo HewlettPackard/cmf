@@ -12,7 +12,6 @@ body {
 
 .flex-container {
   display: flex;
-  
 }
 
 .flex-container > div {
@@ -25,36 +24,6 @@ body {
 
 .bloc-tabs {
   display: flexs;
-}
-.tabs {
-  padding: 8px;
-  text-align: center;
-  width: 100%;
-  background: rgba(128, 128, 128, 0.075);
-  cursor: pointer;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.274);
-  box-sizing: content-box;
-  position: relative;
-  outline: none;
-}
-.tabs:not(:last-child) {
-  border-right: 1px solid rgba(0, 0, 0, 0.274);
-}
-
-.active-tabs {
-  background: white;
-  border-bottom: 1px solid transparent;
-}
-.active-tabs::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% + 2px);
-  height: 1px;
-  background: rgb(88, 147, 241);
 }
 
 button {
@@ -87,14 +56,26 @@ button {
   display: block;
 }
 
-.active {
+.pagination-button.active-page {
   background-color: #2c5282;
   color: #fff;
   font-weight: bold;
   border-color: #2c5282;
 }
 
-.active:hover {
+.pagination-button {
+  transition:
+    background-color 0.3s,
+    border-color 0.3s;
+}
+
+.pagination-button:hover {
+  background-color: #1a365d; /* Darker blue */
+  color: #fff;
+  border-color: #1a365d;
+}
+
+.pagination-button.active-page:hover {
   background-color: #1a365d;
   border-color: #1a365d;
 }

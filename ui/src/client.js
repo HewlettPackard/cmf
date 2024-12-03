@@ -1,18 +1,18 @@
 /***
-* Copyright (2023) Hewlett Packard Enterprise Development LP
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* You may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***/
+ * Copyright (2023) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
 
 import config from "./config";
 
@@ -39,7 +39,15 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) {
+  async getArtifacts(
+    pipelineName,
+    type,
+    page,
+    sortField,
+    sortOrder,
+    filterBy,
+    filterValue,
+  ) {
     return this.apiClient
       .get(`/artifacts/${pipelineName}/${type}`, {
         params: {
@@ -56,48 +64,57 @@ class FastAPIClient {
   }
 
   async getArtifactTypes() {
+    return this.apiClient.get(`/artifact_types`).then(({ data }) => {
+      return data;
+    });
+  }
+
+  async getArtifactLineage(pipeline) {
     return this.apiClient
-      .get(`/artifact_types`)
+      .get(`/artifact-lineage/force-directed-graph/${pipeline}`)
       .then(({ data }) => {
         return data;
       });
   }
 
-  async getArtifactLineage(pipeline) {
-      return this.apiClient.get(`/artifact-lineage/force-directed-graph/${pipeline}`)
-      .then(({ data }) => {
-      return data;
-    });
-  }
-
   async getArtiTreeLineage(pipeline) {
-      return this.apiClient.get(`/artifact-lineage/tangled-tree/${pipeline}`)
+    return this.apiClient
+      .get(`/artifact-lineage/tangled-tree/${pipeline}`)
       .then(({ data }) => {
-      return data;
-    });
+        return data;
+      });
   }
 
   async getExecutionTypes(pipeline) {
-      return this.apiClient.get(`/list-of-executions/${pipeline}`)
+    return this.apiClient
+      .get(`/list-of-executions/${pipeline}`)
       .then(({ data }) => {
-      return data;
-    });
+        return data;
+      });
   }
 
   async getExecutionLineage(pipeline, uuid) {
-      return this.apiClient.get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
+    return this.apiClient
+      .get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
       .then(({ data }) => {
-      return data;
-    });
+        return data;
+      });
   }
 
-  async getExecTreeLineage(pipeline,uuid) {
-      return this.apiClient.get(`/execution-lineage/tangled-tree/${uuid}/${pipeline}`)
+  async getExecTreeLineage(pipeline, uuid) {
+    return this.apiClient
+      .get(`/execution-lineage/tangled-tree/${uuid}/${pipeline}`)
       .then(({ data }) => {
-      return data;
-    });
+        return data;
+      });
   }
 
+  async getArtiExeTreeLineage(pipeline) {
+    return this.apiClient.get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
+    .then(({ data }) => {
+      return data;
+    }); 
+  }
 
   async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
@@ -116,7 +133,7 @@ class FastAPIClient {
   }
 
   async getPipelines(value) {
-   try {
+    try {
       const { data } = await this.apiClient.get(`/pipelines`);
       return data;
     } catch (error) {
@@ -125,17 +142,16 @@ class FastAPIClient {
   }
 
   async getModelCard(modelId) {
-    return this.apiClient.get(`/model-card`, {
+    return this.apiClient
+      .get(`/model-card`, {
         params: {
           modelId: modelId,
         },
       })
-      .then(({data}) => {
+      .then(({ data }) => {
         return data;
       });
   }
-
 }
-
 
 export default FastAPIClient;

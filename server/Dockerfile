@@ -32,8 +32,7 @@ RUN mkdir -p /cmf-server/data/static
 RUN mkdir -p /cmf-server/data/tensorboard-logs
 
 # library required for curl command
-
-RUN apt-get install -y gcc
+RUN apt-get update -y && apt-get install -y gcc
 
 RUN apt-get update -y && apt-get install -y curl
 
