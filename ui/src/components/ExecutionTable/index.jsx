@@ -72,7 +72,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   
   const handleLinkClick = (file_name) => {
     setShowPopup(true);
-    client.getPythonEnv("/home/sharvark/cmf-server/data/env/python_env_4619b71f780f0c6f369de6b3d1872289.txt").then((data) => {
+    client.getPythonEnv(file_name).then((data) => {
       console.log(data);
       setPopupData(data);
       setShowPopup(true);
@@ -190,8 +190,10 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
                 </th>
-                <th scope="col" className="px-6 py-3 Execution">
-                  Python Env
+                <th scope="col" className="px-6 py-3 Env">
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    Python Env
+                  </span>
                 </th>
                 <th scope="col" className="px-6 py-3 Git_Repo">
                   Git Repo
@@ -222,7 +224,8 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              handleLinkClick("");
+                              handleLinkClick(data.custom_properties_Python_env);
+                    
                             }}
                           >
                             Click for Env Details

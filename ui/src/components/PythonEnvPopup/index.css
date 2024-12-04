@@ -1,3 +1,4 @@
+/* Overlay for popup */
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -10,121 +11,58 @@
   align-items: center;
 }
 
-.popup-border {
-  position: sticky;
-  top: 0;
-  right: 0;
-  z-index: 10; /* Ensure it stays on top of the popup */
-}
-
+/* Popup container */
 .popup {
+  position: relative;
   background-color: white;
   padding: 20px;
   border-radius: 8px;
-  max-width: 1100px;
-  width: 100%;
-  position: relative;
+  width: 90%;
+  max-width: 800px; /* Adjusted for better responsiveness */
+  max-height: 90vh; /* Prevent overflow beyond the viewport */
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  max-height: 90vh; /* Ensuring it doesn't exceed the viewport */
-  overflow-y: auto; /* Ensure the popup can scroll if it still overflows */
+  overflow-y: auto; /* Scroll if content exceeds height */
 }
 
+/* Close button */
 .close-button {
+  position: absolute;
+  top: -18px;
+  right: -19px;
   background: gray;
   color: white;
   border: 2px solid black;
   border-radius: 50%;
   padding: 5px 10px;
+  font-size: 12px; /* Unified font size */
   cursor: pointer;
-  position: absolute;
-  top: -18px;
-  right: -19px;
   z-index: 10;
 }
 
-.download-button {
-  background: white;
-  color: dark gray;
-  border: none;
-  cursor: pointer;
-  width: 84px;
-  height: 55px;
-  float: right;
+/* Popup heading */
+.popup-heading {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+  color: #333;
+  margin: 0;
+  padding: 10px 0;
+  background-color: #f9f9f9; /* Subtle background for heading */
+  border-bottom: 1px solid #ddd;
 }
 
+/* Popup content */
 .popup-content {
   margin-top: 20px;
-}
-
-.popup-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  text-align: left;
-}
-
-.popup-labels,
-.popup-data {
-  display: flex;
-  flex-direction: column;
-}
-
-.popup-labels {
-  flex: 1;
-  font-weight: bold;
-  background-color: #f0f0f0; /* Light gray background for labels */
-  padding: 10px;
-  border-radius: 4px 0 0 4px; /* Rounded corners for left section */
-}
-
-.popup-data {
-  flex: 2;
-  background-color: #e0f7fa; /* Light blue background for data */
-  padding: 10px;
-  border-radius: 0 4px 4px 0; /* Rounded corners for right section */
-  text-align: left;
-}
-
-.table-container {
-  max-height: 400px; /* Adjust this height as needed */
-  max-width: 100%;
-  overflow-x: auto; /* Horizontal scrollbar */
-  overflow-y: auto; /* Vertical scrollbar */
-  margin-top: 20px;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  overflow: auto;
-  background-color: #e0f7fa; /* Light blue background for data */
-}
-
-.table th,
-.table td {
+  padding: 15px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px; /* Default font size */
+  background-color: #f8f9fa; /* Light gray background */
+  color: #333;
   border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left; /* Align text to the left */
+  border-radius: 4px;
+  max-height: 400px;
+  overflow-y: auto; /* Scrollable content */
+  white-space: pre-wrap; /* Preserve whitespace and line breaks */
 }
 
-.table th {
-  background-color: #f2f2f2; /* Light gray background for headers */
-  font-weight: bold;
-}
-
-.tbody tr:nth-child(even) {
-  background-color: #f9f9f9; /* Light gray background for even rows */
-}
-
-.tbody tr:hover {
-  background-color: #f1f1f1; /* Light gray background for hovered rows */
-}
-
-hr {
-  margin: 20px 0;
-}
-
-p {
-  font-weight: bold;
-  margin: 10px 0;
-}
