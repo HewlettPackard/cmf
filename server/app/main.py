@@ -120,6 +120,7 @@ async def mlmd_push(info: Request):
 @app.get("/mlmd_pull/{pipeline_name}", response_class=HTMLResponse)
 async def mlmd_pull(info: Request, pipeline_name: str):
     # checks if mlmd file exists on server
+    print("inside api")
     req_info = await info.json()
     if os.path.exists(server_store_path):
         #json_payload values can be json data, NULL or no_exec_id.

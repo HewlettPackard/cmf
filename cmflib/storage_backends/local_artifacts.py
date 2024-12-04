@@ -16,8 +16,7 @@
 
 import os
 from dvc.api import DVCFileSystem
-from cmflib.cmf_exception_handling import CmfException
-from cmflib.cmf_success_codes import StatusCodes
+from cmflib.cmf_exception_handling import ObjectDownloadSuccess, ObjectDownloadFailure
 
 class LocalArtifacts():
     """

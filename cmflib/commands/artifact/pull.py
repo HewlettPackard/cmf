@@ -597,7 +597,6 @@ class CmdArtifactPull(CmdBase):
                 else:
                     status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
                 return status
-
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:
@@ -636,6 +635,8 @@ class CmdArtifactPull(CmdBase):
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
+                    if not args[1].endswith(".dir"):
+                        total_files_count += 1
                     if args[0] and args[1] and args[2]:
                         if not args[1].endswith(".dir"):
                             object_name, download_loc, download_flag = amazonS3_class_obj.download_file(

@@ -34,7 +34,6 @@ class CmfResponse(Exception):
         self.status = status
         super().__init__(*args)
 
-
 class CmfFailure(CmfResponse):
     def __init__(self, return_code=None, *args):
         super().__init__(return_code, status="failure", *args)
