@@ -18,6 +18,7 @@ import os
 import requests
 #import urllib3
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from cmflib.cmf_exception_handling import NoDataFoundosdf
 
 class OSDFremoteArtifacts:
     def download_artifacts(
@@ -35,7 +36,8 @@ class OSDFremoteArtifacts:
         custom_auth_header = dvc_config_op["remote.osdf.custom_auth_header"]
         #print(f"dynamic password from download_artifacts={dynamic_password}")
         #print(f"Fetching artifact={local_path}, surl={host} to {remote_file_path} when this has been called at {current_directory}")
-
+        download_success_return_code = 206
+        download_failure_return_code = 207
         try:
             headers={dvc_config_op["remote.osdf.custom_auth_header"]: dvc_config_op["remote.osdf.password"]}
             temp = local_path.split("/")
@@ -52,17 +54,15 @@ class OSDFremoteArtifacts:
             if response.status_code == 200 and response.content:
                 data = response.content
             else:
-                return "No data received from the server."
+                raise NoDataFoundosdf
 
         except Exception as exception:
-            return exception
+            print(exception)
 
         try:
             with open(remote_file_path, 'wb') as file:
                 file.write(data)
             if os.path.exists(remote_file_path) and os.path.getsize(remote_file_path) > 0:
-                #print(f"object {local_path} downloaded at {remote_file_path}")
-                stmt = f"object {local_path} downloaded at {remote_file_path}."
-                return stmt
+                return download_success_return_code
         except Exception as e:
-            print(f"An error occurred while writing to the file: {e}")
+            return download_failure_return_code

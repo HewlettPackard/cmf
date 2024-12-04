@@ -16,8 +16,7 @@
 
 import os
 from dvc.api import DVCFileSystem
-from cmflib.cmf_exception_handling import CmfException
-from cmflib.cmf_success_codes import StatusCodes
+from cmflib.cmf_exception_handling import ObjectDownloadSuccess, ObjectDownloadFailure
 
 class LocalArtifacts:
     def download_artifacts(
@@ -40,7 +39,6 @@ class LocalArtifacts:
                 dir_path, _ = download_loc.rsplit("/", 1)
             if dir_path != "":
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
-            status_code = StatusCodes()
 
             response = ""
 
@@ -49,17 +47,24 @@ class LocalArtifacts:
             we download .dir object with 'temp_dir' and remove 
             this after all the files from this .dir object is downloaded.
             """
+            total_files_in_directory = 0
+            file_download_success = 0
+            download_success_return_code = 206
+            download_failure_return_code = 207
             if object_name.endswith('.dir'):
+                print("inside")
                 # in case of .dir, download_loc is a absolute path for a folder
                 os.makedirs(download_loc, mode=0o777, exist_ok=True)
-
+               
                 # download the .dir object 
                 temp_dir = f"{download_loc}/dir"
-                response = fs.get_file(object_name, temp_dir)
-
+                try:
+                    response = fs.get_file(object_name, temp_dir)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    return total_files_in_directory,file_download_success,download_failure_return_code
                 with open(temp_dir, 'r') as file:
                     tracked_files = eval(file.read())
-
                 # removing temp_dir
                 if os.path.exists(temp_dir):
                     os.remove(temp_dir)
@@ -71,7 +76,10 @@ class LocalArtifacts:
                 which will leave us with the artifact repo path
                 """
                 repo_path = "/".join(object_name.split("/")[:-2])
+                file_download_failure = 0
+
                 for file_info in tracked_files:
+                    total_files_in_directory += 1
                     relpath = file_info['relpath']
                     md5_val = file_info['md5']
                     # md5_val = a237457aa730c396e5acdbc5a64c8453
@@ -79,15 +87,33 @@ class LocalArtifacts:
                     formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                     temp_object_name = f"{repo_path}/{formatted_md5}"
                     temp_download_loc = f"{download_loc}/{relpath}"
-                    obj = fs.get_file(temp_object_name, temp_download_loc)
-                    if obj == None: 
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                    try:
+                        obj = fs.get_file(temp_object_name, temp_download_loc)
+                        if obj == None: 
+                            file_download_success += 1
+                            print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                        else:
+                            print(f"object {temp_object_name} is not downloaded.")
+                            file_download_failure += 1
+                    except Exception as e:
+                        print(f"object {temp_object_name} is not downloaded.")
+                        file_download_failure += 1
+                if file_download_failure == 0:   # if count_failed is 0 it means all the objects of directory are downloaded
+                    response = None
+                else:                   # if count_failed is greater than 0 it means some artifacts or all are not downloaded
+                    response  = False
             else:
-                response = fs.get_file(object_name, download_loc)
+                try:
+                    response = fs.get_file(object_name, download_loc)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    return total_files_in_directory,file_download_success,download_failure_return_code
             if response == None:  # get_file() returns none when file gets downloaded.
-                return_code, stmt = status_code.get_message(int(2),object_name=object_name,download_loc=download_loc)
-
-                return return_code,stmt
+                print(f"object {object_name} downloaded at {download_loc}.")
+                return total_files_in_directory,file_download_success, download_success_return_code
+            if response == False:
+                print(f"object {object_name} is not downloaded.")
+                return total_files_in_directory,file_download_success,download_failure_return_code
         except TypeError as exception:
             return exception
         except Exception as exception:

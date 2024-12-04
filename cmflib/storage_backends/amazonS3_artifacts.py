@@ -45,6 +45,10 @@ class AmazonS3Artifacts:
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
 
             response = ""
+            total_files_in_directory = 0
+            file_download_success = 0
+            download_success_return_code = 206
+            download_failure_return_code = 207
 
             """"
             if object_name ends with .dir - it is a directory.
@@ -57,7 +61,11 @@ class AmazonS3Artifacts:
 
                 # download .dir object
                 temp_dir = f"{download_loc}/temp_dir"
-                response = s3.download_file(bucket_name, object_name, temp_dir)
+                try:
+                    response = s3.download_file(bucket_name, object_name, temp_dir)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    return total_files_in_directory,file_download_success,download_failure_return_code
 
                 with open(temp_dir, 'r') as file:
                     tracked_files = eval(file.read())
@@ -72,8 +80,10 @@ class AmazonS3Artifacts:
                 we need to remove the hash of the .dir from the object_name
                 which will leave us with the artifact repo path
                 """
+                file_download_failure = 0
                 repo_path = "/".join(object_name.split("/")[:-2])
                 for file_info in tracked_files:
+                    total_files_in_directory += 1
                     relpath = file_info['relpath']
                     md5_val = file_info['md5']
                     # download_loc =  /home/user/datatslice/example-get-started/test/artifacts/raw_data
@@ -82,15 +92,34 @@ class AmazonS3Artifacts:
                     formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                     temp_download_loc = f"{download_loc}/{relpath}"
                     temp_object_name = f"{repo_path}/{formatted_md5}"
-                    obj = s3.download_file(bucket_name, temp_object_name, temp_download_loc)
-                    if obj == None:
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                    try:
+                        obj = s3.download_file(bucket_name, temp_object_name, temp_download_loc)
+                        if obj == None:
+                            file_download_success += 1
+                            print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                        else:
+                            print(f"object {temp_object_name} is not downloaded.")
+                            file_download_failure += 1
+                    except Exception as e:
+                        print(f"object {temp_object_name} is not downloaded.")
+                        file_download_failure += 1
+                if file_download_failure == 0:   # if count_failed is 0 it means all the objects of directory are downloaded
+                    response = None
+                else:                   # if count_failed is greater than 0 it means some artifacts or all are not downloaded
+                    response  = False
             else:
                 # download objects which are file
-                response = s3.download_file(bucket_name, object_name, download_loc)
+                try:
+                    response = s3.download_file(bucket_name, object_name, download_loc)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    return total_files_in_directory,file_download_success,download_failure_return_code
             if response == None:
-                return f"{object_name} downloaded at {download_loc}"
-            return response
+                print(f"object {object_name} downloaded at {download_loc}.")
+                return total_files_in_directory,file_download_success, download_success_return_code
+            if response == False:
+                print(f"object {object_name} is not downloaded.")
+                return total_files_in_directory,file_download_success,download_failure_return_code
 
         except s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist

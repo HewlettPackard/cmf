@@ -27,7 +27,7 @@ from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_push
 from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import MissingRequiredArgument, Minios3ServerInactive, FileNotFound, ExecutionsNotFound
+from cmflib.cmf_exception_handling import PipelineNameNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound
 
 class CmdArtifactPush(CmdBase):
     def run(self):
@@ -65,7 +65,7 @@ class CmdArtifactPush(CmdBase):
          # Put a check to see whether pipline exists or not
         pipeline_name = self.args.pipeline_name
         if not query.get_pipeline_id(pipeline_name) > 0:
-            raise MissingRequiredArgument(pipeline_name)
+            raise PipelineNameNotFound(pipeline_name)
 
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
@@ -112,7 +112,6 @@ class CmdArtifactPush(CmdBase):
                 pass
         #print("file_set = ", final_list)
         result = dvc_push(list(final_list))
-        print(result,"result")
         return result
       
 def add_parser(subparsers, parent_parser):

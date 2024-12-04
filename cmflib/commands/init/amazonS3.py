@@ -30,6 +30,7 @@ from cmflib.dvc_wrapper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
+from cmflib.cmf_exception_handling import ArgumentNotProvided, CmfInitComplete, CmfInitFailed
 
 class CmdInitAmazonS3(CmdBase):
     def run(self):
@@ -62,7 +63,7 @@ class CmdInitAmazonS3(CmdBase):
         ):
             pass
         else:
-            return "ERROR: Provide user, password and uri for neo4j initialization."
+            raise ArgumentNotProvided
 
         output = is_git_repo()
         if not output:
@@ -79,12 +80,14 @@ class CmdInitAmazonS3(CmdBase):
         repo_type = "amazons3"
         output = dvc_add_remote_repo(repo_type, self.args.url)
         if not output:
-            return "cmf init failed."
+            raise CmfInitFailed
         print(output)
+        print("1")
         dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
         dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
         dvc_add_attribute(repo_type, "session_token", self.args.session_token)
-        return "cmf init complete."
+        status = CmfInitComplete()
+        return status
 
 
 def add_parser(subparsers, parent_parser):

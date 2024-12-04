@@ -17,8 +17,6 @@
 import os
 from minio import Minio
 from minio.error import S3Error
-from cmflib.commands.error_handling import handle_error
-from cmflib.cmf_success_codes import StatusCodes
 from cmflib.cmf_exception_handling import BucketNotFound
 
 class MinioArtifacts:
@@ -38,10 +36,9 @@ class MinioArtifacts:
                 endpoint, access_key=access_key, secret_key=secret_key, secure=False
             )
             found = client.bucket_exists(bucket_name)
-            if not found:
+            if not found:   #check if minio bucket exists
                 raise BucketNotFound()
 
-            status_code = StatusCodes()
             response = ""
 
             """"
@@ -50,6 +47,10 @@ class MinioArtifacts:
             this after all the files from this .dir object is downloaded.
             """
             #print("inside download arti")
+            total_files_in_directory = 0
+            file_download_success = 0
+            download_success_return_code = 206
+            download_failure_return_code = 207
             if object_name.endswith('.dir'):
                 print("inside if loop")
                 # in case of .dir, download_loc is a absolute path for a folder
@@ -57,8 +58,12 @@ class MinioArtifacts:
 
                 # download .dir object
                 temp_dir = f"{download_loc}/temp_dir"
-                response = client.fget_object(bucket_name, object_name, temp_dir)
-
+                try:
+                    response = client.fget_object(bucket_name, object_name, temp_dir)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    return total_files_in_directory,file_download_success,download_failure_return_code
+      
                 with open(temp_dir, 'r') as file:
                     tracked_files = eval(file.read())
 
@@ -75,8 +80,11 @@ class MinioArtifacts:
                 repo_path = object_name.split("/")
                 repo_path = repo_path[:len(repo_path)-2]
                 repo_path = "/".join(repo_path)
-                count_failed = 0
+                file_download_failure = 0
+               
+                
                 for file_info in tracked_files:
+                    total_files_in_directory += 1
                     relpath = file_info['relpath']
                     md5_val = file_info['md5']
                     # download_loc =  /home/sharvark/datatslice/example-get-started/test/artifacts/raw_data
@@ -85,28 +93,34 @@ class MinioArtifacts:
                     formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                     temp_download_loc = f"{download_loc}/{relpath}"
                     temp_object_name = f"{repo_path}/{formatted_md5}"
-                    obj = client.fget_object(bucket_name, temp_object_name, temp_download_loc)
-                    if obj:
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
-                    else:
-                        count_failed += 1
+                    try:
+                        obj = client.fget_object(bucket_name, temp_object_name, temp_download_loc)
+                        if obj:
+                            print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                            file_download_success += 1
+                        else:
+                            file_download_failure += 1
+                            print(f"object {temp_object_name} is not downloaded.")
+                    except Exception as e:
                         print(f"object {temp_object_name} is not downloaded.")
-                    if count_failed == 0:   # if count_failed is 0 it means all the objects of directory are downloaded
-                        response = True
-                    else:                   # if count_failed is greater than 0 it means some artifacts or all are not downloaded
-                        response  = False
+                        file_download_failure += 1
+                if file_download_failure == 0:   # if count_failed is 0 it means all the objects of directory are downloaded
+                    response = True
+                else:                   # if count_failed is greater than 0 it means some artifacts or all are not downloaded
+                    response  = False
             else:
-                print("inside else loop")
-                response = client.fget_object(bucket_name, object_name, download_loc)
+                #print("inside else loop")
+                try:
+                    response = client.fget_object(bucket_name, object_name, download_loc)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    return total_files_in_directory,file_download_success,download_failure_return_code
             if response:
-                print("insdie if reponse ")
-                #stmt = f"object {object_name} downloaded at {download_loc}."
-                return_code, stmt = status_code.get_message(int(2),object_name=object_name,download_loc=download_loc)
-                return return_code, stmt
+                print(f"object {object_name} downloaded at {download_loc}.")
+                return total_files_in_directory,file_download_success, download_success_return_code
             else:
-                print("insdie else reponse ")
-                return_code, stmt = status_code.get_message(int(22),object_name=object_name)
-                return return_code, stmt
+                print(f"object {object_name} is not downloaded.")
+                return total_files_in_directory,file_download_success,download_failure_return_code
         except TypeError as exception:
             #print("inside ")
             return exception

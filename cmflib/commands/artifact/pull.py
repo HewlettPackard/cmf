@@ -28,7 +28,8 @@ from cmflib.storage_backends import (
 )
 from cmflib.cli.command import CmdBase
 from cmflib.utils.dvc_config import DvcConfig
-from cmflib.cmf_exception_handling import MissingRequiredArgument, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, ArtifactNotFound
+from cmflib.cmf_exception_handling import PipelineNameNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, ArtifactNotFound, BatchDownloadFailure, BatchDownloadSuccess,ObjectDownloadFailure, ObjectDownloadSuccess
+from cmflib.cli.utils import check_minio_server
 
 class CmdArtifactPull(CmdBase):
 
@@ -166,18 +167,27 @@ class CmdArtifactPull(CmdBase):
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
             current_directory = os.path.dirname(mlmd_file_name)
-        if self.args.pipeline_name == "":
-            raise MissingRequiredArgument
-        if not os.path.exists(mlmd_file_name):
+        if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name)
+        if self.args.artifact_name == "":
+            raise ArtifactNotFound("")
+        if self.args.pipeline_name == "":        #checking if pipeline_name is not ""
+            raise PipelineNameNotFound(self.args.pipeline_name)
         query = cmfquery.CmfQuery(mlmd_file_name)
-        if not query.get_pipeline_id(self.args.pipeline_name) > 0:
-            raise MissingRequiredArgument(self.args.pipeline_name)
+        if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd
+            raise PipelineNameNotFound(self.args.pipeline_name)
+        
+        # dvc_config_op = DvcConfig.get_dvc_config()
+        # cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
+        # cmf_config={}
+        # cmf_config=CmfConfig.read_config(cmf_config_file)
+        # out_msg = check_minio_server(dvc_config_op)
+        # if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS": #checking if minios3 server is active
+        #     raise Minios3ServerInactive()
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
         identifiers = []
-
         for stage in stages:
             # getting all executions for stages
             executions = query.get_all_executions_in_stage(stage)
@@ -190,7 +200,6 @@ class CmdArtifactPull(CmdBase):
                     identifiers.append(id)
             else:
                 print("No Executions found for " + stage + " stage.")
-
         # created dictionary
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
@@ -204,15 +213,15 @@ class CmdArtifactPull(CmdBase):
         # print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
-
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
             return output
         dvc_config_op = output
-
+        total_files_count = 0
+        files_download_completed = 0
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts()
-            if self.args.artifact_name:
+            if self.args.artifact_name:  #checking if artifact_name is in mlmd
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
@@ -220,61 +229,106 @@ class CmdArtifactPull(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
-                    stmt = minio_class_obj.download_artifacts(
+                    total_files_in_directory,file_downloaded,return_code = minio_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
                         minio_args[0], # bucket_name
                         minio_args[1], # object_name
                         minio_args[2], # path_name
                     )
-                    return stmt
+                    file_failed_to_download = total_files_in_directory - file_downloaded
+                    if not minio_args[0].endswith(".dir"):
+                        if return_code == 206:
+                            file_downloaded = 1
+                        else:                 
+                            file_failed_to_downloaded = 1
+
+                    if return_code == 206:
+                        status = BatchDownloadSuccess(file_downloaded)
+                    else:
+                        status = BatchDownloadFailure(total_files_in_directory, file_failed_to_downloaded)
+                    return status
             else:
-                count_download_started = 0
-                count_download_completed = 0
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
                     minio_args = self.extract_repo_args("minio", name, url, current_directory)
-                    count_download_started += 1
-                    return_code, stmt = minio_class_obj.download_artifacts(
+                    if not minio_args[1].endswith(".dir"):
+                        total_files_count += 1
+                    total_files_in_dir,count_files_success,return_code = minio_class_obj.download_artifacts(
                         dvc_config_op,
                         current_directory,
                         minio_args[0], # bucket_name
                         minio_args[1], # object_name
                         minio_args[2], # path_name
                     )
-                    if return_code == 2:
-                        count_download_completed += 1
-                    
-                temp = f"files downloaded = {count_download_completed }. Files failed to download = {count_download_started - count_download_completed}"
-                return temp
+                    total_files_count += total_files_in_dir
+                    files_download_completed += count_files_success
+                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
+                    if return_code == 206 and not minio_args[1].endswith(".dir") :
+                        files_download_completed += 1
+                files_downloaded = files_download_completed + count_files_success 
+                Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
+                if Files_failed_to_download == 0:
+                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                else:
+                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                return status
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts()
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
+                
                 if output is None:
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     local_args = self.extract_repo_args("local", output[0], output[1], current_directory)
-                    stmt = local_class_obj.download_artifacts(
+                    total_files_in_directory,file_downloaded,return_code = local_class_obj.download_artifacts(
                            dvc_config_op, current_directory, local_args[0], local_args[1]
                     )
-                    print(stmt)
+                    file_failed_to_download = total_files_in_directory - file_downloaded
+                    if not local_args[0].endswith(".dir"):
+                        if return_code ==206:
+                            file_downloaded = 1
+                        else:  
+                            file_failed_to_downloaded = 1
+
+                    if return_code == 206:
+                        status = BatchDownloadSuccess(file_downloaded)
+                    else:
+                        status = BatchDownloadFailure(total_files_in_directory, file_failed_to_downloaded)
+                    return status
             else:
                 for name, url in name_url_dict.items():
-                    #print(name, url)
+                    print("1")
                     if not isinstance(url, str):
                         continue
                     local_args = self.extract_repo_args("local", name, url, current_directory)
+                    if not local_args[1].endswith(".dir"):
+                        total_files_count += 1
                     # local_args[0] = current dvc location
                     # local_args[1] = current download location
-                    stmt = local_class_obj.download_artifacts(
+                    total_files_in_dir,count_files_success,return_code = local_class_obj.download_artifacts(
                            dvc_config_op, current_directory, local_args[0], local_args[1]
                     )
-                    print(stmt)
-            return "Done"
+                    # print(total_files_in_dir,count_files_success,return_code, stmt)
+                    total_files_count += total_files_in_dir
+                    files_download_completed += count_files_success
+                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
+                    if return_code == 206 and not local_args[1].endswith(".dir") :
+                        files_download_completed += 1
+                files_downloaded = files_download_completed + count_files_success 
+                Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
+                if Files_failed_to_download == 0:
+                    print("2")
+                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                else:
+                    print("3")
+                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                print("4")
+                return status
         elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
             if self.args.artifact_name:
@@ -285,29 +339,52 @@ class CmdArtifactPull(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     args = self.extract_repo_args("ssh", output[0], output[1], current_directory)
-                    stmt = sshremote_class_obj.download_artifacts(
+                    total_files_in_directory,file_downloaded,return_code = sshremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
                         current_directory,
                         args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
-                    print(stmt)
+                    file_failed_to_download = total_files_in_directory - file_downloaded
+                    if not args[0].endswith(".dir"):
+                        if return_code == 206:
+                            file_downloaded = 1
+                        else:                 
+                            file_failed_to_downloaded = 1
+
+                    if return_code == 206:
+                        status = BatchDownloadSuccess(file_downloaded)
+                    else:
+                        status = BatchDownloadFailure(total_files_in_directory, file_failed_to_downloaded)
+                    return status
             else:
                 for name, url in name_url_dict.items():
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("ssh", name, url, current_directory)
-                    stmt = sshremote_class_obj.download_artifacts(
+                    if not args[1].endswith(".dir"):
+                        total_files_count += 1
+                    total_files_in_dir,count_files_success,return_code = sshremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
                         current_directory,
                         args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
-                    print(stmt)
-            return "Done"
+                    total_files_count += total_files_in_dir
+                    files_download_completed += count_files_success
+                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
+                    if return_code == 206 and not args[1].endswith(".dir") :
+                        files_download_completed += 1
+                files_downloaded = files_download_completed + count_files_success 
+                Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
+                if Files_failed_to_download == 0:
+                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                else:
+                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                return status
         elif dvc_config_op["core.remote"] == "osdf":
             #Regenerate Token for OSDF
             from cmflib.utils.helper_functions import generate_osdf_token
@@ -338,29 +415,42 @@ class CmdArtifactPull(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
-                    stmt = osdfremote_class_obj.download_artifacts(
+                    return_code = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # s_url of the artifact
                         current_directory,
                         args[1], # download_loc of the artifact
                         args[2]  # name of the artifact
                     )
-                    print(stmt)
+                    
+                    if return_code == 206:
+                        status = ObjectDownloadSuccess(args[0],args[1])
+                    else:
+                        status = ObjectDownloadFailure(args[0],args[1])
+                    return status
             else:
                 for name, url in name_url_dict.items():
+                    total_files_count += 1
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("osdf", name, url, current_directory)
-                    stmt = osdfremote_class_obj.download_artifacts(
+                        
+                    return_code = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
                         current_directory,
                         args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
-                    print(stmt)
-            return "Done"
+                    if return_code == 206:
+                        file_downloaded +=1
+                Files_failed_to_download = total_files_count - files_downloaded
+                if Files_failed_to_download == 0:
+                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                else:
+                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                return status
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
             if self.args.artifact_name:
@@ -372,29 +462,52 @@ class CmdArtifactPull(CmdBase):
                 else:
                     args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
                     if args[0] and args[1] and args[2]:
-                        stmt = amazonS3_class_obj.download_artifacts(
+                        total_files_in_directory,file_downloaded,return_code = amazonS3_class_obj.download_artifacts(
                             dvc_config_op,
                             current_directory,
                             args[0], # bucket_name
                             args[1], # object_name
                             args[2], # download_loc
                         )
-                        print(stmt)
+                    file_failed_to_download = total_files_in_directory - file_downloaded
+                    if not args[0].endswith(".dir"):
+                        if return_code ==206:
+                            file_downloaded = 1
+                        else:                 
+                            file_failed_to_download = 1
+
+                    if return_code == 206:
+                        status = BatchDownloadSuccess(file_downloaded)
+                    else:
+                        status = BatchDownloadFailure(total_files_in_directory,file_failed_to_download)
+                return status
             else:
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
+                    if not args[1].endswith(".dir"):
+                        total_files_count += 1
                     if args[0] and args[1] and args[2]:
-                        stmt = amazonS3_class_obj.download_artifacts(
+                        total_files_in_dir,count_files_success,return_code = amazonS3_class_obj.download_artifacts(
                             dvc_config_op,
                             current_directory,
                             args[0], # bucket_name
                             args[1], # object_name
                             args[2], # download_loc
                         )
-                        print(stmt)
-            return "Done"
+                    total_files_count += total_files_in_dir
+                    files_download_completed += count_files_success
+                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
+                    if return_code == 206 and not args[1].endswith(".dir") :
+                        files_download_completed += 1
+                files_downloaded = files_download_completed + count_files_success 
+                Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
+                if Files_failed_to_download == 0:
+                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                else:
+                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                return status
         else:
             remote = dvc_config_op["core.remote"]
             msg = f"{remote} is not valid artifact repository for CMF.\n Reinitialize CMF."
