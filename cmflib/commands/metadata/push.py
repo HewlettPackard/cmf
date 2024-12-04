@@ -139,9 +139,9 @@ class CmdMetadataPush(CmdBase):
                 print(display_output)
                 # /tensorboard api call is done only if mlmd push is successfully completed
                 # tensorboard parameter is passed
-                print("......................................")
-                print("tensorboard logs upload started!!")
-                print("......................................")
+                    print("......................................")
+                    print("tensorboard logs upload started!!")
+                    print("......................................")
 
 
                 tensorboard = self.args.tensorboard[0]
