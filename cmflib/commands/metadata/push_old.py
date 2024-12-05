@@ -23,8 +23,7 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import MlmdAndTensorboardPushSuccess, MlmdAndTensorboardPushFailure, PipelineNameNotFound, MlmdFilePushedSuccess, ExecutionsAlreadyExists
-from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNameNotFound, MlmdFilePulledSuccess, ExecutionsAlreadyExists, UpdateCmfVersion, CmfServerNotAvailable, InternalServerError, CmfNotConfigured, InvalidTensorboardFilePath
+from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNameNotFound, MlmdFilePulledSuccess, ExecutionsAlreadyExists, UpdateCmfVersion
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
     def run(self):
@@ -53,18 +52,17 @@ class CmdMetadataPush(CmdBase):
 
         # in case, there is no .cmfconfig file
         if output.find("'cmf' is  not configured") != -1:
-            raise CmfNotConfigured(output)
+            return output
 
         config_file_path = os.path.join(output, cmfconfig)
         attr_dict = CmfConfig.read_config(config_file_path)
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
 
-        
+        print("metadata push started")
+        print("........................................")
 
         # Checks if pipeline name exists
         if self.args.pipeline_name in query.get_pipeline_names():
-            print("metadata push started")
-            print("........................................")
             # converts mlmd file to json format
             json_payload = query.dumptojson(self.args.pipeline_name, None)
             # checks if execution_id is given by user
@@ -87,19 +85,22 @@ class CmdMetadataPush(CmdBase):
                 exec_id = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_id, self.args.pipeline_name)
             status_code = response.status_code
-            if status_code == 200:
-                output = ""
-                display_output = ""
-                if response.json()['status']=="success":
-                    display_output = "mlmd is successfully pushed."
-                    output = MlmdFilePushedSuccess
-                if response.json()["status"]=="exists":
-                    display_output = "Executions already exists."
-                    output = ExecutionsAlreadyExists
-                
-                if not self.args.tensorboard:
-                    return output
-                print(display_output)
+            
+            if status_code == 200 and response.json()['status']=="success":
+                pass
+                #return MlmdFilePulledSuccess(self.args.filename).handle()
+            elif status_code==200 and response.json()["status"]=="exists":
+                raise ExecutionsAlreadyExists
+            elif status_code==422 and response.json()["status"]=="version_update":
+                raise UpdateCmfVersion
+            elif status_code == 404:
+                return "ERROR: cmf-server is not available."
+            elif status_code == 500:
+                return "ERROR: Internal server error."
+            else:
+                return "ERROR: Status Code = {status_code}. Unable to push mlmd."
+
+            if self.args.tensorboard:
                 # /tensorboard api call is done only if mlmd push is successfully completed
                 # tensorboard parameter is passed
                 print("......................................")
@@ -112,11 +113,9 @@ class CmdMetadataPush(CmdBase):
                     tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, file_name, self.args.tensorboard)
                     tstatus_code = tresponse.status_code
                     if tstatus_code == 200:
-                        # give status code as success
-                        return MlmdAndTensorboardPushSuccess(file_name)
+                        print("tensorboard logs: file {file_name} pushed successfully")
                     else:
-                        # give status code as failure 
-                        return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
+                        return "ERROR: Failed to upload file {file_name}. Server response: {response.text}"
                 # If path provided is a directory
                 elif os.path.isdir(self.args.tensorboard):
                     # Recursively push all files and subdirectories
@@ -128,19 +127,12 @@ class CmdMetadataPush(CmdBase):
                             if tresponse.status_code == 200:
                                 print(f"tensorboard logs: File {file_name} uploaded successfully.")
                             else:
-                                # give status as failure
-                                return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
-                    return MlmdAndTensorboardPushSuccess
+                                return f"ERROR: Failed to upload file {file_name}. Server response: {tresponse.text}"
+                    return f"tensorboard logs: {self.args.tensorboard} uploaded successfully!!"
                 else:
-                    return InvalidTensorboardFilePath
-            elif status_code==422 and response.json()["status"]=="version_update":
-                raise UpdateCmfVersion
-            elif status_code == 404:
-                raise CmfServerNotAvailable
-            elif status_code == 500:
-                raise InternalServerError
+                    return "ERROR: Invalid data path. Provide valid file/folder path for tensorboard logs!!"
             else:
-                return "ERROR: Status Code = {status_code}. Unable to push mlmd."
+                return MlmdFilePulledSuccess(self.args.filename).handle()
         else:
             raise PipelineNameNotFound(self.args.pipeline_name)
 
