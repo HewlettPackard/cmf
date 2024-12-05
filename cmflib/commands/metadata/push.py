@@ -24,7 +24,7 @@ from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import MlmdAndTensorboardPushSuccess, MlmdAndTensorboardPushFailure, PipelineNameNotFound, MlmdFilePushedSuccess, ExecutionsAlreadyExists
-from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNameNotFound, MlmdFilePulledSuccess, ExecutionsAlreadyExists, UpdateCmfVersion, CmfServerNotAvailable, InternalServerError, CmfNotConfigured
+from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNameNotFound, MlmdFilePulledSuccess, ExecutionsAlreadyExists, UpdateCmfVersion, CmfServerNotAvailable, InternalServerError, CmfNotConfigured, InvalidTensorboardFilePath
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
     def run(self):
@@ -89,51 +89,50 @@ class CmdMetadataPush(CmdBase):
             status_code = response.status_code
             if status_code == 200:
                 output = ""
+                display_output = ""
                 if response.json()['status']=="success":
-                    output = "mlmd is successfully pushed."
+                    display_output = "mlmd is successfully pushed."
+                    output = MlmdFilePushedSuccess
                 if response.json()["status"]=="exists":
-                    output = "Executions already exists."
+                    display_output = "Executions already exists."
+                    output = ExecutionsAlreadyExists
                 
-                if self.args.tensorboard:
-                    print(output)
+                if not self.args.tensorboard:
+                    return output
+                print(display_output)
                 # /tensorboard api call is done only if mlmd push is successfully completed
                 # tensorboard parameter is passed
-                    print("......................................")
-                    print("tensorboard logs upload started!!")
-                    print("......................................")
+                print("......................................")
+                print("tensorboard logs upload started!!")
+                print("......................................")
 
-                    # check if the path provided is for a file
-                    if os.path.isfile(self.args.tensorboard):
-                        file_name = os.path.basename(self.args.tensorboard)
-                        tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, file_name, self.args.tensorboard)
-                        tstatus_code = tresponse.status_code
-                        if tstatus_code == 200:
-                            # give status code as success
-                            return MlmdAndTensorboardPushSuccess(file_name)
-                        else:
-                            # give status code as failure 
-                            return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
-                    # If path provided is a directory
-                    elif os.path.isdir(self.args.tensorboard):
-                        # Recursively push all files and subdirectories
-                        for root, dirs, files in os.walk(self.args.tensorboard):
-                            for file_name in files:
-                                file_path = os.path.join(root, file_name)
-                                relative_path = os.path.relpath(file_path, self.args.tensorboard)
-                                tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, relative_path, file_path)
-                                if tresponse.status_code == 200:
-                                    print(f"tensorboard logs: File {file_name} uploaded successfully.")
-                                else:
-                                    # give status as failure
-                                    return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
-                        return MlmdAndTensorboardPushSuccess
+                # check if the path provided is for a file
+                if os.path.isfile(self.args.tensorboard):
+                    file_name = os.path.basename(self.args.tensorboard)
+                    tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, file_name, self.args.tensorboard)
+                    tstatus_code = tresponse.status_code
+                    if tstatus_code == 200:
+                        # give status code as success
+                        return MlmdAndTensorboardPushSuccess(file_name)
                     else:
-                        return "ERROR: Invalid data path. Provide valid file/folder path for tensorboard logs!!"
+                        # give status code as failure 
+                        return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
+                # If path provided is a directory
+                elif os.path.isdir(self.args.tensorboard):
+                    # Recursively push all files and subdirectories
+                    for root, dirs, files in os.walk(self.args.tensorboard):
+                        for file_name in files:
+                            file_path = os.path.join(root, file_name)
+                            relative_path = os.path.relpath(file_path, self.args.tensorboard)
+                            tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, relative_path, file_path)
+                            if tresponse.status_code == 200:
+                                print(f"tensorboard logs: File {file_name} uploaded successfully.")
+                            else:
+                                # give status as failure
+                                return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
+                    return MlmdAndTensorboardPushSuccess
                 else:
-                    if response.json()['status']=="success":
-                        return MlmdFilePushedSuccess
-                    if response.json()["status"]=="exists":
-                        return ExecutionsAlreadyExists
+                    return InvalidTensorboardFilePath
             elif status_code==422 and response.json()["status"]=="version_update":
                 raise UpdateCmfVersion
             elif status_code == 404:

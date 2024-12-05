@@ -53,14 +53,14 @@ class ExecutionsAlreadyExists(CmfSuccess):
 
 
 class ExecutionsNotFound(CmfFailure):
-    def __init__(self, return_code=105):
+    def __init__(self, return_code=104):
         super().__init__(return_code)
  
     def handle(self):
         return f"Executions not found"
     
 class ExecutionIDNotFound(CmfFailure):
-    def __init__(self,exec_id, return_code=106):
+    def __init__(self,exec_id, return_code=105):
         self.exec_id = exec_id
         super().__init__(return_code)
  
@@ -68,7 +68,7 @@ class ExecutionIDNotFound(CmfFailure):
         return f"Error: Execution id {self.exec_id} is not present in mlmd."
     
 class ArtifactNotFound(CmfFailure):
-    def __init__(self,artifact_name, return_code=107):
+    def __init__(self,artifact_name, return_code=106):
         self.artifact_name = artifact_name
         super().__init__(return_code)
  
@@ -86,7 +86,7 @@ class ObjectDownloadSuccess(CmfSuccess):
         return f"object {self.object_name} downloaded at {self.download_loc}."
     
 class ObjectDownloadFailure(CmfFailure):
-    def __init__(self,object_name, return_code=108):
+    def __init__(self,object_name, return_code=107):
         self.object_name = object_name
         super().__init__(return_code)
 
@@ -94,7 +94,7 @@ class ObjectDownloadFailure(CmfFailure):
         return f"object {self.object_name} is not downloaded."
     
 class BatchDownloadFailure(CmfFailure):
-    def __init__(self,files_downloaded, Files_failed_to_download, return_code=109):
+    def __init__(self,files_downloaded, Files_failed_to_download, return_code=108):
         self.files_downloaded = files_downloaded
         self.Files_failed_to_download = Files_failed_to_download
         super().__init__(return_code)
@@ -118,7 +118,7 @@ class Minios3ServerInactive(CmfFailure):
         return f"MinioS3 server failed to start!!!"
 
 class CmfNotConfigured(CmfFailure):
-    def __init__(self,message, return_code=111):
+    def __init__(self,message, return_code=110):
         self.message = message
         super().__init__(return_code)
 
@@ -126,7 +126,7 @@ class CmfNotConfigured(CmfFailure):
         return self.message
 
 class MlmdNotFoundOnServer(CmfFailure):
-    def __init__(self, return_code=113):
+    def __init__(self, return_code=111):
         super().__init__(return_code)
 
     def handle(self):
@@ -151,14 +151,14 @@ class MlmdFilePushedSuccess(CmfSuccess):
 
     
 class UpdateCmfVersion(CmfFailure):
-    def __init__(self, return_code=110):
+    def __init__(self, return_code=112):
         super().__init__(return_code)
 
     def handle(self):
         return "ERROR: You need to update cmf to the latest version. Unable to push metadata file."
 
 class MlmdAndTensorboardPushSuccess(CmfSuccess):
-    def __init__(self, tensorboard_file_name:str = "All", return_code=207):
+    def __init__(self, tensorboard_file_name:str = "All", return_code=206):
         self.tensorboard_file_name = tensorboard_file_name
         super().__init__(return_code)
 
@@ -168,7 +168,7 @@ class MlmdAndTensorboardPushSuccess(CmfSuccess):
         return f"tensorboard logs: file {self.tensorboard_file_push_message} pushed successfully" 
     
 class MlmdAndTensorboardPushFailure(CmfFailure):
-    def __init__(self,tensorboard_file_name,response_text, return_code=111):
+    def __init__(self,tensorboard_file_name,response_text, return_code=113):
         self.tensorboard_file_name = tensorboard_file_name
         self.response_text = response_text
         super().__init__(return_code)
@@ -178,28 +178,28 @@ class MlmdAndTensorboardPushFailure(CmfFailure):
 
 
 class ArgumentNotProvided(CmfFailure):
-    def __init__(self, return_code=112):
+    def __init__(self, return_code=114):
         super().__init__(return_code)
 
     def handle(self):
         return "ERROR: Provide user, password and uri for neo4j initialization."
 
 class CmfInitFailed(CmfFailure):
-    def __init__(self, return_code=113):
+    def __init__(self, return_code=115):
         super().__init__(return_code)
 
     def handle(self):
         return "cmf init failed."
 
 class CmfInitComplete(CmfSuccess):
-    def __init__(self, return_code=208):
+    def __init__(self, return_code=207):
         super().__init__(return_code)
 
     def handle(self):
         return "cmf init complete."
 
 class CmfInitShow(CmfSuccess):
-    def __init__(self,result, attr_str, return_code=209):
+    def __init__(self,result, attr_str, return_code=208):
         self.result = result
         self.attr_str = attr_str
         super().__init__(return_code)
@@ -208,14 +208,14 @@ class CmfInitShow(CmfSuccess):
         return f"{self.result}\n{self.attr_str}"
 
 class CmfServerNotAvailable(CmfFailure):
-    def __init__(self, return_code=114):
+    def __init__(self, return_code=116):
         super().__init__(return_code)
 
     def handle(self):
         return "ERROR: cmf-server is not available."
 
 class InternalServerError(CmfFailure):
-    def __init__(self, return_code=115):
+    def __init__(self, return_code=117):
         super().__init__(return_code)
 
     def handle(self):
@@ -229,7 +229,7 @@ class MlmdFilePulledFailure(CmfFailure):
         return "ERROR: Unable to pull mlmd."
 
 class CurrentDirectoryNotfound(CmfFailure):
-    def __init__(self,current_dir, return_code=116):
+    def __init__(self,current_dir, return_code=118):
         self.current_dir = current_dir
         super().__init__(return_code)
 
@@ -237,15 +237,22 @@ class CurrentDirectoryNotfound(CmfFailure):
         return f"{self.current_dir} doesn't exists."
 
 class FileNameNotfound(CmfFailure):
-    def __init__(self, return_code=116):
+    def __init__(self, return_code=119):
         super().__init__(return_code)
 
     def handle(self):
         return "Provide path with file name."
 
 class NoDataFoundOsdf(CmfFailure):
-    def __init__(self, return_code=117):
+    def __init__(self, return_code=120):
         super().__init__(return_code)
 
     def handle(self):
         return "No data received from the server."
+
+class InvalidTensorboardFilePath(CmfFailure):
+    def __init__(self, return_code=121):
+        super().__init__(return_code)
+
+    def handle(self):
+        return "ERROR: Invalid data path. Provide valid file/folder path for tensorboard logs!!"
