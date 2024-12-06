@@ -188,7 +188,7 @@ class CmdExecutionList(CmdBase):
     
 def add_parser(subparsers, parent_parser):
     EXECUTION_LIST_HELP = '''Display all executions with detailed information from the specified MLMD file. 
-                             By default, records are displayed in table format with 5 columns and a limit of 20 records per page.'''
+                             By default, records are displayed in table format with 8 columns and a limit of 20 records per page.'''
 
     parser = subparsers.add_parser(
         "list",
@@ -229,7 +229,7 @@ def add_parser(subparsers, parent_parser):
         "-l",
         "--long", 
         action='store_true',
-        help="Use to display 20 records per page in a table with 7 columns.",
+        help="Use to display 20 records per page in a table with 8 columns.",
     )
 
     parser.set_defaults(func=CmdExecutionList)

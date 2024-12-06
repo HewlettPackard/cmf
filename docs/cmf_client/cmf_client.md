@@ -260,7 +260,7 @@ Optional Arguments
 ```
 Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] -l
 ```
-`cmf artifact list` command displays all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
+`cmf artifact list` command displays all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page.
 ```
 cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' -l
 ```
@@ -273,7 +273,7 @@ Optional Arguments
   -h, --help                                            show this help message and exit.
   -f [file_name], --file-name [file_name]               Specify the absolute or relative path for the input MLMD file. 
   -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.
-  -l, --long                                            Use to display 20 records per page in a table with 7 columns.                                                     
+  -l, --long                                            Use to display 20 records per page in a table with 8 columns.                                                     
 ```
 
 ## cmf metadata
@@ -341,7 +341,7 @@ Optional Arguments
 ```
 Usage: cmf execution [-h] {list}
 ```
-`cmf execution` command displays all executions with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
+`cmf execution` command displays all executions with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page.
 ### cmf executions list
 ```
 Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] -l
@@ -359,7 +359,7 @@ Optional Arguments
   -h, --help                                            show this help message and exit.
   --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
   -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
-  -l, --long                                            Use to display 20 records per page in a table with 7 columns. 
+  -l, --long                                            Use to display 20 records per page in a table with 8 columns. 
 ```
 
 ## cmf pipeline

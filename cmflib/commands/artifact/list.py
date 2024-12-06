@@ -242,12 +242,12 @@ class CmdArtifactsList(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page."
+    ARTIFACT_LIST_HELP = "Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.",
+        description="Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page.",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -283,7 +283,7 @@ def add_parser(subparsers, parent_parser):
         "-l", 
         "--long", 
         action='store_true',
-        help="Use to display 20 records per page in a table with 7 columns.",
+        help="Use to display 20 records per page in a table with 8 columns.",
     )
 
     parser.set_defaults(func=CmdArtifactsList)
