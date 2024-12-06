@@ -428,7 +428,7 @@ async def artifact(request: Request):
     # from varkhs query
     rows = await conn.fetch('''
         select a.id, a.uri, a.name, a.create_time_since_epoch, a.last_update_time_since_epoch,
-        JSON_AGG(JSON_BUILD_OBJECT('artifact_id',ap.artifact_id,'name',ap.name,'int_value',ap.int_value,'is_custom_property',ap.is_custom_property)) 
+        JSON_AGG(JSON_BUILD_OBJECT('artifact_id',ap.artifact_id,'name',ap.name,'string_value',ap.string_value,'is_custom_property',ap.is_custom_property)) 
         as custom_properties from artifact as a join artifactproperty as ap on a.id=ap.artifact_id group by a.id;
     ''')
 
