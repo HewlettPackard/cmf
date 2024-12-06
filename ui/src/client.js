@@ -152,6 +152,14 @@ class FastAPIClient {
         return data;
       });
   }
+
+  async getArtifact() {
+    return this.apiClient
+      .get(`/artifact`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
 }
 
 export default FastAPIClient;

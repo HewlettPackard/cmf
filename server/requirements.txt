@@ -6,3 +6,5 @@ minio
 dvc[s3,ssh]==2.27.0
 pandas
 python-multipart
+asyncpg
+psycopg2-binary
