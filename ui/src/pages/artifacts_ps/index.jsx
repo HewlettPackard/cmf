@@ -22,6 +22,7 @@ import ArtifactPsTable from "../../components/ArtifactPsTable";
 import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
+import ArtifactPsTypeSidebar from "../../components/ArtifactPsTypeSidebar";
 
 const client = new FastAPIClient(config);
 
@@ -31,6 +32,8 @@ const Artifacts_ps = () => {
   // undefined state is to check whether artifacts data is set
   // null state of artifacts we display No Data
   const [artifacts, setArtifacts] = useState([]);
+  const [artifactTypes, setArtifactTypes] = useState([]);
+  const [selectedArtifactType, setSelectedArtifactType] = useState(null);
  
 
   const fetchPipelines = () => {
@@ -42,7 +45,7 @@ const Artifacts_ps = () => {
 
   useEffect(() => {
     fetchPipelines();
-    fetchArtifacts();
+    fetchArtifactTypes();
   }, []);
 
   const handlePipelineClick = (pipeline) => {
@@ -57,10 +60,23 @@ const Artifacts_ps = () => {
       client.getArtifact()
       .then((data) => {
         setArtifacts(data);
-        //console.log(data)
       })
-      //console.log(artifacts);
-      //console.log("everyone is crazy!!!!!!!!!!");
+  };
+
+  const fetchArtifactTypes = () => {
+    client.getArtifactTypes().then((types) => {
+      setArtifactTypes(types);
+      setSelectedArtifactType(types[0]);
+      fetchArtifacts();   // need to write code here
+    });
+  };
+
+  const handleArtifactTypeClick = (artifactType) => {
+    if (selectedArtifactType !== artifactType) {
+      // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
+      // setArtifacts(null);
+    }
+    setSelectedArtifactType(artifactType);
   };
 
   return (
@@ -78,6 +94,14 @@ const Artifacts_ps = () => {
               className="flex-grow"
             />
           </div>
+          <div className="flex flex-col w-full">
+              {selectedPipeline !== null && (
+                <ArtifactPsTypeSidebar
+                  artifactTypes={artifactTypes}
+                  handleArtifactTypeClick={handleArtifactTypeClick}
+                />
+              )}
+            </div>
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
             <div>
               {(

@@ -32,13 +32,18 @@ const ArtifactPsTable = ({artifacts}) => {
 
   const consistentColumns = [];
 
-  //console.log(artifacts)
+  console.log(artifacts)
+
+  artifacts.map((artifact, idx) => (
+    JSON.parse(artifact.custom_properties).map((property, idx) => (
+      console.log(property," ",idx)
+  ))))
+
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
     setData(artifacts);
     //setSortedData([data]);
   }, [artifacts]);
-
 
 
   const renderArrow = () => (
@@ -81,6 +86,15 @@ const ArtifactPsTable = ({artifacts}) => {
     return date_time.toUTCString();
   }
 
+  const toggleRow = (rowId) => {
+    if (expandedRow === rowId) {
+      setExpandedRow(null);
+    } else {
+      setExpandedRow(rowId);
+    }
+  };
+
+
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
       <div className="overflow-x-auto w-full">
@@ -88,6 +102,7 @@ const ArtifactPsTable = ({artifacts}) => {
             <table className="divide-y divide-gray-200 border-4 w-full">
               <thead>
                 <tr className="text-xs font-bold font-sans text-left text-black uppercase">
+                <th scope="col" className="id px-6 py-3"></th>
                 <th className="px-6 py-3" scope="col">ID</th>
                 <th className="px-6 py-3" >
                 <span scope="col" style={{ display: 'inline-flex', alignItems: 'center' }}>
@@ -98,31 +113,39 @@ const ArtifactPsTable = ({artifacts}) => {
                 <th className="px-6 py-3" scope="col">URI</th>
                 <th className="px-6 py-3" scope="col">URL</th>
                 <th className="px-6 py-3" scope="col">GIT_REPO</th>
+                <th className="px-6 py-3" scope="col">COMMIT</th>
                 </tr>
               </thead>
               <tbody className="body divide-y divide-gray-200">
                 {artifacts.map((artifact, index) => (
                 <React.Fragment key={index}>
                 <tr key={index} className="text-sm font-medium text-gray-800">
-                <td className="px-6 py-4">{artifact.id}</td>
-                <td className="px-6 py-4">{artifact.name}</td>
-                <td className="px-6 py-4">{createDateTime(artifact.create_time_since_epoch)}</td>
-                <td className="px-6 py-4">{artifact.uri}</td>
-                <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "url")}</td>
-                <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "git_repo")}</td>
+                  <td
+                        className="px-6 py-4 cursor-pointer"
+                        onClick={() => toggleRow(index)}
+                      >
+                        {expandedRow === index ? "-" : "+"}
+                  </td>
+                  <td className="px-6 py-4">{artifact.id}</td>
+                  <td className="px-6 py-4">{artifact.name}</td>
+                  <td className="px-6 py-4">{createDateTime(artifact.create_time_since_epoch)}</td>
+                  <td className="px-6 py-4">{artifact.uri}</td>
+                  <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "url")}</td>
+                  <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "git_repo")}</td>
+                  <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "Commit")}</td>
                 </tr>
                 {expandedRow === index && (
                 <tr>
                 <td colSpan="6">
                 <table className="expanded-table">
-                <tbody>
-                {artifact.custom_properties.map((property, idx) => (
-                <tr key={idx}>
-                <td>{property.name}</td>
-                <td>{property.value}</td>
-                </tr>
-                ))}
-              </tbody>
+                  <tbody>
+                  {JSON.parse(artifact.custom_properties).map((property, idx) => (
+                  <tr key={idx}>
+                  <td>{property.name}</td>
+                  <td>{property.string_value}</td>
+                  </tr>
+                  ))}
+                  </tbody>
               </table>
               </td>
               </tr>
