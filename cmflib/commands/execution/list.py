@@ -17,6 +17,7 @@
 import argparse
 import os
 import textwrap
+import pandas as pd
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
@@ -25,48 +26,53 @@ from cmflib.dvc_wrapper import dvc_get_config
 
 class CmdExecutionList(CmdBase):
 
-    def update_dataframe(self, df, is_long):
+    def update_dataframe(self, df: pd.DataFrame, is_long: bool) -> pd.DataFrame:
         """
-        Updates the dataframe to fit the specified table format based on the length option.
-
+        Reorders and updates the DataFrame columns.
         Parameters:
-        - df: DataFrame to be updated.
-        - is_long: Boolean indicating whether to use long option or not.
-
+        - df: The input DataFrame to be updated.
+        - is_long: 
+            - If True, includes all columns after prioritizing 'id' and 'Context_Type'columns.
+            - If False, includes only columns starting with 'custom_properties' after prioritizing 'id' and 'Context_Type' columns.
         Returns:
-        - Updated DataFrame with selected columns.
+        - pd.DataFrame: A new DataFrame with reordered columns.
         """
         if is_long:
+            # When user specify -l option(i.e long) in that case we need to print id and Context_Type as a 1st 2 columns in table
+            # and after that all the remaining columns.
             updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if not (col == "id" or col == "Context_Type")]
         else:
+            # In case of short option(that is default option) we need to print id and Context_Type as a 1st 2 columns in table
+            # and after that need to print all columns which is start with "custom_properties".  
             updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if col.startswith('custom_properties_')]
-            # Limit to a maximum of 5 columns.
-            if len(updated_columns) > 5:
-                updated_columns = updated_columns[:5]
 
         return df[updated_columns]
     
-    
-    def display_table(self, df, char_size, is_custom_prop):
+    def display_table(self, df: pd.DataFrame) -> None:
         """
-        Displays the dataframe in a table format, optionally renaming columns and wrapping text.
+        Displays the DataFrame in a paginated table format with optional column renaming and text wrapping for better readability. 
+        Parameters: 
+        - df: The DataFrame to display.
+        """
+        # Limit the table to a maximum of 8 columns to ensure proper formatting and readability.
+        # Tables with more than 8 columns may appear cluttered or misaligned on smaller terminal screens. 
+        if len(df.columns) > 8:
+            df=df.iloc[:,:8]
 
-        Parameters:
-        - df: DataFrame to display.
-        - char_size: Character width for text wrapping.
-        - is_custom_prop: Boolean indicating if custom properties named column are used or not.
-        """
-        if is_custom_prop:
-            # Rename columns.
-            df = df.rename(columns = lambda x: x.replace("custom_properties_", "") if x.startswith("custom_properties_") else x)
-        
-        # Wrapping text in object columns.
-        for col in df.select_dtypes(include=['object']).columns:
-            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=char_size) if isinstance(x, str) else x)
+        # Rename columns that start with "custom_properties_" by removing the prefix for clarity. 
+        # For example, "custom_properties_auc_curve" becomes "auc_curve". 
+        df = df.rename(columns = lambda x: x.replace("custom_properties_", "") if x.startswith("custom_properties_") else x)
+
+        # Wrap text in object-type columns to a width of 15 characters.
+        # This ensures that long strings are displayed neatly within the table.
+        for col in df.select_dtypes(include=["object"]).columns:
+            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=15) if isinstance(x, str) else x)
 
         total_records = len(df)
         start_index = 0  
 
+        # Display up to 20 records per page for better readability. 
+        # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
         while True:
             end_index = start_index + 20
             records_per_page = df.iloc[start_index:end_index]
@@ -91,7 +97,7 @@ class CmdExecutionList(CmdBase):
                 break
             
             # Update start index for the next page.
-            start_index = end_index
+            start_index = end_index 
 
     def run(self):
         # Check if 'cmf' is configured
@@ -147,10 +153,10 @@ class CmdExecutionList(CmdBase):
             else:
                 if self.args.execution_id[0].isdigit():
                     if int(self.args.execution_id[0]) in list(df['id']): # Converting series to list.
-                        df = df.query(f'id == {int(self.args.execution_id[0])}')
+                        df = df.query(f'id == {int(self.args.execution_id[0])}')  # Used dataframe based on execution id
                         df = self.update_dataframe(df, True)
 
-                        # Wrap text in object columns to fit within 30 characters.
+                        # Wrap text in object-type columns to a width of 30 characters.
                         for col in df.select_dtypes(include=['object']).columns:
                             df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
                         
@@ -159,7 +165,7 @@ class CmdExecutionList(CmdBase):
                         df = df.T.reset_index()
                         df.columns.values[0] = 'id'  # Rename the first column back to 'id'.
 
-                        # Display the filtered DataFrame as a formatted table.
+                        # Display the updated DataFrame as a formatted table.
                         table = tabulate(
                             df,
                             headers=df.columns,
@@ -170,18 +176,12 @@ class CmdExecutionList(CmdBase):
                         print()
                         return "Done"
                 return "Execution id does not exist.."  
-
-            # Update and display the full DataFrame based on the long option.    
+    
             if self.args.long:
                 df = self.update_dataframe(df, True)
-
-                # Limit to a maximum of 7 columns.
-                if len(df.columns) > 7:
-                    df=df.iloc[:,:7]
-                self.display_table(df, 15, True)
             else:
                 df = self.update_dataframe(df, False)
-                self.display_table(df, 25, True) 
+            self.display_table(df) 
                 
             return "Done"
     
