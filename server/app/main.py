@@ -8,6 +8,7 @@ import pandas as pd
 from typing import List, Dict, Any
 from cmflib.cmfquery import CmfQuery
 import asyncio
+import asyncpg
 from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
@@ -406,3 +407,31 @@ async def update_global_exe_dict(pipeline_name):
     # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
     return
+
+
+# api to display artifacts available in mlmd[from postgres]
+@app.get("/artifact")
+async def artifact(request: Request):
+    conn = await asyncpg.connect(
+        user='myuser', 
+        password='mypassword',
+        database='mlmd', 
+        host='192.168.20.67'
+    )
+
+    # rows = await conn.fetch("select t1.*, t2.* from artifact as t1 join artifactproperty as t2 on t2.artifact_id=t1.id where t1.id=1;")
+    # rows = await conn.fetch("select t1.* from artifact as t1 where t1.id=1;")
+    
+    # for model
+    # rows = await conn.fetch("SELECT * FROM artifact WHERE type_id IN (SELECT id FROM type where name='Model') ORDER BY id;")
+    
+    # from varkhs query
+    rows = await conn.fetch('''
+        select a.id, a.uri, a.name, a.create_time_since_epoch, a.last_update_time_since_epoch,
+        JSON_AGG(JSON_BUILD_OBJECT('artifact_id',ap.artifact_id,'name',ap.name,'int_value',ap.int_value,'is_custom_property',ap.is_custom_property)) 
+        as custom_properties from artifact as a join artifactproperty as ap on a.id=ap.artifact_id group by a.id;
+    ''')
+
+    await conn.close()
+    print(rows)
+    return [dict(row) for row in rows]
