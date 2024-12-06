@@ -14,13 +14,16 @@
 # limitations under the License.
 ###
 import abc
+import os
 import json
 import logging
 import typing as t
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
 import pandas as pd
-from ml_metadata.metadata_store import metadata_store
+#from ml_metadata.metadata_store import metadata_store
+from cmflib.store.sqllite_store import SqlliteStore
+from cmflib.store.postgres import PostgresStore
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.mlmd_objects import CONTEXT_LIST
 
@@ -113,10 +116,23 @@ class CmfQuery(object):
         filepath: Path to the MLMD database file.
     """
 
-    def __init__(self, filepath: str = "mlmd") -> None:
-        config = mlpb.ConnectionConfig()
-        config.sqlite.filename_uri = filepath
-        self.store = metadata_store.MetadataStore(config)
+    def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
+        if is_server:
+            IP = os.getenv('MYIP')
+            POSTGRES_DB = os.getenv('POSTGRES_DB')
+            POSTGRES_USER = os.getenv('POSTGRES_USER')
+            POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+            #print(f"The value of POSTGRES_DB is {POSTGRES_DB}")
+            #print(f"The value of POSTGRES_USER: {POSTGRES_USER}")
+            #print(f"The value of POSTGRES_PASSSWORD: {POSTGRES_PASSWORD}")
+            #print(f"The value of POSTGRES_HOST: {IP}")
+            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+            temp_store = PostgresStore(config_dict)
+        else:
+            temp_store = SqlliteStore({"filename":filepath})
+        #print("temp_store type", type(temp_store))
+        self.store = temp_store.connect()
+        #print("self.store = ", self.store)
 
     @staticmethod
     def _copy(
