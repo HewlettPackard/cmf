@@ -305,7 +305,6 @@ class CmdArtifactPull(CmdBase):
                     return status
             else:
                 for name, url in name_url_dict.items():
-                    print("1")
                     if not isinstance(url, str):
                         continue
                     local_args = self.extract_repo_args("local", name, url, current_directory)
@@ -316,21 +315,16 @@ class CmdArtifactPull(CmdBase):
                     total_files_in_dir,count_files_success,return_code = local_class_obj.download_artifacts(
                            dvc_config_op, current_directory, local_args[0], local_args[1]
                     )
-                    # print(total_files_in_dir,count_files_success,return_code, stmt)
                     total_files_count += total_files_in_dir
                     files_download_completed += count_files_success
-                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
                     if return_code == 206 and not local_args[1].endswith(".dir") :
                         files_download_completed += 1
                 files_downloaded = files_download_completed + count_files_success 
                 Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
                 if Files_failed_to_download == 0:
-                    print("2")
                     status = BatchDownloadSuccess(files_downloaded=files_downloaded)
                 else:
-                    print("3")
                     status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
-                print("4")
                 return status
         elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
@@ -378,7 +372,6 @@ class CmdArtifactPull(CmdBase):
                     )
                     total_files_count += total_files_in_dir
                     files_download_completed += count_files_success
-                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
                     if return_code == 206 and not args[1].endswith(".dir") :
                         files_download_completed += 1
                 files_downloaded = files_download_completed + count_files_success 
@@ -501,7 +494,6 @@ class CmdArtifactPull(CmdBase):
                         )
                     total_files_count += total_files_in_dir
                     files_download_completed += count_files_success
-                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
                     if return_code == 206 and not args[1].endswith(".dir") :
                         files_download_completed += 1
                 files_downloaded = files_download_completed + count_files_success 

@@ -1,4 +1,11 @@
-"""Exceptions raised by the CMF."""
+"""
+    Exceptions raised by the CMF.
+    CmfResponse includes two child classes 
+           1. CmfSuccess
+           2. CmfFailure
+    On the basis of success and failure various child classes are created
+
+"""
 
 class CmfResponse(Exception):
     """Base class for all cmf exceptions."""

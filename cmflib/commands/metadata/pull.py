@@ -87,14 +87,6 @@ class CmdMetadataPull(CmdBase):
             else:
                 raise MlmdFilePulledFailure
             
-        
-        
-            # verifying status codes
-        # else:
-        #     print("4")
-        #     raise MlmdNotFoundOnServer    
-
-
 def add_parser(subparsers, parent_parser):
     PULL_HELP = "Pulls mlmd from cmf-server to users's machine."
 

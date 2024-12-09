@@ -82,7 +82,6 @@ class CmdInitAmazonS3(CmdBase):
         if not output:
             raise CmfInitFailed
         print(output)
-        print("1")
         dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id)
         dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key)
         dvc_add_attribute(repo_type, "session_token", self.args.session_token)
