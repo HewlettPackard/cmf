@@ -63,7 +63,7 @@ from cmflib.cmf_server_methods import (
     log_dataset_with_version,
     log_model_with_version, 
     log_execution_metrics_from_client, 
-    log_metrics_from_client,
+    log_step_metrics_from_client,
     log_dataslice_from_client,
 )
 
@@ -1497,9 +1497,9 @@ Cmf.log_dataset_with_version = log_dataset_with_version
 Cmf.log_model_with_version = log_model_with_version
 Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 #Cmf.commit_existing_metrics = commit_existing_metrics
-Cmf.log_metrics_from_client = log_metrics_from_client
+Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 #Cmf.DataSlice.commit_existing = commit_existing
-Cmf.log_dataslice_from_client = log_dataslice_from_client
+Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 
 def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):
     """ Pushes MLMD file to CMF-server.

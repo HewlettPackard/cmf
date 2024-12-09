@@ -639,7 +639,7 @@ def log_execution_metrics_from_client(self, metrics_name: str,
 
 
 
-def log_metrics_from_client(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
+def log_step_metrics_from_client(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
     """
     Commits existing metrics associated with the given URI to MLMD.
     Example:
