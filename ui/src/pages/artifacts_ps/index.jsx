@@ -55,28 +55,26 @@ const Artifacts_ps = () => {
     }
     setSelectedPipeline(pipeline);
   };
-
-  const fetchArtifacts = () => {
-      client.getArtifact()
-      .then((data) => {
-        setArtifacts(data);
-      })
+  
+  const fetchArtifacts = (artifact_type) => {
+    client.getArtifact(artifact_type)
+    .then((data) => {
+      setArtifacts(data);
+    })
   };
-
+  
   const fetchArtifactTypes = () => {
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
       setSelectedArtifactType(types[0]);
-      fetchArtifacts();   // need to write code here
+      fetchArtifacts(types[0]);
     });
   };
-
+  
   const handleArtifactTypeClick = (artifactType) => {
-    if (selectedArtifactType !== artifactType) {
-      // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
-      // setArtifacts(null);
-    }
     setSelectedArtifactType(artifactType);
+    fetchArtifacts(artifactType);
+    console.log(artifactType);
   };
 
   return (
@@ -94,15 +92,15 @@ const Artifacts_ps = () => {
               className="flex-grow"
             />
           </div>
-          <div className="flex flex-col w-full">
-              {selectedPipeline !== null && (
-                <ArtifactPsTypeSidebar
-                  artifactTypes={artifactTypes}
-                  handleArtifactTypeClick={handleArtifactTypeClick}
-                />
-              )}
-            </div>
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
+            <div className="flex flex-col w-full">
+                {selectedPipeline !== null && (
+                  <ArtifactPsTypeSidebar
+                    artifactTypes={artifactTypes}
+                    handleArtifactTypeClick={handleArtifactTypeClick}
+                  />
+                )}
+            </div>
             <div>
               {(
                   <ArtifactPsTable
@@ -110,7 +108,6 @@ const Artifacts_ps = () => {
                   />
                 )}
             </div>
-          
           </div>
         </div>
         <Footer />

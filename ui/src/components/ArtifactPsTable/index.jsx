@@ -32,13 +32,6 @@ const ArtifactPsTable = ({artifacts}) => {
 
   const consistentColumns = [];
 
-  console.log(artifacts)
-
-  artifacts.map((artifact, idx) => (
-    JSON.parse(artifact.custom_properties).map((property, idx) => (
-      console.log(property," ",idx)
-  ))))
-
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
     setData(artifacts);

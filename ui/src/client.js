@@ -153,9 +153,13 @@ class FastAPIClient {
       });
   }
 
-  async getArtifact() {
+  async getArtifact(artifact_type) {
     return this.apiClient
-      .get(`/artifact`)
+      .get(`/artifact`, {
+        params: {
+          artifact_type: artifact_type,
+        },
+      })
       .then(({ data }) => {
         return data;
       });
