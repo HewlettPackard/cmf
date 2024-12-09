@@ -152,6 +152,22 @@ class FastAPIClient {
         return data;
       });
   }
+
+  async getPythonEnv(file_name) {
+    return this.apiClient
+      .get(`/python-env`, {
+        params: {
+          file_name: file_name
+        },
+        responseType: "text", // Explicitly specify response type as text
+      })
+      .then(( response ) => {
+        return response.data;
+      });
+  }
+
 }
+
+
 
 export default FastAPIClient;
