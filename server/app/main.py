@@ -3,7 +3,6 @@ from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
-from typing import Literal
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
@@ -433,7 +432,6 @@ async def get_python_env(file_name: str) -> str:
     
     # Check if the file exists
     file_path = os.path.join("/cmf-server/data/env/", os.path.basename(file_name))
-    print("file_path = ", file_path)
     if not os.path.exists(file_path):
         raise HTTPException(status_code=404, detail="File not found")
 

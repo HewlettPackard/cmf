@@ -595,8 +595,6 @@ def log_execution_metrics_from_client(self, metrics_name: str,
     existing_artifacts = self.store.get_artifacts_by_uri(uri)
 
     existing_artifact = existing_artifacts[0] if existing_artifacts else None
-    # Didn't understand this, 
-    # and in case of step_metrics should we follow this logic or dataset's logic or does it even matter
     if not existing_artifact or \
         ((existing_artifact) and not
         (existing_artifact.name == new_metrics_name)):  #we need to add the artifact otherwise its already there 

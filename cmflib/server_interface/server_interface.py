@@ -17,7 +17,7 @@
 import requests
 import json
 
-# This function posts mlmd data and env files on cmf-server using mlmd_push rest api
+# This function posts mlmd data on cmf-server using mlmd_push rest api
 def call_mlmd_push(json_payload, url, exec_id, pipeline_name):
     url_to_pass = f"{url}/mlmd_push"
     json_data = {"id": exec_id, "json_payload": json_payload, "pipeline_name": pipeline_name}
