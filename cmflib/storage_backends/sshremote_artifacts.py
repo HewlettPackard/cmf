@@ -52,6 +52,11 @@ class SSHremoteArtifacts:
 
             response = ""
             abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
+                                               
+            total_files_in_directory = 0
+            file_download_success = 0
+            download_success_return_code = 206
+            download_failure_return_code = 207
             """"
             if object_name ends with .dir - it is a directory.
             we download .dir object with 'temp_dir' and remove 
@@ -63,8 +68,14 @@ class SSHremoteArtifacts:
 
                  # download .dir object
                 temp_dir = f"{abs_download_loc}/temp_dir"
-                response = sftp.put(object_name, temp_dir)
-
+                try:
+                    response = sftp.put(object_name, temp_dir)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    sftp.close()
+                    ssh.close()
+                    return total_files_in_directory,file_download_success,download_failure_return_code
+                
                 with open(temp_dir, 'r') as file:
                     tracked_files = eval(file.read())
 
@@ -80,6 +91,7 @@ class SSHremoteArtifacts:
                 """
                 repo_path = "/".join(object_name.split("/")[:-2])
                 for file_info in tracked_files:
+                    total_files_in_directory += 1
                     relpath = file_info['relpath']
                     md5_val = file_info['md5']
                     # download_loc =  /home/user/datatslice/example-get-started/test/artifacts/raw_data
@@ -88,18 +100,39 @@ class SSHremoteArtifacts:
                     formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                     temp_download_loc = f"{abs_download_loc}/{relpath}"
                     temp_object_name = f"{repo_path}/{formatted_md5}"
-                    obj = sftp.put(object_name, temp_download_loc)
-                    if obj:
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                    try:
+                        obj = sftp.put(object_name, temp_download_loc)
+                        if obj:
+                            print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                            file_download_success += 1
+                        else:
+                            file_download_failure += 1
+                            print(f"object {temp_object_name} is not downloaded.")
+                    except Exception as e:
+                        print(f"object {temp_object_name} is not downloaded.")
+                        file_download_failure += 1
+                if file_download_failure == 0:   # if count_failed is 0 it means all the objects of directory are downloaded
+                    response = True
+                else:                   # if count_failed is greater than 0 it means some artifacts or all are not downloaded
+                    response  = False
             else:
-                response = sftp.put(object_name, abs_download_loc)
+                try:
+                    response = sftp.put(object_name, abs_download_loc)
+                except Exception as e:
+                    print(f"object {object_name} is not downloaded.")
+                    sftp.close()
+                    ssh.close()
+                    return total_files_in_directory,file_download_success,download_failure_return_code
             if response:
-                stmt = f"object {object_name} downloaded at {abs_download_loc}."
-                return stmt
-
-            sftp.close()
-            ssh.close()
-
+                print(f"object {object_name} downloaded at {download_loc}.")
+                sftp.close()
+                ssh.close()
+                return total_files_in_directory,file_download_success, download_success_return_code
+            else:
+                print(f"object {object_name} is not downloaded.")
+                sftp.close()
+                ssh.close()
+                return total_files_in_directory,file_download_success,download_failure_return_code
         except TypeError as exception:
             return exception
         except Exception as exception:

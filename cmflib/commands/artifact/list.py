@@ -20,6 +20,7 @@ import pandas as pd
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
+from cmflib.cmf_exception_handling import PipelineNameNotFound, FileNotFound, ArtifactNotFound
 
 class CmdArtifactsList(CmdBase):
     def update_dataframe(self, df):
@@ -42,13 +43,15 @@ class CmdArtifactsList(CmdBase):
         current_directory = os.getcwd()
         # default path for mlmd file name
         mlmd_file_name = "./mlmd"
+        if self.args.artifact_name == "":
+            raise ArtifactNotFound("")
         if self.args.file_name:
             mlmd_file_name = self.args.file_name
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
+            raise FileNotFound(mlmd_file_name)
 
         # Creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
@@ -61,10 +64,9 @@ class CmdArtifactsList(CmdBase):
                 if(artifact_id != -1):
                     df = df.query(f'id == {int(artifact_id)}')
                 else:
-                    df = "Artifact name does not exist.."
+                    raise ArtifactNotFound
         else:
-            df = "Pipeline does not exist..."
-
+            raise PipelineNameNotFound(self.args.pipeline_name)
         if not isinstance(df, str):
             if self.args.long:
                 pd.set_option('display.max_rows', None)  # Set to None to display all rows
