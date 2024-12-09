@@ -28,6 +28,20 @@ from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, Pip
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
     def run(self):
+        # Get url from config
+        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
+
+        # find root_dir of .cmfconfig
+        output = find_root(cmfconfig)
+
+        # in case, there is no .cmfconfig file
+        if output.find("'cmf' is not configured.") != -1:
+            raise CmfNotConfigured(output)
+
+        config_file_path = os.path.join(output, cmfconfig)
+        attr_dict = CmfConfig.read_config(config_file_path)
+        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
+
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
 
@@ -44,22 +58,6 @@ class CmdMetadataPush(CmdBase):
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         execution_flag = 0
         status_code = 0
-
-        # Get url from config
-        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
-
-        # find root_dir of .cmfconfig
-        output = find_root(cmfconfig)
-
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is  not configured") != -1:
-            raise CmfNotConfigured(output)
-
-        config_file_path = os.path.join(output, cmfconfig)
-        attr_dict = CmfConfig.read_config(config_file_path)
-        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
-
-        
 
         # Checks if pipeline name exists
         if self.args.pipeline_name in query.get_pipeline_names():
@@ -113,7 +111,7 @@ class CmdMetadataPush(CmdBase):
                     tstatus_code = tresponse.status_code
                     if tstatus_code == 200:
                         # give status code as success
-                        return MlmdAndTensorboardPushSuccess(file_name)
+                        return MlmdAndTensorboardPushSuccess()
                     else:
                         # give status code as failure 
                         return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
@@ -130,9 +128,9 @@ class CmdMetadataPush(CmdBase):
                             else:
                                 # give status as failure
                                 return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
-                    return MlmdAndTensorboardPushSuccess
+                    return MlmdAndTensorboardPushSuccess()
                 else:
-                    return InvalidTensorboardFilePath
+                    return InvalidTensorboardFilePath()
             elif status_code==422 and response.json()["status"]=="version_update":
                 raise UpdateCmfVersion
             elif status_code == 404:

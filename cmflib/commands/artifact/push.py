@@ -26,14 +26,20 @@ from cmflib.utils.helper_functions import generate_osdf_token
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_push
 from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import PipelineNameNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound
+from cmflib.cmf_exception_handling import PipelineNameNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess
 
 class CmdArtifactPush(CmdBase):
     def run(self):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
+        # find root_dir of .cmfconfig
+        output = find_root(cmf_config_file)
+        # in case, there is no .cmfconfig file
+        if output.find("'cmf' is not configured.") != -1:
+            raise CmfNotConfigured(output)
         cmf_config={}
         cmf_config=CmfConfig.read_config(cmf_config_file)
         out_msg = check_minio_server(dvc_config_op)
@@ -67,7 +73,7 @@ class CmdArtifactPush(CmdBase):
         if not query.get_pipeline_id(pipeline_name) > 0:
             raise PipelineNameNotFound(pipeline_name)
 
-        stages = query.get_pipeline_stages(self.args.pipeline_name)
+        stages = query.get_pipeline_stages(pipeline_name)
         executions = []
         identifiers = []
 
@@ -112,7 +118,7 @@ class CmdArtifactPush(CmdBase):
                 pass
         #print("file_set = ", final_list)
         result = dvc_push(list(final_list))
-        return result
+        return ArtifactPushSuccess(result)
       
 def add_parser(subparsers, parent_parser):
     HELP = "Push artifacts to the user configured artifact repo."

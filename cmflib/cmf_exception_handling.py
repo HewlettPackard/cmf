@@ -263,3 +263,11 @@ class InvalidTensorboardFilePath(CmfFailure):
 
     def handle(self):
         return "ERROR: Invalid data path. Provide valid file/folder path for tensorboard logs!!"
+
+class ArtifactPushSuccess(CmfSuccess):
+    def __init__(self, message, return_code=205):
+        self.message = message
+        super().__init__(return_code)
+
+    def handle(self):
+        return self.message

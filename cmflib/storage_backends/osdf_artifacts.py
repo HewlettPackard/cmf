@@ -18,7 +18,7 @@ import os
 import requests
 #import urllib3
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from cmflib.cmf_exception_handling import NoDataFoundosdf
+from cmflib.cmf_exception_handling import NoDataFoundOsdf
 
 class OSDFremoteArtifacts:
     def download_artifacts(
@@ -54,7 +54,7 @@ class OSDFremoteArtifacts:
             if response.status_code == 200 and response.content:
                 data = response.content
             else:
-                raise NoDataFoundosdf
+                raise NoDataFoundOsdf
 
         except Exception as exception:
             print(exception)

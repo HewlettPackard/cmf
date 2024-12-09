@@ -31,7 +31,7 @@ class CmdMetadataPull(CmdBase):
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
         # in case, there is no .cmfconfig file
-        if output.find("'cmf' is  not configured") != -1:
+        if output.find("'cmf' is not configured") != -1:
             raise CmfNotConfigured(output)
         config_file_path = os.path.join(output, cmfconfig)
         attr_dict = CmfConfig.read_config(config_file_path)
