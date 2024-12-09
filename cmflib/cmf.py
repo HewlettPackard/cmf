@@ -456,10 +456,8 @@ class Cmf:
         # link the artifact to execution if it exists and creates artifact if it doesn't
         self.log_python_env(python_env_file_path)
         new_custom_props = {}
-        new_custom_props["Python_env"] = python_env_file_path
-        print("new custom props = ", new_custom_props )
+        new_custom_props["Python_Env"] = python_env_file_path
         self.update_execution(self.execution.id, new_custom_props)
-        print(self.execution)
         os.chdir(logging_dir)
         return self.execution
 

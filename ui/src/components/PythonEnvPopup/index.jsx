@@ -1,11 +1,12 @@
 import React from "react";
-import "./index.css"; // Optional: For styling the popup
+import "./index.module.css"; // Optional: For styling the popup
 
 const PythonEnvPopup = ({ show, python_env, onClose }) => {
   if (!show) {
     return null;
   }
 
+  console.log(python_env)
   return (
     <>
       <div className="popup-overlay">

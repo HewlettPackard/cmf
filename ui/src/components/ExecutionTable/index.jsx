@@ -224,7 +224,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                             href="#"
                             onClick={(e) => {
                               e.preventDefault();
-                              handleLinkClick(data.custom_properties_Python_env);
+                              handleLinkClick(data.custom_properties_Python_Env);
                     
                             }}
                           >

@@ -17,7 +17,7 @@
 import requests
 import json
 
-# This function posts mlmd data to mlmd_push api on cmf-server
+# This function posts mlmd data and env files on cmf-server using mlmd_push rest api
 def call_mlmd_push(json_payload, url, exec_id, pipeline_name):
     url_to_pass = f"{url}/mlmd_push"
     json_data = {"id": exec_id, "json_payload": json_payload, "pipeline_name": pipeline_name}
@@ -39,4 +39,11 @@ def call_tensorboard(url, pipeline_name, file_name, file_path):
     files = {'file': (file_name, open(file_path, 'rb'))}
     params = {'pipeline_name': pipeline_name}
     response = requests.post(url_to_pass, files=files, params=params)
+    return response
+
+# This function posts env file to cmf-server
+def call_python_env(url, file_name, file_path):
+    url_to_pass = f"{url}/python-env"
+    files = {'file': (file_name, open(file_path, 'rb'))}
+    response = requests.post(url_to_pass, files=files)
     return response

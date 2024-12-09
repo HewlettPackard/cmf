@@ -29,6 +29,7 @@ services:
     # both the directory paths should be updated as per user's environment
     volumes:
       - /home/xxxx/cmf-server/data:/cmf-server/data
+      - /home/xxxx/cmf-server/data/env:/cmf-server/data/env
       - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
       - /home/xxxx/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
     container_name: cmf-server
