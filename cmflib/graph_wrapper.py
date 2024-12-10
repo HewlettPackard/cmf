@@ -88,20 +88,6 @@ class GraphDriver:
                 "Execution", "Dataset", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
-    def create_env_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
-                            pipeline_context: mlpb.Context):
-        pipeline_id = pipeline_context.id
-        pipeline_name = pipeline_context.name
-        dataset_syntax = self._create_env_syntax(
-            name, path, uri, pipeline_id, pipeline_name)
-        with self.driver.session() as session:
-            node = session.write_transaction(
-                self._run_transaction, dataset_syntax)
-            node_id = node[0]["node_id"]
-            pc_syntax = self._create_execution_artifacts_link_syntax(
-                "Execution", "Environment", self.execution_id, node_id, event)
-            _ = session.write_transaction(self._run_transaction, pc_syntax)
-
     def create_dataslice_node(self, name: str, path: str, uri: str, parent_name:str,
                             custom_properties=None):
         if custom_properties is None:
@@ -289,24 +275,6 @@ class GraphDriver:
         custom_properties["pipeline_id"] = str(pipeline_id)
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Dataset {uri:\"" + uri + "\"}) SET "
-        # props_str = ""
-        for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
-            props_str = "a." + k + \
-                " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
-            syntax_str = syntax_str + props_str
-        syntax_str = syntax_str.rstrip(",")
-        syntax_str = syntax_str + " RETURN ID(a) as node_id"
-        return syntax_str
-
-    @staticmethod
-    def _create_env_syntax(name: str, path: str, uri: str, pipeline_id: int, pipeline_name: str):
-        custom_properties = {}
-        custom_properties["Name"] = name
-        custom_properties["Path"] = path
-        custom_properties["pipeline_id"] = str(pipeline_id)
-        custom_properties["pipeline_name"] = pipeline_name
-        syntax_str = "MERGE (a:Environment {uri:\"" + uri + "\"}) SET "
         # props_str = ""
         for k, v in custom_properties.items():
             k = re.sub('\W+', '', k)

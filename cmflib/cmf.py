@@ -20,7 +20,6 @@ import uuid
 import re
 import os
 import sys
-import yaml
 import pandas as pd
 import typing as t
 
@@ -56,7 +55,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
+from cmflib.utils.helper_functions import change_dir
 from cmflib.cmf_commands_wrapper import (
     _metadata_push,
     _metadata_pull,
@@ -105,7 +104,6 @@ class Cmf:
     """
 
     # pylint: disable=too-many-instance-attributes
-    # what if we follow the same procedure as dataslice/metrics 
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
