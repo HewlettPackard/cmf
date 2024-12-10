@@ -105,17 +105,10 @@ class Cmf:
     """
 
     # pylint: disable=too-many-instance-attributes
-    # Reading CONFIG_FILE variable
-    #cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
     # what if we follow the same procedure as dataslice/metrics 
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
-    #if os.path.exists(cmf_config):
-    #    attr_dict = CmfConfig.read_config(cmf_config)
-    #    __neo4j_uri = attr_dict.get("neo4j-uri", "")
-    #    __neo4j_password = attr_dict.get("neo4j-password", "")
-    #    __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(
         self,
@@ -457,8 +450,6 @@ class Cmf:
             self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
         else:
             self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())          
-
-
         self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
@@ -479,35 +470,6 @@ class Cmf:
             self.execution.id,
             custom_props,
         )
-
-        directory_path = self.ARTIFACTS_PATH
-        os.makedirs(directory_path, exist_ok=True)
-        packages = get_python_env()
-        if isinstance(packages, list):
-            output = f"{packages}\n"
-            md5_hash = get_md5_hash(output)
-            print(md5_hash)
-            python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.txt")
-            # create file if it doesn't exists
-            if not os.path.exists(python_env_file_path):
-                print(f"{python_env_file_path} doesn't exists!!")
-                with open(python_env_file_path, 'w') as file:
-                    for package in packages:
-                        file.write(f"{package}\n")
-
-        else:
-            # in case output is dict
-            env_output = yaml.dump(packages, sort_keys=False)
-            md5_hash = get_md5_hash(env_output)
-            python_env_file_path = os.path.join(directory_path, f"{md5_hash}_python_env.yaml")
-            # create file if it doesn't exists
-            if not os.path.exists(python_env_file_path):
-                print(f"{python_env_file_path} doesn't exists!!")
-                with open(python_env_file_path, 'w') as file:
-                    file.write(env_output)
-
-        # link the artifact to execution if it exists and creates artifact if it doesn't
-        self.log_python_env(python_env_file_path)
         os.chdir(logging_dir)
         return self.execution
 
@@ -703,193 +665,13 @@ class Cmf:
                 custom_props,
             )
 
-        # link the artifact to execution if it exists and creates artifact if it doesn't
         return self.execution
 
-    # what is the reason behind creating this function
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")
         return commit_dvc_lock_file(file_path, self.execution.id)
 
-    def log_python_env(
-            self,
-            url: str,
-        ) -> mlpb.Artifact:
-            "Used to log the python packages involved in the current execution"
-
-            git_repo = git_get_repo()
-            name = re.split("/", url)[-1]
-            existing_artifact = []
-
-            commit_output(url, self.execution.id)
-            c_hash = dvc_get_hash(url)
-
-            if c_hash == "":
-                print("Error in getting the dvc hash,return without logging")
-                return
-
-            dataset_commit = c_hash
-            dvc_url = dvc_get_url(url)
-            dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
-            url = url + ":" + c_hash
-            if c_hash and c_hash.strip:
-                existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
-
-            if existing_artifact and len(existing_artifact) != 0:
-                existing_artifact = existing_artifact[0]
-                uri = c_hash
-                print("i am here")
-                artifact = link_execution_to_artifact(
-                    store=self.store,
-                    execution_id=self.execution.id,
-                    uri=uri,
-                    input_name=url,
-                    event_type=mlpb.Event.Type.OUTPUT,
-                )
-            else:
-                uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-                artifact = create_new_artifact_event_and_attribution(
-                    store=self.store,
-                    execution_id=self.execution.id,
-                    context_id=self.child_context.id,
-                    uri=uri,
-                    name=url,
-                    type_name="Environment",
-                    event_type=mlpb.Event.Type.OUTPUT,
-                    properties={
-                        "git_repo": str(git_repo),
-                        # passing c_hash value to commit
-                        "Commit": str(dataset_commit),
-                        "url": str(dvc_url_with_pipeline),
-                    },
-                    artifact_type_properties={
-                        "git_repo": mlpb.STRING,
-                        "Commit": mlpb.STRING,
-                        "url": mlpb.STRING,
-                    },
-                    milliseconds_since_epoch=int(time.time() * 1000),
-                )
-            self.execution_label_props["git_repo"] = git_repo
-            self.execution_label_props["Commit"] = dataset_commit
-
-            
-            if self.graph:
-                self.driver.create_env_node(
-                    name,
-                    url,
-                    uri,
-                    "output",
-                    self.execution.id,
-                    self.parent_context,
-                )
-
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": "output",
-                    "Execution_Name": self.execution_name,
-                    "Type": "Environment",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
-                )
-            
-            return artifact
-
-    def log_python_env_on_server(
-            self,
-            url: str,
-            uri: str,
-        ) -> mlpb.Artifact:
-            "Used to log the python packages involved in the current execution"
-
-            git_repo = git_get_repo()
-            name = re.split("/", url)[-1]
-            existing_artifact = []
-
-            commit_output(url, self.execution.id)
-            c_hash = dvc_get_hash(url)
-
-            if c_hash == "":
-                print("Error in getting the dvc hash,return without logging")
-                return
-
-            dataset_commit = c_hash
-            dvc_url = dvc_get_url(url)
-            dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
-            url = url + ":" + c_hash
-            if c_hash and c_hash.strip:
-                existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
-
-            if existing_artifact and len(existing_artifact) != 0:
-                existing_artifact = existing_artifact[0]
-                uri = c_hash
-                print("i am here")
-                artifact = link_execution_to_artifact(
-                    store=self.store,
-                    execution_id=self.execution.id,
-                    uri=uri,
-                    input_name=url,
-                    event_type=mlpb.Event.Type.OUTPUT,
-                )
-            else:
-                uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-                artifact = create_new_artifact_event_and_attribution(
-                    store=self.store,
-                    execution_id=self.execution.id,
-                    context_id=self.child_context.id,
-                    uri=uri,
-                    name=url,
-                    type_name="Environment",
-                    event_type=mlpb.Event.Type.OUTPUT,
-                    properties={
-                        "git_repo": str(git_repo),
-                        # passing c_hash value to commit
-                        "Commit": str(dataset_commit),
-                        "url": str(dvc_url_with_pipeline),
-                    },
-                    artifact_type_properties={
-                        "git_repo": mlpb.STRING,
-                        "Commit": mlpb.STRING,
-                        "url": mlpb.STRING,
-                    },
-                    milliseconds_since_epoch=int(time.time() * 1000),
-                )
-            self.execution_label_props["git_repo"] = git_repo
-            self.execution_label_props["Commit"] = dataset_commit
-
-            
-            if self.graph:
-                self.driver.create_env_node(
-                    name,
-                    url,
-                    uri,
-                    "output",
-                    self.execution.id,
-                    self.parent_context,
-                )
-
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": "output",
-                    "Execution_Name": self.execution_name,
-                    "Type": "Environment",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
-                )
-            
-            return artifact
 
     def log_dataset(
         self,
