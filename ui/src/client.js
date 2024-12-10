@@ -153,17 +153,6 @@ class FastAPIClient {
       });
   }
 
-  async getArtifact(artifact_type) {
-    return this.apiClient
-      .get(`/artifact`, {
-        params: {
-          artifact_type: artifact_type,
-        },
-      })
-      .then(({ data }) => {
-        return data;
-      });
-  }
 }
 
 export default FastAPIClient;

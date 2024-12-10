@@ -64,13 +64,6 @@ function DashboardHeader() {
             Artifacts
           </NavLink>
           <NavLink
-            to="/artifact"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
-            activeClassName="active"
-          >
-            Artifacts_ps
-          </NavLink>
-          <NavLink
             to="/executions"
             className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
             activeClassName="active"
