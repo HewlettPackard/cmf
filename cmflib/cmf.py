@@ -105,17 +105,10 @@ class Cmf:
     """
 
     # pylint: disable=too-many-instance-attributes
-    # Reading CONFIG_FILE variable
-    #cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
     # what if we follow the same procedure as dataslice/metrics 
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
-    #if os.path.exists(cmf_config):
-    #    attr_dict = CmfConfig.read_config(cmf_config)
-    #    __neo4j_uri = attr_dict.get("neo4j-uri", "")
-    #    __neo4j_password = attr_dict.get("neo4j-password", "")
-    #    __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(
         self,
@@ -457,8 +450,6 @@ class Cmf:
             self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
         else:
             self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())          
-
-
         self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
@@ -479,7 +470,6 @@ class Cmf:
             self.execution.id,
             custom_props,
         )
-
         os.chdir(logging_dir)
         return self.execution
 
@@ -675,10 +665,8 @@ class Cmf:
                 custom_props,
             )
 
-        # link the artifact to execution if it exists and creates artifact if it doesn't
         return self.execution
 
-    # what is the reason behind creating this function
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")

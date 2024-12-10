@@ -37,88 +37,12 @@ def is_git_repo():
     else:
         return
 
-def get_python_env(env_name='cmf'):
-    # what this is supposed to return 
-    try:
-        # Check if the environment is conda
-        if is_conda_installed():  # If conda is installed and the command succeeds
-
-            # Step 1: Get the list of conda packages
-            conda_packages = subprocess.check_output(['conda', 'list', '--export']).decode('utf-8').splitlines()
-
-            # Step 2: Get the list of pip packages
-            pip_packages = subprocess.check_output(['pip', 'freeze']).decode('utf-8').splitlines()
-
-            # Step 3: Get the list of channels from the current conda environment
-            channels_raw = subprocess.check_output(['conda', 'config', '--show', 'channels']).decode('utf-8').splitlines()
-
-            # Filter out lines that start with 'channels:' and any empty or commented lines
-            channels = [line.strip().lstrip('- ').strip() for line in channels_raw if line and not line.startswith('channels:') and not line.startswith('#')]
-
-            # Step 4: Create a YAML structure for the environment
-            env_data = {
-                'name': env_name,  # Name the environment
-                'channels': channels,  # Add the cleaned channels list
-                'dependencies': [],
-            }
-
-            # Add conda packages to dependencies
-            for package in conda_packages:
-                if not package.startswith('#') and len(package.strip()) > 0:
-                    env_data['dependencies'].append(package)
-
-            # Add pip packages under a pip section in dependencies
-            if pip_packages:
-                pip_section = {'pip': pip_packages}
-                env_data['dependencies'].append(pip_section)
-
-            return env_data
-
-        else:
-            # If not conda, assume virtualenv/pip
-            print("Detected virtualenv/pip environment. Exporting requirements.txt...")
-
-            # Step 1: Get the list of pip packages
-            pip_packages = subprocess.check_output(['pip', 'freeze']).decode('utf-8').splitlines()
-
-            return pip_packages
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-    return
-
-def get_md5_hash(output):
-    import hashlib
-
-    # Convert the string to bytes (utf-8 encoding)
-    byte_content = output.encode('utf-8')
-
-    # Create an MD5 hash object
-    md5_hash = hashlib.md5()
-
-    # Update the hash with the byte content
-    md5_hash.update(byte_content)
-
-    # Return the hexadecimal digest
-    hash_for_op = md5_hash.hexdigest()
-
-    return hash_for_op
         
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
     if not logging_dir == cmf_init_path:
         os.chdir(cmf_init_path)
     return logging_dir
-
-
-def is_conda_installed() -> bool:
-    """Check if Conda is installed by running 'conda --version'."""
-    try:
-        subprocess.run(["conda", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
 
 
 def list_conda_packages_json() -> list:

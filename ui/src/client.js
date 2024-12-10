@@ -152,7 +152,6 @@ class FastAPIClient {
         return data;
       });
   }
-
 }
 
 export default FastAPIClient;

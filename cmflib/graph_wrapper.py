@@ -285,7 +285,6 @@ class GraphDriver:
         syntax_str = syntax_str + " RETURN ID(a) as node_id"
         return syntax_str
 
-
     @staticmethod
     def _create_dataslice_syntax(name: str, path: str, uri: str,
                                custom_properties):

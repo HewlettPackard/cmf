@@ -22,8 +22,6 @@ import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
 import "./App.css";
-// import ArtifactPsTable from "./components/ArtifactPsTable";
-import Artifacts_ps from "./pages/artifacts_ps";
 
 function App() {
   return (
