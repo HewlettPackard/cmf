@@ -26,47 +26,21 @@ from cmflib.dvc_wrapper import dvc_get_config
 
 class CmdExecutionList(CmdBase):
 
-    def update_dataframe(self, df: pd.DataFrame, is_long: bool) -> pd.DataFrame:
-        """
-        Reorders and updates the DataFrame columns.
-        Parameters:
-        - df: The input DataFrame to be updated.
-        - is_long: 
-            - If True, includes all columns after prioritizing 'id' and 'Context_Type'columns.
-            - If False, includes only columns starting with 'custom_properties' after prioritizing 'id' and 'Context_Type' columns.
-        Returns:
-        - pd.DataFrame: A new DataFrame with reordered columns.
-        """
-        if is_long:
-            # When user specify -l option(i.e long) in that case we need to print id and Context_Type as a 1st 2 columns in table
-            # and after that all the remaining columns.
-            updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if not (col == "id" or col == "Context_Type")]
-        else:
-            # In case of short option(that is default option) we need to print id and Context_Type as a 1st 2 columns in table
-            # and after that need to print all columns which is start with "custom_properties".  
-            updated_columns = ["id", "Context_Type"] + [ col for col in df.columns if col.startswith('custom_properties_')]
-
-        return df[updated_columns]
-    
     def display_table(self, df: pd.DataFrame) -> None:
         """
-        Displays the DataFrame in a paginated table format with optional column renaming and text wrapping for better readability. 
-        Parameters: 
+        Display the DataFrame in a paginated table format with text wrapping for better readability.
+        Parameters:
         - df: The DataFrame to display.
         """
-        # Limit the table to a maximum of 8 columns to ensure proper formatting and readability.
-        # Tables with more than 8 columns may appear cluttered or misaligned on smaller terminal screens. 
-        if len(df.columns) > 8:
-            df=df.iloc[:,:8]
-
-        # Rename columns that start with "custom_properties_" by removing the prefix for clarity. 
-        # For example, "custom_properties_auc_curve" becomes "auc_curve". 
-        df = df.rename(columns = lambda x: x.replace("custom_properties_", "") if x.startswith("custom_properties_") else x)
-
-        # Wrap text in object-type columns to a width of 15 characters.
+        # Rearranging columns
+        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "Pipeline_id", "Pipeline_Type", "Git_Repo"] 
+        df = df[updated_columns]
+        df = df.copy()
+       
+        # Wrap text in object-type columns to a width of 14 characters.
         # This ensures that long strings are displayed neatly within the table.
         for col in df.select_dtypes(include=["object"]).columns:
-            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=15) if isinstance(x, str) else x)
+            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
 
         total_records = len(df)
         start_index = 0  
@@ -154,7 +128,16 @@ class CmdExecutionList(CmdBase):
                 if self.args.execution_id[0].isdigit():
                     if int(self.args.execution_id[0]) in list(df['id']): # Converting series to list.
                         df = df.query(f'id == {int(self.args.execution_id[0])}')  # Used dataframe based on execution id
-                        df = self.update_dataframe(df, True)
+
+                        # Rearranging columns: Start with fixed columns and appending the remaining columns.
+                        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "Pipeline_id", "Pipeline_Type", "Git_Repo"] 
+                        updated_columns += [ col for col in df.columns if col not in updated_columns]
+                        
+                        df = df[updated_columns]
+
+                        # Drop columns that start with 'custom_properties_' and that contains NaN values
+                        columns_to_drop = [col for col in df.columns if col.startswith('custom_properties_') and df[col].isna().any()]
+                        df = df.drop(columns=columns_to_drop)
 
                         # Wrap text in object-type columns to a width of 30 characters.
                         for col in df.select_dtypes(include=['object']).columns:
@@ -177,23 +160,17 @@ class CmdExecutionList(CmdBase):
                         return "Done"
                 return "Execution id does not exist.."  
     
-            if self.args.long:
-                df = self.update_dataframe(df, True)
-            else:
-                df = self.update_dataframe(df, False)
-            self.display_table(df) 
-                
+            self.display_table(df)             
             return "Done"
     
     
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = '''Display all executions with detailed information from the specified MLMD file. 
-                             By default, records are displayed in table format with 8 columns and a limit of 20 records per page.'''
+    EXECUTION_LIST_HELP = "Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display all executions with detailed information from the specified MLMD file.",
+        description="Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.",
         help=EXECUTION_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -223,13 +200,6 @@ def add_parser(subparsers, parent_parser):
         action="append",
         help="Specify the execution id to retrieve execution.",
         metavar="<exe_id>",
-    )
-    
-    parser.add_argument(
-        "-l",
-        "--long", 
-        action='store_true',
-        help="Use to display 20 records per page in a table with 8 columns.",
     )
 
     parser.set_defaults(func=CmdExecutionList)

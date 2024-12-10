@@ -26,56 +26,37 @@ from cmflib.dvc_wrapper import dvc_get_config
 from typing import Union, List
 
 class CmdArtifactsList(CmdBase):
-    def update_dataframe(self, df: pd.DataFrame, is_long: bool) -> pd.DataFrame:
+    def convert_to_datetime(self, df: pd.DataFrame, col_name: str) -> pd.DataFrame:
         """
-        Reorders and updates the DataFrame columns.
-
+        Function to convert a column to datetime format.
         Parameters:
-        - df: The input DataFrame to be updated.
-        - is_long: 
-            - If True, includes all columns after prioritizing 'id', 'name', and 'date_time' columns.
-            - If False, includes only columns starting with 'custom_properties' after prioritizing 'id', 'name', and 'date_time' columns.
-
+        - df: The DataFrame containing the data.
+        - col_name: The name of the column to convert to datetime.
         Returns:
-        - pd.DataFrame: A new DataFrame with reordered columns.
-        """
-
-        # Convert the 'create_time_since_epoch' column to UTC datetime format.
-        # The datetime is formatted as "Day DD Mon YYYY HH:MM:SS GMT".
-        df = df.copy()
-        df['date_time'] = pd.to_datetime(df['create_time_since_epoch'], unit='ms', utc=True).dt.strftime("%a %d %b %Y %H:%M:%S GMT")
-        df.drop('create_time_since_epoch', axis=1, inplace=True) # Removing column from dataframe.
-
-        if is_long:
-            # When user specify -l option(i.e long) in that case we need to print id, name and date_time as a 1st 3 columns in table
-            # and after that all the remaining columns.
-            updated_columns = ["id", "name", "date_time"] + [ col for col in df.columns if not (col == "id" or col == "name" or col == "date_time")]
-        else:
-            # In case of short option(that is default option) we need to print id, name and date_time as a 1st 3 columns in table
-            # and after that need to print all columns which is start with "custom_properties".
-            updated_columns = ["id", "name", "date_time"] + [ col for col in df.columns if col.startswith('custom_properties_')]
-
-        return df[updated_columns]
+        - The updated DataFrame with the specified column converted to datetime format.
+        """  
+        # Convert the col_name column to UTC datetime format.
+        # The datetime is formatted as "Day DD Mon YYYY HH:MM:SS GMT"
+        df=df.copy()
+        df[col_name] = pd.to_datetime(df[col_name], unit='ms', utc=True).dt.strftime("%a %d %b %Y %H:%M:%S GMT")
+        
+        return df
     
     def display_table(self, df: pd.DataFrame) -> None:
         """
-        Displays the DataFrame in a paginated table format with optional column renaming and text wrapping for better readability. 
-        Parameters: 
+        Display the DataFrame in a paginated table format with text wrapping for better readability.
+        Parameters:
         - df: The DataFrame to display.
         """
-        # Limit the table to a maximum of 8 columns to ensure proper formatting and readability.
-        # Tables with more than 8 columns may appear cluttered or misaligned on smaller terminal screens. 
-        if len(df.columns) > 8:
-            df=df.iloc[:,:8]
-
-        # Rename columns that start with "custom_properties_" by removing the prefix for clarity. 
-        # For example, "custom_properties_auc_curve" becomes "auc_curve". 
-        df = df.rename(columns = lambda x: x.replace("custom_properties_", "") if x.startswith("custom_properties_") else x)
-
-        # Wrap text in object-type columns to a width of 15 characters.
+        # Rearranging columns
+        updated_columns = ["id", "name", "type", "create_time_since_epoch", "url", "Commit", "uri"] 
+        df = df[updated_columns]
+        df = df.copy()
+       
+        # Wrap text in object-type columns to a width of 14 characters.
         # This ensures that long strings are displayed neatly within the table.
         for col in df.select_dtypes(include=["object"]).columns:
-            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=15) if isinstance(x, str) else x)
+            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
 
         total_records = len(df)
         start_index = 0  
@@ -198,14 +179,25 @@ class CmdArtifactsList(CmdBase):
                     for artifact_id in artifact_ids:
                         # Filter the DataFrame to retrieve rows corresponding to the current ID.
                         filtered_data = df.loc[df['id'] == artifact_id] 
-        
-                        # Update the filtered data using the long format (include all columns).
-                        filtered_data = self.update_dataframe(filtered_data, True)
+
+                        # Converting "create_time_since_epoch" and "last_update_time_since_epoch" to datetime format.
+                        filtered_data = self.convert_to_datetime(filtered_data, "create_time_since_epoch")
+                        filtered_data = self.convert_to_datetime(filtered_data, "last_update_time_since_epoch")
+
+                        # Rearranging columns: Start with fixed columns and appending the remaining columns.
+                        updated_columns = ["id", "name", "type", "create_time_since_epoch", "url", "Commit", "uri", "last_update_time_since_epoch"] 
+                        updated_columns += [ col for col in filtered_data.columns if col not in updated_columns]
                         
+                        filtered_data = filtered_data[updated_columns]
+
+                        # Drop columns that start with 'custom_properties_' and that contains NaN values
+                        columns_to_drop = [col for col in filtered_data.columns if col.startswith('custom_properties_') and df[col].isna().any()]
+                        filtered_data = filtered_data.drop(columns=columns_to_drop)
+
                         # Wrap text in object-type columns to a width of 30 characters for better readability.
                         for col in filtered_data.select_dtypes(include=['object']).columns:
                             filtered_data[col] = filtered_data[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
-
+                        
                         # For a single artifact name, display the table in a horizontal format:
                         # Set 'id' as the index.
                         filtered_data.set_index("id", inplace=True)
@@ -213,7 +205,7 @@ class CmdArtifactsList(CmdBase):
                         filtered_data = filtered_data.T.reset_index()
                         # Rename the first column back to 'id' for consistency.
                         filtered_data.columns.values[0] = 'id'
-
+                        
                         # Display the formatted and transposed table using the 'tabulate' library.
                         table = tabulate(
                             filtered_data,
@@ -231,23 +223,19 @@ class CmdArtifactsList(CmdBase):
                 else:
                     return "Artifact name does not exist.."
         
-        if self.args.long:
-            df = self.update_dataframe(df, True)
-        else:
-            df = self.update_dataframe(df, False)
+        df = self.convert_to_datetime(df, "create_time_since_epoch")
         self.display_table(df)
 
         return "Done."
 
 
-
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page."
+    ARTIFACT_LIST_HELP = "Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page.",
+        description="Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -277,13 +265,6 @@ def add_parser(subparsers, parent_parser):
         action="append",
         help="Specify the artifact name to display detailed information about the given artifact name.",
         metavar="<artifact_name>",
-    )
-
-    parser.add_argument(
-        "-l", 
-        "--long", 
-        action='store_true',
-        help="Use to display 20 records per page in a table with 8 columns.",
     )
 
     parser.set_defaults(func=CmdArtifactsList)
