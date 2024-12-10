@@ -18,7 +18,6 @@ import os
 import sys
 import subprocess
 import json
-import yaml
 
 def is_url(url)-> bool:
     from urllib.parse import urlparse
@@ -36,6 +35,7 @@ def is_git_repo():
         return f"A Git repository already exists in {git_dir}."
     else:
         return
+
 
 def get_python_env()-> str:
     installed_packages = ""
@@ -61,7 +61,6 @@ def get_python_env()-> str:
         except ImportError:
             print("Pip is not installed.")
     return packages
-        
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
     if not logging_dir == cmf_init_path:
