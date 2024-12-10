@@ -37,6 +37,30 @@ def is_git_repo():
     else:
         return
 
+def get_python_env()-> str:
+    installed_packages = ""
+    python_version = sys.version
+    packages = ""
+    # check if conda is installed
+    if is_conda_installed():
+        import conda
+        # List all installed packages and their versions
+        data = list_conda_packages_json()
+        transformed_result = [f"{entry['name']}=={entry['version']}" for entry in data]
+        installed_packages =  transformed_result
+        packages = f"Conda: Python {python_version}: {installed_packages}"
+    else:
+        # pip
+        try:
+            from pip._internal.operations import freeze
+
+            # List all installed packages and their versions
+            installed_packages_generator = freeze.freeze()
+            installed_packages = list(installed_packages_generator)
+            packages = f"Python {python_version}: {installed_packages}"
+        except ImportError:
+            print("Pip is not installed.")
+    return packages
         
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
@@ -44,14 +68,24 @@ def change_dir(cmf_init_path):
         os.chdir(cmf_init_path)
     return logging_dir
 
-
-def list_conda_packages_json() -> list:
-    """Return a list of installed Conda packages and their versions."""
+def is_conda_installed():
     try:
-        result = subprocess.run(["conda", "list", "--json"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        import conda
+        # Run the 'conda --version' command and capture the output
+        subprocess.run(['conda', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+    except ImportError:
+        return False
+
+
+def list_conda_packages_json():
+    try:
+        result = subprocess.run(['conda', 'list', '--json'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         return json.loads(result.stdout)
-    except (subprocess.CalledProcessError, json.JSONDecodeError):
-        return []
+    except subprocess.CalledProcessError as e:
+        return f"Error: {e.stderr}"
 
 
 # Generate SciToken dynamically 
