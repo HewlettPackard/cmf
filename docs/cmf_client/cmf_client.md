@@ -258,11 +258,11 @@ Optional Arguments
 ```
 ### cmf artifact list
 ```
-Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] -l
+Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] 
 ```
-`cmf artifact list` command displays all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page.
+`cmf artifact list` command displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
 ```
-cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' -l
+cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' 
 ```
 Required Arguments
 ```
@@ -272,8 +272,7 @@ Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
   -f [file_name], --file-name [file_name]               Specify the absolute or relative path for the input MLMD file. 
-  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.
-  -l, --long                                            Use to display 20 records per page in a table with 8 columns.                                                     
+  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.                                                   
 ```
 
 ## cmf metadata
@@ -341,14 +340,14 @@ Optional Arguments
 ```
 Usage: cmf execution [-h] {list}
 ```
-`cmf execution` command displays all executions with detailed information from the specified MLMD file. By default, records are displayed in table format with 8 columns and a limit of 20 records per page.
+`cmf execution` command to displays executions from the MLMD file.
 ### cmf executions list
 ```
-Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] -l
+Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] 
 ```
-`cmf execution list` Command to display all executions with detailed information from the specified MLMD file.
+`cmf execution list` command to displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
 ```
-cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' -l
+cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' 
 ```
 Required Arguments
 ```
@@ -359,7 +358,6 @@ Optional Arguments
   -h, --help                                            show this help message and exit.
   --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
   -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
-  -l, --long                                            Use to display 20 records per page in a table with 8 columns. 
 ```
 
 ## cmf pipeline
