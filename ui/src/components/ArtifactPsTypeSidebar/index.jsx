@@ -20,23 +20,35 @@ import "./index.css";
 const ArtifactPsTypeSidebar = ({
   artifactTypes,
   handleArtifactTypeClick,
+  onFilter
 }) => {
   const [clickedArtifactType, setClickedArtifactType] = useState(
     artifactTypes[0],
   );
 
+  const [filterValue, setFilterValue] = useState("");
+
   useEffect(() => {
     handleClick(artifactTypes[0]);
     // eslint-disable-next-line
   }, []);
+
   useEffect(() => {
     setClickedArtifactType(artifactTypes[0]);
     // eslint-disable-next-line
   }, [artifactTypes]);
+
   const handleClick = (artifactType) => {
     setClickedArtifactType(artifactType);
     handleArtifactTypeClick(artifactType);
   };
+
+  const handleFilterChange = (e) => {
+    const filterValue = e.target.value;
+    setFilterValue(filterValue); // Update the filter string
+    onFilter(filterValue);
+  };
+
 
   return (
     <>
@@ -55,6 +67,29 @@ const ArtifactPsTypeSidebar = ({
               {artifactType}
             </button>
           ))}
+        </div>
+        <div className="flex flex-row">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBottom: "0.5rem",
+              marginTop: "0.5rem",
+              fontfamily: "Arial,sans-serif",
+            }}
+          >
+            <input
+              type="text"
+              value={filterValue}
+              onChange={handleFilterChange}
+              placeholder="Filter by Name"
+              style={{
+                marginRight: "1rem",
+                padding: "0.5rem",
+                border: "1px solid #ccc",
+              }}
+            />
+          </div>
         </div>
       </div>
     </>

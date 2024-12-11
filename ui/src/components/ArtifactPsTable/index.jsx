@@ -32,6 +32,8 @@ const ArtifactPsTable = ({artifacts}) => {
 
   const consistentColumns = [];
 
+  // console.log(artifacts)
+
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
     setData(artifacts);
@@ -123,16 +125,16 @@ const ArtifactPsTable = ({artifacts}) => {
                   <td className="px-6 py-4">{artifact.name}</td>
                   <td className="px-6 py-4">{createDateTime(artifact.create_time_since_epoch)}</td>
                   <td className="px-6 py-4">{artifact.uri}</td>
-                  <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "url")}</td>
-                  <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "git_repo")}</td>
-                  <td className="px-6 py-4">{getPropertyValue(artifact.custom_properties, "Commit")}</td>
+                  <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "url")}</td>
+                  <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "git_repo")}</td>
+                  <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "Commit")}</td>
                 </tr>
                 {expandedRow === index && (
                 <tr>
                 <td colSpan="6">
                 <table className="expanded-table">
                   <tbody>
-                  {JSON.parse(artifact.custom_properties).map((property, idx) => (
+                  {JSON.parse(artifact.artifact_properties).map((property, idx) => (
                   <tr key={idx}>
                   <td>{property.name}</td>
                   <td>{property.string_value}</td>

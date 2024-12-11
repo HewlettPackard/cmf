@@ -410,13 +410,15 @@ async def update_global_exe_dict(pipeline_name):
 
 
 # api to display artifacts available in mlmd[from postgres]
-@app.get("/artifact")
-async def artifact(request: Request, pipeline_name, artifact_type):
+@app.get("/artifact/{pipeline_name}/{artifact_type}")
+async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
+                   filter_value: str = Query('Model', description="Filter value")):
+    print("I reached here")
     conn = await asyncpg.connect(
         user='myuser', 
         password='mypassword',
         database='mlmd', 
-        host='10.93.244.204',
+        host='192.168.20.67',
     )
 
     # rows = await conn.fetch("select t1.*, t2.* from artifact as t1 join artifactproperty as t2 on t2.artifact_id=t1.id where t1.id=1;")
@@ -474,20 +476,21 @@ async def artifact(request: Request, pipeline_name, artifact_type):
         LEFT JOIN
             artifactproperty ap ON a.id = ap.artifact_id
         WHERE
-            t.name = $3 -- Input for type.name
+            t.name = $2 -- Input for type.name
             AND at.context_id IN (
                 SELECT pc.context_id
                 FROM parentcontext pc
                 JOIN context c2 ON pc.parent_context_id = c2.id
-                WHERE c2.name = $2 -- Input for context.name (which is actually a parent_context)
+                WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
             )
+            AND a.name LIKE '%$3%'
         GROUP BY
             a.id;
 
 
     '''
-    rows = await conn.fetch(query, pipeline_name, artifact_type)
-
+    rows = await conn.fetch(query2, pipeline_name, artifact_type, filter_value)
+    print("almost done")
     await conn.close()
-    print(rows)
+    # print(rows)
     return [dict(row) for row in rows]

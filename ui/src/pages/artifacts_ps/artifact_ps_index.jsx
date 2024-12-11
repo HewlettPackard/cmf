@@ -34,57 +34,120 @@ const Artifacts_ps = () => {
   const [artifacts, setArtifacts] = useState([]);
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
-  const [filter, setFilter] = useState("");
  
 
-  // Fetch pipelines on component mount
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
       setPipelines(data);
-      const defaultPipeline = data[0];
-      setSelectedPipeline(defaultPipeline); // Set the first pipeline as default
-      fetchArtifactTypes(defaultPipeline); // Fetch artifact types once the pipeline is selected
+      setSelectedPipeline(data[0]);
+      fetchArtifactTypes(data[0]);
     });
-  };
-
-  const fetchArtifactTypes = (pipeline) => {
-    client.getArtifactTypes().then((types) => {
-      setArtifactTypes(types);
-      const defaultArtifactType = types[0];
-      setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(pipeline, defaultArtifactType, filter); // Fetch artifacts for the first artifact type and default pipeline
-    });
-  };
-
-  const fetchArtifacts = (pipelineName, artifactType, filter="") => {
-    client.getArtifact(pipelineName, artifactType, filter)
-      .then((data) => {
-        setArtifacts(data); // Update artifacts when data is fetched
-      });
-  };
-
-  const handleArtifactTypeClick = (artifactType) => {
-    setSelectedArtifactType(artifactType); // Set the selected artifact type
-    setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    if (selectedPipeline) {
-      fetchArtifacts(selectedPipeline, artifactType, filter); // Fetch artifacts based on the selected artifact type and pipeline
-    }
-  };
-
-  const handlePipelineClick = (pipeline) => {
-    setSelectedPipeline(pipeline); // Set the selected pipeline
-    setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    fetchArtifacts(pipeline, selectedArtifactType, filter); // Fetch artifacts based on the selected pipeline and artifact type
-  };
-
-  const handleFilter = (value) => {
-    setFilter(value); // Update the filter string
-    console.log("value",value)
   };
 
   useEffect(() => {
-    fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
+    fetchPipelines();
   }, []);
+
+  const handlePipelineClick = (pipeline) => {
+    if (selectedPipeline !== pipeline) {
+      // this condition sets page as null.
+      setArtifacts(null);
+    }
+    setSelectedPipeline(pipeline);
+  };
+  
+  const fetchArtifacts = (pipeline, artifact_type) => {
+    client.getArtifact(pipeline, artifact_type)
+    .then((data) => {
+      setArtifacts(data);
+    })
+  };
+  
+  const fetchArtifactTypes = () => {
+    client.getArtifactTypes().then((types) => {
+      setArtifactTypes(types);
+      setSelectedArtifactType(types[0]);
+      console.log(selectedPipeline);
+      fetchArtifacts(selectedPipeline, types[0]);
+    });
+  };
+  
+  const handleArtifactTypeClick = (artifactType) => {
+    setSelectedArtifactType(artifactType);
+    fetchArtifacts(selectedPipeline, artifactType);
+  };
+
+
+
+  // ############
+
+  // const fetchPipelines = () => {
+  //   client.getPipelines("").then((data) => {
+  //     setPipelines(data);
+  //     setSelectedPipeline(data[0]);
+  //   });
+  // };
+
+  // useEffect(() => {
+  //   fetchPipelines();
+  // }, []);
+
+  // const handlePipelineClick = (pipeline) => {
+  //   if (selectedPipeline !== pipeline) {
+  //     // this condition sets page as null.
+  //     setArtifacts(null);
+  //   }
+  //   setSelectedPipeline(pipeline);
+  // };
+
+  // const handleArtifactTypeClick = (artifactType) => {
+  //   if (selectedArtifactType !== artifactType) {
+  //     // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
+  //     setArtifacts(null);
+  //   }
+  //   setSelectedArtifactType(artifactType);
+  // };
+
+  // const fetchArtifactTypes = (selectedPipeline) => {
+  //   client.getArtifactTypes().then((types) => {
+  //     setArtifactTypes(types);
+  //     setSelectedArtifactType(types[0]);
+  //     fetchArtifacts(
+  //       selectedPipeline,
+  //       types[0]
+  //     );
+  //   });
+  // };
+
+  // useEffect(() => {
+  //   if (selectedPipeline) {
+  //     fetchArtifactTypes(selectedPipeline);
+  //   }
+  //   // eslint-disable-next-line
+  // }, [selectedPipeline]);
+
+  // const fetchArtifacts = (
+  //   pipelineName,
+  //   type,
+  // ) => {
+  //   client
+  //     .getArtifact(
+  //       pipelineName,
+  //       type)
+  //     .then((data) => {
+  //       setArtifacts(data);})
+  //     .catch(() => setArtifacts(null));
+  // };
+
+  // useEffect(() => {
+  //   if (selectedPipeline && selectedArtifactType) {
+  //     fetchArtifacts(
+  //       selectedPipeline,
+  //       selectedArtifactType);
+  //   }
+  // }, [selectedArtifactType]);
+
+
 
   return (
     <>
@@ -107,18 +170,14 @@ const Artifacts_ps = () => {
                   <ArtifactPsTypeSidebar
                     artifactTypes={artifactTypes}
                     handleArtifactTypeClick={handleArtifactTypeClick}
-                    onFilter={handleFilter}
                   />
                 )}
             </div>
             <div>
-                {artifacts !== null && artifacts.length > 0 ? (
-                  <ArtifactPsTable 
-                    artifacts={artifacts} 
-                    // onFilter={handleFilter}
-                    />
-                ) : (
-                  <div>No data available</div> // Display message when there are no artifacts
+              {(
+                  <ArtifactPsTable
+                    artifacts={artifacts}
+                  />
                 )}
             </div>
           </div>
