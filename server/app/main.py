@@ -411,12 +411,12 @@ async def update_global_exe_dict(pipeline_name):
 
 # api to display artifacts available in mlmd[from postgres]
 @app.get("/artifact")
-async def artifact(request: Request, artifact_type):
+async def artifact(request: Request, pipeline_name, artifact_type):
     conn = await asyncpg.connect(
         user='myuser', 
         password='mypassword',
         database='mlmd', 
-        host='192.168.20.67'
+        host='10.93.244.204',
     )
 
     # rows = await conn.fetch("select t1.*, t2.* from artifact as t1 join artifactproperty as t2 on t2.artifact_id=t1.id where t1.id=1;")
@@ -425,7 +425,7 @@ async def artifact(request: Request, artifact_type):
     # for model
     # rows = await conn.fetch("SELECT * FROM artifact WHERE type_id IN (SELECT id FROM type where name='Model') ORDER BY id;")
     
-    query = '''
+    '''
         select a.id, a.uri, a.name, a.create_time_since_epoch, a.last_update_time_since_epoch,
         JSON_AGG(JSON_BUILD_OBJECT(
             'artifact_id',ap.artifact_id,
@@ -441,13 +441,52 @@ async def artifact(request: Request, artifact_type):
         where 
             a.type_id in (
                 SELECT id FROM type 
-                where name=$1)
+                where name=$2)
         group by 
             a.id, a.uri, a.name, a.create_time_since_epoch, a.last_update_time_since_epoch
         order by a.id;
     '''
     # from varkhs query
-    rows = await conn.fetch(query, artifact_type)
+    # rows = await conn.fetch(query, pipeline_name, artifact_type)
+    query2 = '''
+        SELECT
+            a.*,
+            JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'name', ap.name,
+                    'is_custom_property', ap.is_custom_property,
+                    'int_value', ap.int_value,
+                    'double_value', ap.double_value,
+                    'string_value', ap.string_value,
+                    'byte_value', ap.byte_value,
+                    'proto_value', ap.proto_value,
+                    'bool_value', ap.bool_value
+                )
+            ) AS artifact_properties
+        FROM
+            artifact a
+        JOIN
+            type t ON a.type_id = t.id
+        JOIN
+            attribution at ON a.id = at.artifact_id
+        JOIN
+            context c ON at.context_id = c.id
+        LEFT JOIN
+            artifactproperty ap ON a.id = ap.artifact_id
+        WHERE
+            t.name = $3 -- Input for type.name
+            AND at.context_id IN (
+                SELECT pc.context_id
+                FROM parentcontext pc
+                JOIN context c2 ON pc.parent_context_id = c2.id
+                WHERE c2.name = $2 -- Input for context.name (which is actually a parent_context)
+            )
+        GROUP BY
+            a.id;
+
+
+    '''
+    rows = await conn.fetch(query, pipeline_name, artifact_type)
 
     await conn.close()
     print(rows)
