@@ -2323,44 +2323,41 @@ def pipeline_list(filepath = "./mlmd"):
     return output
 
 
-def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = "", long = True):
-    """ Display all executions with detailed information from the specified MLMD file. 
-        By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
+def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = ""):
+    """Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
-        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id", "long") 
+        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file. 
-       execution_id: Executions for particular execution id. 
-       long: Detailed summary regarding execution.
+       execution_id: Executions for particular execution id.
     Returns:
        Output from the _execution_list function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), execution_id, long
-    output = _execution_list(pipeline_name, filepath, execution_id, long)
+    # Optional arguments: filepath( path to store mlmd file), execution_id
+    output = _execution_list(pipeline_name, filepath, execution_id)
     return output
 
 
-def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = "", long = True):
-    """ Display all artifacts with detailed information from the specified MLMD file. By default, records are displayed in table format with 5 columns and a limit of 20 records per page.
+def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = ""):
+    """ Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
-        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name", "long") 
+        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file. 
-       artifact_name: Artifacts for particular artifact name. 
-       long: Detailed summary regarding artifact.
+       artifact_name: Artifacts for particular artifact name.
     Returns:
        Output from the _artifact_list function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), artifact_name, long
-    output = _artifact_list(pipeline_name, filepath, artifact_name, long)
+    # Optional arguments: filepath( path to store mlmd file), artifact_name
+    output = _artifact_list(pipeline_name, filepath, artifact_name)
     return output
