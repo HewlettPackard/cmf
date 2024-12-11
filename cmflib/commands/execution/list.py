@@ -33,7 +33,7 @@ class CmdExecutionList(CmdBase):
         - df: The DataFrame to display.
         """
         # Rearranging columns
-        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "Pipeline_id", "Pipeline_Type", "Git_Repo"] 
+        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
         df = df[updated_columns]
         df = df.copy()
        
@@ -130,7 +130,7 @@ class CmdExecutionList(CmdBase):
                         df = df.query(f'id == {int(self.args.execution_id[0])}')  # Used dataframe based on execution id
 
                         # Rearranging columns: Start with fixed columns and appending the remaining columns.
-                        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "Pipeline_id", "Pipeline_Type", "Git_Repo"] 
+                        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
                         updated_columns += [ col for col in df.columns if col not in updated_columns]
                         
                         df = df[updated_columns]
