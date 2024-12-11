@@ -35,6 +35,7 @@ const Artifacts_ps = () => {
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
   const [filter, setFilter] = useState("");
+  const [sortOrder_initial, setSortOrder] = useState("asc");
  
 
   // Fetch pipelines on component mount
@@ -52,12 +53,12 @@ const Artifacts_ps = () => {
       setArtifactTypes(types);
       const defaultArtifactType = types[0];
       setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(pipeline, defaultArtifactType, filter); // Fetch artifacts for the first artifact type and default pipeline
+      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder_initial); // Fetch artifacts for the first artifact type and default pipeline
     });
   };
 
-  const fetchArtifacts = (pipelineName, artifactType, filter="") => {
-    client.getArtifact(pipelineName, artifactType, filter)
+  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder_initial) => {
+    client.getArtifact(pipelineName, artifactType, filter, sortOrder_initial)
       .then((data) => {
         setArtifacts(data); // Update artifacts when data is fetched
       });
@@ -67,14 +68,14 @@ const Artifacts_ps = () => {
     setSelectedArtifactType(artifactType); // Set the selected artifact type
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
     if (selectedPipeline) {
-      fetchArtifacts(selectedPipeline, artifactType, filter); // Fetch artifacts based on the selected artifact type and pipeline
+      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder_initial); // Fetch artifacts based on the selected artifact type and pipeline
     }
   };
 
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline); // Set the selected pipeline
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    fetchArtifacts(pipeline, selectedArtifactType, filter); // Fetch artifacts based on the selected pipeline and artifact type
+    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder_initial); // Fetch artifacts based on the selected pipeline and artifact type
   };
 
   const handleFilter = (value) => {
@@ -84,7 +85,7 @@ const Artifacts_ps = () => {
 
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
-  }, []);
+  }, [filter, sortOrder_initial]);
 
   return (
     <>
@@ -114,9 +115,10 @@ const Artifacts_ps = () => {
             <div>
                 {artifacts !== null && artifacts.length > 0 ? (
                   <ArtifactPsTable 
-                    artifacts={artifacts} 
-                    // onFilter={handleFilter}
+                    artifacts={artifacts}
+                    sortOrder_initial={sortOrder_initial}
                     />
+                    
                 ) : (
                   <div>No data available</div> // Display message when there are no artifacts
                 )}

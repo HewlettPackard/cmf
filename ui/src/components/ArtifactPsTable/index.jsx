@@ -22,9 +22,9 @@ import config from "../../config";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPsTable = ({artifacts}) => {
+const ArtifactPsTable = ({artifacts, sortOrder_initial}) => {
   const [data, setData] = useState([]);
-  const [sortOrder, setSortOrder] = useState(null);
+  const [sortOrder, setSortOrder] = useState(sortOrder_initial);
   const [sortedData, setSortedData] = useState([]);
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
@@ -89,6 +89,11 @@ const ArtifactPsTable = ({artifacts}) => {
     }
   };
 
+  const toggleSortOrder = () => {
+    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
+    setSortOrder(newSortOrder);
+  };
+
 
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
@@ -100,7 +105,9 @@ const ArtifactPsTable = ({artifacts}) => {
                 <th scope="col" className="id px-6 py-3"></th>
                 <th className="px-6 py-3" scope="col">ID</th>
                 <th className="px-6 py-3" >
-                <span scope="col" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <span scope="col" 
+                      style={{ display: 'inline-flex', alignItems: 'center' }} 
+                      onClick={toggleSortOrder}>
                 Name {renderArrow()}
                 </span>
                 </th>

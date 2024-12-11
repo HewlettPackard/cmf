@@ -412,8 +412,10 @@ async def update_global_exe_dict(pipeline_name):
 # api to display artifacts available in mlmd[from postgres]
 @app.get("/artifact/{pipeline_name}/{artifact_type}")
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
-                   filter_value: str = Query('Model', description="Filter value")):
-    print("I reached here")
+                   filter_value: str = Query(None, description="Filter value"), 
+                   sort_order: str = Query("asc", description="Sort order(asc or desc)")):
+    print("filter_value = ", filter_value)
+    print("sort_order = ", sort_order)
     conn = await asyncpg.connect(
         user='myuser', 
         password='mypassword',
@@ -483,13 +485,13 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
                 JOIN context c2 ON pc.parent_context_id = c2.id
                 WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
             )
-            AND a.name LIKE '%$3%'
+            AND a.name LIKE $3
         GROUP BY
-            a.id;
-
-
+            a.id
+        ORDER BY 
+            a.name $4;
     '''
-    rows = await conn.fetch(query2, pipeline_name, artifact_type, filter_value)
+    rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", sort_order)
     print("almost done")
     await conn.close()
     # print(rows)
