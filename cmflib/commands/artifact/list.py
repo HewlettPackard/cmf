@@ -22,6 +22,7 @@ import textwrap
 from tabulate import tabulate
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
+from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, ArtifactNotFound
 from cmflib.dvc_wrapper import dvc_get_config
 from typing import Union, List
 
@@ -134,7 +135,8 @@ class CmdArtifactsList(CmdBase):
         if len(result) == 0:
                 return msg
         
-        current_directory = os.getcwd()
+        # default path for mlmd file name
+        mlmd_file_name = "./mlmd"
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
@@ -145,10 +147,8 @@ class CmdArtifactsList(CmdBase):
             mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-        
-        current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
-             return f"Error: {mlmd_file_name} doesn't exists in {current_directory} directory."
+            raise FileNotFound(mlmd_file_name)
 
         # Creating cmfquery object.
         query = cmfquery.CmfQuery(mlmd_file_name)
@@ -164,7 +164,7 @@ class CmdArtifactsList(CmdBase):
         df = query.get_all_artifacts_by_context(pipeline_name)
 
         if df.empty:
-            return "Pipeline name doesn't exists..."
+            raise PipelineNotFound
         else:
             if not self.args.artifact_name:         # If self.args.artifact_name is None or an empty list ([]). 
                 pass
@@ -221,7 +221,7 @@ class CmdArtifactsList(CmdBase):
                             break
                     return "End of records.."
                 else:
-                    return "Artifact name does not exist.."
+                    return ArtifactNotFound
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
         self.display_table(df)
