@@ -17,7 +17,7 @@
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.css";
-import Popup from "../../components/Popup";
+import ModelCardPopup from "../../components/ModelCardPopup";
 import FastAPIClient from "../../client";
 import config from "../../config";
 
@@ -181,7 +181,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                           >
                             Open Model Card
                           </a>
-                          <Popup
+                          <ModelCardPopup
                             show={showPopup}
                             model_data={popupData}
                             onClose={handleClosePopup}
