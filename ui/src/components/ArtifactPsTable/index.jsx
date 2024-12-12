@@ -22,13 +22,10 @@ import config from "../../config";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPsTable = ({artifacts, sortOrder_initial}) => {
+const ArtifactPsTable = ({artifacts, onsortOrder}) => {
   const [data, setData] = useState([]);
-  const [sortOrder, setSortOrder] = useState(sortOrder_initial);
-  const [sortedData, setSortedData] = useState([]);
+  const [sortOrder, setSortOrder] = useState("asc");
   const [expandedRow, setExpandedRow] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
-  const [popupData, setPopupData] = useState("");
 
   const consistentColumns = [];
 
@@ -43,7 +40,7 @@ const ArtifactPsTable = ({artifacts, sortOrder_initial}) => {
 
   const renderArrow = () => (
     <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
-      {sortOrder === "asc" ? "↑" : sortOrder === "desc" ? "↓" : "↕"}
+      {sortOrder === "asc" ? "↑" : sortOrder === "desc" ? "↓" : "↑"}
     </span>
   );
 
@@ -92,6 +89,7 @@ const ArtifactPsTable = ({artifacts, sortOrder_initial}) => {
   const toggleSortOrder = () => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
+    onsortOrder(newSortOrder);
   };
 
 
@@ -104,10 +102,9 @@ const ArtifactPsTable = ({artifacts, sortOrder_initial}) => {
                 <tr className="text-xs font-bold font-sans text-left text-black uppercase">
                 <th scope="col" className="id px-6 py-3"></th>
                 <th className="px-6 py-3" scope="col">ID</th>
-                <th className="px-6 py-3" >
+                <th className="px-6 py-3" onClick={toggleSortOrder}>
                 <span scope="col" 
-                      style={{ display: 'inline-flex', alignItems: 'center' }} 
-                      onClick={toggleSortOrder}>
+                      style={{ display: 'inline-flex', alignItems: 'center' }} >
                 Name {renderArrow()}
                 </span>
                 </th>

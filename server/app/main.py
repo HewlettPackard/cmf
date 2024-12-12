@@ -413,9 +413,9 @@ async def update_global_exe_dict(pipeline_name):
 @app.get("/artifact/{pipeline_name}/{artifact_type}")
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
                    filter_value: str = Query(None, description="Filter value"), 
-                   sort_order: str = Query("asc", description="Sort order(asc or desc)")):
-    print("filter_value = ", filter_value)
-    print("sort_order = ", sort_order)
+                   sort_order: str = Query("asc", description="Sort order(asc or desc)"),
+                   page_number: int = Query(1, description="Page number", gt=0)):
+
     conn = await asyncpg.connect(
         user='myuser', 
         password='mypassword',
@@ -423,76 +423,67 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
         host='192.168.20.67',
     )
 
-    # rows = await conn.fetch("select t1.*, t2.* from artifact as t1 join artifactproperty as t2 on t2.artifact_id=t1.id where t1.id=1;")
-    # rows = await conn.fetch("select t1.* from artifact as t1 where t1.id=1;")
-    
-    # for model
-    # rows = await conn.fetch("SELECT * FROM artifact WHERE type_id IN (SELECT id FROM type where name='Model') ORDER BY id;")
-    
-    '''
-        select a.id, a.uri, a.name, a.create_time_since_epoch, a.last_update_time_since_epoch,
-        JSON_AGG(JSON_BUILD_OBJECT(
-            'artifact_id',ap.artifact_id,
-            'name',ap.name,
-            'string_value',ap.string_value,
-            'is_custom_property',ap.is_custom_property
-            )) as custom_properties 
-        from 
-            artifact as a 
-        join 
-            artifactproperty as ap 
-            on a.id=ap.artifact_id  
-        where 
-            a.type_id in (
-                SELECT id FROM type 
-                where name=$2)
-        group by 
-            a.id, a.uri, a.name, a.create_time_since_epoch, a.last_update_time_since_epoch
-        order by a.id;
-    '''
-    # from varkhs query
-    # rows = await conn.fetch(query, pipeline_name, artifact_type)
-    query2 = '''
+    order_by_clause = "ASC" if sort_order.lower() == "asc" else "DESC"
+    record_per_page = 5
+    no_of_offset = (page_number - 1) * record_per_page
+
+    query2 = f"""
+        WITH ranked_data AS (
         SELECT
-            a.*,
-            JSON_AGG(
-                JSON_BUILD_OBJECT(
-                    'name', ap.name,
-                    'is_custom_property', ap.is_custom_property,
-                    'int_value', ap.int_value,
-                    'double_value', ap.double_value,
-                    'string_value', ap.string_value,
-                    'byte_value', ap.byte_value,
-                    'proto_value', ap.proto_value,
-                    'bool_value', ap.bool_value
-                )
-            ) AS artifact_properties
-        FROM
-            artifact a
-        JOIN
-            type t ON a.type_id = t.id
-        JOIN
-            attribution at ON a.id = at.artifact_id
-        JOIN
-            context c ON at.context_id = c.id
-        LEFT JOIN
-            artifactproperty ap ON a.id = ap.artifact_id
-        WHERE
-            t.name = $2 -- Input for type.name
-            AND at.context_id IN (
-                SELECT pc.context_id
-                FROM parentcontext pc
-                JOIN context c2 ON pc.parent_context_id = c2.id
-                WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
+        a.*, 
+        JSON_AGG(
+            JSON_BUILD_OBJECT(
+                'name', ap.name,
+                'is_custom_property', ap.is_custom_property,
+                'int_value', ap.int_value,
+                'double_value', ap.double_value,
+                'string_value', ap.string_value,
+                'byte_value', ap.byte_value,
+                'proto_value', ap.proto_value,
+                'bool_value', ap.bool_value
             )
-            AND a.name LIKE $3
-        GROUP BY
-            a.id
-        ORDER BY 
-            a.name $4;
-    '''
-    rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", sort_order)
-    print("almost done")
+        ) AS artifact_properties,
+        count(*) OVER() AS total_records
+    FROM
+        artifact a
+    JOIN
+        type t ON a.type_id = t.id
+    JOIN
+        attribution at ON a.id = at.artifact_id
+    JOIN
+        context c ON at.context_id = c.id
+    LEFT JOIN
+        artifactproperty ap ON a.id = ap.artifact_id
+    WHERE
+        t.name = $2 -- Input for type.name
+        AND at.context_id IN (
+            SELECT pc.context_id
+            FROM parentcontext pc
+            JOIN context c2 ON pc.parent_context_id = c2.id
+            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
+        )
+        AND a.name LIKE $3
+    GROUP BY
+        a.id
+    ORDER BY 
+        a.name {order_by_clause}
+    )
+SELECT * 
+FROM ranked_data
+LIMIT $4 OFFSET $5;
+            """
+
+    rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", record_per_page, no_of_offset)
+    # rows = await conn.fetch(query3)
+    # print("Total records: ",rows[0]["total_records"])
     await conn.close()
     # print(rows)
-    return [dict(row) for row in rows]
+    if rows:
+        total_record = rows[0]["total_records"]
+    else:
+        total_record = 0
+
+    return {    "total_items": total_record,
+                "items": [dict(row) for row in rows]
+           }
+

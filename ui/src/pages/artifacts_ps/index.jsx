@@ -35,8 +35,10 @@ const Artifacts_ps = () => {
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
   const [filter, setFilter] = useState("");
-  const [sortOrder_initial, setSortOrder] = useState("asc");
- 
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [totalItems, setTotalItems] = useState(0);
+  const [activePage, setActivePage] = useState(1);
+  const [clickedButton, setClickedButton] = useState("page"); 
 
   // Fetch pipelines on component mount
   const fetchPipelines = () => {
@@ -53,14 +55,17 @@ const Artifacts_ps = () => {
       setArtifactTypes(types);
       const defaultArtifactType = types[0];
       setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder_initial); // Fetch artifacts for the first artifact type and default pipeline
+      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder, activePage); // Fetch artifacts for the first artifact type and default pipeline
     });
   };
 
-  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder_initial) => {
-    client.getArtifact(pipelineName, artifactType, filter, sortOrder_initial)
+  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder, activePage) => {
+    client.getArtifact(pipelineName, artifactType, filter, sortOrder, activePage)
       .then((data) => {
-        setArtifacts(data); // Update artifacts when data is fetched
+        console.log(data.items);
+        console.log(data.total_items);
+        setArtifacts(data.items);
+        setTotalItems(data.total_items);
       });
   };
 
@@ -68,24 +73,58 @@ const Artifacts_ps = () => {
     setSelectedArtifactType(artifactType); // Set the selected artifact type
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
     if (selectedPipeline) {
-      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder_initial); // Fetch artifacts based on the selected artifact type and pipeline
+      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder, activePage); // Fetch artifacts based on the selected artifact type and pipeline
     }
+    setActivePage(1);
   };
 
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline); // Set the selected pipeline
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder_initial); // Fetch artifacts based on the selected pipeline and artifact type
+    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder, activePage); // Fetch artifacts based on the selected pipeline and artifact type
+    setActivePage(1);
   };
 
   const handleFilter = (value) => {
     setFilter(value); // Update the filter string
-    console.log("value",value)
+    // console.log("value",value)
   };
+
+  const toggleSortOrder = (newSortOrder) => {
+    setSortOrder(newSortOrder);
+    if (selectedPipeline && selectedArtifactType) {
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, newSortOrder, activePage);
+    }
+  };
+
+  const handlePageClick = (page) => {
+    setActivePage(page);
+    fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, page);
+    setClickedButton("page");
+  };
+
+  const handlePrevClick = () => {
+    if (activePage > 1) {
+      setActivePage(activePage - 1);
+      setClickedButton("prev");
+      handlePageClick(activePage - 1);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage);
+    }
+  };
+
+  const handleNextClick = () => {
+    if (activePage < Math.ceil(totalItems / 5)) {
+      setActivePage(activePage + 1);
+      setClickedButton("next");
+      handlePageClick(activePage + 1);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage);
+    }
+  };
+  
 
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
-  }, [filter, sortOrder_initial]);
+  }, [filter]);
 
   return (
     <>
@@ -116,11 +155,87 @@ const Artifacts_ps = () => {
                 {artifacts !== null && artifacts.length > 0 ? (
                   <ArtifactPsTable 
                     artifacts={artifacts}
-                    sortOrder_initial={sortOrder_initial}
+                    onsortOrder={toggleSortOrder}
                     />
                     
                 ) : (
                   <div>No data available</div> // Display message when there are no artifacts
+                )}
+                {artifacts !== null && totalItems > 0 && (
+                  <>
+                    <button
+                      onClick={handlePrevClick}
+                      disabled={activePage === 1}
+                      className={clickedButton === "prev" ? "active-page" : ""}
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: Math.ceil(totalItems / 5) }).map(
+                      (_, index) => {
+                        const pageNumber = index + 1;
+                        if (
+                          pageNumber === 1 ||
+                          pageNumber === Math.ceil(totalItems / 5)
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageClick(pageNumber)}
+                              className={`pagination-button ${
+                                activePage === pageNumber &&
+                                clickedButton === "page"
+                                  ? "active-page"
+                                  : ""
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          (activePage <= 3 && pageNumber <= 6) ||
+                          (activePage >= Math.ceil(totalItems / 5) - 2 &&
+                            pageNumber >= Math.ceil(totalItems / 5) - 5) ||
+                          Math.abs(pageNumber - activePage) <= 2
+                        ) {
+                          return (
+                            <button
+                              key={pageNumber}
+                              onClick={() => handlePageClick(pageNumber)}
+                              className={`pagination-button ${
+                                activePage === pageNumber &&
+                                clickedButton === "page"
+                                  ? "active-page"
+                                  : ""
+                              }`}
+                            >
+                              {pageNumber}
+                            </button>
+                          );
+                        } else if (
+                          (pageNumber === 2 && activePage > 3) ||
+                          (pageNumber === Math.ceil(totalItems / 5) - 1 &&
+                            activePage < Math.ceil(totalItems / 5) - 3)
+                        ) {
+                          return (
+                            <span
+                              key={`ellipsis-${pageNumber}`}
+                              className="ellipsis"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        return null;
+                      },
+                    )}
+                    <button
+                      onClick={handleNextClick}
+                      disabled={activePage === Math.ceil(totalItems / 5)}
+                      className={clickedButton === "next" ? "active-page" : ""}
+                    >
+                      Next
+                    </button>
+                  </>
                 )}
             </div>
           </div>
