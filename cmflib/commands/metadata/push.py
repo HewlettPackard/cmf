@@ -23,8 +23,8 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import MlmdAndTensorboardPushSuccess, MlmdAndTensorboardPushFailure, PipelineNameNotFound, MlmdFilePushedSuccess, ExecutionsAlreadyExists
-from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNameNotFound, MlmdFilePulledSuccess, ExecutionsAlreadyExists, UpdateCmfVersion, CmfServerNotAvailable, InternalServerError, CmfNotConfigured, InvalidTensorboardFilePath
+from cmflib.cmf_exception_handling import MlmdAndTensorboardPushSuccess, MlmdAndTensorboardPushFailure, MlmdFilePushedSuccess, ExecutionsAlreadyExists
+from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNotFound, ExecutionsAlreadyExists, UpdateCmfVersion, CmfServerNotAvailable, InternalServerError, CmfNotConfigured, InvalidTensorboardFilePath
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
     def run(self):
@@ -42,13 +42,11 @@ class CmdMetadataPush(CmdBase):
         attr_dict = CmfConfig.read_config(config_file_path)
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
 
-        current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
 
         # checks if mlmd filepath is given
         if self.args.file_name:
             mlmd_file_name = self.args.file_name
-            current_directory = os.path.dirname(self.args.file_name)
 
         # checks if mlmd file is present in current directory or given directory
         if not os.path.exists(mlmd_file_name):
@@ -90,7 +88,7 @@ class CmdMetadataPush(CmdBase):
                 display_output = ""
                 if response.json()['status']=="success":
                     display_output = "mlmd is successfully pushed."
-                    output = MlmdFilePushedSuccess
+                    output = MlmdFilePushedSuccess(mlmd_file_name)
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
                     output = ExecutionsAlreadyExists
@@ -140,7 +138,7 @@ class CmdMetadataPush(CmdBase):
             else:
                 return "ERROR: Status Code = {status_code}. Unable to push mlmd."
         else:
-            raise PipelineNameNotFound(self.args.pipeline_name)
+            raise PipelineNotFound(self.args.pipeline_name)
 
 
 def add_parser(subparsers, parent_parser):

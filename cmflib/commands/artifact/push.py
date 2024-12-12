@@ -28,7 +28,7 @@ from cmflib.dvc_wrapper import dvc_push
 from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import PipelineNameNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess
+from cmflib.cmf_exception_handling import PipelineNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess
 
 class CmdArtifactPush(CmdBase):
     def run(self):
@@ -55,14 +55,12 @@ class CmdArtifactPush(CmdBase):
             #print(result)
             return result
 
-        current_directory = os.getcwd()
         # Default path of mlmd file
         mlmd_file_name = "./mlmd"
         if self.args.file_name:
             mlmd_file_name = self.args.file_name
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
             raise FileNotFound(mlmd_file_name)
         # creating cmfquery object
@@ -71,7 +69,7 @@ class CmdArtifactPush(CmdBase):
          # Put a check to see whether pipline exists or not
         pipeline_name = self.args.pipeline_name
         if not query.get_pipeline_id(pipeline_name) > 0:
-            raise PipelineNameNotFound(pipeline_name)
+            raise PipelineNotFound(pipeline_name)
 
         stages = query.get_pipeline_stages(pipeline_name)
         executions = []

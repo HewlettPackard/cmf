@@ -147,7 +147,6 @@ class CmdArtifactsList(CmdBase):
             mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-        
         if not os.path.exists(mlmd_file_name):
             raise FileNotFound(mlmd_file_name)
 

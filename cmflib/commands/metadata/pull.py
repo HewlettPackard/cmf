@@ -20,10 +20,9 @@ import os
 from cmflib import cmf_merger
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
-from cmflib import cmfquery
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import PipelineNameNotFound, CmfNotConfigured, FileNotFound, ExecutionIDNotFound, MlmdNotFoundOnServer, MlmdFilePulledSuccess, CmfServerNotAvailable, InternalServerError, MlmdFilePulledFailure, CurrentDirectoryNotfound, FileNameNotfound
+from cmflib.cmf_exception_handling import PipelineNotFound, CmfNotConfigured, ExecutionIDNotFound, MlmdNotFoundOnServer, MlmdFilePullSuccess, CmfServerNotAvailable, InternalServerError, MlmdFilePullFailure, DirectoryNotfound, FileNameNotfound
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
     def run(self):
@@ -49,7 +48,7 @@ class CmdMetadataPull(CmdBase):
                 if os.path.exists(current_directory):
                     full_path_to_dump  = self.args.file_name
                 else:
-                    raise CurrentDirectoryNotfound(current_dir= current_directory)
+                    raise DirectoryNotfound(current_dir= current_directory)
             else:
                 raise FileNameNotfound
         else:
@@ -62,7 +61,7 @@ class CmdMetadataPull(CmdBase):
         status = output.status_code
         # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
         if output.content.decode() == None:
-            raise PipelineNameNotFound(self.args.pipeline_name)
+            raise PipelineNotFound(self.args.pipeline_name)
         elif output.content.decode() == "no_exec_id":
             raise ExecutionIDNotFound(exec_id)
       
@@ -72,20 +71,20 @@ class CmdMetadataPull(CmdBase):
                     cmf_merger.parse_json_to_mlmd(
                         output.content, full_path_to_dump, cmd, None
                     )  # converts mlmd json data to mlmd file
-                    pull_status = MlmdFilePulledSuccess(full_path_to_dump)
+                    pull_status = MlmdFilePullSuccess(full_path_to_dump)
                     return pull_status
                 except Exception as e:
                     return e
             elif status == 413:
                 raise MlmdNotFoundOnServer
             elif status == 406:
-                raise PipelineNameNotFound(self.args.pipeline_name)
+                raise PipelineNotFound(self.args.pipeline_name)
             elif status == 404:
                 raise CmfServerNotAvailable
             elif status == 500:
                 raise InternalServerError
             else:
-                raise MlmdFilePulledFailure
+                raise MlmdFilePullFailure
             
 def add_parser(subparsers, parent_parser):
     PULL_HELP = "Pulls mlmd from cmf-server to users's machine."

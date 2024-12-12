@@ -249,10 +249,8 @@ def create_unique_executions(server_store_path, req_info) -> str:
                     # mlmd push is failed here
                     status="version_update"
                     return status
-        print(executions_client, executions_server,"comparision")
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
-        print(list_executions_exists,"list_executions_exists")
         for i in mlmd_data["Pipeline"]:
             for stage in i['stages']:
                 for cmf_exec in stage['executions'][:]:
@@ -268,18 +266,15 @@ def create_unique_executions(server_store_path, req_info) -> str:
         if len(i['stages']) == 0 :
             status="exists"
         else:
-            print(mlmd_data,"mlmd_data")
             cmf_merger.parse_json_to_mlmd(
                 json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
             )
-            print("inside success condition")
             status='success'
 
     return status
 
 
 def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: str):
-    print("get_mlmd_from_server")
     query = cmfquery.CmfQuery(server_store_path)
     json_payload = None
     df = pd.DataFrame()

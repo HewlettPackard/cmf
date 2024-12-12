@@ -28,7 +28,7 @@ from cmflib.storage_backends import (
 )
 from cmflib.cli.command import CmdBase
 from cmflib.utils.dvc_config import DvcConfig
-from cmflib.cmf_exception_handling import PipelineNameNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, ArtifactNotFound, BatchDownloadFailure, BatchDownloadSuccess,ObjectDownloadFailure, ObjectDownloadSuccess
+from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, ExecutionsNotFound, ArtifactNotFound, BatchDownloadFailure, BatchDownloadSuccess,ObjectDownloadFailure, ObjectDownloadSuccess
 from cmflib.cli.utils import check_minio_server
 
 class CmdArtifactPull(CmdBase):
@@ -175,10 +175,10 @@ class CmdArtifactPull(CmdBase):
         if self.args.artifact_name == "":
             raise ArtifactNotFound("")
         if self.args.pipeline_name == "":        #checking if pipeline_name is not ""
-            raise PipelineNameNotFound(self.args.pipeline_name)
+            raise PipelineNotFound(self.args.pipeline_name)
         query = cmfquery.CmfQuery(mlmd_file_name)
         if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd
-            raise PipelineNameNotFound(self.args.pipeline_name)
+            raise PipelineNotFound(self.args.pipeline_name)
         
         # dvc_config_op = DvcConfig.get_dvc_config()
         # cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
