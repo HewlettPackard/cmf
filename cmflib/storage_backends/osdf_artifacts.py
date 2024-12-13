@@ -26,8 +26,11 @@ def generate_cached_url(url, cache):
     #This takes host URL as supplied from MLMD records and generates cached URL=cache_path + path
     #Example Input: https://sdsc-origin.nationalresearchplatform.org:8443/nrp/fdp/23/6d9502e0283d91f689d7038b8508a2
     #Example Output: https://osdf-director.osg-htc.org/nrp/fdp/23/6d9502e0283d91f689d7038b8508a2  
+    #The assumption is that url obtained from MLMD is more accurate. So we use the path from this URL and append it to cache path
+    #but we clean up the cache path to only its scheme + netloc: https://osdf-director.osg-htc.org
     parsed_url = urlparse(url)
-    cached_url= cache + parsed_url.path
+    parsed_cache_url= urlparse(cache) 
+    cached_url= parsed_cache_url.scheme + "://" + parsed_cache_url.netloc + parsed_url.path
     return cached_url 
 
 def calculate_md5_from_file(file_path, chunk_size=8192):
