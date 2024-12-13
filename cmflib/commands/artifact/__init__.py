@@ -16,19 +16,19 @@
 
 import argparse
 
-from cmflib.commands.artifact import pull, push
+from cmflib.commands.artifact import pull, push, list
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [pull, push]
+SUB_COMMANDS = [pull, push, list]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_HELP = "Command for artifact pull/push."
+    ARTIFACT_HELP = "Command for artifact pull/push/list."
 
     artifact_parser = subparsers.add_parser(
         "artifact",
         parents=[parent_parser],
-        description="Pull or Push artifacts as per current cmf configuration.",
+        description="Pull, Push or List artifacts as per current cmf configuration.",
         help=ARTIFACT_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

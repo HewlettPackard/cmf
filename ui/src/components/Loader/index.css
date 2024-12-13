@@ -1,0 +1,29 @@
+.loader-container {
+  position: relative; /* Relative positioning for the loader to be placed absolutely inside */
+  width: 100%;
+  height: 100%; /* Ensure it takes the full height of its parent */
+}
+
+/* Loader is absolutely positioned within the loader-container */
+.loader {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the loader */
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #01a982;
+  border-radius: 50%;
+  width: 100px; /* Size of the loader */
+  height: 100px; /* Size of the loader */
+  animation: spin 1.5s linear infinite;
+  z-index: 9999; /* Ensure it appears on top */
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

@@ -10,3 +10,5 @@ minio
 paramiko
 scikit_learn
 boto3
+textwrap
+typing

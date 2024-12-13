@@ -27,10 +27,12 @@ class DvcConfig:
         if not result:
             return message
         else:
+            # splitting config on new line
             config_list = result.split("\n")
             config_dict = {}
             for item in config_list:
-                item_list = item.split("=")
+                # seprating every dvc property and its value using split on '='
+                item_list = item.split("=") 
                 config_dict[item_list[0]] = item_list[1]
             return config_dict
 

@@ -17,8 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
-import time
+import re
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -93,12 +92,27 @@ class CmdArtifactPush(CmdBase):
                  identifier
             )  # getting all artifacts with id
             # dropping artifact with type 'metrics' as metrics doesn't have physical file
-            artifacts = artifacts[artifacts['type'] != 'Metrics']
-            # adding .dvc at the end of every file as it is needed for pull
-            artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
-            names.extend(artifacts['name'].tolist())
-        file_set = set(names)
-        result = dvc_push(list(file_set))
+            if not artifacts.empty:
+                artifacts = artifacts[artifacts['type'] != 'Metrics']
+                # adding .dvc at the end of every file as it is needed for pull
+                artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
+                names.extend(artifacts['name'].tolist())
+        final_list = []
+        for file in set(names):
+            # checking if the .dvc exists
+            if os.path.exists(file):
+                final_list.append(file)
+            # checking if the .dvc exists in user's project working directory
+            elif os.path.isabs(file):
+                    file = re.split("/",file)[-1]
+                    file = os.path.join(os.getcwd(), file)
+                    if os.path.exists(file):
+                        final_list.append(file)
+            else:
+                # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
+                pass
+        #print("file_set = ", final_list)
+        result = dvc_push(list(final_list))
         return result
       
 def add_parser(subparsers, parent_parser):

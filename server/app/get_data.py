@@ -2,10 +2,10 @@ from cmflib import cmfquery, cmf_merger
 import pandas as pd
 import json
 import os
+import typing as t
+from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
-from fastapi.responses import FileResponse
-
 
 async def get_model_data(mlmdfilepath, modelId):
     '''
@@ -78,7 +78,11 @@ async def get_model_data(mlmdfilepath, modelId):
 
     return model_data_df, model_exe_df, model_input_df, model_output_df
 
-async def get_executions(mlmdfilepath, pipeline_name, exe_ids):
+#Converts sync functions to async
+async def async_api(function_to_async, mlmdfilepath: str, *argv):
+    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
+
+def get_executions(mlmdfilepath: str, pipeline_name, exe_ids) -> pd.DataFrame:
     '''
     Args:
      mlmdfilepath: mlmd file path.
@@ -88,18 +92,18 @@ async def get_executions(mlmdfilepath, pipeline_name, exe_ids):
     Returns:
      returns dataframe of executions using execution_ids.
     '''
+
     query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
     executions = query.get_all_executions_by_ids_list(exe_ids)
     df = pd.concat([df, executions], sort=True, ignore_index=True)
-    #df=df.drop('name',axis=1)
     return df
 
 
-async def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
+def get_all_exe_ids(mlmdfilepath: str, pipeline_name: str = None) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
-        returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
+    returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
     '''
     query = cmfquery.CmfQuery(mlmdfilepath)
     execution_ids = {}
@@ -125,7 +129,7 @@ async def get_all_exe_ids(mlmdfilepath, pipeline_name: str = None):
     return execution_ids
 
 
-async def get_all_artifact_ids(mlmdfilepath, execution_ids, pipeline_name: str = None):
+def get_all_artifact_ids(mlmdfilepath: str, execution_ids, pipeline_name: str = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
     # following is a dictionary of dictionaries
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
@@ -170,8 +174,7 @@ async def get_all_artifact_ids(mlmdfilepath, execution_ids, pipeline_name: str =
                 artifact_ids[name] = pd.DataFrame()
     return artifact_ids
 
-
-async def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
+def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
     query = cmfquery.CmfQuery(mlmdfilepath)
     df = pd.DataFrame()
     if (query.get_pipeline_id(pipeline_name) != -1):
@@ -202,16 +205,29 @@ async def get_artifacts(mlmdfilepath, pipeline_name, art_type, artifact_ids):
         tempout = json.loads(result)
         return tempout
 
-def get_artifact_types(mlmdfilepath):
+def get_artifact_types(mlmdfilepath) -> t.List[str]:
     query = cmfquery.CmfQuery(mlmdfilepath)
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-async def create_unique_executions(server_store_path, req_info):
+def create_unique_executions(server_store_path, req_info) -> str:
+    """
+    Creates list of unique executions by checking if they already exist on server or not.
+    locking is introduced lock to avoid data corruption on server, 
+    when multiple similar pipelines pushed on server at same time.
+    Args:
+       server_store_path = mlmd file path on server
+    Returns:
+       Status of parse_json_to_mlmd
+           "exists": if execution already exists on cmf-server
+           "success": execution pushed successfully on cmf-server 
+    """
     mlmd_data = json.loads(req_info["json_payload"])
     pipelines = mlmd_data["Pipeline"]
     pipeline = pipelines[0]
     pipeline_name = pipeline["name"]
+    if not pipeline_name:
+        return {"error": "Pipeline name is required"}
     executions_server = []
     list_executions_exists = []
     if os.path.exists(server_store_path):
@@ -225,7 +241,7 @@ async def create_unique_executions(server_store_path, req_info):
             for j in i["executions"]:
                 if j['name'] != "": #If executions have name , they are reusable executions
                     continue       #which needs to be merged in irrespective of whether already
-                                   #present or not so that new artifacts associated with it gets in.
+                                #present or not so that new artifacts associated with it gets in.
                 if 'Execution_uuid' in j['properties']:
                     for uuid in j['properties']['Execution_uuid'].split(","):
                         executions_client.append(uuid)
@@ -253,12 +269,12 @@ async def create_unique_executions(server_store_path, req_info):
                 json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
             )
             status='success'
+
     return status
 
 
-async def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: str):
+def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: str):
     query = cmfquery.CmfQuery(server_store_path)
-    execution_flag = 0
     json_payload = None
     df = pd.DataFrame()
     if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
@@ -271,9 +287,7 @@ async def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_
         json_payload = query.dumptojson(pipeline_name, exec_id)
     return json_payload
 
-
-async def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
-    query = cmfquery.CmfQuery(server_store_path)
+def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
     if type=="Artifacts":
         lineage_data = query_artifact_lineage_d3force(server_store_path, pipeline_name, dict_of_art_ids)
         '''

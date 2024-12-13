@@ -24,7 +24,6 @@ import pandas as pd
 import typing as t
 
 # This import is needed for jupyterlab environment
-import dvc
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import (
@@ -44,6 +43,8 @@ from cmflib import graph_wrapper
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
+    get_or_create_context_with_type,
+    update_context_custom_properties,
     associate_child_to_parent_context,
     create_new_execution_in_existing_run_context,
     link_execution_to_artifact,
@@ -67,6 +68,9 @@ from cmflib.cmf_commands_wrapper import (
     _init_amazonS3,
     _init_sshremote,
     _init_osdfremote,
+    _artifact_list,
+    _pipeline_list,
+    _execution_list,
 )
 
 class Cmf:
@@ -312,6 +316,42 @@ class Cmf:
                 pipeline_stage, self.parent_context, ctx.id, custom_props
             )
         return ctx
+
+    def update_context(
+        self,
+        type_name: str,
+        context_name: str,
+        context_id: int,
+        properties: t.Optional[t.Dict] = None,
+        custom_properties: t.Optional[t.Dict] = None
+    ) -> mlpb.Context:
+        self.context = get_or_create_context_with_type(
+                           self.store, 
+                           context_name, 
+                           type_name, 
+                           properties, 
+                           type_properties = None,
+                           custom_properties = custom_properties
+                       )
+        if self.context is None:
+            print("Error - no context id")
+            return
+
+        if custom_properties:
+            for key, value in custom_properties.items():
+                if isinstance(value, int):
+                    self.context.custom_properties[key].int_value = value
+                else:
+                    self.context.custom_properties[key].string_value = str(
+                        value)
+        updated_context = update_context_custom_properties(
+            self.store,
+            context_id,
+            context_name,
+            self.context.properties,
+            self.context.custom_properties,
+        )        
+        return updated_context
 
     def create_execution(
         self,
@@ -1068,7 +1108,7 @@ class Cmf:
                 input_name=model_uri,
                 event_type=event_type,
             )
-            model_uri = artifact.name
+            model_uri =  model_uri + ":" + str(self.execution.id)
         else:
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
             model_uri = model_uri + ":" + str(self.execution.id)
@@ -1678,14 +1718,14 @@ class Cmf:
              custom_properties: Dictionary containing custom properties to update. 
           Returns: 
              None 
-        """
-
+       """
         for key, value in custom_properties.items():
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
                 artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
+        
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
         """Gets the artifact object from mlmd"""
@@ -1779,7 +1819,7 @@ class Cmf:
                 should already be versioned.
             Example:
                 ```python
-                dataslice.add_data(f"data/raw_data/{j}.xml)
+                #dataslice.add_data(f"data/raw_data/{j}.xml)
                 ```
             Args:
                 path: Name to identify the file to be added to the dataslice.
@@ -2271,3 +2311,61 @@ def non_related_args(type : str, args : dict):
             non_related_args=list(set(available_args)-set(dict_repository_args[repo]))
     return non_related_args
 
+
+def pipeline_list(filepath = "./mlmd"):
+    """ Display a list of pipeline name(s) from the available mlmd file.
+
+    Example:
+    ```python
+         result = _pipeline_list("./mlmd_directory")
+    ```
+
+    Args:
+        filepath: File path to store the MLMD file. 
+    Returns:
+        Output from the _pipeline_list function.
+    """
+
+    # Optional arguments: filepath( path to store the MLMD file)
+    output = _pipeline_list(filepath)
+    return output
+
+
+def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = ""):
+    """Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+    Example: 
+    ```python 
+        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id") 
+    ```
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the mlmd file. 
+       execution_id: Executions for particular execution id.
+    Returns:
+       Output from the _execution_list function. 
+    """
+
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath( path to store mlmd file), execution_id
+    output = _execution_list(pipeline_name, filepath, execution_id)
+    return output
+
+
+def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = ""):
+    """ Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+    Example: 
+    ```python 
+        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
+    ```
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the mlmd file. 
+       artifact_name: Artifacts for particular artifact name.
+    Returns:
+       Output from the _artifact_list function. 
+    """
+
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath( path to store mlmd file), artifact_name
+    output = _artifact_list(pipeline_name, filepath, artifact_name)
+    return output
