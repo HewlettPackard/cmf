@@ -31,7 +31,7 @@ from cmflib.dvc_wrapper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
-from cmflib.cmf_exception_handling import ArgumentNotProvided, CmfInitComplete, CmfInitFailed
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
 
 class CmdInitSSHRemote(CmdBase):
     def run(self):
@@ -64,7 +64,7 @@ class CmdInitSSHRemote(CmdBase):
         ):
             pass
         else:
-            raise ArgumentNotProvided
+            raise Neo4jArgumentNotProvided
         output = is_git_repo()
         if not output:
             branch_name = "master"

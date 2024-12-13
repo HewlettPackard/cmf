@@ -171,7 +171,7 @@ class CmdArtifactPull(CmdBase):
                 mlmd_file_name = "./mlmd"
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
-            raise FileNotFound(mlmd_file_name)
+            raise FileNotFound(mlmd_file_name, current_directory)
         if self.args.artifact_name == "":
             raise ArtifactNotFound("")
         if self.args.pipeline_name == "":        #checking if pipeline_name is not ""
@@ -180,13 +180,6 @@ class CmdArtifactPull(CmdBase):
         if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd
             raise PipelineNotFound(self.args.pipeline_name)
         
-        # dvc_config_op = DvcConfig.get_dvc_config()
-        # cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
-        # cmf_config={}
-        # cmf_config=CmfConfig.read_config(cmf_config_file)
-        # out_msg = check_minio_server(dvc_config_op)
-        # if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS": #checking if minios3 server is active
-        #     raise Minios3ServerInactive()
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []

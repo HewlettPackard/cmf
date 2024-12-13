@@ -1,14 +1,31 @@
-"""
-    Response and Exceptions raised by the CMF.
-    CmfResponse includes two child classes, 
-           1. CmfSuccess
-           2. CmfFailure
-    On the basis of success and failure various child classes are created.
+###
+# Copyright (2022) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
 
-"""
+#!/usr/bin/env python3
 
 class CmfResponse(Exception):
-    """Base class for all the cmf responses and  exceptions."""
+    """
+        Response and Exceptions raised by the CMF.
+        CmfResponse includes two child classes, 
+            1. CmfSuccess
+            2. CmfFailure
+        On the basis of success and failure various child classes are created.
+
+        Base class for all the cmf responses and  exceptions.
+    """
 
     def __init__(self, return_code=None,  status="failure", *args):
         self.return_code = return_code
@@ -31,7 +48,7 @@ class ExecutionsAlreadyExists(CmfSuccess):
         super().__init__(return_code)
  
     def handle():
-        return "Executions already exists."
+        return "INFO: Executions already exists."
 
 class ObjectDownloadSuccess(CmfSuccess):
     def __init__(self,object_name,download_loc, return_code=202):
@@ -66,7 +83,7 @@ class MlmdFilePushSuccess(CmfSuccess):
     def handle(self):
         return f"SUCCESS: {self.file_name} is successfully pushed."
 
-class MlmdAndTensorboardPushSuccess(CmfSuccess):
+class TensorboardPushSuccess(CmfSuccess):
     def __init__(self, tensorboard_file_name:str = "All", return_code=206):
         self.tensorboard_file_name = tensorboard_file_name
         super().__init__(return_code)
@@ -109,23 +126,25 @@ class PipelineNotFound(CmfFailure):
         super().__init__(return_code)
 
     def handle(self):
-        return f"ERROR: Pipeline_name {self.pipeline_name} doesn't exist."
+        return f"ERROR: Pipeline name {self.pipeline_name} doesn't exist."
 
     
 class FileNotFound(CmfFailure):
-    def __init__(self,file_name,return_code=102):
+    def __init__(self,file_name, directory, return_code=102):
+        self.directory = directory
         self.file_name =file_name
         super().__init__(return_code)
     
     def handle(self):
-        return f"ERROR: File {self.file_name} Not Found."
+        return f"ERROR: File {self.file_name} doesn't exists in {self.directory} directory."
 
 class BucketNotFound(CmfFailure):
-    def __init__(self,return_code=103):
+    def __init__(self,bucket_name, return_code=103):
+        self.bucket_name = bucket_name
         super().__init__(return_code)
  
     def handle(self):
-        return f"ERROR: Bucket doesn't exist."
+        return f"ERROR: Bucket {self.bucket_name} doesn't exist."
 
 class ExecutionsNotFound(CmfFailure):
     def __init__(self, return_code=104):
@@ -196,7 +215,7 @@ class UpdateCmfVersion(CmfFailure):
     def handle(self):
         return "ERROR: You need to update cmf to the latest version. Unable to push metadata file."
 
-class MlmdAndTensorboardPushFailure(CmfFailure):
+class TensorboardPushFailure(CmfFailure):
     def __init__(self,tensorboard_file_name,response_text, return_code=113):
         self.tensorboard_file_name = tensorboard_file_name
         self.response_text = response_text
@@ -205,7 +224,7 @@ class MlmdAndTensorboardPushFailure(CmfFailure):
     def handle(self):
         return f"ERROR: Failed to upload file {self.tensorboard_file_name}. Server response: {self.response_text}."
 
-class ArgumentNotProvided(CmfFailure):
+class Neo4jArgumentNotProvided(CmfFailure):
     def __init__(self, return_code=114):
         super().__init__(return_code)
 
@@ -231,14 +250,14 @@ class InternalServerError(CmfFailure):
         super().__init__(return_code)
 
     def handle(self):
-        return "cmf-server error: Please restart the cmf-server."
+        return "cmf-server error: The server encountered an unexpected error."
 
 class MlmdFilePullFailure(CmfFailure):
     def __init__(self, return_code=118):
         super().__init__(return_code)
 
     def handle(self):
-        return "ERROR: Unable to pull mlmd."
+        return "ERROR: Unable to pull metadata file."
 
 class DirectoryNotfound(CmfFailure):
     def __init__(self,current_dir, return_code=119):

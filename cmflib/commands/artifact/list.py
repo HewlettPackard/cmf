@@ -137,6 +137,7 @@ class CmdArtifactsList(CmdBase):
         
         # default path for mlmd file name
         mlmd_file_name = "./mlmd"
+        current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
@@ -145,10 +146,11 @@ class CmdArtifactsList(CmdBase):
                 return "Error: Missing File name"
         else:
             mlmd_file_name = self.args.file_name[0].strip()
+            current_directory = os.path.dirname(self.args.file_name)
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
         if not os.path.exists(mlmd_file_name):
-            raise FileNotFound(mlmd_file_name)
+            raise FileNotFound(mlmd_file_name, current_directory)
 
         # Creating cmfquery object.
         query = cmfquery.CmfQuery(mlmd_file_name)
@@ -164,7 +166,7 @@ class CmdArtifactsList(CmdBase):
         df = query.get_all_artifacts_by_context(pipeline_name)
 
         if df.empty:
-            raise PipelineNotFound
+            raise PipelineNotFound(pipeline_name)
         else:
             if not self.args.artifact_name:         # If self.args.artifact_name is None or an empty list ([]). 
                 pass

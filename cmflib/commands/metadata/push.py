@@ -23,7 +23,7 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import MlmdAndTensorboardPushSuccess, MlmdAndTensorboardPushFailure, MlmdFilePushedSuccess, ExecutionsAlreadyExists
+from cmflib.cmf_exception_handling import TensorboardPushSuccess, TensorboardPushFailure, MlmdFilePushSuccess, ExecutionsAlreadyExists
 from cmflib.cmf_exception_handling import FileNotFound, ExecutionIDNotFound, PipelineNotFound, ExecutionsAlreadyExists, UpdateCmfVersion, CmfServerNotAvailable, InternalServerError, CmfNotConfigured, InvalidTensorboardFilePath
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
@@ -43,14 +43,15 @@ class CmdMetadataPush(CmdBase):
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
 
         mlmd_file_name = "./mlmd"
-
+        current_directory = os.getcwd()
         # checks if mlmd filepath is given
         if self.args.file_name:
             mlmd_file_name = self.args.file_name
+            current_directory = os.path.dirname(self.args.file_name)
 
         # checks if mlmd file is present in current directory or given directory
         if not os.path.exists(mlmd_file_name):
-            raise FileNotFound(mlmd_file_name)
+            raise FileNotFound(mlmd_file_name, current_directory)
 
         query = cmfquery.CmfQuery(mlmd_file_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
@@ -88,7 +89,7 @@ class CmdMetadataPush(CmdBase):
                 display_output = ""
                 if response.json()['status']=="success":
                     display_output = "mlmd is successfully pushed."
-                    output = MlmdFilePushedSuccess(mlmd_file_name)
+                    output = MlmdFilePushSuccess(mlmd_file_name)
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
                     output = ExecutionsAlreadyExists
@@ -109,10 +110,10 @@ class CmdMetadataPush(CmdBase):
                     tstatus_code = tresponse.status_code
                     if tstatus_code == 200:
                         # give status code as success
-                        return MlmdAndTensorboardPushSuccess()
+                        return TensorboardPushSuccess()
                     else:
                         # give status code as failure 
-                        return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
+                        return TensorboardPushFailure(file_name,tresponse.text)
                 # If path provided is a directory
                 elif os.path.isdir(self.args.tensorboard):
                     # Recursively push all files and subdirectories
@@ -125,8 +126,8 @@ class CmdMetadataPush(CmdBase):
                                 print(f"tensorboard logs: File {file_name} uploaded successfully.")
                             else:
                                 # give status as failure
-                                return MlmdAndTensorboardPushFailure(file_name,tresponse.text)
-                    return MlmdAndTensorboardPushSuccess()
+                                return TensorboardPushFailure(file_name,tresponse.text)
+                    return TensorboardPushSuccess()
                 else:
                     return InvalidTensorboardFilePath()
             elif status_code==422 and response.json()["status"]=="version_update":

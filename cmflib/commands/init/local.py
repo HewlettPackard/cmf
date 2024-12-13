@@ -17,7 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from cmflib.cmf_exception_handling import ArgumentNotProvided, CmfInitComplete, CmfInitFailed
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import (
     git_quiet_init,
@@ -61,7 +61,7 @@ class CmdInitLocal(CmdBase):
         ):
             pass
         else:
-            raise ArgumentNotProvided
+            raise Neo4jArgumentNotProvided
 
         output = is_git_repo()
         

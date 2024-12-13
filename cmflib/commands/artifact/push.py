@@ -57,12 +57,14 @@ class CmdArtifactPush(CmdBase):
 
         # Default path of mlmd file
         mlmd_file_name = "./mlmd"
+        current_directory = os.getcwd()
         if self.args.file_name:
             mlmd_file_name = self.args.file_name
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
+            current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
-            raise FileNotFound(mlmd_file_name)
+            raise FileNotFound(mlmd_file_name, current_directory)
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
 

@@ -38,7 +38,7 @@ class MinioArtifacts:
             )
             found = client.bucket_exists(bucket_name)
             if not found:   #check if minio bucket exists
-                raise BucketNotFound()
+                raise BucketNotFound(bucket_name)
 
             response = ""
 
