@@ -223,7 +223,7 @@ class CmdArtifactsList(CmdBase):
                             break
                     return "End of records.."
                 else:
-                    return ArtifactNotFound
+                    return ArtifactNotFound(self.args.artifact_name)
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
         self.display_table(df)

@@ -1,5 +1,5 @@
 ###
-# Copyright (2022) Hewlett Packard Enterprise Development LP
+# Copyright (2024) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ class TensorboardPushSuccess(CmfSuccess):
 
     def handle(self):
         if self.tensorboard_file_name == "All":
-            return f"tensorboard logs: files pushed successfully" 
+            return f"SUCCESS: All tensorboard logs pushed successfully." 
         return f"tensorboard logs: file {self.tensorboard_file_name} pushed successfully." 
 
 class CmfInitComplete(CmfSuccess):
@@ -130,7 +130,7 @@ class PipelineNotFound(CmfFailure):
 
     
 class FileNotFound(CmfFailure):
-    def __init__(self,file_name, directory, return_code=102):
+    def __init__(self, file_name, directory, return_code=102):
         self.directory = directory
         self.file_name =file_name
         super().__init__(return_code)
@@ -184,7 +184,7 @@ class BatchDownloadFailure(CmfFailure):
         super().__init__(return_code)
 
     def handle(self):
-        return f"Number of files downloaded = {self.files_downloaded }. Files failed to download = {self.Files_failed_to_download}."
+        return f"INFO: Number of files downloaded = {self.files_downloaded }. Files failed to download = {self.Files_failed_to_download}."
 
 class Minios3ServerInactive(CmfFailure):
     def __init__(self,return_code=109):

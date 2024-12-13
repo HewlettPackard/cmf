@@ -110,7 +110,7 @@ class CmdMetadataPush(CmdBase):
                     tstatus_code = tresponse.status_code
                     if tstatus_code == 200:
                         # give status code as success
-                        return TensorboardPushSuccess()
+                        return TensorboardPushSuccess(file_name)
                     else:
                         # give status code as failure 
                         return TensorboardPushFailure(file_name,tresponse.text)
