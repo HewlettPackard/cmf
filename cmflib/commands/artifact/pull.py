@@ -223,7 +223,7 @@ class CmdArtifactPull(CmdBase):
             return output
         dvc_config_op = output
         if dvc_config_op["core.remote"] == "minio":
-            minio_class_obj = minio_artifacts.MinioArtifacts()
+            minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
             if self.args.artifact_name:  #checking if artifact_name is in mlmd
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
@@ -232,25 +232,32 @@ class CmdArtifactPull(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
-                    total_files_in_directory,file_downloaded,return_code = minio_class_obj.download_artifacts(
-                        dvc_config_op,
-                        current_directory,
-                        minio_args[0], # bucket_name
-                        minio_args[1], # object_name
-                        minio_args[2], # path_name
-                    )
-                    file_failed_to_download = total_files_in_directory - file_downloaded
-                    if not minio_args[0].endswith(".dir"):
-                        if return_code == 206:
-                            file_downloaded = 1
-                        else:                 
-                            file_failed_to_downloaded = 1
-
-                    if return_code == 206:
-                        status = BatchDownloadSuccess(file_downloaded)
+                    if not minio_args[1].endswith(".dir"):
+                        object_name, download_loc, download_flag = minio_class_obj.download_file(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+                        if download_flag:
+                            return ObjectDownloadSuccess(object_name, download_loc)
+                        else: 
+                            return ObjectDownloadFailure(object_name)
                     else:
-                        status = BatchDownloadFailure(total_files_in_directory, file_failed_to_downloaded)
-                    return status
+                        # we are downloading multiple files from a directory 
+                        # return total_files_in_directory, files_downloaded
+                        total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+            
+                        if download_flag:
+                            return BatchDownloadSuccess(dir_files_downloaded)
+                        else:
+                            file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_downloaded)
             else:
                 files_downloaded = 0
                 files_failed_to_download = 0
@@ -259,26 +266,37 @@ class CmdArtifactPull(CmdBase):
                         continue
                     minio_args = self.extract_repo_args("minio", name, url, current_directory)
                     if not minio_args[1].endswith(".dir"):
-                        total_files_count += 1
-                    total_files_in_dir,count_files_success,return_code = minio_class_obj.download_artifacts(
-                        dvc_config_op,
-                        current_directory,
-                        minio_args[0], # bucket_name
-                        minio_args[1], # object_name
-                        minio_args[2], # path_name
-                    )
-                    total_files_count += total_files_in_dir
-                    files_download_completed += count_files_success
-                    #print(total_files_in_dir,count_files_success,"total_files_in_dir,count_files_success")
-                    if return_code == 206 and not minio_args[1].endswith(".dir") :
-                        files_download_completed += 1
-                files_downloaded = files_download_completed + count_files_success 
-                Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
-                if Files_failed_to_download == 0:
-                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                        object_name, download_loc, download_flag = minio_class_obj.download_file(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+                        # print output here because we are in a loop and can't return the control
+                        if download_flag:
+                            print(f"object {object_name} downloaded at {download_loc}.")
+                            files_downloaded += 1
+                        else:
+                            files_failed_to_download += 1
+                    else:
+                        total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+                        # download_flag is true only when all the files from the directory are successfully downlaoded.
+                        if download_flag:
+                            files_downloaded += dir_files_downloaded
+                        else:
+                            files_downloaded += dir_files_downloaded
+                            files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
                 else:
-                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
-                return status
+                    return BatchDownloadFailure(files_downloaded, files_failed_to_download)
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts(dvc_config_op)
             # There are two main conditions

@@ -43,7 +43,6 @@ class LocalArtifacts():
         
         try:
             response = self.fs.get_file(object_name, download_loc)
-    
             if response == None:  # get_file() returns none when file gets downloaded.
                 return object_name, download_loc, True
             else:
@@ -116,7 +115,7 @@ class LocalArtifacts():
                     except Exception as e:
                         print(f"object {temp_object_name} is not downloaded.")
 
-                    # total_files - files_downloaded gives us the number of files which are failed to download
+                # total_files - files_downloaded gives us the number of files which are failed to download
                 if (total_files_in_directory - files_downloaded) == 0:   
                     return total_files_in_directory, files_downloaded, True
                 else:         
