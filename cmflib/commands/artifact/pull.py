@@ -257,7 +257,7 @@ class CmdArtifactPull(CmdBase):
                             return BatchDownloadSuccess(dir_files_downloaded)
                         else:
                             file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_downloaded)
+                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
             else:
                 files_downloaded = 0
                 files_failed_to_download = 0
@@ -277,6 +277,7 @@ class CmdArtifactPull(CmdBase):
                             print(f"object {object_name} downloaded at {download_loc}.")
                             files_downloaded += 1
                         else:
+                            print(f"object {object_name} is not downloaded ")
                             files_failed_to_download += 1
                     else:
                         total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
@@ -332,7 +333,7 @@ class CmdArtifactPull(CmdBase):
                             return BatchDownloadSuccess(dir_files_downloaded)
                         else:
                             file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_downloaded)
+                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
             else:
                 files_downloaded = 0
                 files_failed_to_download = 0
@@ -350,7 +351,6 @@ class CmdArtifactPull(CmdBase):
                     # local_args [1] = download_loc
                     
                     if not local_args[0].endswith(".dir"):
-                        print("current dvc loc = ", local_args[0])
                         object_name, download_loc, download_flag = local_class_obj.download_file(
                             current_directory, local_args[0], local_args[1])
                         # print output here because we are in a loop and can't return the control
@@ -358,9 +358,9 @@ class CmdArtifactPull(CmdBase):
                             print(f"object {object_name} downloaded at {download_loc}.")
                             files_downloaded += 1
                         else:
+                            print(f"object {object_name} is not downloaded ")
                             files_failed_to_download += 1
                     else:
-                        print("i should come here once")
                         # we are downloading multiple files from a directory 
                         total_files_in_directory, dir_files_downloaded, download_flag = local_class_obj.download_directory(
                             current_directory, local_args[0], local_args[1])
@@ -400,12 +400,12 @@ class CmdArtifactPull(CmdBase):
                         if return_code == 206:
                             file_downloaded = 1
                         else:                 
-                            file_failed_to_downloaded = 1
+                            file_failed_to_download = 1
 
                     if return_code == 206:
                         status = BatchDownloadSuccess(file_downloaded)
                     else:
-                        status = BatchDownloadFailure(total_files_in_directory, file_failed_to_downloaded)
+                        status = BatchDownloadFailure(total_files_in_directory, file_failed_to_download)
                     return status
             else:
                 for name, url in name_url_dict.items():
@@ -500,7 +500,7 @@ class CmdArtifactPull(CmdBase):
                     status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
                 return status
         elif dvc_config_op["core.remote"] == "amazons3":
-            amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
+            amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
@@ -510,51 +510,70 @@ class CmdArtifactPull(CmdBase):
                 else:
                     args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
                     if args[0] and args[1] and args[2]:
-                        total_files_in_directory,file_downloaded,return_code = amazonS3_class_obj.download_artifacts(
-                            dvc_config_op,
-                            current_directory,
-                            args[0], # bucket_name
-                            args[1], # object_name
-                            args[2], # download_loc
-                        )
-                    file_failed_to_download = total_files_in_directory - file_downloaded
-                    if not args[0].endswith(".dir"):
-                        if return_code ==206:
-                            file_downloaded = 1
-                        else:                 
-                            file_failed_to_download = 1
+                        if not args[1].endswith(".dir"):
+                            object_name, download_loc, download_flag = amazonS3_class_obj.download_file(
+                                current_directory,
+                                args[0], # bucket_name
+                                args[1], # object_name
+                                args[2], # download_loc
+                            )
+                            if download_flag:
+                                return ObjectDownloadSuccess(object_name, download_loc)
+                            else: 
+                                return ObjectDownloadFailure(object_name)
+                        else:
+                            total_files_in_directory, dir_files_downloaded, download_flag = amazonS3_class_obj.download_directory(current_directory,
+                                args[0], # bucket_name
+                                args[1], # object_name
+                                args[2], # download_loc
+                                )
+                        if download_flag:
+                            return BatchDownloadSuccess(dir_files_downloaded)
+                        else:
+                            file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
 
-                    if return_code == 206:
-                        status = BatchDownloadSuccess(file_downloaded)
-                    else:
-                        status = BatchDownloadFailure(total_files_in_directory,file_failed_to_download)
-                return status
+                
             else:
+                files_downloaded = 0
+                files_failed_to_download = 0
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
-                    if not args[1].endswith(".dir"):
-                        total_files_count += 1
                     if args[0] and args[1] and args[2]:
-                        total_files_in_dir,count_files_success,return_code = amazonS3_class_obj.download_artifacts(
-                            dvc_config_op,
+                        if not args[1].endswith(".dir"):
+                            object_name, download_loc, download_flag = amazonS3_class_obj.download_file(
+                                current_directory,
+                                args[0], # bucket_name
+                                args[1], # object_name
+                                args[2], # download_loc
+                            )
+                            if download_flag:
+                                print(f"object {object_name} downloaded at {download_loc}.")
+                                files_downloaded += 1
+                            else:
+                                print(f"object {object_name} is not downloaded ")
+                                files_failed_to_download += 1
+                        else:
+                            total_files_in_directory, dir_files_downloaded, download_flag = amazonS3_class_obj.download_directory(
                             current_directory,
                             args[0], # bucket_name
                             args[1], # object_name
-                            args[2], # download_loc
+                            args[2], # path_name
                         )
-                    total_files_count += total_files_in_dir
-                    files_download_completed += count_files_success
-                    if return_code == 206 and not args[1].endswith(".dir") :
-                        files_download_completed += 1
-                files_downloaded = files_download_completed + count_files_success 
-                Files_failed_to_download = total_files_in_dir + total_files_count - files_download_completed - count_files_success
-                if Files_failed_to_download == 0:
-                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                        # download_flag is true only when all the files from the directory are successfully downlaoded.
+                            if download_flag:
+                                files_downloaded += dir_files_downloaded
+                            else:
+                                files_downloaded += dir_files_downloaded
+                                files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
                 else:
-                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
-                return status
+                    return BatchDownloadFailure(files_downloaded, files_failed_to_download)
         else:
             remote = dvc_config_op["core.remote"]
             msg = f"{remote} is not valid artifact repository for CMF.\n Reinitialize CMF."
@@ -591,4 +610,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
-
