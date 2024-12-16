@@ -49,9 +49,9 @@ class AmazonS3Artifacts:
         Download a single file from an S3 bucket.
 
         Args:
-            current_directory (str): The current working directory (unused here but might be useful in some contexts).
-            bucket_name (str): Name of the S3 bucket.
-            object_name (str): Key (path) of the file in the S3 bucket.
+            current_directory (str): The current working directory.
+            bucket_name (str): Name of the s3 bucket.
+            object_name (str): Key (path) of the file in the s3 bucket.
             download_loc (str): Local path where the file should be downloaded.
 
         Returns:
@@ -91,7 +91,7 @@ class AmazonS3Artifacts:
         Download a directory from an S3 bucket using its .dir metadata object.
 
         Args:
-            current_directory (str): The current working directory (unused here but might be useful in some contexts).
+            current_directory (str): The current working directory .
             bucket_name (str): Name of the S3 bucket.
             object_name (str): Key (path) of the .dir object in the S3 bucket.
             download_loc (str): Local directory path where the directory should be downloaded.

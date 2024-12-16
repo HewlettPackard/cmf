@@ -19,11 +19,17 @@ from dvc.api import DVCFileSystem
 from cmflib.cmf_exception_handling import ObjectDownloadSuccess
 
 class LocalArtifacts():
-    # This class downloads one local artifact at a time and if the passed artifact is a directory 
-    # then, it downloads all the files from the directory 
+    """
+        Initialize the LocalArtifacts class with local repo url.
+        This class downloads one local artifact at a time and if the passed artifact is a directory 
+        then, it downloads all the files from the directory 
 
+        Args:
+            dvc_config_op (dict): Dictionary containing local url (remote.local.url).
+        """
+    
     def __init__(self, dvc_config_op):
-        self.fs = fs = DVCFileSystem(
+        self.fs = DVCFileSystem(
                 dvc_config_op["remote.local-storage.url"]
             )  # dvc_config_op[1] is file system path - "/path/to/local/repository"
         
@@ -33,8 +39,22 @@ class LocalArtifacts():
         object_name: str,
         download_loc: str,
     ):
+        """
+        Download a single file from an S3 bucket.
+
+        Args:
+            current_directory (str): The current working directory.
+            bucket_name (str): Name of the local bucket.
+            object_name (str): Key (path) of the file in the local repo.
+            download_loc (str): Local path where the file should be downloaded.
+
+        Returns:
+            tuple: (object_name, download_loc, status) where status indicates success (True) or failure (False).
+        """
         # get_file() only creates file, to put artifacts in proper directory, subfolders are required.
         # download_loc = contains absolute path of the file with file name and extension
+
+        # Create necessary directories for the download location.
         dir_path = ""
         if "/" in download_loc:
             dir_path, _ = download_loc.rsplit("/", 1)
@@ -42,8 +62,11 @@ class LocalArtifacts():
             os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
         
         try:
+            # get_file() returns none when file gets downloaded.
             response = self.fs.get_file(object_name, download_loc)
-            if response == None:  # get_file() returns none when file gets downloaded.
+
+            # Check if the response indicates success.
+            if response == None:  
                 return object_name, download_loc, True
             else:
                 return  object_name, download_loc, False
@@ -57,6 +80,19 @@ class LocalArtifacts():
         object_name: str,
         download_loc: str,
     ):
+        """
+        Download a directory from an local repo using its .dir metadata object.
+
+        Args:
+            current_directory (str): The current working directory .
+            bucket_name (str): Name of the local bucket.
+            object_name (str): Key (path) of the .dir object in the local bucket.
+            download_loc (str): Local directory path where the directory should be downloaded.
+
+        Returns:
+            tuple: (total_files_in_directory, files_downloaded, status) where status indicates success (True) or failure (False).
+        """
+
         # get_file() only creates file, to put artifacts in proper directory, subfolders are required.
         # download_loc = contains absolute path of the file with file name and extension
         dir_path = ""
@@ -74,11 +110,13 @@ class LocalArtifacts():
         os.makedirs(download_loc, mode=0o777, exist_ok=True)
         total_files_in_directory = 0
         files_downloaded = 0
-        # download the .dir object 
+
+        # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/dir"
         try:
-            # we are getting .dir object which contains information about all the files tracked inside it 
+            # Download the .dir file containing metadata about tracked files.
             response = self.fs.get_file(object_name, temp_dir)
+            
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 

@@ -22,7 +22,13 @@ from cmflib.cmf_exception_handling import BucketNotFound
 class MinioArtifacts:
 
     def __init__(self, dvc_config_op):
-        # dvc_config_op["remote.minio.endpointurl"] = http://XX.XX.XX.XX:9000
+        """
+        Initialize the MinioArtifacts class with minios3 repo credentials.
+        dvc_config_op["remote.minio.endpointurl"] = http://XX.XX.XX.XX:9000
+        Args:
+            dvc_config_op (dict): Dictionary containing local url (remote.local.url).
+        """
+        
         self.endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
         self.access_key = dvc_config_op["remote.minio.access_key_id"]
         self.secret_key = dvc_config_op["remote.minio.secret_access_key"]
@@ -38,11 +44,29 @@ class MinioArtifacts:
         object_name: str,
         download_loc: str,
         ):
+        """
+        Download a single file from an S3 bucket.
+
+        Args:
+            current_directory (str): The current working directory.
+            bucket_name (str): Name of the minioS3 bucket.
+            object_name (str): Key (path) of the file in the minios3 repo.
+            download_loc (str): Local path where the file should be downloaded.
+
+        Returns:
+            tuple: (object_name, download_loc, status) where status indicates success (True) or failure (False).
+        """
         try:
             found = self.client.bucket_exists(bucket_name)
-            if not found:   #check if minio bucket exists
+
+            #check if minio bucket exists
+            if not found:   
                 raise BucketNotFound(bucket_name)
+
+            #Download file
             response = self.client.fget_object(bucket_name, object_name, download_loc)
+
+            # Check if the response indicates success.
             if response:
                 return object_name, download_loc, True
             else:
@@ -58,6 +82,19 @@ class MinioArtifacts:
         object_name: str,
         download_loc: str,
     ):
+        """
+        Download a directory from an minios3 repo using its .dir metadata object.
+
+        Args:
+            current_directory (str): The current working directory .
+            bucket_name (str): Name of the minios3 bucket.
+            object_name (str): Key (path) of the .dir object in the minios3 bucket.
+            download_loc (str): Local directory path where the directory should be downloaded.
+
+        Returns:
+            tuple: (total_files_in_directory, files_downloaded, status) where status indicates success (True) or failure (False).
+        """
+
         found = self.client.bucket_exists(bucket_name)
         if not found:   #check if minio bucket exists
             raise BucketNotFound(bucket_name)
@@ -73,14 +110,14 @@ class MinioArtifacts:
 
         total_files_in_directory = 0
         files_downloaded = 0
-        # download .dir object
+
+        # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/temp_dir"
         try:
+            # Download the .dir file containing metadata about tracked files.
+
             response = self.client.fget_object(bucket_name, object_name, temp_dir)
-                # except Exception as e:
-                #     print(f"object {object_name} is not downloaded.")
-                #     return total_files_in_directory,file_download_success,download_failure_return_code
-      
+                
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 
@@ -119,6 +156,7 @@ class MinioArtifacts:
                         print(f"object {temp_object_name} is not downloaded.")
                 except Exception as e:
                     print(f"object {temp_object_name} is not downloaded.")
+                    
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
