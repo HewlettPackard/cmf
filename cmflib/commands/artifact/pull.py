@@ -298,6 +298,7 @@ class CmdArtifactPull(CmdBase):
                     return BatchDownloadSuccess(files_downloaded)
                 else:
                     return BatchDownloadFailure(files_downloaded, files_failed_to_download)
+
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts(dvc_config_op)
             # There are two main conditions
@@ -433,6 +434,7 @@ class CmdArtifactPull(CmdBase):
                 else:
                     status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
                 return status
+
         elif dvc_config_op["core.remote"] == "osdf":
             #Regenerate Token for OSDF
             from cmflib.utils.helper_functions import generate_osdf_token
@@ -499,6 +501,7 @@ class CmdArtifactPull(CmdBase):
                 else:
                     status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
                 return status
+
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:
@@ -610,3 +613,4 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
+

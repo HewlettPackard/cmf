@@ -56,76 +56,76 @@ class LocalArtifacts():
         current_directory: str,
         object_name: str,
         download_loc: str,
-        ):
-            # get_file() only creates file, to put artifacts in proper directory, subfolders are required.
-            # download_loc = contains absolute path of the file with file name and extension
-            dir_path = ""
-            if "/" in download_loc:
-                dir_path, _ = download_loc.rsplit("/", 1)
-            if dir_path != "":
-                os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
+    ):
+        # get_file() only creates file, to put artifacts in proper directory, subfolders are required.
+        # download_loc = contains absolute path of the file with file name and extension
+        dir_path = ""
+        if "/" in download_loc:
+            dir_path, _ = download_loc.rsplit("/", 1)
+        if dir_path != "":
+            os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
 
-            """"
-            if object_name ends with .dir - it is a directory.
-            we download .dir object with 'temp_dir' and remove 
-            this after all the files from this .dir object is downloaded.
+        """"
+        if object_name ends with .dir - it is a directory.
+        we download .dir object with 'temp_dir' and remove 
+        this after all the files from this .dir object is downloaded.
+        """
+        # in case of .dir, download_loc is a absolute path for a folder
+        os.makedirs(download_loc, mode=0o777, exist_ok=True)
+        total_files_in_directory = 0
+        files_downloaded = 0
+        # download the .dir object 
+        temp_dir = f"{download_loc}/dir"
+        try:
+            # we are getting .dir object which contains information about all the files tracked inside it 
+            response = self.fs.get_file(object_name, temp_dir)
+            with open(temp_dir, 'r') as file:
+                tracked_files = eval(file.read())
+
+            # removing temp_dir
+            if os.path.exists(temp_dir):
+                os.remove(temp_dir)
+
             """
-            # in case of .dir, download_loc is a absolute path for a folder
-            os.makedirs(download_loc, mode=0o777, exist_ok=True)
-            total_files_in_directory = 0
-            files_downloaded = 0
-            # download the .dir object 
-            temp_dir = f"{download_loc}/dir"
-            try:
-                # we are getting .dir object which contains information about all the files tracked inside it 
-                response = self.fs.get_file(object_name, temp_dir)
-                with open(temp_dir, 'r') as file:
-                    tracked_files = eval(file.read())
+            object_name = "files/md5/9b/9a458ac0b534f088a47c2b68bae479.dir" 
+            contains the path of the .dir on the artifact repo
+            we need to remove the hash of the .dir from the object_name
+            which will leave us with the artifact repo path
+            """
+            repo_path = "/".join(object_name.split("/")[:-2])
 
-                # removing temp_dir
-                if os.path.exists(temp_dir):
-                    os.remove(temp_dir)
-
-                """
-                object_name = "files/md5/9b/9a458ac0b534f088a47c2b68bae479.dir" 
-                contains the path of the .dir on the artifact repo
-                we need to remove the hash of the .dir from the object_name
-                which will leave us with the artifact repo path
-                """
-                repo_path = "/".join(object_name.split("/")[:-2])
-
-                obj = True
-                for file_info in tracked_files:
-                    total_files_in_directory += 1
-                    relpath = file_info['relpath']
-                    md5_val = file_info['md5']
-                    # md5_val = a237457aa730c396e5acdbc5a64c8453
-                    # we need a2/37457aa730c396e5acdbc5a64c8453
-                    formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
-                    temp_object_name = f"{repo_path}/{formatted_md5}"
-                    temp_download_loc = f"{download_loc}/{relpath}"
-                    try:
-                        obj = self.fs.get_file(temp_object_name, temp_download_loc)
-                        if obj == None: 
-                            files_downloaded += 1
-                            print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
-                        else:
-                            print(f"object {temp_object_name} is not downloaded.")
-                    # this exception is for get_file() function for temp_object_name
-                    except Exception as e:
+            obj = True
+            for file_info in tracked_files:
+                total_files_in_directory += 1
+                relpath = file_info['relpath']
+                md5_val = file_info['md5']
+                # md5_val = a237457aa730c396e5acdbc5a64c8453
+                # we need a2/37457aa730c396e5acdbc5a64c8453
+                formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
+                temp_object_name = f"{repo_path}/{formatted_md5}"
+                temp_download_loc = f"{download_loc}/{relpath}"
+                try:
+                    obj = self.fs.get_file(temp_object_name, temp_download_loc)
+                    if obj == None: 
+                        files_downloaded += 1
+                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                    else:
                         print(f"object {temp_object_name} is not downloaded.")
+                # this exception is for get_file() function for temp_object_name
+                except Exception as e:
+                    print(f"object {temp_object_name} is not downloaded.")
 
-                # total_files - files_downloaded gives us the number of files which are failed to download
-                if (total_files_in_directory - files_downloaded) == 0:   
-                    return total_files_in_directory, files_downloaded, True
-                else:         
-                    return total_files_in_directory, files_downloaded, False                                  
-            # this exception is for get_file() function for object_name
-            except Exception as e:
-                print(f"object {object_name} is not downloaded.")
-                # need to improve this  
-                # We usually don't count .dir as a file while counting total_files_in_directory.
-                # However, here we failed to download the .dir folder itself. So we need to make 
-                # total_files_in_directory = 1, because  ..............
-                total_files_in_directory = 1 
-                return total_files_in_directory, files_downloaded, False
+            # total_files - files_downloaded gives us the number of files which are failed to download
+            if (total_files_in_directory - files_downloaded) == 0:   
+                return total_files_in_directory, files_downloaded, True
+            else:         
+                return total_files_in_directory, files_downloaded, False                                  
+        # this exception is for get_file() function for object_name
+        except Exception as e:
+            print(f"object {object_name} is not downloaded.")
+            # need to improve this  
+            # We usually don't count .dir as a file while counting total_files_in_directory.
+            # However, here we failed to download the .dir folder itself. So we need to make 
+            # total_files_in_directory = 1, because  ..............
+            total_files_in_directory = 1 
+            return total_files_in_directory, files_downloaded, False
