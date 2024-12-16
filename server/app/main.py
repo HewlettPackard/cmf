@@ -414,7 +414,9 @@ async def update_global_exe_dict(pipeline_name):
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
                    filter_value: str = Query(None, description="Filter value"), 
                    sort_order: str = Query("asc", description="Sort order(asc or desc)"),
-                   page_number: int = Query(1, description="Page number", gt=0)):
+                   page_number: int = Query(1, description="Page number", gt=0),
+                   custom_prop_key: str = Query(None, description="Custom prop value"),
+                   custom_prop_value: str = Query(None, description="Custom prop key"), ):
 
     conn = await asyncpg.connect(
         user='myuser', 
@@ -472,9 +474,76 @@ SELECT *
 FROM ranked_data
 LIMIT $4 OFFSET $5;
             """
+    
 
-    rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", record_per_page, no_of_offset)
-    # rows = await conn.fetch(query3)
+
+    query3 =  f"""
+        WITH ranked_data AS (
+        SELECT
+        a.*, 
+        JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'name', ap.name,
+                    'value', 
+                    CASE
+                        WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
+                        WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
+                        WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
+                        WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
+                        WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
+                        WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
+                        ELSE NULL
+                    END
+                )
+            ) AS artifact_properties,
+        count(*) OVER() AS total_records
+    FROM
+        artifact a
+    JOIN
+        type t ON a.type_id = t.id
+    JOIN
+        attribution at ON a.id = at.artifact_id
+    JOIN
+        context c ON at.context_id = c.id
+    LEFT JOIN
+        artifactproperty ap ON a.id = ap.artifact_id
+    WHERE
+        t.name = $2 -- Input for type.name
+        AND at.context_id IN (
+            SELECT pc.context_id
+            FROM parentcontext pc
+            JOIN context c2 ON pc.parent_context_id = c2.id
+            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
+        )
+        AND a.name ILIKE $3 -- For artifact name
+        AND ap.name ILIKE $6 -- For custom properties key(column) search
+        AND
+            CASE
+                WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
+                WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
+                WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
+                WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
+                WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
+                WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
+                ELSE NULL
+            END ILIKE $7
+    GROUP BY
+        a.id
+    ORDER BY 
+        a.name {order_by_clause}
+    )
+SELECT * 
+FROM ranked_data
+LIMIT $4 OFFSET $5;
+            """ 
+    # rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", record_per_page, no_of_offset)
+    rows = await conn.fetch(query3, pipeline_name, 
+                            artifact_type, 
+                            f"%{filter_value}%", 
+                            record_per_page, 
+                            no_of_offset, 
+                            f"%{custom_prop_key}%",
+                            f"%{custom_prop_value}%")
     # print("Total records: ",rows[0]["total_records"])
     await conn.close()
     # print(rows)
@@ -487,3 +556,17 @@ LIMIT $4 OFFSET $5;
                 "items": [dict(row) for row in rows]
            }
 
+
+
+
+
+# #  OR
+#             CASE
+#                 WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
+#                 WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
+#                 WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
+#                 WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
+#                 WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
+#                 WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
+#                 ELSE NULL
+#             END ILIKE $7

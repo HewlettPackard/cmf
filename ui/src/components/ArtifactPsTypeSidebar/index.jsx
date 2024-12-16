@@ -20,13 +20,17 @@ import "./index.css";
 const ArtifactPsTypeSidebar = ({
   artifactTypes,
   handleArtifactTypeClick,
-  onFilter
+  onFilter,
+  onCustomPropKey,
+  onCustomPropValue,
 }) => {
   const [clickedArtifactType, setClickedArtifactType] = useState(
     artifactTypes[0],
   );
 
   const [filterValue, setFilterValue] = useState("");
+  const [cpValue, setcpValue] = useState("");
+  const [cpKey, setcpKey] = useState("");
 
   useEffect(() => {
     handleClick(artifactTypes[0]);
@@ -49,6 +53,17 @@ const ArtifactPsTypeSidebar = ({
     onFilter(filterValue);
   };
 
+  const handleKeyChange = (e) => {
+    const keyValue = e.target.value;
+    setcpKey(keyValue); // Update the filter string
+    onCustomPropKey(keyValue);
+  };
+
+  const handleValueChange = (e) => {
+    const value = e.target.value;
+    setcpValue(value); // Update the filter string
+    onCustomPropValue(value);
+  };
 
   return (
     <>
@@ -83,6 +98,28 @@ const ArtifactPsTypeSidebar = ({
               value={filterValue}
               onChange={handleFilterChange}
               placeholder="Filter by Name"
+              style={{
+                marginRight: "1rem",
+                padding: "0.5rem",
+                border: "1px solid #ccc",
+              }}
+            />
+            <input
+              type="text"
+              value={cpKey}
+              onChange={handleKeyChange}
+              placeholder="Filter by custom properties key"
+              style={{
+                marginRight: "1rem",
+                padding: "0.5rem",
+                border: "1px solid #ccc",
+              }}
+            />
+            <input
+              type="text"
+              value={cpValue}
+              onChange={handleValueChange}
+              placeholder="Filter by Custom properties value"
               style={{
                 marginRight: "1rem",
                 padding: "0.5rem",

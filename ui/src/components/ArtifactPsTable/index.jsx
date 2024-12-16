@@ -29,7 +29,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
 
   const consistentColumns = [];
 
-  // console.log(artifacts)
+  // console.log(artifacts);
 
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
@@ -46,7 +46,10 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
 
 
   const getPropertyValue = (properties, propertyName) => {
-    // Check if properties is a string and parse it
+    // console.log(artifacts);
+    console.log(properties);
+    console.log(propertyName);
+    // // Check if properties is a string and parse it
     if (typeof properties === "string") {
         try {
             properties = JSON.parse(properties);  // Parse the string to an array
@@ -65,9 +68,9 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
     // Filter the properties by name and extract string_value
     const values = properties
       .filter(prop => prop.name === propertyName)  // Filter properties by name
-      .map(prop => prop.string_value);  // Extract string_value
+      .map(prop => prop.value);  // Extract string_value
 
-    // Return the values as a comma-separated string or "N/A" if no values are found
+    // // Return the values as a comma-separated string or "N/A" if no values are found
     return values.length > 0 ? values.join(", ") : "N/A";
   };
 
@@ -141,7 +144,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
                   {JSON.parse(artifact.artifact_properties).map((property, idx) => (
                   <tr key={idx}>
                   <td>{property.name}</td>
-                  <td>{property.string_value}</td>
+                  <td>{property.value}</td>
                   </tr>
                   ))}
                   </tbody>

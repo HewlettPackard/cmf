@@ -39,6 +39,8 @@ const Artifacts_ps = () => {
   const [totalItems, setTotalItems] = useState(0);
   const [activePage, setActivePage] = useState(1);
   const [clickedButton, setClickedButton] = useState("page"); 
+  const [customPropKey, setCustomPropKey] = useState("");
+  const [customPropValue, setCustomPropValue] = useState("");
 
   // Fetch pipelines on component mount
   const fetchPipelines = () => {
@@ -55,13 +57,14 @@ const Artifacts_ps = () => {
       setArtifactTypes(types);
       const defaultArtifactType = types[0];
       setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder, activePage); // Fetch artifacts for the first artifact type and default pipeline
+      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue); // Fetch artifacts for the first artifact type and default pipeline
     });
   };
 
-  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder, activePage) => {
-    client.getArtifact(pipelineName, artifactType, filter, sortOrder, activePage)
+  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder, activePage, customPropKey="", customPropValue="") => {
+    client.getArtifact(pipelineName, artifactType, filter, sortOrder, activePage, customPropKey, customPropValue)
       .then((data) => {
+        console.log(data);
         console.log(data.items);
         console.log(data.total_items);
         setArtifacts(data.items);
@@ -73,7 +76,7 @@ const Artifacts_ps = () => {
     setSelectedArtifactType(artifactType); // Set the selected artifact type
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
     if (selectedPipeline) {
-      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder, activePage); // Fetch artifacts based on the selected artifact type and pipeline
+      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder, activePage, customPropKey, customPropValue); // Fetch artifacts based on the selected artifact type and pipeline
     }
     setActivePage(1);
   };
@@ -81,7 +84,7 @@ const Artifacts_ps = () => {
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline); // Set the selected pipeline
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder, activePage); // Fetch artifacts based on the selected pipeline and artifact type
+    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue); // Fetch artifacts based on the selected pipeline and artifact type
     setActivePage(1);
   };
 
@@ -93,13 +96,13 @@ const Artifacts_ps = () => {
   const toggleSortOrder = (newSortOrder) => {
     setSortOrder(newSortOrder);
     if (selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, newSortOrder, activePage);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, newSortOrder, activePage, customPropKey, customPropValue);
     }
   };
 
   const handlePageClick = (page) => {
     setActivePage(page);
-    fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, page);
+    fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, page, customPropKey, customPropValue);
     setClickedButton("page");
   };
 
@@ -108,7 +111,7 @@ const Artifacts_ps = () => {
       setActivePage(activePage - 1);
       setClickedButton("prev");
       handlePageClick(activePage - 1);
-      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue);
     }
   };
 
@@ -120,11 +123,21 @@ const Artifacts_ps = () => {
       fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage);
     }
   };
+
+  const handleCustomPropKey = (value) => {
+    setCustomPropKey(value); // Update the filter string
+    // console.log("value",value)
+  };
+
+  const handleCustomPropValue = (value) => {
+    setCustomPropValue(value); // Update the filter string
+    // console.log("value",value)
+  };
   
 
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
-  }, [filter]);
+  }, [filter, customPropKey, customPropValue]);
 
   return (
     <>
@@ -148,6 +161,8 @@ const Artifacts_ps = () => {
                     artifactTypes={artifactTypes}
                     handleArtifactTypeClick={handleArtifactTypeClick}
                     onFilter={handleFilter}
+                    onCustomPropKey={handleCustomPropKey}
+                    onCustomPropValue={handleCustomPropValue}
                   />
                 )}
             </div>
