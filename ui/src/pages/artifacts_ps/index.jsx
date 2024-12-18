@@ -41,6 +41,8 @@ const Artifacts_ps = () => {
   const [clickedButton, setClickedButton] = useState("page"); 
   const [customPropKey, setCustomPropKey] = useState("");
   const [customPropValue, setCustomPropValue] = useState("");
+  const [sortTimeOrder, setSortTimeOrder] = useState("asc");
+  const [selectedCol, setSelectedCol] = useState("name");
 
   // Fetch pipelines on component mount
   const fetchPipelines = () => {
@@ -57,12 +59,12 @@ const Artifacts_ps = () => {
       setArtifactTypes(types);
       const defaultArtifactType = types[0];
       setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue); // Fetch artifacts for the first artifact type and default pipeline
+      fetchArtifacts(pipeline, defaultArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue, sortTimeOrder, selectedCol); // Fetch artifacts for the first artifact type and default pipeline
     });
   };
 
-  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder, activePage, customPropKey="", customPropValue="") => {
-    client.getArtifact(pipelineName, artifactType, filter, sortOrder, activePage, customPropKey, customPropValue)
+  const fetchArtifacts = (pipelineName, artifactType, filter="", sortOrder, activePage, customPropKey="", customPropValue="", sortTimeOrder, selectedCol) => {
+    client.getArtifact(pipelineName, artifactType, filter, sortOrder, activePage, customPropKey, customPropValue, sortTimeOrder, selectedCol)
       .then((data) => {
         console.log(data);
         console.log(data.items);
@@ -76,7 +78,7 @@ const Artifacts_ps = () => {
     setSelectedArtifactType(artifactType); // Set the selected artifact type
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
     if (selectedPipeline) {
-      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder, activePage, customPropKey, customPropValue); // Fetch artifacts based on the selected artifact type and pipeline
+      fetchArtifacts(selectedPipeline, artifactType, filter, sortOrder, activePage, customPropKey, customPropValue, sortTimeOrder, selectedCol); // Fetch artifacts based on the selected artifact type and pipeline
     }
     setActivePage(1);
   };
@@ -84,7 +86,7 @@ const Artifacts_ps = () => {
   const handlePipelineClick = (pipeline) => {
     setSelectedPipeline(pipeline); // Set the selected pipeline
     setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue); // Fetch artifacts based on the selected pipeline and artifact type
+    fetchArtifacts(pipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue, sortTimeOrder, selectedCol); // Fetch artifacts based on the selected pipeline and artifact type
     setActivePage(1);
   };
 
@@ -95,14 +97,23 @@ const Artifacts_ps = () => {
 
   const toggleSortOrder = (newSortOrder) => {
     setSortOrder(newSortOrder);
+    setSelectedCol("name");
     if (selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, newSortOrder, activePage, customPropKey, customPropValue);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, newSortOrder, activePage, customPropKey, customPropValue, sortTimeOrder, "name");
+    }
+  };
+
+  const toggleSortTime = (newSortOrder) => {
+    setSortTimeOrder(newSortOrder);
+    setSelectedCol("create_time_since_epoch");
+    if (selectedPipeline && selectedArtifactType) {
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue, newSortOrder, "create_time_since_epoch");
     }
   };
 
   const handlePageClick = (page) => {
     setActivePage(page);
-    fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, page, customPropKey, customPropValue);
+    fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, page, customPropKey, customPropValue, sortTimeOrder, selectedCol);
     setClickedButton("page");
   };
 
@@ -111,7 +122,7 @@ const Artifacts_ps = () => {
       setActivePage(activePage - 1);
       setClickedButton("prev");
       handlePageClick(activePage - 1);
-      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage, customPropKey, customPropValue, sortTimeOrder, selectedCol);
     }
   };
 
@@ -120,7 +131,7 @@ const Artifacts_ps = () => {
       setActivePage(activePage + 1);
       setClickedButton("next");
       handlePageClick(activePage + 1);
-      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage);
+      fetchArtifacts(selectedPipeline, selectedArtifactType, filter, sortOrder, activePage, sortTimeOrder, selectedCol);
     }
   };
 
@@ -171,6 +182,7 @@ const Artifacts_ps = () => {
                   <ArtifactPsTable 
                     artifacts={artifacts}
                     onsortOrder={toggleSortOrder}
+                    onsortTimeOrder={toggleSortTime}
                     />
                     
                 ) : (

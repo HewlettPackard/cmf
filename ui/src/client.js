@@ -153,20 +153,30 @@ class FastAPIClient {
       });
   }
 
-  async getArtifact(pipeline_name, artifact_type, filterValue, sort_order, page_number, custom_prop_key, custom_prop_value) {
+  async getArtifact(pipeline_name, artifact_type, filterValue, name_order, page_number, custom_prop_key, custom_prop_value, time_order, col_name) {
     return this.apiClient
       .get(`/artifact/${pipeline_name}/${artifact_type}`, {
         params: {
           filter_value: filterValue,
-          sort_order: sort_order,
+          name_order: name_order,
           page_number: page_number,
           custom_prop_key: custom_prop_key,
           custom_prop_value: custom_prop_value,
+          time_order: time_order,
+          col_name: col_name,
         },
       })
       .then(({ data }) => {
         return data;
       });
+  }
+
+  async getExecution(){
+    return this.apiClient
+    .get(`/execution`).
+    then(({data}) => {
+      return data;
+    }); 
   }
 }
 

@@ -22,9 +22,10 @@ import config from "../../config";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPsTable = ({artifacts, onsortOrder}) => {
+const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
   const [data, setData] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
+  const [sortTimeOrder, setSortTimeOrder] = useState("asc");
   const [expandedRow, setExpandedRow] = useState(null);
 
   const consistentColumns = [];
@@ -44,6 +45,11 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
     </span>
   );
 
+  const renderArrowDate = () => (
+    <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
+      {sortTimeOrder === "asc" ? "↑" : sortTimeOrder === "desc" ? "↓" : "↑"}
+    </span>
+  );
 
   const getPropertyValue = (properties, propertyName) => {
     // console.log(artifacts);
@@ -74,13 +80,6 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
     return values.length > 0 ? values.join(", ") : "N/A";
   };
 
-  // Creating Date time from create_time_since_epoch time[it is in millisecond]
-  const createDateTime = (epoch_time) => {
-    // Creating object of Date class
-    const date_time = new Date(epoch_time);
-    return date_time.toUTCString();
-  }
-
   const toggleRow = (rowId) => {
     if (expandedRow === rowId) {
       setExpandedRow(null);
@@ -93,6 +92,12 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
     const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
     setSortOrder(newSortOrder);
     onsortOrder(newSortOrder);
+  };
+
+  const toggleSortTimeOrder = () => {
+    const newSortOrder = sortTimeOrder === "asc" ? "desc" : "asc";
+    setSortTimeOrder(newSortOrder);
+    onsortTimeOrder(newSortOrder);
   };
 
 
@@ -111,7 +116,12 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
                 Name {renderArrow()}
                 </span>
                 </th>
-                <th className="px-6 py-3" scope="col">DATE_Time</th>
+                <th className="px-6 py-3" onClick={toggleSortTimeOrder}>
+                <span scope="col" 
+                      style={{ display: 'inline-flex', alignItems: 'center' }} >
+                DATE {renderArrowDate()}
+                </span>
+                </th>
                 <th className="px-6 py-3" scope="col">URI</th>
                 <th className="px-6 py-3" scope="col">URL</th>
                 <th className="px-6 py-3" scope="col">GIT_REPO</th>
@@ -130,7 +140,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder}) => {
                   </td>
                   <td className="px-6 py-4">{artifact.id}</td>
                   <td className="px-6 py-4">{artifact.name}</td>
-                  <td className="px-6 py-4">{createDateTime(artifact.create_time_since_epoch)}</td>
+                  <td className="px-6 py-4">{artifact.create_time_since_epoch}</td>
                   <td className="px-6 py-4">{artifact.uri}</td>
                   <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "url")}</td>
                   <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "git_repo")}</td>

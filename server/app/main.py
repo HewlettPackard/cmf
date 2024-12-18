@@ -413,10 +413,13 @@ async def update_global_exe_dict(pipeline_name):
 @app.get("/artifact/{pipeline_name}/{artifact_type}")
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
                    filter_value: str = Query(None, description="Filter value"), 
-                   sort_order: str = Query("asc", description="Sort order(asc or desc)"),
+                   name_order: str = Query("asc", description="Sort by name(asc or desc)"),
                    page_number: int = Query(1, description="Page number", gt=0),
                    custom_prop_key: str = Query(None, description="Custom prop value"),
-                   custom_prop_value: str = Query(None, description="Custom prop key"), ):
+                   custom_prop_value: str = Query(None, description="Custom prop key"), 
+                   time_order: str = Query("asc", description="Sort by date(asc or desc)"),
+                   col_name: str = Query("name", description="Column for sorting"),
+                   ):
 
     conn = await asyncpg.connect(
         user='myuser', 
@@ -425,62 +428,16 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
         host='192.168.20.67',
     )
 
-    order_by_clause = "ASC" if sort_order.lower() == "asc" else "DESC"
+    print(col_name)
+    order_by_name = "ASC" if name_order.lower() == "asc" else "DESC"
+    order_by_time = "ASC" if time_order.lower() == "asc" else "DESC"
     record_per_page = 5
     no_of_offset = (page_number - 1) * record_per_page
-
-    query2 = f"""
-        WITH ranked_data AS (
-        SELECT
-        a.*, 
-        JSON_AGG(
-            JSON_BUILD_OBJECT(
-                'name', ap.name,
-                'is_custom_property', ap.is_custom_property,
-                'int_value', ap.int_value,
-                'double_value', ap.double_value,
-                'string_value', ap.string_value,
-                'byte_value', ap.byte_value,
-                'proto_value', ap.proto_value,
-                'bool_value', ap.bool_value
-            )
-        ) AS artifact_properties,
-        count(*) OVER() AS total_records
-    FROM
-        artifact a
-    JOIN
-        type t ON a.type_id = t.id
-    JOIN
-        attribution at ON a.id = at.artifact_id
-    JOIN
-        context c ON at.context_id = c.id
-    LEFT JOIN
-        artifactproperty ap ON a.id = ap.artifact_id
-    WHERE
-        t.name = $2 -- Input for type.name
-        AND at.context_id IN (
-            SELECT pc.context_id
-            FROM parentcontext pc
-            JOIN context c2 ON pc.parent_context_id = c2.id
-            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
-        )
-        AND a.name LIKE $3
-    GROUP BY
-        a.id
-    ORDER BY 
-        a.name {order_by_clause}
-    )
-SELECT * 
-FROM ranked_data
-LIMIT $4 OFFSET $5;
-            """
-    
-
 
     query3 =  f"""
         WITH ranked_data AS (
         SELECT
-        a.*, 
+        a.id, a.name, a.uri, TO_TIMESTAMP(a.create_time_since_epoch/1000) AT TIME ZONE 'UTC' AS create_time_since_epoch,
         JSON_AGG(
                 JSON_BUILD_OBJECT(
                     'name', ap.name,
@@ -529,13 +486,15 @@ LIMIT $4 OFFSET $5;
             END ILIKE $7
     GROUP BY
         a.id
-    ORDER BY 
-        a.name {order_by_clause}
-    )
+    ORDER BY
+        a.name {order_by_name}
+        )
 SELECT * 
 FROM ranked_data
 LIMIT $4 OFFSET $5;
             """ 
+    
+    # SELECT to_char(to_timestamp(epoch_time), 'YYYY-MM-DD HH24:MI:SS') as date FROM my_table;
     # rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", record_per_page, no_of_offset)
     rows = await conn.fetch(query3, pipeline_name, 
                             artifact_type, 
@@ -545,6 +504,7 @@ LIMIT $4 OFFSET $5;
                             f"%{custom_prop_key}%",
                             f"%{custom_prop_value}%")
     # print("Total records: ",rows[0]["total_records"])
+
     await conn.close()
     # print(rows)
     if rows:
@@ -557,16 +517,81 @@ LIMIT $4 OFFSET $5;
            }
 
 
+# api to display executions available in mlmd[from postgres]
+@app.get("/execution/")
+async def execution(request: Request):
+    query =   '''
+        SELECT 
+        e.*,
+        JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'name', ep.name,
+                    'value', 
+                    CASE
+                        WHEN ep.string_value IS NOT NULL AND ep.string_value != '' THEN ep.string_value
+                        WHEN ep.bool_value IS NOT NULL THEN ep.bool_value::TEXT
+                        WHEN ep.double_value IS NOT NULL THEN ep.double_value::TEXT
+                        WHEN ep.int_value IS NOT NULL THEN ep.int_value::TEXT
+                        WHEN ep.byte_value IS NOT NULL THEN ep.byte_value::TEXT
+                        WHEN ep.proto_value IS NOT NULL THEN ep.proto_value::TEXT
+                        ELSE NULL
+                    END
+                )
+            ) AS execution_properties 
+            FROM execution e
+            LEFT JOIN
+            executionproperty as ep ON ep.execution_id = e.id
+            GROUP BY 
+            e.id;'''
+    
+
+    query2="""
+        SELECT
+        a.*, 
+        JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'name', ap.name,
+                    'value', 
+                    CASE
+                        WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
+                        WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
+                        WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
+                        WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
+                        WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
+                        WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
+                        ELSE NULL
+                    END
+                )
+            ) AS execution_properties
+    FROM
+        execution a
+    JOIN
+        attribution at ON a.id = at.context_id
+    LEFT JOIN
+        executionproperty ap ON a.id = ap.execution_id
+    WHERE
+        at.context_id IN (
+            SELECT pc.context_id
+            FROM parentcontext pc
+            JOIN context c2 ON pc.parent_context_id = c2.id
+            WHERE c2.name = 'Te' -- Input for context.name (which is actually a parent_context)
+        )
+    GROUP BY
+        a.id
+"""
+    
+
+    conn = await asyncpg.connect(
+        user='myuser', 
+        password='mypassword',
+        database='mlmd', 
+        host='192.168.0.112',
+    )
+    
+    rows = await conn.fetch(query)
+    await conn.close()
+
+    # print(rows)
+    return [dict(row) for row in rows]
 
 
-
-# #  OR
-#             CASE
-#                 WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
-#                 WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
-#                 WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
-#                 WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
-#                 WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
-#                 WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
-#                 ELSE NULL
-#             END ILIKE $7

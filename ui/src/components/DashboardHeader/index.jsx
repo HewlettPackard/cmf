@@ -78,6 +78,13 @@ function DashboardHeader() {
             Executions
           </NavLink>
           <NavLink
+            to="/execution"
+            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
+            activeClassName="active"
+          >
+            Execution_ps
+          </NavLink>
+          <NavLink
             to="/display_lineage"
             className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
             activeClassName="active"

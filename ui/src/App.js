@@ -24,6 +24,7 @@ import TensorBoard from "./pages/tensorboard";
 import "./App.css";
 // import ArtifactPsTable from "./components/ArtifactPsTable";
 import Artifacts_ps from "./pages/artifacts_ps";
+import Executions_ps from "./pages/executions_ps";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route exact path="/artifacts" element={<Artifacts />} />
           <Route exact path="/artifact" element={<Artifacts_ps />} />
           <Route exact path="/executions" element={<Executions />} />
+          <Route exact path="/execution" element={<Executions_ps />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
           <Route exact path="/tensorboard" element={<TensorBoard />} />
         </Routes>
