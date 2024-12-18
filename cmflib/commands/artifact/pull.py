@@ -161,10 +161,11 @@ class CmdArtifactPull(CmdBase):
                 continue
             # Splitting the 'name' using ':' as the delimiter and storing the first argument in the 'name' variable.
             name = name.split(":")[0]
+            artifact_hash = name = name.split(":")[1]
             # Splitting the path on '/' to extract the file name, excluding the directory structure.
             file_name = name.split('/')[-1]
             if file_name == self.args.artifact_name:
-                return name, url
+                return name, url, artifact_hash
             else:
                 pass
 
@@ -215,7 +216,8 @@ class CmdArtifactPull(CmdBase):
             )  # getting all artifacts with id
             temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
-        # print(name_url_dict)
+
+        #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
         output = DvcConfig.get_dvc_config()  # pulling dvc config
@@ -242,6 +244,7 @@ class CmdArtifactPull(CmdBase):
                 output = self.search_artifact(name_url_dict)
                 # output[0] = artifact_name
                 # output[1] = url
+                # output[2] = hash
                 if output is None:
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
@@ -528,12 +531,14 @@ class CmdArtifactPull(CmdBase):
             #Need to write to cmfconfig with new credentials
             #CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
             #Now Ready to do dvc pull 
+            cache_path=cmf_config["osdf-cache"]
 
             osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts()
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
+                # output[3]=artifact_hash
                 if output is None:
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
@@ -541,9 +546,11 @@ class CmdArtifactPull(CmdBase):
                     return_code = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # s_url of the artifact
+                        cache_path,
                         current_directory,
                         args[1], # download_loc of the artifact
-                        args[2]  # name of the artifact
+                        args[2],  # name of the artifact
+                        output[3] #Artifact Hash
                     )
                     
                     if return_code == 206:
@@ -557,14 +564,18 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
+                    artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
+                    #print(f"Hash for the artifact {name} is {artifact_hash}")
                     args = self.extract_repo_args("osdf", name, url, current_directory)
                         
                     return_code = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
+                        cache_path,
                         current_directory,
                         args[1], # remote_loc of the artifact
-                        args[2]  # name
+                        args[2],  # name
+                        artifact_hash #Artifact Hash
                     )
                     if return_code == 206:
                         file_downloaded +=1
