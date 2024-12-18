@@ -15,6 +15,7 @@
 ###
 
 #!/usr/bin/env python3
+from typing import Optional, List
 
 class CmfResponse(Exception):
     """
@@ -47,7 +48,7 @@ class ExecutionsAlreadyExists(CmfSuccess):
     def __init__(self, return_code=201):
         super().__init__(return_code)
  
-    def handle():
+    def handle(self):
         return "INFO: Executions already exists."
 
 class ObjectDownloadSuccess(CmfSuccess):
@@ -117,6 +118,26 @@ class ArtifactPushSuccess(CmfSuccess):
     def handle(self):
         return self.message
 
+class MetadataExportToJson(CmfSuccess):
+    def __init__(self,full_path_to_dump, return_code=210):
+        self.full_path_to_dump = full_path_to_dump
+        super().__init__(return_code)
+
+    def handle(self):
+        return f"SUCCESS: metadata successfully exported in {self.full_path_to_dump}."
+
+# This class is created for messages like "Done", "Records not found"
+class Msg(CmfSuccess):
+    def __init__(self,msg_str: Optional[str] = None, msg_list: Optional[List[str]] = None,  return_code=211):
+        self.msg_str = msg_str
+        self.msg_list = msg_list
+        super().__init__(return_code)
+
+    def handle(self):
+        if self.msg_list != None:
+            return self.msg_list
+        else:
+            return self.msg_str
 
 ''' CMF FAILURE CLASSES'''
 
@@ -260,12 +281,12 @@ class MlmdFilePullFailure(CmfFailure):
         return "ERROR: Unable to pull metadata file."
 
 class DirectoryNotfound(CmfFailure):
-    def __init__(self,current_dir, return_code=119):
-        self.current_dir = current_dir
+    def __init__(self,dir, return_code=119):
+        self.dir = dir
         super().__init__(return_code)
 
     def handle(self):
-        return f"ERROR: {self.current_dir} doesn't exists."
+        return f"ERROR: {self.dir} doesn't exists."
 
 class FileNameNotfound(CmfFailure):
     def __init__(self, return_code=120):
@@ -288,3 +309,26 @@ class InvalidTensorboardFilePath(CmfFailure):
     def handle(self):
         return "ERROR: Invalid tensorboard logs path. Provide valid file/folder path for tensorboard logs!!"
 
+class MultipleArgumentNotAllowed(CmfFailure):
+    def __init__(self,argument_name, argument_flag, return_code=123):
+        self.argument_flag = argument_flag
+        self.argument_name = argument_name
+        super().__init__(return_code)
+
+    def handle(self):
+        return f"Error: You can only provide one {self.argument_name} using the {self.argument_flag} flag."
+
+class MissingArgument(CmfFailure):
+    def __init__(self,argument_name,return_code=124):
+        self.argument_name = argument_name
+        super().__init__(return_code)
+
+    def handle(self):
+        return f"Error: Missing {self.argument_name}"
+
+class NoChangesMadeError(CmfFailure):
+    def __init__(self,return_code=125):
+        super().__init__(return_code)
+
+    def handle(self):
+        return "INFO: No changes made to the file. Operation aborted."

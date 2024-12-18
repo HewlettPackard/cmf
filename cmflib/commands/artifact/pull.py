@@ -182,9 +182,9 @@ class CmdArtifactPull(CmdBase):
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
-        if self.args.artifact_name == "":
+        if not self.args.artifact_name[0]:     # checking if user has not given -a as ""
             raise ArtifactNotFound("")
-        if self.args.pipeline_name == "":        #checking if pipeline_name is not ""
+        if not self.args.pipeline_name[0]:        # checking if user has not given -p as ""
             raise PipelineNotFound(self.args.pipeline_name)
         query = cmfquery.CmfQuery(mlmd_file_name)
         if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd

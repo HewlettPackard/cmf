@@ -22,6 +22,7 @@ import os
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import dvc_get_config
+from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, MultipleArgumentNotAllowed, MissingArgument, Msg, NoChangesMadeError, MetadataExportToJson
 
 # This class export local mlmd data to a json file
 class CmdMetadataExport(CmdBase):
@@ -44,7 +45,7 @@ class CmdMetadataExport(CmdBase):
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = dvc_get_config()
         if len(result) == 0:
-            return msg
+            raise CmfNotConfigured(msg)
         
         current_directory = os.getcwd()
         full_path_to_dump = ""
@@ -52,9 +53,9 @@ class CmdMetadataExport(CmdBase):
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name.   
-            return "Error: You can only provide one file name using the -f flag."
+            raise MultipleArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
-            return "Error: Missing File name"
+            raise MissingArgument("file name")
         else:
             mlmd_file_name = self.args.file_name[0].strip() # Removing starting and ending whitespaces.
             if mlmd_file_name == "mlmd":
@@ -62,16 +63,16 @@ class CmdMetadataExport(CmdBase):
         
         current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name): 
-            return f"Error: {mlmd_file_name} doesn't exists in {current_directory} directory."
+            raise FileNotFound(mlmd_file_name, current_directory)
 
         # Initialising cmfquery class.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
         # Check if pipeline exists in mlmd .
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:   
-            return "Error: You can only provide one pipeline name using the -p flag."
+            raise MultipleArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string (""). 
-            return "Error: Missing pipeline name"
+            raise MissingArgument("pipeline name")
         else:
             pipeline_name = self.args.pipeline_name[0]
         
@@ -81,9 +82,9 @@ class CmdMetadataExport(CmdBase):
             if not self.args.json_file_name:         # If self.args.json_file_name is None or an empty list ([]). 
                 json_file_name = self.args.json_file_name
             elif len(self.args.json_file_name) > 1:  # If the user provided more than one json file name. 
-                return "Error: You can provide only one json file name using the -j flag."
+                raise MultipleArgumentNotAllowed("json file", "-j")
             elif not self.args.json_file_name[0]:    # self.args.json_file_name[0] is an empty string ("").  
-                return "Error: Missing Json file name"
+                raise MissingArgument("json file")
             else:
                 json_file_name = self.args.json_file_name[0].strip()
 
@@ -96,7 +97,7 @@ class CmdMetadataExport(CmdBase):
                     if userRespone.lower() == "yes":    # Overwrite file.
                         full_path_to_dump = self.create_full_path(current_directory, json_file_name)
                     else: 
-                        return "No changes made to the file. Operation aborted."
+                        raise NoChangesMadeError()
                 else:  
                     full_path_to_dump = self.create_full_path(current_directory, json_file_name)
             else: 
@@ -106,7 +107,7 @@ class CmdMetadataExport(CmdBase):
                     if userRespone.lower() == "yes":
                         full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
                     else:
-                        return "No changes made to the file. Operation aborted."
+                        raise NoChangesMadeError()
                 else:  
                     full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
 
@@ -116,9 +117,9 @@ class CmdMetadataExport(CmdBase):
             # Write metadata into json file.
             with open(full_path_to_dump, 'w') as f:
                 f.write(json.dumps(json.loads(json_payload),indent=2))
-                return f"SUCCESS: metadata successfully exported in {full_path_to_dump}."
+                return MetadataExportToJson(full_path_to_dump)
         else:
-            return f"{pipeline_name} doesn't exists in {mlmd_file_name}!!"
+            raise PipelineNotFound(pipeline_name)
             
 
 
