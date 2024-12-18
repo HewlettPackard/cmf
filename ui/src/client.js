@@ -153,7 +153,7 @@ class FastAPIClient {
       });
   }
 
-  async getArtifact(pipeline_name, artifact_type, filterValue, name_order, page_number, custom_prop_key, custom_prop_value, time_order, col_name) {
+  async getArtifact(pipeline_name, artifact_type, filterValue, sort_order, page_number, custom_prop_key, custom_prop_value, col_name) {
     return this.apiClient
       .get(`/artifact/${pipeline_name}/${artifact_type}`, {
         params: {
@@ -162,7 +162,6 @@ class FastAPIClient {
           page_number: page_number,
           custom_prop_key: custom_prop_key,
           custom_prop_value: custom_prop_value,
-          time_order: time_order,
           col_name: col_name,
         },
       })

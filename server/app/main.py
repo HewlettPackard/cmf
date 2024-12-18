@@ -413,11 +413,10 @@ async def update_global_exe_dict(pipeline_name):
 @app.get("/artifact/{pipeline_name}/{artifact_type}")
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
                    filter_value: str = Query(None, description="Filter value"), 
-                   name_order: str = Query("asc", description="Sort by name(asc or desc)"),
+                   sort_order: str = Query("asc", description="Sort by name(asc or desc)"),
                    page_number: int = Query(1, description="Page number", gt=0),
                    custom_prop_key: str = Query(None, description="Custom prop value"),
                    custom_prop_value: str = Query(None, description="Custom prop key"), 
-                   time_order: str = Query("asc", description="Sort by date(asc or desc)"),
                    col_name: str = Query("name", description="Column for sorting"),
                    ):
 
@@ -429,8 +428,8 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
     )
 
     print(col_name)
-    order_by_name = "ASC" if name_order.lower() == "asc" else "DESC"
-    order_by_time = "ASC" if time_order.lower() == "asc" else "DESC"
+
+    sort_order1 = "ASC" if sort_order.lower() == "asc" else "DESC"
     record_per_page = 5
     no_of_offset = (page_number - 1) * record_per_page
 
@@ -474,23 +473,23 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
         )
         AND a.name ILIKE $3 -- For artifact name
         AND ap.name ILIKE $6 -- For custom properties key(column) search
-        AND
-            CASE
-                WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
-                WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
-                WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
-                WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
-                WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
-                WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
-                ELSE NULL
-            END ILIKE $7
     GROUP BY
         a.id
     ORDER BY
-        a.name {order_by_name}
-        )
+        CASE 
+            WHEN $8 = 'name' THEN 1
+            ELSE 2
+        END,
+        CASE 
+            WHEN $8 = 'name' THEN a.name
+        END {sort_order1},
+        CASE 
+            WHEN $8 = 'create_time_since_epoch' THEN a.create_time_since_epoch
+        END {sort_order1}
+    )
 SELECT * 
 FROM ranked_data
+WHERE CONCAT(id, ' ' ,name, ' ', uri, ' ', create_time_since_epoch, ' ', artifact_properties) LIKE $7
 LIMIT $4 OFFSET $5;
             """ 
     
@@ -502,7 +501,8 @@ LIMIT $4 OFFSET $5;
                             record_per_page, 
                             no_of_offset, 
                             f"%{custom_prop_key}%",
-                            f"%{custom_prop_value}%")
+                            f"%{custom_prop_value}%", 
+                            col_name)
     # print("Total records: ",rows[0]["total_records"])
 
     await conn.close()
