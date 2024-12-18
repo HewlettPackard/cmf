@@ -252,13 +252,15 @@ def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, n
     print(msg)
     return msg
 
-def _init_osdfremote(path, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
                "osdf",
                "--path",
                path,
+               "--cache",
+               cache,
                "--key-id",
                key_id, 
                "--key-path",
