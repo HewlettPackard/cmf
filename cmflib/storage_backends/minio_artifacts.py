@@ -71,6 +71,9 @@ class MinioArtifacts:
                 return object_name, download_loc, True
             else:
                 return object_name, download_loc, False
+        except S3Error as exception:
+            print(exception)
+            return object_name, download_loc, False
         except Exception as e:
             return object_name, download_loc, False
 
@@ -161,7 +164,11 @@ class MinioArtifacts:
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
             else:         
-                return total_files_in_directory, files_downloaded, False   
+                return total_files_in_directory, files_downloaded, False  
+        except S3Error as exception:
+            print(exception)
+            total_files_in_directory = 1 
+            return total_files_in_directory, files_downloaded, False
         except Exception as e:
             print(f"object {object_name} is not downloaded.")
             # need to improve this  
@@ -171,14 +178,4 @@ class MinioArtifacts:
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
     
-            
-
-
-  
-  
-  
-        # except TypeError as exception:
-        #     #print("inside ")
-        #     return exception
-        # except S3Error as exception:
-        #     return exception
+        # sometimes we get TypeError as an execption, however investiagtion for the exact scenarios is pending

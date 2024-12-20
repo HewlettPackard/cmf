@@ -320,7 +320,7 @@ class CmdArtifactPull(CmdBase):
                             print(f"object {object_name} downloaded at {download_loc}.")
                             files_downloaded += 1
                         else:
-                            print(f"object {object_name} is not downloaded ")
+                            print(f"object {object_name} is not downloaded.")
                             files_failed_to_download += 1
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory.
@@ -414,7 +414,7 @@ class CmdArtifactPull(CmdBase):
                             print(f"object {object_name} downloaded at {download_loc}.")
                             files_downloaded += 1
                         else:
-                            print(f"object {object_name} is not downloaded ")
+                            print(f"object {object_name} is not downloaded.")
                             files_failed_to_download += 1
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory.
@@ -501,7 +501,7 @@ class CmdArtifactPull(CmdBase):
                             print(f"object {object_name} downloaded at {download_loc}.")
                             files_downloaded += 1
                         else:
-                            print(f"object {object_name} is not downloaded ")
+                            print(f"object {object_name} is not downloaded.")
                             files_failed_to_download += 1
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory.
@@ -654,7 +654,7 @@ class CmdArtifactPull(CmdBase):
                                 print(f"object {object_name} downloaded at {download_loc}.")
                                 files_downloaded += 1
                             else:
-                                print(f"object {object_name} is not downloaded ")
+                                print(f"object {object_name} is not downloaded.")
                                 files_failed_to_download += 1
                         else:
                             total_files_in_directory, dir_files_downloaded, download_flag = amazonS3_class_obj.download_directory(

@@ -70,7 +70,7 @@ class LocalArtifacts():
             else:
                 return  object_name, download_loc, False
         except Exception as e:
-                return  object_name, download_loc, False
+            return  object_name, download_loc, False
 
 
     def download_directory(
@@ -156,13 +156,14 @@ class LocalArtifacts():
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
             else:         
-                return total_files_in_directory, files_downloaded, False                                  
+                return total_files_in_directory, files_downloaded, False  
         # this exception is for get_file() function for object_name
         except Exception as e:
             print(f"object {object_name} is not downloaded.")
-            # need to improve this  
             # We usually don't count .dir as a file while counting total_files_in_directory.
-            # However, here we failed to download the .dir folder itself. So we need to make 
-            # total_files_in_directory = 1, because  ..............
+            # However, here we failed to download the .dir folder itself. 
+            # So we need to make, total_files_in_directory = 1
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
+
+        # sometimes we get TypeError as an execption, however investiagtion for the exact scenarios is pending
