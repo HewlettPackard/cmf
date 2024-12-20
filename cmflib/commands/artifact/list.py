@@ -22,7 +22,7 @@ import textwrap
 from tabulate import tabulate
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
-from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, ArtifactNotFound, CmfNotConfigured, MultipleArgumentNotAllowed, MissingArgument, Msg
+from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, ArtifactNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument, MsgSuccess
 from cmflib.dvc_wrapper import dvc_get_config
 from typing import Union, List
 
@@ -141,7 +141,7 @@ class CmdArtifactsList(CmdBase):
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-                raise MultipleArgumentNotAllowed("file_name", "-f")
+                raise DuplicateArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
                 raise MissingArgument("file name")
         else:
@@ -156,7 +156,7 @@ class CmdArtifactsList(CmdBase):
         
         # Check if pipeline exists in mlmd.
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
-                raise MultipleArgumentNotAllowed("pipeline_name", "-p")
+                raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
                 raise MissingArgument("pipeline name")
         else:
@@ -170,7 +170,7 @@ class CmdArtifactsList(CmdBase):
             if not self.args.artifact_name:         # If self.args.artifact_name is None or an empty list ([]). 
                 pass
             elif len(self.args.artifact_name) > 1:  # If the user provided more than one artifact_name. 
-                raise MultipleArgumentNotAllowed("artifact_name", "-a")
+                raise DuplicateArgumentNotAllowed("artifact_name", "-a")
             elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
                 raise MissingArgument("artifact name")
             else:
@@ -220,14 +220,14 @@ class CmdArtifactsList(CmdBase):
                         user_input = input("Press Enter to see more records if exists or 'q' to quit: ").strip().lower()
                         if user_input == 'q':
                             break
-                    return Msg(msg_str = "End of records..")
+                    return MsgSuccess(msg_str = "End of records..")
                 else:
                     raise ArtifactNotFound(self.args.artifact_name)
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
         self.display_table(df)
 
-        return Msg(msg_str = "Done.")
+        return MsgSuccess(msg_str = "Done.")
 
 
 def add_parser(subparsers, parent_parser):

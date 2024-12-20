@@ -22,7 +22,7 @@ import os
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import dvc_get_config
-from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, MultipleArgumentNotAllowed, MissingArgument, Msg, NoChangesMadeError, MetadataExportToJson
+from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument,NoChangesMadeInfo, MetadataExportToJson
 
 # This class export local mlmd data to a json file
 class CmdMetadataExport(CmdBase):
@@ -53,7 +53,7 @@ class CmdMetadataExport(CmdBase):
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name.   
-            raise MultipleArgumentNotAllowed("file_name", "-f")
+            raise DuplicateArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
             raise MissingArgument("file name")
         else:
@@ -70,7 +70,7 @@ class CmdMetadataExport(CmdBase):
 
         # Check if pipeline exists in mlmd .
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:   
-            raise MultipleArgumentNotAllowed("pipeline_name", "-p")
+            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string (""). 
             raise MissingArgument("pipeline name")
         else:
@@ -82,7 +82,7 @@ class CmdMetadataExport(CmdBase):
             if not self.args.json_file_name:         # If self.args.json_file_name is None or an empty list ([]). 
                 json_file_name = self.args.json_file_name
             elif len(self.args.json_file_name) > 1:  # If the user provided more than one json file name. 
-                raise MultipleArgumentNotAllowed("json file", "-j")
+                raise DuplicateArgumentNotAllowed("json file", "-j")
             elif not self.args.json_file_name[0]:    # self.args.json_file_name[0] is an empty string ("").  
                 raise MissingArgument("json file")
             else:
@@ -97,7 +97,7 @@ class CmdMetadataExport(CmdBase):
                     if userRespone.lower() == "yes":    # Overwrite file.
                         full_path_to_dump = self.create_full_path(current_directory, json_file_name)
                     else: 
-                        raise NoChangesMadeError()
+                        raise NoChangesMadeInfo()
                 else:  
                     full_path_to_dump = self.create_full_path(current_directory, json_file_name)
             else: 
@@ -107,7 +107,7 @@ class CmdMetadataExport(CmdBase):
                     if userRespone.lower() == "yes":
                         full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
                     else:
-                        raise NoChangesMadeError()
+                        raise NoChangesMadeInfo()
                 else:  
                     full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
 

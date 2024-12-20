@@ -35,17 +35,22 @@ class CmdArtifactPush(CmdBase):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
+
         # find root_dir of .cmfconfig
         output = find_root(cmf_config_file)
+
         # in case, there is no .cmfconfig file
         if output.find("'cmf' is not configured.") != -1:
             raise CmfNotConfigured(output)
-        cmf_config={}
-        cmf_config=CmfConfig.read_config(cmf_config_file)
+        
+
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         if dvc_config_op["core.remote"] == "osdf":
+            config_file_path = os.path.join(output, cmf_config_file)
+            cmf_config={}
+            cmf_config=CmfConfig.read_config(config_file_path)
             #print("key_id="+cmf_config["osdf-key_id"])
             dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
             #print("Dynamic Password"+dynamic_password)

@@ -36,7 +36,9 @@ from cmflib.cmf_exception_handling import (
     BatchDownloadFailure, 
     BatchDownloadSuccess,
     ObjectDownloadFailure, 
-    ObjectDownloadSuccess
+    ObjectDownloadSuccess,
+    MsgSuccess,
+    MsgFailure
 )
 from cmflib.cli.utils import check_minio_server
 
@@ -543,7 +545,7 @@ class CmdArtifactPull(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name)
                 else:
                     args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
-                    return_code = osdfremote_class_obj.download_artifacts(
+                    download_flag, message = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # s_url of the artifact
                         cache_path,
@@ -553,10 +555,10 @@ class CmdArtifactPull(CmdBase):
                         output[3] #Artifact Hash
                     )
                     
-                    if return_code == 206:
-                        status = ObjectDownloadSuccess(args[0],args[1])
+                    if download_flag :
+                        status = MsgSuccess(msg_str = message)
                     else:
-                        status = ObjectDownloadFailure(args[0],args[1])
+                        status = MsgFailure(msg_str = message)
                     return status
             else:
                 for name, url in name_url_dict.items():
@@ -568,7 +570,7 @@ class CmdArtifactPull(CmdBase):
                     #print(f"Hash for the artifact {name} is {artifact_hash}")
                     args = self.extract_repo_args("osdf", name, url, current_directory)
                         
-                    return_code = osdfremote_class_obj.download_artifacts(
+                    download_flag, message = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
                         cache_path,
@@ -577,8 +579,11 @@ class CmdArtifactPull(CmdBase):
                         args[2],  # name
                         artifact_hash #Artifact Hash
                     )
-                    if return_code == 206:
+                    if download_flag:
+                        print(message)   #### success message
                         file_downloaded +=1
+                    else:
+                        print(message)    ### failure message
                 Files_failed_to_download = total_files_count - files_downloaded
                 if Files_failed_to_download == 0:
                     status = BatchDownloadSuccess(files_downloaded=files_downloaded)

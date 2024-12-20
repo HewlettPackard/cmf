@@ -127,7 +127,7 @@ class MetadataExportToJson(CmfSuccess):
         return f"SUCCESS: metadata successfully exported in {self.full_path_to_dump}."
 
 # This class is created for messages like "Done", "Records not found"
-class Msg(CmfSuccess):
+class MsgSuccess(CmfSuccess):
     def __init__(self,msg_str: Optional[str] = None, msg_list: Optional[List[str]] = None,  return_code=211):
         self.msg_str = msg_str
         self.msg_list = msg_list
@@ -309,7 +309,7 @@ class InvalidTensorboardFilePath(CmfFailure):
     def handle(self):
         return "ERROR: Invalid tensorboard logs path. Provide valid file/folder path for tensorboard logs!!"
 
-class MultipleArgumentNotAllowed(CmfFailure):
+class DuplicateArgumentNotAllowed(CmfFailure):
     def __init__(self,argument_name, argument_flag, return_code=123):
         self.argument_flag = argument_flag
         self.argument_name = argument_name
@@ -326,9 +326,21 @@ class MissingArgument(CmfFailure):
     def handle(self):
         return f"Error: Missing {self.argument_name}"
 
-class NoChangesMadeError(CmfFailure):
+class NoChangesMadeInfo(CmfFailure):
     def __init__(self,return_code=125):
         super().__init__(return_code)
 
     def handle(self):
         return "INFO: No changes made to the file. Operation aborted."
+
+class MsgFailure(CmfFailure):
+    def __init__(self,msg_str: Optional[str] = None, msg_list: Optional[List[str]] = None,  return_code=126):
+        self.msg_str = msg_str
+        self.msg_list = msg_list
+        super().__init__(return_code)
+
+    def handle(self):
+        if self.msg_list != None:
+            return self.msg_list
+        else:
+            return self.msg_str

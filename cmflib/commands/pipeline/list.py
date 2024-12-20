@@ -20,7 +20,7 @@ import os
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 from cmflib.dvc_wrapper import dvc_get_config
-from cmflib.cmf_exception_handling import FileNotFound, CmfNotConfigured, MultipleArgumentNotAllowed, MissingArgument, Msg
+from cmflib.cmf_exception_handling import FileNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument, MsgSuccess
 
 class CmdPipelineList(CmdBase):
     def run(self):
@@ -34,7 +34,7 @@ class CmdPipelineList(CmdBase):
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-            raise MultipleArgumentNotAllowed("file_name", "-f")
+            raise DuplicateArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").  
             raise MissingArgument("file name")
         else:
@@ -49,7 +49,7 @@ class CmdPipelineList(CmdBase):
         # Creating cmfquery object.
         query = cmfquery.CmfQuery(mlmd_file_name)
         
-        return Msg(msg_list = [pipeline.name for pipeline in query._get_pipelines()])
+        return MsgSuccess(msg_list = [pipeline.name for pipeline in query._get_pipelines()])
 
 
 def add_parser(subparsers, parent_parser):

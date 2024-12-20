@@ -23,7 +23,7 @@ from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 from tabulate import tabulate
 from cmflib.dvc_wrapper import dvc_get_config
-from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, MultipleArgumentNotAllowed, MissingArgument, Msg, ExecutionsNotFound
+from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument, MsgSuccess, ExecutionsNotFound
 class CmdExecutionList(CmdBase):
 
     def display_table(self, df: pd.DataFrame) -> None:
@@ -84,7 +84,7 @@ class CmdExecutionList(CmdBase):
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-            raise MultipleArgumentNotAllowed("file_name", "-f")
+            raise DuplicateArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string (""). 
             raise MissingArgument("file name")
         else:
@@ -101,7 +101,7 @@ class CmdExecutionList(CmdBase):
 
         # Check if pipeline exists in mlmd.
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:  
-            raise MultipleArgumentNotAllowed("pipeline_name", "-p")
+            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").   
             raise MissingArgument("pipeline name")
         else:
@@ -121,7 +121,7 @@ class CmdExecutionList(CmdBase):
             if not self.args.execution_id:         # If self.args.execution_id is None or an empty list ([]).
                 pass
             elif len(self.args.execution_id) > 1:  # If the user provided more than one execution_id.  
-                raise MultipleArgumentNotAllowed("execution_id", "-e")
+                raise DuplicateArgumentNotAllowed("execution_id", "-e")
             elif not self.args.execution_id[0]:    # self.args.execution_id[0] is an empty string ("").
                 raise MissingArgument("execution id")
             else:
@@ -157,11 +157,11 @@ class CmdExecutionList(CmdBase):
                         )
                         print(table)
                         print()
-                        return Msg(msg_str = "Done.")
+                        return MsgSuccess(msg_str = "Done.")
                 raise ExecutionsNotFound(self.args.execution_id[0])
     
             self.display_table(df)             
-            return Msg(msg_str = "Done.")
+            return MsgSuccess(msg_str = "Done.")
     
     
 def add_parser(subparsers, parent_parser):
