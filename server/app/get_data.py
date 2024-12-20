@@ -258,10 +258,11 @@ def create_unique_executions(server_store_path, req_info) -> str:
                     for uuid in uuids:
                         if uuid in list_executions_exists:
                             stage['executions'].remove(cmf_exec)
-
+        
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
     for i in mlmd_data["Pipeline"]:
+
         if len(i['stages']) == 0 :
             status="exists"
         else:

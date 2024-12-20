@@ -18,7 +18,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-
+from cmflib.cmf_exception_handling import CmfInitComplete, CmfInitFailed, Neo4jArgumentNotProvided
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import (
     git_quiet_init,
@@ -64,7 +64,7 @@ class CmdInitOSDFRemote(CmdBase):
         ):
             pass
         else:
-            return "ERROR: Provide user, password and uri for neo4j initialization."
+            raise Neo4jArgumentNotProvided
         output = is_git_repo()
         if not output:
             branch_name = "master"
@@ -80,7 +80,7 @@ class CmdInitOSDFRemote(CmdBase):
         dvc_quiet_init()
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
-            return "cmf init failed."
+            raise CmfInitFailed
         print(output)
         #dvc_add_attribute(repo_type, "key_id", self.args.key_id)
         #dvc_add_attribute(repo_type, "key_path", self.args.key_path)
@@ -105,7 +105,7 @@ class CmdInitOSDFRemote(CmdBase):
         attr_dict["key_issuer"] = self.args.key_issuer
         CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
 
-        return "cmf init complete."
+        return CmfInitComplete
 
 
 def add_parser(subparsers, parent_parser):
