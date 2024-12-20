@@ -159,17 +159,8 @@ class SSHremoteArtifacts:
             sftp.close()
             ssh.close()
             print(f"object {object_name} is not downloaded.")
-            # need to improve this  
             # We usually don't count .dir as a file while counting total_files_in_directory.
-            # However, here we failed to download the .dir folder itself. So we need to make 
-            # total_files_in_directory = 1, because  ..............
+            # However, here we failed to download the .dir folder itself. 
+            # So we need to make, total_files_in_directory = 1
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
-
-
-
-
-        # except TypeError as exception:
-        #     return exception
-        # except Exception as exception:
-        #     return exception
