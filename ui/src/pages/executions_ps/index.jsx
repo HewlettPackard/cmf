@@ -22,7 +22,6 @@ import ExecutionPsTable from "../../components/ExecutionPsTable";
 import Footer from "../../components/Footer";
 import "./index.module.css";
 import Sidebar from "../../components/Sidebar";
-import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
 
@@ -37,23 +36,17 @@ const Executions_ps = () => {
   const [sortField, setSortField] = useState("Context_Type");
   // Default sort order
   const [sortOrder, setSortOrder] = useState(null);
-  // Default filter field
-  const [filterBy, setFilterBy] = useState(null);
   // Default filter value
   const [filterValue, setFilterValue] = useState(null);
-  // Default value for loader
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchPipelines();
   }, []);
 
   const fetchPipelines = () => {
-    setLoading(true);
     client.getPipelines("").then((data) => {
       setPipelines(data);
       setSelectedPipeline(data[0]);
-      setLoading(false);
     });
   };
 
@@ -62,33 +55,25 @@ const Executions_ps = () => {
       fetchExecutions(
         selectedPipeline,
         activePage,
-        sortField,
-        sortOrder,
-        filterBy,
         filterValue,
       );
     }
   }, [
     selectedPipeline,
     activePage,
-    sortField,
-    sortOrder,
-    filterBy,
     filterValue,
   ]);
 
   const fetchExecutions = (
     pipelineName,
     page,
-    sortField,
-    sortOrder,
-    filterBy,
     filterValue,
   ) => {
     client
-      .getExecution()
+      .getExecution(pipelineName, page, filterValue)
       .then((data) => {
-        setExecutions(data);
+        setExecutions(data.items);
+        setTotalItems(data.total_items);
       });
   };
 
@@ -124,15 +109,11 @@ const Executions_ps = () => {
     fetchExecutions(
       selectedPipeline,
       activePage,
-      newSortField,
-      newSortOrder,
-      filterBy,
       filterValue,
     );
   };
 
-  const handleFilter = (field, value) => {
-    setFilterBy(field);
+  const handleFilter = (value) => {
     setFilterValue(value);
   };
 
@@ -152,11 +133,6 @@ const Executions_ps = () => {
             />
           </div>
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
-            {loading ? (
-              <div className="flex-grow flex justify-center items-center">
-                <Loader />
-              </div>
-            ) : (
               <div>
                 {selectedPipeline !== null && executions !== null && (
                   <ExecutionPsTable
@@ -244,7 +220,6 @@ const Executions_ps = () => {
                   )}
                 </div>
               </div>
-            )}
           </div>
         </div>
         <Footer />

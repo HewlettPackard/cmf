@@ -409,14 +409,12 @@ async def update_global_exe_dict(pipeline_name):
     return
 
 
-# api to display artifacts available in mlmd[from postgres]
+# api to display artifacts available in mlmd file[from postgres]
 @app.get("/artifact/{pipeline_name}/{artifact_type}")
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
-                   filter_value: str = Query(None, description="Filter value"), 
+                   filter_value: str = Query(None, description="Search based on value"), 
                    sort_order: str = Query("asc", description="Sort by name(asc or desc)"),
                    page_number: int = Query(1, description="Page number", gt=0),
-                   custom_prop_key: str = Query(None, description="Custom prop value"),
-                   custom_prop_value: str = Query(None, description="Custom prop key"), 
                    col_name: str = Query("name", description="Column for sorting"),
                    ):
 
@@ -427,9 +425,7 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
         host='192.168.20.67',
     )
 
-    print(col_name)
-
-    sort_order1 = "ASC" if sort_order.lower() == "asc" else "DESC"
+    sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
     record_per_page = 5
     no_of_offset = (page_number - 1) * record_per_page
 
@@ -451,8 +447,7 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
                         ELSE NULL
                     END
                 )
-            ) AS artifact_properties,
-        count(*) OVER() AS total_records
+            ) AS artifact_properties
     FROM
         artifact a
     JOIN
@@ -471,42 +466,36 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
             JOIN context c2 ON pc.parent_context_id = c2.id
             WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
         )
-        AND a.name ILIKE $3 -- For artifact name
-        AND ap.name ILIKE $6 -- For custom properties key(column) search
     GROUP BY
         a.id
     ORDER BY
         CASE 
-            WHEN $8 = 'name' THEN 1
+            WHEN $6 = 'name' THEN 1
             ELSE 2
         END,
         CASE 
-            WHEN $8 = 'name' THEN a.name
-        END {sort_order1},
+            WHEN $6 = 'name' THEN a.name
+        END {sort_order},
         CASE 
-            WHEN $8 = 'create_time_since_epoch' THEN a.create_time_since_epoch
-        END {sort_order1}
+            WHEN $6 = 'create_time_since_epoch' THEN a.create_time_since_epoch
+        END {sort_order}
     )
-SELECT * 
+SELECT *,
+count(*) OVER() AS total_records 
 FROM ranked_data
-WHERE CONCAT(id, ' ' ,name, ' ', uri, ' ', create_time_since_epoch, ' ', artifact_properties) LIKE $7
-LIMIT $4 OFFSET $5;
+WHERE CONCAT(id, ' ' ,name, ' ', uri, ' ', create_time_since_epoch, ' ', artifact_properties) LIKE $5
+LIMIT $3 OFFSET $4;
             """ 
     
-    # SELECT to_char(to_timestamp(epoch_time), 'YYYY-MM-DD HH24:MI:SS') as date FROM my_table;
-    # rows = await conn.fetch(query2, pipeline_name, artifact_type, f"%{filter_value}%", record_per_page, no_of_offset)
     rows = await conn.fetch(query3, pipeline_name, 
                             artifact_type, 
-                            f"%{filter_value}%", 
                             record_per_page, 
-                            no_of_offset, 
-                            f"%{custom_prop_key}%",
-                            f"%{custom_prop_value}%", 
+                            no_of_offset,
+                            f"%{filter_value}%", 
                             col_name)
-    # print("Total records: ",rows[0]["total_records"])
 
     await conn.close()
-    # print(rows)
+
     if rows:
         total_record = rows[0]["total_records"]
     else:
@@ -517,12 +506,23 @@ LIMIT $4 OFFSET $5;
            }
 
 
-# api to display executions available in mlmd[from postgres]
-@app.get("/execution/")
-async def execution(request: Request):
-    query =   '''
-        SELECT 
-        e.*,
+# api to display executions available in mlmd file[from postgres]
+@app.get("/execution/{pipeline_name}")
+async def execution(request: Request, pipeline_name: str,
+                   active_page: int = Query(1, description="Page number", gt=0),
+                   filter_value: str = Query(None, description="Search based on value"),    
+                   ):
+    
+    # sort_order: str = Query("asc", description="Sort by name(asc or desc)"),
+    
+    # sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
+    record_per_page = 5
+    no_of_offset = (active_page - 1) * record_per_page
+
+    query2="""
+    WITH ranked_data AS (
+        SELECT
+        e.*, 
         JSON_AGG(
                 JSON_BUILD_OBJECT(
                     'name', ep.name,
@@ -537,17 +537,60 @@ async def execution(request: Request):
                         ELSE NULL
                     END
                 )
-            ) AS execution_properties 
-            FROM execution e
-            LEFT JOIN
-            executionproperty as ep ON ep.execution_id = e.id
-            GROUP BY 
-            e.id;'''
-    
+            ) AS execution_properties
+    FROM
+        execution e
+    JOIN
+        type t ON e.type_id = t.id
+    JOIN
+        attribution at ON e.id = at.context_id
+    JOIN
+        context c ON at.context_id = c.id
+    LEFT JOIN
+        executionproperty ep ON e.id = ep.execution_id
+    WHERE
+        at.context_id IN (
+            SELECT pc.context_id
+            FROM parentcontext pc
+            JOIN context c2 ON pc.parent_context_id = c2.id
+            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
+        )
+    GROUP BY
+        e.id
+    )
+    SELECT *,
+    count(*) OVER() AS total_records 
+    FROM ranked_data
+    LIMIT $2 OFFSET $3;
+"""
 
-    query2="""
+    conn = await asyncpg.connect(
+        user='myuser', 
+        password='mypassword',
+        database='mlmd', 
+        host='192.168.20.67',
+    )
+    
+    rows = await conn.fetch(query2, pipeline_name, record_per_page, no_of_offset)
+    await conn.close()
+
+    # print(rows)
+
+    if rows:
+        total_record = rows[0]["total_records"]
+    else:
+        total_record = 0
+
+    return {    "total_items": total_record,
+                "items": [dict(row) for row in rows]
+    }
+
+
+
+    query3 =  f"""
+        WITH ranked_data AS (
         SELECT
-        a.*, 
+        a.id, a.name, a.uri, TO_TIMESTAMP(a.create_time_since_epoch/1000) AT TIME ZONE 'UTC' AS create_time_since_epoch,
         JSON_AGG(
                 JSON_BUILD_OBJECT(
                     'name', ap.name,
@@ -562,36 +605,96 @@ async def execution(request: Request):
                         ELSE NULL
                     END
                 )
-            ) AS execution_properties
+            ) AS artifact_properties
     FROM
-        execution a
+        artifact a
     JOIN
-        attribution at ON a.id = at.context_id
+        type t ON a.type_id = t.id
+    JOIN
+        attribution at ON a.id = at.artifact_id
+    JOIN
+        context c ON at.context_id = c.id
     LEFT JOIN
-        executionproperty ap ON a.id = ap.execution_id
+        artifactproperty ap ON a.id = ap.artifact_id
     WHERE
-        at.context_id IN (
+        t.name = $2 -- Input for type.name
+        AND at.context_id IN (
             SELECT pc.context_id
             FROM parentcontext pc
             JOIN context c2 ON pc.parent_context_id = c2.id
-            WHERE c2.name = 'Te' -- Input for context.name (which is actually a parent_context)
+            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
         )
     GROUP BY
         a.id
-"""
+    ORDER BY
+        CASE 
+            WHEN $6 = 'name' THEN 1
+            ELSE 2
+        END,
+        CASE 
+            WHEN $6 = 'name' THEN a.name
+        END {sort_order},
+        CASE 
+            WHEN $6 = 'create_time_since_epoch' THEN a.create_time_since_epoch
+        END {sort_order}
+    )
+SELECT *,
+count(*) OVER() AS total_records 
+FROM ranked_data
+WHERE CONCAT(id, ' ' ,name, ' ', uri, ' ', create_time_since_epoch, ' ', artifact_properties) LIKE $5
+LIMIT $3 OFFSET $4;
+            """ 
     
+   
+
+
+@app.get("/search")
+async def search_item(request: Request, 
+                   value: str = Query(None, description="value to be search")
+                   ):
 
     conn = await asyncpg.connect(
         user='myuser', 
         password='mypassword',
         database='mlmd', 
-        host='192.168.0.112',
+        host='192.168.20.67',
     )
-    
-    rows = await conn.fetch(query)
+
+    print(value)
+
+    query3 = """
+        WITH ranked_data AS (SELECT
+        a.id, a.name, a.uri, TO_TIMESTAMP(a.create_time_since_epoch/1000) AT TIME ZONE 'UTC' AS create_time_since_epoch,
+        JSON_AGG(
+                JSON_BUILD_OBJECT(
+                    'name', ap.name,
+                    'value', 
+                    CASE
+                        WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
+                        WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
+                        WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
+                        WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
+                        WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
+                        WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
+                        ELSE NULL
+                    END
+                )
+            ) AS artifact_properties
+    FROM
+        artifact a
+    JOIN
+        artifactproperty ap ON a.id = ap.artifact_id
+    GROUP BY
+        a.id)
+    SELECT * 
+    FROM ranked_data
+    WHERE CONCAT(id, ' ' ,name, ' ',uri, ' ',create_time_since_epoch, ' ',artifact_properties) LIKE $1;
+    """
+    rows = await conn.fetch(query3, f"%{value}%")
     await conn.close()
 
     # print(rows)
     return [dict(row) for row in rows]
 
 
+ 

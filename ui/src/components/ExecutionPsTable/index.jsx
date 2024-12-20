@@ -28,11 +28,6 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
 
   const consistentColumns = [];
 
-  console.log(executions);
-  console.log(typeof(executions));
-  console.log(executions.execution_properties);
-  console.log(typeof(executions.execution_properties));
-
   useEffect(() => {
     // Set initial sorting order when component mounts
     setSortedData([...executions]);
@@ -55,7 +50,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   const handleFilterChange = (event) => {
     const value = event.target.value;
     setFilterValue(value);
-    onFilter("Context_Type", value); // Notify parent component about filter change
+    onFilter(value); // Notify parent component about filter change
   };
 
   const toggleRow = (rowId) => {
@@ -67,10 +62,6 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   };
 
   const getPropertyValue = (properties, propertyName) => {
-    // console.log(properties);
-    // console.log(typeof(properties));
-    // console.log(propertyName);
-    // // Check if properties is a string and parse it
     if (typeof properties === "string") {
         try {
             properties = JSON.parse(properties);  // Parse the string to an array
@@ -176,7 +167,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
           type="text"
           value={filterValue}
           onChange={handleFilterChange}
-          placeholder="Filter by Context Type"
+          placeholder="Filter by Context Type/Properties"
           style={{
             marginRight: "1rem",
             padding: "0.5rem",

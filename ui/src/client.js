@@ -153,15 +153,13 @@ class FastAPIClient {
       });
   }
 
-  async getArtifact(pipeline_name, artifact_type, filterValue, sort_order, page_number, custom_prop_key, custom_prop_value, col_name) {
+  async getArtifact(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
     return this.apiClient
       .get(`/artifact/${pipeline_name}/${artifact_type}`, {
         params: {
           filter_value: filterValue,
-          name_order: name_order,
+          sort_order: sort_order,
           page_number: page_number,
-          custom_prop_key: custom_prop_key,
-          custom_prop_value: custom_prop_value,
           col_name: col_name,
         },
       })
@@ -170,13 +168,44 @@ class FastAPIClient {
       });
   }
 
-  async getExecution(){
+  async getSearchResult(value){
     return this.apiClient
-    .get(`/execution`).
+    .get(`/search`,{
+      params: {
+        value: value,
+      },
+    }).
     then(({data}) => {
       return data;
     }); 
   }
+
+//   async getExecution(pipeline_name, active_page, sort_order, filter_value){
+//     return this.apiClient
+//     .get(`/execution/${pipeline_name}`,{
+//       params: {
+//         active_page: active_page,
+//         sort_order: sort_order,
+//         filter_value: filter_value,
+//       },
+//     }).
+//     then(({data}) => {
+//       return data;
+//     }); 
+//   }
+// }
+
+async getExecution(pipeline_name, active_page){
+  return this.apiClient
+  .get(`/execution/${pipeline_name}`,{
+    params: {
+      active_page: active_page,
+    },
+  }).
+  then(({data}) => {
+    return data;
+  }); 
+}
 }
 
 export default FastAPIClient;

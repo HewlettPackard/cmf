@@ -20,17 +20,13 @@ import "./index.css";
 const ArtifactPsTypeSidebar = ({
   artifactTypes,
   handleArtifactTypeClick,
-  onFilter,
-  onCustomPropKey,
-  onCustomPropValue,
+  onFilter
 }) => {
   const [clickedArtifactType, setClickedArtifactType] = useState(
     artifactTypes[0],
   );
 
   const [filterValue, setFilterValue] = useState("");
-  const [cpValue, setcpValue] = useState("");
-  const [cpKey, setcpKey] = useState("");
 
   useEffect(() => {
     handleClick(artifactTypes[0]);
@@ -51,18 +47,6 @@ const ArtifactPsTypeSidebar = ({
     const filterValue = e.target.value;
     setFilterValue(filterValue); // Update the filter string
     onFilter(filterValue);
-  };
-
-  const handleKeyChange = (e) => {
-    const keyValue = e.target.value;
-    setcpKey(keyValue); // Update the filter string
-    onCustomPropKey(keyValue);
-  };
-
-  const handleValueChange = (e) => {
-    const value = e.target.value;
-    setcpValue(value); // Update the filter string
-    onCustomPropValue(value);
   };
 
   return (
@@ -97,29 +81,7 @@ const ArtifactPsTypeSidebar = ({
               type="text"
               value={filterValue}
               onChange={handleFilterChange}
-              placeholder="Filter by Name"
-              style={{
-                marginRight: "1rem",
-                padding: "0.5rem",
-                border: "1px solid #ccc",
-              }}
-            />
-            <input
-              type="text"
-              value={cpKey}
-              onChange={handleKeyChange}
-              placeholder="Filter by custom properties key"
-              style={{
-                marginRight: "1rem",
-                padding: "0.5rem",
-                border: "1px solid #ccc",
-              }}
-            />
-            <input
-              type="text"
-              value={cpValue}
-              onChange={handleValueChange}
-              placeholder="Filter by Custom properties value"
+              placeholder="Filter by Name/Properties"
               style={{
                 marginRight: "1rem",
                 padding: "0.5rem",
