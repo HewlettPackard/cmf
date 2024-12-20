@@ -31,12 +31,14 @@ from cmflib.utils.dvc_config import DvcConfig
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, 
     FileNotFound, 
+    MissingArgument,
     ExecutionsNotFound, 
     ArtifactNotFound, 
     BatchDownloadFailure, 
     BatchDownloadSuccess,
     ObjectDownloadFailure, 
     ObjectDownloadSuccess,
+    DuplicateArgumentNotAllowed,
     MsgSuccess,
     MsgFailure
 )
@@ -184,14 +186,23 @@ class CmdArtifactPull(CmdBase):
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
-        if not self.args.artifact_name[0]:     # checking if user has not given -a as ""
-            raise ArtifactNotFound("")
-        if not self.args.pipeline_name[0]:        # checking if user has not given -p as ""
+        
+        if not self.args.artifact_name:         # If self.args.artifact_name is None or an empty list ([]). 
+                pass
+        elif len(self.args.artifact_name) > 1:  # If the user provided more than one artifact_name. 
+            raise DuplicateArgumentNotAllowed("artifact_name", "-a")
+        elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
+            raise MissingArgument("artifact name")
+        
+        if not self.args.pipeline_name:        # checking if user has not given -p as ""
             raise PipelineNotFound(self.args.pipeline_name)
+        elif not self.args.pipeline_name[0]:
+            raise MissingArgument("pipeline name")
+    
+        
         query = cmfquery.CmfQuery(mlmd_file_name)
         if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd
             raise PipelineNotFound(self.args.pipeline_name)
-        
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
@@ -218,7 +229,6 @@ class CmdArtifactPull(CmdBase):
             )  # getting all artifacts with id
             temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
-
         #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
@@ -236,7 +246,6 @@ class CmdArtifactPull(CmdBase):
                    download all files from directory
                      
         """
-
         dvc_config_op = output
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
