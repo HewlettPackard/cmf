@@ -186,20 +186,6 @@ class CmdArtifactPull(CmdBase):
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
-        
-        if not self.args.artifact_name:         # If self.args.artifact_name is None or an empty list ([]). 
-                pass
-        elif len(self.args.artifact_name) > 1:  # If the user provided more than one artifact_name. 
-            raise DuplicateArgumentNotAllowed("artifact_name", "-a")
-        elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
-            raise MissingArgument("artifact name")
-        
-        if not self.args.pipeline_name:        # checking if user has not given -p as ""
-            raise PipelineNotFound(self.args.pipeline_name)
-        elif not self.args.pipeline_name[0]:
-            raise MissingArgument("pipeline name")
-    
-        
         query = cmfquery.CmfQuery(mlmd_file_name)
         if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd
             raise PipelineNotFound(self.args.pipeline_name)
@@ -235,7 +221,6 @@ class CmdArtifactPull(CmdBase):
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
             return output
-        
         """
            There are multiple scenarios for cmf artifact pull 
            Code checks if self.args.artifact_name is provided by user or not

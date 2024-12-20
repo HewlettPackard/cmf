@@ -28,7 +28,7 @@ from cmflib.dvc_wrapper import dvc_push
 from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import PipelineNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess
+from cmflib.cmf_exception_handling import PipelineNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess, MissingArgument, DuplicateArgumentNotAllowed
 
 class CmdArtifactPush(CmdBase):
     def run(self):
@@ -72,7 +72,7 @@ class CmdArtifactPush(CmdBase):
             raise FileNotFound(mlmd_file_name, current_directory)
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
-
+        
          # Put a check to see whether pipline exists or not
         pipeline_name = self.args.pipeline_name
         if not query.get_pipeline_id(pipeline_name) > 0:

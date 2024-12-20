@@ -78,6 +78,14 @@ class AmazonS3Artifacts:
                 return object_name, download_loc, True
             else:
                 return object_name, download_loc, False
+        except self.s3.exceptions.ClientError as e:
+            # If a specific error code is returned, the bucket does not exist
+            if e.response['Error']['Code'] == '404':
+                print(f"{bucket_name}  doesn't exists!!")
+                return object_name, download_loc, False   
+            else:
+                print(e)
+                return object_name, download_loc, False
         except Exception as e:
             return object_name, download_loc, False
 
@@ -147,14 +155,12 @@ class AmazonS3Artifacts:
                 formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                 temp_download_loc = f"{download_loc}/{relpath}"
                 temp_object_name = f"{repo_path}/{formatted_md5}"
-                try:
-                    obj = self.s3.download_file(bucket_name, temp_object_name, temp_download_loc)
-                    if obj == None:
-                        files_downloaded += 1
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
-                    else:
-                        print(f"object {temp_object_name} is not downloaded.")
-                except Exception as e:
+                
+                obj = self.s3.download_file(bucket_name, temp_object_name, temp_download_loc)
+                if obj == None:
+                    files_downloaded += 1
+                    print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                else:
                     print(f"object {temp_object_name} is not downloaded.")
 
             # Check if all files were successfully downloaded.
@@ -162,6 +168,16 @@ class AmazonS3Artifacts:
                 return total_files_in_directory, files_downloaded, True
             else:         
                 return total_files_in_directory, files_downloaded, False   
+        except self.s3.exceptions.ClientError as e:
+            # If a specific error code is returned, the bucket does not exist
+            if e.response['Error']['Code'] == '404':
+                print(f"{bucket_name}  doesn't exists!!")
+                total_files_in_directory = 1 
+                return total_files_in_directory, files_downloaded, False    
+            else:
+                print(e)
+                total_files_in_directory = 1 
+                return total_files_in_directory, files_downloaded, False
         except Exception as e:
             print(f"object {object_name} is not downloaded.")
             # Handle failure to download the .dir metadata.
@@ -172,15 +188,5 @@ class AmazonS3Artifacts:
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
 
-        # this will never be called 
-        except self.s3.exceptions.ClientError as e:
-            # If a specific error code is returned, the bucket does not exist
-            if e.response['Error']['Code'] == '404':
-                return f"{bucket_name}  doesn't exists!!"
-            else:
-                # Handle other errors
-               raise
-        except TypeError as exception:
-            return exception
-        except Exception as e:
-            return e
+        
+            
