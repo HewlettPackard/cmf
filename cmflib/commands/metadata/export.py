@@ -21,8 +21,14 @@ import os
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import dvc_get_config
-from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument,NoChangesMadeInfo, MetadataExportToJson
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound,
+    FileNotFound,
+    DuplicateArgumentNotAllowed,
+    MissingArgument,
+    NoChangesMadeInfo,
+    MetadataExportToJson
+)
 
 # This class export local mlmd data to a json file
 class CmdMetadataExport(CmdBase):
@@ -41,12 +47,6 @@ class CmdMetadataExport(CmdBase):
             return "Provide path with file name."
         
     def run(self):
-        # Check if 'cmf' is configured.
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            raise CmfNotConfigured(msg)
-        
         current_directory = os.getcwd()
         full_path_to_dump = ""
 

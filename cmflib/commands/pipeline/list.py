@@ -19,17 +19,15 @@ import os
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
-from cmflib.dvc_wrapper import dvc_get_config
-from cmflib.cmf_exception_handling import FileNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument, MsgSuccess
+from cmflib.cmf_exception_handling import (
+    FileNotFound, 
+    DuplicateArgumentNotAllowed, 
+    MissingArgument, 
+    MsgSuccess
+)
 
 class CmdPipelineList(CmdBase):
     def run(self):
-        # Check if 'cmf' is configured.
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            raise CmfNotConfigured(msg)
-        
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.

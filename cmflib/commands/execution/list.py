@@ -22,8 +22,15 @@ import pandas as pd
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 from tabulate import tabulate
-from cmflib.dvc_wrapper import dvc_get_config
-from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument, MsgSuccess, ExecutionsNotFound
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound,
+    FileNotFound,
+    DuplicateArgumentNotAllowed,
+    MissingArgument,
+    MsgSuccess,
+    ExecutionsNotFound
+)
+
 class CmdExecutionList(CmdBase):
 
     def display_table(self, df: pd.DataFrame) -> None:
@@ -74,12 +81,6 @@ class CmdExecutionList(CmdBase):
             start_index = end_index 
 
     def run(self):
-        # Check if 'cmf' is configured
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            raise CmfNotConfigured(msg)
-        
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.

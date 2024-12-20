@@ -172,6 +172,7 @@ class AmazonS3Artifacts:
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
 
+        # this will never be called 
         except self.s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist
             if e.response['Error']['Code'] == '404':

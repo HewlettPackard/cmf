@@ -20,11 +20,17 @@ import pandas as pd
 import textwrap
 
 from tabulate import tabulate
+from typing import Union, List
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
-from cmflib.cmf_exception_handling import PipelineNotFound, FileNotFound, ArtifactNotFound, CmfNotConfigured, DuplicateArgumentNotAllowed, MissingArgument, MsgSuccess
-from cmflib.dvc_wrapper import dvc_get_config
-from typing import Union, List
+from cmflib.cmf_exception_handling import ( 
+    PipelineNotFound,
+    FileNotFound,
+    ArtifactNotFound,
+    DuplicateArgumentNotAllowed,
+    MissingArgument,
+    MsgSuccess
+)
 
 class CmdArtifactsList(CmdBase):
     def convert_to_datetime(self, df: pd.DataFrame, col_name: str) -> pd.DataFrame:
@@ -129,11 +135,6 @@ class CmdArtifactsList(CmdBase):
         return -1
 
     def run(self):
-        # Check if 'cmf' is configured.
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            raise CmfNotConfigured(msg)
         
         # default path for mlmd file name
         mlmd_file_name = "./mlmd"
