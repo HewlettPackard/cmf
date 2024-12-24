@@ -43,6 +43,7 @@ from cmflib.cmf_exception_handling import (
     MsgFailure
 )
 from cmflib.cli.utils import check_minio_server
+from cmflib.cmf_exception_handling import CmfNotConfigured
 
 class CmdArtifactPull(CmdBase):
 
@@ -220,7 +221,7 @@ class CmdArtifactPull(CmdBase):
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
-            return output
+            raise CmfNotConfigured(output)
         """
            There are multiple scenarios for cmf artifact pull 
            Code checks if self.args.artifact_name is provided by user or not
