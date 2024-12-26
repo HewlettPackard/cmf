@@ -28,7 +28,14 @@ from cmflib.dvc_wrapper import dvc_push
 from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import PipelineNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess, MissingArgument, DuplicateArgumentNotAllowed
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound, Minios3ServerInactive, 
+    FileNotFound, 
+    ExecutionsNotFound, 
+    CmfNotConfigured, 
+    ArtifactPushSuccess, 
+    MissingArgument, 
+    DuplicateArgumentNotAllowed)
 
 class CmdArtifactPush(CmdBase):
     def run(self):
@@ -61,7 +68,6 @@ class CmdArtifactPush(CmdBase):
             return result
 
         # Default path of mlmd file
-        mlmd_file_name = "./mlmd"
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.

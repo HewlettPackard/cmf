@@ -144,7 +144,6 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-e",
         "--execution",
-        action="append",
         help="Specify Execution id.",
         default=None,
         metavar="<exec_id>",
@@ -152,8 +151,7 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-t",
-        "--tensorboard",
-        action="append",
+        "--tensorboard",\
         help="Specify path to tensorboard logs for the pipeline.",
         metavar="<tensorboard>"
     )
