@@ -39,9 +39,6 @@ from cmflib.cmf_exception_handling import (
 )
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
-    def __init__(self, args):
-        self.args = args
-
     def run(self):
         # Get url from config
         cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
@@ -107,7 +104,7 @@ class CmdMetadataPush(CmdBase):
                     output = MlmdFilePushSuccess(mlmd_file_name)
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
-                    output = ExecutionsAlreadyExists
+                    output = ExecutionsAlreadyExists()
                 
                 if not self.args.tensorboard:
                     return output
@@ -173,17 +170,23 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify mlmd file name.", 
+        metavar="<file_name>"
     )
 
     parser.add_argument(
         "-e",
         "--execution",
+        action="append",
         help="Specify Execution id.",
         metavar="<exec_id>",
     )

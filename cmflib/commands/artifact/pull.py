@@ -187,6 +187,7 @@ class CmdArtifactPull(CmdBase):
             mlmd_file_name = self.args.file_name
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
+            print("mlmd_file_name",mlmd_file_name)
             current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
@@ -197,9 +198,11 @@ class CmdArtifactPull(CmdBase):
         stages = query.get_pipeline_stages(self.args.pipeline_name)
         executions = []
         identifiers = []
+        print("stages:",stages)
         for stage in stages:
             # getting all executions for stages
             executions = query.get_all_executions_in_stage(stage)
+            print("executions:",executions)
             # check if stage has executions
             if len(executions) > 0:
                  # converting it to dictionary
@@ -213,16 +216,20 @@ class CmdArtifactPull(CmdBase):
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
             raise ExecutionsNotFound()
+        print("identifiers: ", identifiers)
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
+            print("get_artifacts: ",get_artifacts)
             temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
         #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
+        # print('i am here')
         output = DvcConfig.get_dvc_config()  # pulling dvc config
+
         if type(output) is not dict:
             raise CmfNotConfigured(output)
         """

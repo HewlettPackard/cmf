@@ -28,9 +28,6 @@ from cmflib.commands.metadata.push import CmdMetadataPush
 
 
 class CmdRepoPush(CmdBase):
-    def __init__(self, args):
-        self.args = args
-    
     def run_command(self, command, cwd=None):
         process = subprocess.Popen(command, cwd=cwd, shell=True,
                                 stdout=subprocess.PIPE,
@@ -77,38 +74,40 @@ class CmdRepoPush(CmdBase):
         
 
     def run(self):
-        # check whether dvc is configured or not
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            return msg
+        # # check whether dvc is configured or not
+        # msg = "'cmf' is not configured.\nExecute 'cmf init' command."
+        # result = dvc_get_config()
+        # if len(result) == 0:
+        #     return msg
     
-        current_directory = os.getcwd()
-        mlmd_file_name = "./mlmd"
+        # current_directory = os.getcwd()
+        # mlmd_file_name = "./mlmd"
 
-        # check whether mlmd file exists or not
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
-            current_directory = os.path.dirname(self.args.file_name)
+        # # check whether mlmd file exists or not
+        # if self.args.file_name:
+        #     mlmd_file_name = self.args.file_name
+        #     current_directory = os.path.dirname(self.args.file_name)
 
-        # checks if mlmd file is present in current directory or given directory
-        if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
-        else:
-            # creating cmfquery object
-            query = cmfquery.CmfQuery(mlmd_file_name)
-            # Put a check to see whether pipline exists or not
-            pipeline_name = self.args.pipeline_name
-            if not query.get_pipeline_id(pipeline_name) > 0:
-                return f"ERROR: Pipeline {pipeline_name} doesn't exist!!"
+        # # checks if mlmd file is present in current directory or given directory
+        # if not os.path.exists(mlmd_file_name):
+        #     return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
+        # else:
+        #     # creating cmfquery object
+        #     query = cmfquery.CmfQuery(mlmd_file_name)
+        #     # Put a check to see whether pipline exists or not
+        #     pipeline_name = self.args.pipeline_name
+        #     if not query.get_pipeline_id(pipeline_name) > 0:
+        #         return f"ERROR: Pipeline {pipeline_name} doesn't exist!!"
             
             print("Executing cmf artifact push command..")
             artifact_push_instance = CmdArtifactPush(self.args)
-            if artifact_push_instance.run():
+            # print(artifact_push_instance.run().status)
+            if artifact_push_instance.run().status == "success":
                 print("Executing cmf metadata push command..")
                 metadata_push_instance = CmdMetadataPush(self.args)
-                if metadata_push_instance.run():
+                if metadata_push_instance.run().status == "success":
                     print("Execution git push command..")
+                    print(self.git_push())
                     return self.git_push()
          
 
@@ -129,17 +128,23 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify mlmd file name.", 
+        metavar="<file_name>"
     )
 
     parser.add_argument(
         "-e",
         "--execution",
+        action="append",
         help="Specify Execution id.",
         default=None,
         metavar="<exec_id>",
@@ -148,6 +153,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-t",
         "--tensorboard",
+        action="append",
         help="Specify path to tensorboard logs for the pipeline.",
         metavar="<tensorboard>"
     )

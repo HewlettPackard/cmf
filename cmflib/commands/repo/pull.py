@@ -65,27 +65,27 @@ class CmdRepoPull(CmdBase):
         
     def run(self):
         # check whether dvc is configured or not
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            return msg
+        # msg = "'cmf' is not configured.\nExecute 'cmf init' command."
+        # result = dvc_get_config()
+        # if len(result) == 0:
+        #     return msg
         
-        current_directory = os.getcwd()
-        mlmd_file_name = "./mlmd"
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
-            if mlmd_file_name == "mlmd":
-                mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
+        # current_directory = os.getcwd()
+        # mlmd_file_name = "./mlmd"
+        # if self.args.file_name:
+        #     mlmd_file_name = self.args.file_name
+        #     if mlmd_file_name == "mlmd":
+        #         mlmd_file_name = "./mlmd"
+        #     current_directory = os.path.dirname(mlmd_file_name)
         
-        if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
-        else:
+        # if not os.path.exists(mlmd_file_name):
+        #     return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
+        # else:
             instance_of_artifact = CmdArtifactPull(self.args)
-            if instance_of_artifact.run():
+            if instance_of_artifact.run().status == "success":
                 print("metadata pull started...")
                 instance_of_metadata = CmdMetadataPull(self.args)
-                if instance_of_metadata.run():
+                if instance_of_metadata.run().status == "success":
                     return self.git_pull()
 
 
