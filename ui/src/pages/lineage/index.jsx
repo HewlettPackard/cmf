@@ -162,7 +162,7 @@ const Lineage = () => {
         setExecDropdownData(data);
         setSelectedExecutionType(data[0]); // data[0] = "Prepare_3f45"
         // method used such that even with multiple "_" it will get right execution_name and uuid
-        const uuid = data[0].split("_").pop(); // 3f45
+        const uuid= extractUuid(data[0]);     // 3f45
         if (lineageType === "Execution") {
           fetchExecutionLineage(pipelineName, uuid);
         } else {
@@ -174,12 +174,17 @@ const Lineage = () => {
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
+  // Extract uuid from execution_type_name "Prepare_3f45" ---> "3f45"
+  const extractUuid = (data) => {
+    return data.split("_").pop();
+  }
+
   // used for execution drop down
   const handleExecutionClick = (executionType) => {
     setExecutionData(null);
 
     setSelectedExecutionType(executionType);
-    const uuid = executionType.split("_").pop();
+    const uuid= extractUuid(executionType);
     fetchExecutionLineage(selectedPipeline, uuid);
   };
 
@@ -187,7 +192,7 @@ const Lineage = () => {
   const handleTreeClick = (executionType) => {
     setExecutionData(null);
     setSelectedExecutionType(executionType);
-    const uuid = executionType.split("_").pop();
+    const uuid= extractUuid(executionType);
     fetchExecTree(selectedPipeline, uuid);
   };
 
