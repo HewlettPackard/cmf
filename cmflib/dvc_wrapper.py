@@ -492,3 +492,31 @@ def git_modify_remote_url(git_url) -> str:
            print(f"Unexpected {outs}")
            print(f"Unexpected {errs}")
     return commit
+
+# Pulling code from mlmd branch
+def git_get_pull() -> str:
+    process = subprocess.Popen('git pull cmf_origin mlmd', 
+                                cwd=None, 
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    return (
+                stdout.decode('utf-8').strip() if stdout else '',
+                stderr.decode('utf-8').strip() if stderr else '',
+                process.returncode
+            )
+
+# Pusing code inside mlmd branch
+def git_get_push() -> str:
+    process = subprocess.Popen('git push -u cmf_origin mlmd', 
+                                cwd=None, 
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    return (
+                stdout.decode('utf-8').strip() if stdout else '',
+                stderr.decode('utf-8').strip() if stderr else '',
+                process.returncode
+            )
