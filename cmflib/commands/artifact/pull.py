@@ -84,14 +84,11 @@ class CmdArtifactPull(CmdBase):
         # information from the user-supplied arguments.
         # url = Test-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c87bf20f0feacc9034,
         #          Second-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c"
-
         # s_url = Url without pipeline name
-        s_url = self.split_url_pipeline(url, self.args.pipeline_name)
-
+        s_url = self.split_url_pipeline(url, self.args.pipeline_name[0])
         # got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
         # spliting url using '/' delimiter
         token = s_url.split("/")
-
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
@@ -119,15 +116,12 @@ class CmdArtifactPull(CmdBase):
         elif type == "local":
             token_length = len(token)
             download_loc = current_directory + "/" + name
-
             # local artifact repo path =  local-storage/files/md5/23/69v2uu3jeejjeiw.
             # token is a list = ['local-storage', 'files', 'md5', '23', '69v2uu3jeejjeiw']
             # get last 4 element inside token
             token = token[(token_length-4):]
-
             # join last 4 token using '/' delimiter
             current_dvc_loc = "/".join(token)
-
             return current_dvc_loc, download_loc
 
         elif type == "ssh":
@@ -169,11 +163,11 @@ class CmdArtifactPull(CmdBase):
                 continue
             # Splitting the 'name' using ':' as the delimiter and storing the first argument in the 'name' variable.
             name = name.split(":")[0]
-            artifact_hash = name = name.split(":")[1]
+            #artifact_hash = name = name.split(":")[1]
             # Splitting the path on '/' to extract the file name, excluding the directory structure.
             file_name = name.split('/')[-1]
-            if file_name == self.args.artifact_name:
-                return name, url, artifact_hash
+            if file_name == self.args.artifact_name[0]:
+                return name, url
             else:
                 pass
 
@@ -183,26 +177,40 @@ class CmdArtifactPull(CmdBase):
         # pipeline_name = self.args.pipeline_name
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
+                raise DuplicateArgumentNotAllowed("file_name", "-f")
+        elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
+                raise MissingArgument("file name")
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-            print("mlmd_file_name",mlmd_file_name)
-            current_directory = os.path.dirname(mlmd_file_name)
+        current_directory = os.path.dirname(mlmd_file_name)
+        if not self.args.artifact_name:         # If self.args.artifact_name[0] is None or an empty list ([]). 
+                pass
+        elif len(self.args.artifact_name) > 1:  # If the user provided more than one artifact_name. 
+            raise DuplicateArgumentNotAllowed("artifact_name", "-a")
+        elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
+            raise MissingArgument("artifact name")
+        
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
         query = cmfquery.CmfQuery(mlmd_file_name)
-        if not query.get_pipeline_id(self.args.pipeline_name) > 0:   #checking if pipeline name  exists in mlmd
+        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
+            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
+        elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
+            raise MissingArgument("pipeline name")
+        elif not query.get_pipeline_id(self.args.pipeline_name[0]) > 0:   #checking if pipeline name  exists in mlmd
             raise PipelineNotFound(self.args.pipeline_name)
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
-        stages = query.get_pipeline_stages(self.args.pipeline_name)
+        stages = query.get_pipeline_stages(self.args.pipeline_name[0])
         executions = []
         identifiers = []
-        print("stages:",stages)
         for stage in stages:
             # getting all executions for stages
             executions = query.get_all_executions_in_stage(stage)
-            print("executions:",executions)
             # check if stage has executions
             if len(executions) > 0:
                  # converting it to dictionary
@@ -216,25 +224,21 @@ class CmdArtifactPull(CmdBase):
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
             raise ExecutionsNotFound()
-        print("identifiers: ", identifiers)
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
-            print("get_artifacts: ",get_artifacts)
             temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
         #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
-        # print('i am here')
         output = DvcConfig.get_dvc_config()  # pulling dvc config
-
         if type(output) is not dict:
             raise CmfNotConfigured(output)
         """
            There are multiple scenarios for cmf artifact pull 
-           Code checks if self.args.artifact_name is provided by user or not
+           Code checks if self.args.artifact_name[0] is provided by user or not
            under these conditions there are two more conditions
               1. if file is not .dir (single file) 
                    Download single file
@@ -246,14 +250,14 @@ class CmdArtifactPull(CmdBase):
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
             # Check if a specific artifact name is provided as input.
-            if self.args.artifact_name: 
+            if self.args.artifact_name[0]: 
                 # Search for the artifact in the metadata store.
                 output = self.search_artifact(name_url_dict)
                 # output[0] = artifact_name
                 # output[1] = url
                 # output[2] = hash
                 if output is None:
-                    raise ArtifactNotFound(self.args.artifact_name)
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     # Extract repository arguments specific to MinIO.
                     minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
@@ -352,9 +356,8 @@ class CmdArtifactPull(CmdBase):
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
-                
                 if output is None:
-                    raise ArtifactNotFound(self.args.artifact_name)
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     # Extract repository arguments specific to Local repo.
                     local_args = self.extract_repo_args("local", output[0], output[1], current_directory)
@@ -439,7 +442,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    raise ArtifactNotFound(self.args.artifact_name)
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     # Extract repository arguments specific to ssh-remote.
                     args = self.extract_repo_args("ssh", output[0], output[1], current_directory)
@@ -547,7 +550,7 @@ class CmdArtifactPull(CmdBase):
                 # output[1] = url
                 # output[3]=artifact_hash
                 if output is None:
-                    raise ArtifactNotFound(self.args.artifact_name)
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
                     download_flag, message = osdfremote_class_obj.download_artifacts(
@@ -603,7 +606,7 @@ class CmdArtifactPull(CmdBase):
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    raise ArtifactNotFound(self.args.artifact_name)
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
                     if args[0] and args[1] and args[2]:
@@ -694,16 +697,17 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", "--file_name", action="append", help="Specify mlmd file name.", metavar="<file_name>"
     )
 
     parser.add_argument(
-        "-a", "--artifact_name", help="Specify artifact name.", metavar="<artifact_name>"
+        "-a", "--artifact_name", action="append", help="Specify artifact name.", metavar="<artifact_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPull)
