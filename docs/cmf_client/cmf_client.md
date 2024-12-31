@@ -2,7 +2,7 @@
 
 # cmf 
 ```
-Usage: cmf [-h] {init, artifact, metadata, execution, pipeline}
+Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
 ```
 The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
 
@@ -379,4 +379,48 @@ Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
   --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+```
+
+## cmf repo
+```
+Usage: cmf repo [-h] {push, pull}
+```
+`cmf repo` command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.
+### cmf repo push
+```
+Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
+```
+`cmf repo push` command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+```
+cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t 'tensorboard_log_path'
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -e [exec_id], --execution [exec_id]                   Specify execution id.
+  -t [tensorboard], --tensorboard [tensorboard]         Specify path to tensorboard logs for the pipeline.
+```
+### cmf repo pull
+```
+Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -a [artifact_name]
+```
+`cmf repo pull` command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+```
+cmf repo pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -a 'artifact_name'
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -e [exec_id], --execution [exec_id]                   Specify execution id.
+  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name.
 ```
