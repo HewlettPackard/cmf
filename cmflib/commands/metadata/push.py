@@ -118,8 +118,6 @@ class CmdMetadataPush(CmdBase):
                     if execution_flag == 0:
                         raise ExecutionIDNotFound(exec_id)
                 status_code = response.status_code
-                print("status_code:",status_code)
-                print("response.json:",response.json()['status'])
                 if status_code == 200:
                     output = ""
                     display_output = ""

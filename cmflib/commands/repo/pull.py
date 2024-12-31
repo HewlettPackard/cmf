@@ -16,29 +16,16 @@
 
 #!/usr/bin/env python3
 import argparse
-import os
-import subprocess
 import requests
 
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import dvc_get_config, git_get_repo, git_checkout_new_branch
+from cmflib.dvc_wrapper import git_get_repo, git_get_pull
 from cmflib.commands.artifact.pull import CmdArtifactPull
 from cmflib.commands.metadata.pull import CmdMetadataPull
+from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
 
 
 class CmdRepoPull(CmdBase):
-    def __init__(self, args):
-        self.args = args
-    
-    def run_command(self, command, cwd=None):
-        process = subprocess.Popen(command, cwd=cwd, shell=True,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-        return (stdout.decode('utf-8').strip() if stdout else '',
-                stderr.decode('utf-8').strip() if stderr else '',
-                process.returncode)
-    
     def branch_exists(self, repo_own, repo_name, branch_name):
         url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
         res = requests.get(url)
@@ -52,50 +39,32 @@ class CmdRepoPull(CmdBase):
         url = url.split("/")
         # whether branch exists in git repo or not
         if self.branch_exists(url[-2], url[-1], "mlmd"):
-            print("branch exists")
             # git pull
             print("git pull started...")
-            stdout, stderr, returncode = self.run_command("git pull cmf_origin mlmd")
-            print(stdout)
+            stdout, stderr, returncode = git_get_pull()
             if returncode != 0:
-                return f"Error pulling changes: {stderr}"
-            return stdout
+                raise MsgFailure(msg_str=f"Error pulling changes: {stderr}")
+            return MsgSuccess(msg_str=stdout)
         else:
-            return "mlmd branch is not exists in github..."
+            return MsgSuccess(msg_str="mlmd branch does not exists inside github...")
         
     def run(self):
-        # check whether dvc is configured or not
-        # msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        # result = dvc_get_config()
-        # if len(result) == 0:
-        #     return msg
-        
-        # current_directory = os.getcwd()
-        # mlmd_file_name = "./mlmd"
-        # if self.args.file_name:
-        #     mlmd_file_name = self.args.file_name
-        #     if mlmd_file_name == "mlmd":
-        #         mlmd_file_name = "./mlmd"
-        #     current_directory = os.path.dirname(mlmd_file_name)
-        
-        # if not os.path.exists(mlmd_file_name):
-        #     return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
-        # else:
+        print("metadata pull started...")
+        instance_of_metadata = CmdMetadataPull(self.args)
+        if instance_of_metadata.run().status == "success":  
+            print("artifact pull started...")
             instance_of_artifact = CmdArtifactPull(self.args)
             if instance_of_artifact.run().status == "success":
-                print("metadata pull started...")
-                instance_of_metadata = CmdMetadataPull(self.args)
-                if instance_of_metadata.run().status == "success":
-                    return self.git_pull()
+                return self.git_pull()
 
 
 def add_parser(subparsers, parent_parser):
-    PULL_HELP = "Pull user-generated mlmd to server to create one single mlmd file for all the pipelines."
+    PULL_HELP = "Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively."
 
     parser = subparsers.add_parser(
         "pull",
         parents=[parent_parser],
-        description="Pull user's mlmd to cmf-server.",
+        description="Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -106,23 +75,33 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify mlmd file name.", 
+        metavar="<file_name>",
     )
 
     parser.add_argument(
         "-e",
         "--execution",
+        action="append",
         help="Specify Execution id.",
         metavar="<exec_id>",
     )
 
     parser.add_argument(
-        "-a", "--artifact_name", help="Specify artifact name.", metavar="<artifact_name>"
+        "-a", 
+        "--artifact_name", 
+        action="append",
+        help="Specify artifact name.", 
+        metavar="<artifact_name>",
     )
 
     parser.set_defaults(func=CmdRepoPull)

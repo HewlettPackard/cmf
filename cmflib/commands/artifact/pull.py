@@ -172,6 +172,10 @@ class CmdArtifactPull(CmdBase):
                 pass
 
     def run(self):
+        output = DvcConfig.get_dvc_config()  # pulling dvc config
+        if type(output) is not dict:
+            raise CmfNotConfigured(output)
+        
         # check whether 'mlmd' file exist in current directory 
         # or in the directory provided by user
         # pipeline_name = self.args.pipeline_name
@@ -180,16 +184,17 @@ class CmdArtifactPull(CmdBase):
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-                raise DuplicateArgumentNotAllowed("file_name", "-f")
+            raise DuplicateArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
-                raise MissingArgument("file name")
+            raise MissingArgument("file name")
         else:
             mlmd_file_name = self.args.file_name[0].strip()
-            if mlmd_file_name == "mlmd":
-                mlmd_file_name = "./mlmd"
+            if "/" not in mlmd_file_name:
+                mlmd_file_name = "./"+mlmd_file_name
         current_directory = os.path.dirname(mlmd_file_name)
+
         if not self.args.artifact_name:         # If self.args.artifact_name[0] is None or an empty list ([]). 
-                pass
+            pass
         elif len(self.args.artifact_name) > 1:  # If the user provided more than one artifact_name. 
             raise DuplicateArgumentNotAllowed("artifact_name", "-a")
         elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
@@ -198,12 +203,14 @@ class CmdArtifactPull(CmdBase):
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
         query = cmfquery.CmfQuery(mlmd_file_name)
+        
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
             raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
             raise MissingArgument("pipeline name")
         elif not query.get_pipeline_id(self.args.pipeline_name[0]) > 0:   #checking if pipeline name  exists in mlmd
             raise PipelineNotFound(self.args.pipeline_name)
+        
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(self.args.pipeline_name[0])
         executions = []
@@ -220,6 +227,7 @@ class CmdArtifactPull(CmdBase):
                     identifiers.append(id)
             else:
                 print("No Executions found for " + stage + " stage.")
+
         # created dictionary
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
@@ -233,9 +241,6 @@ class CmdArtifactPull(CmdBase):
         #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
-        output = DvcConfig.get_dvc_config()  # pulling dvc config
-        if type(output) is not dict:
-            raise CmfNotConfigured(output)
         """
            There are multiple scenarios for cmf artifact pull 
            Code checks if self.args.artifact_name[0] is provided by user or not
@@ -275,7 +280,7 @@ class CmdArtifactPull(CmdBase):
                             # Return success if the file is downloaded successfully.
                             return ObjectDownloadSuccess(object_name, download_loc)
                         else: 
-                            return ObjectDownloadFailure(object_name)
+                            raise ObjectDownloadFailure(object_name)
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory 
                         # return total_files_in_directory, files_downloaded
@@ -292,7 +297,7 @@ class CmdArtifactPull(CmdBase):
                         else:
                             # Calculate the number of files that failed to download.
                             file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
+                            raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
             
             else:
                 # Handle the case where no specific artifact name is provided.
@@ -341,7 +346,7 @@ class CmdArtifactPull(CmdBase):
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)
                 else:
-                    return BatchDownloadFailure(files_downloaded, files_failed_to_download)
+                    raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
 
         elif dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts(dvc_config_op)
@@ -371,7 +376,7 @@ class CmdArtifactPull(CmdBase):
                             # Return success if the file is downloaded successfully.
                             return ObjectDownloadSuccess(object_name, download_loc)
                         else: 
-                            return ObjectDownloadFailure(object_name)
+                            raise ObjectDownloadFailure(object_name)
                         
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory 
@@ -384,7 +389,7 @@ class CmdArtifactPull(CmdBase):
                         else:
                             # Calculate the number of files that failed to download.
                             file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
+                            raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
             else:
                 # Handle the case where no specific artifact name is provided.
                 files_downloaded = 0
@@ -430,7 +435,7 @@ class CmdArtifactPull(CmdBase):
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)
                 else:
-                    return BatchDownloadFailure(
+                    raise BatchDownloadFailure(
                             files_downloaded, files_failed_to_download)
                     
         elif dvc_config_op["core.remote"] == "ssh-storage":
@@ -459,7 +464,7 @@ class CmdArtifactPull(CmdBase):
                             # Return success if the file is downloaded successfully.
                             return ObjectDownloadSuccess(object_name, download_loc)
                         else: 
-                            return ObjectDownloadFailure(object_name)
+                            raise ObjectDownloadFailure(object_name)
 
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory 
@@ -476,7 +481,7 @@ class CmdArtifactPull(CmdBase):
                     else:
                         # Calculate the number of files that failed to download.
                         file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                        return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)   
+                        raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)   
             else:
                 # Handle the case where no specific artifact name is provided.
                 files_downloaded = 0
@@ -520,7 +525,7 @@ class CmdArtifactPull(CmdBase):
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)
                 else:
-                    return BatchDownloadFailure(files_downloaded, files_failed_to_download)
+                    raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
         elif dvc_config_op["core.remote"] == "osdf":
             #Regenerate Token for OSDF
             from cmflib.utils.helper_functions import generate_osdf_token
@@ -631,7 +636,7 @@ class CmdArtifactPull(CmdBase):
                             return BatchDownloadSuccess(dir_files_downloaded)
                         else:
                             file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                            return BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
+                            raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
 
                 
             else:
@@ -673,11 +678,11 @@ class CmdArtifactPull(CmdBase):
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)
                 else:
-                    return BatchDownloadFailure(files_downloaded, files_failed_to_download)
+                    raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
         else:
             remote = dvc_config_op["core.remote"]
             msg = f"{remote} is not valid artifact repository for CMF.\n Reinitialize CMF."
-            return msg
+            raise MsgFailure(msg_str=msg)
 
 
 def add_parser(subparsers, parent_parser):
@@ -711,4 +716,3 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
-

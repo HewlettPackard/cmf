@@ -22,6 +22,7 @@ from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_push
 from cmflib.commands.artifact.push import CmdArtifactPush
 from cmflib.commands.metadata.push import CmdMetadataPush
+from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
 
 
 class CmdRepoPush(CmdBase):
@@ -41,15 +42,14 @@ class CmdRepoPush(CmdBase):
             # pull the code
             # push the code
             stdout, stderr, returncode = git_get_pull()
-            # print(returncode+"1")
             if returncode != 0:
-                return f"Error pulling changes: {stderr}"
+                raise MsgFailure(msg_str=f"Error pulling changes: {stderr}")
             print(stdout)
         # push the code
         stdout, stderr, returncode = git_get_push()
         if returncode != 0:
-            return f"Error pushing changes: {stderr}"
-        return "Successfully pushed and pulled changes!"
+            raise MsgFailure(msg_str=f"Error pushing changes: {stderr}")
+        return MsgSuccess(msg_str="Successfully pushed and pulled changes!")
         
 
     def run(self):
@@ -60,17 +60,16 @@ class CmdRepoPush(CmdBase):
             metadata_push_instance = CmdMetadataPush(self.args)
             if metadata_push_instance.run().status == "success":
                 print("Execution git push command..")
-                print(self.git_push())
-                return 
+                return self.git_push()
          
 
 def add_parser(subparsers, parent_parser):
-    PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipelines."
+    PUSH_HELP = "Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively."
 
     parser = subparsers.add_parser(
         "push",
         parents=[parent_parser],
-        description="Push user's mlmd to cmf-server.",
+        description="Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.",
         help=PUSH_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

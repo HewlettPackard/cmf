@@ -38,9 +38,6 @@ from cmflib.cmf_exception_handling import (
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
-    
-    def __init__(self, args):
-        self.args = args
 
     def run(self):
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")

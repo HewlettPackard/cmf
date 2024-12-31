@@ -71,6 +71,8 @@ from cmflib.cmf_commands_wrapper import (
     _artifact_list,
     _pipeline_list,
     _execution_list,
+    _repo_push,
+    _repo_pull,
 )
 
 class Cmf:
@@ -2368,4 +2370,46 @@ def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = 
     # Required arguments: pipeline_name
     # Optional arguments: filepath( path to store mlmd file), artifact_name
     output = _artifact_list(pipeline_name, filepath, artifact_name)
+    return output
+
+
+def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):
+    """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+    Example: 
+    ```python 
+        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_id", "./tensorboard_path") 
+    ```
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the mlmd file.
+       execution_id: Executions for particular execution id.
+       tensorboard_path: Path to tensorboard logs.
+    Returns:
+       Output from the _repo_push function. 
+    """
+
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath, execution_id, tensorboard_path
+    output = _repo_push(pipeline_name, filepath, execution_id, tensorboard_path)
+    return output
+
+
+def repo_pull(pipeline_name: str, filepath = "./mlmd", artifact_name: str = "", execution_id: str = ""):
+    """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+    Example: 
+    ```python 
+        result = _repo_pull("example_pipeline", "./mlmd_directory", "example_artifact_name", "example_execution_id") 
+    ```
+    Args: 
+       pipeline_name: Name of the pipeline. 
+       filepath: Path to store the mlmd file. 
+       artifact_name: Artifacts for particular artifact name.
+       execution_id: Executions for particular execution id.
+    Returns:
+       Output from the _repo_pull function. 
+    """
+
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath, artifact_name, execution_id
+    output = _repo_pull(pipeline_name, filepath, artifact_name, execution_id)
     return output

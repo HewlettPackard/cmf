@@ -23,12 +23,13 @@ SUB_COMMANDS = [push, pull]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
-    REPO_HELP = "Command for repo push."
+    REPO_HELP = "Push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively."
+
 
     metadata_parser = subparsers.add_parser(
         "repo",
         parents=[parent_parser],
-        description="Command repo push.",
+        description="Push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.",
         help=REPO_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
