@@ -26,7 +26,18 @@ from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
 
 
 class CmdRepoPull(CmdBase):
-    def branch_exists(self, repo_own, repo_name, branch_name):
+    def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool:
+        """
+        Check if a branch exists in a GitHub repository.
+
+        Args:
+            repo_owner: The owner of the GitHub repository.
+            repo_name: The name of the GitHub repository.
+            branch_name: The name of the branch to check.
+
+        Returns:
+            bool: True if the branch exists, otherwise False.
+        """
         url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
         res = requests.get(url)
 
@@ -35,18 +46,21 @@ class CmdRepoPull(CmdBase):
         return False
     
     def git_pull(self):
+        # Getting github url from cmf init command
         url = git_get_repo()
+        # Example url = https://github.com/ABC/my-repo
         url = url.split("/")
-        # whether branch exists in git repo or not
+        # Check whether branch exists in git repo or not
+        # url[-2] = ABC, url-1] = my-repo
         if self.branch_exists(url[-2], url[-1], "mlmd"):
-            # git pull
+            # pull the code from mlmd branch
             print("git pull started...")
             stdout, stderr, returncode = git_get_pull()
             if returncode != 0:
                 raise MsgFailure(msg_str=f"Error pulling changes: {stderr}")
             return MsgSuccess(msg_str=stdout)
         else:
-            return MsgSuccess(msg_str="mlmd branch does not exists inside github...")
+            raise MsgFailure(msg_str="Branch 'mlmd' does not exists!!")
         
     def run(self):
         print("metadata pull started...")

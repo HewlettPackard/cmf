@@ -26,7 +26,18 @@ from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
 
 
 class CmdRepoPush(CmdBase):
-    def branch_exists(self, repo_own, repo_name, branch_name):
+    def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool:
+        """
+        Check if a branch exists in a GitHub repository.
+
+        Args:
+            repo_owner: The owner of the GitHub repository.
+            repo_name: The name of the GitHub repository.
+            branch_name: The name of the branch to check.
+
+        Returns:
+            bool: True if the branch exists, otherwise False.
+        """
         url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
         res = requests.get(url)
 
@@ -35,17 +46,20 @@ class CmdRepoPush(CmdBase):
         return False
 
     def git_push(self):
+        # Getting github url from cmf init command
         url = git_get_repo()
+        # Example url = https://github.com/ABC/my-repo
         url = url.split("/")
-        # whether branch exists in git repo or not
+        # Check whether branch exists in git repo or not
+        # url[-2] = ABC, url-1] = my-repo
         if self.branch_exists(url[-2], url[-1], "mlmd"):
-            # pull the code
-            # push the code
+            # 1. pull the code from mlmd branch
+            # 2. push the code inside mlmd branch
             stdout, stderr, returncode = git_get_pull()
             if returncode != 0:
                 raise MsgFailure(msg_str=f"Error pulling changes: {stderr}")
             print(stdout)
-        # push the code
+        # push the code inside mlmd branch
         stdout, stderr, returncode = git_get_push()
         if returncode != 0:
             raise MsgFailure(msg_str=f"Error pushing changes: {stderr}")
