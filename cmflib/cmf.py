@@ -1642,6 +1642,7 @@ def cmf_init(type: str = "",
         password: str = "",
         port: int = 0,
         osdf_path: str = "",
+        osdf_cache: str = "",
         key_id: str = "",
         key_path: str = "",
         key_issuer: str = "",
@@ -1674,7 +1675,12 @@ def cmf_init(type: str = "",
        session_token: Session token for AmazonS3.
        user: SSH remote username.
        password: SSH remote password. 
-       port: SSH remote port
+       port: SSH remote port.
+       osdf_path: OSDF Origin Path.
+       osdf_cache: OSDF Cache Path (Optional).
+       key_id: OSDF Key ID.
+       key_path: OSDF Private Key Path.
+       key_issuer: OSDF Key Issuer URL.
     Returns:
        Output based on the initialized repository type.
     """
@@ -1701,6 +1707,7 @@ def cmf_init(type: str = "",
         'user': user,
         'password': password,
         'osdf_path': osdf_path,
+        'osdf_cache': osdf_cache,
         'key_id': key_id,
         'key_path': key_path, 
         'key-issuer': key_issuer,
@@ -1770,10 +1777,11 @@ def cmf_init(type: str = "",
 
         return output
 
-    elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != 0 and key_issuer != "" and git_remote_url != "":
+    elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != "" and key_issuer != "" and git_remote_url != "":
         """Initialize osdfremote repository"""
         output = _init_osdfremote(
             osdf_path,
+            osdf_cache,
             key_id,
             key_path,
             key_issuer,
@@ -1798,10 +1806,10 @@ def non_related_args(type : str, args : dict):
     minioS3=["url", "endpoint_url", "access_key_id", "secret_key", "git_remote_url"]
     amazonS3=["url", "access_key_id", "secret_key", "session_token", "git_remote_url"]
     sshremote=["path", "user", "port", "password", "git_remote_url"]
-    osdfremote=["osdf_path", "key_id", "key_path", "key-issuer", "git_remote_url"]
+    osdfremote=["osdf_path", "osdf_cache", "key_id", "key_path", "key-issuer", "git_remote_url"]
 
 
-    dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote}
+    dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote, "osdfremote": osdfremote}
     
     for repo,arg in dict_repository_args.items():
         if repo ==type:
@@ -1810,7 +1818,7 @@ def non_related_args(type : str, args : dict):
 
 
 def pipeline_list(filepath = "./mlmd"):
-    """ Display list of pipline for current mlmd.
+    """ Display a list of pipeline name(s) from the available mlmd file.
 
     Example:
     ```python
@@ -1828,43 +1836,41 @@ def pipeline_list(filepath = "./mlmd"):
     return output
 
 
-def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = "", long = True):
-    """ Display list of execution for given pipeline.
+def execution_list(pipeline_name: str, filepath = "./mlmd", execution_id: str = ""):
+    """Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
-        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id", "long") 
+        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_id") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file. 
-       execution_id: Executions for particular execution id. 
-       long: Detailed summary regarding execution.
+       execution_id: Executions for particular execution id.
     Returns:
        Output from the _execution_list function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), execution_id, long
-    output = _execution_list(pipeline_name, filepath, execution_id, long)
+    # Optional arguments: filepath( path to store mlmd file), execution_id
+    output = _execution_list(pipeline_name, filepath, execution_id)
     return output
 
 
-def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = "", long = True):
-    """ Display list of artifact for given pipeline.
+def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = ""):
+    """ Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
-        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name", "long") 
+        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file. 
-       artifact_name: Artifacts for particular artifact name. 
-       long: Detailed summary regarding artifact.
+       artifact_name: Artifacts for particular artifact name.
     Returns:
        Output from the _artifact_list function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), artifact_name, long
-    output = _artifact_list(pipeline_name, filepath, artifact_name, long)
+    # Optional arguments: filepath( path to store mlmd file), artifact_name
+    output = _artifact_list(pipeline_name, filepath, artifact_name)
     return output
