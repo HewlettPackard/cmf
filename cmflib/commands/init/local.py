@@ -17,7 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import (
     git_quiet_init,
@@ -26,6 +26,7 @@ from cmflib.dvc_wrapper import (
     git_add_remote,
     dvc_quiet_init,
     dvc_add_remote_repo,
+    git_modify_remote_url,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
@@ -61,7 +62,7 @@ class CmdInitLocal(CmdBase):
         ):
             pass
         else:
-            return "ERROR: Provide user, password and uri for neo4j initialization."
+            raise Neo4jArgumentNotProvided
 
         output = is_git_repo()
         
@@ -73,15 +74,19 @@ class CmdInitLocal(CmdBase):
             git_initial_commit()
             git_add_remote(self.args.git_remote_url)
             print("git init complete.")
+        else:
+            git_modify_remote_url(self.args.git_remote_url)
+            print("git init complete.")
 
         print("Starting cmf init.")
         dvc_quiet_init()
         repo_type = "local-storage"
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
-            return "cmf init failed."
+            raise CmfInitFailed
         print(output)
-        return "cmf init complete."
+        status = CmfInitComplete()
+        return status
 
 
 def add_parser(subparsers, parent_parser):

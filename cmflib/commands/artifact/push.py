@@ -23,23 +23,41 @@ from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
 from cmflib.utils.helper_functions import generate_osdf_token
-from cmflib.utils.helper_functions import is_url
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_push
 from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.cli.utils import find_root
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound, Minios3ServerInactive, 
+    FileNotFound, 
+    ExecutionsNotFound, 
+    CmfNotConfigured, 
+    ArtifactPushSuccess, 
+    MissingArgument, 
+    DuplicateArgumentNotAllowed)
 
 class CmdArtifactPush(CmdBase):
     def run(self):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
-        cmf_config={}
-        cmf_config=CmfConfig.read_config(cmf_config_file)
+
+        # find root_dir of .cmfconfig
+        output = find_root(cmf_config_file)
+
+        # in case, there is no .cmfconfig file
+        if output.find("'cmf' is not configured.") != -1:
+            raise CmfNotConfigured(output)
+        
+
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
-            return "MinioS3 server failed to start!!!"
+            raise Minios3ServerInactive()
         if dvc_config_op["core.remote"] == "osdf":
+            config_file_path = os.path.join(output, cmf_config_file)
+            cmf_config={}
+            cmf_config=CmfConfig.read_config(config_file_path)
             #print("key_id="+cmf_config["osdf-key_id"])
             dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
             #print("Dynamic Password"+dynamic_password)
@@ -49,26 +67,36 @@ class CmdArtifactPush(CmdBase):
             #print(result)
             return result
 
-        current_directory = os.getcwd()
         # Default path of mlmd file
-        mlmd_file_name = "./mlmd"
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
+        current_directory = os.getcwd()
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
+                raise DuplicateArgumentNotAllowed("file_name", "-f")
+        elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
+                raise MissingArgument("file name")
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
+        current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
-
+            raise FileNotFound(mlmd_file_name, current_directory)
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
-
+        
          # Put a check to see whether pipline exists or not
-        pipeline_name = self.args.pipeline_name
+        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
+                raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
+        elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
+                raise MissingArgument("pipeline name")
+        else:
+            pipeline_name = self.args.pipeline_name[0]
+        
         if not query.get_pipeline_id(pipeline_name) > 0:
-            return f"ERROR: Pipeline {pipeline_name} doesn't exist!!"
+            raise PipelineNotFound(pipeline_name)
 
-        stages = query.get_pipeline_stages(self.args.pipeline_name)
+        stages = query.get_pipeline_stages(pipeline_name)
         executions = []
         identifiers = []
 
@@ -86,7 +114,7 @@ class CmdArtifactPush(CmdBase):
 
         names = []
         if len(identifiers) == 0:  # check if there are no executions
-            return "No executions found."
+            raise ExecutionsNotFound()
         for identifier in identifiers:
             artifacts = query.get_all_artifacts_for_execution(
                  identifier
@@ -113,8 +141,8 @@ class CmdArtifactPush(CmdBase):
                 pass
         #print("file_set = ", final_list)
         result = dvc_push(list(final_list))
-        return result
-      
+        return ArtifactPushSuccess(result)
+    
 def add_parser(subparsers, parent_parser):
     HELP = "Push artifacts to the user configured artifact repo."
 
@@ -132,12 +160,17 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify mlmd file name.",
+        metavar="<file_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPush)

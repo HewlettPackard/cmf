@@ -327,6 +327,49 @@ def _execution_list(pipeline_name, file_name, execution_id):
                file_name,
                "-e",
                execution_id
+<<<<<<< HEAD
+=======
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
+def _repo_push(pipeline_name, file_name, tensorboard_path, execution_id):
+    cli_args = cli.parse_args(
+            [
+               "repo",
+               "push",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-e",
+               execution_id,
+               "-t",
+               tensorboard_path
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
+def _repo_pull(pipeline_name, file_name, artifact_name, execution_id):
+    cli_args = cli.parse_args(
+            [
+               "execution",
+               "list",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-a",
+               artifact_name,
+               "-e",
+               execution_id
+>>>>>>> 21df74e (pulled changes)
             ]
            )
     cmd = cli_args.func(cli_args)

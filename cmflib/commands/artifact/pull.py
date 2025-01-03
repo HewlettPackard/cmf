@@ -28,9 +28,27 @@ from cmflib.storage_backends import (
 )
 from cmflib.cli.command import CmdBase
 from cmflib.utils.dvc_config import DvcConfig
-
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound, 
+    FileNotFound, 
+    MissingArgument,
+    ExecutionsNotFound, 
+    ArtifactNotFound, 
+    BatchDownloadFailure, 
+    BatchDownloadSuccess,
+    ObjectDownloadFailure, 
+    ObjectDownloadSuccess,
+    DuplicateArgumentNotAllowed,
+    MsgSuccess,
+    MsgFailure
+)
+from cmflib.cli.utils import check_minio_server
+from cmflib.cmf_exception_handling import CmfNotConfigured
 
 class CmdArtifactPull(CmdBase):
+
+    def __init__(self, args):
+        self.args = args
 
     def split_url_pipeline(self, url: str, pipeline_name: str):
        # This function takes url and pipeline_name as a input parameter
@@ -66,14 +84,11 @@ class CmdArtifactPull(CmdBase):
         # information from the user-supplied arguments.
         # url = Test-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c87bf20f0feacc9034,
         #          Second-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c"
-
         # s_url = Url without pipeline name
-        s_url = self.split_url_pipeline(url, self.args.pipeline_name)
-
+        s_url = self.split_url_pipeline(url, self.args.pipeline_name[0])
         # got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
         # spliting url using '/' delimiter
         token = s_url.split("/")
-
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
@@ -101,15 +116,12 @@ class CmdArtifactPull(CmdBase):
         elif type == "local":
             token_length = len(token)
             download_loc = current_directory + "/" + name
-
             # local artifact repo path =  local-storage/files/md5/23/69v2uu3jeejjeiw.
             # token is a list = ['local-storage', 'files', 'md5', '23', '69v2uu3jeejjeiw']
             # get last 4 element inside token
             token = token[(token_length-4):]
-
             # join last 4 token using '/' delimiter
             current_dvc_loc = "/".join(token)
-
             return current_dvc_loc, download_loc
 
         elif type == "ssh":
@@ -151,34 +163,58 @@ class CmdArtifactPull(CmdBase):
                 continue
             # Splitting the 'name' using ':' as the delimiter and storing the first argument in the 'name' variable.
             name = name.split(":")[0]
-            artifact_hash = name = name.split(":")[1]
+            #artifact_hash = name = name.split(":")[1]
             # Splitting the path on '/' to extract the file name, excluding the directory structure.
             file_name = name.split('/')[-1]
-            if file_name == self.args.artifact_name:
-                return name, url, artifact_hash
+            if file_name == self.args.artifact_name[0]:
+                return name, url
             else:
                 pass
 
     def run(self):
+        output = DvcConfig.get_dvc_config()  # pulling dvc config
+        if type(output) is not dict:
+            raise CmfNotConfigured(output)
+        
         # check whether 'mlmd' file exist in current directory 
         # or in the directory provided by user
         # pipeline_name = self.args.pipeline_name
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
-            if mlmd_file_name == "mlmd":
-                mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
-        if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
-        query = cmfquery.CmfQuery(mlmd_file_name)
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
+            raise DuplicateArgumentNotAllowed("file_name", "-f")
+        elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
+            raise MissingArgument("file name")
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
+            if "/" not in mlmd_file_name:
+                mlmd_file_name = "./"+mlmd_file_name
+        current_directory = os.path.dirname(mlmd_file_name)
 
+        if not self.args.artifact_name:         # If self.args.artifact_name[0] is None or an empty list ([]). 
+            pass
+        elif len(self.args.artifact_name) > 1:  # If the user provided more than one artifact_name. 
+            raise DuplicateArgumentNotAllowed("artifact_name", "-a")
+        elif not self.args.artifact_name[0]:    # self.args.artifact_name[0] is an empty string ("").
+            raise MissingArgument("artifact name")
+        
+        if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
+            raise FileNotFound(mlmd_file_name, current_directory)
+        query = cmfquery.CmfQuery(mlmd_file_name)
+        
+        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
+            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
+        elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
+            raise MissingArgument("pipeline name")
+        elif not query.get_pipeline_id(self.args.pipeline_name[0]) > 0:   #checking if pipeline name  exists in mlmd
+            raise PipelineNotFound(self.args.pipeline_name)
+        
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
-        stages = query.get_pipeline_stages(self.args.pipeline_name)
+        stages = query.get_pipeline_stages(self.args.pipeline_name[0])
         executions = []
         identifiers = []
-
         for stage in stages:
             # getting all executions for stages
             executions = query.get_all_executions_in_stage(stage)
@@ -195,116 +231,301 @@ class CmdArtifactPull(CmdBase):
         # created dictionary
         name_url_dict = {}
         if len(identifiers) == 0:  # check if there are no executions
-            return "No executions found."
+            raise ExecutionsNotFound()
         for identifier in identifiers:
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
             temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
-
         #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
-
-        output = DvcConfig.get_dvc_config()  # pulling dvc config
-        if type(output) is not dict:
-            return output
+        """
+           There are multiple scenarios for cmf artifact pull 
+           Code checks if self.args.artifact_name[0] is provided by user or not
+           under these conditions there are two more conditions
+              1. if file is not .dir (single file) 
+                   Download single file
+              2. else file is .dir (directory)
+                   download all files from directory
+                     
+        """
         dvc_config_op = output
-
         if dvc_config_op["core.remote"] == "minio":
-            minio_class_obj = minio_artifacts.MinioArtifacts()
-            if self.args.artifact_name:
+            minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
+            # Check if a specific artifact name is provided as input.
+            if self.args.artifact_name[0]: 
+                # Search for the artifact in the metadata store.
                 output = self.search_artifact(name_url_dict)
-                # output[0] = name
+                # output[0] = artifact_name
                 # output[1] = url
                 # output[2] = hash
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
+                    # Extract repository arguments specific to MinIO.
                     minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
-                    stmt = minio_class_obj.download_artifacts(
-                        dvc_config_op,
-                        current_directory,
-                        minio_args[0], # bucket_name
-                        minio_args[1], # object_name
-                        minio_args[2], # path_name
-                    )
-                    print(stmt)
+
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not minio_args[1].endswith(".dir"):
+                        # Download a single file from MinIO.
+                        object_name, download_loc, download_flag = minio_class_obj.download_file(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+                        if download_flag:
+                            # Return success if the file is downloaded successfully.
+                            return ObjectDownloadSuccess(object_name, download_loc)
+                        else: 
+                            raise ObjectDownloadFailure(object_name)
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory 
+                        # return total_files_in_directory, files_downloaded
+                        total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+            
+                        if download_flag:
+                            # Return success if all files in the directory are downloaded.
+                            return BatchDownloadSuccess(dir_files_downloaded)
+                        else:
+                            # Calculate the number of files that failed to download.
+                            file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                            raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
+            
             else:
+                # Handle the case where no specific artifact name is provided.
+                files_downloaded = 0
+                files_failed_to_download = 0
+
+                # Iterate through the dictionary of artifact names and URLs.
                 for name, url in name_url_dict.items():
-                    if not isinstance(url, str):
+                    if not isinstance(url, str):    ## Skip invalid URLs.
                         continue
                     minio_args = self.extract_repo_args("minio", name, url, current_directory)
-                    stmt = minio_class_obj.download_artifacts(
-                        dvc_config_op,
-                        current_directory,
-                        minio_args[0], # bucket_name
-                        minio_args[1], # object_name
-                        minio_args[2], # path_name
-                    )
-                    print(stmt)
-            return "Done"
+
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not minio_args[1].endswith(".dir"):
+                        # Download a single file from MinIO.
+                        object_name, download_loc, download_flag = minio_class_obj.download_file(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+
+                        # print output here because we are in a loop and can't return the control
+                        if download_flag:
+                            print(f"object {object_name} downloaded at {download_loc}.")
+                            files_downloaded += 1
+                        else:
+                            print(f"object {object_name} is not downloaded.")
+                            files_failed_to_download += 1
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory.
+                        total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
+                            current_directory,
+                            minio_args[0], # bucket_name
+                            minio_args[1], # object_name
+                            minio_args[2], # path_name
+                        )
+                        # Return success if all files in the directory are downloaded.
+                        if download_flag:
+                            files_downloaded += dir_files_downloaded
+                        else:
+                            files_downloaded += dir_files_downloaded
+                            files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
+                else:
+                    raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
+
         elif dvc_config_op["core.remote"] == "local-storage":
-            local_class_obj = local_artifacts.LocalArtifacts()
+            local_class_obj = local_artifacts.LocalArtifacts(dvc_config_op)
+            # There are two main conditions
+            # Condition 1 - user can use -a paramter for cmf artifact pull command
+                # -a can be a dir or a file
+            # Condition 2 - user can chose to download all the artifacts in one go. 
+                # we can have both dir and files in our list of artifacts
+            # Check if a specific artifact name is provided as input.
             if self.args.artifact_name:
+                # Search for the artifact in the metadata store.
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
+                    # Extract repository arguments specific to Local repo.
                     local_args = self.extract_repo_args("local", output[0], output[1], current_directory)
-                    stmt = local_class_obj.download_artifacts(
-                           dvc_config_op, current_directory, local_args[0], local_args[1]
-                    )
-                    print(stmt)
+                    # local_args [0] = current_dvc_loc
+                    # local_args [1] = download_loc
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not local_args[0].endswith(".dir"):
+                        # Download a single file from Local.
+                        object_name, download_loc, download_flag = local_class_obj.download_file(current_directory, local_args[0], local_args[1])
+                        if download_flag:
+                            # Return success if the file is downloaded successfully.
+                            return ObjectDownloadSuccess(object_name, download_loc)
+                        else: 
+                            raise ObjectDownloadFailure(object_name)
+                        
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory 
+                        # return total_files_in_directory, files_downloaded
+                        total_files_in_directory, dir_files_downloaded, download_flag = local_class_obj.download_directory(current_directory, local_args[0], local_args[1])
+            
+                        if download_flag:
+                            # Return success if all files in the directory are downloaded.
+                            return BatchDownloadSuccess(dir_files_downloaded)
+                        else:
+                            # Calculate the number of files that failed to download.
+                            file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                            raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
             else:
+                # Handle the case where no specific artifact name is provided.
+                files_downloaded = 0
+                files_failed_to_download = 0
+                # Iterate through the dictionary of artifact names and URLs.
                 for name, url in name_url_dict.items():
-                    #print(name, url)
                     if not isinstance(url, str):
                         continue
+                    # name1 - file
+                    # name2 - failed file
+                    # name3 - dir (5 files)
+                    # name4 - dir (4 files) - failed dir - 2 files passed, 2 files failed
+                    # name5 - file
+                    # name6 - dir - and can't open it (but it has 2 files) .. user don't know 
                     local_args = self.extract_repo_args("local", name, url, current_directory)
-                    # local_args[0] = current dvc location
-                    # local_args[1] = current download location
-                    stmt = local_class_obj.download_artifacts(
-                           dvc_config_op, current_directory, local_args[0], local_args[1]
-                    )
-                    print(stmt)
-            return "Done"
+                    # local_args [0] = current_dvc_loc
+                    # local_args [1] = download_loc
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not local_args[0].endswith(".dir"):
+                        # Download a single file from Local repo.
+                        object_name, download_loc, download_flag = local_class_obj.download_file(
+                            current_directory, local_args[0], local_args[1])
+                        
+                        # print output here because we are in a loop and can't return the control
+                        if download_flag:
+                            print(f"object {object_name} downloaded at {download_loc}.")
+                            files_downloaded += 1
+                        else:
+                            print(f"object {object_name} is not downloaded.")
+                            files_failed_to_download += 1
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory.
+                        total_files_in_directory, dir_files_downloaded, download_flag = local_class_obj.download_directory(
+                            current_directory, local_args[0], local_args[1])
+                        # download_flag is true only when all the files from the directory are successfully downlaoded.
+                        if download_flag:
+                            files_downloaded += dir_files_downloaded
+                        else:
+                            files_downloaded += dir_files_downloaded
+                            files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
+                else:
+                    raise BatchDownloadFailure(
+                            files_downloaded, files_failed_to_download)
+                    
         elif dvc_config_op["core.remote"] == "ssh-storage":
-            sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts()
+            sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts(dvc_config_op)
+            # Check if a specific artifact name is provided as input.
             if self.args.artifact_name:
+                # Search for the artifact in the metadata store.
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
+                    # Extract repository arguments specific to ssh-remote.
                     args = self.extract_repo_args("ssh", output[0], output[1], current_directory)
-                    stmt = sshremote_class_obj.download_artifacts(
-                        dvc_config_op,
-                        args[0], # host,
-                        current_directory,
-                        args[1], # remote_loc of the artifact
-                        args[2]  # name
-                    )
-                    print(stmt)
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not args[1].endswith(".dir"):
+                        # Download a single file from ssh-remote.
+                        object_name, download_loc, download_flag = sshremote_class_obj.download_file(
+                            args[0], # host,
+                            current_directory,
+                            args[1], # remote_loc of the artifact
+                            args[2]  # name
+                        )
+                        if download_flag:
+                            # Return success if the file is downloaded successfully.
+                            return ObjectDownloadSuccess(object_name, download_loc)
+                        else: 
+                            raise ObjectDownloadFailure(object_name)
+
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory 
+                        # return total_files_in_directory, files_downloaded
+                        total_files_in_directory, dir_files_downloaded, download_flag = sshremote_class_obj.download_directory(
+                            args[0], # host,
+                            current_directory,
+                            args[1], # remote_loc of the artifact
+                            args[2]  # name
+                            )
+                    if download_flag:
+                        # Return success if all files in the directory are downloaded.
+                        return BatchDownloadSuccess(dir_files_downloaded)
+                    else:
+                        # Calculate the number of files that failed to download.
+                        file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                        raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)   
             else:
+                # Handle the case where no specific artifact name is provided.
+                files_downloaded = 0
+                files_failed_to_download = 0
+                # Iterate through the dictionary of artifact names and URLs.
                 for name, url in name_url_dict.items():
-                    #print(name, url)
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("ssh", name, url, current_directory)
-                    stmt = sshremote_class_obj.download_artifacts(
-                        dvc_config_op,
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not args[1].endswith(".dir"):
+                        # Download a single file from ssh-remote.
+                        object_name, download_loc, download_flag = sshremote_class_obj.download_file(
                         args[0], # host,
                         current_directory,
                         args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
-                    print(stmt)
-            return "Done"
+                        # print output here because we are in a loop and can't return the control
+                        if download_flag:
+                            print(f"object {object_name} downloaded at {download_loc}.")
+                            files_downloaded += 1
+                        else:
+                            print(f"object {object_name} is not downloaded.")
+                            files_failed_to_download += 1
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory.
+                        total_files_in_directory, dir_files_downloaded, download_flag = sshremote_class_obj.download_directory(
+                            args[0], # host,
+                            current_directory,
+                            args[1], # remote_loc of the artifact
+                            args[2]  # name
+                        )
+                        if download_flag:
+                            files_downloaded += dir_files_downloaded
+                        else:
+                            files_downloaded += dir_files_downloaded
+                            files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
+                else:
+                    raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
         elif dvc_config_op["core.remote"] == "osdf":
             #Regenerate Token for OSDF
             from cmflib.utils.helper_functions import generate_osdf_token
@@ -334,11 +555,10 @@ class CmdArtifactPull(CmdBase):
                 # output[1] = url
                 # output[3]=artifact_hash
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
-                    #print(f"Hash for the artifact {self.args.artifact_name} is {output[3]}")
-                    stmt = osdfremote_class_obj.download_artifacts(
+                    download_flag, message = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # s_url of the artifact
                         cache_path,
@@ -347,16 +567,23 @@ class CmdArtifactPull(CmdBase):
                         args[2],  # name of the artifact
                         output[3] #Artifact Hash
                     )
-                    print(stmt)
+                    
+                    if download_flag :
+                        status = MsgSuccess(msg_str = message)
+                    else:
+                        status = MsgFailure(msg_str = message)
+                    return status
             else:
                 for name, url in name_url_dict.items():
+                    total_files_count += 1
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
                     artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
                     #print(f"Hash for the artifact {name} is {artifact_hash}")
                     args = self.extract_repo_args("osdf", name, url, current_directory)
-                    stmt = osdfremote_class_obj.download_artifacts(
+                        
+                    download_flag, message = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
                         cache_path,
@@ -365,47 +592,97 @@ class CmdArtifactPull(CmdBase):
                         args[2],  # name
                         artifact_hash #Artifact Hash
                     )
-                    print(stmt)
-            return "Done"
+                    if download_flag:
+                        print(message)   #### success message
+                        file_downloaded +=1
+                    else:
+                        print(message)    ### failure message
+                Files_failed_to_download = total_files_count - files_downloaded
+                if Files_failed_to_download == 0:
+                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                else:
+                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                return status
+
         elif dvc_config_op["core.remote"] == "amazons3":
-            amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts()
-            #print(self.args.artifact_name,"artifact name")
+            amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
                 if output is None:
-                    print(f"{self.args.artifact_name} doesn't exist.")
+                    raise ArtifactNotFound(self.args.artifact_name[0])
                 else:
                     args = self.extract_repo_args("amazons3", output[0], output[1], current_directory)
                     if args[0] and args[1] and args[2]:
-                        stmt = amazonS3_class_obj.download_artifacts(
-                            dvc_config_op,
-                            current_directory,
-                            args[0], # bucket_name
-                            args[1], # object_name
-                            args[2], # download_loc
-                        )
-                        print(stmt)
+                        if not args[1].endswith(".dir"):
+                            object_name, download_loc, download_flag = amazonS3_class_obj.download_file(
+                                current_directory,
+                                args[0], # bucket_name
+                                args[1], # object_name
+                                args[2], # download_loc
+                            )
+                            if download_flag:
+                                return ObjectDownloadSuccess(object_name, download_loc)
+                            else: 
+                                return ObjectDownloadFailure(object_name)
+                        else:
+                            total_files_in_directory, dir_files_downloaded, download_flag = amazonS3_class_obj.download_directory(current_directory,
+                                args[0], # bucket_name
+                                args[1], # object_name
+                                args[2], # download_loc
+                                )
+                        if download_flag:
+                            return BatchDownloadSuccess(dir_files_downloaded)
+                        else:
+                            file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                            raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
+
+                
             else:
+                files_downloaded = 0
+                files_failed_to_download = 0
                 for name, url in name_url_dict.items():
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
                     if args[0] and args[1] and args[2]:
-                        stmt = amazonS3_class_obj.download_artifacts(
-                            dvc_config_op,
+                        if not args[1].endswith(".dir"):
+                            object_name, download_loc, download_flag = amazonS3_class_obj.download_file(
+                                current_directory,
+                                args[0], # bucket_name
+                                args[1], # object_name
+                                args[2], # download_loc
+                            )
+                            if download_flag:
+                                print(f"object {object_name} downloaded at {download_loc}.")
+                                files_downloaded += 1
+                            else:
+                                print(f"object {object_name} is not downloaded.")
+                                files_failed_to_download += 1
+                        else:
+                            total_files_in_directory, dir_files_downloaded, download_flag = amazonS3_class_obj.download_directory(
                             current_directory,
                             args[0], # bucket_name
                             args[1], # object_name
-                            args[2], # download_loc
+                            args[2], # path_name
                         )
-                        print(stmt)
-            return "Done"
+                        # download_flag is true only when all the files from the directory are successfully downlaoded.
+                            if download_flag:
+                                files_downloaded += dir_files_downloaded
+                            else:
+                                files_downloaded += dir_files_downloaded
+                                files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
+                else:
+                    raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
         else:
             remote = dvc_config_op["core.remote"]
             msg = f"{remote} is not valid artifact repository for CMF.\n Reinitialize CMF."
-            return msg
+            raise MsgFailure(msg_str=msg)
 
 
 def add_parser(subparsers, parent_parser):
@@ -425,17 +702,17 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", "--file_name", action="append", help="Specify mlmd file name.", metavar="<file_name>"
     )
 
     parser.add_argument(
-        "-a", "--artifact_name", help="Specify artifact name.", metavar="<artifact_name>"
+        "-a", "--artifact_name", action="append", help="Specify artifact name.", metavar="<artifact_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPull)
-

@@ -2,7 +2,11 @@
 
 # cmf 
 ```
+<<<<<<< HEAD
 Usage: cmf [-h] {init, artifact, metadata, execution, pipeline}
+=======
+Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
+>>>>>>> 21df74e (pulled changes)
 ```
 The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
 
@@ -350,6 +354,8 @@ Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_i
 `cmf execution list` command to displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
 ```
 cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' 
+<<<<<<< HEAD
+=======
 ```
 Required Arguments
 ```
@@ -379,4 +385,67 @@ Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
   --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+```
+
+## cmf repo
+```
+Usage: cmf repo [-h] {push, pull}
+```
+`cmf repo` command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.
+### cmf repo push
+```
+Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
+```
+`cmf repo push` command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+```
+cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t 'tensorboard_log_path'
+>>>>>>> 21df74e (pulled changes)
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+<<<<<<< HEAD
+  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+  -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
+=======
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -e [exec_id], --execution [exec_id]                   Specify execution id.
+  -t [tensorboard], --tensorboard [tensorboard]         Specify path to tensorboard logs for the pipeline.
+>>>>>>> 21df74e (pulled changes)
+```
+### cmf repo pull
+```
+Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -a [artifact_name]
+```
+<<<<<<< HEAD
+`cmf pipeline` command displays a list of pipeline name(s) from the available mlmd file.
+### cmf pipeline list
+=======
+`cmf repo pull` command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+>>>>>>> 21df74e (pulled changes)
+```
+cmf repo pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -a 'artifact_name'
+```
+<<<<<<< HEAD
+`cmf pipeline list` command displays a list of pipeline name(s) from the available mlmd file.
+=======
+Required Arguments
+>>>>>>> 21df74e (pulled changes)
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                            show this help message and exit.
+<<<<<<< HEAD
+  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+=======
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -e [exec_id], --execution [exec_id]                   Specify execution id.
+  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name.
+>>>>>>> 21df74e (pulled changes)
 ```
