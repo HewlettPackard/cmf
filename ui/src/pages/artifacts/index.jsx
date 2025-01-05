@@ -1,19 +1,18 @@
 /***
-* Copyright (2023) Hewlett Packard Enterprise Development LP
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* You may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-***/
-
+ * Copyright (2023) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
 
 import React, { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
@@ -23,14 +22,17 @@ import ArtifactTable from "../../components/ArtifactTable";
 import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
-import ArtifactTypeSidebar from "./ArtifactTypeSidebar";
+import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
+import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
 
 const Artifacts = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [pipelines, setPipelines] = useState([]);
-  const [artifacts, setArtifacts] = useState([]);
+  // undefined state is to check whether artifacts data is set
+  // null state of artifacts we display No Data
+  const [artifacts, setArtifacts] = useState([undefined]);
   const [artifactTypes, setArtifactTypes] = useState([]);
   const [selectedArtifactType, setSelectedArtifactType] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
@@ -39,16 +41,20 @@ const Artifacts = () => {
   // Default sort field
   const [sortField, setSortField] = useState("name");
   // Default sort order
-  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortOrder, setSortOrder] = useState(null);
   // Default filter field
   const [filterBy, setFilterBy] = useState(null);
   // Default filter value
   const [filterValue, setFilterValue] = useState(null);
+  // Default loader value
+  const [loading, setLoading] = useState(true);
 
   const fetchPipelines = () => {
+    setLoading(true);
     client.getPipelines("").then((data) => {
       setPipelines(data);
       setSelectedPipeline(data[0]);
+      setLoading(false);
     });
   };
 
@@ -57,22 +63,38 @@ const Artifacts = () => {
   }, []);
 
   const handlePipelineClick = (pipeline) => {
-    setArtifacts(null);
+    if (selectedPipeline !== pipeline) {
+      // this condition sets page as null.
+      setArtifacts(null);
+    }
     setSelectedPipeline(pipeline);
     setActivePage(1);
-    fetchArtifacts(pipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
   };
 
   const handleArtifactTypeClick = (artifactType) => {
-    setArtifacts(null);
+    if (selectedArtifactType !== artifactType) {
+      // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
+      setArtifacts(null);
+    }
     setSelectedArtifactType(artifactType);
     setActivePage(1);
   };
 
   const fetchArtifactTypes = () => {
+    setLoading(true);
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
-      handleArtifactTypeClick(types[0]);
+      setSelectedArtifactType(types[0]);
+      setLoading(false);
+      fetchArtifacts(
+        selectedPipeline,
+        types[0],
+        activePage,
+        sortField,
+        sortOrder,
+        filterBy,
+        filterValue,
+      );
     });
   };
 
@@ -83,18 +105,56 @@ const Artifacts = () => {
     // eslint-disable-next-line
   }, [selectedPipeline]);
 
-  const fetchArtifacts = (pipelineName, type, page, sortField, sortOrder, filterBy, filterValue) => {
-    client.getArtifacts(pipelineName, type, page, sortField, sortOrder, filterBy, filterValue).then((data) => {
-      setArtifacts(data.items);
-      setTotalItems(data.total_items);
-    });
+  const fetchArtifacts = (
+    pipelineName,
+    type,
+    page,
+    sortField,
+    sortOrder,
+    filterBy,
+    filterValue,
+  ) => {
+    setArtifacts(undefined);
+    // if data then set artifacts with that data else set it null.
+    setLoading(true);
+    client
+      .getArtifacts(
+        pipelineName,
+        type,
+        page,
+        sortField,
+        sortOrder,
+        filterBy,
+        filterValue,
+      )
+      .then((data) => {
+        setArtifacts(data.items);
+        setTotalItems(data.total_items);
+        setLoading(false);
+      })
+      .catch(() => setArtifacts(null));
   };
 
   useEffect(() => {
     if (selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue);
+      fetchArtifacts(
+        selectedPipeline,
+        selectedArtifactType,
+        activePage,
+        sortField,
+        sortOrder,
+        filterBy,
+        filterValue,
+      );
     }
-  }, [selectedPipeline, selectedArtifactType, activePage, sortField, sortOrder, filterBy, filterValue]);
+  }, [
+    selectedArtifactType,
+    activePage,
+    sortField,
+    sortOrder,
+    filterBy,
+    filterValue,
+  ]);
 
   const handlePageClick = (page) => {
     setActivePage(page);
@@ -127,39 +187,54 @@ const Artifacts = () => {
     setFilterValue(value);
   };
 
-
   return (
     <>
       <section
-        className="flex flex-col bg-white"
+        className="flex flex-col bg-white min-h-screen"
         style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
-        <div className="flex flex-row">
-          <Sidebar
-            pipelines={pipelines}
-            handlePipelineClick={handlePipelineClick}
-          />
-          <div className="container justify-center items-center mx-auto px-4">
-            <div className="flex flex-col">
+        <div className="flex flex-grow" style={{ padding: "1px" }}>
+          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+            <Sidebar
+              pipelines={pipelines}
+              handlePipelineClick={handlePipelineClick}
+              className="flex-grow"
+            />
+          </div>
+          <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
+            <div className="flex flex-col w-full">
               {selectedPipeline !== null && (
                 <ArtifactTypeSidebar
                   artifactTypes={artifactTypes}
                   handleArtifactTypeClick={handleArtifactTypeClick}
+                  onFilter={handleFilter}
                 />
               )}
             </div>
-            <div className="container">
-              {selectedPipeline !== null && selectedArtifactType !== null && artifacts !== null && artifacts !== {} && (
-                <ArtifactTable artifacts={artifacts} ArtifactType={selectedArtifactType} onSort={handleSort} onFilter={handleFilter}/>
-              )}
+            {loading ? (
+              <div className="flex-grow flex justify-center items-center">
+                <Loader />
+              </div>
+            ) : (
               <div>
+                {selectedPipeline !== null &&
+                  selectedArtifactType !== null &&
+                  artifacts !== null &&
+                  artifacts !== {} && (
+                    <ArtifactTable
+                      artifacts={artifacts}
+                      ArtifactType={selectedArtifactType}
+                      onSort={handleSort}
+                      onFilter={handleFilter}
+                    />
+                  )}
                 {artifacts !== null && totalItems > 0 && (
                   <>
                     <button
                       onClick={handlePrevClick}
                       disabled={activePage === 1}
-                      className={clickedButton === "prev" ? "active" : ""}
+                      className={clickedButton === "prev" ? "active-page" : ""}
                     >
                       Previous
                     </button>
@@ -174,12 +249,12 @@ const Artifacts = () => {
                             <button
                               key={pageNumber}
                               onClick={() => handlePageClick(pageNumber)}
-                              className={
+                              className={`pagination-button ${
                                 activePage === pageNumber &&
                                 clickedButton === "page"
-                                  ? "active"
+                                  ? "active-page"
                                   : ""
-                              }
+                              }`}
                             >
                               {pageNumber}
                             </button>
@@ -194,12 +269,12 @@ const Artifacts = () => {
                             <button
                               key={pageNumber}
                               onClick={() => handlePageClick(pageNumber)}
-                              className={
+                              className={`pagination-button ${
                                 activePage === pageNumber &&
                                 clickedButton === "page"
-                                  ? "active"
+                                  ? "active-page"
                                   : ""
-                              }
+                              }`}
                             >
                               {pageNumber}
                             </button>
@@ -219,19 +294,19 @@ const Artifacts = () => {
                           );
                         }
                         return null;
-                      }
+                      },
                     )}
                     <button
                       onClick={handleNextClick}
                       disabled={activePage === Math.ceil(totalItems / 5)}
-                      className={clickedButton === "next" ? "active" : ""}
+                      className={clickedButton === "next" ? "active-page" : ""}
                     >
                       Next
                     </button>
                   </>
                 )}
               </div>
-            </div>
+            )}
           </div>
         </div>
         <Footer />

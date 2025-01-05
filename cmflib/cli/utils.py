@@ -16,7 +16,6 @@
 
 import subprocess
 import os
-import sys
 
 def fix_subparsers(subparsers):
     subparsers.required = True
@@ -58,9 +57,11 @@ def check_minio_server(dvc_config_op):
     from minio.error import S3Error
 
     if dvc_config_op["core.remote"] == "minio":
+        # dvc_config_op["remote.minio.endpointurl"] = http://XX.XX.XX.XX:9000 
         endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
         access_key = dvc_config_op["remote.minio.access_key_id"]
         secret_key = dvc_config_op["remote.minio.secret_access_key"]
+        # dvc_config_op["remote.minio.url"] = s3://dvc-art
         bucket_name = dvc_config_op["remote.minio.url"].split("s3://")[1]
         try:
             client = Minio(

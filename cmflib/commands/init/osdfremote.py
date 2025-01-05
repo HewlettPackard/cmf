@@ -18,8 +18,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import subprocess
-import sys
 
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import (
@@ -27,7 +25,6 @@ from cmflib.dvc_wrapper import (
     git_checkout_new_branch,
     git_initial_commit,
     git_add_remote,
-    check_git_repo,
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
@@ -35,7 +32,6 @@ from cmflib.dvc_wrapper import (
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
 from cmflib.utils.helper_functions import generate_osdf_token
-from cmflib.utils.helper_functions import is_url
 
 class CmdInitOSDFRemote(CmdBase):
     def run(self):
@@ -103,6 +99,7 @@ class CmdInitOSDFRemote(CmdBase):
 
         attr_dict = {}
         attr_dict["path"] = self.args.path
+        attr_dict["cache"] = self.args.cache
         attr_dict["key_id"] = self.args.key_id
         attr_dict["key_path"] = self.args.key_path
         attr_dict["key_issuer"] = self.args.key_issuer
@@ -129,6 +126,14 @@ def add_parser(subparsers, parent_parser):
         help="Specify FQDN for OSDF directory path including port and path",
         metavar="<path>",
         default=argparse.SUPPRESS,
+    )
+
+    parser.add_argument(
+        "--cache",
+        help="Specify FQDN for OSDF cache path including port and path. For Ex. https://osdf-director.osg-htc.org/nrp/fdp/",
+        metavar="<cache>",
+        #default="https://osdf-director.osg-htc.org/nrp/fdp/",
+        default="",
     )
 
     required_arguments.add_argument(

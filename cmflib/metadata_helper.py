@@ -23,8 +23,6 @@ from ml_metadata.metadata_store import metadata_store
 from ipaddress import ip_address, IPv4Address
 from typing import List
 import functools
-import uuid
-
 
 def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
     if value is None:
@@ -68,7 +66,7 @@ def connect_to_mlmd() -> metadata_store.MetadataStore:
     raise RuntimeError('Could not connect to the Metadata store.')
 
 
-def get_artifacts_by_id(store, artifact_id: [int]) -> List[metadata_store_pb2.Artifact]:
+def get_artifacts_by_id(store, artifact_id: List[int]) -> List[metadata_store_pb2.Artifact]:
     try:
         artifacts = store.get_artifacts_by_id(artifact_id)
         return artifacts
@@ -123,6 +121,15 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
         context_type.id = store.put_context_type(context_type)  # Returns ID
         return context_type
 
+def update_context_custom_properties(store, context_id, context_name: str, properties: dict, custom_properties: dict) -> metadata_store_pb2.Context:
+        context = metadata_store_pb2.Context(
+            id = context_id,
+            name=context_name,
+            properties=properties,
+            custom_properties=custom_properties,
+        )
+        store.put_contexts([context])
+        return context
 
 def create_artifact_with_type(
         store,
@@ -387,7 +394,7 @@ def create_new_execution_in_existing_run_context(
         git_start_commit: str = None,
         git_end_commit: str = "",
         python_env: str = "",
-        custom_properties: {} = None,
+        custom_properties: dict = None,
         create_new_execution:bool = True
 ) -> metadata_store_pb2.Execution:
     mlmd_custom_properties = {}

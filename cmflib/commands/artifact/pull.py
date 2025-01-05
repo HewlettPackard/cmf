@@ -48,7 +48,8 @@ class CmdArtifactPull(CmdBase):
                     # assign u to url if pipeline name exist
                     if pipeline_name in u:
                         url = u
-            # splitting url using ':' delimiter token = ["Test-env","home/user/local-storage/files/md5/23/6d9502e508a2"]
+            # splitting url using ':' delimiter 
+            # token = ["Test-env","home/user/local-storage/files/md5/23/6d9502e508a2"]
             token = url.split(":")
             # removing 1st element from token i.e pipeline name
             # output token will be ["home/user/local-storage/files/md5/23/6d9502e508a2"]
@@ -70,7 +71,7 @@ class CmdArtifactPull(CmdBase):
         s_url = self.split_url_pipeline(url, self.args.pipeline_name)
 
         # got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
-        #spliting url using '/' delimiter
+        # spliting url using '/' delimiter
         token = s_url.split("/")
 
         # name = artifacts/model/model.pkl
@@ -102,7 +103,7 @@ class CmdArtifactPull(CmdBase):
             download_loc = current_directory + "/" + name
 
             # local artifact repo path =  local-storage/files/md5/23/69v2uu3jeejjeiw.
-
+            # token is a list = ['local-storage', 'files', 'md5', '23', '69v2uu3jeejjeiw']
             # get last 4 element inside token
             token = token[(token_length-4):]
 
@@ -112,15 +113,14 @@ class CmdArtifactPull(CmdBase):
             return current_dvc_loc, download_loc
 
         elif type == "ssh":
-            # comments remaining
-            token_var = token[2].split(":")
-            host = token_var[0]
-            token.pop(0)
-            token.pop(0)
-            token.pop(0)
-            current_loc_1 = "/".join(token)
-            current_loc = f"/{current_loc_1}"
+            # token = ['ssh:', '', 'XX.XX.XX.XX:22', 'home', 'user', 'ssh-storage', 'files', 'md5', '23', '6d9502e0283d91f689d7038b8508a2']
+            host_with_port = token[2].split(":")
+            host = host_with_port[0]
+            # Update token list by removing the first three items
+            # token = ['home', 'user', 'ssh-storage', 'files', 'md5', '23', '6d9502e0283d91f689d7038b8508a2']
+            current_loc = '/' + '/'.join(token[3:])
             return host, current_loc, name
+        
         elif type == "osdf":
             token_length = len(token)
             download_loc = current_directory + "/" + name if current_directory != ""  else name
@@ -149,17 +149,20 @@ class CmdArtifactPull(CmdBase):
         for name, url in input_dict.items():
             if not isinstance(url, str):
                 continue
-            # splitting name with ':' as the delimiter and store first argument inside name
+            # Splitting the 'name' using ':' as the delimiter and storing the first argument in the 'name' variable.
             name = name.split(":")[0]
+            artifact_hash = name = name.split(":")[1]
+            # Splitting the path on '/' to extract the file name, excluding the directory structure.
             file_name = name.split('/')[-1]
             if file_name == self.args.artifact_name:
-                return name, url
+                return name, url, artifact_hash
             else:
                 pass
 
     def run(self):
-        # check whether the mlmd file exist or not in current directory
-        pipeline_name = self.args.pipeline_name
+        # check whether 'mlmd' file exist in current directory 
+        # or in the directory provided by user
+        # pipeline_name = self.args.pipeline_name
         current_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
         if self.args.file_name:
@@ -199,7 +202,8 @@ class CmdArtifactPull(CmdBase):
             )  # getting all artifacts with id
             temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
-        # print(name_url_dict)
+
+        #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
 
@@ -214,6 +218,7 @@ class CmdArtifactPull(CmdBase):
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
+                # output[2] = hash
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
@@ -320,22 +325,27 @@ class CmdArtifactPull(CmdBase):
             #Need to write to cmfconfig with new credentials
             #CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
             #Now Ready to do dvc pull 
+            cache_path=cmf_config["osdf-cache"]
 
             osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts()
             if self.args.artifact_name:
                 output = self.search_artifact(name_url_dict)
                 # output[0] = name
                 # output[1] = url
+                # output[3]=artifact_hash
                 if output is None:
                     print(f"{self.args.artifact_name} doesn't exist.")
                 else:
                     args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
+                    #print(f"Hash for the artifact {self.args.artifact_name} is {output[3]}")
                     stmt = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # s_url of the artifact
+                        cache_path,
                         current_directory,
                         args[1], # download_loc of the artifact
-                        args[2]  # name of the artifact
+                        args[2],  # name of the artifact
+                        output[3] #Artifact Hash
                     )
                     print(stmt)
             else:
@@ -343,13 +353,17 @@ class CmdArtifactPull(CmdBase):
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
+                    artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
+                    #print(f"Hash for the artifact {name} is {artifact_hash}")
                     args = self.extract_repo_args("osdf", name, url, current_directory)
                     stmt = osdfremote_class_obj.download_artifacts(
                         dvc_config_op,
                         args[0], # host,
+                        cache_path,
                         current_directory,
                         args[1], # remote_loc of the artifact
-                        args[2]  # name
+                        args[2],  # name
+                        artifact_hash #Artifact Hash
                     )
                     print(stmt)
             return "Done"

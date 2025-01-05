@@ -1,4 +1,3 @@
-import time, json
 from cmflib import cmfquery
 from collections import deque, defaultdict
 import pandas as pd
@@ -27,7 +26,7 @@ class UniqueQueue:
         return value in self.seen
 
 
-async def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_exe_id, uuid):
+def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_exe_id, uuid):
     query = cmfquery.CmfQuery(mlmd_path)
     pipeline_id = query.get_pipeline_id(pipeline_name)
     df=dict_of_exe_id[pipeline_name]
@@ -109,7 +108,26 @@ def topological_sort(input_data,execution_id_dict):
     return output_data
 
 def modify_exec_name(exec_name_uuid):
-    after_first_slash=exec_name_uuid.split('/', 1)[1]
-    name='_'.join(after_first_slash.rsplit('_', 1)[:-1])# 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> Prepare  
-    uuid=exec_name_uuid.split('_')[-1].split('-')[0][:4] # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> d09f 
-    return (name +"_"+uuid)   # Prepare_d09f
+    # First split by '/' once, and then split by '_' to get the parts.
+    # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ------->  'Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'
+    # "huggingface_leaderboard/Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5" ---------> 'Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5'
+    after_first_slash = exec_name_uuid.split('/', 1)[1]
+
+    # Use rsplit only once to get the name and uuid parts.
+    # 'Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' --------> ['Prepare','d09fdb26-0e9d-11ef-944f-4bf54f5aca7f']
+    # 'Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5' ----> ['Evaluation_2_01-ai/Yi-34B', '1eb053ac-c143-11ee-8b31-996711f273d5']
+    name_and_uuid = after_first_slash.rsplit('_', 1)
+    
+    # Name comes from the first part (before the last '_')
+    #  ['Prepare','d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'] ----> ['Prepare]
+    # ['Evaluation_2_01-ai/Yi-34B', '1eb053ac-c143-11ee-8b31-996711f273d5'] -----> ['Evaluation_2_01-ai/Yi-34B']
+    name = name_and_uuid[0]
+
+    # UUID is taken from the last part of the rsplit (after the last '_')
+    # 'd09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ----->  d09f
+    # '1eb053ac-c143-11ee-8b31-996711f273d5' -----> 1eb0
+    uuid = name_and_uuid[1].split('-')[0][:4]
+
+    # Combine the name and shortened UUID
+    result = name + "_" + uuid
+    return result

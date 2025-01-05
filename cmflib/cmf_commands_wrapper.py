@@ -252,13 +252,15 @@ def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, n
     print(msg)
     return msg
 
-def _init_osdfremote(path, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     cli_args = cli.parse_args(
             [
                "init",
                "osdf",
                "--path",
                path,
+               "--cache",
+               cache,
                "--key-id",
                key_id, 
                "--key-path",
@@ -282,3 +284,53 @@ def _init_osdfremote(path, key_id, key_path, key_issuer, git_remote_url, cmf_ser
     print(msg)
     return msg
     
+def _artifact_list(pipeline_name, file_name, artifact_name):
+    cli_args = cli.parse_args(
+            [
+               "artifact",
+               "list",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-a",
+               artifact_name
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
+def _pipeline_list(file_name):
+    cli_args = cli.parse_args(
+            [
+               "pipeline",
+               "list",
+               "-f",
+               file_name
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+
+def _execution_list(pipeline_name, file_name, execution_id):
+    cli_args = cli.parse_args(
+            [
+               "execution",
+               "list",
+               "-p",
+               pipeline_name,
+               "-f",
+               file_name,
+               "-e",
+               execution_id
+            ]
+           )
+    cmd = cli_args.func(cli_args)
+    msg = cmd.do_run()
+    print(msg)
+    return msg
+

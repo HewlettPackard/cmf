@@ -173,11 +173,11 @@ const Popup = ({ show, model_data, onClose }) => {
       />
       <div className="popup-overlay">
         <div className="popup">
-        <div className="popup-border">
+          <div className="popup-border">
             <button onClick={onClose} className="close-button">
-             X
+              X
             </button>
-        </div>
+          </div>
           <button className="download-button" onClick={downloadJSON}>
             <i className="fa fa-download"></i>
           </button>

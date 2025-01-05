@@ -19,11 +19,9 @@ import logging
 import typing as t
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
-
 import pandas as pd
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-
 from cmflib.mlmd_objects import CONTEXT_LIST
 
 __all__ = ["CmfQuery"]
@@ -952,6 +950,38 @@ class CmfQuery(object):
             pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
+    
+    def get_all_executions_for_artifact_id(self, artifact_id: int) -> pd.DataFrame:
+        """Return executions that consumed and produced given artifact.
+
+        Args:
+            artifact_name: Artifact id.
+        Returns:
+            Pandas data frame containing stage executions, one execution per row.
+        """
+        df = pd.DataFrame()
+
+        try:
+            for event in self.store.get_events_by_artifact_ids([artifact_id]):
+                stage_ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
+                linked_execution = {
+                    "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
+                    "execution_id": event.execution_id,
+                    "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
+                    "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'],
+                    "stage": stage_ctx.name,
+                    "pipeline": self.store.get_parent_contexts_by_context(stage_ctx.id)[0].name,
+                }
+                d1 = pd.DataFrame(
+                    linked_execution,
+                    index=[
+                        0,
+                    ],
+                )
+                df = pd.concat([df, d1], sort=True, ignore_index=True)
+        except:
+            return df
+        return df
 
     """def materialize(self, artifact_name:str):
        artifacts = self.store.get_artifacts()

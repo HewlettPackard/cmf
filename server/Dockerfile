@@ -31,16 +31,8 @@ RUN mkdir -p /cmf-server/data/static
 # folder for tensorboard logs
 RUN mkdir -p /cmf-server/data/tensorboard-logs
 
-# libraries required for lineage
-RUN apt-get update -y && apt-get install -y libzbar-dev 
-
-RUN apt-get install -y build-essential
-
-RUN apt-get install -y python3-dev
-
 # library required for curl command
-
-RUN apt-get install -y gcc
+RUN apt-get update -y && apt-get install -y gcc
 
 RUN apt-get update -y && apt-get install -y curl
 
