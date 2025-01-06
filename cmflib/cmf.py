@@ -418,15 +418,7 @@ class Cmf:
         )
         
         self.execution_label_props["execution_command"] = cmd
-        if self.graph:
-            self.driver.create_execution_node(
-            self.execution_name,
-            self.child_context.id,
-            self.parent_context,
-            cmd,
-            self.execution.id,
-            custom_props,
-        )
+        
             
         directory_path = self.ARTIFACTS_PATH
         os.makedirs(directory_path, exist_ok=True)
@@ -453,11 +445,19 @@ class Cmf:
                 with open(python_env_file_path, 'w') as file:
                     file.write(env_output)
 
+        custom_props["Python_Env"] = python_env_file_path
+        self.update_execution(self.execution.id, custom_props)
         # link the artifact to execution if it exists and creates artifact if it doesn't
         self.log_python_env(python_env_file_path)
-        new_custom_props = {}
-        new_custom_props["Python_Env"] = python_env_file_path
-        self.update_execution(self.execution.id, new_custom_props)
+        if self.graph:
+            self.driver.create_execution_node(
+            self.execution_name,
+            self.child_context.id,
+            self.parent_context,
+            cmd,
+            self.execution.id,
+            custom_props,
+        )
         os.chdir(logging_dir)
         return self.execution
 
@@ -1201,7 +1201,7 @@ class Cmf:
         self.execution_label_props["Commit"] = metrics_commit
 
         if self.graph:
-            self.driver.create_metrics_node(
+            self.driver.create_step_metrics_node(
                 name,
                 uri,
                 "output",

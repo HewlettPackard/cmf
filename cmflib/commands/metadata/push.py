@@ -79,10 +79,11 @@ class CmdMetadataPush(CmdBase):
             execution = None
             exec_id = None
             if self.args.execution:
-                execution = cmfquery.get_all_executions_by_ids_list([self.args.execution])
+                # this is not the correct way to type cast as this is user given input 
+                execution = query.get_all_executions_by_ids_list([int(self.args.execution)])
                 if execution.empty:
                     return "Given execution is not found in mlmd."
-                exec_id = self.args.execution
+                exec_id = int(self.args.execution)
             # converts mlmd file to json format
             json_payload = query.dumptojson(self.args.pipeline_name, None)
             response = server_interface.call_mlmd_push(json_payload, url, exec_id, self.args.pipeline_name)
