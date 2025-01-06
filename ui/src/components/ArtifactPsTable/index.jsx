@@ -108,7 +108,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
             <table className="divide-y divide-gray-200 border-4 w-full">
               <thead>
                 <tr className="text-xs font-bold font-sans text-left text-black uppercase">
-                <th scope="col" className="id px-6 py-3"></th>
+                <th scope="col" className="px-6 py-3"></th>
                 <th className="px-6 py-3" scope="col">ID</th>
                 <th className="px-6 py-3" onClick={toggleSortOrder}>
                 <span scope="col" 
@@ -116,6 +116,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
                 Name {renderArrow()}
                 </span>
                 </th>
+                <th className="px-6 py-3" scope="col">Execution TYPE</th>
                 <th className="px-6 py-3" onClick={toggleSortTimeOrder}>
                 <span scope="col" 
                       style={{ display: 'inline-flex', alignItems: 'center' }} >
@@ -124,7 +125,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
                 </th>
                 <th className="px-6 py-3" scope="col">URI</th>
                 <th className="px-6 py-3" scope="col">URL</th>
-                <th className="px-6 py-3" scope="col">GIT_REPO</th>
+                <th className="px-6 py-3" scope="col">GIT REPO</th>
                 <th className="px-6 py-3" scope="col">COMMIT</th>
                 </tr>
               </thead>
@@ -140,6 +141,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
                   </td>
                   <td className="px-6 py-4">{artifact.id}</td>
                   <td className="px-6 py-4">{artifact.name}</td>
+                  <td className="px-6 py-4">{artifact.execution}</td>
                   <td className="px-6 py-4">{artifact.create_time_since_epoch}</td>
                   <td className="px-6 py-4">{artifact.uri}</td>
                   <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "url")}</td>

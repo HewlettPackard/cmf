@@ -432,7 +432,8 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
     query3 =  f"""
         WITH ranked_data AS (
         SELECT
-        a.id, a.name, a.uri, TO_TIMESTAMP(a.create_time_since_epoch/1000) AT TIME ZONE 'UTC' AS create_time_since_epoch,
+        a.id, a.name, c.name as execution, a.uri, TO_TIMESTAMP(a.create_time_since_epoch/1000) AT TIME ZONE 'UTC' AS create_time_since_epoch,
+        a.last_update_time_since_epoch, 
         JSON_AGG(
                 JSON_BUILD_OBJECT(
                     'name', ap.name,
@@ -467,7 +468,7 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
             WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
         )
     GROUP BY
-        a.id
+        a.id, c.name
     ORDER BY
         CASE 
             WHEN $6 = 'name' THEN 1
