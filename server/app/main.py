@@ -511,12 +511,11 @@ LIMIT $3 OFFSET $4;
 @app.get("/execution/{pipeline_name}")
 async def execution(request: Request, pipeline_name: str,
                    active_page: int = Query(1, description="Page number", gt=0),
-                   filter_value: str = Query(None, description="Search based on value"),    
+                   filter_value: str = Query("", description="Search based on value"),  
+                   sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
                    ):
     
-    # sort_order: str = Query("asc", description="Sort by name(asc or desc)"),
-    
-    # sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
+    sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
     record_per_page = 5
     no_of_offset = (active_page - 1) * record_per_page
 
@@ -544,13 +543,13 @@ async def execution(request: Request, pipeline_name: str,
     JOIN
         type t ON e.type_id = t.id
     JOIN
-        attribution at ON e.id = at.context_id
+        association asso ON e.id = asso.execution_id
     JOIN
-        context c ON at.context_id = c.id
+        context c ON asso.context_id = c.id
     LEFT JOIN
         executionproperty ep ON e.id = ep.execution_id
     WHERE
-        at.context_id IN (
+        asso.context_id IN (
             SELECT pc.context_id
             FROM parentcontext pc
             JOIN context c2 ON pc.parent_context_id = c2.id
@@ -562,6 +561,7 @@ async def execution(request: Request, pipeline_name: str,
     SELECT *,
     count(*) OVER() AS total_records 
     FROM ranked_data
+    WHERE CONCAT(execution_properties) LIKE $4
     LIMIT $2 OFFSET $3;
 """
 
@@ -572,7 +572,7 @@ async def execution(request: Request, pipeline_name: str,
         host='192.168.20.67',
     )
     
-    rows = await conn.fetch(query2, pipeline_name, record_per_page, no_of_offset)
+    rows = await conn.fetch(query2, pipeline_name, record_per_page, no_of_offset, f"%{filter_value}%")
     await conn.close()
 
     # print(rows)
@@ -585,69 +585,6 @@ async def execution(request: Request, pipeline_name: str,
     return {    "total_items": total_record,
                 "items": [dict(row) for row in rows]
     }
-
-
-
-    query3 =  f"""
-        WITH ranked_data AS (
-        SELECT
-        a.id, a.name, a.uri, TO_TIMESTAMP(a.create_time_since_epoch/1000) AT TIME ZONE 'UTC' AS create_time_since_epoch,
-        JSON_AGG(
-                JSON_BUILD_OBJECT(
-                    'name', ap.name,
-                    'value', 
-                    CASE
-                        WHEN ap.string_value IS NOT NULL AND ap.string_value != '' THEN ap.string_value
-                        WHEN ap.bool_value IS NOT NULL THEN ap.bool_value::TEXT
-                        WHEN ap.double_value IS NOT NULL THEN ap.double_value::TEXT
-                        WHEN ap.int_value IS NOT NULL THEN ap.int_value::TEXT
-                        WHEN ap.byte_value IS NOT NULL THEN ap.byte_value::TEXT
-                        WHEN ap.proto_value IS NOT NULL THEN ap.proto_value::TEXT
-                        ELSE NULL
-                    END
-                )
-            ) AS artifact_properties
-    FROM
-        artifact a
-    JOIN
-        type t ON a.type_id = t.id
-    JOIN
-        attribution at ON a.id = at.artifact_id
-    JOIN
-        context c ON at.context_id = c.id
-    LEFT JOIN
-        artifactproperty ap ON a.id = ap.artifact_id
-    WHERE
-        t.name = $2 -- Input for type.name
-        AND at.context_id IN (
-            SELECT pc.context_id
-            FROM parentcontext pc
-            JOIN context c2 ON pc.parent_context_id = c2.id
-            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
-        )
-    GROUP BY
-        a.id
-    ORDER BY
-        CASE 
-            WHEN $6 = 'name' THEN 1
-            ELSE 2
-        END,
-        CASE 
-            WHEN $6 = 'name' THEN a.name
-        END {sort_order},
-        CASE 
-            WHEN $6 = 'create_time_since_epoch' THEN a.create_time_since_epoch
-        END {sort_order}
-    )
-SELECT *,
-count(*) OVER() AS total_records 
-FROM ranked_data
-WHERE CONCAT(id, ' ' ,name, ' ', uri, ' ', create_time_since_epoch, ' ', artifact_properties) LIKE $5
-LIMIT $3 OFFSET $4;
-            """ 
-    
-   
-
 
 @app.get("/search")
 async def search_item(request: Request, 

@@ -195,11 +195,12 @@ class FastAPIClient {
 //   }
 // }
 
-async getExecution(pipeline_name, active_page){
+async getExecution(pipeline_name, active_page, filter_value){
   return this.apiClient
   .get(`/execution/${pipeline_name}`,{
     params: {
       active_page: active_page,
+      filter_value: filter_value,
     },
   }).
   then(({data}) => {

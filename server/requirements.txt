@@ -8,3 +8,4 @@ pandas
 python-multipart
 asyncpg
 psycopg2-binary
+python-dotenv

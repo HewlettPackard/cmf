@@ -36,15 +36,15 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   const handleSort = () => {
     const newSortOrder =
       sortOrder === "desc" ? "asc" : sortOrder === "asc" ? "desc" : "asc";
-    setSortOrder(newSortOrder);
-    const sorted = [...executions].sort((a, b) => {
-      if (newSortOrder === "asc") {
-        return a.Context_Type.localeCompare(b.Context_Type);
-      } else {
-        return b.Context_Type.localeCompare(a.Context_Type);
-      }
-    });
-    setSortedData(sorted); // Notify parent component about sorting change
+      setSortOrder(newSortOrder);
+      const sorted = [...executions].sort((a, b) => {
+        if (newSortOrder === "asc") {
+          return a.Context_Type.localeCompare(b.Context_Type);
+        } else {
+          return b.Context_Type.localeCompare(a.Context_Type);
+        }
+      });
+      setSortedData(sorted); // Notify parent component about sorting change
   };
 
   const handleFilterChange = (event) => {
@@ -172,6 +172,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
             marginRight: "1rem",
             padding: "0.5rem",
             border: "1px solid #ccc",
+            width: "300px",
           }}
         />
       </div>
