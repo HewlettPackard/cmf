@@ -21,7 +21,7 @@ function Search() {
   const handleSubmit = () => {
     client.getSearchResult(query).then((data) => {
       setData(data);
-      console.log(data); // You can see the response in the console
+      // console.log(data); // You can see the response in the console
     });
   };
 

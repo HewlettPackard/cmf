@@ -30,7 +30,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
 
   const consistentColumns = [];
 
-  // console.log(artifacts);
+  // console.log("artifacts",artifacts);
 
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
@@ -53,8 +53,8 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
 
   const getPropertyValue = (properties, propertyName) => {
     // console.log(artifacts);
-    console.log(properties);
-    console.log(propertyName);
+    // console.log(properties);
+    // console.log(propertyName);
     // // Check if properties is a string and parse it
     if (typeof properties === "string") {
         try {
@@ -139,7 +139,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
                       >
                         {expandedRow === index ? "-" : "+"}
                   </td>
-                  <td className="px-6 py-4">{artifact.id}</td>
+                  <td className="px-6 py-4">{artifact.artifact_id}</td>
                   <td className="px-6 py-4">{artifact.name}</td>
                   <td className="px-6 py-4">{artifact.execution}</td>
                   <td className="px-6 py-4">{artifact.create_time_since_epoch}</td>

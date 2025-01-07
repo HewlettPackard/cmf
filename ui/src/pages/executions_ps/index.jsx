@@ -72,8 +72,8 @@ const Executions_ps = () => {
     client
       .getExecution(pipelineName, page, filterValue)
       .then((data) => {
-        console.log("data:",data)
-        console.log("data_items:",data.items)
+        // console.log("data:",data)
+        // console.log("data_items:",data.items)
         setExecutions(data.items);
         setTotalItems(data.total_items);
       });

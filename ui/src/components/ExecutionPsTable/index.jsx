@@ -27,6 +27,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   const [expandedRow, setExpandedRow] = useState(null);
 
   const consistentColumns = [];
+  console.log("executions:",executions);
 
   useEffect(() => {
     // Set initial sorting order when component mounts
@@ -62,6 +63,9 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   };
 
   const getPropertyValue = (properties, propertyName) => {
+    console.log("properties",properties);
+    console.log("propertyname",propertyName);
+
     if (typeof properties === "string") {
         try {
             properties = JSON.parse(properties);  // Parse the string to an array
