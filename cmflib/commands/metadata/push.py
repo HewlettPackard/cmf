@@ -104,7 +104,7 @@ class CmdMetadataPush(CmdBase):
                     output = MlmdFilePushSuccess(mlmd_file_name)
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
-                    output = ExecutionsAlreadyExists
+                    output = ExecutionsAlreadyExists()
                 
                 if not self.args.tensorboard:
                     return output
