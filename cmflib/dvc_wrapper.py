@@ -457,6 +457,8 @@ def dvc_push(file_list: Optional[List[str]] = None) -> str:
     else:
         file_list.insert(0, 'dvc')
         file_list.insert(1, 'push')
+        file_list.insert(2, '-j')
+        file_list.insert(3, '16')
         try:
             process = subprocess.Popen(file_list,
                                    stdout=subprocess.PIPE,
