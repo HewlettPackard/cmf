@@ -28,6 +28,7 @@ from server.app.query_execution_lineage_d3force import query_execution_lineage_d
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
+from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
 import json
@@ -124,8 +125,9 @@ async def mlmd_pull(info: Request, pipeline_name: str):
         #json_payload values can be json data, NULL or no_exec_id.
         json_payload= await async_api(get_mlmd_from_server, server_store_path, pipeline_name, req_info['exec_id'])
     else:
-        print("No mlmd file submitted.")
-        json_payload = ""
+        raise HTTPException(status_code=413, detail=f"mlmd file not available on cmf-server.")
+    if json_payload == None:
+            raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
 
 # api to display executions available in mlmd
