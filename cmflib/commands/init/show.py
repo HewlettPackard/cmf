@@ -22,6 +22,7 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.dvc_wrapper import dvc_get_config
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.cmf_exception_handling import CmfNotConfigured, CmfInitShow
 
 class CmdInitShow(CmdBase):
     def run(self):
@@ -29,11 +30,11 @@ class CmdInitShow(CmdBase):
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = dvc_get_config()
         if len(result) == 0:
-            return msg
+            return CmfNotConfigured(msg)
         else:
             cmf_config_root = find_root(cmfconfig)
             if cmf_config_root.find("'cmf' is not configured") != -1:
-                return msg
+                return CmfNotConfigured(msg)
             config_file_path = os.path.join(cmf_config_root, cmfconfig)
             attr_dict = CmfConfig.read_config(config_file_path)
             attr_list = []
@@ -41,7 +42,7 @@ class CmdInitShow(CmdBase):
                 temp_str = f"{key} = {value}"
                 attr_list.append(temp_str)
             attr_str = "\n".join(attr_list)
-            return f"{result}\n{attr_str}"
+            return CmfInitShow(result,attr_str)
 
 
 def add_parser(subparsers, parent_parser):
