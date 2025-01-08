@@ -140,40 +140,39 @@ class CmdMetadataPush(CmdBase):
                     output = ExecutionsAlreadyExists()
                 if not self.args.tensorboard:
                     return output
-                else:
-                    print(display_output)
-                    # /tensorboard api call is done only if mlmd push is successfully completed
-                    # tensorboard parameter is passed
-                    print("......................................")
-                    print("tensorboard logs upload started!!")
-                    print("......................................")
-                    # check if the path provided is for a file
-                    if os.path.isfile(self.args.tensorboard):
-                        file_name = os.path.basename(self.args.tensorboard)
-                        tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, file_name, self.args.tensorboard)
-                        tstatus_code = tresponse.status_code
-                        if tstatus_code == 200:
-                            # give status code as success
-                            return TensorboardPushSuccess(file_name)
-                        else:
-                            # give status code as failure 
-                            return TensorboardPushFailure(file_name,tresponse.text)
-                    # If path provided is a directory            
-                    elif os.path.isdir(self.args.tensorboard):
-                        # Recursively push all files and subdirectories
-                        for root, dirs, files in os.walk(self.args.tensorboard):
-                            for file_name in files:
-                                file_path = os.path.join(root, file_name)
-                                relative_path = os.path.relpath(file_path, self.args.tensorboard)
-                                tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, relative_path, file_path)
-                                if tresponse.status_code == 200:
-                                    print(f"tensorboard logs: File {file_name} uploaded successfully.")
-                                else:
-                                    # give status as failure
-                                    return TensorboardPushFailure(file_name,tresponse.text)
-                        return TensorboardPushSuccess()
+                print(display_output)
+                # /tensorboard api call is done only if mlmd push is successfully completed
+                # tensorboard parameter is passed
+                print("......................................")
+                print("tensorboard logs upload started!!")
+                print("......................................")
+                # check if the path provided is for a file
+                if os.path.isfile(self.args.tensorboard):
+                    file_name = os.path.basename(self.args.tensorboard)
+                    tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, file_name, self.args.tensorboard)
+                    tstatus_code = tresponse.status_code
+                    if tstatus_code == 200:
+                        # give status code as success
+                        return TensorboardPushSuccess(file_name)
                     else:
-                        return InvalidTensorboardFilePath()   
+                        # give status code as failure 
+                        return TensorboardPushFailure(file_name,tresponse.text)
+                # If path provided is a directory            
+                elif os.path.isdir(self.args.tensorboard):
+                    # Recursively push all files and subdirectories
+                    for root, dirs, files in os.walk(self.args.tensorboard):
+                        for file_name in files:
+                            file_path = os.path.join(root, file_name)
+                            relative_path = os.path.relpath(file_path, self.args.tensorboard)
+                            tresponse = server_interface.call_tensorboard(url, self.args.pipeline_name, relative_path, file_path)
+                            if tresponse.status_code == 200:
+                                print(f"tensorboard logs: File {file_name} uploaded successfully.")
+                            else:
+                                # give status as failure
+                                return TensorboardPushFailure(file_name,tresponse.text)
+                    return TensorboardPushSuccess()
+                else:
+                    return InvalidTensorboardFilePath()   
             else:
                 return "ERROR: Status Code = {status_code}. Unable to push mlmd."
         else:
