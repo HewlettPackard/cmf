@@ -31,12 +31,34 @@ from cmflib.dvc_wrapper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
-from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, DuplicateArgumentNotAllowed, MissingArgument
 
 class CmdInitSSHRemote(CmdBase):
     def run(self):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+        
+        required_args = {
+        "path": self.args.path,
+        "user": self.args.user,
+        "port": self.args.port,
+        "password": self.args.password,
+        "git-remote-url": self.args.git_remote_url,
+        "cmf-server-url" : self.args.cmf_server_url,
+        "neo4j-user" : self.args.neo4j_user,
+        "neo4j-password" :  self.args.neo4j_password,
+        "neo4j_uri" : self.args.neo4j_uri
+        }
+
+        for arg_name, arg_value in required_args.items():
+            if arg_value:
+                if arg_name == "cmf-server-url" and len(arg_value) > 2:
+                    raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
+        
         # checking if config file exists
         if not os.path.exists(cmf_config):
             # writing default value to config file
@@ -53,14 +75,14 @@ class CmdInitSSHRemote(CmdBase):
         # read --neo4j details and add to the exsting file
         if self.args.neo4j_user and self.args.neo4j_password and self.args.neo4j_uri:
             attr_dict = {}
-            attr_dict["user"] = self.args.neo4j_user
-            attr_dict["password"] = self.args.neo4j_password
-            attr_dict["uri"] = self.args.neo4j_uri
+            attr_dict["user"] = self.args.neo4j_user[0]
+            attr_dict["password"] = self.args.neo4j_password[0]
+            attr_dict["uri"] = self.args.neo4j_uri[0]
             CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
         elif (
-            not self.args.neo4j_user
-            and not self.args.neo4j_password
-            and not self.args.neo4j_uri
+            not self.args.neo4j_user[0]
+            and not self.args.neo4j_password[0]
+            and not self.args.neo4j_uri[0]
         ):
             pass
         else:
@@ -72,19 +94,19 @@ class CmdInitSSHRemote(CmdBase):
             git_quiet_init()
             git_checkout_new_branch(branch_name)
             git_initial_commit()
-            git_add_remote(self.args.git_remote_url)
+            git_add_remote(self.args.git_remote_url[0])
             print("git init complete.")
 
         print("Starting cmf init.")
         repo_type = "ssh-storage"
         dvc_quiet_init()
-        output = dvc_add_remote_repo(repo_type, self.args.path)
+        output = dvc_add_remote_repo(repo_type, self.args.path[0])
         if not output:
             raise CmfInitFailed
         print(output)
-        dvc_add_attribute(repo_type, "user", self.args.user)
-        dvc_add_attribute(repo_type, "password", self.args.password)
-        dvc_add_attribute(repo_type, "port", self.args.port)
+        dvc_add_attribute(repo_type, "user", self.args.user[0])
+        dvc_add_attribute(repo_type, "password", self.args.password[0])
+        dvc_add_attribute(repo_type, "port", self.args.port[0])
         status = CmfInitComplete()
         return status
 
@@ -107,6 +129,7 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify remote ssh directory path.",
         metavar="<path>",
+        action="append",
         default=argparse.SUPPRESS,
     )
 
@@ -115,6 +138,7 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify username.",
         metavar="<user>",
+        action="append",
         default=argparse.SUPPRESS,
     )
 
@@ -123,6 +147,7 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify port.",
         metavar="<port>",
+        action="append",
         default=argparse.SUPPRESS,
     )
 
@@ -131,6 +156,7 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify password. This will be saved only on local",
         metavar="<password>",
+        action="append",
         default=argparse.SUPPRESS,
     )
 
@@ -139,6 +165,7 @@ def add_parser(subparsers, parent_parser):
         required=True,
         help="Specify git repo url. eg: https://github.com/XXX/example.git",
         metavar="<git_remote_url>",
+        action="append",
         default=argparse.SUPPRESS,
     )
 
@@ -153,18 +180,21 @@ def add_parser(subparsers, parent_parser):
         "--neo4j-user",
         help="Specify neo4j user.",
         metavar="<neo4j_user>",
+        action="append",
         # default=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--neo4j-password",
         help="Specify neo4j password.",
         metavar="<neo4j_password>",
+        action="append",
         # default=argparse.SUPPRESS,
     )
     parser.add_argument(
         "--neo4j-uri",
         help="Specify neo4j uri.eg bolt://localhost:7687",
         metavar="<neo4j_uri>",
+        action="append",
         # default=argparse.SUPPRESS,
     )
 
