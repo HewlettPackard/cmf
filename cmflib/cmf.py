@@ -422,7 +422,7 @@ class Cmf:
             
         directory_path = self.ARTIFACTS_PATH
         os.makedirs(directory_path, exist_ok=True)
-        packages = get_python_env()
+        packages = get_python_env(env_name=self.branch_name)
         if isinstance(packages, list):
             output = f"{packages}\n"
             md5_hash = get_md5_hash(output)

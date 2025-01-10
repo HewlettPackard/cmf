@@ -17,7 +17,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-import json
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
@@ -80,7 +79,6 @@ class CmdMetadataPush(CmdBase):
 
         query = cmfquery.CmfQuery(mlmd_file_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
-        execution_flag = 0
         status_code = 0
 
         # Checks if pipeline name exists
