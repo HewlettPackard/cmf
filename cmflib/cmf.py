@@ -491,17 +491,14 @@ class Cmf:
         if self.execution is None:
             print("Error - no execution id")
             return
-        execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[
-            0
-        ]
+        execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
         if custom_properties:
             for key, value in custom_properties.items():
                 if isinstance(value, int):
                     self.execution.custom_properties[key].int_value = value
                 else:
-                    self.execution.custom_properties[key].string_value = str(
-                        value)
+                    self.execution.custom_properties[key].string_value = str(value)
         self.store.put_executions([self.execution])
         c_props = {}
         for k, v in self.execution.custom_properties.items():
@@ -510,7 +507,7 @@ class Cmf:
             if val_type == "string_value":
                 val = self.execution.custom_properties[k].string_value
             else:
-                val = str(v).split(":")[1]
+                val = str(v).split(":")[1].strip()
             # The properties value are stored in the format type:value hence,
             # taking only value
             self.execution_label_props[key] = val
