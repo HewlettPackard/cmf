@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###
-
+from cmflib.cmf_exception_handling import CmfResponse
 
 class CmfParserError(Exception):
     """Base class for CLI parser errors."""
@@ -36,6 +36,7 @@ def parse_args(argv=None):
 
     parser = get_main_parser()
     args = parser.parse_args(argv)
+
     args.parser = parser
     return args
 
@@ -54,10 +55,14 @@ def main(argv=None):
         args = parse_args(argv)
         cmd = args.func(args)
         msg = cmd.do_run()
-        print(msg)
+        print(msg.handle())
+    except CmfResponse as e:
+        print(e.handle())
     except CmfParserError:
-        pass
+        pass    
     except KeyboardInterrupt:
         print("Interrupted by the user")
     except Exception as e:
         print(e)
+   
+    

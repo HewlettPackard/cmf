@@ -31,6 +31,7 @@ from cmflib.dvc_wrapper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
 
 class CmdInitSSHRemote(CmdBase):
     def run(self):
@@ -63,7 +64,7 @@ class CmdInitSSHRemote(CmdBase):
         ):
             pass
         else:
-            return "ERROR: Provide user, password and uri for neo4j initialization."
+            raise Neo4jArgumentNotProvided
         output = is_git_repo()
         if not output:
             branch_name = "master"
@@ -79,12 +80,14 @@ class CmdInitSSHRemote(CmdBase):
         dvc_quiet_init()
         output = dvc_add_remote_repo(repo_type, self.args.path)
         if not output:
-            return "cmf init failed."
+            raise CmfInitFailed
         print(output)
         dvc_add_attribute(repo_type, "user", self.args.user)
         dvc_add_attribute(repo_type, "password", self.args.password)
         dvc_add_attribute(repo_type, "port", self.args.port)
-        return "cmf init complete."
+        status = CmfInitComplete()
+        return status
+
 
 
 def add_parser(subparsers, parent_parser):
