@@ -114,10 +114,6 @@ class CmdExecutionList(CmdBase):
         if df.empty:    
             raise PipelineNotFound(pipeline_name)
         else:
-            # Drop the 'Python_Env' column if it exists in the DataFrame.
-            if "Python_Env" in df.columns:
-                df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers.
-
             # Process execution ID if provided
             if not self.args.execution_id:         # If self.args.execution_id is None or an empty list ([]).
                 pass

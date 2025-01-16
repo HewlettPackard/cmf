@@ -22,7 +22,10 @@ from ml_metadata.proto import metadata_store_pb2 as mlpb
 class GraphDriver:
 
     def __init__(self, uri, user, password):
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+        self.driver = GraphDatabase.driver(uri, 
+                                        auth=(user, password),
+                                        #notifications_min_severity="OFF" # Suppress warnings on driver level
+                                        )
         self.pipeline_id = None
         self.stage_id = None
         self.execution_id = None
@@ -222,7 +225,7 @@ class GraphDriver:
         already_linked_execution_query = "MATCH (f)-[r:linked]->(e2:Execution) " \
             "WHERE r.uri = '{}' RETURN ELEMENTID(f) as id, f.uri as uri".format(parent_artifact_uri)
 
-        with self.driver.session() as session:
+        with self.driver.session(notifications_min_severity="OFF") as session: # Supress Warnings on Session level
             execution_parent = session.read_transaction(
                 self._run_transaction, parent_execution_query)
             executions = {}

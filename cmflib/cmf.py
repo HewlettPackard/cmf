@@ -56,7 +56,7 @@ from cmflib.metadata_helper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
-from cmflib.cmf_server_methods import (
+from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
     log_python_env_from_client, 
@@ -445,10 +445,6 @@ class Cmf:
                 with open(python_env_file_path, 'w') as file:
                     file.write(env_output)
 
-        custom_props["Python_Env"] = python_env_file_path
-        self.update_execution(self.execution.id, custom_props)
-        # link the artifact to execution if it exists and creates artifact if it doesn't
-        self.log_python_env(python_env_file_path)
         if self.graph:
             self.driver.create_execution_node(
             self.execution_name,
@@ -458,6 +454,11 @@ class Cmf:
             self.execution.id,
             custom_props,
         )
+            
+        custom_props["Python_Env"] = python_env_file_path
+        self.update_execution(self.execution.id, custom_props)
+        # link the artifact to execution if it exists and creates artifact if it doesn't
+        self.log_python_env(python_env_file_path)
         os.chdir(logging_dir)
         return self.execution
 
@@ -618,7 +619,9 @@ class Cmf:
                         "Pipeline_Name": self.parent_context.name,
                     }
                 )
-                self.driver.create_execution_links(uri, name, "Environment")
+                # commented this because input links from 'Env' node to executions 
+                # are getting created without running this piece of code
+                #self.driver.create_execution_links(uri, name, "Environment")
             return artifact
 
 
@@ -1486,16 +1489,14 @@ class Cmf:
 #                print(last)
 #                os.symlink(str(index), slicedir + "/ " + last)
 
-# Binding cmf_server_methods to Cmf class
+# Binding cmf_server.py methods to Cmf class
 Cmf.merge_created_context = merge_created_context
 Cmf.merge_created_execution = merge_created_execution
 Cmf.log_python_env_from_client = log_python_env_from_client
 Cmf.log_dataset_with_version = log_dataset_with_version
 Cmf.log_model_with_version = log_model_with_version
 Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
-#Cmf.commit_existing_metrics = commit_existing_metrics
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
-#Cmf.DataSlice.commit_existing = commit_existing
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 
 def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):

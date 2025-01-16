@@ -211,10 +211,11 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                 <React.Fragment key={index}>
                   <tr
                     key={index}
-                    onClick={() => toggleRow(index)}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4 cursor-pointer">
+                    <td className="px-6 py-4 cursor-pointer"
+                      onClick={() => {toggleRow(index)}}
+                    >
                       {expandedRow === index ? "-" : "+"}
                     </td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
@@ -228,7 +229,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     
                             }}
                           >
-                            Click for Env Details
+                            View Env Details
                           </a>
                           <PythonEnvPopup
                             show={showPopup}
