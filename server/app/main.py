@@ -91,10 +91,16 @@ async def read_root(request: Request):
 async def mlmd_push(info: Request):
     print("mlmd push started")
     print("......................")
+    # Check if the body is empty
+    if not await info.body():
+        return {"error": "Request body is missing or empty"}
     req_info = await info.json()
+    # Check if "pipeline_name" and "json_payload" are present and not empty
+    if not req_info.get("pipeline_name"):
+        return {"error": "Pipeline name is missing"}
+    if not req_info.get("json_payload"):
+        return {"error": "JSON payload is missing"}
     pipeline_name = req_info["pipeline_name"]
-    if not pipeline_name:
-        return {"error": "Pipeline name is required"}
     if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
         pipeline_locks[pipeline_name] = asyncio.Lock()
     pipeline_lock = pipeline_locks[pipeline_name]   
