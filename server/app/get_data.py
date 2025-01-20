@@ -261,31 +261,35 @@ def create_unique_executions(server_store_path, req_info) -> str:
         
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
+            
     for i in mlmd_data["Pipeline"]:
-
         if len(i['stages']) == 0 :
             status="exists"
         else:
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["exec_uuid"]
             )
             status='success'
 
     return status
 
 
-def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: str):
+def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: dict):
     query = cmfquery.CmfQuery(server_store_path)
     json_payload = None
-    df = pd.DataFrame()
+    flag=0
     if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
-        if exec_id != None:
-            exec_id = int(exec_id)
-            df = query.get_all_executions_by_ids_list([exec_id])
-            if df.empty:
-                json_payload = "no_exec_id"
+        if exec_uuid != None:
+            dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+            for index, row in dict_of_exe_ids.iterrows():
+                exec_uuid_list = row['Execution_uuid'].split(",")
+                if exec_uuid in exec_uuid_list:
+                    flag=1
+                    break
+            if not flag:
+                json_payload = "no_exec_uuid"
                 return json_payload
-        json_payload = query.dumptojson(pipeline_name, exec_id)
+        json_payload = query.dumptojson(pipeline_name, exec_uuid)
     return json_payload
 
 def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):

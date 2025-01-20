@@ -19,7 +19,7 @@ import argparse
 import requests
 
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import git_get_repo, git_get_pull
+from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_branch
 from cmflib.commands.artifact.pull import CmdArtifactPull
 from cmflib.commands.metadata.pull import CmdMetadataPull
 from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
@@ -49,18 +49,19 @@ class CmdRepoPull(CmdBase):
         # Getting github url from cmf init command
         url = git_get_repo()
         # Example url = https://github.com/ABC/my-repo
-        url = url.split("/")
+        splited_url = url.split("/")
+        branch_name = git_get_branch()[0]
         # Check whether branch exists in git repo or not
         # url[-2] = ABC, url-1] = my-repo
-        if self.branch_exists(url[-2], url[-1], "mlmd"):
+        if self.branch_exists(splited_url[-2], splited_url[-1], branch_name):
             # pull the code from mlmd branch
             print("git pull started...")
-            stdout, stderr, returncode = git_get_pull()
+            stdout, stderr, returncode = git_get_pull(branch_name)
             if returncode != 0:
-                raise MsgFailure(msg_str=f"Error pulling changes: {stderr}")
+                raise MsgFailure(msg_str=f"{stderr}")
             return MsgSuccess(msg_str=stdout)
         else:
-            raise MsgFailure(msg_str="Branch 'mlmd' does not exists!!")
+            raise MsgFailure(msg_str=f"{branch_name} inside {url} does not exists!!")
         
     def run(self):
         print("metadata pull started...")
@@ -104,17 +105,20 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-e",
-        "--execution",
+        "--execution_uuid",
         action="append",
-        help="Specify Execution id.",
-        metavar="<exec_id>",
+        help="Specify Execution uuid.",
+        metavar="<exec_uuid>",
     )
 
+    # The 'artifact_name' parameter is used inside 'cmf artifact pull' command.
+    # To avoid errors, it is defined here with a default value of 'None' and hidden from the help text using 'argparse.SUPPRESS'.
     parser.add_argument(
         "-a", 
         "--artifact_name", 
-        action="append",
-        help="Specify artifact name.", 
+        action="store_const",
+        const="None",
+        help=argparse.SUPPRESS, 
         metavar="<artifact_name>",
     )
 

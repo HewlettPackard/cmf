@@ -23,7 +23,7 @@ from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from typing import Union
 
-def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[str, int]) -> Union[str, None]:
+def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union[str, str]) -> Union[str, None]:
     try:
         mlmd_data = json.loads(mlmd_json)
         pipelines = mlmd_data["Pipeline"]
@@ -52,17 +52,16 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[s
                             graph=graph, is_server=True)
         
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
-            if exec_id is None:  #if exec_id is None we pass all the executions.
+            if exec_uuid is None:  #if exec_uuid is None we pass all the executions.
                 list_executions = [execution for execution in stage["executions"]]
-            elif exec_id is not None:  # elif exec_id is not None, we pass executions for that specific id.
+            elif exec_uuid is not None:  # elif exec_uuid is not None, we pass executions for that specific uuid.
                 list_executions = [
                     execution
                     for execution in stage["executions"]
-                    if execution["id"] == int(exec_id)
+                    if exec_uuid in execution['properties']["Execution_uuid"].split(",") 
                 ]
             else:
                 return "Invalid execution id given."
-
             for execution in list_executions:  # Iterates over all the executions
                 try:
                     _ = cmf_class.merge_created_context(

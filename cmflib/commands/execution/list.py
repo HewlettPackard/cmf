@@ -28,7 +28,7 @@ from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     MissingArgument,
     MsgSuccess,
-    ExecutionsNotFound
+    ExecutionUUIDNotFound
 )
 
 class CmdExecutionList(CmdBase):
@@ -119,47 +119,45 @@ class CmdExecutionList(CmdBase):
                 df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers.
 
             # Process execution ID if provided
-            if not self.args.execution_id:         # If self.args.execution_id is None or an empty list ([]).
+            if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
                 pass
-            elif len(self.args.execution_id) > 1:  # If the user provided more than one execution_id.  
-                raise DuplicateArgumentNotAllowed("execution_id", "-e")
-            elif not self.args.execution_id[0]:    # self.args.execution_id[0] is an empty string ("").
-                raise MissingArgument("execution id")
+            elif len(self.args.execution_uuid) > 1:  # If the user provided more than one execution_uuid.  
+                raise DuplicateArgumentNotAllowed("execution_uuid", "-e")
+            elif not self.args.execution_uuid[0]:    # self.args.execution_uuid[0] is an empty string ("").
+                raise MissingArgument("execution uuid")
             else:
-                if self.args.execution_id[0].isdigit():
-                    if int(self.args.execution_id[0]) in list(df['id']): # Converting series to list.
-                        df = df.query(f'id == {int(self.args.execution_id[0])}')  # Used dataframe based on execution id
+                df = df[df['Execution_uuid'].apply(lambda x: self.args.execution_uuid[0] in x.split(","))] # Used dataframe based on execution uuid
+                if not df.empty:
+                    # Rearranging columns: Start with fixed columns and appending the remaining columns.
+                    updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
+                    updated_columns += [ col for col in df.columns if col not in updated_columns]
+                    
+                    df = df[updated_columns]
 
-                        # Rearranging columns: Start with fixed columns and appending the remaining columns.
-                        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
-                        updated_columns += [ col for col in df.columns if col not in updated_columns]
-                        
-                        df = df[updated_columns]
+                    # Drop columns that start with 'custom_properties_' and that contains NaN values
+                    columns_to_drop = [col for col in df.columns if col.startswith('custom_properties_') and df[col].isna().any()]
+                    df = df.drop(columns=columns_to_drop)
 
-                        # Drop columns that start with 'custom_properties_' and that contains NaN values
-                        columns_to_drop = [col for col in df.columns if col.startswith('custom_properties_') and df[col].isna().any()]
-                        df = df.drop(columns=columns_to_drop)
+                    # Wrap text in object-type columns to a width of 30 characters.
+                    for col in df.select_dtypes(include=['object']).columns:
+                        df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
+                    
+                    # Set 'id' as the DataFrame index and transpose it for display horizontally.
+                    df.set_index("id", inplace=True)
+                    df = df.T.reset_index()
+                    df.columns.values[0] = 'id'  # Rename the first column back to 'id'.
 
-                        # Wrap text in object-type columns to a width of 30 characters.
-                        for col in df.select_dtypes(include=['object']).columns:
-                            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
-                        
-                        # Set 'id' as the DataFrame index and transpose it for display horizontally.
-                        df.set_index("id", inplace=True)
-                        df = df.T.reset_index()
-                        df.columns.values[0] = 'id'  # Rename the first column back to 'id'.
-
-                        # Display the updated DataFrame as a formatted table.
-                        table = tabulate(
-                            df,
-                            headers=df.columns,
-                            tablefmt="grid",
-                            showindex=False,
-                        )
-                        print(table)
-                        print()
-                        return MsgSuccess(msg_str = "Done.")
-                raise ExecutionsNotFound(self.args.execution_id[0])
+                    # Display the updated DataFrame as a formatted table.
+                    table = tabulate(
+                        df,
+                        headers=df.columns,
+                        tablefmt="grid",
+                        showindex=False,
+                    )
+                    print(table)
+                    print()
+                    return MsgSuccess(msg_str = "Done.")
+                return ExecutionUUIDNotFound(self.args.execution_uuid[0])
     
             self.display_table(df)             
             return MsgSuccess(msg_str = "Done.")
@@ -197,10 +195,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-e", 
-        "--execution_id", 
+        "--execution_uuid", 
         action="append",
-        help="Specify the execution id to retrieve execution.",
-        metavar="<exe_id>",
+        help="Specify the execution uuid to retrieve execution.",
+        metavar="<exe_uuid>",
     )
 
     parser.set_defaults(func=CmdExecutionList)

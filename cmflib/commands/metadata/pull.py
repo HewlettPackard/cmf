@@ -26,7 +26,8 @@ from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
     MissingArgument,
-    CmfNotConfigured, ExecutionIDNotFound,
+    CmfNotConfigured, 
+    ExecutionUUIDNotFound,
     MlmdNotFoundOnServer,
     MlmdFilePullSuccess,
     CmfServerNotAvailable, 
@@ -53,17 +54,19 @@ class CmdMetadataPull(CmdBase):
         full_path_to_dump = ""
         cmd = "pull"
         status = 0
-        exec_id = None
+        exec_uuid = None
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
             raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
             raise MissingArgument("pipeline name")
-        if not self.args.execution:         # If self.args.execution[0] is None or an empty list ([]). 
-                pass
-        elif len(self.args.execution) > 1:  # If the user provided more than one execution id. 
-            raise DuplicateArgumentNotAllowed("execution id", "-e")
-        elif not self.args.execution[0]:    # self.args.execution[0] is an empty string ("").
-            raise MissingArgument("execution id")
+        
+        if not self.args.execution_uuid:         # If self.args.execution_uuid[0] is None or an empty list ([]). 
+            pass
+        elif len(self.args.execution_uuid) > 1:  # If the user provided more than one execution_uuid. 
+            raise DuplicateArgumentNotAllowed("execution_uuid", "-e")
+        elif not self.args.execution_uuid[0]:    # self.args.execution_uuid[0] is an empty string ("").
+            raise MissingArgument("execution_uuid")
+        
         if self.args.file_name:  # setting directory where mlmd file will be dumped
             if len(self.args.file_name) > 1:  # If the user provided more than one file name. 
                 raise DuplicateArgumentNotAllowed("file_name", "-f")
@@ -81,23 +84,24 @@ class CmdMetadataPull(CmdBase):
                 raise FileNameNotfound
         else:
             full_path_to_dump = os.getcwd() + "/mlmd"
-        if self.args.execution:
-            exec_id = self.args.execution[0]
+        
+        if self.args.execution_uuid:
+            exec_uuid = self.args.execution_uuid[0]
         output = server_interface.call_mlmd_pull(
-            url, self.args.pipeline_name[0], exec_id
+            url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
         # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
         if output.content.decode() == None:
             raise PipelineNotFound(self.args.pipeline_name[0])
-        elif output.content.decode() == "no_exec_id":
-            raise ExecutionIDNotFound(exec_id)
+        elif output.content.decode() == "no_exec_uuid":
+            raise ExecutionUUIDNotFound(exec_uuid)
       
         elif output.content:
             if status == 200:
                 try:
                     cmf_merger.parse_json_to_mlmd(
-                        output.content, full_path_to_dump, cmd, None
+                        output.content, full_path_to_dump, cmd, exec_uuid
                     )  # converts mlmd json data to mlmd file
                     pull_status = MlmdFilePullSuccess(full_path_to_dump)
                     return pull_status
@@ -144,7 +148,7 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-e", "--execution", action="append", help="Specify Execution id", metavar="<exec_id>"
+        "-e", "--execution_uuid", action="append", help="Specify execution_uuid", metavar="<exec_uuid>"
     )
 
     parser.set_defaults(func=CmdMetadataPull)

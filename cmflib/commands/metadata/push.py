@@ -29,7 +29,7 @@ from cmflib.cmf_exception_handling import (
     MlmdFilePushSuccess,
     ExecutionsAlreadyExists,
     FileNotFound,
-    ExecutionIDNotFound,
+    ExecutionUUIDNotFound,
     PipelineNotFound,
     UpdateCmfVersion,
     CmfServerNotAvailable,
@@ -91,32 +91,35 @@ class CmdMetadataPush(CmdBase):
                 print("........................................")
                 # converts mlmd file to json format
                 json_payload = query.dumptojson(pipeline_name, None)
-                
+
                 # checks if execution is given by user
-                if not self.args.execution:         # If self.args.execution is None or an empty list ([]).
-                    exec_id = None
-                    response = server_interface.call_mlmd_push(json_payload, url, exec_id, pipeline_name)
-                elif len(self.args.execution) > 1:  # If the user provided more than one execution.  
-                    raise DuplicateArgumentNotAllowed("execution", "-e")
-                elif not self.args.execution[0]:    # self.args.execution[0] is an empty string ("").
-                    raise MissingArgument("execution id")
-                elif not self.args.execution[0].isdigit():
-                    raise ExecutionIDNotFound(self.args.execution[0])
+                if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
+                    exec_uuid = None
+                    response = server_interface.call_mlmd_push(json_payload, url, exec_uuid, pipeline_name)
+                elif len(self.args.execution_uuid) > 1:  # If the user provided more than one execution.  
+                    raise DuplicateArgumentNotAllowed("execution_uuid", "-e")
+                elif not self.args.execution_uuid[0]:    # self.args.execution_uuid[0] is an empty string ("").
+                    raise MissingArgument("execution_uuid")
                 else:
-                    exec_id = int(self.args.execution[0])
+                    exec_uuid = self.args.execution_uuid[0]
                     mlmd_data = json.loads(json_payload)["Pipeline"]
                     # checks if given execution present in mlmd
                     for i in mlmd_data[0]["stages"]:
                         for j in i["executions"]:
-                            if j["id"] == int(exec_id):
+                            # created exec_uuid of list if multiple uuid present for single execution.
+                            # for eg: f9da581c-d16c-11ef-9809-9350156ed1ac,32f17f4a-d16d-11ef-9809-9350156ed1ac
+                            uuid_list = j['properties']['Execution_uuid'].split(",")
+                            # check if user specified exec_uuid exists inside local mlmd
+                            if exec_uuid in uuid_list: 
                                 execution_flag = 1
-                                # calling mlmd_push api to push mlmd file to cmf-server
+                                # calling mlmd_push api to push mlmd_data = json.loads(json_payload)["Pipeline"]
+                    # checks if given execution present in mlmdmlmd file to cmf-server
                                 response = server_interface.call_mlmd_push(
-                                    json_payload, url, exec_id, pipeline_name
+                                    json_payload, url, exec_uuid, pipeline_name
                                 )
                                 break
                     if execution_flag == 0:
-                        raise ExecutionIDNotFound(exec_id)
+                        raise ExecutionUUIDNotFound(exec_uuid)
                 status_code = response.status_code
                 if status_code == 200:
                     output = ""
@@ -127,7 +130,6 @@ class CmdMetadataPush(CmdBase):
                     if response.json()["status"]=="exists":
                         display_output = "Executions already exists."
                         output = ExecutionsAlreadyExists()
-
                     if not self.args.tensorboard:
                         return output
                     elif len(self.args.tensorboard) > 1:  # If the user provided more than one tensorboard name. 
@@ -140,6 +142,7 @@ class CmdMetadataPush(CmdBase):
                     print("......................................")
                     print("tensorboard logs upload started!!")
                     print("......................................")
+
 
                     tensorboard = self.args.tensorboard[0]
                     # check if the path provided is for a file
@@ -212,10 +215,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-e",
-        "--execution",
+        "--execution_uuid",
         action="append",
-        help="Specify Execution id.",
-        metavar="<exec_id>",
+        help="Specify Execution uuid.",
+        metavar="<exec_uuid>",
     )
 
     parser.add_argument(

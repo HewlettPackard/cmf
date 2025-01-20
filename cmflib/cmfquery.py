@@ -239,18 +239,23 @@ class CmfQuery(object):
         """
         return self.store.get_children_contexts_by_context(pipeline_id)
 
-    def _get_executions(self, stage_id: int, execution_id: t.Optional[int] = None) -> t.List[mlpb.Execution]:
+    def _get_executions(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]:
         """Return executions of the given stage.
 
         Args:
             stage_id: Stage identifier.
-            execution_id: If not None, return only execution with this ID.
+            execution_uuid: If not None, return only execution with this uuid.
         Returns:
             List of executions matching input parameters.
         """
         executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id)
-        if execution_id is not None:
-            executions = [execution for execution in executions if execution.id == execution_id]
+        if execution_uuid is not None:
+            executions_list = executions
+            executions = []
+            for execution in executions_list:
+                exec_uuid_list = execution.properties['Execution_uuid'].string_value.split(",")
+                if execution_uuid in exec_uuid_list:
+                    executions.append(execution)
         return executions
 
     def _get_executions_by_input_artifact_id(self, artifact_id: int,pipeline_id: str = None) -> t.List[int]:
@@ -889,17 +894,14 @@ class CmfQuery(object):
                 )
         return df
 
-    def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
+    def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
         Args:
             pipeline_name: Name of an AI pipelines.
-            exec_id: Optional stage execution ID - filter stages by this execution ID.
+            exec_uuid: Optional stage execution_uuid - filter stages by this execution_uuid.
         Returns:
             Pipeline in JSON format.
         """
-        if exec_id is not None:
-            exec_id = int(exec_id)
-
         def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
             for attr in CONTEXT_LIST:
                 #Artifacts getattr call on Type was giving empty string, which was overwriting 
@@ -921,7 +923,7 @@ class CmfQuery(object):
             pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
             for stage in self._get_stages(pipeline.id):
                 stage_attrs = _get_node_attributes(stage, {"executions": []})
-                for execution in self._get_executions(stage.id, execution_id=exec_id):
+                for execution in self._get_executions(stage.id, execution_uuid=exec_uuid):
                     # name will be an empty string for executions that are created with
                     # create new execution as true(default)
                     # In other words name property will there only for execution

@@ -40,21 +40,18 @@ class CmdInitMinioS3(CmdBase):
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
         required_args = {
-        "url": self.args.url,
-        "endpoint-url": self.args.endpoint_url,
-        "access-key-id": self.args.access_key_id,
-        "secret-key": self.args.secret_key,
-        "git-remote-url": self.args.git_remote_url,
-        "cmf-server-url" : self.args.cmf_server_url,
-        "neo4j-user" : self.args.neo4j_user,
-        "neo4j-password" :  self.args.neo4j_password,
-        "neo4j_uri" : self.args.neo4j_uri
+            "url": self.args.url,
+            "endpoint-url": self.args.endpoint_url,
+            "access-key-id": self.args.access_key_id,
+            "secret-key": self.args.secret_key,
+            "git-remote-url": self.args.git_remote_url,
+            "neo4j-user" : self.args.neo4j_user,
+            "neo4j-password" :  self.args.neo4j_password,
+            "neo4j_uri" : self.args.neo4j_uri
         }
 
         for arg_name, arg_value in required_args.items():
             if arg_value:
-                if arg_name == "cmf-server-url" and len(arg_value) > 2:
-                    raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
@@ -81,9 +78,9 @@ class CmdInitMinioS3(CmdBase):
             attr_dict["uri"] = self.args.neo4j_uri[0]
             CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
         elif (
-            not self.args.neo4j_user[0]
-            and not self.args.neo4j_password[0]
-            and not self.args.neo4j_uri[0]
+            not self.args.neo4j_user
+            and not self.args.neo4j_password
+            and not self.args.neo4j_uri
         ):
             pass
         else:
@@ -105,7 +102,7 @@ class CmdInitMinioS3(CmdBase):
         print("Starting cmf init.")
         dvc_quiet_init()
         repo_type = "minio"
-        output = dvc_add_remote_repo(repo_type, self.args.url)
+        output = dvc_add_remote_repo(repo_type, self.args.url[0])
         if not output:
             raise CmfInitFailed
         print(output)
@@ -114,7 +111,6 @@ class CmdInitMinioS3(CmdBase):
         dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key[0])
         status = CmfInitComplete()
         return status
-
 
 
 def add_parser(subparsers, parent_parser):

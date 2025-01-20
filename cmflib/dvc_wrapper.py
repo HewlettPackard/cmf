@@ -495,9 +495,9 @@ def git_modify_remote_url(git_url) -> str:
            print(f"Unexpected {errs}")
     return commit
 
-# Pulling code from mlmd branch
-def git_get_pull() -> str:
-    process = subprocess.Popen('git pull cmf_origin mlmd', 
+# Pulling code from branch
+def git_get_pull(branch_name: str) -> str:
+    process = subprocess.Popen(f'git pull cmf_origin {branch_name}', 
                                 cwd=None, 
                                 shell=True,
                                 stdout=subprocess.PIPE,
@@ -509,9 +509,23 @@ def git_get_pull() -> str:
                 process.returncode
             )
 
-# Pusing code inside mlmd branch
-def git_get_push() -> str:
-    process = subprocess.Popen('git push -u cmf_origin mlmd', 
+# Pusing code inside branch
+def git_get_push(branch_name: str) -> str:
+    process = subprocess.Popen(f'git push -u cmf_origin {branch_name}', 
+                                cwd=None, 
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    return (
+                stdout.decode('utf-8').strip() if stdout else '',
+                stderr.decode('utf-8').strip() if stderr else '',
+                process.returncode
+            )
+
+# Getting current branch
+def git_get_branch() -> tuple:
+    process = subprocess.Popen('git branch --show-current', 
                                 cwd=None, 
                                 shell=True,
                                 stdout=subprocess.PIPE,

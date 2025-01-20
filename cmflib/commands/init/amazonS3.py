@@ -40,21 +40,17 @@ class CmdInitAmazonS3(CmdBase):
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
         required_args = {
-        "url": self.args.url,
-        "access-key-id": self.args.access_key_id,
-        "secret-key": self.args.secret_key,
-        "git-remote-url": self.args.git_remote_url,
-        "session-token" : self.args.session_token,
-        "cmf-server-url" : self.args.cmf_server_url,
-        "neo4j-user" : self.args.neo4j_user,
-        "neo4j-password" :  self.args.neo4j_password,
-        "neo4j_uri" : self.args.neo4j_uri
-
+            "url": self.args.url,
+            "access-key-id": self.args.access_key_id,
+            "secret-key": self.args.secret_key,
+            "git-remote-url": self.args.git_remote_url,
+            "session-token" : self.args.session_token,
+            "neo4j-user" : self.args.neo4j_user,
+            "neo4j-password" :  self.args.neo4j_password,
+            "neo4j_uri" : self.args.neo4j_uri
         }
         for arg_name, arg_value in required_args.items():
             if arg_value:
-                if arg_name == "cmf-server-url" and len(arg_value) > 2:
-                    raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
@@ -78,10 +74,10 @@ class CmdInitAmazonS3(CmdBase):
             attr_dict["password"] = self.args.neo4j_password[0]
             attr_dict["uri"] = self.args.neo4j_uri[0]
             CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
-        elif (
-            not self.args.neo4j_user[0]
-            and not self.args.neo4j_password[0]
-            and not self.args.neo4j_uri[0]
+        elif(
+            not self.args.neo4j_user
+            and not self.args.neo4j_password
+            and not self.args.neo4j_uri
         ):
             pass
         else:

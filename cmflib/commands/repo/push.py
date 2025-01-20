@@ -17,12 +17,26 @@
 #!/usr/bin/env python3
 import argparse
 import requests
+import os
+import re
 
+from cmflib import cmfquery
+from cmflib.cli.utils import check_minio_server, find_root
+from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.utils.dvc_config import DvcConfig
+from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_push
+from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_push, git_get_branch, dvc_push
 from cmflib.commands.artifact.push import CmdArtifactPush
 from cmflib.commands.metadata.push import CmdMetadataPush
-from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
+from cmflib.cmf_exception_handling import (
+    MsgSuccess, 
+    MsgFailure, 
+    ArtifactPushSuccess, 
+    Minios3ServerInactive, 
+    CmfNotConfigured, 
+    FileNotFound,)
 
 
 class CmdRepoPush(CmdBase):
@@ -50,32 +64,111 @@ class CmdRepoPush(CmdBase):
         url = git_get_repo()
         # Example url = https://github.com/ABC/my-repo
         url = url.split("/")
+        branch_name = git_get_branch()[0]
         # Check whether branch exists in git repo or not
         # url[-2] = ABC, url-1] = my-repo
-        if self.branch_exists(url[-2], url[-1], "mlmd"):
+        if self.branch_exists(url[-2], url[-1], branch_name):
             # 1. pull the code from mlmd branch
             # 2. push the code inside mlmd branch
-            stdout, stderr, returncode = git_get_pull()
+            stdout, stderr, returncode = git_get_pull(branch_name)
             if returncode != 0:
-                raise MsgFailure(msg_str=f"Error pulling changes: {stderr}")
+                raise MsgFailure(msg_str=f"{stderr}")
             print(stdout)
         # push the code inside mlmd branch
-        stdout, stderr, returncode = git_get_push()
+        stdout, stderr, returncode = git_get_push(branch_name)
         if returncode != 0:
-            raise MsgFailure(msg_str=f"Error pushing changes: {stderr}")
+            raise MsgFailure(msg_str=f"{stderr}")
         return MsgSuccess(msg_str="Successfully pushed and pulled changes!")
+    
+    def artifact_push(self):
+        result = ""
+        dvc_config_op = DvcConfig.get_dvc_config()
+        cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
+
+        # find root_dir of .cmfconfig
+        output = find_root(cmf_config_file)
+
+        # in case, there is no .cmfconfig file
+        if output.find("'cmf' is not configured.") != -1:
+            raise CmfNotConfigured(output)
+
+        out_msg = check_minio_server(dvc_config_op)
+        if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
+            raise Minios3ServerInactive()
+        if dvc_config_op["core.remote"] == "osdf":
+            config_file_path = os.path.join(output, cmf_config_file)
+            cmf_config={}
+            cmf_config=CmfConfig.read_config(config_file_path)
+            #print("key_id="+cmf_config["osdf-key_id"])
+            dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+            #print("Dynamic Password"+dynamic_password)
+            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
+            result = dvc_push()
+            return result
+
+        current_directory = os.getcwd()
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        else:
+            mlmd_file_name = self.args.file_name[0]
+            if mlmd_file_name == "mlmd":
+                mlmd_file_name = "./mlmd"
+            current_directory = os.path.dirname(mlmd_file_name)
+        if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
+            raise FileNotFound(mlmd_file_name, current_directory)
+        
+        # creating cmfquery object
+        query = cmfquery.CmfQuery(mlmd_file_name)
+        names = []
+        df = query.get_all_executions_in_pipeline(self.args.pipeline_name[0])
+        # fetching execution id from df based on execution_uuid 
+        exec_id_df = df[df['Execution_uuid'].apply(lambda x: self.args.execution_uuid[0] in x.split(","))]['id'] 
+        exec_id = int (exec_id_df.iloc[0])
+        
+        artifacts = query.get_all_artifacts_for_execution(exec_id)  # getting all artifacts based on execution id
+        # dropping artifact with type 'metrics' as metrics doesn't have physical file
+        if not artifacts.empty:
+            artifacts = artifacts[artifacts['type'] != 'Metrics']
+            # adding .dvc at the end of every file as it is needed for pull
+            artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
+            names.extend(artifacts['name'].tolist())
+
+        final_list = []
+        for file in set(names):
+            # checking if the .dvc exists
+            if os.path.exists(file):
+                final_list.append(file)
+            # checking if the .dvc exists in user's project working directory
+            elif os.path.isabs(file):
+                    file = re.split("/",file)[-1]
+                    file = os.path.join(os.getcwd(), file)
+                    if os.path.exists(file):
+                        final_list.append(file)
+            else:
+                # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
+                pass
+        result = dvc_push(list(final_list))
+        return ArtifactPushSuccess(result)
         
 
     def run(self):
-        print("Executing cmf artifact push command..")
-        artifact_push_instance = CmdArtifactPush(self.args)
-        if artifact_push_instance.run().status == "success":
-            print("Executing cmf metadata push command..")
-            metadata_push_instance = CmdMetadataPush(self.args)
-            if metadata_push_instance.run().status == "success":
-                print("Execution git push command..")
+        print("Executing cmf metadata push command..")
+        metadata_push_instance = CmdMetadataPush(self.args)
+        if metadata_push_instance.run().status == "success":
+            print("Executing cmf artifact push command..")
+            if(self.args.execution_uuid):
+                # If an execution uuid exists, push the artifacts associated with that execution. 
+                artifact_push_result = self.artifact_push()
+            else:
+                # Pushing all artifacts. 
+                artifact_push_instance = CmdArtifactPush(self.args)
+                artifact_push_result = artifact_push_instance.run()
+
+            if artifact_push_result.status == "success":
+                print("Executing git push command..")
                 return self.git_push()
-         
+    
 
 def add_parser(subparsers, parent_parser):
     PUSH_HELP = "Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively."
@@ -109,11 +202,11 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-e",
-        "--execution",
+        "--execution_uuid",
         action="append",
-        help="Specify Execution id.",
+        help="Specify Execution uuid.",
         default=None,
-        metavar="<exec_id>",
+        metavar="<exec_uuid>",
     )
 
     parser.add_argument(

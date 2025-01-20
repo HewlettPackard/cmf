@@ -201,13 +201,13 @@ class ExecutionsNotFound(CmfFailure):
         return f"ERROR: Executions not found."
 
 
-class ExecutionIDNotFound(CmfFailure):
-    def __init__(self, exec_id, return_code=105):
-        self.exec_id = exec_id
+class ExecutionUUIDNotFound(CmfFailure):
+    def __init__(self, exec_uuid, return_code=105):
+        self.exec_uuid = exec_uuid
         super().__init__(return_code)
 
     def handle(self):
-        return f"ERROR: Execution id {self.exec_id} is not present in mlmd."
+        return f"ERROR: Execution uuid {self.exec_uuid} is not present in mlmd."
 
 
 class ArtifactNotFound(CmfFailure):

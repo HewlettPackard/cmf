@@ -39,21 +39,18 @@ class CmdInitSSHRemote(CmdBase):
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
         
         required_args = {
-        "path": self.args.path,
-        "user": self.args.user,
-        "port": self.args.port,
-        "password": self.args.password,
-        "git-remote-url": self.args.git_remote_url,
-        "cmf-server-url" : self.args.cmf_server_url,
-        "neo4j-user" : self.args.neo4j_user,
-        "neo4j-password" :  self.args.neo4j_password,
-        "neo4j_uri" : self.args.neo4j_uri
+            "path": self.args.path,
+            "user": self.args.user,
+            "port": self.args.port,
+            "password": self.args.password,
+            "git-remote-url": self.args.git_remote_url,
+            "neo4j-user" : self.args.neo4j_user,
+            "neo4j-password" :  self.args.neo4j_password,
+            "neo4j_uri" : self.args.neo4j_uri
         }
 
         for arg_name, arg_value in required_args.items():
             if arg_value:
-                if arg_name == "cmf-server-url" and len(arg_value) > 2:
-                    raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
@@ -80,9 +77,9 @@ class CmdInitSSHRemote(CmdBase):
             attr_dict["uri"] = self.args.neo4j_uri[0]
             CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
         elif (
-            not self.args.neo4j_user[0]
-            and not self.args.neo4j_password[0]
-            and not self.args.neo4j_uri[0]
+            not self.args.neo4j_user
+            and not self.args.neo4j_password
+            and not self.args.neo4j_uri
         ):
             pass
         else:
