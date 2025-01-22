@@ -173,27 +173,6 @@ async def executions(
     else:
         return
 
-@app.get("/artifact-lineage/force-directed-graph/{pipeline_name}")
-async def artifact_lineage(request: Request, pipeline_name: str):
-    '''
-      This api returns dictionary of nodes and links for given pipeline.
-      response = {
-                   nodes: [{id:"",name:""}],
-                   links: [{source:1,target:4},{}],
-                 }
-
-    '''
-    # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
-        if (pipeline_name in query.get_pipeline_names()):
-            response=await async_api(get_lineage_data, server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
-            return response
-        else:
-            return f"Pipeline name {pipeline_name} doesn't exist."
-
-    else:
-        return None
 
 @app.get("/list-of-executions/{pipeline_name}")
 async def list_of_executions(request: Request, pipeline_name: str):
@@ -213,23 +192,6 @@ async def list_of_executions(request: Request, pipeline_name: str):
     else:
         return None
 
-@app.get("/execution-lineage/force-directed-graph/{pipeline_name}/{uuid}")
-async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
-    '''
-      returns dictionary of nodes and links for given execution_type.
-      response = {
-                   nodes: [{id:"",name:"",execution_uuid:""}],
-                   links: [{source:1,target:4},{}],
-                 } 
-    '''
-    # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
-        if (pipeline_name in query.get_pipeline_names()):
-            response = await async_api(query_execution_lineage_d3force, server_store_path, pipeline_name, dict_of_exe_ids, uuid)
-    else:
-        response = None
-    return response
     
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
 async def execution_lineage(request: Request,uuid, pipeline_name: str):
@@ -418,3 +380,47 @@ async def update_global_exe_dict(pipeline_name):
     # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
     return
+
+
+# This API is no longer in use within the project but is retained for reference or potential future use.
+@app.get("/execution-lineage/force-directed-graph/{pipeline_name}/{uuid}")
+async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
+    '''
+      returns dictionary of nodes and links for given execution_type.
+      response = {
+                   nodes: [{id:"",name:"",execution_uuid:""}],
+                   links: [{source:1,target:4},{}],
+                 } 
+    '''
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response = await async_api(query_execution_lineage_d3force, server_store_path, pipeline_name, dict_of_exe_ids, uuid)
+    else:
+        response = None
+    return response
+
+
+# This API is no longer in use within the project but is retained for reference or potential future use.
+@app.get("/artifact-lineage/force-directed-graph/{pipeline_name}")
+async def artifact_lineage(request: Request, pipeline_name: str):
+    '''
+      This api returns dictionary of nodes and links for given pipeline.
+      response = {
+                   nodes: [{id:"",name:""}],
+                   links: [{source:1,target:4},{}],
+                 }
+
+    '''
+    # checks if mlmd file exists on server
+    if os.path.exists(server_store_path):
+        query = cmfquery.CmfQuery(server_store_path)
+        if (pipeline_name in query.get_pipeline_names()):
+            response=await async_api(get_lineage_data, server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            return response
+        else:
+            return f"Pipeline name {pipeline_name} doesn't exist."
+
+    else:
+        return None
