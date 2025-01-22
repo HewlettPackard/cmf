@@ -8,13 +8,16 @@ dependencies = [
 	"retrying",
 	"pyarrow",
 	"neo4j",
-	"scikit-learn",
 	"tabulate",
 	"click",
 	"minio",
 	"paramiko",
+	"scikit_learn"
+	"boto3",
 	"scitokens", 
-	"cryptography",
+	"cryptography",   
+	"ray", 
+	"google", 
 ]
 authors = [
   { name="Hewlett Packard Enterprise"},
