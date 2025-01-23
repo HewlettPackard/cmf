@@ -32,6 +32,7 @@ from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
 import json
+from server.app.schemas.dataframe import MLMDPushRequest
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -88,26 +89,17 @@ async def read_root(request: Request):
 
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
-async def mlmd_push(info: Request):
+async def mlmd_push(info: MLMDPushRequest):
     print("mlmd push started")
     print("......................")
-    # Check if the body is empty
-    if not await info.body():
-        return {"error": "Request body is missing or empty"}
-    req_info = await info.json()
-    # Check if "pipeline_name" and "json_payload" are present and not empty
-    if not req_info.get("pipeline_name"):
-        return {"error": "Pipeline name is missing"}
-    if not req_info.get("json_payload"):
-        return {"error": "JSON payload is missing"}
-    pipeline_name = req_info["pipeline_name"]
+    pipeline_name = info.pipeline_name
     if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
         pipeline_locks[pipeline_name] = asyncio.Lock()
     pipeline_lock = pipeline_locks[pipeline_name]   
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, server_store_path, req_info)
+            status = await async_api(create_unique_executions, server_store_path, info.model_dump())
             if status == "version_update":
                 # Raise an HTTPException with status code 422
                 raise HTTPException(status_code=422, detail="version_update")
@@ -120,7 +112,7 @@ async def mlmd_push(info: Request):
             if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
-    return {"status": status, "data": req_info}
+    return {"status": status, "data": info.model_dump()}
 
 # api to get mlmd file from cmf-server
 @app.get("/mlmd_pull/{pipeline_name}", response_class=HTMLResponse)
