@@ -95,6 +95,10 @@ const Executions = () => {
         filterValue,
       )
       .then((data) => {
+        // Removing repeated execution uuid from executions.
+        data.items.map((data, index) => (
+          data.Execution_uuid = [...new Set(data.Execution_uuid.split(","))].join(",")
+        ));
         setExecutions(data.items);
         setTotalItems(data.total_items);
       });

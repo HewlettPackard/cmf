@@ -27,7 +27,6 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   const [expandedRow, setExpandedRow] = useState(null);
 
   const consistentColumns = [];
-  console.log("executions",executions);
 
   useEffect(() => {
     // Set initial sorting order when component mounts
