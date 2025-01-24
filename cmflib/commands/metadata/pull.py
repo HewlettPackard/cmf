@@ -55,23 +55,23 @@ class CmdMetadataPull(CmdBase):
         cmd = "pull"
         status = 0
         exec_uuid = None
-        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:
-            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
-        elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").
-            raise MissingArgument("pipeline name")
+
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name,
+            "execution_uuid": self.args.execution_uuid
+        }  
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
         
         if not self.args.execution_uuid:         # If self.args.execution_uuid[0] is None or an empty list ([]). 
             pass
-        elif len(self.args.execution_uuid) > 1:  # If the user provided more than one execution_uuid. 
-            raise DuplicateArgumentNotAllowed("execution_uuid", "-e")
-        elif not self.args.execution_uuid[0]:    # self.args.execution_uuid[0] is an empty string ("").
-            raise MissingArgument("execution_uuid")
         
         if self.args.file_name:  # setting directory where mlmd file will be dumped
-            if len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-                raise DuplicateArgumentNotAllowed("file_name", "-f")
-            elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
-                raise MissingArgument("file name")
             if not os.path.isdir(self.args.file_name[0]):
                 temp = os.path.dirname(self.args.file_name[0])
                 if temp != "":

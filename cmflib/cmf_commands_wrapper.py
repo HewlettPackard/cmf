@@ -17,7 +17,7 @@
 from cmflib import cli
 
 
-def _metadata_push(pipeline_name, file_name, execution_id, tensorboard):
+def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard):
     cli_args = cli.parse_args(
             [
                "metadata",
@@ -27,7 +27,7 @@ def _metadata_push(pipeline_name, file_name, execution_id, tensorboard):
                "-f",
                file_name,
                "-e",
-               execution_id,
+               execution_uuid,
                "-t",
                tensorboard
             ]
@@ -37,7 +37,7 @@ def _metadata_push(pipeline_name, file_name, execution_id, tensorboard):
     print(msg)
     return msg
 
-def _metadata_pull(pipeline_name, file_name, execution_id):
+def _metadata_pull(pipeline_name, file_name, execution_uuid):
     cli_args = cli.parse_args(
             [
                "metadata",
@@ -47,7 +47,7 @@ def _metadata_pull(pipeline_name, file_name, execution_id):
                "-f",
                file_name,
                "-e",
-               execution_id,
+               execution_uuid,
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -316,7 +316,7 @@ def _pipeline_list(file_name):
     print(msg)
     return msg
 
-def _execution_list(pipeline_name, file_name, execution_id):
+def _execution_list(pipeline_name, file_name, execution_uuid):
     cli_args = cli.parse_args(
             [
                "execution",
@@ -326,7 +326,7 @@ def _execution_list(pipeline_name, file_name, execution_id):
                "-f",
                file_name,
                "-e",
-               execution_id
+               execution_uuid
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -334,7 +334,7 @@ def _execution_list(pipeline_name, file_name, execution_id):
     print(msg)
     return msg
 
-def _repo_push(pipeline_name, file_name, tensorboard_path, execution_id):
+def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
     cli_args = cli.parse_args(
             [
                "repo",
@@ -344,7 +344,7 @@ def _repo_push(pipeline_name, file_name, tensorboard_path, execution_id):
                "-f",
                file_name,
                "-e",
-               execution_id,
+               execution_uuid,
                "-t",
                tensorboard_path
             ]
@@ -354,19 +354,17 @@ def _repo_push(pipeline_name, file_name, tensorboard_path, execution_id):
     print(msg)
     return msg
 
-def _repo_pull(pipeline_name, file_name, artifact_name, execution_id):
+def _repo_pull(pipeline_name, file_name, execution_uuid):
     cli_args = cli.parse_args(
             [
-               "execution",
-               "list",
+               "repo",
+               "pull",
                "-p",
                pipeline_name,
                "-f",
                file_name,
-               "-a",
-               artifact_name,
                "-e",
-               execution_id
+               execution_uuid
             ]
            )
     cmd = cli_args.func(cli_args)

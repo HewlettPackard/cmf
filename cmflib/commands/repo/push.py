@@ -36,7 +36,8 @@ from cmflib.cmf_exception_handling import (
     ArtifactPushSuccess, 
     Minios3ServerInactive, 
     CmfNotConfigured, 
-    FileNotFound,)
+    FileNotFound
+    )
 
 
 class CmdRepoPush(CmdBase):

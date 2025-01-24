@@ -61,7 +61,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
                     if exec_uuid in execution['properties']["Execution_uuid"].split(",") 
                 ]
             else:
-                return "Invalid execution id given."
+                return "Invalid execution uuid given."
             for execution in list_executions:  # Iterates over all the executions
                 try:
                     _ = cmf_class.merge_created_context(
