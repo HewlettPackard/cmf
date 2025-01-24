@@ -39,7 +39,7 @@ class CmdInitMinioS3(CmdBase):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
-        required_args = {
+        cmd_args = {
             "url": self.args.url,
             "endpoint-url": self.args.endpoint_url,
             "access-key-id": self.args.access_key_id,
@@ -50,7 +50,7 @@ class CmdInitMinioS3(CmdBase):
             "neo4j_uri" : self.args.neo4j_uri
         }
 
-        for arg_name, arg_value in required_args.items():
+        for arg_name, arg_value in cmd_args.items():
             if arg_value:
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)

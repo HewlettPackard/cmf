@@ -37,7 +37,7 @@ class CmdInitLocal(CmdBase):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
               
-        required_args = {
+        cmd_args = {
             "path": self.args.path,
             "git-remote-url": self.args.git_remote_url,
             "neo4j-user" : self.args.neo4j_user,
@@ -45,7 +45,7 @@ class CmdInitLocal(CmdBase):
             "neo4j_uri" : self.args.neo4j_uri
         }
 
-        for arg_name, arg_value in required_args.items():
+        for arg_name, arg_value in cmd_args.items():
             if arg_value:
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)
