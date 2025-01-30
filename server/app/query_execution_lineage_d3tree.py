@@ -37,12 +37,12 @@ def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_e
     parents_set = set()
     queue = UniqueQueue()
     df = pd.DataFrame()
-
-
     parents = query.get_one_hop_parent_executions_ids(execution_id, pipeline_id) #list of parent execution ids
     dict_parents = {}
     if parents == None:
         parents = []
+    if not execution_id:
+        return {"error": f"No execution lineage is available for pipeline {pipeline_name} with uuid {uuid}"}
     dict_parents[execution_id[0]] = list(set(parents))  # [2] = [1,2,3,4] list of parent id
     parents_set.add(execution_id[0])     #created so that we can directly find execuions using execution ids
     for i in set(parents):
