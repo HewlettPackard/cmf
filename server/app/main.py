@@ -32,7 +32,7 @@ from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
 import json
-from server.app.schemas.dataframe import MLMDPushRequest, MLMDRequest, ExecutionsQueryParams, ArtifactsQueryParams
+from server.app.schemas.dataframe import MLMDPushRequest, MLMDPullRequest, ExecutionsRequest, ArtifactsRequest
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -87,19 +87,27 @@ app.add_middleware(
 async def read_root(request: Request):
     return {"cmf-server"}
 
+
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
 async def mlmd_push(info: MLMDPushRequest):
     print("mlmd push started")
     print("......................")
-    pipeline_name = info.pipeline_name
+    req_info = info.model_dump()  # Serializing the input data into a dictionary using model_dump()
+    pipeline_name = req_info["pipeline_name"]
     if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
         pipeline_locks[pipeline_name] = asyncio.Lock()
     pipeline_lock = pipeline_locks[pipeline_name]   
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, server_store_path, info.model_dump())
+            status = await async_api(create_unique_executions, server_store_path, req_info)
+            if status == "invalid_json_payload":
+                # Invalid JSON payload, return 400 Bad Request
+                raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
+            if status == "pipeline_not_exist":
+                # Pipeline name does not exist in the server, return 404 Not Found
+                raise HTTPException(status_code=404, detail=f"Pipeline name '{pipeline_name}' does not exist.")
             if status == "version_update":
                 # Raise an HTTPException with status code 422
                 raise HTTPException(status_code=422, detail="version_update")
@@ -112,11 +120,12 @@ async def mlmd_push(info: MLMDPushRequest):
             if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
-    return {"status": status, "data": info.model_dump()}
+    return {"status": status}
+
 
 # api to get mlmd file from cmf-server
 @app.get("/mlmd_pull/{pipeline_name}", response_class=HTMLResponse)
-async def mlmd_pull(pipeline_name: str, request: MLMDRequest):
+async def mlmd_pull(pipeline_name: str, request: MLMDPullRequest):
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
     # checks if pipeline exists
@@ -125,13 +134,15 @@ async def mlmd_pull(pipeline_name: str, request: MLMDRequest):
     json_payload = await async_api(get_mlmd_from_server, server_store_path, pipeline_name, request.exec_id)
     return json_payload
 
+
 # api to display executions available in mlmd
 @app.get("/executions/{pipeline_name}")
 async def executions(
     request: Request,
     pipeline_name: str,
-    query_params: ExecutionsQueryParams = Depends()
+    query_params: ExecutionsRequest = Depends()
     ):
+    # Extract the query parameters from the query_params object
     page = query_params.page
     per_page = query_params.per_page
     sort_field = query_params.sort_field
@@ -185,7 +196,7 @@ async def list_of_executions(request: Request, pipeline_name: str):
 
     
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
-async def execution_lineage(request: Request,uuid, pipeline_name: str):
+async def execution_lineage(request: Request, uuid: str, pipeline_name: str):
     '''
       returns dictionary of nodes and links for given execution_type.
       response = {
@@ -204,10 +215,12 @@ async def execution_lineage(request: Request,uuid, pipeline_name: str):
 # api to display artifacts available in mlmd
 @app.get("/artifacts/{pipeline_name}/{type}")
 async def artifacts(
+    request: Request,
     pipeline_name: str,
     type: str,   # type = artifact type
-    query_params: ArtifactsQueryParams = Depends()
+    query_params: ArtifactsRequest = Depends()
     ):
+    # Extract the query parameters from the query_params object
     page = query_params.page
     per_page = query_params.per_page
     sort_field = query_params.sort_field
@@ -262,6 +275,7 @@ async def artifacts(
     except Exception as e:
         print(f"An error occurred: {e}")
         return {"error": f"Failed to get artifacts available in mlmd: {e}"}
+
 
 @app.get("/artifact-lineage/tangled-tree/{pipeline_name}")
 async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Dict[str, Any]]]:
@@ -369,11 +383,13 @@ async def update_global_exe_dict(pipeline_name):
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
     return
 
+
 # Function to checks if mlmd file exists on server
 async def check_mlmd_file_exists():
     if not os.path.exists(server_store_path):
         print(f"{server_store_path} file doesn't exist.")
         raise HTTPException(status_code=404, detail=f"{server_store_path} file doesn't exist.")
+
 
 # Function to check if the pipeline exists
 async def check_pipeline_exists(pipeline_name):
@@ -383,7 +399,8 @@ async def check_pipeline_exists(pipeline_name):
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
 
 
-# This API is no longer in use within the project but is retained for reference or potential future use.
+"""
+This API is no longer in use within the project but is retained for reference or potential future use.
 @app.get("/execution-lineage/force-directed-graph/{pipeline_name}/{uuid}")
 async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
     '''
@@ -403,7 +420,6 @@ async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
     return response
 
 
-# This API is no longer in use within the project but is retained for reference or potential future use.
 @app.get("/artifact-lineage/force-directed-graph/{pipeline_name}")
 async def artifact_lineage(request: Request, pipeline_name: str):
     '''
@@ -425,3 +441,4 @@ async def artifact_lineage(request: Request, pipeline_name: str):
 
     else:
         return None
+"""

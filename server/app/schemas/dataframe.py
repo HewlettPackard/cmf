@@ -1,44 +1,51 @@
-from pydantic import BaseModel, HttpUrl, Field, model_validator
-import pandas as pd
-from typing import Sequence, Optional
+from pydantic import BaseModel, Field, model_validator
+from typing import Optional
+import json
 
 
-class ExecutionDataFrame(BaseModel):
-    context_id: str
-    context_type: str
-    execution: str
-
-class MLMDPushRequest(BaseModel):
+# Pydantic model for the request body in the MLMD push API.
+class MLMDPushRequest(BaseModel): 
+    # ... indicates required field
     id: Optional[int] = Field(None, description="Optional execution id for the request")
-    pipeline_name: str = Field(..., min_length=1, description="Name of the pipeline (cannot be empty)")
-    json_payload: str = Field(..., description="JSON payload for the pipeline (cannot be empty)")
+    pipeline_name: str = Field(..., min_length=1, description="Name of the pipeline")
+    json_payload: str = Field(..., description="JSON payload for the pipeline")
 
+    # Custom validation for pipeline name and JSON payload
     @model_validator(mode="after")
     def validate_fields(cls, values):
         if not values.pipeline_name.strip():
             raise ValueError("Pipeline name must not be empty or whitespace")
         if not values.json_payload:
             raise ValueError("JSON payload must not be empty")
-        return values
+        # Attempt to parse the JSON payload to ensure it is valid JSON
+        try:
+            json.loads(values.json_payload)  # Try to load the JSON string
+        except json.JSONDecodeError:
+            raise ValueError("JSON payload is not valid JSON")  # Raise error if invalid JSON
 
-class MLMDRequest(BaseModel):
+        return values
+    
+
+# Pydantic model for the request body in the MLMD pull API.
+class MLMDPullRequest(BaseModel):
+    # The execution ID is required, but it can be None if no specific execution is needed
     exec_id: int | None = Field(
         ..., 
         description="Execution ID must be an integer. It is a required field but can be null."
     )
 
-class ExecutionsQueryParams(BaseModel):
+# Base query parameters for pagination, sorting, and filtering.
+class BaseRequest(BaseModel):
     page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
     per_page: int = Field(5, le=100, description="Items per page, max 100")  # Limit per page to max 100
-    sort_field: str = Field("Context_Type", description="Column to sort by")
     sort_order: str = Field("asc", description="Sort order (asc or desc)")
     filter_by: Optional[str] = Field(None, description="Filter by column")
     filter_value: Optional[str] = Field(None, description="Filter value")
 
-class ArtifactsQueryParams(BaseModel):
-    page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
-    per_page: int = Field(5, le=100, description="Items per page, max 100")  # Limit per page to max 100
-    sort_field: str = Field("name", description="Column to sort by")
-    sort_order: str = Field("asc", description="Sort order (asc or desc)")
-    filter_by: Optional[str] = Field(None, description="Filter by column")
-    filter_value: Optional[str] = Field(None, description="Filter value")
+# Query parameters for execution.
+class ExecutionsRequest(BaseRequest):
+    sort_field: str = Field("Context_Type", description="Column to sort by (default: Context_Type)")
+
+# Query parameters for artifact.
+class ArtifactsRequest(BaseRequest):
+    sort_field: str = Field("name", description="Column to sort by (default: name)")
