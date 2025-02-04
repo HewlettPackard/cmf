@@ -36,8 +36,11 @@ from cmflib.cmf_exception_handling import (
     ArtifactPushSuccess, 
     Minios3ServerInactive, 
     CmfNotConfigured, 
-    FileNotFound
-    )
+    FileNotFound,
+    ExecutionUUIDNotFound,
+    MissingArgument,
+    DuplicateArgumentNotAllowed,
+)
 
 
 class CmdRepoPush(CmdBase):
@@ -79,9 +82,22 @@ class CmdRepoPush(CmdBase):
         stdout, stderr, returncode = git_get_push(branch_name)
         if returncode != 0:
             raise MsgFailure(msg_str=f"{stderr}")
-        return MsgSuccess(msg_str="Successfully pushed and pulled changes!")
+        return MsgSuccess(msg_str="cmf repo push command executed successfully.")
     
     def artifact_push(self):
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name,
+            "execution_uuid": self.args.execution_uuid,
+            "tensorboad": self.args.tensorboard
+        }  
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
+                
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
@@ -122,10 +138,22 @@ class CmdRepoPush(CmdBase):
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
         names = []
+        isExecUuid = False
+        
         df = query.get_all_executions_in_pipeline(self.args.pipeline_name[0])
+
+        # checking if execution_uuid exists in the df
+        for index, row in df.iterrows():
+            if row['Execution_uuid'] == self.args.execution_uuid[0] or self.args.execution_uuid[0] in row['Execution_uuid']:
+                isExecUuid = True
+                break
+        
+        if not isExecUuid:
+            raise ExecutionUUIDNotFound(self.args.execution_uuid[0])
+        
         # fetching execution id from df based on execution_uuid 
         exec_id_df = df[df['Execution_uuid'].apply(lambda x: self.args.execution_uuid[0] in x.split(","))]['id'] 
-        exec_id = int (exec_id_df.iloc[0])
+        exec_id = int(exec_id_df.iloc[0])
         
         artifacts = query.get_all_artifacts_for_execution(exec_id)  # getting all artifacts based on execution id
         # dropping artifact with type 'metrics' as metrics doesn't have physical file
@@ -154,19 +182,21 @@ class CmdRepoPush(CmdBase):
         
 
     def run(self):
-        print("Executing cmf metadata push command..")
-        metadata_push_instance = CmdMetadataPush(self.args)
-        if metadata_push_instance.run().status == "success":
-            print("Executing cmf artifact push command..")
-            if(self.args.execution_uuid):
-                # If an execution uuid exists, push the artifacts associated with that execution. 
-                artifact_push_result = self.artifact_push()
-            else:
-                # Pushing all artifacts. 
-                artifact_push_instance = CmdArtifactPush(self.args)
-                artifact_push_result = artifact_push_instance.run()
+        print("Executing cmf artifact push command..")
+        if(self.args.execution_uuid):
+            # If an execution uuid exists, push the artifacts associated with that execution. 
+            artifact_push_result = self.artifact_push()
+        else:
+            # Pushing all artifacts. 
+            artifact_push_instance = CmdArtifactPush(self.args)
+            artifact_push_result = artifact_push_instance.run()
 
-            if artifact_push_result.status == "success":
+        if artifact_push_result.status == "success":
+            print("Executing cmf metadata push command..")
+            metadata_push_instance = CmdMetadataPush(self.args)
+            metadata_push_result = metadata_push_instance.run()
+            if metadata_push_result.status == "success":
+                print(metadata_push_result.handle())  # Print the message returned by the handle() method of the metadata_push_result object.
                 print("Executing git push command..")
                 return self.git_push()
     

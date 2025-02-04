@@ -128,11 +128,6 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     }
   };
 
-  const createUniqueUuids = (exe_uuid) =>{
-    // Removing repeated execution uuid from executions.
-    return [...new Set(exe_uuid.split(","))].join(",")
-  }
-
   return (
     <div className="flex flex-col">
       <div
@@ -196,7 +191,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     <td className="px-6 py-4 cursor-pointer">
                       {expandedRow === index ? "-" : "+"}
                     </td>
-                    <td className="px-6 py-4">{createUniqueUuids(data.Execution_uuid)}</td>
+                    <td className="px-6 py-4">{data.Execution_uuid}</td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
                     <td className="px-6 py-4">{data.Execution}</td>
                     <td className="px-6 py-4">{data.Git_Repo}</td>
@@ -216,14 +211,10 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                                 return (
                                   <React.Fragment key={key}>
                                     <tr>
-                                      {key !='Execution_uuid' &&
-                                        <>
-                                          <td key={key}>{key}</td>
-                                          <td key={value}>
-                                            {value ? value : "Null"}
-                                          </td>
-                                        </>
-                                      }
+                                      <td key={key}>{key}</td>
+                                      <td key={value}>
+                                        {value ? value : "Null"}
+                                      </td>
                                     </tr>
                                   </React.Fragment>
                                 );
