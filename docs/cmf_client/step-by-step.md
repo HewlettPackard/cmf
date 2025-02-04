@@ -1,5 +1,4 @@
 # Quick start with cmf-client
-(AES: Is this a duplicate of `Getting Started with cmf.md`)
 Common metadata framework (cmf) has the following components:
 
 - **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata.

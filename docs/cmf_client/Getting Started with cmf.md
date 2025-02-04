@@ -1,11 +1,11 @@
 # Getting started with cmf
 Common metadata framework (cmf) has the following components:
 
-- **Metadata Library** exposes API’s to track the pipeline metadata. It also provides APIs to query the stored metadata.
+- **Metadata Library** exposes APIs to track the pipeline metadata. It also provides APIs to query the stored metadata.
 - **cmf-client** interacts with the cmf-server to pull or push metadata
 - **cmf-server with GUI** interacts with remote cmf-clients and merges the metadata transferred by each
   client. This server also provides a GUI that can render the stored metadata.
-- **Central Artifact Repositories** hosts the code and data. (AES: Needs a better description)
+- **Central Artifact Repositories** hosts the code and data.
 
 ## Setup a cmf-client
 `cmf-client` is a tool that facilitates metadata collaboration between different teams and team members. These clients
@@ -27,17 +27,15 @@ pip install cmflib
 [Documentation](https://hewlettpackard.github.io/cmf/) for more details.
 
 ## Install cmf-server
-cmf-server is a key interface for the user to explore and track their ML training runs by browsing the stored
+cmf-server is the primary interface for the user to explore and track their ML training runs by browsing the stored
 metadata. Users can retrieve the saved metadata file and can view the content of the saved metadata file using
 the UI provided by the cmf-server.
 
 Details on how to setup a cmf-server can be found [here](../cmf_server/cmf-server.md).
 
 ## Simple Example of using the CMF Client
-(AES: Should this be changed so that it doesn't depend on an existing S3 bucket? What if we just linked to the existing example?)
 In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a minio)
 
-(AES: Suggest moving this into its own example for people looking for a template for their S3/minio application)
 S3 bucket as the artifact repository and a cmf-server.
 
 **Setup the example directory**

@@ -32,4 +32,3 @@ Proceed with the following steps to set up a SSH Remote Repository:
 5. To troubleshoot SSH permissions-related issues, check the `/etc/ssh/sshd_config` file on the
    remote machine. This configuration file serves as the primary starting point for diagnosing
    and resolving SSH permission-related challenges.
-   (AES: Is there more guidance that we can give? Any particular settings that they should verify?)

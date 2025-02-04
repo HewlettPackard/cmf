@@ -1,7 +1,7 @@
 # CMF Components
-Common metadata framework has the following components:
+The Common metadata framework (CMF) has the following components:
 
-- [Metadata Library](#metadata-library) exposes API’s to track the pipeline metadata. It also provides API’s to query
+- [Metadata Library](#metadata-library) exposes APIs to track the pipeline metadata. It also provides APIs to query
   the stored metadata.
 - [Local Client](#local-client) interacts with the server to pull or push metadata from or to the remote store.
 - [Central Server](#central-server) interacts with all the remote clients and is responsible to merge the metadata
@@ -12,10 +12,11 @@ Common metadata framework has the following components:
 
 
 ## Metadata Library
-The APIs and the abstractions provided by the library enables tracking of pipeline metadata. CMF tracks the stages in
-the pipeline, the input and output artifacts at each stage and metrics. The framework allows metrics to be tracked both
-at coarse and fine-grained intervals. For example, coarse-grained metrics of stage are captured at the end of a stage.
-Fine-grained metrics can be tracked per step (epoch) or at regular intervals during the execution of the stage
+The APIs and the abstractions provided by CMF enables tracking of pipeline metadata. CMF tracks the stages in
+the pipeline, the input and output artifacts at each stage, and potentially performance metrics (e.g. the value of the
+loss function for a neural network). The framework allows metrics to be tracked both at coarse and fine-grained
+intervals. For example, coarse-grained metrics of stage are captured at the end of a stage.  Fine-grained metrics
+can be tracked per step (epoch) or at regular intervals during the execution of the stage.
 
 The metadata logged through the APIs are written to a backend relational database. The library also provides APIs to
 query the metadata stored in the relational database for the users to inspect pipelines.
@@ -24,7 +25,7 @@ In addition to explicit tracking through the APIs, the library also provides imp
 tracks the software version used in the pipelines. The function arguments and function return values can
 be automatically tracked by adding metadata tracker class decorators on the functions.
 
-Before writing the metadata to relational database, the metadata operations are journaled in the metadata journal log.
+Before writing the metadata to relational database, the metadata operations are recorded in the metadata journal log.
 This enables the framework to transfer the local metadata to the central server.
 
 All artifacts are versioned with a data versioning framework (e.g., DVC). The content hash of the artifacts are
@@ -43,40 +44,38 @@ for each change in the artifact along the experiment. This helps to track the tr
 different stages in the pipeline.
 
 ## Local Client
-The metadata client interacts with the metadata server. It communicates with the server, for synchronization of metadata.
+The metadata client synchronizes the metadata with a remote server.
 
 After the experiment is completed, the user invokes the ``cmf push`` command to push the collected metadata to the remote.
-This transfers the existing metadata journal to the server.
+This transfers the existing metadata journal to the server. The metadata from the central repository can also be pulled
+to the local repository, using the artifacts and/or the project as the identifier.
 
-The metadata from the central repository can be pulled to the local repository, either using the artifacts or using the
-project as the identifier or both.
-
-When artifact is used as the identifier, all metadata associated with the artifacts currently present in the branch of
-the cloned Git repository is pulled from the central repository to the local repository. The pulled metadata consists of
+When an artifact is used as the identifier, all metadata associated with the artifacts currently present in the branch of
+the cloned git repository are pulled from the central repository to the local repository. The pulled metadata consists of
 both the immediate metadata associated with the artifacts and the metadata of all the artifacts in its chain of lineage.
 
-When project is used as the identifier, all the metadata associated with the current branch of the pipeline code that
+When a project is used as the identifier, all the metadata associated with the current branch of the pipeline code that
 is checked out is pulled to the local repository.
 
 ## Central Server
-The central server exposes REST APIs that can be called from the remote clients. This can help in situations where the
-connectivity between the core datacenter and the remote client is robust. The remote client calls the API’s exposed by
-the central server to log the metadata directly to the central metadata repository.
+The central server exposes REST APIs that can be called from the remote clients. This is best for scenarios where the
+the core datacenter and the remote client have a strong, robust connection. In this case, the remote client calls the
+APIs exposed by the central server to log the metadata directly to the central metadata repository.
 
-Where the connectivity with the central server is intermittent, the remote clients log the metadata to the local
+If the connectivity with the central server is intermittent, the remote clients can log the metadata to the local
 repository. The journaled metadata is pushed by the remote client to the central server. The central server will
 replay the journal and merge the incoming metadata with the metadata already existing in the central repository. The
-ability to accurately identify the artifacts anywhere using their content hash, makes this merge robust.
+ability to accurately identify the artifacts anywhere using their content hash makes this merge robust.
 
 ## Central Repositories
 The common metadata framework consist of three central repositories for the code, data and metadata.
 
 #### Central Metadata repository
 The central metadata repository holds the metadata pushed from the distributed sites. It holds metadata about all the
-different pipelines that was tracked using the common metadata tracker. The consolidated view of the metadata stored
+different pipelines that were tracked using the common metadata tracker. The consolidated view of the metadata stored
 in the central repository helps the users browse the various stages in the pipeline executed at different
-locations. Using the query layer that is pointed to the central repository, the user gets the global view of the
-metadata providing them with a deeper understanding of the pipelines and its metadata.  The metadata helps to
+locations. Using the query layer that points to the central repository, the user gets the global view of the
+metadata providing them with a deeper understanding of the pipelines and its metadata. The metadata helps to
 understand nonobvious results like performance of a dataset with respect to other datasets, performance of a particular
 pipeline with respect to other pipelines, etc.
 
@@ -87,6 +86,6 @@ two characters of the content hash and the name of the artifact as the remaining
 in efficient retrieval of the artifacts.
 
 #### Git Repository
-Git repository is used to track the code. Along with the code, the metadata file of the artifacts which contain the
+A Git repository is used to track the code. Along with the code, the metadata file of the artifacts which contain the
 content hash of the artifacts are also tracked by git. The Data versioning framework (dvc) would use these files to
 retrieve the artifacts from the artifact storage repository.
