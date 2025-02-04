@@ -12,5 +12,4 @@ scikit_learn
 boto3
 scitokens
 cryptography
-ray
-google
+ray==2.34.0

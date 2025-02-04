@@ -16,7 +16,7 @@ setup(
         install_requires=["ml-metadata==1.15.0",
                           "dvc[ssh,s3]==3.51.1", "pandas", "retrying", "pyarrow", "neo4j", \
                             "tabulate", "click", "minio", "paramiko", "scikit_learn", "boto3", "scitokens", "cryptography", \
-                              "ray", "google"],  # add any additional packages that
+                              "ray==2.34.0"],  # add any additional packages that
         # needs to be installed along with your package. Eg: 'caer'
 
         keywords=['python', 'first package'],
