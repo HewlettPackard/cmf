@@ -54,7 +54,7 @@ source activate cmf/activate
 # Clone the CMF project from GitHub and install CMF
 git clone https://github.com/HewlettPackard/cmf
 pip install ./cmf
-pip install -r examples/example-get-started/src/requirements.txt
+pip install -r ./cmf/examples/example-get-started/src/requirements.txt
 ```
 
 ### Setup a cmf-server
