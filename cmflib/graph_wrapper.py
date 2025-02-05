@@ -255,7 +255,6 @@ class GraphDriver:
         #Match(n:Metrics) where n.Name contains 'metrics_1' return n
         search_syntax = "MATCH (n:{}) where '{}' in n.Name  \
                               return ELEMENTID(n) as node_id".format(node_label, node_name)
-        print(search_syntax)
         node_id = None
         with self.driver.session() as session:
             nodes = session.read_transaction(
@@ -268,7 +267,6 @@ class GraphDriver:
         #Match(n:Metrics) where n.Path contains 'metrics_1' return n
         search_syntax = "MATCH (n:{}) where '{}' in n.Path  \
                               return ELEMENTID(n) as node_id".format(node_label, node_path)
-        print(search_syntax)
         node_id = None
         with self.driver.session() as session:
             nodes = session.read_transaction(
