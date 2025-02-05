@@ -20,7 +20,6 @@ async def query_visualization_artifact_execution(mlmd_path: str, pipeline_name: 
     for type_, df in dict_art_id[pipeline_name].items():
         if type_ == "Environment":
             env_list = list(df["id"])
-            #print("env_list = ", env_list)
         for df_index, df_row in df.iterrows():
             if df_row['id'] in env_list:
                 continue
@@ -72,8 +71,6 @@ async def query_visualization_artifact_execution(mlmd_path: str, pipeline_name: 
             # If artifact is not taken as output by any executions then make parents of that given artifact to empty
             if(not output_flag):
                 dict_output["a_"+str(df_row['id'])] = []
-    print("dict_output = ", dict_output)
-    print("arti_exe_dict = ", arti_exe_dict)
 
     data_organized = topological_sort(dict_output, arti_exe_dict)
     return data_organized

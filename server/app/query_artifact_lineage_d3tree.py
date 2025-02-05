@@ -13,7 +13,6 @@ def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_ar
     for type_, df in dict_of_art_ids[pipeline_name].items():
         if type_ == "Environment":
             env_list = list(df["id"])
-            #print("env_list = ", env_list)
         for index, row in df.iterrows():
             #creating a dictionary of id and artifact name {id:artifact name}
             artifact_id = row['id']  # This will be an integer
