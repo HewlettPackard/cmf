@@ -92,7 +92,7 @@ def find_location(string, elements):
     return None
 
 #Query mlmd to get all the executions and its commands
-cmd_exe = {}
+cmd_exe: t.Dict[str, t.Tuple[int, str, str]] = {}
 cmf_query = cmfquery.CmfQuery(args.cmf_filename)
 pipelines: t.List[str] = cmf_query.get_pipeline_names()
 for pipeline in pipelines:
@@ -110,16 +110,23 @@ for pipeline in pipelines:
             if already same execution command has been captured previously use the latest
             execution id to associate the new metadata
             '''
-            if None is cmd_exe.get(exe_step, None):
-                cmd_exe[exe_step] = str(row['id']) + "," + stage + "," + pipeline
+            existing = cmd_exe.get(exe_step)
+            if existing is None:
+                cmd_exe[exe_step] = (row['id'], stage, pipeline)
             else:
-                if row['id'] > int(cmd_exe.get(exe_step, None).split(',')[0]):
-                    cmd_exe[exe_step] = str(row['id']) + "," + stage + "," + pipeline
+                """
+                If the execution command is already present, compare the stored execution id
+                (existing[0]) with the current row's execution id.
+                If the current execution id is greater (i.e., a later execution),
+                update the metadata for this command.
+                """
+                if row['id'] > existing[0]:
+                    cmd_exe[exe_step] = (row['id'], stage, pipeline)
 
 """
 Parse the dvc.lock file.
 """
-pipeline_dict = {}
+pipeline_dict: t.Dict[str, t.Dict[str, t.Dict[str, t.Union[t.List[str], t.List[dict]]]]] = {}
 with open("dvc.lock", 'r') as f:
     valuesYaml = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -182,10 +189,12 @@ for k, v in pipeline_dict.items():
                 context_name = k
                 lineage = execution_name+","+context_name+","+ pipeline_name
 
-                cmd = cmd_exe.get(str(' '.join(vvv)), None)
+                # Cast vvv to a list of strings to ensure join works correctly.
+                cmd_str = ' '.join(t.cast(t.List[str], vvv))
+                cmd = cmd_exe.get(cmd_str, None)
                 _ = metawriter.create_context(pipeline_stage=context_name)
 
-                ingest_metadata(lineage, vv, metawriter, str(' '.join(vvv)))
+                ingest_metadata(lineage, vv, metawriter, cmd_str)
 
 
 metawriter.log_dvc_lock("dvc.lock")

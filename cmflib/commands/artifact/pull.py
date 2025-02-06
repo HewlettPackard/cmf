@@ -72,8 +72,14 @@ class CmdArtifactPull(CmdBase):
             if len(token) > 1:
                 # in case of metrics we have multiple ':' in its url
                 # concating remaining tokens after removing pipeline_name using ':' delimiter
-                token = ":".join(token)
-                return token
+
+                # We assign the joined string to a new variable token_str instead of reassigning it to token
+                # because token was originally a list of strings (list[str]),
+                # and ":".join(token) returns a single string (str).
+                # Reassigning it to token would cause a type mismatch error with tools like mypy,
+                # as the variable type would conflict between list[str] and str.
+                token_str = ":".join(token)
+                return token_str
             return "".join(token)
 
     def extract_repo_args(self, type: str, name: str, url: str, current_directory: str):

@@ -15,6 +15,7 @@
 ###
 
 import os
+import typing as t
 from minio import Minio
 from minio.error import S3Error
 from cmflib.cmf_exception_handling import BucketNotFound
@@ -134,9 +135,12 @@ class MinioArtifacts:
             we need to remove the hash of the .dir from the object_name
             which will leave us with the artifact repo path
             """
-            repo_path = object_name.split("/")
+            # Ensure repo_path is treated as a List[str] initially
+            repo_path: t.List[str] = object_name.split("/")
             repo_path = repo_path[:len(repo_path)-2]
-            repo_path = "/".join(repo_path)
+            # Join the List[str] into a string and assign to a new variable 'repo_path_str'
+            # This avoids type conflict, as 'repo_path' is a list of strings, while 'repo_path_str' is a string.
+            repo_path_str = "/".join(repo_path)
 
 
             obj=True
@@ -149,7 +153,7 @@ class MinioArtifacts:
                 # we need a2/37457aa730c396e5acdbc5a64c8453
                 formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                 temp_download_loc = f"{download_loc}/{relpath}"
-                temp_object_name = f"{repo_path}/{formatted_md5}"
+                temp_object_name = f"{repo_path_str}/{formatted_md5}"
                 try:
                     obj = self.client.fget_object(bucket_name, temp_object_name, temp_download_loc)
                     if obj:
