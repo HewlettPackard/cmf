@@ -418,8 +418,12 @@ class Cmf:
         )
         
         self.execution_label_props["execution_command"] = cmd
-        
-            
+
+        # The following lines create an artifact of type 'Environment'.  
+        # This artifact captures detailed information about all installed packages in the environment.  
+        # (Additional Information: The package details are retrieved using `pip freeze` or `conda list`.  
+        # Note: `pip freeze` lists only Python packages, whereas `conda list` may also include non-Python dependencies.)  
+
         directory_path = self.ARTIFACTS_PATH
         os.makedirs(directory_path, exist_ok=True)
         packages = get_python_env(env_name=self.branch_name)
@@ -537,7 +541,19 @@ class Cmf:
             self,
             url: str,
         ) -> mlpb.Artifact:
-            "Used to log the python packages involved in the current execution"
+            """
+            Logs the Python environment used in the current execution by creating an 'Environment' artifact.
+
+            This function retrieves information about the Python environment, including package details,
+            and associates it with the current execution. It ensures that the environment's state is 
+            tracked using a DVC hash and links it with the execution in a metadata store.
+
+            Args:
+                url (str): The path to the artifact.
+
+            Returns:
+                    Artifact object from ML Metadata library associated with the new dataset artifact.
+            """
 
             git_repo = git_get_repo()
             name = re.split("/", url)[-1]
