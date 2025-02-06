@@ -49,12 +49,12 @@ cd cmf_getting_started_example
 
 # Create and activate Python virtual environment (the Python version may need to be adjusted depending on your system)
 python -m venv cmf/
-source activate cmf/activate
+source activate cmf/bin/activate
 
 # Clone the CMF project from GitHub and install CMF
 git clone https://github.com/HewlettPackard/cmf
 pip install ./cmf
-pip install -r ./cmf/examples/example-get-started/src/requirements.txt
+pip install -r ./cmf/examples/example-get-started/requirements.txt
 ```
 
 ### Setup a cmf-server
