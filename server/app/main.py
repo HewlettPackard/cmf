@@ -1,5 +1,5 @@
 # cmf-server api's
-from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +9,7 @@ from typing import List, Dict, Any
 from cmflib.cmfquery import CmfQuery
 import asyncio
 import asyncpg
+from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
@@ -27,9 +28,14 @@ from server.app.query_execution_lineage_d3force import query_execution_lineage_d
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
+from server.app.db.dbconfig import get_db
+from server.app.db.dbqueries import fetch_artifacts
 from pathlib import Path
 import os
 import json
+
+
+app = FastAPI()
 
 server_store_path = "/cmf-server/data/postgres_data"
 
@@ -389,7 +395,6 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
     #  checks if mlmd file exists on server
     response = None
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response = await query_visualization_artifact_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
     return response
@@ -411,6 +416,21 @@ async def update_global_exe_dict(pipeline_name):
     return
 
 
+@app.get("/artifact/{pipeline_name}/{artifact_type}")
+async def get_artifacts(
+    pipeline_name: str, 
+    artifact_type: str, 
+    filter_value: str = Query(None, description="Search based on value"), 
+    page: int = Query(1, ge=1),
+    #page_size: int = Query(10, ge=1, le=100),
+    sort_column: str = Query("name"),
+    sort_order: str = Query("ASC"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
+    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, page, 5, sort_column, sort_order)
+
+'''
 # # api to display artifacts available in mlmd file[from postgres]
 @app.get("/artifact/{pipeline_name}/{artifact_type}")
 async def artifact(request: Request, pipeline_name: str, artifact_type: str, 
@@ -424,8 +444,8 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
         user='myuser', 
         password='mypassword',
         database='mlmd', 
-        host='192.168.20.67',
-        port=5432,
+        host='10.93.244.204',
+        port="5432",
     )
 
     sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
@@ -533,6 +553,9 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
            }
 
 
+'''
+
+
 
 # api to display executions available in mlmd file[from postgres]
 @app.get("/execution/{pipeline_name}")
@@ -541,81 +564,84 @@ async def execution(request: Request, pipeline_name: str,
                    filter_value: str = Query("", description="Search based on value"),  
                    sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
                    ):
+    
+    try:
+        engine = get_connection()
+        print("connected success")
+    except Exception as ex:
+        print("connection failure = ",ex)
 
-        conn = await asyncpg.connect(
-        user='myuser', 
-        password='mypassword',
-        database='mlmd', 
-        host='192.168.20.67',
-        port=5432,
+    
+
+
+    rows = await conn.fetch(query2, pipeline_name, record_per_page, no_of_offset)
+    await conn.close()
+
+    sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
+    record_per_page = 5
+    no_of_offset = (active_page - 1) * record_per_page
+
+    query2 = """
+        WITH relevant_contexts AS (  
+            SELECT pc.context_id  
+            FROM parentcontext pc  
+            JOIN context c2 ON pc.parent_context_id = c2.id  
+            WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
+        ),    
+        execution_properties_agg AS
+        ( 
+            SELECT
+            execution_id,   
+            JSON_AGG(      
+                JSON_BUILD_OBJECT(        
+                    'name', ep.name,        
+                    'value',        
+                        CASE          
+                        WHEN ep.string_value IS NOT NULL AND ep.string_value != '' THEN ep.string_value         
+                        WHEN ep.bool_value IS NOT NULL THEN ep.bool_value::TEXT          
+                        WHEN ep.double_value IS NOT NULL THEN ep.double_value::TEXT          
+                        WHEN ep.int_value IS NOT NULL THEN ep.int_value::TEXT          
+                        WHEN ep.byte_value IS NOT NULL THEN ep.byte_value::TEXT          
+                        WHEN ep.proto_value IS NOT NULL THEN ep.proto_value::TEXT          
+                    ELSE NULL        
+                    END
+                )    
+            ) AS execution_properties  
+            FROM executionproperty ep  
+            GROUP BY execution_id
+        ),            
+        base_data AS ( 
+            SELECT e.id AS execution_id  
+            FROM execution e  
+            JOIN type t ON e.type_id = t.id  
+            JOIN association ass ON e.id = ass.execution_id  
+            JOIN context c ON ass.context_id = c.id  
+            WHERE ass.context_id IN (SELECT context_id FROM relevant_contexts)
         )
+        SELECT  bd.*,  ep_agg.execution_properties,  
+        COUNT(*) OVER() AS total_records
+        FROM base_data bd
+        LEFT JOIN execution_properties_agg ep_agg ON  bd.execution_id = ep_agg.execution_id
+        WHERE
+        CONCAT(
+            COALESCE(ep_agg.execution_properties::TEXT, '')
+        ) LIKE $4
+        ORDER BY bd.execution_id ASC -- Replace with a relevant column for sorting
+        LIMIT $2
+        OFFSET $3;
+        """
+    
+    rows = await conn.fetch(query2, pipeline_name, record_per_page, no_of_offset, f"%{filter_value}%")     
 
-        # print(sort_order)
+    if rows:
+        total_record = rows[0]["total_records"]
+    else:
+        total_record = 0
 
-        sort_order = "ASC" if sort_order.lower() == "asc" else "DESC"
-        record_per_page = 5
-        no_of_offset = (active_page - 1) * record_per_page
+    return {    "total_items": total_record,
+                "items": [dict(row) for row in rows]
+    }   
 
-        query2 = """
-            WITH relevant_contexts AS (  
-                SELECT pc.context_id  
-                FROM parentcontext pc  
-                JOIN context c2 ON pc.parent_context_id = c2.id  
-                WHERE c2.name = $1 -- Input for context.name (which is actually a parent_context)
-            ),    
-            execution_properties_agg AS
-            ( 
-                SELECT
-                execution_id,   
-                JSON_AGG(      
-                    JSON_BUILD_OBJECT(        
-                        'name', ep.name,        
-                        'value',        
-                         CASE          
-                            WHEN ep.string_value IS NOT NULL AND ep.string_value != '' THEN ep.string_value         
-                            WHEN ep.bool_value IS NOT NULL THEN ep.bool_value::TEXT          
-                            WHEN ep.double_value IS NOT NULL THEN ep.double_value::TEXT          
-                            WHEN ep.int_value IS NOT NULL THEN ep.int_value::TEXT          
-                            WHEN ep.byte_value IS NOT NULL THEN ep.byte_value::TEXT          
-                            WHEN ep.proto_value IS NOT NULL THEN ep.proto_value::TEXT          
-                        ELSE NULL        
-                        END
-                    )    
-                ) AS execution_properties  
-                FROM executionproperty ep  
-                GROUP BY execution_id
-            ),            
-            base_data AS ( 
-                SELECT e.id AS execution_id  
-                FROM execution e  
-                JOIN type t ON e.type_id = t.id  
-                JOIN association ass ON e.id = ass.execution_id  
-                JOIN context c ON ass.context_id = c.id  
-                WHERE ass.context_id IN (SELECT context_id FROM relevant_contexts)
-            )
-            SELECT  bd.*,  ep_agg.execution_properties,  
-            COUNT(*) OVER() AS total_records
-            FROM base_data bd
-            LEFT JOIN execution_properties_agg ep_agg ON  bd.execution_id = ep_agg.execution_id
-            WHERE
-            CONCAT(
-                COALESCE(ep_agg.execution_properties::TEXT, '')
-            ) LIKE $4
-            ORDER BY bd.execution_id ASC -- Replace with a relevant column for sorting
-            LIMIT $2
-            OFFSET $3;
-            """
-        
-        rows = await conn.fetch(query2, pipeline_name, record_per_page, no_of_offset, f"%{filter_value}%")     
-
-        if rows:
-            total_record = rows[0]["total_records"]
-        else:
-            total_record = 0
-
-        return {    "total_items": total_record,
-                    "items": [dict(row) for row in rows]
-        }   
     
 
 @app.get("/search")
@@ -627,9 +653,11 @@ async def search_item(request: Request,
         user='myuser', 
         password='mypassword',
         database='mlmd', 
-        host='192.168.20.67',
+        host='10.93.244.204',
         port=5432,
-        )
+    )
+
+    print(value)
 
     query3 = """
         WITH ranked_data AS (SELECT

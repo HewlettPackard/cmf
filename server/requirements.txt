@@ -3,9 +3,10 @@ fastapi-pagination
 uvicorn
 pydantic
 minio
-dvc[s3,ssh]==2.27.0
+dvc[s3,ssh]==3.51.0
 pandas
 python-multipart
+sqlalchemy
 asyncpg
-psycopg2-binary
 python-dotenv
+psycopg[binary]
