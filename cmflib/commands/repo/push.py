@@ -248,4 +248,19 @@ def add_parser(subparsers, parent_parser):
         metavar="<tensorboard>"
     )
 
+    parser.add_argument(
+        "-e",
+        "--execution",
+        help="Specify Execution id.",
+        default=None,
+        metavar="<exec_id>",
+    )
+
+    parser.add_argument(
+        "-t",
+        "--tensorboard",
+        help="Specify path to tensorboard logs for the pipeline.",
+        metavar="<tensorboard>"
+    )
+
     parser.set_defaults(func=CmdRepoPush)

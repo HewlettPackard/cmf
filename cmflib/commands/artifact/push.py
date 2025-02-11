@@ -39,6 +39,9 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdArtifactPush(CmdBase):
+    def __init__(self, args):
+        self.args = args
+
     def run(self):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()

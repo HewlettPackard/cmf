@@ -41,6 +41,9 @@ from cmflib.cmf_exception_handling import (
 )
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
+    def __init__(self, args):
+        self.args = args
+
     def run(self):
         # Get url from config
         cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
