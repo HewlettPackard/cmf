@@ -62,7 +62,7 @@ async def get_model_data(query: CmfQuery, modelId: int):
     if not exe_ids:
          return model_data_df, model_exe_df, model_input_df, model_output_df
     model_exe_df = query.get_all_executions_by_ids_list(exe_ids)
-    model_exe_df.drop(columns=['Python_Env', 'Git_Start_Commit', 'Git_End_Commit'], inplace=True)
+    model_exe_df.drop(columns=['Git_Start_Commit', 'Git_End_Commit'], inplace=True)
 
     in_art_ids =  []
     # input artifacts
@@ -251,10 +251,11 @@ def create_unique_executions(query: CmfQuery, req_info) -> str:
                     for uuid in uuids:
                         if uuid in list_executions_exists:
                             stage['executions'].remove(cmf_exec)
-
+        
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
     for i in mlmd_data["Pipeline"]:
+
         if len(i['stages']) == 0 :
             status="exists"
         else:

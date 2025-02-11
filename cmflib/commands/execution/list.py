@@ -22,7 +22,14 @@ import pandas as pd
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 from tabulate import tabulate
-from cmflib.dvc_wrapper import dvc_get_config
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound,
+    FileNotFound,
+    DuplicateArgumentNotAllowed,
+    MissingArgument,
+    MsgSuccess,
+    ExecutionsNotFound
+)
 
 class CmdExecutionList(CmdBase):
 
@@ -74,19 +81,13 @@ class CmdExecutionList(CmdBase):
             start_index = end_index 
 
     def run(self):
-        # Check if 'cmf' is configured
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            return msg
-        
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-            return "Error: You can only provide one file name using the -f flag."
+            raise DuplicateArgumentNotAllowed("file_name", "-f")
         elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string (""). 
-            return "Error: Missing File name"
+            raise MissingArgument("file name")
         else:
             mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
@@ -94,16 +95,16 @@ class CmdExecutionList(CmdBase):
         
         current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):  
-            return f"Error: {mlmd_file_name} doesn't exists in {current_directory} directory."
+            raise FileNotFound(mlmd_file_name, current_directory)
 
         # Creating cmfquery object.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
         # Check if pipeline exists in mlmd.
         if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:  
-            return "Error: You can only provide one pipeline name using the -p flag."
+            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
         elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").   
-            return "Error: Missing pipeline name"
+            raise MissingArgument("pipeline name")
         else:
             pipeline_name = self.args.pipeline_name[0]
         
@@ -111,19 +112,15 @@ class CmdExecutionList(CmdBase):
 
         # Check if the DataFrame is empty, indicating the pipeline name does not exist.
         if df.empty:    
-            return "Pipeline does not exist.."
+            raise PipelineNotFound(pipeline_name)
         else:
-            # Drop the 'Python_Env' column if it exists in the DataFrame.
-            if "Python_Env" in df.columns:
-                df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers.
-
             # Process execution ID if provided
             if not self.args.execution_id:         # If self.args.execution_id is None or an empty list ([]).
                 pass
             elif len(self.args.execution_id) > 1:  # If the user provided more than one execution_id.  
-                return "Error: You can only provide one execution id using the -e flag."
+                raise DuplicateArgumentNotAllowed("execution_id", "-e")
             elif not self.args.execution_id[0]:    # self.args.execution_id[0] is an empty string ("").
-                return "Error: Missing execution id"
+                raise MissingArgument("execution id")
             else:
                 if self.args.execution_id[0].isdigit():
                     if int(self.args.execution_id[0]) in list(df['id']): # Converting series to list.
@@ -157,11 +154,11 @@ class CmdExecutionList(CmdBase):
                         )
                         print(table)
                         print()
-                        return "Done"
-                return "Execution id does not exist.."  
+                        return MsgSuccess(msg_str = "Done.")
+                raise ExecutionsNotFound(self.args.execution_id[0])
     
             self.display_table(df)             
-            return "Done"
+            return MsgSuccess(msg_str = "Done.")
     
     
 def add_parser(subparsers, parent_parser):
