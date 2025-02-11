@@ -78,10 +78,18 @@ async def fetch_artifacts(
 
     # Execute query
     result = await db.execute(query, {"pipeline_name": pipeline_name, "search_query": search_query})
-    print("result",result.mappings().all())
-    print("result",type(result.mappings().all()))
-    return result.mappings().all()
 
+    # Fetch all rows as dictionaries
+    rows = result.mappings().all()
+
+    if rows:
+        total_record = rows[0]["total_records"]
+    else:
+        total_record = 0
+
+    return {    "total_items": total_record,
+                "items": [dict(row) for row in rows]
+           }
 
     '''
     relevant_contexts = select(
