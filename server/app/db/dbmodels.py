@@ -117,15 +117,59 @@ attribution = Table(
     Column("artifact_id", Integer, nullable=False),
 
     # Unique Constraint
-    UniqueConstraint("context_id", "artifact_id", name="attribution_context_id_artifact_id_key")
-  
+    UniqueConstraint("context_id", "artifact_id", name="attribution_context_id_artifact_id_key") 
 )
 
 
+execution = Table(
+    "execution", metadata,
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column("type_id", Integer, nullable=False),
+    Column("last_known_state", Integer),
+    Column("name", String(255)),
+    Column("external_id", String(255), unique=True),
+    Column("create_time_since_epoch", BigInteger, nullable=False),
+    Column("last_update_time_since_epoch", BigInteger, nullable=False),
+    
+    # Indexes
+    Index("idx_execution_create_time_since_epoch", "create_time_since_epoch"),
+    Index("idx_execution_external_id", "external_id"),
+    Index("idx_execution_last_update_time_since_epoch", "last_update_time_since_epoch"),
+    
+    # Constraints
+    UniqueConstraint("type_id", "name", name="uniqueexecutiontypename")
+    # UniqueConstraint("external_id", name="execution_external_id_key")
+)
 
 
+executionproperty = Table(
+    "executionproperty", metadata,
+    Column("execution_id", Integer, nullable=False),
+    Column("name", String(255), nullable=False),
+    Column("is_custom_property", Boolean, nullable=False),
+    Column("int_value", Integer),
+    Column("double_value", Double),
+    Column("string_value", Text),
+    Column("byte_value", LargeBinary),
+    Column("proto_value", LargeBinary),
+    Column("bool_value", Boolean),
+    
+    # Primary Key
+    UniqueConstraint("execution_id", "name", "is_custom_property", name="executionproperty_pkey"),
+    
+    # Indexes
+    Index("idx_execution_property_double", "name", "is_custom_property", "double_value"),
+    Index("idx_execution_property_int", "name", "is_custom_property", "int_value"),
+    Index("idx_execution_property_string", "name", "is_custom_property", "string_value")
+)
 
 
+association = Table(
+    "association", metadata, 
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column("context_id", Integer, nullable=False),
+    Column("execution_id", Integer, nullable=False),
 
-
-
+    # Unique Constraint
+    UniqueConstraint("context_id", "execution_id", name="association_context_id_execution_id_key") 
+)

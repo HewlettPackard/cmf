@@ -331,7 +331,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
 async def artifact_types(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        artifact_types = await async_api(get_artifact_types, server_store_path)
+        artifact_types = await async_api(get_artifact_types, query)
         if "Environment" in artifact_types:
             artifact_types.remove("Environment")
         return artifact_types
