@@ -134,9 +134,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
                             cmf_class.log_execution_metrics_from_client(event["artifact"]["name"], custom_props)
                         elif artifact_type == "Dataslice":            
                             dataslice = cmf_class.create_dataslice(event["artifact"]["name"])
-                            dataslice.commit_existing(uri, custom_props)                    
+                            dataslice.log_dataslice_from_client(uri, props, custom_props)                    
                         elif artifact_type == "Step_Metrics":                          
-                            cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, custom_props)
+                            cmf_class.log_step_metrics_from_client(event["artifact"]["name"], uri, props, 
+                                                                   custom_props)
+                        elif artifact_type == "Environment":
+                            cmf_class.log_python_env_from_client(artifact_name, uri, props)
                         else:
                             pass
                     except AlreadyExistsError as e:
@@ -194,6 +197,3 @@ def create_original_time_since_epoch(mlmd_data):
                 # print(k['artifact']['custom_properties']['original_create_time_since_epoch'])
 
     return mlmd_data
-
-
-

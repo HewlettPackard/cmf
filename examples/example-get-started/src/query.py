@@ -11,8 +11,7 @@ def _print_executions_in_stage(cmf_query: cmfquery.CmfQuery, stage_name: str) ->
     print('\n')
     print('\n')
     df: pd.DataFrame = cmf_query.get_all_executions_in_stage(stage_name)
-    # dropping Python_Env value in query output as it is very big in size most of the time
-    df.drop(columns=['Git_Start_Commit', 'Git_End_Commit', 'Python_Env'], inplace=True, axis=1)
+    df.drop(columns=['Git_Start_Commit', 'Git_End_Commit'], inplace=True, axis=1)
     print(tabulate(df, headers='keys', tablefmt='psql'))
 
 

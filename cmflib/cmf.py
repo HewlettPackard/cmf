@@ -20,6 +20,7 @@ import uuid
 import re
 import os
 import sys
+import yaml
 import pandas as pd
 import typing as t
 
@@ -54,7 +55,18 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
+from cmflib.cmf_server import (
+    merge_created_context, 
+    merge_created_execution, 
+    log_python_env_from_client, 
+    log_dataset_with_version,
+    log_model_with_version, 
+    log_execution_metrics_from_client, 
+    log_step_metrics_from_client,
+    log_dataslice_from_client,
+)
+
 from cmflib.cmf_commands_wrapper import (
     _metadata_push,
     _metadata_pull,
@@ -105,16 +117,9 @@ class Cmf:
     """
 
     # pylint: disable=too-many-instance-attributes
-    # Reading CONFIG_FILE variable
-    cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
-    if os.path.exists(cmf_config):
-        attr_dict = CmfConfig.read_config(cmf_config)
-        __neo4j_uri = attr_dict.get("neo4j-uri", "")
-        __neo4j_password = attr_dict.get("neo4j-password", "")
-        __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(
         self,
@@ -172,6 +177,7 @@ class Cmf:
             )
         os.chdir(logging_dir)
 
+    # function used to load neo4j params for cmf client
     @staticmethod
     def __load_neo4j_params():
          cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
@@ -181,7 +187,7 @@ class Cmf:
              Cmf.__neo4j_password = attr_dict.get("neo4j-password", "")
              Cmf.__neo4j_user = attr_dict.get("neo4j-user", "")
 
-
+    # function used to load neo4j params for cmf-server
     @staticmethod
     def __get_neo4j_server_config():
         Cmf.__neo4j_uri = os.getenv('NEO4J_URI', "")
@@ -278,47 +284,7 @@ class Cmf:
             )
         return ctx
 
-    def merge_created_context(
-        self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None
-    ) -> mlpb.Context:
-        """Merge created context.
-        Every call creates a unique pipeline stage.
-        Created for metadata push purpose.
-        Example:
-
-            ```python
-            #Create context
-            # Import CMF
-            from cmflib.cmf import Cmf
-            from ml_metadata.proto import metadata_store_pb2 as mlpb
-            # Create CMF logger
-            cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
-            # Create context
-            context: mlmd.proto.Context = cmf.merge_created_context(
-                pipeline_stage="Test-env/prepare",
-                custom_properties ={"user-metadata1": "metadata_value"}
-            ```
-            Args:
-                Pipeline_stage: Pipeline_Name/Stage_name.
-                custom_properties: Developers can provide key value pairs with additional properties of the execution that
-                    need to be stored.
-            Returns:
-                Context object from ML Metadata library associated with the new context for this stage.
-        """
-
-        custom_props = {} if custom_properties is None else custom_properties
-        ctx = get_or_create_run_context(
-            self.store, pipeline_stage, custom_props)
-        self.child_context = ctx
-        associate_child_to_parent_context(
-            store=self.store, parent_context=self.parent_context, child_context=ctx
-        )
-        if self.graph:
-            self.driver.create_stage_node(
-                pipeline_stage, self.parent_context, ctx.id, custom_props
-            )
-        return ctx
-
+    
     def update_context(
         self,
         type_name: str,
@@ -421,7 +387,7 @@ class Cmf:
         git_repo = git_get_repo()
         git_start_commit = git_get_commit()
         cmd = str(sys.argv) if cmd is None else cmd
-        python_env=get_python_env()
+
         self.execution = create_new_execution_in_existing_run_context(
             store=self.store,
             # Type field when re-using executions
@@ -435,7 +401,6 @@ class Cmf:
             pipeline_type=self.parent_context.name,
             git_repo=git_repo,
             git_start_commit=git_start_commit,
-            python_env=python_env,
             custom_properties=custom_props,
             create_new_execution=create_new_execution,
         )
@@ -455,6 +420,37 @@ class Cmf:
         )
         
         self.execution_label_props["execution_command"] = cmd
+
+        # The following lines create an artifact of type 'Environment'.  
+        # This artifact captures detailed information about all installed packages in the environment.  
+        # (Additional Information: The package details are retrieved using `pip freeze` or `conda list`.  
+        # Note: `pip freeze` lists only Python packages, whereas `conda list` may also include non-Python dependencies.)  
+
+        directory_path = self.ARTIFACTS_PATH
+        os.makedirs(directory_path, exist_ok=True)
+        packages = get_python_env(env_name=self.branch_name)
+        if isinstance(packages, list):
+            output = f"{packages}\n"
+            md5_hash = get_md5_hash(output)
+            python_env_file_path = os.path.join(directory_path, f"python_env_{md5_hash}.txt")
+            # create file if it doesn't exists
+            if not os.path.exists(python_env_file_path):
+                #print(f"{python_env_file_path} doesn't exists!!")
+                with open(python_env_file_path, 'w') as file:
+                    for package in packages:
+                        file.write(f"{package}\n")
+
+        else:
+            # in case output is dict
+            env_output = yaml.dump(packages, sort_keys=False)
+            md5_hash = get_md5_hash(env_output)
+            python_env_file_path = os.path.join(directory_path, f"python_env_{md5_hash}.yaml")
+            # create file if it doesn't exists
+            if not os.path.exists(python_env_file_path):
+                #print(f"{python_env_file_path} doesn't exists!!")
+                with open(python_env_file_path, 'w') as file:
+                    file.write(env_output)
+
         if self.graph:
             self.driver.create_execution_node(
             self.execution_name,
@@ -464,6 +460,11 @@ class Cmf:
             self.execution.id,
             custom_props,
         )
+            
+        custom_props["Python_Env"] = python_env_file_path
+        self.update_execution(self.execution.id, custom_props)
+        # link the artifact to execution if it exists and creates artifact if it doesn't
+        self.log_python_env(python_env_file_path)
         os.chdir(logging_dir)
         return self.execution
 
@@ -497,17 +498,14 @@ class Cmf:
         if self.execution is None:
             print("Error - no execution id")
             return
-        execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[
-            0
-        ]
+        execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
         if custom_properties:
             for key, value in custom_properties.items():
                 if isinstance(value, int):
                     self.execution.custom_properties[key].int_value = value
                 else:
-                    self.execution.custom_properties[key].string_value = str(
-                        value)
+                    self.execution.custom_properties[key].string_value = str(value)
         self.store.put_executions([self.execution])
         c_props = {}
         for k, v in self.execution.custom_properties.items():
@@ -516,7 +514,7 @@ class Cmf:
             if val_type == "string_value":
                 val = self.execution.custom_properties[k].string_value
             else:
-                val = str(v).split(":")[1]
+                val = str(v).split(":")[1].strip()
             # The properties value are stored in the format type:value hence,
             # taking only value
             self.execution_label_props[key] = val
@@ -541,126 +539,109 @@ class Cmf:
             )
         return self.execution
 
-    def merge_created_execution(
-        self,
-        execution_type: str,
-        execution_cmd: str,
-        properties: t.Optional[t.Dict] = None,
-        custom_properties: t.Optional[t.Dict] = None,
-        orig_execution_name:str = "",
-        create_new_execution:bool = True
-    ) -> mlpb.Execution:
-        """Merge Created execution.
-        Every call creates a unique execution. Execution can only be created within a context, so
-        [create_context][cmflib.cmf.Cmf.create_context] must be called first.
-        Every call occurs when metadata push or pull is processed. Data from pre-existing executions is used
-        to create new executions with additional data(Required on cmf-server).
-        Example:
-            ```python
-            # Import CMF
-            from cmflib.cmf import Cmf
-            from ml_metadata.proto import metadata_store_pb2 as mlpb
-            # Create CMF logger
-            cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
-            # Create or reuse context for this stage
-            context: mlmd.proto.Context = cmf.merge_created_context(
-                pipeline_stage="prepare",
-                custom_properties ={"user-metadata1": "metadata_value"}
-            )
-            # Create a new execution for this stage run
-            execution: mlmd.proto.Execution = cmf.merge_created_execution(
-                execution_type="Prepare",
-                properties={"Context_Type":""},
-                custom_properties = {"split": split, "seed": seed},
-                orig_execution_name=execution_name
-            )
-            ```
-        Args:
-            execution_type: Type of the execution.(when create_new_execution is False, this is the name of execution)
-            properties: Properties of Execution.
-            custom_properties: Developers can provide key value pairs with additional properties of the execution that
-                need to be stored.
+    def log_python_env(
+            self,
+            url: str,
+        ) -> mlpb.Artifact:
+            """
+            Logs the Python environment used in the current execution by creating an 'Environment' artifact.
 
-            cmd: command used to run this execution.
+            This function retrieves information about the Python environment, including package details,
+            and associates it with the current execution. It ensures that the environment's state is 
+            tracked using a DVC hash and links it with the execution in a metadata store.
 
-            create_new_execution:bool = True, This can be used by advanced users to re-use executions
-                This is applicable, when working with framework code like mmdet, pytorch lightning etc, where the
-                custom call-backs are used to log metrics.
-                if create_new_execution is True(Default), execution_type parameter will be used as the name of the execution type.
-                if create_new_execution is False, if existing execution exist with the same name as execution_type.
-                it will be reused.
-                Only executions created with  create_new_execution as False will have "name" as a property.
+            Args:
+                url (str): The path to the artifact.
 
+            Returns:
+                    Artifact object from ML Metadata library associated with the new dataset artifact.
+            """
 
-        Returns:
-            Execution object from ML Metadata library associated with the execution for this stage.
-        """
-        # Initializing the execution related fields
-        properties = {} if properties is None else properties
-        self.metrics = {}
-        self.input_artifacts = []
-        self.execution_label_props = {}
-        custom_props = {} if custom_properties is None else custom_properties
-        # print(custom_props)
-        git_repo = properties.get("Git_Repo", "")
-        git_start_commit = properties.get("Git_Start_Commit", "")
-        python_env = properties.get("Python_Env", "")
-        #name = properties.get("Name", "")
-        create_new_execution = True
-        execution_name = execution_type
-        #exe.name property is passed as the orig_execution_name.
-        #if name is not an empty string then we are re-using executions
-        if orig_execution_name != "":
-            create_new_execution = False
-            execution_name = orig_execution_name
+            git_repo = git_get_repo()
+            name = re.split("/", url)[-1]
+            existing_artifact = []
 
-        self.execution = create_new_execution_in_existing_run_context(
-            store=self.store,
-            execution_type_name=execution_type, # Type field when re-using executions
-            execution_name=execution_name, #Name field if we are re-using executionsname
-                                           #Type field , if creating new executions always
-            context_id=self.child_context.id,
-            execution=execution_cmd,
-            pipeline_id=self.parent_context.id,
-            pipeline_type=self.parent_context.name,
-            git_repo=git_repo,
-            git_start_commit=git_start_commit,
-            python_env=python_env,
-            custom_properties=custom_props,
-            create_new_execution=create_new_execution
-        )
+            commit_output(url, self.execution.id)
+            c_hash = dvc_get_hash(url)
 
-        uuids = ""
+            if c_hash == "":
+                print("Error in getting the dvc hash,return without logging")
+                return
 
-        uuids = self.execution.properties["Execution_uuid"].string_value
-        if uuids:
-            # In case of a reusable execution, the execution UUID is repeated each time while pushing MLMD inside the server.  
-            # To resolve this, taking the union of  properties["Execution_uuid"] and uuids.
-            set_of_uuids = set(uuids.split(",") + properties["Execution_uuid"].split(","))
-            self.execution.properties["Execution_uuid"].string_value = ",".join(set_of_uuids)
-        else:
-            self.execution.properties["Execution_uuid"].string_value =\
-                properties["Execution_uuid"]
-        self.store.put_executions([self.execution])
-        self.execution_name = str(self.execution.id) + "," + execution_type
-        self.execution_command = execution_cmd
-        for k, v in custom_props.items():
-            k = re.sub("-", "_", k)
-            self.execution_label_props[k] = v
-        self.execution_label_props["Execution_Name"] = (
-            execution_type + ":" + str(self.execution.id)
-        )
-        self.execution_label_props["execution_command"] = execution_cmd
-        if self.graph:
-            self.driver.create_execution_node(
-                self.execution_name,
-                self.child_context.id,
-                self.parent_context,
-                execution_cmd,
-                self.execution.id,
-                custom_props,
-            )
-        return self.execution
+            commit = c_hash
+            dvc_url = dvc_get_url(url)
+            dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
+            url = url + ":" + c_hash
+            if c_hash and c_hash.strip:
+                existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
+
+            if existing_artifact and len(existing_artifact) != 0:
+                existing_artifact = existing_artifact[0]
+                uri = c_hash
+                artifact = link_execution_to_artifact(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    uri=uri,
+                    input_name=url,
+                    event_type=mlpb.Event.Type.INPUT,
+                )
+            else:
+                uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
+                artifact = create_new_artifact_event_and_attribution(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    context_id=self.child_context.id,
+                    uri=uri,
+                    name=url,
+                    type_name="Environment",
+                    event_type=mlpb.Event.Type.INPUT,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing c_hash value to commit
+                        "Commit": str(commit),
+                        "url": str(dvc_url_with_pipeline),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
+                    milliseconds_since_epoch=int(time.time() * 1000),
+                )
+            custom_props = {}
+            custom_props["git_repo"] = git_repo
+            custom_props["Commit"] = commit
+            self.execution_label_props["git_repo"] = git_repo
+            self.execution_label_props["Commit"] = commit
+
+            if self.graph:
+                self.driver.create_env_node(
+                    name,
+                    url,
+                    uri,
+                    "input",
+                    self.execution.id,
+                    self.parent_context,
+                    custom_props,
+                )
+                self.input_artifacts.append(
+                    {
+                        "Name": name,
+                        "Path": url,
+                        "URI": uri,
+                        "Event": "input",
+                        "Execution_Name": self.execution_name,
+                        "Type": "Environment",
+                        "Execution_Command": self.execution_command,
+                        "Pipeline_Id": self.parent_context.id,
+                        "Pipeline_Name": self.parent_context.name,
+                    }
+                )
+                # commented this because input links from 'Env' node to executions 
+                # are getting created without running this piece of code
+                #self.driver.create_execution_links(uri, name, "Environment")
+            return artifact
+
 
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
@@ -874,142 +855,6 @@ class Cmf:
             put_artifact(self.store, dup_art)
         return dup_artifact
 
-    def log_dataset_with_version(
-        self,
-        url: str,
-        version: str,
-        event: str,
-        props: t.Optional[t.Dict] = None,
-        custom_properties: t.Optional[t.Dict] = None,
-    ) -> mlpb.Artifact:
-        """Logs a dataset when the version (hash) is known.
-           Example: 
-             ```python 
-             artifact: mlpb.Artifact = cmf.log_dataset_with_version( 
-                 url="path/to/dataset", 
-                 version="abcdef",
-                 event="output",
-                 props={ "git_repo": "https://github.com/example/repo",
-                         "url": "/path/in/repo", },
-                 custom_properties={ "custom_key": "custom_value", }, 
-                 ) 
-             ```
-             Args: 
-                url: Path to the dataset. 
-                version: Hash or version identifier for the dataset. 
-                event: Takes arguments `INPUT` or `OUTPUT`. 
-                props: Optional properties for the dataset (e.g., git_repo, url). 
-                custom_properties: Optional custom properties for the dataset.
-             Returns:
-                Artifact object from the ML Protocol Buffers library associated with the new dataset artifact. 
-        """
-
-        props = {} if props is None else props
-        custom_props = {} if custom_properties is None else custom_properties
-        git_repo = props.get("git_repo", "")
-        name = url
-        event_type = mlpb.Event.Type.OUTPUT
-        existing_artifact = []
-        c_hash = version
-        if event.lower() == "input":
-            event_type = mlpb.Event.Type.INPUT
-
-        # dataset_commit = commit_output(url, self.execution.id)
-
-        dataset_commit = version
-        url = url + ":" + c_hash
-        if c_hash and c_hash.strip:
-            existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
-
-        # To Do - What happens when uri is the same but names are different
-        if existing_artifact and len(existing_artifact) != 0:
-            existing_artifact = existing_artifact[0]
-
-            # Quick fix- Updating only the name
-            if custom_properties is not None:
-                self.update_existing_artifact(
-                    existing_artifact, custom_properties)
-            uri = c_hash
-            # update url for existing artifact
-            self.update_dataset_url(existing_artifact, props.get("url", ""))
-            artifact = link_execution_to_artifact(
-                store=self.store,
-                execution_id=self.execution.id,
-                uri=uri,
-                input_name=url,
-                event_type=event_type,
-            )
-        else:
-            # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
-            #   url = url + ":" + str(self.execution.id)
-            uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
-                execution_id=self.execution.id,
-                context_id=self.child_context.id,
-                uri=uri,
-                name=url,
-                type_name="Dataset",
-                event_type=event_type,
-                properties={
-                    "git_repo": str(git_repo),
-                    "Commit": str(dataset_commit),
-                    "url": props.get("url", " "),
-                },
-                artifact_type_properties={
-                    "git_repo": mlpb.STRING,
-                    "Commit": mlpb.STRING,
-                    "url": mlpb.STRING,
-                },
-                custom_properties=custom_props,
-                milliseconds_since_epoch=int(time.time() * 1000),
-            )
-        custom_props["git_repo"] = git_repo
-        custom_props["Commit"] = dataset_commit
-        self.execution_label_props["git_repo"] = git_repo
-        self.execution_label_props["Commit"] = dataset_commit
-
-        if self.graph:
-            self.driver.create_dataset_node(
-                name,
-                url,
-                uri,
-                event,
-                self.execution.id,
-                self.parent_context,
-                custom_props,
-            )
-            if event.lower() == "input":
-                self.input_artifacts.append(
-                    {
-                        "Name": name,
-                        "Path": url,
-                        "URI": uri,
-                        "Event": event.lower(),
-                        "Execution_Name": self.execution_name,
-                        "Type": "Dataset",
-                        "Execution_Command": self.execution_command,
-                        "Pipeline_Id": self.parent_context.id,
-                        "Pipeline_Name": self.parent_context.name,
-                    }
-                )
-                self.driver.create_execution_links(uri, name, "Dataset")
-            else:
-                child_artifact = {
-                    "Name": name,
-                    "Path": url,
-                    "URI": uri,
-                    "Event": event.lower(),
-                    "Execution_Name": self.execution_name,
-                    "Type": "Dataset",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
-                )
-        return artifact
 
     # Add the model to dvc do a git commit and store the commit id in MLMD
     def log_model(
@@ -1140,7 +985,7 @@ class Cmf:
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        # custom_properties["Commit"] = model_commit
+        custom_properties["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
         #To DO model nodes should be similar to dataset nodes when we create neo4j
         if self.graph:
@@ -1183,226 +1028,6 @@ class Cmf:
                 )
         os.chdir(logging_dir)
         return artifact
-
-    # Add the model to dvc do a git commit and store the commit id in MLMD
-    def log_model_with_version(
-        self,
-        path: str,
-        event: str,
-        props=None,
-        custom_properties: t.Optional[t.Dict] = None,
-    ) -> object:
-        """Logs a model when the version(hash) is known
-         The model is added to dvc and the metadata file (.dvc) gets committed to git.
-        Example:
-            ```python
-            artifact: mlmd.proto.Artifact= cmf.log_model_with_version(
-                path="path/to/model.pkl",
-                event="output",
-                props={
-                        "url": "/home/user/local-storage/bf/629ccd5cd008066b72c04f9a918737",
-                        "model_type": "RandomForestClassifier",
-                        "model_name": "RandomForestClassifier:default",
-                        "Commit": "commit 1146dad8b74cae205db6a3132ea403db1e4032e5",
-                        "model_framework": "SKlearn",
-                       },
-                custom_properties={
-                        "uri": "bf629ccd5cd008066b72c04f9a918737",
-                },
-
-            )
-            ```
-        Args:
-            path: Path to the model file.
-            event: Takes arguments `INPUT` OR `OUTPUT`.
-            props: Model artifact properties.
-            custom_properties: The model properties.
-        Returns:
-            Artifact object from ML Metadata library associated with the new model artifact.
-        """
-
-        if custom_properties is None:
-            custom_properties = {}
-        custom_props = {} if custom_properties is None else custom_properties
-        name = re.split("/", path)[-1]
-        event_type = mlpb.Event.Type.OUTPUT
-        existing_artifact = []
-        if event.lower() == "input":
-            event_type = mlpb.Event.Type.INPUT
-
-        # props["commit"] = "" # To do get from incoming data
-        c_hash = props.get("uri", " ")
-        # If connecting to an existing artifact - The name of the artifact is used as path/steps/key
-        model_uri = path + ":" + c_hash
-        # dvc_url = dvc_get_url(path, False)
-        url = props.get("url", "")
-        # uri = ""
-        if c_hash and c_hash.strip():
-            uri = c_hash.strip()
-            existing_artifact.extend(self.store.get_artifacts_by_uri(uri))
-        else:
-            raise RuntimeError("Model commit failed, Model uri empty")
-
-        if (
-            existing_artifact
-            and len(existing_artifact) != 0
-        ):
-            # update url for existing artifact
-            existing_artifact = self.update_model_url(existing_artifact, url)
-            artifact = link_execution_to_artifact(
-                store=self.store,
-                execution_id=self.execution.id,
-                uri=c_hash,
-                input_name=model_uri,
-                event_type=event_type,
-            )
-            model_uri = artifact.name
-        else:
-            uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
-            model_uri = model_uri + ":" + str(self.execution.id)
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
-                execution_id=self.execution.id,
-                context_id=self.child_context.id,
-                uri=uri,
-                name=model_uri,
-                type_name="Model",
-                event_type=event_type,
-                properties={
-                    "model_framework": props.get("model_framework", ""),
-                    "model_type": props.get("model_type", ""),
-                    "model_name": props.get("model_name", ""),
-                    "Commit": props.get("Commit", ""),
-                    "url": str(url),
-                },
-                artifact_type_properties={
-                    "model_framework": mlpb.STRING,
-                    "model_type": mlpb.STRING,
-                    "model_name": mlpb.STRING,
-                    "Commit": mlpb.STRING,
-                    "url": mlpb.STRING,
-                },
-                custom_properties=custom_props,
-                milliseconds_since_epoch=int(time.time() * 1000),
-            )
-        # custom_properties["Commit"] = model_commit
-        # custom_props["url"] = url
-        self.execution_label_props["Commit"] = props.get("Commit", "")
-        if self.graph:
-            self.driver.create_model_node(
-                model_uri,
-                uri,
-                event,
-                self.execution.id,
-                self.parent_context,
-                custom_props,
-            )
-            if event.lower() == "input":
-                self.input_artifacts.append(
-                    {
-                        "Name": model_uri,
-                        "URI": uri,
-                        "Event": event.lower(),
-                        "Execution_Name": self.execution_name,
-                        "Type": "Model",
-                        "Execution_Command": self.execution_command,
-                        "Pipeline_Id": self.parent_context.id,
-                        "Pipeline_Name": self.parent_context.name,
-                    }
-                )
-                self.driver.create_execution_links(uri, model_uri, "Model")
-            else:
-                child_artifact = {
-                    "Name": model_uri,
-                    "URI": uri,
-                    "Event": event.lower(),
-                    "Execution_Name": self.execution_name,
-                    "Type": "Model",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
-                )
-
-        return artifact
-
-    def log_execution_metrics_from_client(self, metrics_name: str,
-                                         custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
-        """ Logs execution metrics from a client.
-            Data from pre-existing metrics from client side is used to create identical metrics on server side. 
-            Example: 
-              ```python 
-              artifact: mlpb.Artifact = cmf.log_execution_metrics_from_client( 
-                      metrics_name="example_metrics:uri:123", 
-                      custom_properties={"custom_key": "custom_value"}, 
-                      )
-              ``` 
-              Args: 
-                 metrics_name: Name of the metrics in the format "name:uri:execution_id". 
-                 custom_properties: Optional custom properties for the metrics. 
-              Returns: 
-                 Artifact object from the ML Protocol Buffers library associated with the metrics artifact.
-        """
-
-        metrics = None
-        custom_props = {} if custom_properties is None else custom_properties
-        existing_artifact = []
-        name_tokens = metrics_name.split(":")
-        if name_tokens and len(name_tokens) > 2:
-            name = name_tokens[0]
-            uri = name_tokens[1]
-            execution_id = name_tokens[2]
-        else:
-            print(f"Error : metrics name {metrics_name} is not in the correct format")
-            return 
-
-        #we need to add the execution id to the metrics name
-        new_metrics_name = f"{name}:{uri}:{str(self.execution.id)}"
-        existing_artifacts = self.store.get_artifacts_by_uri(uri)
-
-        existing_artifact = existing_artifacts[0] if existing_artifacts else None
-        if not existing_artifact or \
-           ((existing_artifact) and not
-            (existing_artifact.name == new_metrics_name)):  #we need to add the artifact otherwise its already there 
-            metrics = create_new_artifact_event_and_attribution(
-            store=self.store,
-            execution_id=self.execution.id,
-            context_id=self.child_context.id,
-            uri=uri,
-            name=new_metrics_name,
-            type_name="Metrics",
-            event_type=mlpb.Event.Type.OUTPUT,
-            properties={"metrics_name": metrics_name},
-            artifact_type_properties={"metrics_name": mlpb.STRING},
-            custom_properties=custom_props,
-            milliseconds_since_epoch=int(time.time() * 1000),
-        )
-            if self.graph:
-                # To do create execution_links
-                self.driver.create_metrics_node(
-                    metrics_name,
-                    uri,
-                    "output",
-                    self.execution.id,
-                    self.parent_context,
-                    custom_props,
-                )
-                child_artifact = {
-                    "Name": metrics_name,
-                    "URI": uri,
-                    "Event": "output",
-                    "Execution_Name": self.execution_name,
-                    "Type": "Metrics",
-                    "Execution_Command": self.execution_command,
-                    "Pipeline_Id": self.parent_context.id,
-                    "Pipeline_Name": self.parent_context.name,
-                }
-                self.driver.create_artifact_relationships(
-                    self.input_artifacts, child_artifact, self.execution_label_props
-                )
-        return metrics
 
 
     def log_execution_metrics(
@@ -1589,8 +1214,12 @@ class Cmf:
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
+
+        custom_props["Commit"] = metrics_commit
+        self.execution_label_props["Commit"] = metrics_commit
+
         if self.graph:
-            self.driver.create_metrics_node(
+            self.driver.create_step_metrics_node(
                 name,
                 uri,
                 "output",
@@ -1603,7 +1232,7 @@ class Cmf:
                 "URI": uri,
                 "Event": "output",
                 "Execution_Name": self.execution_name,
-                "Type": "Metrics",
+                "Type": "Step_Metrics",
                 "Execution_Command": self.execution_command,
                 "Pipeline_Id": self.parent_context.id,
             }
@@ -1612,79 +1241,6 @@ class Cmf:
             )
 
         os.chdir(logging_dir)
-        return metrics
-
-    def commit_existing_metrics(self, metrics_name: str, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None):
-        """
-        Commits existing metrics associated with the given URI to MLMD.
-        Example:
-        ```python
-           artifact: mlpb.Artifact = cmf.commit_existing_metrics("existing_metrics", "abc123",
-           {"custom_key": "custom_value"})
-        ```
-        Args:
-           metrics_name: Name of the metrics.
-           uri: Unique identifier associated with the metrics.
-           custom_properties: Optional custom properties for the metrics.
-        Returns:
-           Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact.
-        """
-
-        custom_props =  {} if custom_properties is None else custom_properties
-        c_hash = uri.strip()
-        existing_artifact = []
-        existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
-        if (existing_artifact
-            and len(existing_artifact) != 0 ):
-            metrics = link_execution_to_artifact(
-                store=self.store,
-                execution_id=self.execution.id,
-                uri=c_hash,
-                input_name=metrics_name,
-                event_type=mlpb.Event.Type.OUTPUT,
-            )
-        else:
-            metrics = create_new_artifact_event_and_attribution(
-                store=self.store,
-                execution_id=self.execution.id,
-                context_id=self.child_context.id,
-                uri=uri,
-                name=metrics_name,
-                type_name="Step_Metrics",
-                event_type=mlpb.Event.Type.OUTPUT,
-                properties={
-                    # passing uri value to commit
-                    "Commit": props.get("Commit", ""),
-                    "url": props.get("url", ""),
-                },
-                artifact_type_properties={
-                    "Commit": mlpb.STRING,
-                    "url": mlpb.STRING,
-                },
-                custom_properties=custom_props,
-                milliseconds_since_epoch=int(time.time() * 1000),
-            )
-        if self.graph:
-            self.driver.create_metrics_node(
-                metrics_name,
-                uri,
-                "output",
-                self.execution.id,
-                self.parent_context,
-                custom_props,
-            )
-            child_artifact = {
-                "Name": metrics_name,
-                "URI": uri,
-                "Event": "output",
-                "Execution_Name": self.execution_name,
-                "Type": "Metrics",
-                "Execution_Command": self.execution_command,
-                "Pipeline_Id": self.parent_context.id,
-            }
-            self.driver.create_artifact_relationships(
-                self.input_artifacts, child_artifact, self.execution_label_props
-            )
         return metrics
 
 
@@ -1904,12 +1460,6 @@ class Cmf:
                     input_name=dataslice_path + ":" + c_hash,
                 )
             else:
-                props={
-                        "git_repo": str(git_repo),
-                        # passing c_hash value to commit
-                        "Commit": str(dataslice_commit),
-                        "url": str(dvc_url_with_pipeline),
-                    },
                 slice = create_new_artifact_event_and_attribution(
                     store=self.writer.store,
                     execution_id=self.writer.execution.id,
@@ -1932,57 +1482,16 @@ class Cmf:
                     custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
+
+            custom_props["git_repo"] = git_repo
+            custom_props["Commit"] = dataslice_commit
+            self.writer.execution_label_props["git_repo"] = git_repo
+            self.writer.execution_label_props["Commit"] = dataslice_commit
             if self.writer.graph:
                 self.writer.driver.create_dataslice_node(
-                    self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, props
+                    self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, custom_props
                 )
             os.chdir(logging_dir)
-            return slice
-
-        # commit existing dataslice to server
-        def commit_existing(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
-            custom_props = {} if custom_properties is None else custom_properties
-            c_hash = uri.strip()
-            dataslice_commit = c_hash
-            existing_artifact = []
-            if c_hash and c_hash.strip():
-                existing_artifact.extend(
-                    self.writer.store.get_artifacts_by_uri(c_hash))
-            if existing_artifact and len(existing_artifact) != 0:
-                print("Adding to existing data slice")
-                 # Haven't added event type in this if cond, is it not needed??
-                slice = link_execution_to_input_artifact(
-                    store=self.writer.store,
-                    execution_id=self.writer.execution.id,
-                    uri=c_hash,
-                    input_name=self.name,
-                )
-            else:
-                slice = create_new_artifact_event_and_attribution(
-                    store=self.writer.store,
-                    execution_id=self.writer.execution.id,
-                    context_id=self.writer.child_context.id,
-                    uri=c_hash,
-                    name=self.name,
-                    type_name="Dataslice",
-                    event_type=mlpb.Event.Type.OUTPUT,
-                    properties={
-                        "git_repo": props.get("git_repo", ""),
-                        "Commit": props.get("Commit", ""),
-                        "url": props.get("url", " "),
-                    },
-                    artifact_type_properties={
-                        "git_repo": mlpb.STRING,
-                        "Commit": mlpb.STRING,
-                        "url": mlpb.STRING,
-                    },
-                    custom_properties=custom_properties,
-                    milliseconds_since_epoch=int(time.time() * 1000),
-                )
-            if self.writer.graph:
-                self.writer.driver.create_dataslice_node(
-                    self.name, self.name, c_hash, self.data_parent, custom_properties
-                )
             return slice
 
 
@@ -1998,7 +1507,17 @@ class Cmf:
 #                print(last)
 #                os.symlink(str(index), slicedir + "/ " + last)
 
-def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+# Binding cmf_server.py methods to Cmf class
+Cmf.merge_created_context = merge_created_context
+Cmf.merge_created_execution = merge_created_execution
+Cmf.log_python_env_from_client = log_python_env_from_client
+Cmf.log_dataset_with_version = log_dataset_with_version
+Cmf.log_model_with_version = log_model_with_version
+Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
+Cmf.log_step_metrics_from_client = log_step_metrics_from_client
+Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
+
+def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):
     """ Pushes MLMD file to CMF-server.
     Example:
     ```python

@@ -1,7 +1,7 @@
 import React from "react";
 import "./index.css"; // Optional: For styling the popup
 
-const Popup = ({ show, model_data, onClose }) => {
+const ModelCardPopup = ({ show, model_data, onClose }) => {
   if (!show) {
     return null;
   }
@@ -198,4 +198,4 @@ const Popup = ({ show, model_data, onClose }) => {
   );
 };
 
-export default Popup;
+export default ModelCardPopup;
