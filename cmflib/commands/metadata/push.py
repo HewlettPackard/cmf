@@ -17,6 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import json
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root

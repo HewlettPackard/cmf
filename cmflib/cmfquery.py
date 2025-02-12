@@ -991,7 +991,7 @@ class CmfQuery(object):
         executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id)
         if execution_uuid is None:
             return executions
-        executions_with_uuid = []
+        executions_with_uuid: t.List[mlpb.Execution] = []
         for execution in executions:
             exec_uuid_list = execution.properties['Execution_uuid'].string_value.split(",")
             if execution_uuid in exec_uuid_list:

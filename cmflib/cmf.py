@@ -1517,7 +1517,7 @@ Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 
-def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_id: str = ""):
+def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
     """ Pushes MLMD file to CMF-server.
     Example:
     ```python

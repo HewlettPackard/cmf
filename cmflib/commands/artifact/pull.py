@@ -635,8 +635,6 @@ class CmdArtifactPull(CmdBase):
                     if not isinstance(url, str):
                         continue
                     args = self.extract_repo_args("amazons3", name, url, current_directory)
-                    if not args[1].endswith(".dir"):
-                        total_files_count += 1
                     if args[0] and args[1] and args[2]:
                         if not args[1].endswith(".dir"):
                             object_name, download_loc, download_flag = amazonS3_class_obj.download_file(

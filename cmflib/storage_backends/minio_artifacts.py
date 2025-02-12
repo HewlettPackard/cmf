@@ -117,6 +117,8 @@ class MinioArtifacts:
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/temp_dir"
         try:
+            # Download the .dir file containing metadata about tracked files.
+
             response = self.client.fget_object(bucket_name, object_name, temp_dir)
                 
             with open(temp_dir, 'r') as file:
@@ -125,6 +127,7 @@ class MinioArtifacts:
             # removing temp_dir
             if os.path.exists(temp_dir):
                 os.remove(temp_dir)
+
             """
             object_name =  files/md5/c9/d8fdacc0d942cf8d7d95b6301cfb97.dir
             contains the path of the .dir on the artifact repo
@@ -153,7 +156,6 @@ class MinioArtifacts:
                         files_downloaded +=1
                         print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                     else:
-                        count_failed += 1
                         print(f"object {temp_object_name} is not downloaded.")
                 except Exception as e:
                     print(f"object {temp_object_name} is not downloaded.")
