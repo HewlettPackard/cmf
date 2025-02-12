@@ -115,9 +115,15 @@ class Cmf:
     """
 
     # pylint: disable=too-many-instance-attributes
+    cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
+    if os.path.exists(cmf_config):
+        attr_dict = CmfConfig.read_config(cmf_config)
+        __neo4j_uri = attr_dict.get("neo4j-uri", "")
+        __neo4j_password = attr_dict.get("neo4j-password", "")
+        __neo4j_user = attr_dict.get("neo4j-user", "")
 
     def __init__(
         self,
@@ -137,11 +143,15 @@ class Cmf:
             Cmf.__prechecks()
         if custom_properties is None:
             custom_properties = {}
+        # If pipeline_name is not provided, derive it from the current folder name 
+        # self.pipeline_name to ensure that it is accessible as an instance variable for use in other methods
         if not pipeline_name:
             # assign folder name as pipeline name 
             cur_folder = os.path.basename(os.getcwd())
-            pipeline_name = cur_folder
-        config = mlpb.ConnectionConfig()
+            self.pipeline_name = cur_folder
+        else:
+            self.pipeline_name = pipeline_name
+        config = getattr(mlpb, "ConnectionConfig")() # Use getattr to avoid mypy error due to dynamic attribute generation
         config.sqlite.filename_uri = filepath
         self.store = metadata_store.MetadataStore(config)
         self.filepath = filepath
@@ -149,9 +159,9 @@ class Cmf:
         self.execution = None
         self.execution_name = ""
         self.execution_command = ""
-        self.metrics = {}
-        self.input_artifacts = []
-        self.execution_label_props = {}
+        self.metrics: dict[str, dict[int, dict[str, t.Any]]] = {}
+        self.input_artifacts: list[str] = []
+        self.execution_label_props: dict[str, str] = {}
         self.graph = graph
         #last token in filepath
         self.branch_name = filepath.rsplit("/", 1)[-1]
@@ -160,7 +170,7 @@ class Cmf:
             git_checkout_new_branch(self.branch_name)
         self.parent_context = get_or_create_parent_context(
             store=self.store,
-            pipeline=pipeline_name,
+            pipeline=self.pipeline_name,
             custom_properties=custom_properties,
         )
         if is_server:
@@ -171,7 +181,7 @@ class Cmf:
                 Cmf.__neo4j_uri, Cmf.__neo4j_user, Cmf.__neo4j_password
             )
             self.driver.create_pipeline_node(
-                pipeline_name, self.parent_context.id, custom_properties
+                self.pipeline_name, self.parent_context.id, custom_properties
             )
         os.chdir(logging_dir)
 
@@ -242,7 +252,7 @@ class Cmf:
 
     def create_context(
         self, pipeline_stage: str, custom_properties: t.Optional[t.Dict] = None
-    ) -> mlpb.Context:
+    ) -> mlpb.Context:  # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Create's a  context(stage).
         Every call creates a unique pipeline stage.
         Updates Pipeline_stage name.
@@ -289,14 +299,18 @@ class Cmf:
         context_name: str,
         context_id: int,
         properties: t.Optional[t.Dict] = None,
-        custom_properties: t.Optional[t.Dict] = None
-    ) -> mlpb.Context:
+        custom_properties: t.Optional[t.Dict] = None,
+        type_properties:  t.Optional[t.Dict] = None
+    ) -> mlpb.Context:  # type: ignore  # Context type not recognized by mypy, using ignore to bypass
+        properties = properties or {}  # If properties is None, use an empty dictionary
+        custom_properties = custom_properties or {}  # If custom_properties is None, use an empty dictionary
+        type_properties = type_properties or {}  # If type_properties is None, use an empty dictionary
         self.context = get_or_create_context_with_type(
                            self.store, 
                            context_name, 
                            type_name, 
-                           properties, 
-                           type_properties = None,
+                           properties=properties, 
+                           type_properties = type_properties,
                            custom_properties = custom_properties
                        )
         if self.context is None:
@@ -323,9 +337,9 @@ class Cmf:
         self,
         execution_type: str,
         custom_properties: t.Optional[t.Dict] = None,
-        cmd: str = None,
+        cmd: t.Optional[str] = None,
         create_new_execution: bool = True,
-    ) -> mlpb.Execution:
+    ) -> mlpb.Execution:    # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """Create execution.
         Every call creates a unique execution. Execution can only be created within a context, so
         [create_context][cmflib.cmf.Cmf.create_context] must be called first.
@@ -370,10 +384,10 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
-        name_without_extension = os.path.splitext(file_name)[0]
+        self.name_without_extension = os.path.splitext(file_name)[0]    # Assigning to an instance variable
         # create context if not already created
         if not self.child_context:
-            self.create_context(pipeline_stage=name_without_extension)
+            self.create_context(pipeline_stage=self.name_without_extension)
             assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # Initializing the execution related fields
@@ -540,7 +554,7 @@ class Cmf:
     def log_python_env(
             self,
             url: str,
-        ) -> mlpb.Artifact:
+        ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
             """
             Logs the Python environment used in the current execution by creating an 'Environment' artifact.
 
@@ -554,7 +568,10 @@ class Cmf:
             Returns:
                     Artifact object from ML Metadata library associated with the new dataset artifact.
             """
-
+            # create execution if not already created
+            if not self.execution:
+                self.create_execution(execution_type=self.name_without_extension)
+                assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
             git_repo = git_get_repo()
             name = re.split("/", url)[-1]
             existing_artifact = []
@@ -644,6 +661,10 @@ class Cmf:
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")
+        # create execution if not already created
+        if not self.execution:
+            self.create_execution(execution_type=self.name_without_extension)
+            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
         return commit_dvc_lock_file(file_path, self.execution.id)
 
     def log_dataset(
@@ -652,7 +673,7 @@ class Cmf:
         event: str,
         custom_properties: t.Optional[t.Dict] = None,
         external: bool = False,
-    ) -> mlpb.Artifact:
+    ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Logs a dataset as artifact.
         This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
@@ -804,7 +825,7 @@ class Cmf:
         os.chdir(logging_dir)
         return artifact
 
-    def update_dataset_url(self, artifact: mlpb.Artifact, updated_url: str):
+    def update_dataset_url(self, artifact: mlpb.Artifact, updated_url: str):    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Update dataset url
            Updates url of given artifact.
            Example
@@ -863,7 +884,7 @@ class Cmf:
         model_type: str = "Default",
         model_name: str = "Default",
         custom_properties: t.Optional[t.Dict] = None,
-    ) -> mlpb.Artifact:
+    ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Logs a model.
         The model is added to dvc and the metadata file (.dvc) gets committed to git.
         Example:
@@ -1030,7 +1051,7 @@ class Cmf:
 
     def log_execution_metrics(
         self, metrics_name: str, custom_properties: t.Optional[t.Dict] = None
-    ) -> mlpb.Artifact:
+    ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Log the metadata associated with the execution (coarse-grained tracking).
         It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
         have.
@@ -1123,12 +1144,13 @@ class Cmf:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metrics.
         """
+        custom_props = {} if custom_properties is None else custom_properties
         if metrics_name in self.metrics:
             key = max((self.metrics[metrics_name]).keys()) + 1
-            self.metrics[metrics_name][key] = custom_properties
+            self.metrics[metrics_name][key] = custom_props
         else:
             self.metrics[metrics_name] = {}
-            self.metrics[metrics_name][1] = custom_properties
+            self.metrics[metrics_name][1] = custom_props
 
     def commit_metrics(self, metrics_name: str):
         """ Writes the in-memory metrics to a Parquet file, commits the metrics file associated with the metrics id to DVC and Git,
@@ -1246,6 +1268,15 @@ class Cmf:
         self, version: str, custom_properties: t.Optional[t.Dict] = None
     ) -> object: 
         uri = str(uuid.uuid1())
+        # create context if not already created
+        if not self.child_context:
+            self.create_context(pipeline_stage=self.name_without_extension)
+            assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
+
+        # create execution if not already created
+        if not self.execution:
+            self.create_execution(execution_type=self.name_without_extension)
+            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
         return create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -1262,7 +1293,7 @@ class Cmf:
 
 
     def update_existing_artifact(
-        self, artifact: mlpb.Artifact, custom_properties: t.Dict
+        self, artifact: mlpb.Artifact, custom_properties: t.Dict    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
     ):
         """ Updates an existing artifact with the provided custom properties and stores it back to MLMD. 
           Example: 
@@ -1283,7 +1314,7 @@ class Cmf:
         put_artifact(self.store, artifact)
         
 
-    def get_artifact(self, artifact_id: int) -> mlpb.Artifact:
+    def get_artifact(self, artifact_id: int) -> mlpb.Artifact:  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Gets the artifact object from mlmd"""
         return get_artifacts_by_id(self.store, [artifact_id])[0]
 
@@ -1291,12 +1322,12 @@ class Cmf:
     # To Do - Links should be created in mlmd also.
     # Todo - assumes source as Dataset and target as slice - should be generic and accomodate any types
     def link_artifacts(
-        self, artifact_source: mlpb.Artifact, artifact_target: mlpb.Artifact
+        self, artifact_source: mlpb.Artifact, artifact_target: mlpb.Artifact    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
     ):
         self.driver.create_links(artifact_source.name,
                                  artifact_target.name, "derived")
 
-    def update_model_output(self, artifact: mlpb.Artifact):
+    def update_model_output(self, artifact: mlpb.Artifact): # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """updates an artifact"""
         put_artifact(self.store, artifact)
 
@@ -1319,6 +1350,10 @@ class Cmf:
 
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
+        # create execution if not already created
+        if not self.execution:
+            self.create_execution(execution_type=self.name_without_extension)
+            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
         # To do checkout if not there
         directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
@@ -1342,6 +1377,10 @@ class Cmf:
         Returns:
            None
         """
+        # create execution if not already created
+        if not self.execution:
+            self.create_execution(execution_type=self.name_without_extension)
+            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
         directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
@@ -1360,7 +1399,7 @@ class Cmf:
         """
 
         def __init__(self, name: str, writer):
-            self.props = {}
+            self.props:dict[str, dict[str, str]] = {}
             self.name = name
             self.writer = writer
 
@@ -1419,12 +1458,12 @@ class Cmf:
             # create context if not already created
             if not self.writer.child_context:
                 self.writer.create_context(pipeline_stage=name_without_extension)
-                assert self.writer.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
+                assert self.writer.child_context is not None, f"Failed to create context for {self.writer.pipeline_name}!!"
 
             # create execution if not already created
             if not self.writer.execution:
                 self.writer.create_execution(execution_type=name_without_extension)
-                assert self.writer.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+                assert self.writer.execution is not None, f"Failed to create execution for {self.writer.pipeline_name}!!"
 
             directory_path = os.path.join(self.writer.ARTIFACTS_PATH, self.writer.execution.properties["Execution_uuid"].string_value.split(',')[0], self.writer.DATASLICE_PATH)
             os.makedirs(directory_path, exist_ok=True)
@@ -1465,7 +1504,7 @@ class Cmf:
                     uri=c_hash,
                     name=dataslice_path + ":" + c_hash,
                     type_name="Dataslice",
-                    event_type=mlpb.Event.Type.OUTPUT,
+                    event_type=mlpb.Event.Type.OUTPUT,  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
                     properties={
                         "git_repo": str(git_repo),
                         # passing c_hash value to commit
@@ -1473,9 +1512,9 @@ class Cmf:
                         "url": str(dvc_url_with_pipeline),
                     },
                     artifact_type_properties={
-                        "git_repo": mlpb.STRING,
-                        "Commit": mlpb.STRING,
-                        "url": mlpb.STRING,
+                        "git_repo": mlpb.STRING,    # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                        "Commit": mlpb.STRING,  # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                        "url": mlpb.STRING, # type: ignore  # String type not recognized by mypy, using ignore to bypass
                     },
                     custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),

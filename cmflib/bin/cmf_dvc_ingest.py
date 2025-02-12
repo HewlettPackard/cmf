@@ -92,7 +92,7 @@ def find_location(string, elements):
     return None
 
 #Query mlmd to get all the executions and its commands
-cmd_exe: t.Dict[str, t.Tuple[int, str, str]] = {}
+cmd_exe: t.Dict[str, str] = {}
 cmf_query = cmfquery.CmfQuery(args.cmf_filename)
 pipelines: t.List[str] = cmf_query.get_pipeline_names()
 for pipeline in pipelines:
@@ -112,21 +112,25 @@ for pipeline in pipelines:
             '''
             existing = cmd_exe.get(exe_step)
             if existing is None:
-                cmd_exe[exe_step] = (row['id'], stage, pipeline)
+                cmd_exe[exe_step] = f"{row['id']},{stage},{pipeline}"
             else:
-                """
-                If the execution command is already present, compare the stored execution id
-                (existing[0]) with the current row's execution id.
-                If the current execution id is greater (i.e., a later execution),
-                update the metadata for this command.
-                """
-                if row['id'] > existing[0]:
-                    cmd_exe[exe_step] = (row['id'], stage, pipeline)
+                if row['id'] > int(existing.split(',')[0]):
+                    cmd_exe[exe_step] = f"{row['id']},{stage},{pipeline}"
 
 """
 Parse the dvc.lock file.
 """
-pipeline_dict: t.Dict[str, t.Dict[str, t.Dict[str, t.Union[t.List[str], t.List[dict]]]]] = {}
+# pipeline_dict stores pipeline stages with the following hierarchy:
+# {
+#     "<stage_name>": {
+#         "<index>": {
+#             "cmd": List[str],        # List of command parts as strings
+#             "deps": List[Dict[str, Any]],  # List of dependency dictionaries
+#             "outs": List[Dict[str, Any]]   # List of output dictionaries
+#         }
+#     }
+# }
+pipeline_dict: t.Dict[str, t.Dict[str, t.Dict[str, t.Union[t.List[str], t.List[t.Dict[str, t.Any]]]]]] = {}
 with open("dvc.lock", 'r') as f:
     valuesYaml = yaml.load(f, Loader=yaml.FullLoader)
 
