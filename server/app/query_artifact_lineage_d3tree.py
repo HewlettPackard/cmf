@@ -7,17 +7,25 @@ from server.app.utils import modify_arti_name
 
 def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_art_ids: dict) -> List[List[Dict[str, Any]]]:
     query = cmfquery.CmfQuery(mlmd_path)
+    env_list = []
     id_name = {}
     child_parent_artifact_id = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
+        if type_ == "Environment":
+            env_list = list(df["id"])
         for index, row in df.iterrows():
             #creating a dictionary of id and artifact name {id:artifact name}
             artifact_id = row['id']  # This will be an integer
+            if artifact_id in env_list:
+                continue
             id_name[artifact_id] = modify_arti_name(row["name"], type_)
             one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id(artifact_id)  # get immediate artifacts     
             child_parent_artifact_id[artifact_id] = []      # assign empty dict for artifact with no parent artifact
-            if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts             
-                child_parent_artifact_id[artifact_id] = list(one_hop_parent_artifacts["id"])
+            if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts    
+                parents_list =  list(one_hop_parent_artifacts["id"])
+                final_parents_list = list(set(parents_list) - set(env_list))
+                #child_parent_artifact_id[artifact_id] = list(one_hop_parent_artifacts["id"])
+                child_parent_artifact_id[artifact_id] = final_parents_list
     data_organized = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
