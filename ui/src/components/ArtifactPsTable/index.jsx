@@ -30,7 +30,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
 
   const consistentColumns = [];
 
-  // console.log("artifacts",artifacts);
+  console.log("artifacts",artifacts);
 
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
@@ -153,7 +153,7 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
                 <td colSpan="6">
                 <table className="expanded-table">
                   <tbody>
-                  {JSON.parse(artifact.artifact_properties).map((property, idx) => (
+                  {artifact.artifact_properties.map((property, idx) => (
                   <tr key={idx}>
                   <td>{property.name}</td>
                   <td>{property.value}</td>

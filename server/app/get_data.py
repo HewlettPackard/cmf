@@ -201,6 +201,7 @@ def get_artifacts(query: CmfQuery, pipeline_name, art_type, artifact_ids):
         return tempout
 
 def get_artifact_types(query: CmfQuery) -> t.List[str]:
+    print(type(query))
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 

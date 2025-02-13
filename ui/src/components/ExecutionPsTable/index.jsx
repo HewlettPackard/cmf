@@ -231,7 +231,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                       <td colSpan="4">
                         <table className="expanded-table">
                         <tbody>
-                        {JSON.parse(data.execution_properties).map((property, idx) => (
+                        {data.execution_properties.map((property, idx) => (
                           <tr key={idx}>
                             <td>{property.name}</td>
                             <td>{property.value}</td>

@@ -29,7 +29,7 @@ from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
 from server.app.db.dbconfig import get_db
-from server.app.db.dbqueries import fetch_artifacts
+from server.app.db.dbqueries import fetch_artifacts, fetch_executions
 from pathlib import Path
 import os
 import json
@@ -470,14 +470,13 @@ async def get_artifacts(
     pipeline_name: str, 
     artifact_type: str, 
     filter_value: str = Query(None, description="Search based on value"), 
-    page: int = Query(1, ge=1),
-    #page_size: int = Query(10, ge=1, le=100),
     sort_column: str = Query("name"),
     sort_order: str = Query("ASC"),
+    page_number: int = Query(1, ge=1),
     db: AsyncSession = Depends(get_db)
 ):
     """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
-    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, page, 5, sort_column, sort_order)
+    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, page_number, 5, sort_column, sort_order)
 
 '''
 # # api to display artifacts available in mlmd file[from postgres]
@@ -605,10 +604,25 @@ async def artifact(request: Request, pipeline_name: str, artifact_type: str,
 '''
 
 
-
 # api to display executions available in mlmd file[from postgres]
 @app.get("/execution/{pipeline_name}")
-async def execution(request: Request, pipeline_name: str,
+async def execution(request: Request,
+                   pipeline_name: str,
+                   active_page: int = Query(1, description="Page number", gt=0),
+                   filter_value: str = Query("", description="Search based on value"),  
+                   sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
+                   db: AsyncSession = Depends(get_db)
+                   ):
+    """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
+    return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
+    
+
+
+  
+'''
+# # api to display executions available in mlmd file[from postgres]
+# @app.get("/execution/{pipeline_name}")
+# async def execution(request: Request, pipeline_name: str,
                    active_page: int = Query(1, description="Page number", gt=0),
                    filter_value: str = Query("", description="Search based on value"),  
                    sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
@@ -739,4 +753,4 @@ async def search_item(request: Request,
 
     rows = await conn.fetch(query3, f"%{value}%")
 
-    return [dict(row) for row in rows]
+    return [dict(row) for row in rows]'''
