@@ -185,6 +185,15 @@ class Cmf:
             )
         os.chdir(logging_dir)
 
+    # Declare methods as class-level callables
+    merge_created_context: t.Callable[..., t.Any]
+    merge_created_execution: t.Callable[..., t.Any]
+    log_python_env_from_client: t.Callable[..., t.Any]
+    log_dataset_with_version: t.Callable[..., t.Any]
+    log_model_with_version: t.Callable[..., t.Any]
+    log_execution_metrics_from_client: t.Callable[..., t.Any]
+    log_step_metrics_from_client: t.Callable[..., t.Any]
+
     # function used to load neo4j params for cmf client
     @staticmethod
     def __load_neo4j_params():
@@ -1402,6 +1411,9 @@ class Cmf:
             self.props:dict[str, dict[str, str]] = {}
             self.name = name
             self.writer = writer
+
+        # Declare methods as class-level callables
+        log_dataslice_from_client: t.Callable[..., t.Any]
 
         # def add_files(self, list_of_files:np.array ):
         #    for i in list_of_files:
