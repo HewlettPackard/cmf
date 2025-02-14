@@ -1521,7 +1521,7 @@ def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str
     """ Pushes MLMD file to CMF-server.
     Example:
     ```python
-         result = metadata_push("example_pipeline", "mlmd_file", "eg_execution_uuid")
+         result = metadata_push("example_pipeline", "mlmd_file", "eg_execution_uuid", "tensorboard_log")
     ```
     Args:
         pipeline_name: Name of the pipeline.
