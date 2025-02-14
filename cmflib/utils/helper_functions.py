@@ -15,10 +15,9 @@
 ###
 
 import os
-import sys
-import subprocess
 import json
-import yaml
+import requests
+import subprocess
 
 def is_url(url)-> bool:
     from urllib.parse import urlparse
@@ -173,3 +172,22 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
         print(f"Unexpected {err}, {type(err)}")
 
     return dynamic_pass
+
+def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool:
+    """
+    Check if a branch exists in a GitHub repository.
+
+    Args:
+        repo_owner: The owner of the GitHub repository.
+        repo_name: The name of the GitHub repository.
+        branch_name: The name of the branch to check.
+
+    Returns:
+        bool: True if the branch exists, otherwise False.
+    """
+    url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
+    res = requests.get(url)
+
+    if res.status_code == 200:
+        return True
+    return False

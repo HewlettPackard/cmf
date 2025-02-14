@@ -24,6 +24,29 @@ from ml_metadata.proto import metadata_store_pb2 as mlpb
 from typing import Union
 
 def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union[str, str]) -> Union[str, None]:
+    """
+    Parses a JSON string representing ML Metadata (MLMD) and stores it in a specified path.
+    Args:
+        mlmd_json (str): A JSON string containing the MLMD data.
+        path_to_store (str): The file path where the MLMD data should be stored.
+        cmd (str): The command to execute. If "push", the original_time_since_epoch is added to the custom_properties.
+        exec_uuid (Union[str, str]): The execution UUID. If None, all executions are processed. If a specific UUID is provided, only executions with that UUID are processed.
+    Returns:
+        Union[str, None]: Returns a string message if an invalid execution UUID is given, otherwise returns None.
+    Raises:
+        Exception: If any error occurs during the parsing or storing process, an exception is raised and the error message is printed.
+    Notes:
+        - If the environment variable 'NEO4J_URI' is set, the graph is enabled.
+        - The function initializes a connection configuration and metadata store.
+        - The function iterates over all stages and executions in the MLMD data.
+        - If a context or execution already exists, it updates the custom properties.
+        - The function handles various artifact types (Dataset, Model, Metrics, Dataslice, Step_Metrics, Environment) and logs them accordingly.
+    """
+
+    # CONSTANTS
+    INPUT = 3
+    OUTPUT = 4
+
     try:
         mlmd_data = json.loads(mlmd_json)
         pipelines = mlmd_data["Pipeline"]
@@ -107,7 +130,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
 
                     try:
                         if artifact_type == "Dataset" :
-                            if event_type == 3 :
+                            if event_type == INPUT :
                                 event_io = "input" 
                             else:
                                 event_io = "output"    
@@ -119,7 +142,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
                                 custom_properties=custom_props,
                             )
                         elif artifact_type == "Model":
-                            if event_type == 3 :
+                            if event_type == INPUT :
                                 event_io = "input" 
                             else:
                                 event_io = "output"

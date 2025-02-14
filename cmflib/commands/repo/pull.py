@@ -16,9 +16,9 @@
 
 #!/usr/bin/env python3
 import argparse
-import requests
 
 from cmflib.cli.command import CmdBase
+from cmflib.utils.helper_functions import branch_exists
 from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_branch
 from cmflib.commands.artifact.pull import CmdArtifactPull
 from cmflib.commands.metadata.pull import CmdMetadataPull
@@ -26,25 +26,6 @@ from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
 
 
 class CmdRepoPull(CmdBase):
-    def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool:
-        """
-        Check if a branch exists in a GitHub repository.
-
-        Args:
-            repo_owner: The owner of the GitHub repository.
-            repo_name: The name of the GitHub repository.
-            branch_name: The name of the branch to check.
-
-        Returns:
-            bool: True if the branch exists, otherwise False.
-        """
-        url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
-        res = requests.get(url)
-
-        if res.status_code == 200:
-            return True
-        return False
-    
     def git_pull(self):
         # Getting github url from cmf init command
         url = git_get_repo()
@@ -52,8 +33,8 @@ class CmdRepoPull(CmdBase):
         splited_url = url.split("/")
         branch_name = git_get_branch()[0]
         # Check whether branch exists in git repo or not
-        # url[-2] = ABC, url-1] = my-repo
-        if self.branch_exists(splited_url[-2], splited_url[-1], branch_name):
+        # splitted_url[-2] = ABC, splitted_url[-1] = my-repo
+        if branch_exists(splited_url[-2], splited_url[-1], branch_name):
             # pull the code from mlmd branch
             print("git pull started...")
             stdout, stderr, returncode = git_get_pull(branch_name)

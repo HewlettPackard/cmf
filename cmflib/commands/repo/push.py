@@ -16,13 +16,12 @@
 
 #!/usr/bin/env python3
 import argparse
-import requests
 import os
 import re
 
 from cmflib import cmfquery
 from cmflib.cli.utils import check_minio_server, find_root
-from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.utils.helper_functions import generate_osdf_token, branch_exists
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
@@ -44,25 +43,6 @@ from cmflib.cmf_exception_handling import (
 
 
 class CmdRepoPush(CmdBase):
-    def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool:
-        """
-        Check if a branch exists in a GitHub repository.
-
-        Args:
-            repo_owner: The owner of the GitHub repository.
-            repo_name: The name of the GitHub repository.
-            branch_name: The name of the branch to check.
-
-        Returns:
-            bool: True if the branch exists, otherwise False.
-        """
-        url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
-        res = requests.get(url)
-
-        if res.status_code == 200:
-            return True
-        return False
-
     def git_push(self):
         # Getting github url from cmf init command
         url = git_get_repo()
@@ -70,8 +50,8 @@ class CmdRepoPush(CmdBase):
         url = url.split("/")
         branch_name = git_get_branch()[0]
         # Check whether branch exists in git repo or not
-        # url[-2] = ABC, url-1] = my-repo
-        if self.branch_exists(url[-2], url[-1], branch_name):
+        # url[-2] = ABC, url[-1] = my-repo
+        if branch_exists(url[-2], url[-1], branch_name):
             # 1. pull the code from mlmd branch
             # 2. push the code inside mlmd branch
             stdout, stderr, returncode = git_get_pull(branch_name)
@@ -85,20 +65,39 @@ class CmdRepoPush(CmdBase):
         return MsgSuccess(msg_str="cmf repo push command executed successfully.")
     
     def artifact_push(self):
+        """
+        Pushes artifacts to the remote storage.
+
+        Raises:
+            MissingArgument: If a required argument is missing.
+            DuplicateArgumentNotAllowed: If a duplicate argument is provided.
+            CmfNotConfigured: If the .cmfconfig file is not configured.
+            Minios3ServerInactive: If the Minio server is inactive.
+            FileNotFound: If the mlmd file does not exist.
+            ExecutionUUIDNotFound: If the execution UUID is not found in the pipeline.
+
+        Returns:
+            ArtifactPushSuccess: If the artifacts are successfully pushed to the remote storage.
+        """
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
             "tensorboad": self.args.tensorboard
         }  
+
+        # Validates the command arguments.
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)
+                # Check if the argument is a list and has more than one value
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
                 
         result = ""
+
+        # Checks the DVC configuration and the presence of the .cmfconfig file.
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
@@ -109,9 +108,12 @@ class CmdRepoPush(CmdBase):
         if output.find("'cmf' is not configured.") != -1:
             raise CmfNotConfigured(output)
 
+        # Verifies the Minio server status if the remote is Minio.
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
+        
+        # If the remote is OSDF, generate a dynamic password and update the DVC configuration.
         if dvc_config_op["core.remote"] == "osdf":
             config_file_path = os.path.join(output, cmf_config_file)
             cmf_config={}
@@ -124,6 +126,7 @@ class CmdRepoPush(CmdBase):
             result = dvc_push()
             return result
 
+        # Determines the mlmd file name and checks its existence.
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
@@ -135,11 +138,10 @@ class CmdRepoPush(CmdBase):
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
             raise FileNotFound(mlmd_file_name, current_directory)
         
-        # creating cmfquery object
+        # Creates a CmfQuery object and retrieves all executions in the specified pipeline.
         query = cmfquery.CmfQuery(mlmd_file_name)
         names = []
         isExecUuid = False
-        
         df = query.get_all_executions_in_pipeline(self.args.pipeline_name[0])
 
         # checking if execution_uuid exists in the df
