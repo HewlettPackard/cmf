@@ -168,13 +168,16 @@ class CmdArtifactPull(CmdBase):
             file_name = file_path.split('/')[-1]
            
             if remote == "osdf":
+                # Extracting the artifact hash from the artifact name.
                 artifact_hash = name = name.split(":")[1]
                 return name, url, artifact_hash
             elif name == artifact_name or file_path == artifact_name or file_name == artifact_name:
+                # If the artifact name matches, set flag to False and break the loop
                 flag = False
                 break
             
         if flag:
+            # Raise an exception if the artifact is not found
             raise ArtifactNotFound(artifact_name)
         return name, url
 
@@ -263,6 +266,7 @@ class CmdArtifactPull(CmdBase):
             # Check if a specific artifact name is provided as input.
             if self.args.artifact_name: 
                 # Search for the artifact in the metadata store.
+                # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
                 # output[0] = artifact_name
                 # output[1] = url
@@ -361,6 +365,7 @@ class CmdArtifactPull(CmdBase):
             # Check if a specific artifact name is provided as input.
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
+                # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
                 # output[0] = name
                 # output[1] = url
@@ -443,6 +448,7 @@ class CmdArtifactPull(CmdBase):
             # Check if a specific artifact name is provided as input.
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
+                # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
                 # output[0] = name
                 # output[1] = url
@@ -547,6 +553,8 @@ class CmdArtifactPull(CmdBase):
 
             osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts()
             if self.args.artifact_name:
+                # Search for the artifact in the metadata store.
+                # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
                 # output[0] = name
                 # output[1] = url
@@ -600,6 +608,8 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:
+                # Search for the artifact in the metadata store.
+                # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
                 # output[0] = name
                 # output[1] = url
