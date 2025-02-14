@@ -918,7 +918,7 @@ class CmfQuery(object):
             pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
             for stage in self._get_stages(pipeline.id):
                 stage_attrs = _get_node_attributes(stage, {"executions": []})
-                for execution in self.get_all_executions_by_uuid(stage.id, execution_uuid=exec_uuid):
+                for execution in self.get_all_executions_by_stage(stage.id, execution_uuid=exec_uuid):
                     # name will be an empty string for executions that are created with
                     # create new execution as true(default)
                     # In other words name property will there only for execution
@@ -980,13 +980,18 @@ class CmfQuery(object):
             return df
         return df
     
-    def get_all_executions_by_uuid(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]:
-        """Return executions of the given stage.
+    def get_all_executions_by_stage(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]:
+        """
+        Return executions of the given stage.
+
+        This function retrieves all executions associated with a specific stage.
+        If an execution UUID is provided, it filters the executions to include only those
+        that match the given UUID.
         Args:
-            stage_id: Stage identifier.
-            execution_uuid: If not None, return execution with this uuid.
+            stage_id (int): Stage identifier.
+            execution_uuid (Optional[str]): If not None, return execution with this UUID.
         Returns:
-            List of executions matching input parameters.
+            List[mlpb.Execution]: List of executions matching input parameters.
         """
         executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id)
         if execution_uuid is None:
@@ -997,24 +1002,6 @@ class CmfQuery(object):
             if execution_uuid in exec_uuid_list:
                 executions_with_uuid.append(execution)
         return executions_with_uuid
-
-    """def materialize(self, artifact_name:str):
-       artifacts = self.store.get_artifacts()
-       for art in artifacts:
-           if art.name == artifact_name:
-               selected_artifact = art
-               break
-       for k, v in selected_artifact.custom_properties.items():
-           if (k == "Path"):
-               path = v
-           elif (k == "git_repo"):
-               git_repo = v
-           elif (k == "Revision"):
-               rev = v
-           elif (remote == "Remote"):
-               remote = v
-       
-       Cmf.materialize(path, git_repo, rev, remote)"""
 
 
 def test_on_collision() -> None:
