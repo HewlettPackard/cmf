@@ -316,7 +316,6 @@ EXECUTION_EXECUTION_TYPE_NAME="Execution_type_name"
 EXECUTION_REPO = "Git_Repo"
 EXECUTION_START_COMMIT = "Git_Start_Commit"
 EXECUTION_END_COMMIT = "Git_End_Commit"
-EXECUTION_PYTHON_ENV= "Python_Env"
 EXECUTION_PIPELINE_TYPE = "Pipeline_Type"
 
 EXECUTION_PIPELINE_ID = "Pipeline_id"
@@ -393,7 +392,6 @@ def create_new_execution_in_existing_run_context(
         git_repo: str = None,
         git_start_commit: str = None,
         git_end_commit: str = "",
-        python_env: str = "",
         custom_properties: dict = None,
         create_new_execution:bool = True
 ) -> metadata_store_pb2.Execution:
@@ -418,7 +416,6 @@ def create_new_execution_in_existing_run_context(
             EXECUTION_REPO: metadata_store_pb2.STRING,
             EXECUTION_START_COMMIT: metadata_store_pb2.STRING,
             EXECUTION_END_COMMIT: metadata_store_pb2.STRING,
-            EXECUTION_PYTHON_ENV: metadata_store_pb2.STRING,
         },
 
         properties={
@@ -433,7 +430,6 @@ def create_new_execution_in_existing_run_context(
             EXECUTION_REPO: metadata_store_pb2.Value(string_value=git_repo),
             EXECUTION_START_COMMIT: metadata_store_pb2.Value(string_value=git_start_commit),
             EXECUTION_END_COMMIT: metadata_store_pb2.Value(string_value=git_end_commit),
-            EXECUTION_PYTHON_ENV: metadata_store_pb2.Value(string_value=python_env),
             # should set to task ID, not component ID
         },
         custom_properties=mlmd_custom_properties,

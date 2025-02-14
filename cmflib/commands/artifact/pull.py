@@ -597,7 +597,6 @@ class CmdArtifactPull(CmdBase):
                 else:
                     status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
                 return status
-
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:

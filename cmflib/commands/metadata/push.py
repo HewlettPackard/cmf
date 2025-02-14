@@ -41,7 +41,22 @@ from cmflib.cmf_exception_handling import (
 )
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
+
+    # Create a function to search for files into multiple directories
+    def search_files(self, file_list, *directories):
+        found_files = {}
+        for directory in directories:
+            abs_dir = os.path.abspath(directory)
+            for file_name in file_list:
+                if isinstance(file_name, str):
+                    file_path = os.path.join(abs_dir, file_name)
+                    if os.path.isfile(file_path):
+                        found_files[file_name] = file_path
+        return found_files
+
     def run(self):
+        current_directory = mlmd_directory = os.getcwd()
+        mlmd_file_name = "./mlmd"
         # Get url from config
         cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
 
@@ -82,11 +97,10 @@ class CmdMetadataPush(CmdBase):
         
         # checks if mlmd file is present in current directory or given directory
         if not os.path.exists(mlmd_file_name):
-            raise FileNotFound(mlmd_file_name, current_directory)
+            raise FileNotFound(mlmd_file_name, mlmd_directory)
 
         query = cmfquery.CmfQuery(mlmd_file_name)
         # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
-        execution_flag = 0
         status_code = 0
 
         # Checks if pipeline name exists
@@ -122,7 +136,39 @@ class CmdMetadataPush(CmdBase):
                 if execution_flag == 0:
                     raise ExecutionUUIDNotFound(exec_uuid)
             status_code = response.status_code
-            if status_code == 200:
+
+            # we need to push the python env files only after the mlmd push has succeded 
+            # otherwise there is no use of those python env files on cmf-server
+
+            if status_code==422 and response.json()["status"]=="version_update":
+                raise UpdateCmfVersion
+            elif status_code == 404:
+                raise CmfServerNotAvailable
+            elif status_code == 500:
+                raise InternalServerError
+            elif status_code == 200:
+                # the only question remains how we want to percieve the failure of upload of the python env files 
+                # for now, it is considered as non-consequential.
+                # that means it's failure/success doesn't matter.
+                # however, we will be keeping the record of the status code.
+                
+                # Getting all executions df to get the custom property 'Python_Env'
+                executions = query.get_all_executions_in_pipeline(self.args.pipeline_name)
+                if not executions.empty:
+                    if 'custom_properties_Python_Env' in executions.columns:
+                        list_of_env_files = executions['custom_properties_Python_Env'].drop_duplicates().tolist()
+                        # This is a validation step to suppress errors in case user is pushing the mlmd
+                        # from a directory in which 'cmf_artifacts/Python_Env_hash.txt' is not present.
+                        # Find the valid file paths.  
+                        found_files = self.search_files(list_of_env_files, current_directory, mlmd_directory) 
+
+                        # push valid files on cmf-server
+                        if found_files:
+                            for name, path in found_files.items():
+                                env_response = server_interface.call_python_env(url, name, path)
+                                # keeping record of status but this won't affect the mlmd success.
+                                print(env_response.json())
+
                 output = ""
                 display_output = ""
                 if response.json()['status']=="success":
@@ -168,13 +214,7 @@ class CmdMetadataPush(CmdBase):
                                 return TensorboardPushFailure(file_name,tresponse.text)
                     return TensorboardPushSuccess()
                 else:
-                    return InvalidTensorboardFilePath()
-            elif status_code==422 and response.json()["status"]=="version_update":
-                raise UpdateCmfVersion
-            elif status_code == 404:
-                raise CmfServerNotAvailable
-            elif status_code == 500:
-                raise InternalServerError
+                    return InvalidTensorboardFilePath()   
             else:
                 return "ERROR: Status Code = {status_code}. Unable to push mlmd."
         else:

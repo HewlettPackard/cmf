@@ -40,3 +40,10 @@ def call_tensorboard(url, pipeline_name, file_name, file_path):
     params = {'pipeline_name': pipeline_name}
     response = requests.post(url_to_pass, files=files, params=params)
     return response
+
+# This function posts env file to cmf-server
+def call_python_env(url, file_name, file_path):
+    url_to_pass = f"{url}/python-env"
+    files = {'file': (file_name, open(file_path, 'rb'))}
+    response = requests.post(url_to_pass, files=files)
+    return response

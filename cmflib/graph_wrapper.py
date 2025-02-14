@@ -22,7 +22,10 @@ from ml_metadata.proto import metadata_store_pb2 as mlpb
 class GraphDriver:
 
     def __init__(self, uri, user, password):
-        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+        self.driver = GraphDatabase.driver(uri, 
+                                        auth=(user, password),
+                                        #notifications_min_severity="OFF" # Suppress warnings on driver level
+                                        )
         self.pipeline_id = None
         self.stage_id = None
         self.execution_id = None
@@ -88,6 +91,22 @@ class GraphDriver:
                 "Execution", "Dataset", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
+    def create_env_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
+                            pipeline_context: mlpb.Context, custom_properties=None):
+        if custom_properties is None:
+            custom_properties = {}
+        pipeline_id = pipeline_context.id
+        pipeline_name = pipeline_context.name
+        dataset_syntax = self._create_env_syntax(
+            name, path, uri, pipeline_id, pipeline_name, custom_properties)
+        with self.driver.session() as session:
+            node = session.write_transaction(
+                self._run_transaction, dataset_syntax)
+            node_id = node[0]["node_id"]
+            pc_syntax = self._create_execution_artifacts_link_syntax(
+                "Execution", "Environment", self.execution_id, node_id, event)
+            _ = session.write_transaction(self._run_transaction, pc_syntax)
+
     def create_dataslice_node(self, name: str, path: str, uri: str, parent_name:str,
                             custom_properties=None):
         if custom_properties is None:
@@ -144,6 +163,22 @@ class GraphDriver:
                 "Execution", "Metrics", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
+    def create_step_metrics_node(self, name: str, uri: str, event: str, execution_id: int, pipeline_context: mlpb.Context,
+                            custom_properties=None):
+        if custom_properties is None:
+            custom_properties = {}
+        pipeline_id = pipeline_context.id
+        pipeline_name = pipeline_context.name
+        metrics_syntax = self._create_step_metrics_syntax(
+            name, uri, event, execution_id, pipeline_id, pipeline_name, custom_properties)
+        with self.driver.session() as session:
+            node = session.write_transaction(
+                self._run_transaction, metrics_syntax)
+            node_id = node[0]["node_id"]
+            pc_syntax = self._create_execution_artifacts_link_syntax(
+                "Execution", "Step_Metrics", self.execution_id, node_id, event)
+            _ = session.write_transaction(self._run_transaction, pc_syntax)
+
     def create_artifact_relationships(
             self,
             parent_artifacts,
@@ -185,12 +220,12 @@ class GraphDriver:
 
         parent_execution_query = "MATCH (n:{}".format(
             parent_artifact_type) + "{uri: '" + parent_artifact_uri + "'}) " \
-            "<-[:output]-(f:Execution) Return ID(f)as id, f.uri as uri"
+            "<-[:output]-(f:Execution) Return ELEMENTID(f) as id, f.uri as uri"
 
         already_linked_execution_query = "MATCH (f)-[r:linked]->(e2:Execution) " \
-            "WHERE r.uri = '{}' RETURN ID(f)as id, f.uri as uri".format(parent_artifact_uri)
+            "WHERE r.uri = '{}' RETURN ELEMENTID(f) as id, f.uri as uri".format(parent_artifact_uri)
 
-        with self.driver.session() as session:
+        with self.driver.session(notifications_min_severity="OFF") as session: # Supress Warnings on Session level
             execution_parent = session.read_transaction(
                 self._run_transaction, parent_execution_query)
             executions = {}
@@ -219,8 +254,7 @@ class GraphDriver:
     def _get_node(self, node_label: str, node_name: str)->int:
         #Match(n:Metrics) where n.Name contains 'metrics_1' return n
         search_syntax = "MATCH (n:{}) where '{}' in n.Name  \
-                              return ID(n) as node_id".format(node_label, node_name)
-        print(search_syntax)
+                              return ELEMENTID(n) as node_id".format(node_label, node_name)
         node_id = None
         with self.driver.session() as session:
             nodes = session.read_transaction(
@@ -232,8 +266,7 @@ class GraphDriver:
     def _get_node_with_path(self, node_label: str, node_path: str)->int:
         #Match(n:Metrics) where n.Path contains 'metrics_1' return n
         search_syntax = "MATCH (n:{}) where '{}' in n.Path  \
-                              return ID(n) as node_id".format(node_label, node_path)
-        print(search_syntax)
+                              return ELEMENTID(n) as node_id".format(node_label, node_path)
         node_id = None
         with self.driver.session() as session:
             nodes = session.read_transaction(
@@ -261,7 +294,7 @@ class GraphDriver:
             k = re.sub('\W+', '', k)
             syntax_str = syntax_str + k + ":" + "\"" + v + "\"" + ","
         syntax_str = syntax_str.rstrip(syntax_str[-1])
-        syntax_str = syntax_str + "}) RETURN ID(a) as node_id"
+        syntax_str = syntax_str + "}) RETURN ELEMENTID(a) as node_id"
         return syntax_str
 
     # Todo - Verify what is considered as unique node . is it a combination of
@@ -282,7 +315,25 @@ class GraphDriver:
                 " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str
         syntax_str = syntax_str.rstrip(",")
-        syntax_str = syntax_str + " RETURN ID(a) as node_id"
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id"
+        return syntax_str
+
+    @staticmethod
+    def _create_env_syntax(name: str, path: str, uri: str, pipeline_id: int, pipeline_name: str, 
+                            custom_properties):
+        custom_properties["Name"] = name
+        custom_properties["Path"] = path
+        custom_properties["pipeline_id"] = str(pipeline_id)
+        custom_properties["pipeline_name"] = pipeline_name
+        syntax_str = "MERGE (a:Environment {uri:\"" + uri + "\"}) SET "
+        # props_str = ""
+        for k, v in custom_properties.items():
+            k = re.sub('\W+', '', k)
+            props_str = "a." + k + \
+                " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
+            syntax_str = syntax_str + props_str
+        syntax_str = syntax_str.rstrip(",")
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id"
         return syntax_str
 
     @staticmethod
@@ -298,7 +349,7 @@ class GraphDriver:
                 " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str
         syntax_str = syntax_str.rstrip(",")
-        syntax_str = syntax_str + " RETURN ID(a) as node_id"
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id"
         return syntax_str
 
     @staticmethod
@@ -314,7 +365,7 @@ class GraphDriver:
             #syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
             syntax_str = syntax_str + props_str
         syntax_str = syntax_str.rstrip(",")
-        syntax_str = syntax_str + " RETURN ID(a) as node_id"
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id"
         return syntax_str
 
     @staticmethod
@@ -331,7 +382,24 @@ class GraphDriver:
             syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
         syntax_str = syntax_str.rstrip(syntax_str[-1])
         syntax_str = syntax_str + "})"
-        syntax_str = syntax_str + " RETURN ID(a) as node_id"
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id"
+        return syntax_str
+    
+    @staticmethod
+    def _create_step_metrics_syntax(name: str, uri: str, event: str, execution_id: int, pipeline_id: int,
+                               pipeline_name: str, custom_properties):
+        custom_properties["Name"] = name
+        custom_properties["uri"] = uri
+        # custom_properties["execution_id"] = str(execution_id)
+        custom_properties["pipeline_id"] = str(pipeline_id)
+        custom_properties["pipeline_name"] = pipeline_name
+        syntax_str = "MERGE (a:Step_Metrics {"  # + str(props) + ")"
+        for k, v in custom_properties.items():
+            k = re.sub('\W+', '', k)
+            syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
+        syntax_str = syntax_str.rstrip(syntax_str[-1])
+        syntax_str = syntax_str + "})"
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id"
         return syntax_str
 
     @staticmethod
@@ -346,13 +414,13 @@ class GraphDriver:
             syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
 
         syntax_str = syntax_str.rstrip(syntax_str[-1])
-        syntax_str = syntax_str + "}) RETURN ID(a) as node_id"
+        syntax_str = syntax_str + "}) RETURN ELEMENTID(a) as node_id"
         return syntax_str
 
 
     @staticmethod
     def _create_parent_child_syntax(parent_label: str, child_label: str, parent_id: int, child_id: int, relation: str):
-        parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} MERGE (a)-[r:{}]->(b) \
+        parent_child_syntax = "MATCH (a:{}), (b:{}) where ELEMENTID(a) = '{}' AND ELEMENTID(b) = '{}' MERGE (a)-[r:{}]->(b) \
                               return type(r)".format(parent_label, child_label, parent_id, child_id, relation)
         return parent_child_syntax
 
@@ -360,10 +428,10 @@ class GraphDriver:
     def _create_execution_artifacts_link_syntax(parent_label: str, child_label: str, parent_id: int, child_id: int,
                                                 relation: str):
         if relation.lower() == "input":
-            parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} MERGE (a)<-[r:{}]-(b) \
+            parent_child_syntax = "MATCH (a:{}), (b:{}) where ELEMENTID(a) = '{}' AND ELEMENTID(b) = '{}' MERGE (a)<-[r:{}]-(b) \
                               return type(r)".format(parent_label, child_label, parent_id, child_id, relation)
         else:
-            parent_child_syntax = "MATCH (a:{}), (b:{}) where ID(a) = {} AND ID(b) = {} MERGE (a)-[r:{}]->(b) \
+            parent_child_syntax = "MATCH (a:{}), (b:{}) where ELEMENTID(a) = '{}' AND ELEMENTID(b) = '{}' MERGE (a)-[r:{}]->(b) \
                               return type(r)".format(parent_label, child_label, parent_id, child_id, relation)
 
         return parent_child_syntax
@@ -380,7 +448,7 @@ class GraphDriver:
         CREATE (a)-[r:RELTYPE]->(b)
         RETURN type(r)
         """
-        parent_child_syntax_1 = "MATCH (a:{}), (b:{}) WHERE a.uri = '{}' AND ID(a) = {} AND  ID(b) = {} ".format(
+        parent_child_syntax_1 = "MATCH (a:{}), (b:{}) WHERE a.uri = '{}' AND ELEMENTID(a) = '{}' AND  ELEMENTID(b) = '{}' ".format(
             parent_label, child_label, parent_uri, parent_id, child_id)
         parent_child_syntax_2 = "MERGE (a)-[r:{}".format(relation)
         parent_child_syntax_3 = "{"
@@ -434,5 +502,5 @@ class GraphDriver:
             syntax_str = syntax_str + k + ":" + "\"" + v + "\"" + ","
 
         syntax_str = syntax_str.rstrip(syntax_str[-1])
-        syntax_str = syntax_str + "}) RETURN ID(a) as node_id"
+        syntax_str = syntax_str + "}) RETURN ELEMENTID(a) as node_id"
         return syntax_str
