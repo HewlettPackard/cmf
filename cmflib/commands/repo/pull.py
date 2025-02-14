@@ -27,14 +27,24 @@ from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
 
 class CmdRepoPull(CmdBase):
     def git_pull(self):
-        # Getting github url from cmf init command
+        # Getting GitHub URL from cmf init command
         url = git_get_repo()
         # Example url = https://github.com/ABC/my-repo
-        splited_url = url.split("/")
+        # Check if the URL is a GitHub URL
+        if "github.com" not in url:
+            raise MsgFailure(msg_str="The repository URL is not a GitHub URL.")
+        
+        # Extracting the repository owner and name from the URL
+        # repo_owner = ABC, repo_name = my-repo
+        url_parts = url.split("/")
+        repo_owner = url_parts[-2]
+        repo_name = url_parts[-1]
+        
+        # Getting the current branch name
         branch_name = git_get_branch()[0]
-        # Check whether branch exists in git repo or not
-        # splitted_url[-2] = ABC, splitted_url[-1] = my-repo
-        if branch_exists(splited_url[-2], splited_url[-1], branch_name):
+        
+        # Check whether the branch exists in the GitHub repository
+        if branch_exists(repo_owner, repo_name, branch_name):
             # pull the code from mlmd branch
             print("git pull started...")
             stdout, stderr, returncode = git_get_pull(branch_name)
@@ -42,7 +52,7 @@ class CmdRepoPull(CmdBase):
                 raise MsgFailure(msg_str=f"{stderr}")
             return MsgSuccess(msg_str=stdout)
         else:
-            raise MsgFailure(msg_str=f"{branch_name} inside {url} does not exists!!")
+            raise MsgFailure(msg_str=f"{branch_name} inside {url} does not exist!!")
         
     def run(self):
         print("Executing cmf metadata pull command..")

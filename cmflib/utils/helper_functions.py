@@ -173,7 +173,7 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     return dynamic_pass
 
-def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool:
+def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     """
     Check if a branch exists in a GitHub repository.
 
@@ -185,7 +185,7 @@ def branch_exists(self, repo_own: str, repo_name: str, branch_name: str) -> bool
     Returns:
         bool: True if the branch exists, otherwise False.
     """
-    url = f"https://api.github.com/repos/{repo_own}/{repo_name}/branches/{branch_name}"
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/branches/{branch_name}"
     res = requests.get(url)
 
     if res.status_code == 200:

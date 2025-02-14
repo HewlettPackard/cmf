@@ -42,26 +42,37 @@ from cmflib.cmf_exception_handling import (
 )
 
 
-class CmdRepoPush(CmdBase):
+class CmdRepoPush(CmdBase):   
     def git_push(self):
-        # Getting github url from cmf init command
+        # Getting GitHub URL from cmf init command
         url = git_get_repo()
         # Example url = https://github.com/ABC/my-repo
-        url = url.split("/")
+        # Check if the URL is a GitHub URL
+        if "github.com" not in url:
+            raise MsgFailure(msg_str="The repository URL is not a GitHub URL.")
+        
+        # Extracting the repository owner and name from the URL
+        # repo_owner = ABC, repo_name = my-repo
+        url_parts = url.split("/")
+        repo_owner = url_parts[-2]
+        repo_name = url_parts[-1]
+        
+        # Getting the current branch name
         branch_name = git_get_branch()[0]
-        # Check whether branch exists in git repo or not
-        # url[-2] = ABC, url[-1] = my-repo
-        if branch_exists(url[-2], url[-1], branch_name):
-            # 1. pull the code from mlmd branch
-            # 2. push the code inside mlmd branch
+        
+        # Check whether the branch exists in the GitHub repository
+        if branch_exists(repo_owner, repo_name, branch_name):
+            # Pull the latest changes from the branch
             stdout, stderr, returncode = git_get_pull(branch_name)
             if returncode != 0:
-                raise MsgFailure(msg_str=f"{stderr}")
+                raise MsgFailure(msg_str=f"Git pull failed: {stderr}")
             print(stdout)
-        # push the code inside mlmd branch
+        
+        # Push the changes to the branch
         stdout, stderr, returncode = git_get_push(branch_name)
         if returncode != 0:
-            raise MsgFailure(msg_str=f"{stderr}")
+            raise MsgFailure(msg_str=f"Git push failed: {stderr}")
+        
         return MsgSuccess(msg_str="cmf repo push command executed successfully.")
     
     def artifact_push(self):
