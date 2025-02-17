@@ -201,7 +201,6 @@ def get_artifacts(query: CmfQuery, pipeline_name, art_type, artifact_ids):
         return tempout
 
 def get_artifact_types(query: CmfQuery) -> t.List[str]:
-    print(type(query))
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
@@ -294,7 +293,8 @@ def get_lineage_data(query: CmfQuery, pipeline_name,type, dict_of_art_ids, dict_
                       }
         '''
     elif type=="Execution":
-        lineage_data = query_list_of_executions(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+        lineage_data = query_list_of_executions(pipeline_name, dict_of_exe_ids)
+        print("lineage_data",lineage_data)
 
         '''
         returns list of execution types for specific pipeline.

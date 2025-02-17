@@ -19,7 +19,6 @@ import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
-import Search from "../../components/Search";
 
 const client = new FastAPIClient(config);
 
@@ -68,7 +67,6 @@ const Home = () => {
             </tbody>
           </table>
         </div>
-        <Search/>
         <Footer />
       </section>
     </>

@@ -168,11 +168,12 @@ class FastAPIClient {
       });
   }
 
-  async getSearchResult(value){
+  async getExecution(pipeline_name, active_page, filter_value){
     return this.apiClient
-    .get(`/search`,{
+    .get(`/execution/${pipeline_name}`,{
       params: {
-        value: value,
+        active_page: active_page,
+        filter_value: filter_value,
       },
     }).
     then(({data}) => {
@@ -180,33 +181,6 @@ class FastAPIClient {
     }); 
   }
 
-//   async getExecution(pipeline_name, active_page, sort_order, filter_value){
-//     return this.apiClient
-//     .get(`/execution/${pipeline_name}`,{
-//       params: {
-//         active_page: active_page,
-//         sort_order: sort_order,
-//         filter_value: filter_value,
-//       },
-//     }).
-//     then(({data}) => {
-//       return data;
-//     }); 
-//   }
-// }
-
-async getExecution(pipeline_name, active_page, filter_value){
-  return this.apiClient
-  .get(`/execution/${pipeline_name}`,{
-    params: {
-      active_page: active_page,
-      filter_value: filter_value,
-    },
-  }).
-  then(({data}) => {
-    return data;
-  }); 
-}
   async getPythonEnv(file_name) {
     return this.apiClient
       .get(`/python-env`, {
@@ -219,9 +193,8 @@ async getExecution(pipeline_name, active_page, filter_value){
         return response.data;
       });
   }
-
 }
 
 
-
 export default FastAPIClient;
+
