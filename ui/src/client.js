@@ -153,6 +153,34 @@ class FastAPIClient {
       });
   }
 
+  async getArtifact(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
+    return this.apiClient
+      .get(`/artifact/${pipeline_name}/${artifact_type}`, {
+        params: {
+          filter_value: filterValue,
+          sort_order: sort_order,
+          page_number: page_number,
+          col_name: col_name,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getExecution(pipeline_name, active_page, filter_value){
+    return this.apiClient
+    .get(`/execution/${pipeline_name}`,{
+      params: {
+        active_page: active_page,
+        filter_value: filter_value,
+      },
+    }).
+    then(({data}) => {
+      return data;
+    }); 
+  }
+
   async getPythonEnv(file_name) {
     return this.apiClient
       .get(`/python-env`, {
@@ -165,9 +193,8 @@ class FastAPIClient {
         return response.data;
       });
   }
-
 }
 
 
-
 export default FastAPIClient;
+

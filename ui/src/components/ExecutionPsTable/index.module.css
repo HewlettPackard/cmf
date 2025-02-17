@@ -1,0 +1,23 @@
+.pagination-button.active {
+  background-color: #2c5282;
+  color: #fff;
+  font-weight: bold;
+  border-color: #2c5282;
+}
+
+.pagination-button.active:hover {
+  background-color: #1a365d;
+  border-color: #1a365d;
+}
+.arrow {
+  font-weight: bold;
+  font-size: 1.2em; /* Adjust the size as needed */
+}
+
+td {
+  text-align: left;
+}
+
+thead {
+  background-color: #f4f4f4f4;
+}
