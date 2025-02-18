@@ -32,7 +32,8 @@ from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
 import json
-from server.app.schemas.dataframe import MLMDPushRequest, MLMDPullRequest, ExecutionsRequest, ArtifactsRequest
+import typing as t
+from server.app.schemas.dataframe import MLMDPushRequest, ExecutionsRequest, ArtifactsRequest
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -125,13 +126,13 @@ async def mlmd_push(info: MLMDPushRequest):
 
 # api to get mlmd file from cmf-server
 @app.get("/mlmd_pull/{pipeline_name}", response_class=HTMLResponse)
-async def mlmd_pull(pipeline_name: str, request: MLMDPullRequest):
+async def mlmd_pull(pipeline_name: str, exec_id: t.Optional[int]= None):
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
     #json_payload values can be json data, NULL or no_exec_id.
-    json_payload = await async_api(get_mlmd_from_server, server_store_path, pipeline_name, request.exec_id)
+    json_payload = await async_api(get_mlmd_from_server, server_store_path, pipeline_name, exec_id)
     return json_payload
 
 

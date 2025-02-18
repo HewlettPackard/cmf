@@ -24,15 +24,6 @@ class MLMDPushRequest(BaseModel):
             raise ValueError("JSON payload is not valid JSON")  # Raise error if invalid JSON
 
         return values
-    
-
-# Pydantic model for the request body in the MLMD pull API.
-class MLMDPullRequest(BaseModel):
-    # The execution ID is required, but it can be None if no specific execution is needed
-    exec_id: int | None = Field(
-        ..., 
-        description="Execution ID must be an integer. It is a required field but can be null."
-    )
 
 # Base query parameters for pagination, sorting, and filtering.
 class BaseRequest(BaseModel):
