@@ -34,6 +34,9 @@ def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_e
     #finding execution_id by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid ('Prepare_u3tr')  
     result = df[df['Execution_uuid'].str[:4] == uuid]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
     execution_id=result["id"].tolist() 
+    # Return error if no execution ID is found for the given uuid
+    if not execution_id:  
+        return {"error": f"uuid '{uuid}' does not match any execution in pipeline '{pipeline_name}'"}
     parents_set = set()
     queue = UniqueQueue()
     df = pd.DataFrame()
@@ -41,8 +44,6 @@ def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_e
     dict_parents = {}
     if parents == None:
         parents = []
-    if not execution_id:
-        return {"error": f"No execution lineage is available for pipeline {pipeline_name} with uuid {uuid}"}
     dict_parents[execution_id[0]] = list(set(parents))  # [2] = [1,2,3,4] list of parent id
     parents_set.add(execution_id[0])     #created so that we can directly find execuions using execution ids
     for i in set(parents):
