@@ -135,13 +135,9 @@ class MinioArtifacts:
             we need to remove the hash of the .dir from the object_name
             which will leave us with the artifact repo path
             """
-            # Ensure repo_path_list is treated as a List[str] initially
             repo_path_list: t.List[str] = object_name.split("/")
             repo_path_list = repo_path_list[:len(repo_path_list)-2]
-            # Join the List[str] into a string and assign to a new variable 'repo_path'
-            # This avoids type conflict, as 'repo_path_list' is a list of strings, while 'repo_path' is a string.
             repo_path = "/".join(repo_path_list)
-
 
             obj=True
             for file_info in tracked_files:
