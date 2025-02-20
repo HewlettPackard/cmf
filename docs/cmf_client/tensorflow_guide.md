@@ -1,15 +1,18 @@
 # How to Use TensorBoard with CMF
 
-1. Copy the contents of the 'example-get-started' directory from `cmf/examples/example-get-started` into a separate directory outside cmf repository.
+1. Copy the contents of the 'example-get-started' directory from
+	`cmf/examples/example-get-started` into a separate directory outside cmf
+	repository.
 
-2. Execute the following command to install the TensorFlow library in the current directory:
-     ```bash
-     pip install tensorflow
-     ```
-     
+2. Execute the following command to install the TensorFlow library in the
+	current directory:
+  ```bash
+  pip install tensorflow
+  ```
+
 3. Create a new Python file (e.g., `tensorflow_log.py`) and copy the following code:
-   
-   ```
+
+  ```
 	import datetime
     import tensorflow as tf
 
@@ -20,7 +23,7 @@
 	def create_model():
 	return tf.keras.models.Sequential([
 		tf.keras.layers.Flatten(input_shape=(28, 28), name='layers_flatten'),
-		tf.keras.layers.Dense(512, activation='relu', name='layers_dense'), 
+		tf.keras.layers.Dense(512, activation='relu', name='layers_dense'),
 		tf.keras.layers.Dropout(0.2, name='layers_dropout'),
 		tf.keras.layers.Dense(10, activation='softmax', name='layers_dense_2')
 	])
@@ -108,7 +111,7 @@
      sh test_script.sh
      ```
 
-9. Use the following command to push the generated MLMD and TensorFlow log files to the CMF server: 
+9. Use the following command to push the generated MLMD and TensorFlow log files to the CMF server:
      ```bash
      cmf metadata push -p 'pipeline-name' -t 'tensorboard-log-file-name'
      ```
