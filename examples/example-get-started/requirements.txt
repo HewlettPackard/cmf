@@ -1,4 +1,6 @@
 dvc
-click
+numpy
 pandas
-PyYAML
+pyyaml
+scikit-learn
+scipy
