@@ -173,3 +173,16 @@ association = Table(
     # Unique Constraint
     UniqueConstraint("context_id", "execution_id", name="association_context_id_execution_id_key") 
 )
+
+
+event = Table(
+    "event", metadata, 
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column("artifact_id", Integer, nullable=False),
+    Column("execution_id", Integer, nullable=False),
+    Column("type", Integer, nullable=False),
+    Column("milliseconds_since_epoch", BigInteger),
+
+    # Unique Constraint
+    UniqueConstraint("artifact_id", "execution_id", "type", name="uniqueevent") 
+)
