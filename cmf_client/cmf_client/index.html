@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.5">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.d7758b05.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.8608ea7d.min.css">
       
       
 
@@ -893,7 +893,7 @@
 
 <h1 id="getting-started-with-cmf-client-commands">Getting started with cmf-client commands<a class="headerlink" href="#getting-started-with-cmf-client-commands" title="Permanent link">&para;</a></h1>
 <h1 id="cmf">cmf<a class="headerlink" href="#cmf" title="Permanent link">&para;</a></h1>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf [-h] {init, artifact, metadata, execution, pipeline}
+<p><div class="highlight"><pre><span></span><code>Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
 </code></pre></div>
 The <code>cmf</code> command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.</p>
 <h2 id="cmf-init">cmf init<a class="headerlink" href="#cmf-init" title="Permanent link">&para;</a></h2>
@@ -1125,33 +1125,33 @@ Optional Arguments
 </code></pre></div>
 <code>cmf metadata</code> push, pull or export the metadata file to and from the cmf-server, respectively.</p>
 <h3 id="cmf-metadata-pull">cmf metadata pull<a class="headerlink" href="#cmf-metadata-pull" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
+<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_uuid]
 </code></pre></div>
 <code>cmf metadata pull</code> command pulls the metadata file from the cmf-server to the user's local machine.
-<div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_id&#39;
+<div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
 </code></pre></div>
 Required Arguments
 <div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
 </code></pre></div>
 Optional Arguments
-<div class="highlight"><pre><span></span><code>-h, --help                                  show this help message and exit.
--e [exec_id], --execution [exec_id]         Specify execution id.
--f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
+<div class="highlight"><pre><span></span><code>-h, --help                                                show this help message and exit.
+-e [exec_uuid], --execution_uuid [exec_uuid]              Specify execution uuid.
+-f [file_name], --file_name [file_name]                   Specify mlmd file name with full path(either relative or absolute).
 </code></pre></div></p>
 <h3 id="cmf-metadata-push">cmf metadata push<a class="headerlink" href="#cmf-metadata-push" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
+<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
 </code></pre></div>
 <code>cmf metadata push</code> command pushes the metadata file from the local machine to the cmf-server.
-<div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_id&#39; -t &#39;/path/to/tensorboard-log&#39;
+<div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; -t &#39;/path/to/tensorboard-log&#39;
 </code></pre></div>
 Required Arguments
 <div class="highlight"><pre><span></span><code>-p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
 </code></pre></div>
 Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                         show this help message and exit.
-  -f [file_name], --file_name [file_name]            Specify mlmd file name.
-  -e [exec_id], --execution [exec_id]                Specify execution id.
-  -t [tensorboard], --tensorboard [tensorboard]      Specify path to tensorboard logs for the pipeline.
+<div class="highlight"><pre><span></span><code>  -h, --help                                             show this help message and exit.
+  -f [file_name], --file_name [file_name]                Specify mlmd file name.
+  -e [exec_uuid], --execution [exec_uuid]                Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]          Specify path to tensorboard logs for the pipeline.
 </code></pre></div></p>
 <h3 id="cmf-metadata-export">cmf metadata export<a class="headerlink" href="#cmf-metadata-export" title="Permanent link">&para;</a></h3>
 <p><div class="highlight"><pre><span></span><code>Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_name]
@@ -1160,7 +1160,7 @@ Optional Arguments
 <div class="highlight"><pre><span></span><code>cmf metadata export -p &#39;pipeline-name&#39; -j &#39;/path/to/json-file-name&#39; -f &#39;/path/to/mlmd-file-name&#39;
 </code></pre></div>
 Required Arguments
-<div class="highlight"><pre><span></span><code>-p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
+<div class="highlight"><pre><span></span><code>-p [pipeline_name], --pipeline_name [pipeline_name]        Specify Pipeline name.
 </code></pre></div>
 Optional Arguments
 <div class="highlight"><pre><span></span><code>  -h, --help                                               show this help message and exit.
@@ -1172,18 +1172,18 @@ Optional Arguments
 </code></pre></div>
 <code>cmf execution</code> command to displays executions from the MLMD file.</p>
 <h3 id="cmf-executions-list">cmf executions list<a class="headerlink" href="#cmf-executions-list" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] 
+<p><div class="highlight"><pre><span></span><code>Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_uuid] 
 </code></pre></div>
 <code>cmf execution list</code> command to displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
-<div class="highlight"><pre><span></span><code>cmf execution list -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_id&#39; 
+<div class="highlight"><pre><span></span><code>cmf execution list -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; 
 </code></pre></div>
 Required Arguments
-<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]       Specify Pipeline name.
 </code></pre></div>
 Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
-  -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
+<div class="highlight"><pre><span></span><code>  -h, --help                                                show this help message and exit.
+  --f [file_name], --file-name [file_name]                  Specify the absolute or relative path for the input MLMD file.
+  -e [exe_uuid], --execution_id [exe_uuid]                  Specify the execution uuid to retrieve execution.
 </code></pre></div></p>
 <h2 id="cmf-pipeline">cmf pipeline<a class="headerlink" href="#cmf-pipeline" title="Permanent link">&para;</a></h2>
 <p><div class="highlight"><pre><span></span><code>Usage: cmf pipeline [-h] {list}
@@ -1198,6 +1198,39 @@ Optional Arguments
 Optional Arguments
 <div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
   --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+</code></pre></div></p>
+<h2 id="cmf-repo">cmf repo<a class="headerlink" href="#cmf-repo" title="Permanent link">&para;</a></h2>
+<p><div class="highlight"><pre><span></span><code>Usage: cmf repo [-h] {push, pull}
+</code></pre></div>
+<code>cmf repo</code> command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.</p>
+<h3 id="cmf-repo-push">cmf repo push<a class="headerlink" href="#cmf-repo-push" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
+</code></pre></div>
+<code>cmf repo push</code> command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+<div class="highlight"><pre><span></span><code>cmf repo push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; -t &#39;tensorboard_log_path&#39;
+</code></pre></div>
+Required Arguments
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
+</code></pre></div>
+Optional Arguments
+<div class="highlight"><pre><span></span><code>  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
+</code></pre></div></p>
+<h3 id="cmf-repo-pull">cmf repo pull<a class="headerlink" href="#cmf-repo-pull" title="Permanent link">&para;</a></h3>
+<p><div class="highlight"><pre><span></span><code>Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid]
+</code></pre></div>
+<code>cmf repo pull</code> command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+<div class="highlight"><pre><span></span><code>cmf repo pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
+</code></pre></div>
+Required Arguments
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
+</code></pre></div>
+Optional Arguments
+<div class="highlight"><pre><span></span><code>  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
 </code></pre></div></p>
 
 
