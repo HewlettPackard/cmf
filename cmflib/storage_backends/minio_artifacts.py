@@ -85,12 +85,6 @@ class MinioArtifacts:
         object_name: str,
         download_loc: str,
     ):
-<<<<<<< HEAD
-        # dvc_config_op["remote.minio.endpointurl"] = http://XX.XX.XX.XX:9000
-        endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
-        access_key = dvc_config_op["remote.minio.access_key_id"]
-        secret_key = dvc_config_op["remote.minio.secret_access_key"]
-=======
         """
         Download a directory from an minios3 repo using its .dir metadata object.
 
@@ -122,7 +116,6 @@ class MinioArtifacts:
 
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/temp_dir"
->>>>>>> 21df74e (pulled changes)
         try:
             # Download the .dir file containing metadata about tracked files.
 

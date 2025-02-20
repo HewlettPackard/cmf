@@ -2,11 +2,7 @@
 
 # cmf 
 ```
-<<<<<<< HEAD
-Usage: cmf [-h] {init, artifact, metadata, execution, pipeline}
-=======
 Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
->>>>>>> 21df74e (pulled changes)
 ```
 The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
 
@@ -288,11 +284,11 @@ Usage: cmf metadata [-h] {pull,push,export}
 `cmf metadata` push, pull or export the metadata file to and from the cmf-server, respectively.
 ### cmf metadata pull
 ```
-Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
+Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_uuid]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
-cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id'
+cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid'
 ```
 Required Arguments
 ```
@@ -300,17 +296,17 @@ Required Arguments
 ```
 Optional Arguments
 ```
--h, --help                                  show this help message and exit.
--e [exec_id], --execution [exec_id]         Specify execution id.
--f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
+-h, --help                                                show this help message and exit.
+-e [exec_uuid], --execution_uuid [exec_uuid]              Specify execution uuid.
+-f [file_name], --file_name [file_name]                   Specify mlmd file name with full path(either relative or absolute).
 ```
 ### cmf metadata push
 ```
-Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
+Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
 ```
 `cmf metadata push` command pushes the metadata file from the local machine to the cmf-server.
 ```
-cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t '/path/to/tensorboard-log'
+cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t '/path/to/tensorboard-log'
 ```
 Required Arguments
 ```
@@ -318,10 +314,10 @@ Required Arguments
 ```
 Optional Arguments
 ```
-  -h, --help                                         show this help message and exit.
-  -f [file_name], --file_name [file_name]            Specify mlmd file name.
-  -e [exec_id], --execution [exec_id]                Specify execution id.
-  -t [tensorboard], --tensorboard [tensorboard]      Specify path to tensorboard logs for the pipeline.
+  -h, --help                                             show this help message and exit.
+  -f [file_name], --file_name [file_name]                Specify mlmd file name.
+  -e [exec_uuid], --execution [exec_uuid]                Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]          Specify path to tensorboard logs for the pipeline.
 ```
 ### cmf metadata export
 ```
@@ -333,7 +329,7 @@ cmf metadata export -p 'pipeline-name' -j '/path/to/json-file-name' -f '/path/to
 ```
 Required Arguments
 ```
--p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
+-p [pipeline_name], --pipeline_name [pipeline_name]        Specify Pipeline name.
 ```
 Optional Arguments
 ```
@@ -349,23 +345,21 @@ Usage: cmf execution [-h] {list}
 `cmf execution` command to displays executions from the MLMD file.
 ### cmf executions list
 ```
-Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] 
+Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_uuid] 
 ```
 `cmf execution list` command to displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
 ```
-cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' 
-<<<<<<< HEAD
-=======
+cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' 
 ```
 Required Arguments
 ```
-  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+  -p [pipeline_name], --pipeline-name [pipeline_name]       Specify Pipeline name.
 ```
 Optional Arguments
 ```
-  -h, --help                                            show this help message and exit.
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
-  -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
+  -h, --help                                                show this help message and exit.
+  --f [file_name], --file-name [file_name]                  Specify the absolute or relative path for the input MLMD file.
+  -e [exe_uuid], --execution_id [exe_uuid]                  Specify the execution uuid to retrieve execution.
 ```
 
 ## cmf pipeline
@@ -394,58 +388,38 @@ Usage: cmf repo [-h] {push, pull}
 `cmf repo` command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.
 ### cmf repo push
 ```
-Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
+Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
 ```
 `cmf repo push` command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
 ```
-cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t 'tensorboard_log_path'
->>>>>>> 21df74e (pulled changes)
+cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t 'tensorboard_log_path'
 ```
 Required Arguments
 ```
-  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
 ```
 Optional Arguments
 ```
-  -h, --help                                            show this help message and exit.
-<<<<<<< HEAD
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
-  -e [exe_id], --execution_id [exe_id]                  Specify the execution id to retrieve execution.
-=======
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
-  -e [exec_id], --execution [exec_id]                   Specify execution id.
-  -t [tensorboard], --tensorboard [tensorboard]         Specify path to tensorboard logs for the pipeline.
->>>>>>> 21df74e (pulled changes)
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
 ```
 ### cmf repo pull
 ```
-Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -a [artifact_name]
+Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid]
 ```
-<<<<<<< HEAD
-`cmf pipeline` command displays a list of pipeline name(s) from the available mlmd file.
-### cmf pipeline list
-=======
 `cmf repo pull` command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
->>>>>>> 21df74e (pulled changes)
 ```
-cmf repo pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -a 'artifact_name'
+cmf repo pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid'
 ```
-<<<<<<< HEAD
-`cmf pipeline list` command displays a list of pipeline name(s) from the available mlmd file.
-=======
 Required Arguments
->>>>>>> 21df74e (pulled changes)
 ```
-  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
 ```
 Optional Arguments
 ```
-  -h, --help                                            show this help message and exit.
-<<<<<<< HEAD
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
-=======
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
-  -e [exec_id], --execution [exec_id]                   Specify execution id.
-  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name.
->>>>>>> 21df74e (pulled changes)
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
 ```
