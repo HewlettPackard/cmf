@@ -164,8 +164,10 @@ def merge_created_execution(
 
     uuids = self.execution.properties["Execution_uuid"].string_value
     if uuids:
-        self.execution.properties["Execution_uuid"].string_value = uuids +\
-            ","+properties["Execution_uuid"]
+        # In case of a reusable execution, the execution UUID is repeated each time while pushing MLMD inside the server.  
+        # To resolve this, taking the union of  properties["Execution_uuid"] and uuids.
+        set_of_uuids = set(uuids.split(",") + properties["Execution_uuid"].split(","))
+        self.execution.properties["Execution_uuid"].string_value = ",".join(set_of_uuids)
     else:
         self.execution.properties["Execution_uuid"].string_value =\
             properties["Execution_uuid"]

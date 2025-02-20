@@ -124,7 +124,7 @@ async def mlmd_pull(info: Request, pipeline_name: str):
     req_info = await info.json()
     if os.path.exists(server_store_path):
         #json_payload values can be json data, NULL or no_exec_id.
-        json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, req_info['exec_id'])
+        json_payload= await async_api(get_mlmd_from_server, server_store_path, pipeline_name, req_info['exec_uuid'], dict_of_exe_ids)
     else:
         raise HTTPException(status_code=413, detail=f"mlmd file not available on cmf-server.")
     if json_payload == None:

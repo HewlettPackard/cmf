@@ -8,9 +8,10 @@ from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
 
+
 #Converts sync functions to async
-async def async_api(function_to_async, mlmdfilepath: str, *argv):
-    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
+async def async_api(function_to_async, query: CmfQuery, *argv):
+    return await run_in_threadpool(function_to_async, query, *argv)
 
 async def get_model_data(query: CmfQuery, modelId: int):
     '''
@@ -254,50 +255,77 @@ def create_unique_executions(query: CmfQuery, req_info) -> str:
         
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
+            
     for i in mlmd_data["Pipeline"]:
         if len(i['stages']) == 0 :
             status="exists"
         else:
-            print("i am here")
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "", "push", req_info["id"]
+                json.dumps(mlmd_data), "", "push", req_info["exec_uuid"]
             )
             status='success'
 
     return status
 
 
-def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_id: str):
-    execution_flag = 0
+def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: dict):
+    """
+    Retrieves metadata from the server for a given pipeline and execution UUID.
+
+    Args:
+        server_store_path (str): The path to the server store.
+        pipeline_name (str): The name of the pipeline.
+        exec_uuid (str): The execution UUID.
+        dict_of_exe_ids (dict): A dictionary containing execution IDs for pipelines.
+
+    Returns:
+        json_payload (str or None): The metadata in JSON format if found, "no_exec_uuid" if the execution UUID is not found, or None if the pipeline name is not available.
+    """
     json_payload = None
-    df = pd.DataFrame()
+    flag=False
     if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
-        if exec_id != None:
-            exec_id = int(exec_id)
-            df = query.get_all_executions_by_ids_list([exec_id])
-            if df.empty:
-                json_payload = "no_exec_id"
+        if exec_uuid != None:
+            dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+            for index, row in dict_of_exe_ids.iterrows():
+                exec_uuid_list = row['Execution_uuid'].split(",")
+                if exec_uuid in exec_uuid_list:
+                    flag=True
+                    break
+            if not flag:
+                json_payload = "no_exec_uuid"
                 return json_payload
-        json_payload = query.dumptojson(pipeline_name, exec_id)
+        json_payload = query.dumptojson(pipeline_name, exec_uuid)
     return json_payload
 
+def get_lineage_data(
+        query: CmfQuery, 
+        pipeline_name, type,
+        dict_of_art_ids,
+        dict_of_exe_ids):
+    """
+    Retrieves lineage data based on the specified type.
 
-def get_lineage_data(query: CmfQuery, pipeline_name,type, dict_of_art_ids, dict_of_exe_ids):
+    Parameters:
+    server_store_path (str): The path to the server store.
+    pipeline_name (str): The name of the pipeline.
+    type (str): The type of lineage data to retrieve. Can be "Artifacts" or "Execution".
+    dict_of_art_ids (dict): A dictionary of artifact IDs.
+    dict_of_exe_ids (dict): A dictionary of execution IDs.
+
+    Returns:
+    dict or list: 
+        - If type is "Artifacts", returns a dictionary with nodes and links for artifact lineage.
+                lineage_data= {
+                    nodes:[],
+                    links:[]
+                }
+        - If type is "Execution", returns a list of execution types for the specified pipeline.
+        - Otherwise, returns visualization data for artifact execution.
+    """
     if type=="Artifacts":
         lineage_data = query_artifact_lineage_d3force(query, pipeline_name, dict_of_art_ids)
-        '''
-        returns dictionary of nodes and links for artifact lineage.
-        lineage_data= {
-                       nodes:[],
-                       links:[]
-                      }
-        '''
     elif type=="Execution":
         lineage_data = query_list_of_executions(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
-
-        '''
-        returns list of execution types for specific pipeline.
-        '''
     else:
         lineage_data = query_visualization_ArtifactExecution(query, pipeline_name)
     return lineage_data
