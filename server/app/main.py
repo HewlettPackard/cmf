@@ -1,14 +1,13 @@
 # cmf-server api's
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
 from cmflib.cmfquery import CmfQuery
 import asyncio
-import asyncpg
 from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
@@ -324,7 +323,9 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
 async def artifact_types(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        artifact_types = await async_api(get_artifact_types, query)
+        artifact_types = await async_api(get_artifact_types, server_store_path)
+        if "Environment" in artifact_types:
+            artifact_types.remove("Environment")
         return artifact_types
     else:
         artifact_types = ""
@@ -389,10 +390,55 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
     #  checks if mlmd file exists on server
     response = None
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
             response = await query_visualization_artifact_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
     return response
+
+# Rest api is for pushing python env to upload python env
+@app.post("/python-env")
+async def upload_python_env(request:Request, file: UploadFile = File(..., description="The file to upload")):
+    try:
+        file_path = os.path.join("/cmf-server/data/env/",  os.path.basename(file.filename))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, "wb") as buffer:
+            buffer.write(await file.read())
+        return {"message": f"File '{file.filename}' uploaded successfully"}
+    except Exception as e:
+        return {"error": f"Failed to up load file: {e}"}
+    
+# Rest api to fetch the env data from the /cmf-server/data/env folder
+@app.get("/python-env", response_class=PlainTextResponse)
+async def get_python_env(file_name: str) -> str:
+    """
+    API endpoint to fetch the content of a requirements file.
+
+    Args:
+        file_name (str): The name of the file to be fetched. Must end with .txt or .yaml.
+
+    Returns:
+        str: The content of the file as plain text.
+
+    Raises:
+        HTTPException: If the file does not exist or the extension is unsupported.
+    """
+    # Validate file extension
+    if not (file_name.endswith(".txt") or file_name.endswith(".yaml")):
+        raise HTTPException(
+            status_code=400, detail="Unsupported file extension. Use .txt or .yaml"
+        )
+    
+    # Check if the file exists
+    file_path = os.path.join("/cmf-server/data/env/", os.path.basename(file_name))
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Read and return the file content as plain text
+    try:
+        with open(file_path, "r") as file:
+            content = file.read()
+        return content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
 
 async def update_global_art_dict(pipeline_name):

@@ -62,7 +62,7 @@ async def get_model_data(query: CmfQuery, modelId: int):
     if not exe_ids:
          return model_data_df, model_exe_df, model_input_df, model_output_df
     model_exe_df = query.get_all_executions_by_ids_list(exe_ids)
-    model_exe_df.drop(columns=['Python_Env', 'Git_Start_Commit', 'Git_End_Commit'], inplace=True)
+    model_exe_df.drop(columns=['Git_Start_Commit', 'Git_End_Commit'], inplace=True)
 
     in_art_ids =  []
     # input artifacts
