@@ -178,6 +178,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
             <thead>
               <tr className="text-xs font-bold text-left text-black uppercase">
                 <th scope="col" className="px-6 py-3"></th>
+                <th scope="col" className="px-6 py-3">Execution uuid</th>
                 <th
                   scope="col"
                   onClick={handleSort}
@@ -218,6 +219,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     >
                       {expandedRow === index ? "-" : "+"}
                     </td>
+                    <td className="px-6 py-4">{data.Execution_uuid}</td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
                     <td className="px-6 py-4">{data.Execution}</td>
                     <td className="px-6 py-4">

@@ -27,7 +27,9 @@ from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     MissingArgument,
     NoChangesMadeInfo,
-    MetadataExportToJson
+    MetadataExportToJson,
+    DirectoryNotfound,
+    MsgFailure
 )
 
 # This class export local mlmd data to a json file
@@ -42,20 +44,28 @@ class CmdMetadataExport(CmdBase):
                 full_path_to_dump  = json_file_name
                 return full_path_to_dump
             else:
-                return f"{current_directory} doesn't exists."
+                raise DirectoryNotfound(current_directory)
         else:
-            return "Provide path with file name."
+            raise MsgFailure(msg_str = "Provide path with file name.")
         
     def run(self):
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name,
+            "json_file_name": self.args.json_file_name
+        }  
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
+         
         current_directory = os.getcwd()
         full_path_to_dump = ""
 
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
-        elif len(self.args.file_name) > 1:  # If the user provided more than one file name.   
-            raise DuplicateArgumentNotAllowed("file_name", "-f")
-        elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string ("").
-            raise MissingArgument("file name")
         else:
             mlmd_file_name = self.args.file_name[0].strip() # Removing starting and ending whitespaces.
             if mlmd_file_name == "mlmd":
@@ -68,23 +78,12 @@ class CmdMetadataExport(CmdBase):
         # Initialising cmfquery class.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
-        # Check if pipeline exists in mlmd .
-        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:   
-            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
-        elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string (""). 
-            raise MissingArgument("pipeline name")
-        else:
-            pipeline_name = self.args.pipeline_name[0]
-        
+        pipeline_name = self.args.pipeline_name[0]
         pipeline = query.get_pipeline_id(pipeline_name)
 
         if pipeline > 0:
             if not self.args.json_file_name:         # If self.args.json_file_name is None or an empty list ([]). 
                 json_file_name = self.args.json_file_name
-            elif len(self.args.json_file_name) > 1:  # If the user provided more than one json file name. 
-                raise DuplicateArgumentNotAllowed("json file", "-j")
-            elif not self.args.json_file_name[0]:    # self.args.json_file_name[0] is an empty string ("").  
-                raise MissingArgument("json file")
             else:
                 json_file_name = self.args.json_file_name[0].strip()
 
@@ -112,7 +111,7 @@ class CmdMetadataExport(CmdBase):
                     full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
 
             # Pulling data from local mlmd file.
-            json_payload = query.dumptojson(pipeline_name,None)
+            json_payload = query.dumptojson(pipeline_name, None)
 
             # Write metadata into json file.
             with open(full_path_to_dump, 'w') as f:
