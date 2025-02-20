@@ -33,7 +33,7 @@ from pathlib import Path
 import os
 import json
 import typing as t
-from server.app.schemas.dataframe import MLMDPushRequest, ExecutionsRequest, ArtifactsRequest
+from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -143,7 +143,7 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
 async def executions(
     request: Request,
     pipeline_name: str,
-    query_params: ExecutionsRequest = Depends()
+    query_params: ExecutionRequest = Depends()
     ):
     # Extract the query parameters from the query_params object
     page = query_params.page
@@ -194,7 +194,7 @@ async def list_of_executions(request: Request, pipeline_name: str):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(get_lineage_data, server_store_path,pipeline_name,"Execution",dict_of_art_ids,dict_of_exe_ids)
+    response = await async_api(get_lineage_data, server_store_path, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
     return response
 
     
@@ -221,7 +221,7 @@ async def artifacts(
     request: Request,
     pipeline_name: str,
     type: str,   # type = artifact type
-    query_params: ArtifactsRequest = Depends()
+    query_params: ArtifactRequest = Depends()
     ):
     # Extract the query parameters from the query_params object
     page = query_params.page
@@ -485,7 +485,7 @@ async def artifact_lineage(request: Request, pipeline_name: str):
     if os.path.exists(server_store_path):
         query = cmfquery.CmfQuery(server_store_path)
         if (pipeline_name in query.get_pipeline_names()):
-            response=await async_api(get_lineage_data, server_store_path,pipeline_name,"Artifacts",dict_of_art_ids,dict_of_exe_ids)
+            response=await async_api(get_lineage_data, server_store_path, pipeline_name, "Artifacts", dict_of_art_ids, dict_of_exe_ids)
             return response
         else:
             return f"Pipeline name {pipeline_name} doesn't exist."

@@ -34,9 +34,9 @@ class BaseRequest(BaseModel):
     filter_value: Optional[str] = Field(None, description="Filter value")
 
 # Query parameters for execution.
-class ExecutionsRequest(BaseRequest):
+class ExecutionRequest(BaseRequest):
     sort_field: str = Field("Context_Type", description="Column to sort by (default: Context_Type)")
 
 # Query parameters for artifact.
-class ArtifactsRequest(BaseRequest):
+class ArtifactRequest(BaseRequest):
     sort_field: str = Field("name", description="Column to sort by (default: name)")
