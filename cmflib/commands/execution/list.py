@@ -28,7 +28,7 @@ from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     MissingArgument,
     MsgSuccess,
-    ExecutionsNotFound
+    ExecutionUUIDNotFound
 )
 
 class CmdExecutionList(CmdBase):
@@ -81,13 +81,21 @@ class CmdExecutionList(CmdBase):
             start_index = end_index 
 
     def run(self):
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name,
+            "execution_uuid": self.args.execution_uuid
+        }
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
+                
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
-        elif len(self.args.file_name) > 1:  # If the user provided more than one file name. 
-            raise DuplicateArgumentNotAllowed("file_name", "-f")
-        elif not self.args.file_name[0]:    # self.args.file_name[0] is an empty string (""). 
-            raise MissingArgument("file name")
         else:
             mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
@@ -100,14 +108,7 @@ class CmdExecutionList(CmdBase):
         # Creating cmfquery object.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
-        # Check if pipeline exists in mlmd.
-        if self.args.pipeline_name is not None and len(self.args.pipeline_name) > 1:  
-            raise DuplicateArgumentNotAllowed("pipeline_name", "-p")
-        elif not self.args.pipeline_name[0]:    # self.args.pipeline_name[0] is an empty string ("").   
-            raise MissingArgument("pipeline name")
-        else:
-            pipeline_name = self.args.pipeline_name[0]
-        
+        pipeline_name = self.args.pipeline_name[0]
         df = query.get_all_executions_in_pipeline(pipeline_name)
 
         # Check if the DataFrame is empty, indicating the pipeline name does not exist.
@@ -115,47 +116,41 @@ class CmdExecutionList(CmdBase):
             raise PipelineNotFound(pipeline_name)
         else:
             # Process execution ID if provided
-            if not self.args.execution_id:         # If self.args.execution_id is None or an empty list ([]).
+            if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
                 pass
-            elif len(self.args.execution_id) > 1:  # If the user provided more than one execution_id.  
-                raise DuplicateArgumentNotAllowed("execution_id", "-e")
-            elif not self.args.execution_id[0]:    # self.args.execution_id[0] is an empty string ("").
-                raise MissingArgument("execution id")
             else:
-                if self.args.execution_id[0].isdigit():
-                    if int(self.args.execution_id[0]) in list(df['id']): # Converting series to list.
-                        df = df.query(f'id == {int(self.args.execution_id[0])}')  # Used dataframe based on execution id
+                df = df[df['Execution_uuid'].apply(lambda x: self.args.execution_uuid[0] in x.split(","))] # Used dataframe based on execution uuid
+                if not df.empty:
+                    # Rearranging columns: Start with fixed columns and appending the remaining columns.
+                    updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
+                    updated_columns += [ col for col in df.columns if col not in updated_columns]
+                    
+                    df = df[updated_columns]
 
-                        # Rearranging columns: Start with fixed columns and appending the remaining columns.
-                        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
-                        updated_columns += [ col for col in df.columns if col not in updated_columns]
-                        
-                        df = df[updated_columns]
+                    # Drop columns that start with 'custom_properties_' and that contains NaN values
+                    columns_to_drop = [col for col in df.columns if col.startswith('custom_properties_') and df[col].isna().any()]
+                    df = df.drop(columns=columns_to_drop)
 
-                        # Drop columns that start with 'custom_properties_' and that contains NaN values
-                        columns_to_drop = [col for col in df.columns if col.startswith('custom_properties_') and df[col].isna().any()]
-                        df = df.drop(columns=columns_to_drop)
+                    # Wrap text in object-type columns to a width of 30 characters.
+                    for col in df.select_dtypes(include=['object']).columns:
+                        df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
+                    
+                    # Set 'id' as the DataFrame index and transpose it for display horizontally.
+                    df.set_index("id", inplace=True)
+                    df = df.T.reset_index()
+                    df.columns.values[0] = 'id'  # Rename the first column back to 'id'.
 
-                        # Wrap text in object-type columns to a width of 30 characters.
-                        for col in df.select_dtypes(include=['object']).columns:
-                            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
-                        
-                        # Set 'id' as the DataFrame index and transpose it for display horizontally.
-                        df.set_index("id", inplace=True)
-                        df = df.T.reset_index()
-                        df.columns.values[0] = 'id'  # Rename the first column back to 'id'.
-
-                        # Display the updated DataFrame as a formatted table.
-                        table = tabulate(
-                            df,
-                            headers=df.columns,
-                            tablefmt="grid",
-                            showindex=False,
-                        )
-                        print(table)
-                        print()
-                        return MsgSuccess(msg_str = "Done.")
-                raise ExecutionsNotFound(self.args.execution_id[0])
+                    # Display the updated DataFrame as a formatted table.
+                    table = tabulate(
+                        df,
+                        headers=df.columns,
+                        tablefmt="grid",
+                        showindex=False,
+                    )
+                    print(table)
+                    print()
+                    return MsgSuccess(msg_str = "Done.")
+                return ExecutionUUIDNotFound(self.args.execution_uuid[0])
     
             self.display_table(df)             
             return MsgSuccess(msg_str = "Done.")
@@ -193,10 +188,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-e", 
-        "--execution_id", 
+        "--execution_uuid", 
         action="append",
-        help="Specify the execution id to retrieve execution.",
-        metavar="<exe_id>",
+        help="Specify the execution uuid to retrieve execution.",
+        metavar="<exe_uuid>",
     )
 
     parser.set_defaults(func=CmdExecutionList)
