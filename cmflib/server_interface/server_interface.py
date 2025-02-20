@@ -17,19 +17,19 @@
 import requests
 import json
 
-# This function posts mlmd data on cmf-server using mlmd_push rest api
-def call_mlmd_push(json_payload, url, exec_id, pipeline_name):
+# This function posts mlmd data to mlmd_push api on cmf-server
+def call_mlmd_push(json_payload, url, exec_uuid, pipeline_name):
     url_to_pass = f"{url}/mlmd_push"
-    json_data = {"id": exec_id, "json_payload": json_payload, "pipeline_name": pipeline_name}
+    json_data = {"exec_uuid": exec_uuid, "json_payload": json_payload, "pipeline_name": pipeline_name}
     response = requests.post(url_to_pass, json=json_data)  # Post request
     # print("Status code -", response.status_code)
     return response
 
 
 # This function gets mlmd data from mlmd_pull api from cmf-server
-def call_mlmd_pull(url, pipeline_name, exec_id):
+def call_mlmd_pull(url, pipeline_name, exec_uuid):
     url_to_pass = f"{url}/mlmd_pull/{pipeline_name}"
-    response = requests.get(url_to_pass, params={"exec_id": exec_id})  # Get request
+    response = requests.get(url_to_pass, params={"exec_uuid": exec_uuid})  # Get request
     return response
 
 

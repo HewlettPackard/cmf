@@ -6,7 +6,7 @@ import json
 # Pydantic model for the request body in the MLMD push API.
 class MLMDPushRequest(BaseModel): 
     # ... indicates required field
-    id: Optional[int] = Field(None, description="Optional execution id for the request")
+    exec_uuid: Optional[str] = Field(None, description="Optional execution uuid for the request")
     pipeline_name: str = Field(..., min_length=1, description="Name of the pipeline")
     json_payload: str = Field(..., description="JSON payload for the pipeline")
 

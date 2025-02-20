@@ -126,13 +126,15 @@ async def mlmd_push(info: MLMDPushRequest):
 
 # api to get mlmd file from cmf-server
 @app.get("/mlmd_pull/{pipeline_name}", response_class=HTMLResponse)
-async def mlmd_pull(pipeline_name: str, exec_id: t.Optional[int]= None):
+async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
     #json_payload values can be json data, NULL or no_exec_id.
-    json_payload = await async_api(get_mlmd_from_server, server_store_path, pipeline_name, exec_id)
+    json_payload= await async_api(get_mlmd_from_server, server_store_path, pipeline_name, exec_uuid, dict_of_exe_ids)
+    if json_payload == None:
+            raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
 
 
