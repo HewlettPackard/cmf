@@ -28,7 +28,7 @@ from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
 from server.app.db.dbconfig import get_db
-from server.app.db.dbqueries import fetch_artifacts, fetch_executions
+from server.app.db.dbqueries import fetch_artifacts, fetch_artifact_execution_lineage, fetch_executions
 from pathlib import Path
 import os
 import json
@@ -389,14 +389,14 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     return [json_payload_1, json_payload_2, json_payload_3, json_payload_4]
 
 
-@app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
-async def artifact_execution_lineage(request: Request, pipeline_name: str):
-    #  checks if mlmd file exists on server
-    response = None
-    if os.path.exists(server_store_path):
-        if (pipeline_name in query.get_pipeline_names()):
-            response = await query_visualization_artifact_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
-    return response
+# @app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
+# async def artifact_execution_lineage(request: Request, pipeline_name: str):
+#     #  checks if mlmd file exists on server
+#     response = None
+#     if os.path.exists(server_store_path):
+#         if (pipeline_name in query.get_pipeline_names()):
+#             response = await query_visualization_artifact_execution(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+#     return response
 
 # Rest api is for pushing python env to upload python env
 @app.post("/python-env")
@@ -487,3 +487,12 @@ async def execution(request: Request,
     """Retrieve paginated executions with filtering, sorting, and full-text search."""
     return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
     
+
+
+@app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
+async def artifact_execution_lineage(request: Request, 
+                                     pipeline_name: str,
+                                     db: AsyncSession = Depends(get_db)):
+    print("i am inside artifact_execution_lineage")
+    #  checks if mlmd file exists on server
+    return await fetch_artifact_execution_lineage(db, pipeline_name)

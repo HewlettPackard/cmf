@@ -18,7 +18,7 @@ DB_CONFIG = {
 
 user='myuser'
 password='mypassword'
-host='10.93.244.204'
+host='192.168.20.67'
 port=5432
 database='mlmd'
 
