@@ -190,18 +190,18 @@ def create_original_time_since_epoch(mlmd_data):
         "Pipeline"
     ][0]["create_time_since_epoch"]
     for i in mlmd_data["Pipeline"][0]["stages"]:
-        i["custom_properties"]["original_create_time_since_epoch"] = i[
+        i["custom_properties"]["original_create_time_since_epoch"] = str(i[
             "create_time_since_epoch"
-        ]
+        ])
         original_stages.append(
             i["custom_properties"]["original_create_time_since_epoch"]
         )
         stages.append(i["create_time_since_epoch"])
         # print(i['custom_properties']['original_create_time_since_epoch'])
         for j in i["executions"]:
-            j["custom_properties"]["original_create_time_since_epoch"] = j[
+            j["custom_properties"]["original_create_time_since_epoch"] = str(j[
                 "create_time_since_epoch"
-            ]
+            ])
             original_execution.append(
                 j["custom_properties"]["original_create_time_since_epoch"]
             )
@@ -210,7 +210,7 @@ def create_original_time_since_epoch(mlmd_data):
             for k in j["events"]:
                 k["artifact"]["custom_properties"][
                     "original_create_time_since_epoch"
-                ] = k["artifact"]["create_time_since_epoch"]
+                ] = str(k["artifact"]["create_time_since_epoch"])
                 original_artifact.append(
                     k["artifact"]["custom_properties"][
                         "original_create_time_since_epoch"
