@@ -498,7 +498,7 @@ def git_modify_remote_url(git_url) -> str:
     return commit
 
 # Pulling code from branch
-def git_get_pull(branch_name: str) -> str:
+def git_get_pull(branch_name: str) -> t.Tuple[str, str, int]:
     process = subprocess.Popen(f'git pull cmf_origin {branch_name}', 
                                 cwd=None, 
                                 shell=True,
@@ -512,7 +512,7 @@ def git_get_pull(branch_name: str) -> str:
             )
 
 # Pusing code inside branch
-def git_get_push(branch_name: str) -> str:
+def git_get_push(branch_name: str) -> t.Tuple[str, str, int]:
     process = subprocess.Popen(f'git push -u cmf_origin {branch_name}', 
                                 cwd=None, 
                                 shell=True,
