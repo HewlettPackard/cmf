@@ -254,7 +254,7 @@ class CmfQuery(object):
             executions = [execution for execution in executions if execution.id == execution_id]
         return executions
 
-    def _get_executions_by_input_artifact_id(self, artifact_id: int,pipeline_id: t.Optional[str] = None) -> t.List[int]:
+    def _get_executions_by_input_artifact_id(self, artifact_id: int, pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Return stage executions that consumed given input artifact.
 
         Args:
@@ -276,7 +276,7 @@ class CmfQuery(object):
                     execution_ids.append(exe.id)
         return execution_ids
 
-    def _get_executions_by_output_artifact_id(self, artifact_id: int, pipeline_id: t.Optional[str] = None) -> t.List[int]:
+    def _get_executions_by_output_artifact_id(self, artifact_id: int, pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Return stage execution that produced given output artifact.
 
         Args:
@@ -580,7 +580,7 @@ class CmfQuery(object):
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
-    def get_one_hop_child_artifacts(self, artifact_name: str, pipeline_id: t.Optional[str] = None) -> pd.DataFrame:
+    def get_one_hop_child_artifacts(self, artifact_name: str, pipeline_id: t.Optional[int] = None) -> pd.DataFrame:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
@@ -593,12 +593,12 @@ class CmfQuery(object):
             return pd.DataFrame()
 
         # Get output artifacts of executions consumed the above artifact.
-        artifacts_ids = self._get_output_artifacts(self._get_executions_by_input_artifact_id(artifact.id,pipeline_id))
+        artifacts_ids = self._get_output_artifacts(self._get_executions_by_input_artifact_id(artifact.id, pipeline_id))
         return self._as_pandas_df(
             self.store.get_artifacts_by_id(artifacts_ids), lambda _artifact: self.get_artifact_df(_artifact)
         )
 
-    def get_one_hop_parent_executions(self, execution_id: t.List[int], pipeline_id: t.Optional[str] = None) -> t.List[int]:
+    def get_one_hop_parent_executions(self, execution_id: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
@@ -618,7 +618,7 @@ class CmfQuery(object):
         # Flatten list_exec and return as a list of integers
         return list(chain.from_iterable(list_exec))
 
-    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: t.Optional[str] = None) -> t.List[int]:
+    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Get parent execution ids for given execution id
         Args: 
            execution_id : Execution id for which parent execution are required
@@ -732,7 +732,7 @@ class CmfQuery(object):
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
-    def get_all_parent_executions_by_id(self, execution_id: t.List[int], pipeline_id: t.Optional[str] = None) -> t.List[t.List[t.Any]]:
+    def get_all_parent_executions_by_id(self, execution_id: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[t.List[t.Any]]:
         parent_executions: t.List[t.List[t.Any]] = [[],[]]
         current_execution_id: t.List[int] = execution_id
         list_of_parent_execution_id: t.List[t.List[t.Any]] = []

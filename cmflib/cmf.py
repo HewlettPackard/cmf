@@ -598,7 +598,7 @@ class Cmf:
             dvc_url = dvc_get_url(url)
             dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
             url = url + ":" + c_hash
-            if c_hash and c_hash.strip:
+            if c_hash and c_hash.strip():
                 existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
             if existing_artifact and len(existing_artifact) != 0:
