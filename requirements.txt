@@ -1,5 +1,5 @@
-ml-metadata==1.11.0
-dvc[s3,ssh]==2.27.0
+ml-metadata==1.15.0
+dvc[s3,ssh]==3.51.1
 pandas
 retrying
 pyarrow
@@ -10,5 +10,6 @@ minio
 paramiko
 scikit_learn
 boto3
-textwrap
-typing
+scitokens
+cryptography
+ray==2.34.0

@@ -29,7 +29,7 @@ def call_mlmd_push(json_payload, url, exec_uuid, pipeline_name):
 # This function gets mlmd data from mlmd_pull api from cmf-server
 def call_mlmd_pull(url, pipeline_name, exec_uuid):
     url_to_pass = f"{url}/mlmd_pull/{pipeline_name}"
-    response = requests.get(url_to_pass, json={"exec_uuid": exec_uuid})  # Get request
+    response = requests.get(url_to_pass, params={"exec_uuid": exec_uuid})  # Get request
     return response
 
 
