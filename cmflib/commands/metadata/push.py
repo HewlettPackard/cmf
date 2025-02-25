@@ -154,7 +154,7 @@ class CmdMetadataPush(CmdBase):
                 # however, we will be keeping the record of the status code.
                 
                 # Getting all executions df to get the custom property 'Python_Env'
-                executions = query.get_all_executions_in_pipeline(self.args.pipeline_name)
+                executions = query.get_all_executions_in_pipeline(pipeline_name)
                 if not executions.empty:
                     if 'custom_properties_Python_Env' in executions.columns:
                         list_of_env_files = executions['custom_properties_Python_Env'].drop_duplicates().tolist()
