@@ -213,16 +213,24 @@ def create_unique_executions(query: CmfQuery, req_info) -> str:
     Args:
        server_store_path = mlmd file path on server
     Returns:
-       Status of parse_json_to_mlmd
-           "exists": if execution already exists on cmf-server
-           "success": execution pushed successfully on cmf-server 
+       str: A status message indicating the result of the operation:
+            - "exists": Execution already exists on the CMF server.
+            - "success": Execution successfully pushed to the CMF server.
+            - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
+            - "pipeline_not_exist": If the provided pipeline name does not match the one in the payload. 
     """
     mlmd_data = json.loads(req_info["json_payload"])
-    pipelines = mlmd_data["Pipeline"]
+    # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
+    pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
+    if not pipelines:
+        return "invalid_json_payload"  # No pipelines found in payload
     pipeline = pipelines[0]
-    pipeline_name = pipeline["name"]
+    pipeline_name = pipeline.get("name")  # Extract pipeline name, use .get() to avoid KeyError
     if not pipeline_name:
-        return {"error": "Pipeline name is required"}
+        return "invalid_json_payload"  # Missing pipeline name
+    req_pipeline_name = req_info["pipeline_name"]
+    if req_pipeline_name != pipeline_name:
+        return "pipeline_not_exist"  # Mismatch between provided pipeline name and payload
     executions_server = []
     list_executions_exists = []
     if os.path.exists("/cmf-server/data/postgres_data"):
