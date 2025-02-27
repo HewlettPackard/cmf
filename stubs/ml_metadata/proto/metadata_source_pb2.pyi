@@ -342,4 +342,4 @@ class RecordSet(_message.Message):
     def __init__(self, column_names: _Optional[_Iterable[str]] = ..., records: _Optional[_Iterable[_Union[RecordSet.Record, _Mapping]]] = ...) -> None: ...
 
 class MetadataSourceType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__: list[str] = []
