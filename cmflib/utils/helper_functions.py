@@ -132,7 +132,8 @@ def list_conda_packages_json() -> list:
 def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     #for SciToken Generation & Validation
-    import scitokens
+    # Error: Skipping analyzing "scitokens": module is installed, but missing library stubs or py.typed marker
+    import scitokens    # type: ignore
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.backends import default_backend
 

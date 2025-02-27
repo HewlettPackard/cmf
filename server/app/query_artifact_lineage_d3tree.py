@@ -7,9 +7,9 @@ from server.app.utils import modify_arti_name
 
 def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_art_ids: dict) -> List[List[Dict[str, Any]]]:
     query = cmfquery.CmfQuery(mlmd_path)
-    env_list = []
-    id_name = {}
-    child_parent_artifact_id = {}
+    env_list: List[Any] = []
+    id_name: Dict[Any, str] = {}
+    child_parent_artifact_id: Dict[Any, List[Any]] = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         if type_ == "Environment":
             env_list = list(df["id"])
@@ -26,10 +26,10 @@ def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_ar
                 final_parents_list = list(set(parents_list) - set(env_list))
                 #child_parent_artifact_id[artifact_id] = list(one_hop_parent_artifacts["id"])
                 child_parent_artifact_id[artifact_id] = final_parents_list
-    data_organized = topological_sort(child_parent_artifact_id, id_name)
+    data_organized: List[List[Dict[str, Any]]] = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
-def topological_sort(input_data, artifact_name_id_dict) -> List[Dict]:
+def topological_sort(input_data, artifact_name_id_dict) -> List[List[Dict[str, Any]]]:
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -60,6 +60,3 @@ def topological_sort(input_data, artifact_name_id_dict) -> List[Dict]:
             parent_dict[parents].append({'id': artifact_name_id_dict[id_val],'parents': [artifact_name_id_dict[parent] for parent in input_data[id_val]]})
     output_data= list(parent_dict.values()) 
     return output_data
-
-
-

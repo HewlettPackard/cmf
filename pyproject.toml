@@ -16,7 +16,8 @@ dependencies = [
 	"boto3",
 	"scitokens", 
 	"cryptography",   
-	"ray==2.34.0"
+	"ray==2.34.0",
+	"mypy"
 ]
 authors = [
   { name = "Hewlett Packard Enterprise"}
