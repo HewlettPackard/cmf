@@ -39,9 +39,6 @@ RUN apt-get update -y && apt-get install -y curl
 # Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 
-# library required for lineage
-RUN apt-get install -y graphviz graphviz-dev 
-
 # Install requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
