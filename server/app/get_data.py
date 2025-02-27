@@ -269,7 +269,7 @@ def create_unique_executions(query: CmfQuery, req_info) -> str:
             status="exists"
         else:
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "", "push", req_info["exec_uuid"]
+                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["exec_uuid"]
             )
             status='success'
 

@@ -1,7 +1,7 @@
 import warnings
 
 warnings.filterwarnings("ignore")
-def query_list_of_executions(pipeline_name, dict_of_art_ids, dict_of_exe_ids):
+def query_list_of_executions(pipeline_name, dict_of_exe_ids):
     list_of_exec = []
     list_of_exec_uuid = []
     list_of_exec = dict_of_exe_ids[pipeline_name]["Context_Type"].tolist()
