@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2025) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 # limitations under the License.
 ###
 from cmflib.cmf_exception_handling import CmfResponse
+from cmflib.cli.progress_bar import ProgressBar    
 
 class CmfParserError(Exception):
     """Base class for CLI parser errors."""
@@ -51,18 +52,24 @@ def main(argv=None):
         int, string: command's return code and error
     """
     args = None
+    pbar = ProgressBar()
+    pbar.start_progress_bar()
     try:
         args = parse_args(argv)
         cmd = args.func(args)
-        msg = cmd.do_run()
+        msg = cmd.do_run(pbar)
+        pbar.stop_progress_bar()
         print(msg.handle())
     except CmfResponse as e:
+        pbar.stop_progress_bar()
         print(e.handle())
     except CmfParserError:
+        pbar.stop_progress_bar()
         pass    
     except KeyboardInterrupt:
+        pbar.stop_progress_bar()
         print("Interrupted by the user")
     except Exception as e:
+        pbar.stop_progress_bar()
         print(e)
    
-    

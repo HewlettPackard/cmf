@@ -25,7 +25,7 @@ from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import CmfNotConfigured, CmfInitShow
 
 class CmdInitShow(CmdBase):
-    def run(self):
+    def run(self, pbar):
         cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
         msg = "'cmf' is not configured.\nExecute 'cmf init' command."
         result = dvc_get_config()

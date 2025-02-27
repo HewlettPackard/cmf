@@ -15,13 +15,14 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
+import argparse
+
 from cmflib import cmf_merger
-from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
-from cmflib.server_interface import server_interface
+from cmflib.cli.command import CmdBase
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.server_interface import server_interface
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
@@ -39,8 +40,7 @@ from cmflib.cmf_exception_handling import (
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
-
-    def run(self):
+    def run(self, pbar):
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
@@ -79,7 +79,7 @@ class CmdMetadataPull(CmdBase):
                 if os.path.exists(current_directory):
                     full_path_to_dump  = self.args.file_name[0]
                 else:
-                    raise DirectoryNotfound(current_dir= current_directory)
+                    raise DirectoryNotfound(dir = current_directory)
             else:
                 raise FileNameNotfound
         else:

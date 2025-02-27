@@ -14,15 +14,15 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
-import pandas as pd
+import argparse
 import textwrap
+import pandas as pd
 
+from cmflib import cmfquery
 from tabulate import tabulate
 from typing import Union, List
 from cmflib.cli.command import CmdBase
-from cmflib import cmfquery
 from cmflib.cmf_exception_handling import ( 
     PipelineNotFound,
     FileNotFound,
@@ -49,7 +49,7 @@ class CmdArtifactsList(CmdBase):
         
         return df
     
-    def display_table(self, df: pd.DataFrame) -> None:
+    def display_table(self, df: pd.DataFrame, pb) -> None:
         """
         Display the DataFrame in a paginated table format with text wrapping for better readability.
         Parameters:
@@ -87,7 +87,9 @@ class CmdArtifactsList(CmdBase):
             if end_index >= total_records:
                 print("\nEnd of records.")
                 break
-
+            # Stop the progress bar before waiting for user input.
+            # This ensures the progress bar does not continue running while waiting for user input.
+            pb.stop_progress_bar()
             # Ask the user for input to navigate pages.
             user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
             if user_input == 'q':
@@ -134,7 +136,7 @@ class CmdArtifactsList(CmdBase):
             return matched_ids
         return -1
 
-    def run(self):
+    def run(self, pbar):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -216,6 +218,9 @@ class CmdArtifactsList(CmdBase):
                         print(table)
                         print()
 
+                        # Stop the progress bar before waiting for user input.
+                        # This ensures the progress bar does not continue running while waiting for user input.
+                        pbar.stop_progress_bar()
                         user_input = input("Press Enter to see more records if exists or 'q' to quit: ").strip().lower()
                         if user_input == 'q':
                             break
@@ -224,7 +229,7 @@ class CmdArtifactsList(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name[0])
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
-        self.display_table(df)
+        self.display_table(df, pbar)
 
         return MsgSuccess(msg_str = "Done.")
 

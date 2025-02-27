@@ -14,14 +14,14 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
+import argparse
 import textwrap
 import pandas as pd
 
-from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 from tabulate import tabulate
+from cmflib.cli.command import CmdBase
 from cmflib.cmf_exception_handling import (
     PipelineNotFound,
     FileNotFound,
@@ -33,7 +33,7 @@ from cmflib.cmf_exception_handling import (
 
 class CmdExecutionList(CmdBase):
 
-    def display_table(self, df: pd.DataFrame) -> None:
+    def display_table(self, df: pd.DataFrame, pbar) -> None:
         """
         Display the DataFrame in a paginated table format with text wrapping for better readability.
         Parameters:
@@ -71,7 +71,9 @@ class CmdExecutionList(CmdBase):
             if end_index >= total_records:
                 print("\nEnd of records.")
                 break
-
+            # Stop the progress bar before waiting for user input.
+            # This ensures the progress bar does not continue running while waiting for user input.
+            pbar.stop_progress_bar()
             # Ask the user for input to navigate pages.
             user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
             if user_input == 'q':
@@ -80,7 +82,7 @@ class CmdExecutionList(CmdBase):
             # Update start index for the next page.
             start_index = end_index 
 
-    def run(self):
+    def run(self, pbar):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -152,7 +154,7 @@ class CmdExecutionList(CmdBase):
                     return MsgSuccess(msg_str = "Done.")
                 return ExecutionUUIDNotFound(self.args.execution_uuid[0])
     
-            self.display_table(df)             
+            self.display_table(df, pbar)             
             return MsgSuccess(msg_str = "Done.")
     
     

@@ -34,9 +34,11 @@ from cmflib.utils.helper_functions import is_git_repo
 from cmflib.utils.helper_functions import generate_osdf_token
 
 class CmdInitOSDFRemote(CmdBase):
-    def run(self):
+    def run(self, pbar):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
+        # to avoid from overlapping progress bar with print stmt we first stopped progress  
+        pbar.stop_progress_bar()
         # checking if config file exists
         if not os.path.exists(cmf_config):
             # writing default value to config file

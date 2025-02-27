@@ -15,19 +15,19 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
 import re
+import argparse
 
 from cmflib import cmfquery
-from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import check_minio_server
-from cmflib.utils.helper_functions import generate_osdf_token
-from cmflib.utils.dvc_config import DvcConfig
-from cmflib.dvc_wrapper import dvc_push
-from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.cli.utils import find_root
+from cmflib.cli.command import CmdBase
+from cmflib.dvc_wrapper import dvc_push
+from cmflib.utils.dvc_config import DvcConfig
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.cli.utils import check_minio_server
+from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.utils.helper_functions import generate_osdf_token
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, Minios3ServerInactive, 
     FileNotFound, 
@@ -39,7 +39,7 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdArtifactPush(CmdBase):
-    def run(self):
+    def run(self, pbar):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
@@ -141,7 +141,8 @@ class CmdArtifactPush(CmdBase):
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        #print("file_set = ", final_list)
+        # Stop the progress bar before pushing all artifacts to avoid overlapping
+        pbar.stop_progress_bar()
         result = dvc_push(list(final_list))
         return ArtifactPushSuccess(result)
     

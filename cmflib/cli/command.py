@@ -25,9 +25,9 @@ class CmdBase(ABC):
     def __init__(self, args):
         self.args = args
 
-    def do_run(self):
-        return self.run()
+    def do_run(self, pbar):
+        return self.run(pbar)
 
     @abstractmethod
-    def run(self):
+    def run(self, pbar):
         pass

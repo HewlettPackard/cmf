@@ -54,15 +54,15 @@ class CmdRepoPull(CmdBase):
         else:
             raise MsgFailure(msg_str=f"{branch_name} inside {url} does not exist!!")
         
-    def run(self):
+    def run(self, pbar):
         print("Executing cmf metadata pull command..")
         metadata_pull_instance = CmdMetadataPull(self.args)
-        metadata_pull_result = metadata_pull_instance.run()
+        metadata_pull_result = metadata_pull_instance.run(pbar)
         if metadata_pull_result.status == "success":  
             print(metadata_pull_result.handle())          # Print the message returned by the handle() method of the metadata_pull_result object.
             print("Executing cmf artifact pull command..")
             artifact_pull_instance = CmdArtifactPull(self.args)
-            artifact_pull_result = artifact_pull_instance.run()
+            artifact_pull_result = artifact_pull_instance.run(pbar)
             if artifact_pull_result.status == "success":
                 print(artifact_pull_result.handle())   # Print the message returned by the handle() method of the artifact_pull_result object.
                 print("Executing git pull command..")

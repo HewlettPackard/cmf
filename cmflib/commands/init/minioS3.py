@@ -35,7 +35,7 @@ from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitCompl
 from cmflib.cmf_exception_handling import MissingArgument, DuplicateArgumentNotAllowed
 
 class CmdInitMinioS3(CmdBase):
-    def run(self):
+    def run(self, pbar):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
@@ -57,6 +57,8 @@ class CmdInitMinioS3(CmdBase):
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
 
+        # to avoid from overlapping progress bar with print stmt we first stopped progress  
+        pbar.stop_progress_bar()
         # checking if config file exists
         if not os.path.exists(cmf_config):
             # writing default value to config file

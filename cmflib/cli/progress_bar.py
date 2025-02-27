@@ -1,5 +1,5 @@
 ###
-# Copyright (2024) Hewlett Packard Enterprise Development LP
+# Copyright (2025) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -12,33 +12,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-###
-
+# ###
 import time
-from tqdm import tqdm
 import threading
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 class ProgressBar:
-    # Method to display an indeterminate progress bar
-    def show_progress_bar(self) -> None:
-        self.task_done = False
-        with tqdm(total=100, bar_format='{l_bar}{bar}| {n_fmt}/{total_fmt} [{rate_fmt}]', position=0, dynamic_ncols=True) as p:
-            while not self.task_done:
-                # if progress bar is not reaching 100 then update it otherwise wait after reched 100
-                if p.n < 100:
-                    p.update(1)
-                    time.sleep(0.1)
-                # else:
-                #     time.sleep(0.1)
-            # p.update(100-p.n)
+    def __init__(self):
+        # Event used for signaling when the task is done
+        self.task_done = threading.Event()  
 
-    # Method to start the progress bar in a separate thread
-    def start_progress_bar(self) -> None:
-        self.progress_thread = threading.Thread(target=self.show_progress_bar)
+    def show_progress_bar(self, desc):
+        # Display the progress bar with a spinner and description
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            transient=True,
+        ) as progress:
+            # Add a task with the given description
+            task_id = progress.add_task(desc, total=None)
+            # Loop until the task_done event is set
+            while not self.task_done.is_set():  
+                time.sleep(0.1)
+            # Mark the task as completed
+            progress.update(task_id, completed=1)  
+
+    def start_progress_bar(self, desc="Processing..."):
+        # Start the progress bar in a separate thread
+        self.progress_thread = threading.Thread(target=self.show_progress_bar, args=(desc,))
         self.progress_thread.start()
 
-    # Method to stop the progress bar safely
-    def stop_progress_bar(self) -> None:
-        if hasattr(self, 'progress_thread') and self.progress_thread.is_alive():
-            self.task_done = True
-            self.progress_thread.join()
+    def stop_progress_bar(self):
+        # Signal the thread to stop and wait for it to finish
+        self.task_done.set()
+        self.progress_thread.join()
