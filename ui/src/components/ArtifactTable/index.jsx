@@ -66,7 +66,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
 
   const handleLinkClick = (model_id) => {
     client.getModelCard(model_id).then((data) => {
-      // console.log(data);
+      console.log(data);
       setPopupData(data);
       setShowPopup(true);
     });

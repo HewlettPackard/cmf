@@ -33,6 +33,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route exact path="/artifacts" element={<Artifacts />} />
+          <Route exact path="/artifact" element={<Artifacts_ps />} />
           <Route exact path="/executions" element={<Executions />} />
           <Route exact path="/execution" element={<Executions_ps />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
