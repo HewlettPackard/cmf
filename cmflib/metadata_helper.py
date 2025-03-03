@@ -253,7 +253,7 @@ def get_or_create_context_with_type(
             type_properties=type_properties,
             custom_properties=custom_properties,
         )
-        return context
+        return context # Return newly created context
 
     # Verifying that the context has the expected type name
     context_types = store.get_context_types_by_id([context.type_id])
@@ -262,7 +262,7 @@ def get_or_create_context_with_type(
         raise RuntimeError(
             'Context "{}" was found, but it has type "{}" instead of "{}"'.format(
                 context_name, context_types[0].name, type_name))
-    return context
+    return context # Return existing context
 
 
 def create_new_execution_in_existing_context(
@@ -569,4 +569,4 @@ def isIPv6(ip: str) -> bool:
     except Exception as e:
         print('Error: Exception:{}'.format(str(e)), file=sys.stderr)
         sys.stderr.flush()
-        return False
+        return False    # Ensure function always returns a boolean

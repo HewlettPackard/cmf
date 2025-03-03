@@ -174,11 +174,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
                             ) 
                     except Exception as e:
                             print(f"Error in log_{artifact_type}_with_version" , e)
-        return "success"
+        return "success"    # return success if mlmd is successfully parsed and stored in cmf-server (Fix for MyPy error: missing return statement)
     except Exception as e:
         print(f"An error occurred in parse_json_to_mlmd: {e}")
         traceback.print_exc()
-        return None
+        return "An error occurred in parse_json_to_mlmd"    # return error if any error occurs during the process
+       
 
 # create_time_since_epoch is appended to mlmd pushed to cmf-server as original_create_time_since_epoch
 def create_original_time_since_epoch(mlmd_data):

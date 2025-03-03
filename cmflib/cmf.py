@@ -121,6 +121,7 @@ class Cmf:
     ARTIFACTS_PATH = "cmf_artifacts"
     DATASLICE_PATH = "dataslice"
     METRICS_PATH = "metrics"
+    # Fix for MyPy error: Ensure attributes are defined properly
     if os.path.exists(cmf_config):
         attr_dict = CmfConfig.read_config(cmf_config)
         __neo4j_uri = attr_dict.get("neo4j-uri", "")

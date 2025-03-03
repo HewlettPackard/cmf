@@ -347,44 +347,43 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             # Run the step
             if ctx is not None:
                 ctx["cmf"] = cmf
-            if cmf.execution is not None:
-                logger.debug(
-                    M(
-                        "execution",
-                        pipeline=config.pipeline_name,
-                        stage=config.pipeline_stage,
-                        execution_id=cmf.execution.id,
-                    )
+            logger.debug(
+                M(
+                    "execution",
+                    pipeline=config.pipeline_name,
+                    stage=config.pipeline_stage,
+                    execution_id=cmf.execution.id if cmf.execution else None,
                 )
-                logger.debug(M("execution.impl", execution_id=cmf.execution.id, impl=func.__name__))
-                logger.debug(
+            )
+            logger.debug(M("execution.impl", execution_id=cmf.execution.id if cmf.execution else None, impl=func.__name__))
+            logger.debug(
                     M(
                         "execution.inputs",
-                        execution_id=cmf.execution.id,
+                        execution_id=cmf.execution.id if cmf.execution else None,
                         ctx_keys=list((ctx or {}).keys()),
                         params=(params or {}),
                         inputs=inputs,
                     )
                 )
-                start_time = time.time()
-                outputs: t.Optional[t.Dict[str, Artifact]] = func(*args, **kwargs)
-                end_time = time.time()
+            start_time = time.time()
+            outputs: t.Optional[t.Dict[str, Artifact]] = func(*args, **kwargs)
+            end_time = time.time()
 
-                logger.debug(
-                    M(
-                        "execution.runtime",
-                        execution_id=cmf.execution.id,
-                        time_seconds=end_time - start_time,
-                    )
+            logger.debug(
+                M(
+                    "execution.runtime",
+                    execution_id=cmf.execution.id if cmf.execution else None,
+                    time_seconds=end_time - start_time,
                 )
-                logger.debug(
-                    M(
-                        "execution.outputs",
-                        execution_id=cmf.execution.id,
-                        outputs=outputs,
-                        metrics=list(cmf.metrics.keys()),
-                    )
+            )
+            logger.debug(
+                M(
+                    "execution.outputs",
+                    execution_id=cmf.execution.id if cmf.execution else None,
+                    outputs=outputs,
+                    metrics=list(cmf.metrics.keys()),
                 )
+            )
 
             if ctx is not None:
                 del ctx["cmf"]

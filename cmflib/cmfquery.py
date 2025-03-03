@@ -651,7 +651,7 @@ class CmfQuery(object):
         for exe in executions:
             temp_dict = {}
             # To get execution_id, exe list[mlmd.proto.execution] is converted to dict using MessageToDict
-            execution_id = MessageToDict(exe, preserving_proto_field_name=True)
+            execution_id = MessageToDict(exe, preserving_proto_field_name=True) # By default including_default_value_fields=False
             temp_dict['id'] = int(execution_id['id'])
             d1 = self._transform_to_dataframe(exe, temp_dict)       # df {id:,executions}
             df = pd.concat([df, d1], sort=True, ignore_index=True)
@@ -691,7 +691,7 @@ class CmfQuery(object):
         # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
-            d1 = self.get_all_child_artifacts(str(row.name))
+            d1 = self.get_all_child_artifacts(str(row.name))    # Convert row.name to string to ensure compatibility with get_all_child_artifacts method
             # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)
@@ -726,7 +726,7 @@ class CmfQuery(object):
         # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
-            d1 = self.get_all_parent_artifacts(str(row.name))
+            d1 = self.get_all_parent_artifacts(str(row.name))   # Convert row.name to string to ensure compatibility with get_all_parent_artifacts method
             # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)

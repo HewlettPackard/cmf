@@ -116,8 +116,7 @@ def check_git_repo() -> bool:
                                    universal_newlines=True)
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)
-
-        is_git_repo = output.strip().lower() == "true"
+        is_git_repo = output.strip().lower() == 'true'  # Ensure function returns a bool (Fix MyPy error: Function is expected to return bool but returns str)
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
