@@ -659,25 +659,6 @@ class CmfQuery(object):
         df = df[["id", "Execution_type_name","Execution_uuid"]]
         return df
 
-    def get_one_hop_child_executions(self, execution_id: t.List[int]) -> t.List[int]:
-        """Get artifacts produced by executions that consume given artifact.
-
-        Args:
-            artifact name: Name of an artifact.
-        Return:
-            Output artifacts of all executions that consumed given artifact.
-        """
-        artifacts_output=self._get_output_artifacts(execution_id)
-        arti=self.store.get_artifacts_by_id(artifacts_output)
-        list_exec_id:t.List[int] = []
-        for i in artifacts_output:
-            exec=self._get_executions_by_input_artifact_id(i)
-            list_exec=self.store.get_executions_by_id(exec)
-            for exec_id in list_exec:
-                self._transform_to_dataframe(exec_id).Execution_type_name
-                list_exec_id.append(exec_id.id)
-        return list_exec_id
-
     def get_all_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return all downstream artifacts starting from the given artifact.
 
