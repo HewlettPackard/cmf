@@ -61,10 +61,13 @@ def main(argv=None):
     try:
         args = parse_args(argv)
         cmd = args.func(args)
-        # Use the Live context manager to manage the spinner 
-        with Live(spinner, refresh_per_second=10, console=console, transient=True) as live:
-            msg = cmd.do_run(live)
-            print(msg.handle())
+        try:
+            # Use the Live context manager to manage the spinner 
+            with Live(spinner, refresh_per_second=10, console=console, transient=True) as live:
+                msg = cmd.do_run(live)
+                print(msg.handle())
+        except Exception as e:
+            print(e)
     except CmfResponse as e:  
         print(e.handle())
     except CmfParserError:
