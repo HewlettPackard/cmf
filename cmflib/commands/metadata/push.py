@@ -56,7 +56,7 @@ class CmdMetadataPush(CmdBase):
                         found_files[file_name] = file_path
         return found_files
 
-    def run(self, pbar):
+    def run(self, live):
         current_directory = mlmd_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
         # Get url from config
@@ -108,6 +108,8 @@ class CmdMetadataPush(CmdBase):
         # Checks if pipeline name exists
         pipeline_name = self.args.pipeline_name[0]
         if pipeline_name in query.get_pipeline_names():
+            print("metadata push started")
+            print("........................................")
             # converts mlmd file to json format
             json_payload = query.dumptojson(pipeline_name, None)
 
@@ -166,13 +168,11 @@ class CmdMetadataPush(CmdBase):
                         if found_files:
                             for name, path in found_files.items():
                                 env_response = server_interface.call_python_env(url, name, path)
-                                pbar.stop_progress_bar()
                                 # keeping record of status but this won't affect the mlmd success.
                                 print(env_response.json())
 
                 output = ""
                 display_output = ""
-                pbar.stop_progress_bar()
                 if response.json()['status']=="success":
                     display_output = "mlmd is successfully pushed."
                     output = MlmdFilePushSuccess(mlmd_file_name)

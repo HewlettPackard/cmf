@@ -19,10 +19,10 @@ import argparse
 
 from cmflib.cli.command import CmdBase
 from cmflib.utils.helper_functions import branch_exists
-from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_branch
 from cmflib.commands.artifact.pull import CmdArtifactPull
 from cmflib.commands.metadata.pull import CmdMetadataPull
 from cmflib.cmf_exception_handling import MsgSuccess, MsgFailure
+from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_branch
 
 
 class CmdRepoPull(CmdBase):
@@ -54,15 +54,15 @@ class CmdRepoPull(CmdBase):
         else:
             raise MsgFailure(msg_str=f"{branch_name} inside {url} does not exist!!")
         
-    def run(self, pbar):
+    def run(self, live):
         print("Executing cmf metadata pull command..")
         metadata_pull_instance = CmdMetadataPull(self.args)
-        metadata_pull_result = metadata_pull_instance.run(pbar)
+        metadata_pull_result = metadata_pull_instance.run(live)
         if metadata_pull_result.status == "success":  
             print(metadata_pull_result.handle())          # Print the message returned by the handle() method of the metadata_pull_result object.
             print("Executing cmf artifact pull command..")
             artifact_pull_instance = CmdArtifactPull(self.args)
-            artifact_pull_result = artifact_pull_instance.run(pbar)
+            artifact_pull_result = artifact_pull_instance.run(live)
             if artifact_pull_result.status == "success":
                 print(artifact_pull_result.handle())   # Print the message returned by the handle() method of the artifact_pull_result object.
                 print("Executing git pull command..")

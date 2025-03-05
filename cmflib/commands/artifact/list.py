@@ -17,6 +17,7 @@
 import os
 import argparse
 import textwrap
+import readchar
 import pandas as pd
 
 from cmflib import cmfquery
@@ -49,7 +50,7 @@ class CmdArtifactsList(CmdBase):
         
         return df
     
-    def display_table(self, df: pd.DataFrame, pb) -> None:
+    def display_table(self, df: pd.DataFrame) -> None:
         """
         Display the DataFrame in a paginated table format with text wrapping for better readability.
         Parameters:
@@ -87,12 +88,10 @@ class CmdArtifactsList(CmdBase):
             if end_index >= total_records:
                 print("\nEnd of records.")
                 break
-            # Stop the progress bar before waiting for user input.
-            # This ensures the progress bar does not continue running while waiting for user input.
-            pb.stop_progress_bar()
             # Ask the user for input to navigate pages.
-            user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
-            if user_input == 'q':
+            print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+            user_input = readchar.readchar()
+            if user_input.lower() == 'q':
                 break
             
             # Update start index for the next page.
@@ -136,7 +135,7 @@ class CmdArtifactsList(CmdBase):
             return matched_ids
         return -1
 
-    def run(self, pbar):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -218,18 +217,16 @@ class CmdArtifactsList(CmdBase):
                         print(table)
                         print()
 
-                        # Stop the progress bar before waiting for user input.
-                        # This ensures the progress bar does not continue running while waiting for user input.
-                        pbar.stop_progress_bar()
-                        user_input = input("Press Enter to see more records if exists or 'q' to quit: ").strip().lower()
-                        if user_input == 'q':
+                        print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+                        user_input = readchar.readchar()
+                        if user_input.lower() == 'q':
                             break
                     return MsgSuccess(msg_str = "End of records..")
                 else:
                     raise ArtifactNotFound(self.args.artifact_name[0])
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
-        self.display_table(df, pbar)
+        self.display_table(df)
 
         return MsgSuccess(msg_str = "Done.")
 

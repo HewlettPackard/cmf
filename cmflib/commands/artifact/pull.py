@@ -183,7 +183,7 @@ class CmdArtifactPull(CmdBase):
             raise ArtifactNotFound(artifact_name)
         return name, url
 
-    def run(self, pbar):
+    def run(self, live):
         output = DvcConfig.get_dvc_config()  # pulling dvc config
         if type(output) is not dict:
             raise CmfNotConfigured(output)
@@ -262,8 +262,8 @@ class CmdArtifactPull(CmdBase):
                    download all files from directory
                      
         """
+
         dvc_config_op = output
-        pbar.stop_progress_bar()
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
             # Check if a specific artifact name is provided as input.

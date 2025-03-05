@@ -75,7 +75,7 @@ class CmdRepoPush(CmdBase):
         
         return MsgSuccess(msg_str="cmf repo push command executed successfully.")
     
-    def artifact_push(self, pbar):
+    def artifact_push(self, live):
         """
         Pushes artifacts to the remote storage.
 
@@ -190,25 +190,24 @@ class CmdRepoPush(CmdBase):
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        pbar.stop_proogress_bar()
         result = dvc_push(list(final_list))
         return ArtifactPushSuccess(result)
         
 
-    def run(self, pbar):
+    def run(self, live):
         print("Executing cmf artifact push command..")
         if(self.args.execution_uuid):
             # If an execution uuid exists, push the artifacts associated with that execution. 
-            artifact_push_result = self.artifact_push(pbar)
+            artifact_push_result = self.artifact_push(live)
         else:
             # Pushing all artifacts. 
             artifact_push_instance = CmdArtifactPush(self.args)
-            artifact_push_result = artifact_push_instance.run(pbar)
+            artifact_push_result = artifact_push_instance.run(live)
 
         if artifact_push_result.status == "success":
             print("Executing cmf metadata push command..")
             metadata_push_instance = CmdMetadataPush(self.args)
-            metadata_push_result = metadata_push_instance.run(pbar)
+            metadata_push_result = metadata_push_instance.run(live)
             if metadata_push_result.status == "success":
                 print(metadata_push_result.handle())  # Print the message returned by the handle() method of the metadata_push_result object.
                 print("Executing git push command..")

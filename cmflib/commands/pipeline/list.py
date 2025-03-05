@@ -27,7 +27,7 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdPipelineList(CmdBase):
-    def run(self, pbar):        
+    def run(self, live):        
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.

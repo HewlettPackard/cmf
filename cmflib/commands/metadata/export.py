@@ -48,7 +48,7 @@ class CmdMetadataExport(CmdBase):
         else:
             raise MsgFailure(msg_str = "Provide path with file name.")
         
-    def run(self, pbar):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -92,9 +92,6 @@ class CmdMetadataExport(CmdBase):
                 if not json_file_name.endswith(".json"):
                     json_file_name = json_file_name+".json" # Added .json extention to json file name.
                 if os.path.exists(json_file_name):
-                    # Stop the progress bar before waiting for user input.
-                    # This ensures the progress bar does not continue running while waiting for user input. 
-                    pbar.stop_progress_bar()
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":    # Overwrite file.
                         full_path_to_dump = self.create_full_path(current_directory, json_file_name)
@@ -105,9 +102,6 @@ class CmdMetadataExport(CmdBase):
             else: 
                 # Checking whether a json file exists in the directory based on pipeline name.
                 if os.path.exists(f"{pipeline_name}.json"):
-                    # Stop the progress bar before waiting for user input.
-                    # This ensures the progress bar does not continue running while waiting for user input. 
-                    pbar.stop_progress_bar()
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":
                         full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"

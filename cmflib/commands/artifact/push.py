@@ -39,7 +39,7 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdArtifactPush(CmdBase):
-    def run(self, pbar):
+    def run(self, live):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
@@ -141,8 +141,6 @@ class CmdArtifactPush(CmdBase):
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        # Stop the progress bar before pushing all artifacts to avoid overlapping
-        pbar.stop_progress_bar()
         result = dvc_push(list(final_list))
         return ArtifactPushSuccess(result)
     

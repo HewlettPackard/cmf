@@ -17,6 +17,7 @@
 import os
 import argparse
 import textwrap
+import readchar
 import pandas as pd
 
 from cmflib import cmfquery
@@ -33,7 +34,7 @@ from cmflib.cmf_exception_handling import (
 
 class CmdExecutionList(CmdBase):
 
-    def display_table(self, df: pd.DataFrame, pbar) -> None:
+    def display_table(self, df: pd.DataFrame) -> None:
         """
         Display the DataFrame in a paginated table format with text wrapping for better readability.
         Parameters:
@@ -73,16 +74,17 @@ class CmdExecutionList(CmdBase):
                 break
             # Stop the progress bar before waiting for user input.
             # This ensures the progress bar does not continue running while waiting for user input.
-            pbar.stop_progress_bar()
+             
             # Ask the user for input to navigate pages.
-            user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
-            if user_input == 'q':
+            print("Press any key to see more or 'q' to quit.", end="", flush=True)
+            user_input = readchar.readchar()
+            if user_input.lower() == 'q':
                 break
             
             # Update start index for the next page.
             start_index = end_index 
 
-    def run(self, pbar):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -154,7 +156,7 @@ class CmdExecutionList(CmdBase):
                     return MsgSuccess(msg_str = "Done.")
                 return ExecutionUUIDNotFound(self.args.execution_uuid[0])
     
-            self.display_table(df, pbar)             
+            self.display_table(df )             
             return MsgSuccess(msg_str = "Done.")
     
     

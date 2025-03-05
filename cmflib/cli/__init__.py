@@ -13,8 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###
+from rich.live import Live               # To manage live-updating output
+from rich.console import Console         # For rendering to the terminal
+from rich.spinner import Spinner         # Provides a ready-made spinner widget
 from cmflib.cmf_exception_handling import CmfResponse
-from cmflib.cli.progress_bar import ProgressBar    
+
+console = Console() # Create a console object
+spinner = Spinner("dots", text="Loading...") # Create a spinner object
+
 
 class CmfParserError(Exception):
     """Base class for CLI parser errors."""
@@ -52,24 +58,19 @@ def main(argv=None):
         int, string: command's return code and error
     """
     args = None
-    pbar = ProgressBar()
-    pbar.start_progress_bar()
     try:
         args = parse_args(argv)
         cmd = args.func(args)
-        msg = cmd.do_run(pbar)
-        pbar.stop_progress_bar()
-        print(msg.handle())
-    except CmfResponse as e:
-        pbar.stop_progress_bar()
+        # Use the Live context manager to manage the spinner 
+        with Live(spinner, refresh_per_second=10, console=console, transient=True) as live:
+            msg = cmd.do_run(live)
+            print(msg.handle())
+    except CmfResponse as e:  
         print(e.handle())
     except CmfParserError:
-        pbar.stop_progress_bar()
         pass    
     except KeyboardInterrupt:
-        pbar.stop_progress_bar()
         print("Interrupted by the user")
     except Exception as e:
-        pbar.stop_progress_bar()
         print(e)
    

@@ -40,7 +40,7 @@ from cmflib.cmf_exception_handling import (
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
-    def run(self, pbar):
+    def run(self, live):
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
