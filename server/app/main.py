@@ -37,7 +37,6 @@ from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, Arti
 
 server_store_path = "/cmf-server/data/postgres_data"
 
-#if os.path.exists(server_store_path):
 query = CmfQuery(is_server=True)
 
 #global variables
@@ -107,7 +106,7 @@ async def mlmd_push(info: MLMDPushRequest):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, server_store_path, req_info)
+            status = await async_api(create_unique_executions, query, req_info)
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
@@ -137,7 +136,7 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
     #json_payload values can be json data, NULL or no_exec_id.
-    json_payload= await async_api(get_mlmd_from_server, server_store_path, pipeline_name, exec_uuid, dict_of_exe_ids)
+    json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, dict_of_exe_ids)
     if json_payload == None:
             raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
@@ -174,7 +173,7 @@ async def executions(
             if total_items < end_idx:
                 end_idx = total_items
             exe_ids_list = exe_ids[start_idx:end_idx]
-            executions_df = await async_api(get_executions, server_store_path, pipeline_name, exe_ids_list)
+            executions_df = await async_api(get_executions, query, pipeline_name, exe_ids_list)
             temp = executions_df.to_json(orient="records")
             executions_parsed = json.loads(temp)
             return {
@@ -199,7 +198,7 @@ async def list_of_executions(request: Request, pipeline_name: str):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(get_lineage_data, server_store_path, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
+    response = await async_api(get_lineage_data, query, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
     return response
 
     
@@ -216,7 +215,7 @@ async def execution_lineage(request: Request, uuid: str, pipeline_name: str):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(query_execution_lineage_d3tree, query, server_store_path, pipeline_name, dict_of_exe_ids,uuid)
+    response = await async_api(query_execution_lineage_d3tree, query, pipeline_name, dict_of_exe_ids, uuid)
     return response
     
 
@@ -299,7 +298,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(query_artifact_lineage_d3tree, server_store_path, pipeline_name, dict_of_art_ids)        
+    response = await async_api(query_artifact_lineage_d3tree, query, pipeline_name, dict_of_art_ids)        
     return response
 
 
@@ -308,7 +307,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
 async def artifact_types():
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
-    artifact_types = await async_api(get_artifact_types, server_store_path)
+    artifact_types = await async_api(get_artifact_types, query)
     if "Environment" in artifact_types:
             artifact_types.remove("Environment")
     return artifact_types
@@ -448,7 +447,6 @@ async def check_mlmd_file_exists():
 
 # Function to check if the pipeline exists
 async def check_pipeline_exists(pipeline_name):
-    query = cmfquery.CmfQuery(server_store_path)
     if pipeline_name not in query.get_pipeline_names():
         print(f"Pipeline {pipeline_name} not found.")
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")

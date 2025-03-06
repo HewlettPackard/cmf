@@ -208,10 +208,13 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
 def create_unique_executions(query: CmfQuery, req_info) -> str:
     """
     Creates list of unique executions by checking if they already exist on server or not.
-    locking is introduced lock to avoid data corruption on server, 
+    Locking is introduced to avoid data corruption on server, 
     when multiple similar pipelines pushed on server at same time.
     Args:
-       server_store_path = mlmd file path on server
+        query:CmfQuery = CmfQuery class object, which is used to query the data from the server.
+        req_info: dict = A dictionary containing the following              
+            - pipeline_name: str = The name of the pipeline.
+            - exec_uuid: str = The execution UUID.
     Returns:
        str: A status message indicating the result of the operation:
             - "exists": Execution already exists on the CMF server.
