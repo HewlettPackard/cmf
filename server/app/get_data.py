@@ -333,7 +333,7 @@ def get_lineage_data(
     if type=="Artifacts":
         lineage_data = query_artifact_lineage_d3force(query, pipeline_name, dict_of_art_ids)
     elif type=="Execution":
-        lineage_data = query_list_of_executions(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+        lineage_data = query_list_of_executions(pipeline_name, dict_of_exe_ids)
     else:
         lineage_data = query_visualization_ArtifactExecution(query, pipeline_name)
     return lineage_data
