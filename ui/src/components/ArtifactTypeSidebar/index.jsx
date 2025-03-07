@@ -51,7 +51,7 @@ const ArtifactTypeSidebar = ({
   return (
     <>
       <div className="flex justify-between border-b border-gray-200">
-        <div className="artifacttype-tabs flex flex-row ">
+        <div className="font-custom-fam color-black flex flex-row ">
           {artifactTypes.map((artifactType, index) => (
             <button
               key={artifactType}
@@ -68,24 +68,14 @@ const ArtifactTypeSidebar = ({
         </div>
         <div className="flex flex-row">
           <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginBottom: "0.5rem",
-              marginTop: "0.5rem",
-              fontfamily: "Arial,sans-serif",
-            }}
+            className="flex flex-end mb-2 mt-2 font-custom-fam"
           >
             <input
               type="text"
               value={filterValue}
               onChange={handleFilterChange}
               placeholder="Filter by Name"
-              style={{
-                marginRight: "1rem",
-                padding: "0.5rem",
-                border: "1px solid #ccc",
-              }}
+              className="mr-2 p-2 border border-solid border-gray-300"
             />
           </div>
         </div>

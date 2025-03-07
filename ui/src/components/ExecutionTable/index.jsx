@@ -16,7 +16,6 @@
 
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
-import "./index.module.css";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import PythonEnvPopup from "../../components/PythonEnvPopup";
@@ -87,8 +86,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     if (sortOrder === "desc") {
       return (
         <span
-          className="text-2xl cursor-pointer"
-          style={{ marginLeft: "4px", display: "inline-flex" }}
+          className="text-2xl cursor-pointer ml-1 inline-flex"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -108,8 +106,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     } else if (sortOrder === "asc") {
       return (
         <span
-          className="text-2xl cursor-pointer"
-          style={{ marginLeft: "4px", display: "inline-flex" }}
+          className="text-2xl cursor-pointer ml-4 inline-flex"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -129,8 +126,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     } else {
       return (
         <span
-          className="text-2xl cursor-pointer"
-          style={{ marginLeft: "4px", display: "inline-flex" }}
+          className="text-2xl cursor-pointer ml-4 inline-flex"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -153,29 +149,20 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   return (
     <div className="flex flex-col">
       <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: "0.5rem",
-          marginTop: "0.5rem",
-        }}
+      className="flex justify-end mb-2 mt-2"
       >
         <input
           type="text"
           value={filterValue}
           onChange={handleFilterChange}
           placeholder="Filter by Context Type"
-          style={{
-            marginRight: "1rem",
-            padding: "0.5rem",
-            border: "1px solid #ccc",
-          }}
+          className="mr-2 p-1 border border-solid border-gray-300"
         />
       </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200" id="mytable">
-            <thead>
+            <thead className="bg-custom-white">
               <tr className="text-xs font-bold text-left text-black uppercase">
                 <th scope="col" className="px-6 py-3"></th>
                 <th scope="col" className="px-6 py-3">Execution uuid</th>
@@ -184,7 +171,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                   onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span className="inline-flex items-center">
                     Context Type {renderArrow()}
                   </span>
                 </th>
@@ -192,7 +179,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                   Execution
                 </th>
                 <th scope="col" className="px-6 py-3 Env">
-                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span className="inline-flex items-center">
                     Python Env
                   </span>
                 </th>
@@ -214,15 +201,15 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     key={index}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4 cursor-pointer"
+                    <td className="px-6 py-4 cursor-pointer text-left"
                       onClick={() => {toggleRow(index)}}
                     >
                       {expandedRow === index ? "-" : "+"}
                     </td>
-                    <td className="px-6 py-4">{data.Execution_uuid}</td>
-                    <td className="px-6 py-4">{data.Context_Type}</td>
-                    <td className="px-6 py-4">{data.Execution}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-left">{data.Execution_uuid}</td>
+                    <td className="px-6 py-4 text-left">{data.Context_Type}</td>
+                    <td className="px-6 py-4 text-left">{data.Execution}</td>
+                    <td className="px-6 py-4 text-left">
                           <a
                             href="#"
                             onClick={(e) => {
@@ -239,14 +226,14 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                             onClose={handleClosePopup}
                           />
                     </td>
-                    <td className="px-6 py-4">{data.Git_Repo}</td>
-                    <td className="px-6 py-4">{data.Git_Start_Commit}</td>
-                    <td className="px-6 py-4">{data.Pipeline_Type}</td>
+                    <td className="px-6 py-4 text-left">{data.Git_Repo}</td>
+                    <td className="px-6 py-4 text-left">{data.Git_Start_Commit}</td>
+                    <td className="px-6 py-4 text-left">{data.Pipeline_Type}</td>
                   </tr>
                   {expandedRow === index && (
                     <tr>
-                      <td colSpan="4">
-                        <table className="expanded-table">
+                      <td colSpan="4" className="text-left">
+                        <table className="w-full border-collapse border border-gray-300">
                           <tbody>
                             {Object.entries(data).map(([key, value]) => {
                               if (
@@ -255,9 +242,9 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                               ) {
                                 return (
                                   <React.Fragment key={key}>
-                                    <tr>
-                                      <td key={key}>{key}</td>
-                                      <td key={value}>
+                                    <tr className="even:bg-gray-100">
+                                      <td key={key} className="p-1 border-b border-r border-gray-300 text-left">{key}</td>
+                                      <td key={value} className="p-1 border-b border-r border-gray-300 text-left">
                                         {value ? value : "Null"}
                                       </td>
                                     </tr>

@@ -17,7 +17,6 @@
 // Sidebar.js
 
 import React, { useState } from "react";
-import "./index.css";
 
 const Sidebar = ({ pipelines, handlePipelineClick }) => {
   /*const [clickedPipeline, setClickedPipeline] = useState(pipelines[0] || '')*/
@@ -35,21 +34,21 @@ const Sidebar = ({ pipelines, handlePipelineClick }) => {
 
   return (
     <div className="flex flex-col ">
-      <h1 className="px-2 py-4 text-base font-bold text-center border-b-4 border-black  uppercase">
+      <h1 className="px-2 py-4 text-base font-bold text-center border-b-4 border-black uppercase text-black custom-fam">
         {" "}
         List of Pipelines{" "}
       </h1>
-      <div className="sidebar">
+      <div className="bg-custom-white">
         <ul>
           {pipelines.map((pipeline, index) => (
             <li key={index}>
               <a
                 href="#"
-                className={
+                className={`block p-1 mt-1 custom-fam text-black no-underline bg-transparent break-words rounded transition-all duration-300 whitespace-normal ${
                   toggleState === index
-                    ? "side-tabs side-active-tabs"
-                    : "side-tabs"
-                }
+                    ? "bg-white text-black m-2px"
+                    : "hover:bg-white hover:text-black"
+                }`}
                 onClick={() => handleClick(pipeline, index)}
               >
                 {pipeline}

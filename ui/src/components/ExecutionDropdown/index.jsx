@@ -14,9 +14,10 @@ const ExecutionDropdown = ({ data, exec_type, handleExecutionClick }) => {
   };
 
   return (
-    <div className="dropdown">
-      <select
-        className="dropdown-select"
+    <div className="relative inline-block mt-0.5 border-2 rounded-sm">
+       <select
+        className="py-2 px-4 text-sm cursor-pointer border border-solid border-black outline-none 
+        transition duration-300 ease-in-out focus:border-blue-500 hover:border-blue-500"
         value={selectedExecutionType}
         onChange={(event) => {
           handleCallExecutionClick(event);

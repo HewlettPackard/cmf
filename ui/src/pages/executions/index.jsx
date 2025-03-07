@@ -20,7 +20,6 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import ExecutionTable from "../../components/ExecutionTable";
 import Footer from "../../components/Footer";
-import "./index.module.css";
 import Sidebar from "../../components/Sidebar";
 import Loader from "../../components/Loader";
 
@@ -148,7 +147,6 @@ const Executions = () => {
     <>
       <section
         className="flex flex-col bg-white min-h-screen"
-        style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
         <div className="flex flex-row flex-grow">
@@ -179,7 +177,7 @@ const Executions = () => {
                       <button
                         onClick={handlePrevClick}
                         disabled={activePage === 1}
-                        className={clickedButton === "prev" ? "active" : ""}
+                        className={`px-4 py-2 border-none ${clickedButton === "prev" ? "active" : ""}`}
                       >
                         Previous
                       </button>
@@ -194,12 +192,12 @@ const Executions = () => {
                               <button
                                 key={pageNumber}
                                 onClick={() => handlePageClick(pageNumber)}
-                                className={`pagination-button ${
+                                className={`px-4 py-2 border-none pagination-button ${
                                   activePage === pageNumber &&
                                   clickedButton === "page"
-                                    ? "active"
-                                    : ""
-                                }`}
+                                  ? "bg-custom-blue text-white font-bold border-custom-active-page"
+                                  : ""
+                                  } transition duration-300 hover:bg-custom-blue hover:text-white hover:border-custom-blue`}
                               >
                                 {pageNumber}
                               </button>
@@ -212,14 +210,15 @@ const Executions = () => {
                           ) {
                             return (
                               <button
+                                class="px-4 py-2 border-none"
                                 key={pageNumber}
                                 onClick={() => handlePageClick(pageNumber)}
-                                className={`pagination-button ${
+                                className={`px-4 py-2 border-none pagination-button ${
                                   activePage === pageNumber &&
-                                  clickedButton === "page"
-                                    ? "active"
+                                    clickedButton === "page"
+                                    ? "bg-custom-blue text-white font-bold border-custom-active-page"
                                     : ""
-                                }`}
+                                    } transition duration-300 hover:bg-custom-blue hover:text-white hover:border-custom-blue`}
                               >
                                 {pageNumber}
                               </button>
@@ -244,7 +243,7 @@ const Executions = () => {
                       <button
                         onClick={handleNextClick}
                         disabled={activePage === Math.ceil(totalItems / 5)}
-                        className={clickedButton === "next" ? "active" : ""}
+                        className={`px-4 py-2 border-none ${clickedButton === "next" ? "active" : ""}`}
                       >
                         Next
                       </button>

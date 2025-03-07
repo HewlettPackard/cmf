@@ -36,8 +36,7 @@ const Home = () => {
   return (
     <>
       <section
-        className="flex flex-col bg-white"
-        style={{ minHeight: "100vh" }}
+        className="flex flex-col bg-white min-h-screen"
       >
         <DashboardHeader />
         <div className="container justify-start items-start mx-auto px-50">
@@ -46,7 +45,7 @@ const Home = () => {
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-s  font-bold text-black uppercase "
+                  className="px-6 py-3 text-s font-bold text-black uppercase"
                 >
                   List of Pipelines
                 </th>

@@ -21,11 +21,10 @@ import Artifacts from "./pages/artifacts";
 import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
-import "./App.css";
 
 function App() {
   return (
-    <div className="App bg-white">
+    <div className="text-center bg-white">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
