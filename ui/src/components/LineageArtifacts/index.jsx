@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import * as d3 from "d3";
-import "./index.css"; // Adjust the path if needed
+// import "./index.css"; // Adjust the path if needed
 
 const LineageArtifacts = ({ data }) => {
   // eslint-disable-next-line no-unused-vars
@@ -110,19 +110,19 @@ const LineageArtifacts = ({ data }) => {
 
     node
       .append("g")
-      .attr("class", "text-group")
+      .attr("class", "cursor-pointer")
       .on("mouseover", handleMouseOver)
       .on("mouseout", handleMouseOut)
       .append("text")
       .attr("x", 15) // Set x position to the center of the rectangle
       .attr("y", 15)
-      .attr("class", "truncated-text")
+      .attr("class", "text-xs font-bold fill-black")
       .text((d) => d.name.substring(0, 5) + "...");
 
     node
       .select(".text-group")
       .append("text")
-      .attr("class", "full-text")
+      .attr("class", "text-xs font-bold fill-black")
       .text((d) => d.name)
       .attr("x", 50) // Set x position to the center of the rectangle
       .attr("y", -5)

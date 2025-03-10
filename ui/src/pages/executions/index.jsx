@@ -150,7 +150,7 @@ const Executions = () => {
       >
         <DashboardHeader />
         <div className="flex flex-row flex-grow">
-          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+          <div className="min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
             <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}

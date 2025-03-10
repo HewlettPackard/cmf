@@ -20,7 +20,7 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Sidebar";
-import LineageTypeSidebar from "./LineageTypeSidebar";
+import LineageTypeSidebar from "../../components/TypeSidebar/LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import TangledTree from "../../components/TangledTree";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
@@ -223,7 +223,7 @@ const Lineage = () => {
         <DashboardHeader />
 
         <div className="flex flex-grow p-px">
-          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+          <div className="min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
             <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}

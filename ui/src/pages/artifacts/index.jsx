@@ -21,7 +21,7 @@ import DashboardHeader from "../../components/DashboardHeader";
 import ArtifactTable from "../../components/ArtifactTable";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Sidebar";
-import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
+import ArtifactTypeSidebar from "../../components/TypeSidebar/ArtifactTypeSidebar";
 import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
@@ -193,7 +193,7 @@ const Artifacts = () => {
       >
         <DashboardHeader />
         <div className="flex flex-grow p-px">
-          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+          <div className="min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
             <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}
