@@ -71,9 +71,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
         store = metadata_store.MetadataStore(config)
 
         # Initialize the cmf class with pipeline_name and graph_status
-        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+        if cmd == "pull":
+            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                            graph=graph)
+        else:
+            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph, is_server=True)
-        
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
             if exec_uuid is None:  #if exec_uuid is None we pass all the executions.
                 list_executions = [execution for execution in stage["executions"]]
