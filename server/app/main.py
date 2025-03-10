@@ -36,6 +36,17 @@ from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, Arti
 server_store_path = "/cmf-server/data/postgres_data"
 
 query = CmfQuery(is_server=True)
+IP = os.getenv('MYIP')
+print("IP = ", IP)
+POSTGRES_DB = os.getenv('POSTGRES_DB')
+print("POSTGRES_DB = ", POSTGRES_DB)
+POSTGRES_USER = os.getenv('POSTGRES_USER')
+print("POSTGRES_USER = ", POSTGRES_USER)
+POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+print("POSTGRES_PASSWORD = ", POSTGRES_PASSWORD)
+config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+print("config_dict = ", config_dict)
+
 
 #global variables
 dict_of_art_ids = {}
@@ -169,7 +180,7 @@ async def executions(
             if total_items < end_idx:
                 end_idx = total_items
             exe_ids_list = exe_ids[start_idx:end_idx]
-            executions_df = await async_api(get_executions, server_store_path, pipeline_name, exe_ids_list)
+            executions_df = await async_api(get_executions, query, pipeline_name, exe_ids_list)
             temp = executions_df.to_json(orient="records")
             executions_parsed = json.loads(temp)
             return {
