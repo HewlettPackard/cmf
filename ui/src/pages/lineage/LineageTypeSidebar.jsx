@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import "./index.css";
 
 const LineageTypeSidebar = ({ LineageTypes, handleLineageTypeClick }) => {
   const [clickedLineageType, setClickedLineageType] = useState(LineageTypes[0]);

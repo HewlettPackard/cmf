@@ -14,7 +14,7 @@ const ExecutionTangledDropdown = ({ data, exec_type, handleTreeClick }) => {
   };
 
   return (
-      <div className="flex items-center gap-2 mt-0.5">
+      <div className="flex items-center gap-2 mt-4">
         {/* Label */}
         <label className="text-sm font-medium text-gray-700">Execution list:</label>
     
