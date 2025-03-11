@@ -1,5 +1,18 @@
 ## Common Metadata Ontology
-Common Metadata Ontology (CMO) is proposed to integrate and aggregate the pipeline metadata from various sources such as Papers-with-code, OpenML and Huggingface. CMF's data model is a manifestation of CMO which is specifically designed to capture the pipeline-centric metadata of AI pipelines. It consists of nodes to represent a pipeline, components of a pipeline (stages), relationships to capture interaction among pipeline entities and properties. CMO offers interoperability of diverse metadata, search and recommendation with reasoning capabilities. CMO offers flexibility to incorporate various executions implemented for each stage such as dataset preprocessing, feature engineering, training (including HPO), testing and evaluation. This enables robust search capabilities to identify the best execution path for a given pipeline. Additionally, CMO also facilitates the inclusion of additional semantic and statistical properties to enhance the richness and comprehensiveness of the metadata associated with them. The overview of CMO can be found below.
+Common Metadata Ontology (CMO) integrates and aggregates the pipeline metadata
+from various sources such as Papers-with-code, OpenML and Huggingface. CMF's
+data model is a manifestation of CMO which is specifically designed to capture
+the pipeline-centric metadata of AI pipelines. It consists of nodes to represent
+a pipeline, components of a pipeline (stages), relationships to capture
+interaction among pipeline entities and properties. CMO offers interoperability
+of diverse metadata, search and recommendation with reasoning capabilities. CMO
+offers flexibility to incorporate various executions implemented for each stage
+such as dataset preprocessing, feature engineering, training (including
+hyperparameter optimization), testing and evaluation. This enables robust search
+capabilities to identify the best execution path for a given pipeline.
+Additionally, CMO also facilitates the inclusion of additional semantic and
+statistical properties to enhance the richness and comprehensiveness of the
+metadata associated with them. The overview of CMO can be found below.
 
 ![Common Metadata Ontology](../assets/CMO_v2_properties.svg)
 
@@ -10,7 +23,19 @@ The external link to arrows.app can be found [here](https://drive.google.com/fil
 ### Sample pipeline represented using CMO
 ![Sample Pipeline](../assets/example-pipeline-cmo.svg)
 
-The sample figure shows a pipeline titled "Robust outlier detection by de-biasing VAE likelihoods" executed for "Outlier Detection" task for the stage train/test. The model used in the pipeline was "Variational Autoencoder". Several datasets were used in the pipeline implementation which are as follows (i) German Traffic Sign, (ii) Street View House Numbers and (iii) CelebFaces Arrtibutes dataset. The corresponding hyperparameters used and the metrics generated as a result of execution are included in the figure. The external link to source figure created using arrows.app can be found [here](https://drive.google.com/file/d/1oa3tKMKZlmDFI0sBcIkWZdW4LS4P6WMs/view?usp=sharing)
+The sample figure shows a pipeline titled "Robust outlier detection by
+de-biasing VAE likelihoods" executed for the "Outlier Detection" task focusing
+on the stage train/test. The model used in the pipeline was "Variational
+Autoencoder".  Several datasets were used in the pipeline:
+
+- German Traffic Sign
+- Street View House Numbers
+- CelebFaces Arrtibutes dataset.
+
+The corresponding hyperparameters used and the metrics generated as a result of
+execution are included in the figure. The external link to source figure created
+using arrows.app can be found
+[here](https://drive.google.com/file/d/1oa3tKMKZlmDFI0sBcIkWZdW4LS4P6WMs/view?usp=sharing)
 
 
 #### Turtle Syntax
@@ -137,7 +162,7 @@ Parameter setting using for each Execution of a Stage
 * custom_properties
 
 
-NOTE: 
+NOTE:
 * *are optional properties
 * There additional information on each node, different for each source. As of now, there are included in the KG for efficient search. But they are available to be used in the future to extract the data and populate as node properties.
 * **For metric, there are umpteen possible metric names and values. Therefore, we capture all of them as a key value pair under evaluations
@@ -152,4 +177,4 @@ NOTE:
 #### Related works
 * Publio, G. C., Esteves, D., Ławrynowicz, A., Panov, P., Soldatova, L., Soru, T., ... & Zafar, H. (2018). ML-schema: exposing the semantics of machine learning with schemas and ontologies. arXiv preprint arXiv:1807.05351. Link - http://ml-schema.github.io/documentation/ML%20Schema.html
 * Nguyen, A., Weller, T., Färber, M., & Sure-Vetter, Y. (2020). Making neural networks fair. In Knowledge Graphs and Semantic Web: Second Iberoamerican Conference and First Indo-American Conference, KGSWC 2020, Mérida, Mexico, November 26–27, 2020, Proceedings 2 (pp. 29-44). Springer International Publishing. Link - https://arxiv.org/pdf/1907.11569.pdf
-* Humm, B. G., & Zender, A. (2021). An ontology-based concept for meta automl. In Artificial Intelligence Applications and Innovations: 17th IFIP WG 12.5 International Conference, AIAI 2021, Hersonissos, Crete, Greece, June 25–27, 2021, Proceedings 17 (pp. 117-128). Springer International Publishing.Link - https://www.researchgate.net/profile/Alexander-Zender-2/publication/352574909_An_Ontology-Based_Concept_for_Meta_AutoML/links/619691e107be5f31b796d2fd/An-Ontology-Based-Concept-for-Meta-AutoML.pdf 
+* Humm, B. G., & Zender, A. (2021). An ontology-based concept for meta automl. In Artificial Intelligence Applications and Innovations: 17th IFIP WG 12.5 International Conference, AIAI 2021, Hersonissos, Crete, Greece, June 25–27, 2021, Proceedings 17 (pp. 117-128). Springer International Publishing.Link - https://www.researchgate.net/profile/Alexander-Zender-2/publication/352574909_An_Ontology-Based_Concept_for_Meta_AutoML/links/619691e107be5f31b796d2fd/An-Ontology-Based-Concept-for-Meta-AutoML.pdf
