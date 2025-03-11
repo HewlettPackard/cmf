@@ -75,6 +75,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
             cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph)
         else:
+            # in else, we are assuming cmd="push"
             cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph, is_server=True)
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages

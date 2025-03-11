@@ -142,17 +142,11 @@ class Cmf:
             temp_store = SqlliteStore({"filename":filepath})
         else:
             IP = os.getenv('MYIP')
-            print("IP = ", IP)
             POSTGRES_DB = os.getenv('POSTGRES_DB')
-            print("POSTGRES_DB = ", POSTGRES_DB)
             POSTGRES_USER = os.getenv('POSTGRES_USER')
-            print("POSTGRES_USER = ", POSTGRES_USER)
             POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-            print("POSTGRES_PASSWORD = ", POSTGRES_PASSWORD)
             config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
-            print("config_dict = ", config_dict)
             temp_store = PostgresStore(config_dict)
-        #print("temp_store type", type(temp_store))
         if custom_properties is None:
             custom_properties = {}
         if not pipeline_name:
@@ -160,7 +154,6 @@ class Cmf:
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
         self.store = temp_store.connect()
-        #print("self.store = ", self.store)
         self.filepath = filepath
         self.child_context = None
         self.execution = None

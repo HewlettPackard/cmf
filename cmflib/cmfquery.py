@@ -116,6 +116,7 @@ class CmfQuery(object):
     """
 
     def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
+        temp_store = ""
         if is_server:
             IP = os.getenv('MYIP')
             POSTGRES_DB = os.getenv('POSTGRES_DB')
@@ -125,9 +126,7 @@ class CmfQuery(object):
             temp_store = PostgresStore(config_dict)
         else:
             temp_store = SqlliteStore({"filename":filepath})
-        #print("temp_store type", type(temp_store))
         self.store = temp_store.connect()
-        #print("self.store = ", self.store)
 
     @staticmethod
     def _copy(

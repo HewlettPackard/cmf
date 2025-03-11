@@ -34,19 +34,7 @@ import typing as t
 from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
 
 server_store_path = "/cmf-server/data/postgres_data"
-
 query = CmfQuery(is_server=True)
-IP = os.getenv('MYIP')
-print("IP = ", IP)
-POSTGRES_DB = os.getenv('POSTGRES_DB')
-print("POSTGRES_DB = ", POSTGRES_DB)
-POSTGRES_USER = os.getenv('POSTGRES_USER')
-print("POSTGRES_USER = ", POSTGRES_USER)
-POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-print("POSTGRES_PASSWORD = ", POSTGRES_PASSWORD)
-config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
-print("config_dict = ", config_dict)
-
 
 #global variables
 dict_of_art_ids = {}
