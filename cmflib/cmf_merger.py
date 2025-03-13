@@ -23,6 +23,7 @@ from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from typing import Union
 from  concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 
 # def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union[str, str]) -> Union[str, None]:
 #     """
@@ -179,6 +180,9 @@ from  concurrent.futures import ThreadPoolExecutor, as_completed
 #         print(f"An error occurred in parse_json_to_mlmd: {e}")
 #         traceback.print_exc()
 
+# Create a threading lock to avoid race condition when updating shared resources
+db_lock = threading.Lock()
+
 def handle_context(cmf_class, stage):
     try:
         _ = cmf_class.merge_created_context(
@@ -255,18 +259,29 @@ def handle_event(cmf_class, store, event):
 def process_execution(cmf_class, store, stage, execution):
     handle_context(cmf_class, stage)
     handle_execution(cmf_class, execution)
+    events = execution.get("events", [])
+    for event in events:
+        handle_event(cmf_class, store, event)
 
-    # Process events concurrently within an execution
-    with ThreadPoolExecutor() as event_executor:
-        event_futures = [
-            event_executor.submit(handle_event, cmf_class, store, event)
-            for event in execution["events"]
+def process_stage(stage, path_to_store, pipeline_name, graph, exec_uuid):
+    with db_lock:  # Lock to avoid SQLite write conflicts
+        config = getattr(mlpb, "ConnectionConfig")()
+        config.sqlite.filename_uri = path_to_store
+        store = metadata_store.MetadataStore(config)
+
+        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name, graph=graph, is_server=True)
+
+    if exec_uuid is None:
+        list_executions = stage["executions"]
+    else:
+        list_executions = [
+            execution for execution in stage["executions"]
+            if exec_uuid in execution['properties'].get("Execution_uuid", "").split(",")
         ]
-        for future in as_completed(event_futures):
-            try:
-                future.result()
-            except Exception as e:
-                print(f"Error in event processing: {e}")
+
+    for execution in list_executions:
+        process_execution(cmf_class, store, stage, execution)
+
 
 def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union[str, str]) -> Union[str, None]:
     try:
@@ -275,35 +290,19 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
         pipeline_name = pipeline["name"]
 
         data = create_original_time_since_epoch(mlmd_data) if cmd == "push" else mlmd_data
-
         graph = bool(os.getenv('NEO4J_URI', ""))
 
-        config = getattr(mlpb, "ConnectionConfig")()
-        config.sqlite.filename_uri = path_to_store
-        store = metadata_store.MetadataStore(config)
-
-        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name, graph=graph, is_server=True)
-
-        for stage in data["Pipeline"][0]["stages"]:
-            if exec_uuid is None:
-                list_executions = stage["executions"]
-            else:
-                list_executions = [
-                    execution for execution in stage["executions"]
-                    if exec_uuid in execution['properties']["Execution_uuid"].split(",")
-                ]
-
-            # Process executions concurrently within a stage
-            with ThreadPoolExecutor() as executor:
-                futures = [
-                    executor.submit(process_execution, cmf_class, store, stage, execution)
-                    for execution in list_executions
-                ]
-                for future in as_completed(futures):
-                    try:
-                        future.result()
-                    except Exception as e:
-                        print(f"Error in execution processing: {e}")
+        # Use ThreadPoolExecutor to parallelize stages
+        with ThreadPoolExecutor() as executor:
+            futures = [
+                executor.submit(process_stage, stage, path_to_store, pipeline_name, graph, exec_uuid)
+                for stage in data["Pipeline"][0]["stages"]
+            ]
+            for future in as_completed(futures):
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"Error in stage processing: {e}")
 
         return "success"
 
