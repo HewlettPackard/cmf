@@ -162,6 +162,7 @@ const Artifacts_ps = () => {
                 {artifacts !== null && artifacts.length > 0 ? (
                   <ArtifactPsTable 
                     artifacts={artifacts}
+                    artifactType={selectedArtifactType}
                     onsortOrder={toggleSortOrder}
                     onsortTimeOrder={toggleSortTime}
                     />

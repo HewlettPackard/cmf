@@ -16,17 +16,20 @@
 
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
-import "./index.css";
+import ModelCardPopup from "../../components/ModelCardPopup";
 import FastAPIClient from "../../client";
 import config from "../../config";
+import "./index.css";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
+const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}) => {
   const [data, setData] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
   const [expandedRow, setExpandedRow] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState("");
 
   const consistentColumns = [];
 
@@ -101,6 +104,10 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
   };
 
 
+  const handleClosePopup = () => {
+    setShowPopup(false);
+  };
+
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
       <div className="overflow-x-auto w-full">
@@ -109,18 +116,21 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
               <thead>
                 <tr className="text-xs font-bold font-sans text-left text-black uppercase">
                 <th scope="col" className="px-6 py-3"></th>
-                <th className="px-6 py-3" scope="col">ID</th>
-                <th className="px-6 py-3" onClick={toggleSortOrder}>
-                <span scope="col" 
-                      style={{ display: 'inline-flex', alignItems: 'center' }} >
-                Name {renderArrow()}
+                <th scope="col" className="px-6 py-3">ID</th>
+                <th scope="col" className="px-6 py-3" onClick={toggleSortOrder}>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }} >
+                  Name {renderArrow()}
                 </span>
                 </th>
                 <th className="px-6 py-3" scope="col">Execution TYPE</th>
-                <th className="px-6 py-3" onClick={toggleSortTimeOrder}>
-                <span scope="col" 
-                      style={{ display: 'inline-flex', alignItems: 'center' }} >
-                DATE {renderArrowDate()}
+                {artifactType === "Model" && (
+                  <th scope="col" className="px-6 py-3">
+                    Model Card
+                  </th>
+                )}
+                <th scope="col" className="px-6 py-3" onClick={toggleSortTimeOrder}>
+                <span style={{ display: 'inline-flex', alignItems: 'center' }} >
+                  DATE {renderArrowDate()}
                 </span>
                 </th>
                 <th className="px-6 py-3" scope="col">URI</th>
@@ -142,6 +152,29 @@ const ArtifactPsTable = ({artifacts, onsortOrder, onsortTimeOrder}) => {
                   <td className="px-6 py-4">{artifact.artifact_id}</td>
                   <td className="px-6 py-4">{artifact.name}</td>
                   <td className="px-6 py-4">{artifact.execution}</td>
+                  {artifactType === "Model" && (
+                    <td className="px-6 py-4">
+                      <button
+                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => {
+                          client.getModelCard(artifact.artifact_id).then((res) => {
+                            console.log("res", res);
+                            setPopupData(res);
+                            setShowPopup(true);
+                          });
+                        }}
+                      >
+                        View Model Card
+                      </button>
+                      {showPopup && (
+                        <ModelCardPopup
+                          show={showPopup}
+                          model_data={popupData}
+                          onClose={handleClosePopup}
+                        />
+                      )}
+                    </td>
+                  )}
                   <td className="px-6 py-4">{artifact.create_time_since_epoch}</td>
                   <td className="px-6 py-4">{artifact.uri}</td>
                   <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "url")}</td>
