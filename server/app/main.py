@@ -34,7 +34,6 @@ import os
 import json
 import typing as t
 from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
-import time
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -93,7 +92,6 @@ async def read_root(request: Request):
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
 async def mlmd_push(info: MLMDPushRequest):
-    start_time = time.time()
     print("mlmd push started")
     print("......................")
     req_info = info.model_dump()  # Serializing the input data into a dictionary using model_dump()
@@ -123,8 +121,6 @@ async def mlmd_push(info: MLMDPushRequest):
             if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
-    end_time = time.time()
-    print(f"mlmd_push request took {end_time - start_time} seconds")
     return {"status": status}
 
 

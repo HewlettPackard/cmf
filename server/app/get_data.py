@@ -6,7 +6,6 @@ import typing as t
 from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
-import time
 
 # Converts sync functions to async
 async def async_api(function_to_async, mlmdfilepath: str, *argv):
@@ -226,11 +225,7 @@ def create_unique_executions(server_store_path, req_info) -> str:
             - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
             - "pipeline_not_exist": If the provided pipeline name does not match the one in the payload. 
     """
-    start_time = time.time()
     mlmd_data = json.loads(req_info["json_payload"])
-    step_time = time.time()
-    print(f"Time taken to load JSON payload: {step_time - start_time} seconds")
-
     # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
     pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
     if not pipelines:
@@ -242,9 +237,6 @@ def create_unique_executions(server_store_path, req_info) -> str:
     req_pipeline_name = req_info["pipeline_name"]
     if req_pipeline_name != pipeline_name:
         return "pipeline_not_exist"  # Mismatch between provided pipeline name and payload
-    step_time = time.time()
-    print(f"Time taken to validate pipeline name: {step_time - start_time} seconds")
-
     executions_server = []
     list_executions_exists = []
     if os.path.exists(server_store_path):
@@ -253,9 +245,6 @@ def create_unique_executions(server_store_path, req_info) -> str:
         for i in executions.index:
             for uuid in executions['Execution_uuid'][i].split(","):
                 executions_server.append(uuid)
-        step_time = time.time()
-        print(f"Time taken to get executions from server: {step_time - start_time} seconds")
-
         executions_client = []
         for i in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
             for j in i["executions"]:
@@ -269,9 +258,6 @@ def create_unique_executions(server_store_path, req_info) -> str:
                     # mlmd push is failed here
                     status="version_update"
                     return status
-        step_time = time.time()
-        print(f"Time taken to get executions from client: {step_time - start_time} seconds")
-
         if executions_server != []:
             list_executions_exists = list(set(executions_client).intersection(set(executions_server)))
         for i in mlmd_data["Pipeline"]:
@@ -284,8 +270,6 @@ def create_unique_executions(server_store_path, req_info) -> str:
         
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
-        step_time = time.time()
-        print(f"Time taken to filter executions: {step_time - start_time} seconds")
             
     for i in mlmd_data["Pipeline"]:
 
@@ -296,11 +280,7 @@ def create_unique_executions(server_store_path, req_info) -> str:
                 json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["exec_uuid"]
             )
             status='success'
-    step_time = time.time()
-    print(f"Time taken to push data to server: {step_time - start_time} seconds")
 
-    end_time = time.time()
-    print(f"Total time taken: {end_time - start_time} seconds")
     return status
 
 
@@ -366,4 +346,3 @@ def get_lineage_data(
     else:
         lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data
-
