@@ -61,7 +61,7 @@ const Artifacts_ps = () => {
   };
 
   const fetchArtifacts = (pipelineName, artifactType, sortOrder, activePage, filter="", selectedCol) => {
-    client.getArtifact(pipelineName, artifactType, sortOrder, activePage, filter, selectedCol)
+    client.getArtifacts(pipelineName, artifactType, sortOrder, activePage, filter, selectedCol)
       .then((data) => {
         setArtifacts(data.items);
         setTotalItems(data.total_items);

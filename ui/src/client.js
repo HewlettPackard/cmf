@@ -116,7 +116,7 @@ class FastAPIClient {
 
   async getArtifacts(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
     return this.apiClient
-      .get(`/artifact/${pipeline_name}/${artifact_type}`, {
+      .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
         params: {
           filter_value: filterValue,
           sort_order: sort_order,
@@ -131,7 +131,7 @@ class FastAPIClient {
 
   async getExecutions(pipeline_name, active_page, filter_value, sort_order){
     return this.apiClient
-    .get(`/execution/${pipeline_name}`,{
+    .get(`/executions/${pipeline_name}`,{
       params: {
         active_page: active_page,
         filter_value: filter_value,

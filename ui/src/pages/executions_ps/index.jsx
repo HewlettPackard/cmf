@@ -54,7 +54,7 @@ const Executions_ps = () => {
   }, [selectedPipeline, activePage, filterValue]);
 
   const fetchExecutions = (pipelineName, page, filterValue) => {
-    client.getExecution(pipelineName, page, filterValue, sortOrder).then((data) => {
+    client.getExecutions(pipelineName, page, filterValue, sortOrder).then((data) => {
       setExecutions(data.items);
       setTotalItems(data.total_items);
     });
