@@ -119,6 +119,9 @@ def handle_event(cmf_class, store, event):
             )
         elif artifact_type == "Environment":
             cmf_class.log_python_env_from_client(artifact_name, uri, props)
+        else:
+            # Skip unsupported artifact types without raising an error
+            pass
     except AlreadyExistsError:
         # if same pipeline is pushed twice at same time, update custom_properties using 2nd pipeline                      
         artifact = store.get_artifacts_by_uri(uri)
