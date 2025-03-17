@@ -17,12 +17,20 @@
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.module.css";
+import config from "../../config";
+import FastAPIClient from "../../client";
+import PythonEnvPopup from "../../components/PythonEnvPopup";
+
+const client = new FastAPIClient(config);
 
 const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   const [sortOrder, setSortOrder] = useState(onSort);
   const [sortedData, setSortedData] = useState([]);
   const [filterValue, setFilterValue] = useState("");
   const [expandedRow, setExpandedRow] = useState(null);
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState("");
 
   useEffect(() => {
     setSortedData([...executions]);
@@ -94,6 +102,12 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
     }
   };
 
+  const handleClosePopup = () => {
+    setShowPopup(false);			 
+  };
+
+
+
   return (
     <div className="flex flex-col">
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "0.5rem", marginTop: "0.5rem" }}>
@@ -117,6 +131,9 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                   </span>
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">Execution</th>
+                <th scope="col" className="px-6 py-3">
+                  Python Env
+                </th>
                 <th scope="col" className="px-6 py-3 Git_Repo">Git Repo</th>
                 <th scope="col" className="px-6 py-3 Git_Start_Commit">Git Start Commit</th>
                 <th scope="col" className="px-6 py-3 Pipeline_Type">Pipeline Type</th>
@@ -129,6 +146,26 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                     <td className="px-6 py-4 cursor-pointer">{expandedRow === index ? "-" : "+"}</td>
                     <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Context_Type")}</td>
                     <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Execution")}</td>
+                    <td className="px-6 py-4">
+                      <button
+                        className="text-blue-500 hover:text-blue-700"
+                        onClick={() => {
+                          setShowPopup(true)
+                          client.getPythonEnv(getPropertyValue(data.execution_properties, "Python_Env")).then((data) => {
+                            setPopupData(data)
+                          });
+                        }}
+                      >
+                        View Env Details
+                      </button>    
+                      {showPopup && (
+                        <PythonEnvPopup
+                          show={showPopup}
+                          python_env={popupData}
+                          onClose={handleClosePopup}
+                        />
+                      )}                
+                    </td>
                     <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Git_Repo")}</td>
                     <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Git_Start_Commit")}</td>
                     <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Pipeline_Type")}</td>
