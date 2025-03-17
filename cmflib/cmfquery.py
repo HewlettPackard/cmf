@@ -125,9 +125,7 @@ class CmfQuery(object):
             temp_store = PostgresStore(config_dict)
         else:
             temp_store = SqlliteStore({"filename":filepath})
-        #print("temp_store type", type(temp_store))
         self.store = temp_store.connect()
-        #print("self.store = ", self.store)
 
     @staticmethod
     def _copy(

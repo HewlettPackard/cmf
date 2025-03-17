@@ -272,7 +272,7 @@ def create_unique_executions(query: CmfQuery, req_info) -> str:
             status="exists"
         else:
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["exec_uuid"]
+                json.dumps(mlmd_data), "", "push", req_info["exec_uuid"]
             )
             status='success'
 
@@ -284,7 +284,7 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, di
     Retrieves metadata from the server for a given pipeline and execution UUID.
 
     Args:
-        server_store_path (str): The path to the server store.
+        query (CmfQuery): The CmfQuery object.
         pipeline_name (str): The name of the pipeline.
         exec_uuid (str): The execution UUID.
         dict_of_exe_ids (dict): A dictionary containing execution IDs for pipelines.
@@ -317,7 +317,7 @@ def get_lineage_data(
     Retrieves lineage data based on the specified type.
 
     Parameters:
-    server_store_path (str): The path to the server store.
+    query (CmfQuery): The CmfQuery object
     pipeline_name (str): The name of the pipeline.
     type (str): The type of lineage data to retrieve. Can be "Artifacts" or "Execution".
     dict_of_art_ids (dict): A dictionary of artifact IDs.

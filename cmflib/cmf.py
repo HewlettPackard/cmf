@@ -56,7 +56,6 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import change_dir
 from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
 from cmflib.cmf_server import (
     merge_created_context, 
@@ -156,7 +155,6 @@ class Cmf:
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
         self.store = temp_store.connect()
-        #print("self.store = ", self.store)
         self.filepath = filepath
         self.child_context = None
         self.execution = None
