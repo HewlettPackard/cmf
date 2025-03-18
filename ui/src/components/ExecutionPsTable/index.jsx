@@ -16,6 +16,7 @@
 
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
+import Highlight from "../../components/Highlight";
 import "./index.module.css";
 import config from "../../config";
 import FastAPIClient from "../../client";
@@ -28,7 +29,6 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   const [sortedData, setSortedData] = useState([]);
   const [filterValue, setFilterValue] = useState("");
   const [expandedRow, setExpandedRow] = useState(null);
-
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
 
@@ -106,8 +106,6 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
     setShowPopup(false);			 
   };
 
-
-
   return (
     <div className="flex flex-col">
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "0.5rem", marginTop: "0.5rem" }}>
@@ -144,8 +142,8 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                 <React.Fragment key={index}>
                   <tr key={index} onClick={() => toggleRow(index)} className="text-sm font-medium text-gray-800">
                     <td className="px-6 py-4 cursor-pointer">{expandedRow === index ? "-" : "+"}</td>
-                    <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Context_Type")}</td>
-                    <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Execution")}</td>
+                    <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Context_Type")} highlight={filterValue} /></td>
+                    <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Execution")} highlight={filterValue} /></td>
                     <td className="px-6 py-4">
                       <button
                         className="text-blue-500 hover:text-blue-700"
@@ -166,9 +164,9 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                         />
                       )}                
                     </td>
-                    <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Git_Repo")}</td>
-                    <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Git_Start_Commit")}</td>
-                    <td className="px-6 py-4">{getPropertyValue(data.execution_properties, "Pipeline_Type")}</td>
+                    <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Git_Repo")} highlight={filterValue} /></td>
+                    <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Git_Start_Commit")} highlight={filterValue} /></td>
+                    <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Pipeline_Type")} highlight={filterValue} /></td>
                   </tr>
                   {expandedRow === index && (
                     <tr>
@@ -178,7 +176,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                             {data.execution_properties.map((property, idx) => (
                               <tr key={idx}>
                                 <td>{property.name}</td>
-                                <td>{property.value}</td>
+                                <td><Highlight text={property.value} highlight={filterValue} /></td>
                               </tr>
                             ))}
                           </tbody>

@@ -16,24 +16,21 @@
 
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
-import ModelCardPopup from "../../components/ModelCardPopup";
+import ModelCardPopup from "../ModelCardPopup";
+import Highlight from "../Highlight";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import "./index.css";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}) => {
+const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue}) => {
   const [data, setData] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
-
-  const consistentColumns = [];
-
-  console.log("artifacts",artifacts);
 
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
@@ -55,9 +52,6 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}
   );
 
   const getPropertyValue = (properties, propertyName) => {
-    // console.log(artifacts);
-    // console.log(properties);
-    // console.log(propertyName);
     // // Check if properties is a string and parse it
     if (typeof properties === "string") {
         try {
@@ -102,7 +96,6 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}
     setSortTimeOrder(newSortOrder);
     onsortTimeOrder(newSortOrder);
   };
-
 
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -149,16 +142,16 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}
                       >
                         {expandedRow === index ? "-" : "+"}
                   </td>
-                  <td className="px-6 py-4">{artifact.artifact_id}</td>
-                  <td className="px-6 py-4">{artifact.name}</td>
-                  <td className="px-6 py-4">{artifact.execution}</td>
+                  { /* Convert artifact ID to string and render it with highlighted search term if it matches the filter value */}
+                  <td className="px-6 py-4"><Highlight text={String(artifact.artifact_id)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4"><Highlight text={String(artifact.name)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4"><Highlight text={String(artifact.execution)} highlight={filterValue}/></td>
                   {artifactType === "Model" && (
                     <td className="px-6 py-4">
                       <button
                         className="text-blue-500 hover:text-blue-700"
                         onClick={() => {
                           client.getModelCard(artifact.artifact_id).then((res) => {
-                            console.log("res", res);
                             setPopupData(res);
                             setShowPopup(true);
                           });
@@ -175,11 +168,11 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}
                       )}
                     </td>
                   )}
-                  <td className="px-6 py-4">{artifact.create_time_since_epoch}</td>
-                  <td className="px-6 py-4">{artifact.uri}</td>
-                  <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "url")}</td>
-                  <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "git_repo")}</td>
-                  <td className="px-6 py-4">{getPropertyValue(artifact.artifact_properties, "Commit")}</td>
+                  <td className="px-6 py-4"><Highlight text={String(artifact.create_time_since_epoch)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4"><Highlight text={String(artifact.uri)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "url")} highlight={filterValue}/></td>
+                  <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "git_repo")} highlight={filterValue}/></td>
+                  <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "Commit")} highlight={filterValue}/></td>
                 </tr>
                 {expandedRow === index && (
                 <tr>
@@ -189,7 +182,7 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder}
                   {artifact.artifact_properties.map((property, idx) => (
                   <tr key={idx}>
                   <td>{property.name}</td>
-                  <td>{property.value}</td>
+                  <td><Highlight text={String(property.value)} highlight={filterValue}/></td>
                   </tr>
                   ))}
                   </tbody>

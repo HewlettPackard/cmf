@@ -165,6 +165,7 @@ const Artifacts_ps = () => {
                     artifactType={selectedArtifactType}
                     onsortOrder={toggleSortOrder}
                     onsortTimeOrder={toggleSortTime}
+                    filterValue={filter}
                     />
                     
                 ) : (
