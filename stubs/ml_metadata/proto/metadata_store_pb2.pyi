@@ -15,18 +15,18 @@ INT: PropertyType
 PROTO: PropertyType
 STRING: PropertyType
 STRUCT: PropertyType
-SYSTEM_TYPE_EXTENSION_FIELD_NUMBER: _ClassVar[int]
+SYSTEM_TYPE_EXTENSION_FIELD_NUMBER: int
 UNKNOWN: PropertyType
 system_type_extension: _descriptor.FieldDescriptor
 
 class AnyArtifactStructType(_message.Message):
-    __slots__ = []
+    __slots__: list[str] = []
     def __init__(self) -> None: ...
 
 class Artifact(_message.Message):
     __slots__ = ["create_time_since_epoch", "custom_properties", "external_id", "id", "last_update_time_since_epoch", "name", "properties", "state", "type", "type_id", "uri"]
     class State(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     class CustomPropertiesEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -93,7 +93,7 @@ class ArtifactStructType(_message.Message):
 class ArtifactType(_message.Message):
     __slots__ = ["base_type", "description", "external_id", "id", "name", "properties", "version"]
     class SystemDefinedBaseType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     class PropertiesEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -189,7 +189,7 @@ class Context(_message.Message):
 class ContextType(_message.Message):
     __slots__ = ["base_type", "description", "external_id", "id", "name", "properties", "version"]
     class SystemDefinedBaseType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     class PropertiesEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -234,7 +234,7 @@ class DictArtifactStructType(_message.Message):
 class Event(_message.Message):
     __slots__ = ["artifact_id", "execution_id", "milliseconds_since_epoch", "path", "type"]
     class Type(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     class Path(_message.Message):
         __slots__ = ["steps"]
         class Step(_message.Message):
@@ -269,7 +269,7 @@ class Event(_message.Message):
 class Execution(_message.Message):
     __slots__ = ["create_time_since_epoch", "custom_properties", "external_id", "id", "last_known_state", "last_update_time_since_epoch", "name", "properties", "type", "type_id"]
     class State(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     class CustomPropertiesEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -316,7 +316,7 @@ class Execution(_message.Message):
 class ExecutionType(_message.Message):
     __slots__ = ["base_type", "description", "external_id", "id", "input_type", "name", "output_type", "properties", "version"]
     class SystemDefinedBaseType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     class PropertiesEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -351,7 +351,7 @@ class ExecutionType(_message.Message):
     def __init__(self, id: _Optional[int] = ..., name: _Optional[str] = ..., version: _Optional[str] = ..., description: _Optional[str] = ..., external_id: _Optional[str] = ..., properties: _Optional[_Mapping[str, PropertyType]] = ..., input_type: _Optional[_Union[ArtifactStructType, _Mapping]] = ..., output_type: _Optional[_Union[ArtifactStructType, _Mapping]] = ..., base_type: _Optional[_Union[ExecutionType.SystemDefinedBaseType, str]] = ...) -> None: ...
 
 class FakeDatabaseConfig(_message.Message):
-    __slots__ = []
+    __slots__: list[str] = []
     def __init__(self) -> None: ...
 
 class GrpcChannelArguments(_message.Message):
@@ -432,7 +432,7 @@ class ListOperationOptions(_message.Message):
     class OrderByField(_message.Message):
         __slots__ = ["field", "is_asc"]
         class Field(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-            __slots__ = []
+            __slots__: list[str] = []
         CREATE_TIME: ListOperationOptions.OrderByField.Field
         FIELD_FIELD_NUMBER: _ClassVar[int]
         FIELD_UNSPECIFIED: ListOperationOptions.OrderByField.Field
@@ -540,7 +540,7 @@ class MySQLDatabaseConfig(_message.Message):
     def __init__(self, host: _Optional[str] = ..., port: _Optional[int] = ..., database: _Optional[str] = ..., user: _Optional[str] = ..., password: _Optional[str] = ..., socket: _Optional[str] = ..., ssl_options: _Optional[_Union[MySQLDatabaseConfig.SSLOptions, _Mapping]] = ..., skip_db_creation: bool = ...) -> None: ...
 
 class NoneArtifactStructType(_message.Message):
-    __slots__ = []
+    __slots__: list[str] = []
     def __init__(self) -> None: ...
 
 class ParentContext(_message.Message):
@@ -560,7 +560,7 @@ class RetryOptions(_message.Message):
 class SqliteMetadataSourceConfig(_message.Message):
     __slots__ = ["connection_mode", "filename_uri"]
     class ConnectionMode(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-        __slots__ = []
+        __slots__: list[str] = []
     CONNECTION_MODE_FIELD_NUMBER: _ClassVar[int]
     FILENAME_URI_FIELD_NUMBER: _ClassVar[int]
     READONLY: SqliteMetadataSourceConfig.ConnectionMode
@@ -579,7 +579,7 @@ class SystemTypeExtension(_message.Message):
 
 class TransactionOptions(_message.Message):
     __slots__ = ["tag"]
-    Extensions: _python_message._ExtensionDict
+    Extensions: _python_message._ExtensionDict  # type: ignore
     TAG_FIELD_NUMBER: _ClassVar[int]
     tag: str
     def __init__(self, tag: _Optional[str] = ...) -> None: ...
@@ -613,4 +613,4 @@ class Value(_message.Message):
     def __init__(self, int_value: _Optional[int] = ..., double_value: _Optional[float] = ..., string_value: _Optional[str] = ..., struct_value: _Optional[_Union[_struct_pb2.Struct, _Mapping]] = ..., proto_value: _Optional[_Union[_any_pb2.Any, _Mapping]] = ..., bool_value: bool = ...) -> None: ...
 
 class PropertyType(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
-    __slots__ = []
+    __slots__: list[str] = []

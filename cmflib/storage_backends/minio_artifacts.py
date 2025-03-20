@@ -15,6 +15,7 @@
 ###
 
 import os
+import typing as t
 from minio import Minio
 from minio.error import S3Error
 from cmflib.cmf_exception_handling import BucketNotFound
@@ -134,10 +135,9 @@ class MinioArtifacts:
             we need to remove the hash of the .dir from the object_name
             which will leave us with the artifact repo path
             """
-            repo_path = object_name.split("/")
-            repo_path = repo_path[:len(repo_path)-2]
-            repo_path = "/".join(repo_path)
-
+            repo_path_list: t.List[str] = object_name.split("/")
+            repo_path_list = repo_path_list[:len(repo_path_list)-2]
+            repo_path = "/".join(repo_path_list)
 
             obj=True
             for file_info in tracked_files:

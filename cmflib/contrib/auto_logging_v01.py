@@ -48,6 +48,9 @@ __all__ = [
 
 logger = logging.getLogger(__name__)
 
+# Define a generic type variable T that can represent Context, Parameters, or Dict[str, Any]
+T = t.TypeVar("T", bound=dict)  
+
 
 class LogMessage:
     """Helper class to do structured logging.
@@ -65,7 +68,7 @@ class LogMessage:
         return json.dumps({"type": self.type, **self.kwargs}, cls=JSONEncoder)
 
 
-M = LogMessage
+msg = LogMessage
 
 
 class CMFError(Exception):
@@ -333,9 +336,9 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
 
             # Create a pipeline, create a context and an execution
             cmf = Cmf(
-                filename=config.filename,
+                filepath=config.filename or "mlmd", # Ensure filename is always a valid string
                 pipeline_name=config.pipeline_name,
-                graph=config.graph,
+                graph=config.graph or False # Ensure graph is always a valid boolean
             )
             _ = cmf.create_context(pipeline_stage=config.pipeline_stage)
             _ = cmf.create_execution(execution_type=config.pipeline_stage, custom_properties=params)
@@ -344,40 +347,39 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             # Run the step
             if ctx is not None:
                 ctx["cmf"] = cmf
-
             logger.debug(
-                M(
+                msg(
                     "execution",
                     pipeline=config.pipeline_name,
                     stage=config.pipeline_stage,
-                    execution_id=cmf.execution.id,
+                    execution_id=cmf.execution.id if cmf.execution else None,
                 )
             )
-            logger.debug(M("execution.impl", execution_id=cmf.execution.id, impl=func.__name__))
+            logger.debug(msg("execution.impl", execution_id=cmf.execution.id if cmf.execution else None, impl=func.__name__))
             logger.debug(
-                M(
-                    "execution.inputs",
-                    execution_id=cmf.execution.id,
-                    ctx_keys=list((ctx or {}).keys()),
-                    params=(params or {}),
-                    inputs=inputs,
+                    msg(
+                        "execution.inputs",
+                        execution_id=cmf.execution.id if cmf.execution else None,
+                        ctx_keys=list((ctx or {}).keys()),
+                        params=(params or {}),
+                        inputs=inputs,
+                    )
                 )
-            )
             start_time = time.time()
             outputs: t.Optional[t.Dict[str, Artifact]] = func(*args, **kwargs)
             end_time = time.time()
 
             logger.debug(
-                M(
+                msg(
                     "execution.runtime",
-                    execution_id=cmf.execution.id,
+                    execution_id=cmf.execution.id if cmf.execution else None,
                     time_seconds=end_time - start_time,
                 )
             )
             logger.debug(
-                M(
+                msg(
                     "execution.outputs",
-                    execution_id=cmf.execution.id,
+                    execution_id=cmf.execution.id if cmf.execution else None,
                     outputs=outputs,
                     metrics=list(cmf.metrics.keys()),
                 )
@@ -447,17 +449,30 @@ def cli_run(step_fn: t.Callable) -> None:
     parsed, artifacts = parser.parse_known_args(sys.argv[1:])
 
     # Convert command line arguments into dictionaries
-    def _parse_key_value_list(_kv_list: t.Union[str, t.List[str]], _dict_cls) -> t.Union[t.Dict, Context, Parameters]:
-        """Convert a string like 'a=3,b=5' into a dictionary."""
-        _dict = _dict_cls()
+    def _parse_key_value_list(
+            _kv_list: t.Union[str, t.List[str]], 
+            _dict_cls: t.Type[T] # Ensure _dict_cls is a class type that matches T (e.g., Context, Parameters, dict)
+            ) -> T: # The return type dynamically matches the class passed as _dict_cls
+        """Convert a string like 'a=3,b=5' into an instance of Context, Parameters, or Dict.
+         **Reason for using TypeVar T and Type[T]:**
+        - Previously, the return type was Union[Dict, Context, Parameters], which caused mypy warnings because 
+          it couldn't infer the exact return type based on _dict_cls.
+        - By introducing TypeVar T, we ensure that the return type always matches the class type passed to _dict_cls.
+        - This provides stricter type safety, reduces the need for type casting, and resolves mypy warnings.
+        """
+        _dict: t.Dict[str, t.Any] = {} # Explicit type annotation for clarity
+    
         if not _kv_list:
-            return _dict
+            return _dict_cls(_dict)  # Return an empty instance of the appropriate class (Context/Parameters/Dict)
+    
         if isinstance(_kv_list, str):
-            _kv_list = _kv_list.split(",")
+            _kv_list = _kv_list.split(",")  # Split input string into individual key-value pairs
+     
         for _item in _kv_list:
             _k, _v = _item.split("=")
-            _dict[_k.strip()] = _v.strip()
-        return _dict
+            _dict[_k.strip()] = _v.strip()  # Add key-value pair to the dictionary
+
+        return _dict_cls(_dict)  # Dynamically return an instance matching the _dict_cls type
 
     params = _parse_key_value_list(parsed.params, Parameters)
     ctx = _parse_key_value_list(parsed.ctx, Context)
@@ -632,8 +647,8 @@ def _log_artifacts(
         t.List[Artifact],
         t.Tuple[Artifact],
         t.Set[Artifact],
-        t.Dict[str, t.Union[Artifact, t.List[Artifact]]],
-    ],
+        t.Mapping[str, t.Union[Artifact, t.List[Artifact]]] # Use Mapping for better type compatibility
+    ]
 ) -> None:
     """Log artifacts with Cmf.
     Args:

@@ -13,3 +13,12 @@ boto3
 scitokens
 cryptography
 ray==2.34.0
+mypy
+pandas-stubs
+types-tabulate
+types-requests
+boto3-stubs
+types-paramiko
+types-setuptools
+types-PyYAML
+types-protobuf
