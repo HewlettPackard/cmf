@@ -68,7 +68,7 @@ class LogMessage:
         return json.dumps({"type": self.type, **self.kwargs}, cls=JSONEncoder)
 
 
-M = LogMessage
+msg = LogMessage
 
 
 class CMFError(Exception):
@@ -348,16 +348,16 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             if ctx is not None:
                 ctx["cmf"] = cmf
             logger.debug(
-                M(
+                msg(
                     "execution",
                     pipeline=config.pipeline_name,
                     stage=config.pipeline_stage,
                     execution_id=cmf.execution.id if cmf.execution else None,
                 )
             )
-            logger.debug(M("execution.impl", execution_id=cmf.execution.id if cmf.execution else None, impl=func.__name__))
+            logger.debug(msg("execution.impl", execution_id=cmf.execution.id if cmf.execution else None, impl=func.__name__))
             logger.debug(
-                    M(
+                    msg(
                         "execution.inputs",
                         execution_id=cmf.execution.id if cmf.execution else None,
                         ctx_keys=list((ctx or {}).keys()),
@@ -370,14 +370,14 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
             end_time = time.time()
 
             logger.debug(
-                M(
+                msg(
                     "execution.runtime",
                     execution_id=cmf.execution.id if cmf.execution else None,
                     time_seconds=end_time - start_time,
                 )
             )
             logger.debug(
-                M(
+                msg(
                     "execution.outputs",
                     execution_id=cmf.execution.id if cmf.execution else None,
                     outputs=outputs,
