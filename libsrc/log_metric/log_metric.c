@@ -1,4 +1,4 @@
-#include "log_metric_lib.h"
+#include "log_metric.h"
 #include <Python.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +11,7 @@ static struct {
 // Initialize CMF
 void cmf_init(void) {
     Py_Initialize();
-    
+
     PyObject *cmflib_module = PyImport_ImportModule("cmflib.cmf");
     if (!cmflib_module) {
         PyErr_Print();
@@ -28,7 +28,7 @@ void cmf_init(void) {
     // Initialize Cmf object with Params
     // 1. mlmd file path
     // 2. pipeline name
-    PyObject *args = PyTuple_Pack(2, PyUnicode_FromString("/home/kulkashr/testcmf/mlmd"), PyUnicode_FromString("test_pipeline"));
+    PyObject *args = PyTuple_Pack(2, PyUnicode_FromString("/tmp/shao/mlmd"), PyUnicode_FromString("test_pipeline"));
     Cmf.cmf_pyobject = PyObject_CallObject(cmf_class, args);
 
     Py_DECREF(args);
