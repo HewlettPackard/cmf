@@ -116,6 +116,7 @@ class CmdMetadataPush(CmdBase):
                 exec_uuid = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_uuid, pipeline_name)
             else:
+                execution_flag = 0
                 exec_uuid = self.args.execution_uuid[0]
                 mlmd_data = json.loads(json_payload)["Pipeline"]
                 # checks if given execution present in mlmd

@@ -22,6 +22,7 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
+from server.app.get_data import create_unique_executions
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
@@ -34,7 +35,8 @@ from cmflib.cmf_exception_handling import (
     InternalServerError,
     MlmdFilePullFailure,
     DirectoryNotfound,
-    FileNameNotfound
+    FileNameNotfound,
+    ExecutionsAlreadyExists,
 )
 
 # This class pulls mlmd file from cmf-server
@@ -92,21 +94,16 @@ class CmdMetadataPull(CmdBase):
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
         # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
-        if output.content.decode() == None:
+        if status == 404:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
-      
         elif output.content:
-            if status == 200:
-                try:
-                    cmf_merger.parse_json_to_mlmd(
-                        output.content, full_path_to_dump, cmd, exec_uuid
-                    )  # converts mlmd json data to mlmd file
-                    pull_status = MlmdFilePullSuccess(full_path_to_dump)
-                    return pull_status
-                except Exception as e:
-                    return e
+            response = create_unique_executions(full_path_to_dump, output.content, "pull", exec_uuid)
+            if response =="success":
+                return MlmdFilePullSuccess(full_path_to_dump)
+            elif response == "exists":
+                return ExecutionsAlreadyExists()
             elif status == 413:
                 raise MlmdNotFoundOnServer
             elif status == 406:
