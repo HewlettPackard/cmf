@@ -17,7 +17,6 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from cmflib import cmf_merger
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
@@ -31,12 +30,10 @@ from cmflib.cmf_exception_handling import (
     ExecutionUUIDNotFound,
     MlmdNotFoundOnServer,
     MlmdFilePullSuccess,
-    CmfServerNotAvailable, 
-    InternalServerError,
-    MlmdFilePullFailure,
     DirectoryNotfound,
     FileNameNotfound,
     ExecutionsAlreadyExists,
+    UpdateCmfVersion,
 )
 
 # This class pulls mlmd file from cmf-server
@@ -93,27 +90,23 @@ class CmdMetadataPull(CmdBase):
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
-        # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
-        if status == 404:
+        # Checks if given pipeline does not exist
+        # or if the execution UUID not present inside the mlmd file
+        # else pulls the mlmd file
+        if status == 406:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
-        elif output.content:
+        else:
             response = create_unique_executions(full_path_to_dump, output.content, "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":
                 return ExecutionsAlreadyExists()
-            elif status == 413:
+            elif response == "invalid_json_payload":
                 raise MlmdNotFoundOnServer
-            elif status == 406:
-                raise PipelineNotFound(self.args.pipeline_name[0])
-            elif status == 404:
-                raise CmfServerNotAvailable
-            elif status == 500:
-                raise InternalServerError
-            else:
-                raise MlmdFilePullFailure
+            elif response == "version_update":
+                raise UpdateCmfVersion
             
 def add_parser(subparsers, parent_parser):
     PULL_HELP = "Pulls mlmd from cmf-server to users's machine."

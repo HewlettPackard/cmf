@@ -106,9 +106,6 @@ async def mlmd_push(info: MLMDPushRequest):
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
-            if status == "pipeline_not_exist":
-                # Pipeline name does not exist in the server, return 404 Not Found
-                raise HTTPException(status_code=404, detail=f"Pipeline name '{pipeline_name}' does not exist.")
             if status == "version_update":
                 # Raise an HTTPException with status code 422
                 raise HTTPException(status_code=422, detail="version_update")
@@ -131,10 +128,10 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    #json_payload values can be json data, NULL or no_exec_id.
+    #json_payload values can be json data, none or no_exec_id.
     json_payload= await async_api(get_mlmd_from_server, server_store_path, pipeline_name, exec_uuid, dict_of_exe_ids)
     if json_payload == None:
-            raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
+        raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
 
 

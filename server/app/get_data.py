@@ -212,7 +212,7 @@ def get_artifact_types(mlmdfilepath) -> t.List[str]:
     return artifact_types
 
 
-def create_unique_executions(path, req_info, cmd, exe_uuid) -> str:
+def create_unique_executions(path: str, req_info: str, cmd: str, exe_uuid: str) -> str:
     """
     Creates a list of unique executions by checking if they already exist on the server or not.
     Locking is introduced to avoid data corruption on the server when multiple similar pipelines are pushed at the same time.

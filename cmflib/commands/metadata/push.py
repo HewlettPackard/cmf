@@ -143,7 +143,7 @@ class CmdMetadataPush(CmdBase):
 
             if status_code==422 and response.json()["status"]=="version_update":
                 raise UpdateCmfVersion
-            elif status_code == 404:
+            elif status_code == 400:
                 raise CmfServerNotAvailable
             elif status_code == 500:
                 raise InternalServerError
