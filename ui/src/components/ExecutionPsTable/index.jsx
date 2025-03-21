@@ -34,6 +34,14 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
 
   useEffect(() => {
     setSortedData([...executions]);
+    // handle expanded row based on filter value
+    if (filterValue.trim() !== ""){
+      // expand all rows when filter value is set
+      setExpandedRow("all");
+    }else{
+      // collapse all rows when filter value is empty
+      setExpandedRow(null);
+    }
   }, [executions]);
 
   const handleFilterChange = (event) => {
@@ -43,6 +51,8 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   };
 
   const toggleRow = (rowId) => {
+    // disable manual toggle when all rows are expanded 
+    if (expandedRow === "all") return; 
     setExpandedRow(expandedRow === rowId ? null : rowId);
   };
 
@@ -141,7 +151,9 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
               {sortedData.map((data, index) => (
                 <React.Fragment key={index}>
                   <tr key={index} onClick={() => toggleRow(index)} className="text-sm font-medium text-gray-800">
-                    <td className="px-6 py-4 cursor-pointer">{expandedRow === index ? "-" : "+"}</td>
+                    <td className="px-6 py-4 cursor-pointer">
+                      {expandedRow === index || expandedRow === "all" ? "-" : "+"}
+                    </td>
                     <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Context_Type")} highlight={filterValue} /></td>
                     <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Execution")} highlight={filterValue} /></td>
                     <td className="px-6 py-4">
@@ -168,7 +180,7 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
                     <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Git_Start_Commit")} highlight={filterValue} /></td>
                     <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Pipeline_Type")} highlight={filterValue} /></td>
                   </tr>
-                  {expandedRow === index && (
+                  {(expandedRow === "all" || expandedRow === index) && (
                     <tr>
                       <td colSpan="6">
                         <table className="expanded-table">
