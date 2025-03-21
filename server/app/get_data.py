@@ -346,4 +346,3 @@ def get_lineage_data(
     else:
         lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data
-
