@@ -17,10 +17,6 @@
 import os
 import paramiko
 
-# this is temporary - need to remove after TripleDES warning goes away from paramiko
-# import warnings
-# warnings.filterwarnings(action='ignore', module='.*paramiko.*')
-
 class SSHremoteArtifacts:
 
     def __init__(self, dvc_config_op):
