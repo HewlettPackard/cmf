@@ -15,6 +15,7 @@
 ###
 
 import os
+
 from dvc.api import DVCFileSystem
 
 class LocalArtifacts():
@@ -39,11 +40,10 @@ class LocalArtifacts():
         download_loc: str,
     ):
         """
-        Download a single file from an S3 bucket.
+        Download a single file from an local repository.
 
         Args:
             current_directory (str): The current working directory.
-            bucket_name (str): Name of the local bucket.
             object_name (str): Key (path) of the file in the local repo.
             download_loc (str): Local path where the file should be downloaded.
 
@@ -67,8 +67,7 @@ class LocalArtifacts():
             # Check if the response indicates success.
             if response == None:  
                 return object_name, download_loc, True
-            else:
-                return  object_name, download_loc, False
+            return  object_name, download_loc, False
         except Exception as e:
             return  object_name, download_loc, False
 
@@ -84,8 +83,7 @@ class LocalArtifacts():
 
         Args:
             current_directory (str): The current working directory .
-            bucket_name (str): Name of the local bucket.
-            object_name (str): Key (path) of the .dir object in the local bucket.
+            object_name (str): Key (path) of the .dir object in the local repository.
             download_loc (str): Local directory path where the directory should be downloaded.
 
         Returns:
@@ -113,9 +111,6 @@ class LocalArtifacts():
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/dir"
         try:
-            # Download the .dir file containing metadata about tracked files.
-            response = self.fs.get_file(object_name, temp_dir)
-            
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 
@@ -155,8 +150,7 @@ class LocalArtifacts():
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False  
+            return total_files_in_directory, files_downloaded, False  
         # this exception is for get_file() function for object_name
         except Exception as e:
             print(f"object {object_name} is not downloaded.")
