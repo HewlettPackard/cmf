@@ -210,7 +210,6 @@ const Executions = () => {
                           ) {
                             return (
                               <button
-                                class="px-4 py-2 border-none"
                                 key={pageNumber}
                                 onClick={() => handlePageClick(pageNumber)}
                                 className={`px-4 py-2 border-none pagination-button ${
