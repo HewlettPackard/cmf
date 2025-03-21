@@ -14,14 +14,14 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
+import argparse
 import textwrap
-import pandas as pd
 
-from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
 from tabulate import tabulate
+from cmflib.utils.helper_functions import display_table
+from cmflib.cli.command import CmdBase
 from cmflib.cmf_exception_handling import (
     PipelineNotFound,
     FileNotFound,
@@ -32,54 +32,6 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdExecutionList(CmdBase):
-
-    def display_table(self, df: pd.DataFrame) -> None:
-        """
-        Display the DataFrame in a paginated table format with text wrapping for better readability.
-        Parameters:
-        - df: The DataFrame to display.
-        """
-        # Rearranging columns
-        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
-        df = df[updated_columns]
-        df = df.copy()
-       
-        # Wrap text in object-type columns to a width of 14 characters.
-        # This ensures that long strings are displayed neatly within the table.
-        for col in df.select_dtypes(include=["object"]).columns:
-            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
-
-        total_records = len(df)
-        start_index = 0  
-
-        # Display up to 20 records per page for better readability. 
-        # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
-        while True:
-            end_index = start_index + 20
-            records_per_page = df.iloc[start_index:end_index]
-            
-            # Display the table.
-            table = tabulate(
-                records_per_page,
-                headers=df.columns,
-                tablefmt="grid",
-                showindex=False,
-            )
-            print(table)
-
-            # Check if we've reached the end of the records.
-            if end_index >= total_records:
-                print("\nEnd of records.")
-                break
-
-            # Ask the user for input to navigate pages.
-            user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
-            if user_input == 'q':
-                break
-            
-            # Update start index for the next page.
-            start_index = end_index 
-
     def run(self):
         cmd_args = {
             "file_name": self.args.file_name,
@@ -152,7 +104,7 @@ class CmdExecutionList(CmdBase):
                     return MsgSuccess(msg_str = "Done.")
                 return ExecutionUUIDNotFound(self.args.execution_uuid[0])
     
-            self.display_table(df)             
+            display_table(df, ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"])             
             return MsgSuccess(msg_str = "Done.")
     
     
