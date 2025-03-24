@@ -14,11 +14,11 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
+import argparse
 
-from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
+from cmflib.cli.command import CmdBase
 from cmflib.cmf_exception_handling import (
     FileNotFound, 
     DuplicateArgumentNotAllowed, 

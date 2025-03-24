@@ -16,8 +16,9 @@
 
 import json
 import os
-from cmflib import cmf
 import traceback
+
+from cmflib import cmf
 from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -197,7 +198,6 @@ def create_original_time_since_epoch(mlmd_data):
             i["custom_properties"]["original_create_time_since_epoch"]
         )
         stages.append(i["create_time_since_epoch"])
-        # print(i['custom_properties']['original_create_time_since_epoch'])
         for j in i["executions"]:
             j["custom_properties"]["original_create_time_since_epoch"] = j[
                 "create_time_since_epoch"
@@ -206,7 +206,6 @@ def create_original_time_since_epoch(mlmd_data):
                 j["custom_properties"]["original_create_time_since_epoch"]
             )
             execution.append(j["create_time_since_epoch"])
-            # print(j['custom_properties']['original_create_time_since_epoch'])
             for k in j["events"]:
                 k["artifact"]["custom_properties"][
                     "original_create_time_since_epoch"
@@ -217,6 +216,5 @@ def create_original_time_since_epoch(mlmd_data):
                     ]
                 )
                 artifact.append(k["artifact"]["create_time_since_epoch"])
-                # print(k['artifact']['custom_properties']['original_create_time_since_epoch'])
-
+                
     return mlmd_data

@@ -14,8 +14,6 @@
 # limitations under the License.
 ###
 
-import os
-import subprocess
 from cmflib.dvc_wrapper import dvc_get_config
 
 # This class handles pulls dvc configuration

@@ -61,8 +61,7 @@ class SSHremoteArtifacts:
             ssh.close()
             if response:
                 return object_name, abs_download_loc, True
-            else:
-                return  object_name, abs_download_loc, False
+            return  object_name, abs_download_loc, False
         except Exception as e:
             # this exception is for function sftp.put()
             sftp.close()
@@ -94,7 +93,6 @@ class SSHremoteArtifacts:
             # creates subfolders needed as per artifacts' folder structure
             os.makedirs(dir_path, mode=0o777, exist_ok=True) 
 
-        response = ""
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
                                                
         """"
@@ -108,7 +106,6 @@ class SSHremoteArtifacts:
         # download .dir object
         temp_dir = f"{abs_download_loc}/temp_dir"
         try:
-            response = sftp.put(object_name, temp_dir)
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 
@@ -153,8 +150,7 @@ class SSHremoteArtifacts:
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False  
+            return total_files_in_directory, files_downloaded, False  
         except Exception as e:
             sftp.close()
             ssh.close()

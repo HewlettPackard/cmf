@@ -18,11 +18,11 @@ import os
 import subprocess
 import dvc.api
 import dvc.exceptions
+
 from typing import List, Optional
 
 def check_git_remote() -> bool:
     process = ""
-    commit = ""
     git_remote_configured = False
     try:
         process = subprocess.Popen(['git', 'remote', 'show'],
@@ -42,7 +42,6 @@ def check_git_remote() -> bool:
 
 def check_default_remote() -> bool:
     process = ""
-    commit = ""
     dvc_configured = False
     try:
         process = subprocess.Popen(['dvc', 'config', 'core.remote'],
@@ -101,9 +100,7 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
 
 
 def check_git_repo() -> bool:
-
     process = ""
-    commit = ""
     is_git_repo = False
     try:
         process = subprocess.Popen(['git',
@@ -123,9 +120,7 @@ def check_git_repo() -> bool:
 
 
 def git_checkout_new_branch(branch_name: str):
-
     process = ""
-    commit = ""
     try:
         process = subprocess.Popen(['git',
                                     'checkout',
@@ -136,8 +131,6 @@ def git_checkout_new_branch(branch_name: str):
                                    universal_newlines=True)
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)
-
-        commit = output.strip()
         print(f"*** Note: CMF will check out a new branch in git to commit the metadata files ***\n"
               f"*** The checked out branch is {branch_name}. ***")
     except Exception as err:
@@ -206,6 +199,7 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
         print(f"Unexpected {errs}")
     return commit
 
+
 def git_commit(execution_id: str) -> str:
     commit = ""
     process = None
@@ -232,6 +226,7 @@ def git_commit(execution_id: str) -> str:
            print(f"Unexpected {outs}")
            print(f"Unexpected {errs}")
     return commit
+
 
 def commit_output(folder: str, execution_id: str) -> str:
     commit = ""
@@ -299,6 +294,7 @@ def git_get_repo() -> str:
         print(f"Unexpected {errs}")
     return commit.split()[1]
 
+
 #Initialise git with quiet option
 def git_quiet_init() -> str:
     commit = ""
@@ -338,6 +334,7 @@ def git_initial_commit() -> str:
            print(f"Unexpected {errs}")
     return commit
 
+
 # Add a remote repo url
 def git_add_remote(git_url) -> str:
     commit = ""
@@ -356,6 +353,7 @@ def git_add_remote(git_url) -> str:
            print(f"Unexpected {outs}")
            print(f"Unexpected {errs}")
     return commit
+
 
 # dvc init with quiet option
 def dvc_quiet_init() -> str:
@@ -376,6 +374,7 @@ def dvc_quiet_init() -> str:
            print(f"Unexpected {errs}")
     return commit
 
+
 # add repo in dvc
 def dvc_add_remote_repo(repo_type, repo_path) -> str:
     commit = ""
@@ -394,6 +393,7 @@ def dvc_add_remote_repo(repo_type, repo_path) -> str:
            print(f"Unexpected {outs}")
            print(f"Unexpected {errs}")
     return commit
+
 
 # add repo related attributes in dvc
 def dvc_add_attribute(repo_type, attribute_type, attribute_value) -> str:
@@ -495,6 +495,7 @@ def git_modify_remote_url(git_url) -> str:
            print(f"Unexpected {errs}")
     return commit
 
+
 # Pulling code from branch
 def git_get_pull(branch_name: str) -> str:
     process = subprocess.Popen(f'git pull cmf_origin {branch_name}', 
@@ -509,6 +510,7 @@ def git_get_pull(branch_name: str) -> str:
                 process.returncode
             )
 
+
 # Pusing code inside branch
 def git_get_push(branch_name: str) -> str:
     process = subprocess.Popen(f'git push -u cmf_origin {branch_name}', 
@@ -522,6 +524,7 @@ def git_get_push(branch_name: str) -> str:
                 stderr.decode('utf-8').strip() if stderr else '',
                 process.returncode
             )
+
 
 # Getting current branch
 def git_get_branch() -> tuple:

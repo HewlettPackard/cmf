@@ -15,18 +15,18 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
+import argparse
+
 from cmflib import cmf_merger
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import find_root
-from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import fetch_cmf_config_path
+from cmflib.server_interface import server_interface
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
     MissingArgument,
-    CmfNotConfigured, 
     ExecutionUUIDNotFound,
     MlmdNotFoundOnServer,
     MlmdFilePullSuccess,
@@ -41,14 +41,9 @@ from cmflib.cmf_exception_handling import (
 class CmdMetadataPull(CmdBase):
 
     def run(self):
-        cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
-        # find root_dir of .cmfconfig
-        output = find_root(cmfconfig)
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is not configured") != -1:
-            raise CmfNotConfigured(output)
-        config_file_path = os.path.join(output, cmfconfig)
-        attr_dict = CmfConfig.read_config(config_file_path)
+        output, cmf_config_path = fetch_cmf_config_path()
+        
+        attr_dict = CmfConfig.read_config(cmf_config_path)
         url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
         current_directory = os.getcwd()
         full_path_to_dump = ""
@@ -91,12 +86,12 @@ class CmdMetadataPull(CmdBase):
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
+        
         # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
         if output.content.decode() == None:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
-      
         elif output.content:
             if status == 200:
                 try:
