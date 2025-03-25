@@ -58,7 +58,7 @@ RUN pip install /cmf-server/dist/*
 COPY ./server/app /cmf-server/server/app
 
 # Run the server with uvicorn
-CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 RUN cd /cmf-server/data/static
 

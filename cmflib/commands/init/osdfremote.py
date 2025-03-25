@@ -41,13 +41,13 @@ class CmdInitOSDFRemote(CmdBase):
         if not os.path.exists(cmf_config):
             # writing default value to config file
             attr_dict = {}
-            attr_dict["server-ip"] = "http://127.0.0.1:80"
+            attr_dict["server-url"] = "http://127.0.0.1:80"
             CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
         # if user gave --cmf-server-url, override the config file
         if self.args.cmf_server_url:
             attr_dict = {}
-            attr_dict["server-ip"] = self.args.cmf_server_url
+            attr_dict["server-url"] = self.args.cmf_server_url
             CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
 
         # read --neo4j details and add to the exsting file
