@@ -69,20 +69,48 @@ void log_metric(const char *key, const char **dict_keys, const char **dict_value
     // Populate the dictionary
     for (int i = 0; i < dict_size; i++) {
         PyObject *pValue = NULL;
-
-        // Check if the value is an integer
-        int is_integer = 1;
+        int is_integer = 1, is_float = 1;
+        int has_comma = 0;
+        
+        // Check value type
         for (const char *ch = dict_values[i]; *ch != '\0'; ch++) {
-            if (!isdigit(*ch) && *ch != '-') {  // Allow negative numbers
+            if (!isdigit(*ch) && *ch != '-' && *ch != '.') {
+                if (*ch == ',') {
+                    has_comma = 1;
+                } else {
+                    is_integer = 0;
+                    is_float = 0;
+                    break;
+                }
+            }
+            if (*ch == '.') {
                 is_integer = 0;
-                break;
             }
         }
-
-        if (is_integer) {
-            pValue = PyLong_FromLong(atoi(dict_values[i]));  // Convert to Python integer
+        
+        if (has_comma) {
+            // Convert comma-separated values to a Python list
+            PyObject *pList = PyList_New(0);
+            char *token = strtok(strdup(dict_values[i]), ",");
+            while (token) {
+                PyObject *pElem = PyUnicode_FromString(token);
+                if (!pElem) {
+                    printf("Failed to convert list element to Python object!\n");
+                    Py_DECREF(pList);
+                    Py_DECREF(pDict);
+                    return;
+                }
+                PyList_Append(pList, pElem);
+                Py_DECREF(pElem);
+                token = strtok(NULL, ",");
+            }
+            pValue = pList;
+        } else if (is_integer) {
+            pValue = PyLong_FromLong(atoi(dict_values[i]));
+        } else if (is_float) {
+            pValue = PyFloat_FromDouble(atof(dict_values[i]));
         } else {
-            pValue = PyUnicode_FromString(dict_values[i]);   // Convert to Python string
+            pValue = PyUnicode_FromString(dict_values[i]);
         }
 
         if (!pValue) {
@@ -92,7 +120,7 @@ void log_metric(const char *key, const char **dict_keys, const char **dict_value
         }
 
         PyDict_SetItemString(pDict, dict_keys[i], pValue);
-        Py_DECREF(pValue);  // Reduce reference count as PyDict_SetItemString doesn't steal it
+        Py_DECREF(pValue);
     }
 
     // Call Python function with key and dictionary as arguments
@@ -107,6 +135,7 @@ void log_metric(const char *key, const char **dict_keys, const char **dict_value
         Py_DECREF(result);
     }
 }
+
 // Commit metrics function
 void commit_metrics(const char *metrics_name) {
     if (!Cmf.cmf_pyobject) {
