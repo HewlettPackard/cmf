@@ -6,7 +6,7 @@ import typing as t
 from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
-from datetime import datetime
+import time
 
 # Converts sync functions to async
 async def async_api(function_to_async, mlmdfilepath: str, *argv):
@@ -386,10 +386,10 @@ def get_unique_executions(server_store_path: str, client_mlmd_json: str) -> list
     for stage in mlmd_data["Pipeline"][0]["stages"]:
         for execution in stage["executions"]:
             if execution["properties"]["Execution_uuid"] in new_executions:
-                utc_time = int(datetime.utcnow().timestamp())
+                utc_time_epoch = int(time.time() * 1000)
                 unique_executions.append({
                     "Execution_uuid": execution["properties"]["Execution_uuid"],
-                    "utc_time": utc_time
+                    "last_sync_time": utc_time_epoch
                 })
 
     return unique_executions
