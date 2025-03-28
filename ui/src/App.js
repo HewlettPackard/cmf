@@ -21,6 +21,7 @@ import Artifacts from "./pages/artifacts";
 import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
+import Metahub from "./pages/metahub";
 import "./App.css";
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
           <Route exact path="/executions" element={<Executions />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
           <Route exact path="/tensorboard" element={<TensorBoard />} />
+          <Route exact path="/metahub" element={<Metahub />} />
         </Routes>
       </BrowserRouter>
     </div>

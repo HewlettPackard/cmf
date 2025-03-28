@@ -33,7 +33,15 @@ from pathlib import Path
 import os
 import json
 import typing as t
-from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
+from server.app.schemas.dataframe import (
+    MLMDPushRequest, 
+    ExecutionRequest, 
+    ArtifactRequest, 
+    ServerRegistrationRequest, 
+    AcknowledgeRequest,
+)
+import httpx
+from datetime import datetime
 
 server_store_path = "/cmf-server/data/mlmd"
 
@@ -415,6 +423,54 @@ async def get_python_env(file_name: str) -> str:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
+
+@app.post("/server-registration")
+async def register_server(request: ServerRegistrationRequest):
+    try:
+        # Access the data from the Pydantic model
+        server_name = request.server_name
+        server_ip = request.server_ip
+
+        # Step 1: Send a request to the target server
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(
+                    f"http://{server_ip}:8000/acknowledge",
+                    json={"server_name": server_name, "server_ip": server_ip}
+                )
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Target server did not respond successfully")
+                target_server_data = response.json()
+            except httpx.RequestError:
+                raise HTTPException(status_code=500, detail="Target server is not reachable")
+
+        # Step 2: Store the server details in a dictionary or in-memory data structure
+        # here we are using db but for now i have stored server 2 details inside list of dict
+        registered_servers = []
+        registered_servers.append({
+            "server_name": server_name,
+            "server_ip": server_ip,
+            "connected_at": datetime.now().isoformat()
+        })
+
+        # Step 3: Return the response from the target server
+        return {
+            "message": f"Server '{server_name}' registered successfully with IP {server_ip}",
+            "target_server_response": target_server_data
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to register server: {e}")
+    
+
+@app.post("/acknowledge")
+async def acknowledge(request: AcknowledgeRequest):
+    # Simulate sending metadata and acknowledging the request
+    return {
+        "message": f"Hi {request.server_name}, I acknowledge your request.",
+        "server_name": "TargetServer",
+        "server_ip": "192.168.1.100"
+    }
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids

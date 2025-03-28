@@ -40,3 +40,14 @@ class ExecutionRequest(BaseRequest):
 # Query parameters for artifact.
 class ArtifactRequest(BaseRequest):
     sort_field: str = Field("name", description="Column to sort by (default: name)")
+
+
+# Define a Pydantic model for the request body
+class ServerRegistrationRequest(BaseModel):
+    server_name: str
+    server_ip: str
+
+
+class AcknowledgeRequest(BaseModel):
+    server_name: str
+    server_ip: str

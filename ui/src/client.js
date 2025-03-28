@@ -166,6 +166,17 @@ class FastAPIClient {
       });
   }
 
+  async getServerRegistration(server_name, ip){
+    return this.apiClient
+      .post(`/server-registration`, {
+          server_name: server_name,
+          server_ip: ip,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
 }
 
 
