@@ -56,7 +56,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -141,13 +141,8 @@ class Cmf:
             Cmf.__prechecks()
             temp_store = SqlliteStore({"filename":filepath})
         else:
-            IP = os.getenv('MYIP')
-            POSTGRES_DB = os.getenv('POSTGRES_DB')
-            POSTGRES_USER = os.getenv('POSTGRES_USER')
-            POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-            config_dict = {"host":IP, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+            config_dict = get_postgres_config()
             temp_store = PostgresStore(config_dict)
-        #print("temp_store type", type(temp_store))
         if custom_properties is None:
             custom_properties = {}
         if not pipeline_name:
