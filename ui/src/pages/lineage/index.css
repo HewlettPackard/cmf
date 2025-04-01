@@ -24,41 +24,11 @@ body {
 .bloc-tabs {
   display: flexs;
 }
-.tabs {
-  padding: 8px;
-  text-align: center;
-  width: 100%;
-  background: rgba(128, 128, 128, 0.075);
-  cursor: pointer;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.274);
-  box-sizing: content-box;
-  position: relative;
-  outline: none;
-}
-.tabs:not(:last-child) {
-  border-right: 1px solid rgba(0, 0, 0, 0.274);
-}
-
-.active-tabs {
-  background: white;
-  border-bottom: 1px solid transparent;
-}
-.active-tabs::before {
-  content: "";
-  display: block;
-  position: absolute;
-  top: -5px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% + 2px);
-  height: 5px;
-  background: rgb(88, 147, 241);
-}
-
 button {
   border: none;
   padding: 10px 24px;
 }
+
 .content-tabs {
   flex-grow: 1;
 }
@@ -84,4 +54,21 @@ button {
 }
 .active-content {
   display: block;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-select {
+  margin-top: 8px;
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  border: 2px solid black;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
 }

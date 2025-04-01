@@ -18,60 +18,108 @@
 import argparse
 import json
 import os
+
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound,
+    FileNotFound,
+    DuplicateArgumentNotAllowed,
+    MissingArgument,
+    NoChangesMadeInfo,
+    MetadataExportToJson,
+    DirectoryNotfound,
+    MsgFailure
+)
 
 # This class export local mlmd data to a json file
 class CmdMetadataExport(CmdBase):
+    def create_full_path(self, current_directory: str, json_file_name: str) -> str:
+        if not os.path.isdir(json_file_name):
+            temp = os.path.dirname(json_file_name)
+            current_directory = './'
+            if temp != "":
+                current_directory = temp
+            if os.path.exists(current_directory):
+                full_path_to_dump  = json_file_name
+                return full_path_to_dump
+            else:
+                raise DirectoryNotfound(current_directory)
+        else:
+            raise MsgFailure(msg_str = "Provide path with file name.")
+        
     def run(self):
-
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name,
+            "json_file_name": self.args.json_file_name
+        }  
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
+         
         current_directory = os.getcwd()
         full_path_to_dump = ""
 
-        mlmd_file_name = "./mlmd"
-
-        # checks if mlmd filepath is given
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
-            current_directory = os.path.dirname(self.args.file_name)
-
-        # checks if mlmd file is present in current directory or given directory
-        if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in the {current_directory}."
-
-
-        # setting directory where mlmd file will be dumped
-        if self.args.json_file_name:
-            if not os.path.isdir(self.args.json_file_name):
-                temp = os.path.dirname(self.args.json_file_name)
-                if temp != "":
-                    current_directory = temp
-                if os.path.exists(current_directory):
-                    full_path_to_dump  = self.args.json_file_name
-                else:
-                    return f"{current_directory} doesn't exists."
-            else:
-                return "Provide path with file name."
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
         else:
-            full_path_to_dump = os.getcwd() + f"/{self.args.pipeline_name}.json"
+            mlmd_file_name = self.args.file_name[0].strip() # Removing starting and ending whitespaces.
+            if mlmd_file_name == "mlmd":
+                mlmd_file_name = "./mlmd"
+        
+        current_directory = os.path.dirname(mlmd_file_name)
+        if not os.path.exists(mlmd_file_name): 
+            raise FileNotFound(mlmd_file_name, current_directory)
 
-        # initialising cmfquery class
+        # Initialising cmfquery class.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
-        # check if pipeline exists in mlmd 
-        pipeline = query.get_pipeline_id(self.args.pipeline_name)
+        pipeline_name = self.args.pipeline_name[0]
+        pipeline = query.get_pipeline_id(pipeline_name)
 
         if pipeline > 0:
-            # pulling data from local mlmd file
-            json_payload = query.dumptojson(self.args.pipeline_name,None)
+            if not self.args.json_file_name:         # If self.args.json_file_name is None or an empty list ([]). 
+                json_file_name = self.args.json_file_name
+            else:
+                json_file_name = self.args.json_file_name[0].strip()
 
-            # write metadata into json file
+            # Setting directory where mlmd file will be dumped.
+            if json_file_name:
+                if not json_file_name.endswith(".json"):
+                    json_file_name = json_file_name+".json" # Added .json extention to json file name.
+                if os.path.exists(json_file_name): 
+                    userRespone = input("File name already exists do you want to continue press yes/no: ")
+                    if userRespone.lower() == "yes":    # Overwrite file.
+                        full_path_to_dump = self.create_full_path(current_directory, json_file_name)
+                    else: 
+                        raise NoChangesMadeInfo()
+                else:  
+                    full_path_to_dump = self.create_full_path(current_directory, json_file_name)
+            else: 
+                # Checking whether a json file exists in the directory based on pipeline name.
+                if os.path.exists(f"{pipeline_name}.json"): 
+                    userRespone = input("File name already exists do you want to continue press yes/no: ")
+                    if userRespone.lower() == "yes":
+                        full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
+                    else:
+                        raise NoChangesMadeInfo()
+                else:  
+                    full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
+
+            # Pulling data from local mlmd file.
+            json_payload = query.dumptojson(pipeline_name, None)
+
+            # Write metadata into json file.
             with open(full_path_to_dump, 'w') as f:
                 f.write(json.dumps(json.loads(json_payload),indent=2))
-                return f"SUCCESS: metadata successfully exported in {full_path_to_dump}."
+                return MetadataExportToJson(full_path_to_dump)
         else:
-            return f"{self.args.pipeline_name} doesn't exists in {mlmd_file_name}!!"
+            raise PipelineNotFound(pipeline_name)
+            
 
 
 def add_parser(subparsers, parent_parser):
@@ -89,6 +137,7 @@ def add_parser(subparsers, parent_parser):
     required_arguments.add_argument(
         "-p",
         "--pipeline_name",
+        action="append",
         required=True,
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
@@ -97,12 +146,17 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-j",
         "--json_file_name",
-        help="Specify json file name with full path.",
+        action="append",
+        help="Specify output json file name with full path.",
         metavar="<json_file_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify the absolute or relative path for the input MLMD file.", 
+        metavar="<file_name>",
     )
 
     parser.set_defaults(func=CmdMetadataExport)

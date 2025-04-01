@@ -34,11 +34,12 @@ def query_execution_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_e
     #finding execution_id by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid ('Prepare_u3tr')  
     result = df[df['Execution_uuid'].str[:4] == uuid]   #result = df[id: "1","Execution_type_name", "Execution_uuid"]
     execution_id=result["id"].tolist() 
+    # Return error if no execution ID is found for the given uuid
+    if not execution_id:  
+        return {"error": f"uuid '{uuid}' does not match any execution in pipeline '{pipeline_name}'"}
     parents_set = set()
     queue = UniqueQueue()
     df = pd.DataFrame()
-
-
     parents = query.get_one_hop_parent_executions_ids(execution_id, pipeline_id) #list of parent execution ids
     dict_parents = {}
     if parents == None:
@@ -108,7 +109,26 @@ def topological_sort(input_data,execution_id_dict):
     return output_data
 
 def modify_exec_name(exec_name_uuid):
-    after_first_slash=exec_name_uuid.split('/', 1)[1]
-    name='_'.join(after_first_slash.rsplit('_', 1)[:-1])# 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> Prepare  
-    uuid=exec_name_uuid.split('_')[-1].split('-')[0][:4] # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ---> d09f 
-    return (name +"_"+uuid)   # Prepare_d09f
+    # First split by '/' once, and then split by '_' to get the parts.
+    # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ------->  'Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'
+    # "huggingface_leaderboard/Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5" ---------> 'Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5'
+    after_first_slash = exec_name_uuid.split('/', 1)[1]
+
+    # Use rsplit only once to get the name and uuid parts.
+    # 'Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' --------> ['Prepare','d09fdb26-0e9d-11ef-944f-4bf54f5aca7f']
+    # 'Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5' ----> ['Evaluation_2_01-ai/Yi-34B', '1eb053ac-c143-11ee-8b31-996711f273d5']
+    name_and_uuid = after_first_slash.rsplit('_', 1)
+    
+    # Name comes from the first part (before the last '_')
+    #  ['Prepare','d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'] ----> ['Prepare]
+    # ['Evaluation_2_01-ai/Yi-34B', '1eb053ac-c143-11ee-8b31-996711f273d5'] -----> ['Evaluation_2_01-ai/Yi-34B']
+    name = name_and_uuid[0]
+
+    # UUID is taken from the last part of the rsplit (after the last '_')
+    # 'd09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ----->  d09f
+    # '1eb053ac-c143-11ee-8b31-996711f273d5' -----> 1eb0
+    uuid = name_and_uuid[1].split('-')[0][:4]
+
+    # Combine the name and shortened UUID
+    result = name + "_" + uuid
+    return result

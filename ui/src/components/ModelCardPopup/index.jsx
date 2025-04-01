@@ -1,7 +1,7 @@
 import React from "react";
 import "./index.css"; // Optional: For styling the popup
 
-const Popup = ({ show, model_data, onClose }) => {
+const ModelCardPopup = ({ show, model_data, onClose }) => {
   if (!show) {
     return null;
   }
@@ -173,11 +173,11 @@ const Popup = ({ show, model_data, onClose }) => {
       />
       <div className="popup-overlay">
         <div className="popup">
-        <div className="popup-border">
+          <div className="popup-border">
             <button onClick={onClose} className="close-button">
-             X
+              X
             </button>
-        </div>
+          </div>
           <button className="download-button" onClick={downloadJSON}>
             <i className="fa fa-download"></i>
           </button>
@@ -198,4 +198,4 @@ const Popup = ({ show, model_data, onClose }) => {
   );
 };
 
-export default Popup;
+export default ModelCardPopup;

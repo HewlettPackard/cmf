@@ -1,0 +1,31 @@
+.metadata {
+  text-decoration: none; /* Remove underline from link */
+  padding: 6px 12px; /* Padding to make it look like a button */
+  color: black; /* Text color */
+  background-color: white; /* Initial background color */
+  border-radius: 20px; /* Rounded corners */
+  border: none; /* No border */
+  transition: background-color 0.3s ease; /* Smooth transition on hover */
+  display: inline-block; /* To make padding apply properly */
+}
+
+.metadata:hover {
+  background-color: #f4f4f4f4; /* Change background color on hover */
+  cursor: pointer; /* Change cursor to pointer */
+  color: black;
+}
+
+.metadata.active {
+  color: black; /* Change color of the active link */
+  background-color: #f4f4f4f4;
+}
+
+.cmf-server,
+.cmf-server.active .cmf-server.hover {
+  background-color: #01a982; /* Change background color on hover */
+  cursor: pointer; /* Change cursor to pointer */
+  color: black;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: none;
+}

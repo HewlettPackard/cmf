@@ -7,6 +7,10 @@ from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_list_of_executions import query_list_of_executions
 
+# Converts sync functions to async
+async def async_api(function_to_async, mlmdfilepath: str, *argv):
+    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
+
 async def get_model_data(mlmdfilepath, modelId):
     '''
       This function retrieves the necessary model data required for generating a model card.
@@ -59,7 +63,7 @@ async def get_model_data(mlmdfilepath, modelId):
     if not exe_ids:
          return model_data_df, model_exe_df, model_input_df, model_output_df
     model_exe_df = query.get_all_executions_by_ids_list(exe_ids)
-    model_exe_df.drop(columns=['Python_Env', 'Git_Start_Commit', 'Git_End_Commit'], inplace=True)
+    model_exe_df.drop(columns=['Git_Start_Commit', 'Git_End_Commit'], inplace=True)
 
     in_art_ids =  []
     # input artifacts
@@ -78,9 +82,6 @@ async def get_model_data(mlmdfilepath, modelId):
 
     return model_data_df, model_exe_df, model_input_df, model_output_df
 
-#Converts sync functions to async
-async def async_api(function_to_async, mlmdfilepath: str, *argv):
-    return await run_in_threadpool(function_to_async, mlmdfilepath, *argv)
 
 def get_executions(mlmdfilepath: str, pipeline_name, exe_ids) -> pd.DataFrame:
     '''
@@ -218,16 +219,24 @@ def create_unique_executions(server_store_path, req_info) -> str:
     Args:
        server_store_path = mlmd file path on server
     Returns:
-       Status of parse_json_to_mlmd
-           "exists": if execution already exists on cmf-server
-           "success": execution pushed successfully on cmf-server 
+       str: A status message indicating the result of the operation:
+            - "exists": Execution already exists on the CMF server.
+            - "success": Execution successfully pushed to the CMF server.
+            - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
+            - "pipeline_not_exist": If the provided pipeline name does not match the one in the payload. 
     """
     mlmd_data = json.loads(req_info["json_payload"])
-    pipelines = mlmd_data["Pipeline"]
+    # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
+    pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
+    if not pipelines:
+        return "invalid_json_payload"  # No pipelines found in payload
     pipeline = pipelines[0]
-    pipeline_name = pipeline["name"]
+    pipeline_name = pipeline.get("name")  # Extract pipeline name, use .get() to avoid KeyError
     if not pipeline_name:
-        return {"error": "Pipeline name is required"}
+        return "invalid_json_payload"  # Missing pipeline name
+    req_pipeline_name = req_info["pipeline_name"]
+    if req_pipeline_name != pipeline_name:
+        return "pipeline_not_exist"  # Mismatch between provided pipeline name and payload
     executions_server = []
     list_executions_exists = []
     if os.path.exists(server_store_path):
@@ -258,50 +267,82 @@ def create_unique_executions(server_store_path, req_info) -> str:
                     for uuid in uuids:
                         if uuid in list_executions_exists:
                             stage['executions'].remove(cmf_exec)
-
+        
         for i in mlmd_data["Pipeline"]:
             i['stages']=[stage for stage in i['stages'] if stage['executions']!=[]]
+            
     for i in mlmd_data["Pipeline"]:
+
         if len(i['stages']) == 0 :
             status="exists"
         else:
             cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["id"]
+                json.dumps(mlmd_data), "/cmf-server/data/mlmd", "push", req_info["exec_uuid"]
             )
             status='success'
 
     return status
 
 
-def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_id: str):
+def get_mlmd_from_server(server_store_path: str, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: dict):
+    """
+    Retrieves metadata from the server for a given pipeline and execution UUID.
+
+    Args:
+        server_store_path (str): The path to the server store.
+        pipeline_name (str): The name of the pipeline.
+        exec_uuid (str): The execution UUID.
+        dict_of_exe_ids (dict): A dictionary containing execution IDs for pipelines.
+
+    Returns:
+        json_payload (str or None): The metadata in JSON format if found, "no_exec_uuid" if the execution UUID is not found, or None if the pipeline name is not available.
+    """
     query = cmfquery.CmfQuery(server_store_path)
     json_payload = None
-    df = pd.DataFrame()
+    flag=False
     if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
-        if exec_id != None:
-            exec_id = int(exec_id)
-            df = query.get_all_executions_by_ids_list([exec_id])
-            if df.empty:
-                json_payload = "no_exec_id"
+        if exec_uuid != None:
+            dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+            for index, row in dict_of_exe_ids.iterrows():
+                exec_uuid_list = row['Execution_uuid'].split(",")
+                if exec_uuid in exec_uuid_list:
+                    flag=True
+                    break
+            if not flag:
+                json_payload = "no_exec_uuid"
                 return json_payload
-        json_payload = query.dumptojson(pipeline_name, exec_id)
+        json_payload = query.dumptojson(pipeline_name, exec_uuid)
     return json_payload
 
-def get_lineage_data(server_store_path,pipeline_name,type,dict_of_art_ids,dict_of_exe_ids):
+def get_lineage_data(
+        server_store_path, 
+        pipeline_name, type,
+        dict_of_art_ids,
+        dict_of_exe_ids):
+    """
+    Retrieves lineage data based on the specified type.
+
+    Parameters:
+    server_store_path (str): The path to the server store.
+    pipeline_name (str): The name of the pipeline.
+    type (str): The type of lineage data to retrieve. Can be "Artifacts" or "Execution".
+    dict_of_art_ids (dict): A dictionary of artifact IDs.
+    dict_of_exe_ids (dict): A dictionary of execution IDs.
+
+    Returns:
+    dict or list: 
+        - If type is "Artifacts", returns a dictionary with nodes and links for artifact lineage.
+                lineage_data= {
+                    nodes:[],
+                    links:[]
+                }
+        - If type is "Execution", returns a list of execution types for the specified pipeline.
+        - Otherwise, returns visualization data for artifact execution.
+    """
     if type=="Artifacts":
         lineage_data = query_artifact_lineage_d3force(server_store_path, pipeline_name, dict_of_art_ids)
-        '''
-        returns dictionary of nodes and links for artifact lineage.
-        lineage_data= {
-                       nodes:[],
-                       links:[]
-                      }
-        '''
     elif type=="Execution":
         lineage_data = query_list_of_executions(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
-        '''
-        returns list of execution types for specific pipeline.
-        '''
     else:
         lineage_data = query_visualization_ArtifactExecution(server_store_path, pipeline_name)
     return lineage_data

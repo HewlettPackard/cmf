@@ -1,17 +1,17 @@
 .text-group {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 .truncated-text {
-    /* Style for truncated text, adjust as needed */
-    font-size: 12px;
-    font-weight: bold;
-    fill: black;
+  /* Style for truncated text, adjust as needed */
+  font-size: 12px;
+  font-weight: bold;
+  fill: black;
 }
 
 .full-text {
-    /* Style for full text, adjust as needed */
-    font-size: 12px;
-    font-weight: bold;
-    fill: black;
+  /* Style for full text, adjust as needed */
+  font-size: 12px;
+  font-weight: bold;
+  fill: black;
 }

@@ -23,7 +23,30 @@ from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from typing import Union
 
-def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[str, int]) -> Union[str, None]:
+def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union[str, str]) -> Union[str, None]:
+    """
+    Parses a JSON string representing ML Metadata (MLMD) and stores it in a specified path.
+    Args:
+        mlmd_json (str): A JSON string containing the MLMD data.
+        path_to_store (str): The file path where the MLMD data should be stored.
+        cmd (str): The command to execute. If "push", the original_time_since_epoch is added to the custom_properties.
+        exec_uuid (Union[str, str]): The execution UUID. If None, all executions are processed. If a specific UUID is provided, only executions with that UUID are processed.
+    Returns:
+        Union[str, None]: Returns a string message if an invalid execution UUID is given, otherwise returns None.
+    Raises:
+        Exception: If any error occurs during the parsing or storing process, an exception is raised and the error message is printed.
+    Notes:
+        - If the environment variable 'NEO4J_URI' is set, the graph is enabled.
+        - The function initializes a connection configuration and metadata store.
+        - The function iterates over all stages and executions in the MLMD data.
+        - If a context or execution already exists, it updates the custom properties.
+        - The function handles various artifact types (Dataset, Model, Metrics, Dataslice, Step_Metrics, Environment) and logs them accordingly.
+    """
+
+    # CONSTANTS
+    INPUT = 3
+    OUTPUT = 4
+
     try:
         mlmd_data = json.loads(mlmd_json)
         pipelines = mlmd_data["Pipeline"]
@@ -52,17 +75,16 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[s
                             graph=graph, is_server=True)
         
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
-            if exec_id is None:  #if exec_id is None we pass all the executions.
+            if exec_uuid is None:  #if exec_uuid is None we pass all the executions.
                 list_executions = [execution for execution in stage["executions"]]
-            elif exec_id is not None:  # elif exec_id is not None, we pass executions for that specific id.
+            elif exec_uuid is not None:  # elif exec_uuid is not None, we pass executions for that specific uuid.
                 list_executions = [
                     execution
                     for execution in stage["executions"]
-                    if execution["id"] == int(exec_id)
+                    if exec_uuid in execution['properties']["Execution_uuid"].split(",") 
                 ]
             else:
-                return "Invalid execution id given."
-
+                return "Invalid execution uuid given."
             for execution in list_executions:  # Iterates over all the executions
                 try:
                     _ = cmf_class.merge_created_context(
@@ -108,7 +130,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[s
 
                     try:
                         if artifact_type == "Dataset" :
-                            if event_type == 3 :
+                            if event_type == INPUT :
                                 event_io = "input" 
                             else:
                                 event_io = "output"    
@@ -120,7 +142,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[s
                                 custom_properties=custom_props,
                             )
                         elif artifact_type == "Model":
-                            if event_type == 3 :
+                            if event_type == INPUT :
                                 event_io = "input" 
                             else:
                                 event_io = "output"
@@ -135,9 +157,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_id: Union[s
                             cmf_class.log_execution_metrics_from_client(event["artifact"]["name"], custom_props)
                         elif artifact_type == "Dataslice":            
                             dataslice = cmf_class.create_dataslice(event["artifact"]["name"])
-                            dataslice.commit_existing(uri, custom_props)                    
+                            dataslice.log_dataslice_from_client(uri, props, custom_props)                    
                         elif artifact_type == "Step_Metrics":                          
-                            cmf_class.commit_existing_metrics(event["artifact"]["name"], uri, custom_props)
+                            cmf_class.log_step_metrics_from_client(event["artifact"]["name"], uri, props, 
+                                                                   custom_props)
+                        elif artifact_type == "Environment":
+                            cmf_class.log_python_env_from_client(artifact_name, uri, props)
                         else:
                             pass
                     except AlreadyExistsError as e:
@@ -195,6 +220,3 @@ def create_original_time_since_epoch(mlmd_data):
                 # print(k['artifact']['custom_properties']['original_create_time_since_epoch'])
 
     return mlmd_data
-
-
-

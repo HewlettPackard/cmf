@@ -244,7 +244,7 @@ class CmfQuery(object):
 
         Args:
             stage_id: Stage identifier.
-            execution_id: If not None, return only execution with this ID.
+            execution_id: If not None, return execution with this ID.
         Returns:
             List of executions matching input parameters.
         """
@@ -889,17 +889,14 @@ class CmfQuery(object):
                 )
         return df
 
-    def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
+    def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
         Args:
             pipeline_name: Name of an AI pipelines.
-            exec_id: Optional stage execution ID - filter stages by this execution ID.
+            exec_uuid: Optional stage execution_uuid - filter stages by this execution_uuid.
         Returns:
             Pipeline in JSON format.
         """
-        if exec_id is not None:
-            exec_id = int(exec_id)
-
         def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
             for attr in CONTEXT_LIST:
                 #Artifacts getattr call on Type was giving empty string, which was overwriting 
@@ -921,7 +918,7 @@ class CmfQuery(object):
             pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
             for stage in self._get_stages(pipeline.id):
                 stage_attrs = _get_node_attributes(stage, {"executions": []})
-                for execution in self._get_executions(stage.id, execution_id=exec_id):
+                for execution in self.get_all_executions_by_stage(stage.id, execution_uuid=exec_uuid):
                     # name will be an empty string for executions that are created with
                     # create new execution as true(default)
                     # In other words name property will there only for execution
@@ -950,24 +947,61 @@ class CmfQuery(object):
             pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
+    
+    def get_all_executions_for_artifact_id(self, artifact_id: int) -> pd.DataFrame:
+        """Return executions that consumed and produced given artifact.
 
-    """def materialize(self, artifact_name:str):
-       artifacts = self.store.get_artifacts()
-       for art in artifacts:
-           if art.name == artifact_name:
-               selected_artifact = art
-               break
-       for k, v in selected_artifact.custom_properties.items():
-           if (k == "Path"):
-               path = v
-           elif (k == "git_repo"):
-               git_repo = v
-           elif (k == "Revision"):
-               rev = v
-           elif (remote == "Remote"):
-               remote = v
-       
-       Cmf.materialize(path, git_repo, rev, remote)"""
+        Args:
+            artifact_name: Artifact id.
+        Returns:
+            Pandas data frame containing stage executions, one execution per row.
+        """
+        df = pd.DataFrame()
+
+        try:
+            for event in self.store.get_events_by_artifact_ids([artifact_id]):
+                stage_ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
+                linked_execution = {
+                    "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
+                    "execution_id": event.execution_id,
+                    "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
+                    "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'],
+                    "stage": stage_ctx.name,
+                    "pipeline": self.store.get_parent_contexts_by_context(stage_ctx.id)[0].name,
+                }
+                d1 = pd.DataFrame(
+                    linked_execution,
+                    index=[
+                        0,
+                    ],
+                )
+                df = pd.concat([df, d1], sort=True, ignore_index=True)
+        except:
+            return df
+        return df
+    
+    def get_all_executions_by_stage(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]:
+        """
+        Return executions of the given stage.
+
+        This function retrieves all executions associated with a specific stage.
+        If an execution UUID is provided, it filters the executions to include only those
+        that match the given UUID.
+        Args:
+            stage_id (int): Stage identifier.
+            execution_uuid (Optional[str]): If not None, return execution with this UUID.
+        Returns:
+            List[mlpb.Execution]: List of executions matching input parameters.
+        """
+        executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id)
+        if execution_uuid is None:
+            return executions
+        executions_with_uuid: t.List[mlpb.Execution] = []
+        for execution in executions:
+            exec_uuid_list = execution.properties['Execution_uuid'].string_value.split(",")
+            if execution_uuid in exec_uuid_list:
+                executions_with_uuid.append(execution)
+        return executions_with_uuid
 
 
 def test_on_collision() -> None:

@@ -2,9 +2,9 @@
 
 # cmf 
 ```
-Usage: cmf [-h] {init, artifact, metadata, executions, pipeline}
+Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
 ```
-The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, executions, pipeline and metadata.
+The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
 
 ## cmf init
 ```
@@ -185,6 +185,7 @@ Optional Arguments
 ### cmf init osdfremote 
 ```
 Usage: cmf init osdfremote [-h] --path [path] 
+                             --cache [cache]
                              --key-id [key_id]
                              --key-path [key_path] 
                              --key-issuer [key_issuer] 
@@ -196,11 +197,11 @@ Usage: cmf init osdfremote [-h] --path [path]
 ```
 `cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
 ```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 Required Arguments
 ```
-  --path [path]                        Specify FQDN for OSDF origin including including port and directory path
+  --path [path]                        Specify FQDN for OSDF origin including including port and directory path if any
   --key-id [key_id]                    Specify key_id for provided private key. eg. b2d3
   --key-path [key_path]                Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem
   --key-issuer [key_issuer]            Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX
@@ -208,6 +209,7 @@ Required Arguments
 ```
 Optional Arguments
 ```
+  --cache [cache]                     Specify FQDN for OSDF cache including including port and directory path if any
   -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
@@ -258,11 +260,11 @@ Optional Arguments
 ```
 ### cmf artifact list
 ```
-Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] -l
+Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] 
 ```
-`cmf artifact list` command display list of artifacts.
+`cmf artifact list` command displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
 ```
-cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' -l
+cmf artifact list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -a 'artifact_name' 
 ```
 Required Arguments
 ```
@@ -271,9 +273,8 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
-  -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name.
-  -l, --long                                            Specify in which format you want to saw artifacts[By default short].
+  -f [file_name], --file-name [file_name]               Specify the absolute or relative path for the input MLMD file. 
+  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.                                                   
 ```
 
 ## cmf metadata
@@ -283,11 +284,11 @@ Usage: cmf metadata [-h] {pull,push,export}
 `cmf metadata` push, pull or export the metadata file to and from the cmf-server, respectively.
 ### cmf metadata pull
 ```
-Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_id]
+Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_uuid]
 ```
 `cmf metadata pull` command pulls the metadata file from the cmf-server to the user's local machine.
 ```
-cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id'
+cmf metadata pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid'
 ```
 Required Arguments
 ```
@@ -295,17 +296,17 @@ Required Arguments
 ```
 Optional Arguments
 ```
--h, --help                                  show this help message and exit.
--e [exec_id], --execution [exec_id]         Specify execution id.
--f [file_name], --file_name [file_name]     Specify mlmd file name with full path(either relative or absolute).
+-h, --help                                                show this help message and exit.
+-e [exec_uuid], --execution_uuid [exec_uuid]              Specify execution uuid.
+-f [file_name], --file_name [file_name]                   Specify mlmd file name with full path(either relative or absolute).
 ```
 ### cmf metadata push
 ```
-Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_id] -t [tensorboard]
+Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
 ```
 `cmf metadata push` command pushes the metadata file from the local machine to the cmf-server.
 ```
-cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_id' -t '/path/to/tensorboard-log'
+cmf metadata push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t '/path/to/tensorboard-log'
 ```
 Required Arguments
 ```
@@ -313,10 +314,10 @@ Required Arguments
 ```
 Optional Arguments
 ```
-  -h, --help                                         show this help message and exit.
-  -f [file_name], --file_name [file_name]            Specify mlmd file name.
-  -e [exec_id], --execution [exec_id]                Specify execution id.
-  -t [tensorboard], --tensorboard [tensorboard]      Specify path to tensorboard logs for the pipeline.
+  -h, --help                                             show this help message and exit.
+  -f [file_name], --file_name [file_name]                Specify mlmd file name.
+  -e [exec_uuid], --execution [exec_uuid]                Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]          Specify path to tensorboard logs for the pipeline.
 ```
 ### cmf metadata export
 ```
@@ -328,55 +329,97 @@ cmf metadata export -p 'pipeline-name' -j '/path/to/json-file-name' -f '/path/to
 ```
 Required Arguments
 ```
--p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
+-p [pipeline_name], --pipeline_name [pipeline_name]        Specify Pipeline name.
 ```
 Optional Arguments
 ```
   -h, --help                                               show this help message and exit.
-  -f [file_name], --file_name [file_name]                  Specify mlmd file name.
-  -j [json_file_name], --json_file_name [json_file_name]   Specify json file name with full path.
+  -f [file_name], --file_name [file_name]                  Specify the absolute or relative path for the input MLMD file.
+  -j [json_file_name], --json_file_name [json_file_name]   Specify output json file name with full path.
 ```
 
-## cmf executions
+## cmf execution
 ```
-Usage: cmf executions [-h] {list}
+Usage: cmf execution [-h] {list}
 ```
-`cmf executions` list executions from or to the user configured repository.
+`cmf execution` command to displays executions from the MLMD file.
 ### cmf executions list
 ```
-Usage: cmf executions list [-h] -p [pipeline_name] -f [file_name] -e [execution_id] -l
+Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_uuid] 
 ```
-`cmf executions list` command display list of executions in current cmf configuration.
+`cmf execution list` command to displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
 ```
-cmf executions list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_id' -l
+cmf execution list -p 'pipeline_name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' 
 ```
 Required Arguments
 ```
-  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+  -p [pipeline_name], --pipeline-name [pipeline_name]       Specify Pipeline name.
 ```
 Optional Arguments
 ```
-  -h, --help                                            show this help message and exit.
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
-  -e [exe_id], --execution_id [exe_id]                  Specify execution id.
-  -l, --long                                            Specify in which format you want to saw execution[By default short].
+  -h, --help                                                show this help message and exit.
+  --f [file_name], --file-name [file_name]                  Specify the absolute or relative path for the input MLMD file.
+  -e [exe_uuid], --execution_id [exe_uuid]                  Specify the execution uuid to retrieve execution.
 ```
 
 ## cmf pipeline
 ```
 Usage: cmf pipeline [-h] {list}
 ```
-`cmf pipeline` command to display list of pipelines.
+`cmf pipeline` command displays a list of pipeline name(s) from the available mlmd file.
 ### cmf pipeline list
 ```
 Usage: cmf pipeline list [-h] -f [file_name]
 ```
-`cmf pipeline list` command display list of pipelines in current cmf configuration.
+`cmf pipeline list` command displays a list of pipeline name(s) from the available mlmd file.
 ```
 cmf pipeline list -f '/path/to/mlmd-file-name'
 ```
 Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
+```
+
+## cmf repo
+```
+Usage: cmf repo [-h] {push, pull}
+```
+`cmf repo` command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.
+### cmf repo push
+```
+Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
+```
+`cmf repo push` command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+```
+cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t 'tensorboard_log_path'
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
+```
+### cmf repo pull
+```
+Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid]
+```
+`cmf repo pull` command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+```
+cmf repo pull -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid'
+```
+Required Arguments
+```
+  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
+```
+Optional Arguments
+```
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
 ```

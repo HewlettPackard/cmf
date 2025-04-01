@@ -8,25 +8,27 @@ dependencies = [
 	"retrying",
 	"pyarrow",
 	"neo4j",
-	"scikit-learn",
 	"tabulate",
 	"click",
 	"minio",
 	"paramiko",
+	"scikit_learn",
+	"boto3",
 	"scitokens", 
-	"cryptography",
+	"cryptography",   
+	"ray==2.34.0"
 ]
 authors = [
-  { name="Hewlett Packard Enterprise"},
+  { name = "Hewlett Packard Enterprise"}
 ]
 description = "Track metadata for AI pipeline"
 readme = "README.md"
 requires-python = ">=3.9,<3.11"
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Operating System :: POSIX :: Linux",
+    "Operating System :: POSIX :: Linux"
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/HewlettPackard/cmf"
-"Bug Tracker" = "https://github.com/HewlettPackard/cmf/issues"
+Homepage = "https://github.com/HewlettPackard/cmf"
+BugTracker = "https://github.com/HewlettPackard/cmf/issues"

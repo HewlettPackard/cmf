@@ -16,71 +16,153 @@
 
 import argparse
 import os
+import textwrap
 import pandas as pd
 
 from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
+from tabulate import tabulate
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound,
+    FileNotFound,
+    DuplicateArgumentNotAllowed,
+    MissingArgument,
+    MsgSuccess,
+    ExecutionUUIDNotFound
+)
 
 class CmdExecutionList(CmdBase):
-    def update_dataframe(self, df):
-        # This function return dataframe with custom_properties_ only. 
-        for c in df.columns:
-           if c.startswith('custom_properties_'):
-               df.rename(columns = {c:c.replace('custom_properties_','')}, inplace = True)
-           else:
-               df = df.drop(c, axis = 1)
-        return df
-    
+
+    def display_table(self, df: pd.DataFrame) -> None:
+        """
+        Display the DataFrame in a paginated table format with text wrapping for better readability.
+        Parameters:
+        - df: The DataFrame to display.
+        """
+        # Rearranging columns
+        updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
+        df = df[updated_columns]
+        df = df.copy()
+       
+        # Wrap text in object-type columns to a width of 14 characters.
+        # This ensures that long strings are displayed neatly within the table.
+        for col in df.select_dtypes(include=["object"]).columns:
+            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
+
+        total_records = len(df)
+        start_index = 0  
+
+        # Display up to 20 records per page for better readability. 
+        # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
+        while True:
+            end_index = start_index + 20
+            records_per_page = df.iloc[start_index:end_index]
+            
+            # Display the table.
+            table = tabulate(
+                records_per_page,
+                headers=df.columns,
+                tablefmt="grid",
+                showindex=False,
+            )
+            print(table)
+
+            # Check if we've reached the end of the records.
+            if end_index >= total_records:
+                print("\nEnd of records.")
+                break
+
+            # Ask the user for input to navigate pages.
+            user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
+            if user_input == 'q':
+                break
+            
+            # Update start index for the next page.
+            start_index = end_index 
+
     def run(self):
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name,
+            "execution_uuid": self.args.execution_uuid
+        }
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
+                
         current_directory = os.getcwd()
-        # default path for mlmd file name
-        mlmd_file_name = "./mlmd"
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
-        if not os.path.exists(mlmd_file_name):
-            return f"ERROR: {mlmd_file_name} doesn't exists in {current_directory} directory."
+        
+        current_directory = os.path.dirname(mlmd_file_name)
+        if not os.path.exists(mlmd_file_name):  
+            raise FileNotFound(mlmd_file_name, current_directory)
 
-        # Creating cmfquery object
+        # Creating cmfquery object.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
-        df = query.get_all_executions_in_pipeline(self.args.pipeline_name)
+        pipeline_name = self.args.pipeline_name[0]
+        df = query.get_all_executions_in_pipeline(pipeline_name)
 
-        # If dataframe is empty that means pipeline name is not exist
-        if df.empty:
-            df = "Pipeline does not exist.."
+        # Check if the DataFrame is empty, indicating the pipeline name does not exist.
+        if df.empty:    
+            raise PipelineNotFound(pipeline_name)
         else:
-            # If the new mlmd came[not in the case of Test-env] which is not pushed inside server,
-            # it doesn't exist column named with "Python_Env"
-            if "Python_Env" in df.columns:
-                # Dropping Python_Env column
-                df = df.drop(['Python_Env'], axis=1)  # Type of df is series of integers
-            if self.args.execution_id:
-                try:
-                    if int(self.args.execution_id) in list(df['id']): # Converting series to list 
-                        df = df.query(f'id == {int(self.args.execution_id)}')
-                    else:
-                        df = "Execution id does not exist.."    
-                except:
-                        df = "Execution id does not exist.."   
+            # Process execution ID if provided
+            if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
+                pass
+            else:
+                df = df[df['Execution_uuid'].apply(lambda x: self.args.execution_uuid[0] in x.split(","))] # Used dataframe based on execution uuid
+                if not df.empty:
+                    # Rearranging columns: Start with fixed columns and appending the remaining columns.
+                    updated_columns = ["id", "Context_Type", "Execution", "Execution_uuid", "name", "Pipeline_Type", "Git_Repo"] 
+                    updated_columns += [ col for col in df.columns if col not in updated_columns]
+                    
+                    df = df[updated_columns]
 
-            if not isinstance(df, str):
-                if self.args.long:
-                    pd.set_option('display.max_rows', None)  # Set to None to display all rows
-                    pd.set_option('display.max_columns', None)  # Set to None to display all columns
-                else:
-                    df = self.update_dataframe(df) 
-        return df
+                    # Drop columns that start with 'custom_properties_' and that contains NaN values
+                    columns_to_drop = [col for col in df.columns if col.startswith('custom_properties_') and df[col].isna().any()]
+                    df = df.drop(columns=columns_to_drop)
+
+                    # Wrap text in object-type columns to a width of 30 characters.
+                    for col in df.select_dtypes(include=['object']).columns:
+                        df[col] = df[col].apply(lambda x: textwrap.fill(x, width=30) if isinstance(x, str) else x)
+                    
+                    # Set 'id' as the DataFrame index and transpose it for display horizontally.
+                    df.set_index("id", inplace=True)
+                    df = df.T.reset_index()
+                    df.columns.values[0] = 'id'  # Rename the first column back to 'id'.
+
+                    # Display the updated DataFrame as a formatted table.
+                    table = tabulate(
+                        df,
+                        headers=df.columns,
+                        tablefmt="grid",
+                        showindex=False,
+                    )
+                    print(table)
+                    print()
+                    return MsgSuccess(msg_str = "Done.")
+                return ExecutionUUIDNotFound(self.args.execution_uuid[0])
+    
+            self.display_table(df)             
+            return MsgSuccess(msg_str = "Done.")
+    
     
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = "Display list of executions as present in current mlmd"
+    EXECUTION_LIST_HELP = "Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display list of executions",
+        description="Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.",
         help=EXECUTION_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -89,28 +171,27 @@ def add_parser(subparsers, parent_parser):
 
     required_argumets.add_argument(
         "-p", 
-        "--pipeline_name", 
+        "--pipeline_name",
+        action="append", 
         required=True,
         help="Specify pipeline name.", 
         metavar="<pipeline_name>", 
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>",
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify the absolute or relative path for the input MLMD file.",
+        metavar="<file_name>",
     )
 
     parser.add_argument(
         "-e", 
-        "--execution_id", 
-        help="Specify execution id.", 
-        metavar="<exe_id>",
-    )
-    
-    parser.add_argument(
-        "-l",
-        "--long", 
-        action='store_true',
-        help="Display detailed summary of executions.", 
+        "--execution_uuid", 
+        action="append",
+        help="Specify the execution uuid to retrieve execution.",
+        metavar="<exe_uuid>",
     )
 
     parser.set_defaults(func=CmdExecutionList)
