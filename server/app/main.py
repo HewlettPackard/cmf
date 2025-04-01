@@ -13,7 +13,6 @@ from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
     get_lineage_data,
-    create_unique_executions,
     get_mlmd_from_server,
     get_artifact_types,
     get_all_artifact_ids,
@@ -28,6 +27,7 @@ from server.app.query_execution_lineage_d3force import query_execution_lineage_d
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
+from cmflib.utils.execution_utils import create_unique_executions
 from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
