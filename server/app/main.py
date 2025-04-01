@@ -6,9 +6,9 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 import asyncio
-import threading
+from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
@@ -23,34 +23,38 @@ from server.app.get_data import (
     get_model_data
 
 )
-from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
 from server.app.query_execution_lineage_d3force import query_execution_lineage_d3force
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
+from server.app.db.dbconfig import get_db
+from server.app.db.dbqueries import fetch_artifacts, fetch_artifact_execution_lineage, fetch_executions
 from pathlib import Path
 import os
 import json
 import typing as t
 from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
 
-server_store_path = "/cmf-server/data/mlmd"
+server_store_path = "/cmf-server/data/postgres_data"
+query = CmfQuery(is_server=True)
 
+#global variables
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
 pipeline_locks = {}
 lock_counts = defaultdict(int)
+
 #lifespan used to prevent multiple loading and save time for visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
+    
     if os.path.exists(server_store_path):
         # loaded execution ids with names into memory
-        dict_of_exe_ids = await async_api(get_all_exe_ids, server_store_path)
+        dict_of_exe_ids = await async_api(get_all_exe_ids, query)
         # loaded artifact ids into memory
-        dict_of_art_ids = await async_api(get_all_artifact_ids, server_store_path, dict_of_exe_ids)
+        dict_of_art_ids = await async_api(get_all_artifact_ids, query, dict_of_exe_ids)
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -59,7 +63,6 @@ app = FastAPI(title="cmf-server", lifespan=lifespan)
 
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
-server_store_path = "/cmf-server/data/mlmd"
 
 my_ip = os.environ.get("MYIP", "127.0.0.1")
 hostname = os.environ.get('HOSTNAME', "localhost")
@@ -102,7 +105,7 @@ async def mlmd_push(info: MLMDPushRequest):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, server_store_path, req_info)
+            status = await async_api(create_unique_executions, query, req_info)
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
@@ -132,56 +135,49 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
     #json_payload values can be json data, NULL or no_exec_id.
-    json_payload= await async_api(get_mlmd_from_server, server_store_path, pipeline_name, exec_uuid, dict_of_exe_ids)
+    json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, dict_of_exe_ids)
     if json_payload == None:
             raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
 
 
-# api to display executions available in mlmd
+
+@app.get("/artifacts/{pipeline_name}/{artifact_type}")
+async def get_artifacts(
+    pipeline_name: str, 
+    artifact_type: str, 
+    filter_value: str = Query(None, description="Search based on value"), 
+    sort_column: str = Query("name"),
+    sort_order: str = Query("ASC"),
+    page_number: int = Query(1, ge=1),
+    db: AsyncSession = Depends(get_db)
+):
+    """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
+    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, page_number, 5, sort_column, sort_order)
+
+
+# api to display executions available in mlmd file[from postgres]
 @app.get("/executions/{pipeline_name}")
-async def executions(
-    request: Request,
-    pipeline_name: str,
-    query_params: ExecutionRequest = Depends()
-    ):
-    # Extract the query parameters from the query_params object
-    page = query_params.page
-    per_page = query_params.per_page
-    sort_field = query_params.sort_field
-    sort_order = query_params.sort_order
-    filter_by = query_params.filter_by
-    filter_value = query_params.filter_value
-    # checks if mlmd file exists on server
-    await check_mlmd_file_exists()
-    if pipeline_name in dict_of_exe_ids:
-        try:
-            exe_ids_initial = dict_of_exe_ids[pipeline_name]
-            # Apply filtering if provided
-            if filter_by and filter_value:
-                exe_ids_initial = exe_ids_initial[exe_ids_initial[filter_by].str.contains(filter_value, case=False)]
-            # Apply sorting if provided
-            exe_ids_sorted = exe_ids_initial.sort_values(by=sort_field, ascending=(sort_order == "asc"))
-            exe_ids = exe_ids_sorted['id'].tolist()
-            total_items = len(exe_ids)
-            start_idx = (page - 1) * per_page
-            end_idx = start_idx + per_page
-            if total_items < end_idx:
-                end_idx = total_items
-            exe_ids_list = exe_ids[start_idx:end_idx]
-            executions_df = await async_api(get_executions, server_store_path, pipeline_name, exe_ids_list)
-            temp = executions_df.to_json(orient="records")
-            executions_parsed = json.loads(temp)
-            return {
-                "total_items": total_items,
-                "items": executions_parsed
-            }
-        except Exception as e:
-            print(f"An error occurred: {str(e)}")
-            return {"error": f"Failed to get executions available in mlmd: {e}"}
-    else:
-        print(f"Pipeline {pipeline_name} not found.")
-        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
+async def execution(request: Request,
+                   pipeline_name: str,
+                   active_page: int = Query(1, description="Page number", gt=0),
+                   filter_value: str = Query("", description="Search based on value"),  
+                   sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
+                   db: AsyncSession = Depends(get_db)
+                   ):
+    """Retrieve paginated executions with filtering, sorting, and full-text search."""
+    return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
+    
+
+
+@app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
+async def artifact_execution_lineage(request: Request, 
+                                     pipeline_name: str,
+                                     db: AsyncSession = Depends(get_db)):
+    print("i am inside artifact_execution_lineage")
+    #  checks if mlmd file exists on server
+    return await fetch_artifact_execution_lineage(db, pipeline_name)
+
 
 
 @app.get("/list-of-executions/{pipeline_name}")
@@ -194,7 +190,7 @@ async def list_of_executions(request: Request, pipeline_name: str):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(get_lineage_data, server_store_path, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
+    response = await async_api(get_lineage_data, query, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
     return response
 
     
@@ -211,74 +207,9 @@ async def execution_lineage(request: Request, uuid: str, pipeline_name: str):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(query_execution_lineage_d3tree, server_store_path, pipeline_name, dict_of_exe_ids,uuid)
+    response = await async_api(query_execution_lineage_d3tree, query, pipeline_name, dict_of_exe_ids, uuid)
     return response
     
-
-# api to display artifacts available in mlmd
-@app.get("/artifacts/{pipeline_name}/{type}")
-async def artifacts(
-    request: Request,
-    pipeline_name: str,
-    type: str,   # type = artifact type
-    query_params: ArtifactRequest = Depends()
-    ):
-    # Extract the query parameters from the query_params object
-    page = query_params.page
-    per_page = query_params.per_page
-    sort_field = query_params.sort_field
-    sort_order = query_params.sort_order
-    filter_by = query_params.filter_by
-    filter_value = query_params.filter_value
-    art_ids_dict = {}
-    art_type = type
-    # checks if mlmd file exists on server
-    await check_mlmd_file_exists()
-    # checks if pipeline exists
-    await check_pipeline_exists(pipeline_name)
-    try:
-        art_ids_dict = dict_of_art_ids[pipeline_name]
-        if not art_ids_dict:
-            return {               #return {items: None} so that GUI loads 
-            "total_items": 0,      #empty page when art_ids_dict is {}
-            "items": None
-            }
-        art_ids_initial = []
-        if art_type in art_ids_dict:
-            art_ids_initial = art_ids_dict[art_type]
-        else:
-            return {
-            "total_items": 0,
-            "items": None
-        }
-        # Apply filtering if provided
-        if filter_by and filter_value:
-            art_ids_initial = art_ids_initial[art_ids_initial[filter_by].str.contains(filter_value, case=False)]
-        # Apply sorting if provided
-        art_ids_sorted = art_ids_initial.sort_values(by=sort_field, ascending=(sort_order == "asc"))
-        art_ids = art_ids_sorted['id'].tolist()
-        total_items = len(art_ids)
-        start_idx = (page - 1) * per_page
-        end_idx = start_idx + per_page
-        if total_items < end_idx:
-            end_idx = total_items
-        artifact_id_list = list(art_ids)[start_idx:end_idx]
-        artifact_df = await async_api(get_artifacts, server_store_path, pipeline_name, art_type, artifact_id_list)
-        data_paginated = artifact_df
-        #data_paginated is returned None if artifact df is None or {}
-        #it will load empty page, without this condition it will load 
-        #data of whichever artifact_type is loaded before this. 
-        if artifact_df == None or artifact_df == {}:   
-            data_paginated = None      
-            total_items = 0
-        return {
-            "total_items": total_items,
-            "items": data_paginated
-        }
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        return {"error": f"Failed to get artifacts available in mlmd: {e}"}
-
 
 @app.get("/artifact-lineage/tangled-tree/{pipeline_name}")
 async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Dict[str, Any]]]:
@@ -294,7 +225,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await async_api(query_artifact_lineage_d3tree, server_store_path, pipeline_name, dict_of_art_ids)        
+    response = await async_api(query_artifact_lineage_d3tree, query, pipeline_name, dict_of_art_ids)        
     return response
 
 
@@ -303,7 +234,7 @@ async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Di
 async def artifact_types():
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
-    artifact_types = await async_api(get_artifact_types, server_store_path)
+    artifact_types = await async_api(get_artifact_types, query)
     if "Environment" in artifact_types:
             artifact_types.remove("Environment")
     return artifact_types
@@ -313,7 +244,6 @@ async def artifact_types():
 async def pipelines(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        query = cmfquery.CmfQuery(server_store_path)
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
@@ -347,7 +277,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     model_output_art_df = pd.DataFrame()
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
-    model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(server_store_path, modelId)
+    model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(query, modelId)
     if not model_data_df.empty:
         result_1 = model_data_df.to_json(orient="records")
         json_payload_1 = json.loads(result_1)
@@ -362,15 +292,6 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
         json_payload_4 = json.loads(result_4)
     return [json_payload_1, json_payload_2, json_payload_3, json_payload_4]
 
-
-@app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
-async def artifact_execution_lineage(request: Request, pipeline_name: str):
-    # checks if mlmd file exists on server
-    await check_mlmd_file_exists()
-    # checks if pipeline exists
-    await check_pipeline_exists(pipeline_name)
-    response = await query_visualization_artifact_execution(server_store_path, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
-    return response
 
 # Rest api is for pushing python env to upload python env
 @app.post("/python-env")
@@ -421,7 +342,7 @@ async def get_python_env(file_name: str) -> str:
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
-    output_dict = await async_api(get_all_artifact_ids, server_store_path, dict_of_exe_ids, pipeline_name)
+    output_dict = await async_api(get_all_artifact_ids, query, dict_of_exe_ids, pipeline_name)
     # type(dict_of_art_ids[pipeline_name]) = Dict[ <class 'pandas.core.frame.DataFrame'> ]
     dict_of_art_ids[pipeline_name]=output_dict[pipeline_name]
     return
@@ -429,7 +350,7 @@ async def update_global_art_dict(pipeline_name):
 
 async def update_global_exe_dict(pipeline_name):
     global dict_of_exe_ids
-    output_dict = await async_api(get_all_exe_ids, server_store_path, pipeline_name)
+    output_dict = await async_api(get_all_exe_ids, query, pipeline_name)
     # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
     return
@@ -444,7 +365,6 @@ async def check_mlmd_file_exists():
 
 # Function to check if the pipeline exists
 async def check_pipeline_exists(pipeline_name):
-    query = cmfquery.CmfQuery(server_store_path)
     if pipeline_name not in query.get_pipeline_names():
         print(f"Pipeline {pipeline_name} not found.")
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")

@@ -69,7 +69,7 @@ class CmdMetadataPush(CmdBase):
 
         config_file_path = os.path.join(output, cmfconfig)
         attr_dict = CmfConfig.read_config(config_file_path)
-        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
+        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:8080")
 
         cmd_args = {
             "file_name": self.args.file_name,

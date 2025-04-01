@@ -17,11 +17,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
-import Artifacts from "./pages/artifacts";
-import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
 import "./App.css";
+import Artifacts from "./pages/artifacts_ps";
+import Executions from "./pages/executions_ps";
 
 function App() {
   return (
