@@ -21,7 +21,7 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.execution_utils import create_unique_executions, get_unique_executions
+from cmflib.cmf import create_unique_executions, get_unique_executions
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
