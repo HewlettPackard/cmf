@@ -14,16 +14,36 @@
  * limitations under the License.
  ***/
 
-import React from "react";
+import React, { useState } from "react";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import RegistrationForm from "../../components/Registration";
+import RegisteredServers from "../../components/RegisteredServers";
+import DataSync from "../../components/DataSync";
 
 const Metahub = () => {
   const env = config.apiBasePathWOPort + ":6006";
 
-  const [showRegistrationForm, setShowRegistrationForm] = React.useState(false);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showRegisteredServers, setShowRegisteredServers] = useState(false);
+  const [showDataSync, setShowDataSync] = useState(false);
+
+  const closeForm = () => {
+    setShowRegistrationForm(false);
+  };
+
+  const clearScreen = () => {
+    setShowRegistrationForm(false);
+    setShowRegisteredServers(false);
+    setShowDataSync(false);
+  };
+
+  const demoServers = [
+    { name: "Server 1", ip: "192.168.20.62" },
+    { name: "Server 2", ip: "10.93.244.222" },
+    { name: "Server 3", ip: "192.168.1.3" },
+  ];
 
   return (
     <>
@@ -36,25 +56,37 @@ const Metahub = () => {
           <div className="container justify-center items-center mx-auto px-4">
             <button
               className="bg-blue-500 text-white font-bold py-2 px-4 rounded m-2"
-              onClick={() => setShowRegistrationForm(true)}
+              onClick={() => {
+                setShowRegistrationForm(true);
+                setShowRegisteredServers(false);
+                setShowDataSync(false);
+              }}
             >
               Registration
             </button>
             <button
               className="bg-green-500 text-white font-bold py-2 px-4 rounded m-2"
-              onClick={() => alert("Data Sync button clicked")}
+              onClick={() => {
+                clearScreen();
+                setShowDataSync(true);
+              }}
             >
               Sync server
             </button>
             <button
               className="bg-cyan-500 text-white font-bold py-2 px-4 rounded m-2"
-              onClick={() => alert("Registred server button clicked")}
+              onClick={() => {
+                clearScreen();
+                setShowRegisteredServers(true);
+              }}
             >
-              Registred server
+              Registered server
             </button>
           </div>
         </div>
-        {showRegistrationForm && <RegistrationForm />}
+        {showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
+        {showRegisteredServers && <RegisteredServers servers={demoServers} />}
+        {showDataSync && <DataSync servers={demoServers} onClearScreen={clearScreen} />}
         <Footer />
       </section>
     </>
