@@ -429,14 +429,14 @@ async def register_server(request: ServerRegistrationRequest):
     try:
         # Access the data from the Pydantic model
         server_name = request.server_name
-        server_ip = request.server_ip
+        address_type = request.address_type
 
         # Step 1: Send a request to the target server
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"http://{server_ip}:8000/acknowledge",
-                    json={"server_name": server_name, "server_ip": server_ip}
+                    f"http://{address_type}:8080/acknowledge",
+                    json={"server_name": server_name, "address_type": address_type}
                 )
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -446,17 +446,21 @@ async def register_server(request: ServerRegistrationRequest):
 
         # Step 2: Store the server details in a dictionary or in-memory data structure
         # here we are using db but for now i have stored server 2 details inside list of dict
-        registered_servers = []
-        registered_servers.append({
-            "server_name": server_name,
-            "server_ip": server_ip,
-            "connected_at": datetime.now().isoformat()
-        })
+        # registered_servers = []
+        # registered_servers.append({
+        #     "server_name": server_name,
+        #     "address_type": address_type,
+        #     "connected_at": datetime.now().isoformat()
+        # })
 
         # Step 3: Return the response from the target server
+        # return {
+        #     "message": f"Server '{server_name}' registered successfully with {address_type}",
+        #     "target_server_response": "ayesha"
+        # }
+
         return {
-            "message": f"Server '{server_name}' registered successfully with IP {server_ip}",
-            "target_server_response": target_server_data
+            "message": f"{target_server_data}",
         }
 
     except Exception as e:
@@ -468,8 +472,6 @@ async def acknowledge(request: AcknowledgeRequest):
     # Simulate sending metadata and acknowledging the request
     return {
         "message": f"Hi {request.server_name}, I acknowledge your request.",
-        "server_name": "TargetServer",
-        "server_ip": "192.168.1.100"
     }
 
 async def update_global_art_dict(pipeline_name):
