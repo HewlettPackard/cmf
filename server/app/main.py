@@ -39,6 +39,7 @@ from server.app.schemas.dataframe import (
     AcknowledgeRequest,
 )
 import httpx
+import asyncpg
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
@@ -433,13 +434,14 @@ async def get_python_env(file_name: str) -> str:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
 
-@app.post("/server-registration")
+@app.post("/register-server")
 async def register_server(request: ServerRegistrationRequest):
     try:
         # Access the data from the Pydantic model
         server_name = request.server_name
         address_type = request.address_type
 
+        print("i am here1")
         # Step 1: Send a request to the target server
         async with httpx.AsyncClient() as client:
             try:
@@ -453,24 +455,19 @@ async def register_server(request: ServerRegistrationRequest):
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
 
-        # Step 2: Store the server details in a dictionary or in-memory data structure
-        # here we are using db but for now i have stored server 2 details inside list of dict
-        # registered_servers = []
-        # registered_servers.append({
-        #     "server_name": server_name,
-        #     "address_type": address_type,
-        #     "connected_at": datetime.now().isoformat()
-        # })
+        print("i am here2")
+        # Step 2: Register the server details in the database
+        conn = await asyncpg.connect(
+            user=os.getenv("POSTGRES_USER"),
+            password=os.getenv("POSTGRES_PASSWORD"),
+            database=os.getenv("POSTGRES_DB"),
+            host='192.168.20.67'
+        )
 
-        # Step 3: Return the response from the target server
-        # return {
-        #     "message": f"Server '{server_name}' registered successfully with {address_type}",
-        #     "target_server_response": "ayesha"
-        # }
-
-        return {
-            "message": f"{target_server_data}",
-        }
+        rows = await conn.fetch(f'''INSERT INTO registred_servers (server_name, ip_or_host)
+        VALUES ({server_name}, {address_type});''')
+        print(rows)
+        return rows
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to register server: {e}")
@@ -480,23 +477,30 @@ async def register_server(request: ServerRegistrationRequest):
 async def acknowledge(request: AcknowledgeRequest):
     # Acknowledge the connection setup
     return {
-        "message": f"Hi {request.server_name}, I acknowledge your request.",
+        "message": f"Hi, I acknowledge your request.",
     }
 
-
-@app.post("/replay_execution")
-async def replay_execution(execution: dict):
-    # Simulate replaying an execution on server 1
-    return {"status": "success", "execution": execution}
 
 @app.post("/sync")
 async def sync_metadata(request: ServerRegistrationRequest):
     # when user clicks on the sync button, this api will be called
-
     return {
         "message": "Syncing metadata...",
         "status": "success"
     }
+
+
+@app.get("/server-list")
+async def server_list():
+    conn = await asyncpg.connect(
+        user=os.getenv("POSTGRES_USER"),
+        password=os.getenv("POSTGRES_PASSWORD"),
+        database=os.getenv("POSTGRES_DB"),
+        host='192.168.20.67'
+    )
+    rows = await conn.fetch('''SELECT * FROM registred_servers;''')
+    print(rows)
+    return rows
 
 
 async def update_global_art_dict(pipeline_name):

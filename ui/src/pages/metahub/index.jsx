@@ -15,19 +15,21 @@
  ***/
 
 import React, { useState } from "react";
-import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
-import RegistrationForm from "../../components/Registration";
-import RegisteredServers from "../../components/RegisteredServers";
+import RegisteredServers from "../../components/Registration/RegisteredServers";
 import DataSync from "../../components/DataSync";
+import RegistrationForm from "../../components/Registration/RegistrationForm";
+import FastAPIClient from '../../client';
+import config from '../../config';
+
+const client = new FastAPIClient(config);
 
 const Metahub = () => {
-  const env = config.apiBasePathWOPort + ":6006";
-
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
   const [showRegisteredServers, setShowRegisteredServers] = useState(false);
   const [showDataSync, setShowDataSync] = useState(false);
+  const [serverList, setServerList] = useState([]);
 
   const closeForm = () => {
     setShowRegistrationForm(false);
@@ -39,11 +41,17 @@ const Metahub = () => {
     setShowDataSync(false);
   };
 
-  const demoServers = [
-    { name: "Server 1", ip: "192.168.20.62" },
-    { name: "Server 2", ip: "10.93.244.222" },
-    { name: "Server 3", ip: "192.168.1.3" },
-  ];
+  const getRegistredServers = () =>{
+    client.getRegistredServerList()
+    .then((data) => {
+        console.log(data);
+        setServerList(data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('Failed to fetch server list. Please try again.');
+    });
+  }
 
   return (
     <>
@@ -69,6 +77,7 @@ const Metahub = () => {
               onClick={() => {
                 clearScreen();
                 setShowDataSync(true);
+                getRegistredServers();
               }}
             >
               Sync server
@@ -76,8 +85,8 @@ const Metahub = () => {
             <button
               className="bg-cyan-500 text-white font-bold py-2 px-4 rounded m-2"
               onClick={() => {
-                clearScreen();
                 setShowRegisteredServers(true);
+                getRegistredServers();
               }}
             >
               Registered server
@@ -85,8 +94,8 @@ const Metahub = () => {
           </div>
         </div>
         {showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
-        {showRegisteredServers && <RegisteredServers servers={demoServers} />}
-        {showDataSync && <DataSync servers={demoServers} onClearScreen={clearScreen} />}
+        {showRegisteredServers && <RegisteredServers serverList={serverList}/>}
+        {showDataSync && <DataSync servers={serverList} onClearScreen={clearScreen} />}
         <Footer />
       </section>
     </>

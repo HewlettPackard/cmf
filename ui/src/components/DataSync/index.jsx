@@ -73,7 +73,7 @@ const DataSync = ({ servers, onClearScreen }) => {
                     <option value="">-- Select a server --</option>
                     {servers.map((server, index) => (
                         <option key={index} value={server.ip}>
-                            {server.name} - {server.ip}
+                            {server.server_name} - {server.ip_or_host}
                         </option>
                     ))}
                 </select>
