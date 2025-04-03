@@ -25,7 +25,7 @@ from server.app.query_execution_lineage_d3force import query_execution_lineage_d
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from cmflib.cmf import create_unique_executions
+from cmflib.cmf_merger import create_unique_executions
 from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
@@ -39,7 +39,6 @@ from server.app.schemas.dataframe import (
     AcknowledgeRequest,
 )
 import httpx
-from datetime import datetime
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
@@ -145,15 +144,13 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
 # API for syncing the mlmd data on server
 @app.get("/mlmd_pull")
 async def mlmd_pull():
-    # Simulate a JSON response with execution data
-    response = {
-        "executions": [
-            {"uuid": "abc123"},
-            {"uuid": "def456"},
-            {"uuid": "ghi789"},
-        ]
-    }
-    return response
+    # check if postgres db exists on server
+    await check_mlmd_file_exists()
+    # json payload values can be json data or none
+    json_payload = await async_api(get_mlmd_from_server, server_store_path, None, None, dict_of_exe_ids)
+    if json_payload == None:
+        raise HTTPException(status_code=406, detail="No mlmd file found on server.")
+    return json_payload
 
 
 # api to display executions available in mlmd
@@ -481,7 +478,7 @@ async def register_server(request: ServerRegistrationRequest):
 
 @app.post("/acknowledge")
 async def acknowledge(request: AcknowledgeRequest):
-    # Simulate sending metadata and acknowledging the request
+    # Acknowledge the connection setup
     return {
         "message": f"Hi {request.server_name}, I acknowledge your request.",
     }
@@ -491,6 +488,16 @@ async def acknowledge(request: AcknowledgeRequest):
 async def replay_execution(execution: dict):
     # Simulate replaying an execution on server 1
     return {"status": "success", "execution": execution}
+
+@app.post("/sync")
+async def sync_metadata(request: ServerRegistrationRequest):
+    # when user clicks on the sync button, this api will be called
+
+    return {
+        "message": "Syncing metadata...",
+        "status": "success"
+    }
+
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids

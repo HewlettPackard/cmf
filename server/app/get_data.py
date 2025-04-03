@@ -221,18 +221,21 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, di
     """
     json_payload = None
     flag=False
-    if(pipeline_name in query.get_pipeline_names()):  # checks if pipeline name is available in mlmd
-        if exec_uuid != None:
-            dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
-            for index, row in dict_of_exe_ids.iterrows():
-                exec_uuid_list = row['Execution_uuid'].split(",")
-                if exec_uuid in exec_uuid_list:
-                    flag=True
-                    break
-            if not flag:
-                json_payload = "no_exec_uuid"
-                return json_payload
+    if pipeline_name == None:
         json_payload = query.dumptojson(pipeline_name, exec_uuid)
+    else:
+        if(pipeline_name in query.get_pipeline_names()):  # checks if pipeline name is available in mlmd
+            if exec_uuid != None:
+                dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+                for index, row in dict_of_exe_ids.iterrows():
+                    exec_uuid_list = row['Execution_uuid'].split(",")
+                    if exec_uuid in exec_uuid_list:
+                        flag=True
+                        break
+                if not flag:
+                    json_payload = "no_exec_uuid"
+                    return json_payload
+            json_payload = query.dumptojson(pipeline_name, exec_uuid)
     return json_payload
 
 def get_lineage_data(

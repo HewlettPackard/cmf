@@ -51,3 +51,8 @@ class ServerRegistrationRequest(BaseModel):
 class AcknowledgeRequest(BaseModel):
     server_name: str
     address_type: str
+
+class ServerRegistrationRequest(BaseModel):
+    server_name: str
+    address_type: str
+    
