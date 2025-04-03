@@ -142,6 +142,20 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     return json_payload
 
 
+# API for syncing the mlmd data on server
+@app.get("/mlmd_pull")
+async def mlmd_pull():
+    # Simulate a JSON response with execution data
+    response = {
+        "executions": [
+            {"uuid": "abc123"},
+            {"uuid": "def456"},
+            {"uuid": "ghi789"},
+        ]
+    }
+    return response
+
+
 # api to display executions available in mlmd
 @app.get("/executions/{pipeline_name}")
 async def executions(
@@ -471,6 +485,12 @@ async def acknowledge(request: AcknowledgeRequest):
     return {
         "message": f"Hi {request.server_name}, I acknowledge your request.",
     }
+
+
+@app.post("/replay_execution")
+async def replay_execution(execution: dict):
+    # Simulate replaying an execution on server 1
+    return {"status": "success", "execution": execution}
 
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids

@@ -4,7 +4,7 @@ import config from '../../config';
 
 const client = new FastAPIClient(config);
 
-const RegistrationForm = () => {
+const RegistrationForm = ({ closeForm }) => {
     const [formData, setFormData] = useState({
         serverName: '',
         addressType: 'ipAddress', // Default to IP Address
@@ -22,6 +22,7 @@ const RegistrationForm = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        console.log('Form Data Submitted:', formData);
         callRegistrationAPI();
     };
 
@@ -44,6 +45,7 @@ const RegistrationForm = () => {
             .then((data) => {
                 console.log('data:', data);
                 alert(data.message);
+                closeForm(); // Close the form after successful submission
             })
             .catch((error) => {
                 console.error('Error:', error);
