@@ -899,6 +899,91 @@ class CmfQuery(object):
                 )
         return df
 
+    def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
+        """
+        Extract attributes from a node and return them as a dictionary.
+
+        Args:
+            _node (Union[mlpb.Context, mlpb.Execution, mlpb.Event]): The MLMD node (Context, Execution, or Event) to extract attributes from.
+            _attrs (Dict): A dictionary to populate with extracted attributes.
+
+        Returns:
+            Dict: A dictionary containing the extracted attributes from the node.
+        """
+        for attr in CONTEXT_LIST:
+            if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
+                _attrs[attr] = getattr(_node, attr)
+
+        if "properties" in _attrs:
+            _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
+        if "custom_properties" in _attrs:
+            _attrs["custom_properties"] = CmfQuery._copy(
+                _attrs["custom_properties"], key_mapper={"type": "user_type"}
+            )
+        return _attrs
+
+    def _get_event_attributes(self, execution_id: int) -> t.List[t.Dict]:
+        """
+        Extract event attributes for a given execution ID.
+
+        Args:
+            execution_id (int): The ID of the execution for which event attributes are to be extracted.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of an event associated with the execution.
+        """
+        events = []
+        for event in self.store.get_events_by_execution_ids([execution_id]):
+            event_attrs = self._get_node_attributes(event, {})
+            artifacts = self.store.get_artifacts_by_id([event.artifact_id])
+            artifact_attrs = self._get_node_attributes(
+                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
+            )
+            event_attrs["artifact"] = artifact_attrs
+            events.append(event_attrs)
+        return events
+
+    def _get_execution_attributes(self, stage_id: int, exec_uuid: t.Optional[str] = None) -> t.List[t.Dict]:
+        """
+        Extract execution attributes for a given stage ID.
+
+        Args:
+            stage_id (int): The ID of the stage for which execution attributes are to be extracted.
+            exec_uuid (Optional[str]): An optional execution UUID to filter executions. If None, all executions are included.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of an execution associated with the stage.
+        """
+        executions = []
+        for execution in self.get_all_executions_by_stage(stage_id, execution_uuid=exec_uuid):
+            exec_attrs = self._get_node_attributes(
+                execution,
+                {
+                    "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
+                    "name": execution.name if execution.name != "" else "",
+                    "events": self._get_event_attributes(execution.id),
+                },
+            )
+            executions.append(exec_attrs)
+        return executions
+
+    def _get_stage_attributes(self, pipeline_id: int, exec_uuid: t.Optional[str] = None) -> t.List[t.Dict]:
+        """
+        Extract stage attributes for a given pipeline ID.
+
+        Args:
+            pipeline_id (int): The ID of the pipeline for which stage attributes are to be extracted.
+            exec_uuid (Optional[str]): An optional execution UUID to filter stages. If None, all stages are included.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of a stage associated with the pipeline.
+        """
+        stages = []
+        for stage in self._get_stages(pipeline_id):
+            stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid)})
+            stages.append(stage_attrs)
+        return stages
+
     def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
         Args:
@@ -907,53 +992,9 @@ class CmfQuery(object):
         Returns:
             Pipeline in JSON format.
         """
-        def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
-            for attr in CONTEXT_LIST:
-                #Artifacts getattr call on Type was giving empty string, which was overwriting 
-                # the defined types such as Dataset, Metrics, Models
-                if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
-                    _attrs[attr] = getattr(_node, attr)
-
-            if "properties" in _attrs:
-                _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
-            if "custom_properties" in _attrs:
-                # TODO: (sergey) why do we need to rename "type" to "user_type" if we just copy into a new dictionary?
-                _attrs["custom_properties"] = CmfQuery._copy(
-                    _attrs["custom_properties"], key_mapper={"type": "user_type"}
-                )
-            return _attrs
-
-        pipelines: t.List[t.Dict] = []
+        pipelines = []
         for pipeline in self._get_pipelines(pipeline_name):
-            pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
-            for stage in self._get_stages(pipeline.id):
-                stage_attrs = _get_node_attributes(stage, {"executions": []})
-                for execution in self.get_all_executions_by_stage(stage.id, execution_uuid=exec_uuid):
-                    # name will be an empty string for executions that are created with
-                    # create new execution as true(default)
-                    # In other words name property will there only for execution
-                    # that are created with create new execution flag set to false(special case)
-                    exec_attrs = _get_node_attributes(
-                        execution,
-                        {
-                            "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
-                            "name": execution.name if execution.name != "" else "",
-                            "events": [],
-                        },
-                    )
-                    for event in self.store.get_events_by_execution_ids([execution.id]):
-                        event_attrs = _get_node_attributes(event, {})
-                        # An event has only a single Artifact associated with it. 
-                        # For every artifact we create an event to link it to the execution.
-
-                        artifacts =  self.store.get_artifacts_by_id([event.artifact_id])
-                        artifact_attrs = _get_node_attributes(
-                                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
-                            )
-                        event_attrs["artifact"] = artifact_attrs
-                        exec_attrs["events"].append(event_attrs)
-                    stage_attrs["executions"].append(exec_attrs)
-                pipeline_attrs["stages"].append(stage_attrs)
+            pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, exec_uuid)})
             pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
