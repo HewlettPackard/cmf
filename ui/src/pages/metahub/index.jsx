@@ -30,6 +30,7 @@ const Metahub = () => {
   const [showRegisteredServers, setShowRegisteredServers] = useState(false);
   const [showDataSync, setShowDataSync] = useState(false);
   const [serverList, setServerList] = useState([]);
+  const [buttonType, setButtonType] = useState("registration");
 
   const closeForm = () => {
     setShowRegistrationForm(false);
@@ -68,6 +69,7 @@ const Metahub = () => {
                 setShowRegistrationForm(true);
                 setShowRegisteredServers(false);
                 setShowDataSync(false);
+                setButtonType("registration");
               }}
             >
               Registration
@@ -78,6 +80,7 @@ const Metahub = () => {
                 clearScreen();
                 setShowDataSync(true);
                 getRegistredServers();
+                setButtonType("sync");
               }}
             >
               Sync server
@@ -87,15 +90,16 @@ const Metahub = () => {
               onClick={() => {
                 setShowRegisteredServers(true);
                 getRegistredServers();
+                setButtonType("registered");
               }}
             >
               Registered server
             </button>
           </div>
         </div>
-        {showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
-        {showRegisteredServers && <RegisteredServers serverList={serverList}/>}
-        {showDataSync && <DataSync servers={serverList} onClearScreen={clearScreen} />}
+        {buttonType === "registration" && showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
+        {buttonType === "registered" && showRegisteredServers && <RegisteredServers serverList={serverList}/>}
+        {buttonType === "sync" && showDataSync && <DataSync servers={serverList} onClearScreen={clearScreen} />}
         <Footer />
       </section>
     </>
