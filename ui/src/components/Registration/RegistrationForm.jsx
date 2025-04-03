@@ -42,8 +42,7 @@ const RegistrationForm = () => {
 
         client.getServerRegistration(serverName, addressValue)
             .then((data) => {
-                console.log('data:', data);
-                alert(data.message);
+                alert("Server registered successfully!");
             })
             .catch((error) => {
                 console.error('Error:', error);

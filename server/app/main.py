@@ -441,7 +441,6 @@ async def register_server(request: ServerRegistrationRequest):
         server_name = request.server_name
         address_type = request.address_type
 
-        print("i am here1")
         # Step 1: Send a request to the target server
         async with httpx.AsyncClient() as client:
             try:
@@ -455,7 +454,6 @@ async def register_server(request: ServerRegistrationRequest):
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
 
-        print("i am here2")
         # Step 2: Register the server details in the database
         conn = await asyncpg.connect(
             user=os.getenv("POSTGRES_USER"),
@@ -464,8 +462,8 @@ async def register_server(request: ServerRegistrationRequest):
             host='192.168.20.67'
         )
 
-        rows = await conn.fetch(f'''INSERT INTO registred_servers (server_name, ip_or_host)
-        VALUES ({server_name}, {address_type});''')
+        rows = await conn.fetch('''INSERT INTO registred_servers (server_name, ip_or_host)
+        VALUES ($1, $2) RETURNING *;''', server_name, address_type)
         print(rows)
         return rows
 

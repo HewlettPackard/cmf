@@ -16,19 +16,22 @@ function RegisteredServers({serverList}){
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
-                {serverList.map((server) => (
-                    <tr key={server.id} className="text-xs font-sans text-gray-700">
-                    <td className="id px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {server.id}
-                    </td>
-                    <td className="id px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {server.server_name}
-                    </td>
-                    <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {server.ip_or_host}
-                    </td>
-                    </tr>
-                ))}
+              {serverList.length === 0 && (
+                  alert('No registered servers found.')
+              )}
+              {serverList.map((server) => (
+                  <tr key={server.id} className="text-xs font-sans text-gray-700">
+                  <td className="id px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {server.id}
+                  </td>
+                  <td className="id px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {server.server_name}
+                  </td>
+                  <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {server.ip_or_host}
+                  </td>
+                  </tr>
+              ))}
             </tbody>
           </table>
         </div>
