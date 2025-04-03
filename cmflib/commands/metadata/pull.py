@@ -17,6 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
@@ -40,6 +41,7 @@ from cmflib.cmf_exception_handling import (
 class CmdMetadataPull(CmdBase):
 
     def run(self):
+         
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
@@ -69,7 +71,7 @@ class CmdMetadataPull(CmdBase):
         
         if not self.args.execution_uuid:         # If self.args.execution_uuid[0] is None or an empty list ([]). 
             pass
-        
+         
         if self.args.file_name:  # setting directory where mlmd file will be dumped
             if not os.path.isdir(self.args.file_name[0]):
                 temp = os.path.dirname(self.args.file_name[0])
@@ -83,12 +85,14 @@ class CmdMetadataPull(CmdBase):
                 raise FileNameNotfound
         else:
             full_path_to_dump = os.getcwd() + "/mlmd"
-        
+         
+        query = cmfquery.CmfQuery(full_path_to_dump)
         if self.args.execution_uuid:
             exec_uuid = self.args.execution_uuid[0]
         output = server_interface.call_mlmd_pull(
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
+         
         status = output.status_code
         # Checks if given pipeline does not exist
         # or if the execution UUID not present inside the mlmd file
@@ -99,13 +103,13 @@ class CmdMetadataPull(CmdBase):
             raise ExecutionUUIDNotFound(exec_uuid)
         else:
             # Get unique executions
-            unique_executions = get_unique_executions(full_path_to_dump, output.content)
-            print("Delta between executions: ", unique_executions)
+            unique_executions = get_unique_executions(query, output.content)
+            # print("Delta between executions: ", unique_executions)
             if not unique_executions:
                 return ExecutionsAlreadyExists()
 
             # Create unique executions
-            response = create_unique_executions(full_path_to_dump, output.content, "pull", exec_uuid)
+            response = create_unique_executions(query, output.content, "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":

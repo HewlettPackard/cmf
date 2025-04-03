@@ -227,7 +227,7 @@ def create_original_time_since_epoch(mlmd_data):
     return mlmd_data
 
 
-def identify_existing_and_new_executions(path: str, mlmd_data: dict, pipeline_name: str) -> Tuple[list, list]:
+def identify_existing_and_new_executions(query: str, mlmd_data: dict, pipeline_name: str) -> Tuple[list, list]:
     """
     Identify existing and new executions by comparing server MLMD data with client MLMD data.
 
@@ -244,14 +244,12 @@ def identify_existing_and_new_executions(path: str, mlmd_data: dict, pipeline_na
     existing_executions = []
     new_executions = []
 
-    if os.path.exists(path):
-        query = cmfquery.CmfQuery(path)
-        executions = query.get_all_executions_in_pipeline(pipeline_name)
+    executions = query.get_all_executions_in_pipeline(pipeline_name)
 
-        # Collect all execution UUIDs from the queried data
-        for i in executions.index:
-            for uuid in executions['Execution_uuid'][i].split(","):
-                existing_executions.append(uuid)
+    # Collect all execution UUIDs from the queried data
+    for i in executions.index:
+        for uuid in executions['Execution_uuid'][i].split(","):
+            existing_executions.append(uuid)
 
     # Extract execution UUIDs from the MLMD data payload
     executions_from_req = []
@@ -269,7 +267,7 @@ def identify_existing_and_new_executions(path: str, mlmd_data: dict, pipeline_na
     return existing_executions, new_executions
 
 
-def create_unique_executions(path: str, req_info: str, cmd: str, exe_uuid: str) -> str:
+def create_unique_executions(query: str, req_info: str, cmd: str, exe_uuid: str) -> str:
     """
     Creates a list of unique executions by checking if they already exist on the server or not.
 
@@ -286,7 +284,7 @@ def create_unique_executions(path: str, req_info: str, cmd: str, exe_uuid: str) 
     pipeline_name = mlmd_data["Pipeline"][0]["name"]
 
     # Identify existing and new executions
-    existing_executions, new_executions = identify_existing_and_new_executions(path, mlmd_data, pipeline_name)
+    existing_executions, new_executions = identify_existing_and_new_executions(query, mlmd_data, pipeline_name)
 
     if not new_executions:
         return "exists"
@@ -311,7 +309,7 @@ def create_unique_executions(path: str, req_info: str, cmd: str, exe_uuid: str) 
             return "exists"
         else:
             parse_json_to_mlmd(
-                json.dumps(mlmd_data), path, cmd, exe_uuid
+                json.dumps(mlmd_data), "", cmd, exe_uuid
             )
             return "success"
         
