@@ -25,7 +25,6 @@ from server.app.query_execution_lineage_d3force import query_execution_lineage_d
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from cmflib.cmf_merger import create_unique_executions
 from cmflib.cmf_exception_handling import MlmdNotFoundOnServer
 from pathlib import Path
 import os
@@ -109,7 +108,7 @@ async def mlmd_push(info: MLMDPushRequest):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, query, req_info["json_payload"], "push", req_info["exec_uuid"])
+            status = await async_api(query.create_unique_executions, req_info["json_payload"], "push", req_info["exec_uuid"])
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           

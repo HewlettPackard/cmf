@@ -22,7 +22,6 @@ from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_merger import create_unique_executions, get_unique_executions
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
@@ -103,13 +102,13 @@ class CmdMetadataPull(CmdBase):
             raise ExecutionUUIDNotFound(exec_uuid)
         else:
             # Get unique executions
-            unique_executions = get_unique_executions(query, output.content)
+            unique_executions = query.get_unique_executions(output.content)
             # print("Delta between executions: ", unique_executions)
             if not unique_executions:
                 return ExecutionsAlreadyExists()
 
             # Create unique executions
-            response = create_unique_executions(query, output.content, "pull", exec_uuid)
+            response = query.create_unique_executions(output.content, "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":
