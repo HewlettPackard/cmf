@@ -1,4 +1,5 @@
 # cmf-server api's
+import time
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
@@ -480,11 +481,66 @@ async def acknowledge(request: AcknowledgeRequest):
 
 @app.post("/sync")
 async def sync_metadata(request: ServerRegistrationRequest):
-    # when user clicks on the sync button, this api will be called
-    return {
-        "message": "Syncing metadata...",
-        "status": "success"
-    }
+    """
+    Synchronize metadata for a registered server.
+
+    Args:
+        request (ServerRegistrationRequest): The request containing server details.
+
+    Returns:
+        dict: A response containing the sync status and last sync time.
+
+    Raises:
+        HTTPException: If the server is not found or an error occurs during synchronization.
+    """
+    try:
+        # Access the data from the Pydantic model
+        server_name = request.server_name
+        address_type = request.address_type
+
+        # Connect to the database
+        conn = await asyncpg.connect(
+            user=os.getenv("POSTGRES_USER"),
+            password=os.getenv("POSTGRES_PASSWORD"),
+            database=os.getenv("POSTGRES_DB"),
+            host='192.168.20.67'
+        )
+
+        # Fetch the server details from the database
+        row = await conn.fetchrow(
+            '''SELECT last_sync_time FROM registred_servers WHERE server_name = $1 AND ip_or_host = $2;''',
+            server_name, address_type
+        )
+
+        if not row:
+            raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
+
+        last_sync_time = row['last_sync_time']
+        current_utc_epoch_time = int(time.time() * 1000)
+
+        if not last_sync_time:  # First-time sync
+            message = f"Host server is syncing with the selected server '{server_name}' at address '{address_type}' for the first time."
+            # Call dumptojson method (replace with actual implementation)
+            # await dumptojson(server_name, address_type)
+        else:  # Subsequent sync
+            message = f"Host server is being synced with the selected server '{server_name}' at address '{address_type}'."
+            # Call extract_to_json method (replace with actual implementation)
+            # await extract_to_json(server_name, address_type)
+
+        # Update the last_sync_time in the database
+        await conn.execute(
+            '''UPDATE registred_servers SET last_sync_time = $1 WHERE server_name = $2 AND ip_or_host = $3;''',
+            current_utc_epoch_time, server_name, address_type
+        )
+
+        return {
+            "message": message,
+            "status": "success",
+            "last_sync_time": current_utc_epoch_time
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to sync metadata: {e}")
 
 
 @app.get("/server-list")

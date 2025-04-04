@@ -43,6 +43,12 @@ const RegistrationForm = () => {
         client.getServerRegistration(serverName, addressValue)
             .then((data) => {
                 alert("Server registered successfully!");
+                setFormData({
+                    serverName: '',
+                    addressType: 'ipAddress',
+                    ipAddress: '',
+                    hostName: '',
+                });
             })
             .catch((error) => {
                 console.error('Error:', error);

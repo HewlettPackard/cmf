@@ -185,6 +185,17 @@ class FastAPIClient {
       });
   }
 
+  async sync(serverName, addressType) {
+    return this.apiClient
+      .post(`/sync`, {
+        server_name: serverName,
+        address_type: addressType,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
 }
 
 

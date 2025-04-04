@@ -1,59 +1,34 @@
 import React, { useState } from 'react';
+import FastAPIClient from '../../client';
+
+const client = new FastAPIClient();
 
 const DataSync = ({ servers, onClearScreen }) => {
     const [selectedServer, setSelectedServer] = useState('');
     const [syncStatus, setSyncStatus] = useState('');
 
-    const handleSync = async () => {
+    const handleSync = () => {
         if (selectedServer) {
-            try {
-                setSyncStatus('Syncing data...');
-                console.log(`Initiating sync with server: ${selectedServer}`);
-                const response = await fetch(`http://${selectedServer}:8080/mlmd_pull`);
-                const data = await response.json();
+            setSyncStatus('Syncing data...');
+            console.log(`Initiating sync with server: ${selectedServer}`);
 
-                console.log('Sync response from server:', data); // Log the response from the server
+            // Extract server_name and ip_or_host from the selected server
+            const [server_name, ip_or_host] = selectedServer.split(' - ');
 
-                // Process the response to find unique executions
-                const uniqueExecutions = findUniqueExecutions(data);
-                if (uniqueExecutions.length > 0) {
-                    // Replay unique executions on server 1
-                    await replayExecutionsOnServer1(uniqueExecutions);
-                    setSyncStatus('Data sync completed successfully.');
-                    alert('Data sync completed successfully!'); // Alert on success
-                } else {
-                    setSyncStatus('No unique executions found to sync.');
-                    alert('No unique executions found to sync.');
-                }
-            } catch (error) {
-                console.error('Error during sync:', error);
-                setSyncStatus('Failed to sync data.');
-                alert('Failed to sync data.');
-            }
+            // Call the sync API
+            client.sync(server_name, ip_or_host)
+                .then((data) => {
+                    console.log('Sync response from server:', data); // Log the response from the server
+                    setSyncStatus(data.message || 'Data sync completed successfully.');
+                    alert(data.message || 'Data sync completed successfully!'); // Alert on success
+                })
+                .catch((error) => {
+                    console.error('Error during sync:', error);
+                    setSyncStatus('Failed to sync data.');
+                    alert('Failed to sync data.');
+                });
         } else {
             alert('Please select a server to sync data.');
-        }
-    };
-
-    const findUniqueExecutions = (data) => {
-        // Logic to find unique executions from the JSON response
-        const executions = data.executions || [];
-        const uniqueExecutions = executions.filter((execution) => {
-            // Add logic to determine uniqueness
-            return true; // Placeholder
-        });
-        return uniqueExecutions;
-    };
-
-    const replayExecutionsOnServer1 = async (uniqueExecutions) => {
-        // Logic to replay unique executions on server 1
-        for (const execution of uniqueExecutions) {
-            console.log('Replaying execution on server 1:', execution); // Log each execution being replayed
-            await fetch(`http://${selectedServer}:8080/replay_execution`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(execution),
-            });
         }
     };
 
@@ -72,7 +47,7 @@ const DataSync = ({ servers, onClearScreen }) => {
                 >
                     <option value="">-- Select a server --</option>
                     {servers.map((server, index) => (
-                        <option key={index} value={server.ip}>
+                        <option key={index} value={`${server.server_name} - ${server.ip_or_host}`}>
                             {server.server_name} - {server.ip_or_host}
                         </option>
                     ))}
