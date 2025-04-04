@@ -1,4 +1,3 @@
-from cmflib import cmf_merger
 from cmflib.cmfquery import CmfQuery
 import pandas as pd
 import json
