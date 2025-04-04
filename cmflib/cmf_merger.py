@@ -16,8 +16,7 @@
 
 import json
 import os
-from cmflib import cmf, cmfquery
-import time
+from cmflib import cmf
 import traceback
 from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store

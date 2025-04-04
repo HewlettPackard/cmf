@@ -1,7 +1,6 @@
 from cmflib.cmfquery import CmfQuery
 import pandas as pd
 import json
-import os
 import typing as t
 from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force

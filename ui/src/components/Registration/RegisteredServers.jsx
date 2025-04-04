@@ -17,6 +17,9 @@ function RegisteredServers({ serverList }) {
             <th scope="col" className="exe_uuid px-6 py-3">
               host_or_ip
             </th>
+            <th scope="col" className="exe_uuid px-6 py-3">
+              last_sync_time
+            </th>
           </tr>
         </thead>
         <tbody className="body divide-y divide-gray-200">
@@ -30,6 +33,9 @@ function RegisteredServers({ serverList }) {
               </td>
               <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {server.ip_or_host}
+              </td>
+              <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                {server.last_sync_time}
               </td>
             </tr>
           ))}
