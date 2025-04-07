@@ -142,18 +142,6 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     return json_payload
 
 
-# API for syncing the mlmd data on server
-@app.get("/mlmd_pull")
-async def mlmd_pull():
-    # check if postgres db exists on server
-    await check_mlmd_file_exists()
-    # json payload values can be json data or none
-    json_payload = await async_api(get_mlmd_from_server, server_store_path, None, None, dict_of_exe_ids)
-    if json_payload == None:
-        raise HTTPException(status_code=406, detail="No mlmd file found on server.")
-    return json_payload
-
-
 # api to display executions available in mlmd
 @app.get("/executions/{pipeline_name}")
 async def executions(
@@ -459,7 +447,7 @@ async def register_server(request: ServerRegistrationRequest):
             user=os.getenv("POSTGRES_USER"),
             password=os.getenv("POSTGRES_PASSWORD"),
             database=os.getenv("POSTGRES_DB"),
-            host='192.168.20.67'
+            host='192.168.20.62'
         )
 
         rows = await conn.fetch('''INSERT INTO registred_servers (server_name, ip_or_host)
@@ -477,6 +465,61 @@ async def acknowledge(request: AcknowledgeRequest):
     return {
         "message": f"Hi, I acknowledge your request.",
     }
+
+@app.post("/mlmd_pull")
+async def server_mlmd_pull(request: ServerRegistrationRequest):
+    """
+    Fetch mlmd data from a specified server.
+
+    Args:
+        request (ServerRegistrationRequest): The request containing server details.
+
+    Returns:
+        dict: The mlmd data fetched from the specified server.
+
+    Raises:
+        HTTPException: If the server is not reachable or an error occurs during the request.
+    """
+    try:
+        # Access the data from the Pydantic model
+        address_type = request.address_type
+        pipeline_name = "Test-env"  # Replace with actual pipeline name if needed
+        # Step 1: Send a request to the target server to fetch mlmd data
+        async with httpx.AsyncClient() as client:
+            try:
+                response = await client.get(f"http://{address_type}:8080/mlmd_pull/{pipeline_name}")
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Target server did not respond successfully")
+                json_payload = response.json()
+            except httpx.RequestError:
+                raise HTTPException(status_code=500, detail="Target server is not reachable")
+
+        return json_payload
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch mlmd data: {e}")
+
+
+@app.post("/server-mlmd-push")
+async def server_mlmd_push(json_body: dict):
+    """
+    Push mlmd data to the host server.
+
+    Args:
+        json_body (dict): The JSON payload to be pushed.
+
+    Returns:
+        dict: The response from the mlmd_push API.
+
+    Raises:
+        HTTPException: If an error occurs during the push operation.
+    """
+    try:
+        # Call the mlmd_push function with the provided JSON body
+        status = await mlmd_push(MLMDPushRequest(**json_body))
+        return {"status": status}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to push mlmd data: {e}")
 
 
 @app.post("/sync")
@@ -503,7 +546,7 @@ async def sync_metadata(request: ServerRegistrationRequest):
             user=os.getenv("POSTGRES_USER"),
             password=os.getenv("POSTGRES_PASSWORD"),
             database=os.getenv("POSTGRES_DB"),
-            host='192.168.20.67'
+            host='192.168.20.62'
         )
 
         # Fetch the server details from the database
@@ -520,8 +563,21 @@ async def sync_metadata(request: ServerRegistrationRequest):
 
         if not last_sync_time:  # First-time sync
             message = f"Host server is syncing with the selected server '{server_name}' at address '{address_type}' for the first time."
-            # Call dumptojson method (replace with actual implementation)
-            # await dumptojson(server_name, address_type)
+
+            # Call mlmd_pull to fetch the JSON payload
+            json_payload = await server_mlmd_pull(request)
+            # print(json_payload)
+            # Use the JSON payload in json_data
+            json_data = {
+                "exec_uuid": None,
+                "json_payload": json.dumps(json_payload),
+                "pipeline_name": "Test-env"
+            }
+
+            # Push the JSON payload to the host server
+            push_response = await server_mlmd_push(json_data)
+            print(push_response)
+
         else:  # Subsequent sync
             message = f"Host server is being synced with the selected server '{server_name}' at address '{address_type}'."
             # Call extract_to_json method (replace with actual implementation)
@@ -549,7 +605,7 @@ async def server_list():
         user=os.getenv("POSTGRES_USER"),
         password=os.getenv("POSTGRES_PASSWORD"),
         database=os.getenv("POSTGRES_DB"),
-        host='192.168.20.67'
+        host='192.168.20.62'
     )
     rows = await conn.fetch('''SELECT * FROM registred_servers;''')
     print(rows)
