@@ -42,7 +42,11 @@ const RegistrationForm = () => {
 
         client.getServerRegistration(serverName, addressValue)
             .then((data) => {
-                alert("Server registered successfully!");
+                if (typeof data === 'object') {
+                    alert('Server registered successfully');
+                }else {
+                    alert(data);
+                }
                 setFormData({
                     serverName: '',
                     addressType: 'ipAddress',

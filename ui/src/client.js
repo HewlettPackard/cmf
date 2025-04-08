@@ -166,11 +166,11 @@ class FastAPIClient {
       });
   }
 
-  async getServerRegistration(server_name, address_type){
+  async getServerRegistration(server_name, host_info){
     return this.apiClient
       .post(`/register-server`, {
           server_name: server_name,
-          address_type: address_type,
+          host_info: host_info,
       })
       .then(({ data }) => {
         return data;
@@ -189,7 +189,7 @@ class FastAPIClient {
     return this.apiClient
       .post(`/sync`, {
         server_name: serverName,
-        address_type: addressType,
+        host_info: addressType,
       })
       .then(({ data }) => {
         return data;

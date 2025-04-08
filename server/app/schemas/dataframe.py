@@ -45,14 +45,11 @@ class ArtifactRequest(BaseRequest):
 # Define a Pydantic model for the request body
 class ServerRegistrationRequest(BaseModel):
     server_name: str
-    address_type: str
+    host_info: str
 
 
 class AcknowledgeRequest(BaseModel):
     server_name: str
-    address_type: str
+    host_info: str
 
-class ServerRegistrationRequest(BaseModel):
-    server_name: str
-    address_type: str
     
