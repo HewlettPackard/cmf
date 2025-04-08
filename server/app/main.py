@@ -506,28 +506,6 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
         raise HTTPException(status_code=500, detail=f"Failed to fetch mlmd data: {e}")
 
 
-@app.post("/server-mlmd-push")
-async def server_mlmd_push(json_body: dict):
-    """
-    Push mlmd data to the host server.
-
-    Args:
-        json_body (dict): The JSON payload to be pushed.
-
-    Returns:
-        dict: The response from the mlmd_push API.
-
-    Raises:
-        HTTPException: If an error occurs during the push operation.
-    """
-    try:
-        # Call the mlmd_push function with the provided JSON body
-        status = await mlmd_push(MLMDPushRequest(**json_body))
-        return {"status": status}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to push mlmd data: {e}")
-
-
 @app.post("/sync")
 async def sync_metadata(request: ServerRegistrationRequest):
     """
@@ -571,7 +549,8 @@ async def sync_metadata(request: ServerRegistrationRequest):
             message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
 
             # Call mlmd_pull to fetch the JSON payload
-            json_payload = await server_mlmd_pull(request)
+            # json_payload = await server_mlmd_pull(request)
+            json_payload = {"Pipeline": [{"stages": [{"executions": [{"type": "Prepare", "name": "", "events": [{"type": 3, "artifact": {"type": "Environment", "create_time_since_epoch": 1744012482351, "custom_properties": {}, "id": 1, "last_update_time_since_epoch": 1744012482351, "name": "cmf_artifacts/python_env_a642c4004bf5b720e93f2e840ed9e7c0.txt:cc8b6516ca3f1fa3a9834b4817c2c210", "properties": {"git_repo": "https://github.com/Jaychaware/test", "Commit": "cc8b6516ca3f1fa3a9834b4817c2c210", "url": "Test-env:/home/jaychaware/local-storage/files/md5/cc/8b6516ca3f1fa3a9834b4817c2c210"}, "type_id": 13, "uri": "cc8b6516ca3f1fa3a9834b4817c2c210"}}, {"type": 3, "artifact": {"type": "Dataset", "create_time_since_epoch": 1744012485995, "custom_properties": {"user-metadata1": "metadata_value"}, "id": 2, "last_update_time_since_epoch": 1744012485995, "name": "artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2", "properties": {"git_repo": "https://github.com/Jaychaware/test", "Commit": "236d9502e0283d91f689d7038b8508a2", "url": "Test-env:/home/jaychaware/local-storage/files/md5/23/6d9502e0283d91f689d7038b8508a2"}, "type_id": 14, "uri": "236d9502e0283d91f689d7038b8508a2"}}, {"type": 4, "artifact": {"type": "Dataset", "create_time_since_epoch": 1744012492564, "custom_properties": {}, "id": 3, "last_update_time_since_epoch": 1744012492564, "name": "artifacts/parsed/train.tsv:32b715ef0d71ff4c9e61f55b09c15e75", "properties": {"Commit": "32b715ef0d71ff4c9e61f55b09c15e75", "git_repo": "https://github.com/Jaychaware/test", "url": "Test-env:/home/jaychaware/local-storage/files/md5/32/b715ef0d71ff4c9e61f55b09c15e75"}, "type_id": 14, "uri": "32b715ef0d71ff4c9e61f55b09c15e75"}}, {"type": 4, "artifact": {"type": "Dataset", "create_time_since_epoch": 1744012498415, "custom_properties": {}, "id": 4, "last_update_time_since_epoch": 1744012498415, "name": "artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81", "properties": {"Commit": "6f597d341ceb7d8fbbe88859a892ef81", "git_repo": "https://github.com/Jaychaware/test", "url": "Test-env:/home/jaychaware/local-storage/files/md5/6f/597d341ceb7d8fbbe88859a892ef81"}, "type_id": 14, "uri": "6f597d341ceb7d8fbbe88859a892ef81"}}], "create_time_since_epoch": 1744012475415, "custom_properties": {"split": "0.2", "seed": 20170428, "Python_Env": "cmf_artifacts/python_env_a642c4004bf5b720e93f2e840ed9e7c0.txt"}, "id": 1, "last_update_time_since_epoch": 1744012476918, "properties": {"Pipeline_id": 1, "Git_Repo": "https://github.com/Jaychaware/test", "Execution": "[\'src/parse.py\', \'artifacts/data.xml.gz\', \'artifacts/parsed\']", "Pipeline_Type": "Test-env", "Git_Start_Commit": "5427207315d8947ec27b59ed992e5f0081e5a912", "Context_Type": "Test-env/Prepare", "Execution_type_name": "Test-env/Prepare", "Execution_uuid": "8caa24d8-1385-11f0-a6f3-2cf05deaaba0", "Context_ID": 2, "Git_End_Commit": ""}, "type_id": 12}], "create_time_since_epoch": 1744012475157, "custom_properties": {"user-metadata1": "metadata_value"}, "id": 2, "last_update_time_since_epoch": 1744012475157, "name": "Test-env/Prepare", "properties": {"Pipeline_Stage": "Test-env/Prepare"}, "type": "Pipeline_Stage", "type_id": 11}], "create_time_since_epoch": 1744012474999, "custom_properties": {}, "id": 1, "last_update_time_since_epoch": 1744012474999, "name": "Test-env", "properties": {"Pipeline": "Test-env"}, "type": "Parent_Context", "type_id": 10}]}
             # print(json_payload)
             # Use the JSON payload in json_data
             json_data = {
@@ -581,23 +560,25 @@ async def sync_metadata(request: ServerRegistrationRequest):
             }
 
             # Push the JSON payload to the host server
-            push_response = await server_mlmd_push(json_data)
-            print(push_response)
+            status = await mlmd_push(MLMDPushRequest(**json_data))
+            # print(push_response)
 
         else:  # Subsequent sync
             message = f"Host server is being synced with the selected server '{server_name}' at address '{host_info}'."
             # Call extract_to_json method (replace with actual implementation)
             # await extract_to_json(server_name, host_info)
+            status = {"status": "success"}  # Ensure status is defined
 
-        # Update the last_sync_time in the database
-        await conn.execute(
+        # Update the last_sync_time in the database only if sync status is successful
+        if status.get("status") == "success":
+            await conn.execute(
             '''UPDATE registred_servers SET last_sync_time = $1 WHERE server_name = $2 AND ip_or_host = $3;''',
             current_utc_epoch_time, server_name, host_info
         )
 
         return {
             "message": message,
-            "status": "success",
+            "status": status.get("status", "failed"),
             "last_sync_time": current_utc_epoch_time
         }
 

@@ -19,8 +19,15 @@ const DataSync = ({ servers, onClearScreen }) => {
             client.sync(server_name, ip_or_host)
                 .then((data) => {
                     console.log('Sync response from server:', data); // Log the response from the server
-                    setSyncStatus(data.message || 'Data sync completed successfully.');
-                    alert(data.message || 'Data sync completed successfully!'); // Alert on success
+
+                    // Display the message in an alert
+                    alert(data.message);
+
+                    // After the user clicks "OK," display the status in another alert
+                    alert(`Sync Status: ${data.status}`);
+
+                    // Update the sync status in the UI
+                    setSyncStatus(`Sync Status: ${data.status}`);
                 })
                 .catch((error) => {
                     console.error('Error during sync:', error);

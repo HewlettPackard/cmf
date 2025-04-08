@@ -1,4 +1,10 @@
 function RegisteredServers({ serverList }) {
+  const formatEpochToHumanReadable = (epoch) => {
+    if (!epoch) return "Never Synced";
+    const date = new Date(epoch);
+    return date.toLocaleString(); // Converts to human-readable format
+  };
+
   if (serverList.length === 0) {
     return <div className="p-1.5 inline-block align-middle w-full">No servers registered.</div>;
   }
@@ -35,7 +41,7 @@ function RegisteredServers({ serverList }) {
                 {server.ip_or_host}
               </td>
               <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {server.last_sync_time}
+                {formatEpochToHumanReadable(server.last_sync_time)}
               </td>
             </tr>
           ))}
