@@ -204,9 +204,10 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
     return artifact_types
 
 
-def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: dict):
+def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[str] = None, 
+                         dict_of_exe_ids: t.Optional[dict] = None) -> str:
     """
-    Retrieves metadata from the server for a given pipeline and execution UUID.
+    Retrieves metadata from the server for a given pipeline and execution UUID if mentioned.
 
     Args:
         query (CmfQuery): The CmfQuery object.
@@ -215,12 +216,15 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, di
         dict_of_exe_ids (dict): A dictionary containing execution IDs for pipelines.
 
     Returns:
-        json_payload (str or None): The metadata in JSON format if found, "no_exec_uuid" if the execution UUID is not found, or None if the pipeline name is not available.
+        json_payload (str or None): The metadata in JSON format if found, "no_exec_uuid" 
+        if the execution UUID is not found, or None if the pipeline name is not available.
     """
     json_payload = None
     flag=False
-    if pipeline_name == None:
-        json_payload = query.dumptojson(pipeline_name, exec_uuid)
+    if pipeline_name == None and not last_sync_time :
+        json_payload = query.dumptojson("Test-env", None)
+    elif pipeline_name == None and last_sync_time:
+        json_payload = query.extract_to_json(last_sync_time)
     else:
         if(pipeline_name in query.get_pipeline_names()):  # checks if pipeline name is available in mlmd
             if exec_uuid != None:

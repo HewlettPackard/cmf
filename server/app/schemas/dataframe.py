@@ -46,10 +46,18 @@ class ArtifactRequest(BaseRequest):
 class ServerRegistrationRequest(BaseModel):
     server_name: str
     host_info: str
+    last_sync_time: Optional[str] = Field(None, description="")
 
 
 class AcknowledgeRequest(BaseModel):
     server_name: str
     host_info: str
+
+# Don't forget description
+class MLMDPullRequest(BaseModel):
+    pipeline_name:Optional[str] = Field(None, description="")
+    exec_uuid: Optional[str] = Field(None, description="")
+    last_sync_time: Optional[str] = Field(None, description="")
+    
 
     

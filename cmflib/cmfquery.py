@@ -997,6 +997,10 @@ class CmfQuery(object):
             pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
+
+    def extract_to_json(self, last_sync_time: str):
+        print("into extratc to json")
+        return 
     
     def get_all_executions_for_artifact_id(self, artifact_id: int) -> pd.DataFrame:
         """Return executions that consumed and produced given artifact.
@@ -1107,7 +1111,7 @@ class CmfQuery(object):
 
         return executions_from_path, list_executions_exists, executions_from_req, status
 
-    def create_unique_executions(self, req_info: str, cmd: str, exe_uuid: str) -> str:
+    def create_unique_executions(self, req_info, cmd: str, exe_uuid: str) -> str:
         """
         Creates list of unique executions by checking if they already exist on server or not.
         locking is introduced lock to avoid data corruption on server, 
