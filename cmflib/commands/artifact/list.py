@@ -230,12 +230,12 @@ class CmdArtifactsList(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page."
+    ARTIFACT_LIST_HELP = "Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.",
+        description="Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -255,7 +255,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name",
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.",
+        help="Specify input metadata file name.",
         metavar="<file_name>",
     )
 

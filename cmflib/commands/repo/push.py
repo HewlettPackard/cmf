@@ -94,7 +94,7 @@ class CmdRepoPush(CmdBase):
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
-            "tensorboad": self.args.tensorboard
+            "tensorboard_path": self.args.tensorboard_path
         }  
 
         # Validates the command arguments.
@@ -240,7 +240,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.", 
+        help="Specify input metadata file name.", 
         metavar="<file_name>"
     )
 
@@ -255,10 +255,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-t",
-        "--tensorboard",
+        "--tensorboard_path",
         action="append",
         help="Specify path to tensorboard logs for the pipeline.",
-        metavar="<tensorboard>"
+        metavar="<tensorboard_path>"
     )
 
     parser.set_defaults(func=CmdRepoPush)

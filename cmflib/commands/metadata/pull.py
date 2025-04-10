@@ -119,12 +119,12 @@ class CmdMetadataPull(CmdBase):
                 raise MlmdFilePullFailure
             
 def add_parser(subparsers, parent_parser):
-    PULL_HELP = "Pulls mlmd from cmf-server to users's machine."
+    PULL_HELP = "Pulls metadata from cmf-server to users's machine."
 
     parser = subparsers.add_parser(
         "pull",
         parents=[parent_parser],
-        description="Pulls mlmd from cmf-server to users's machine.",
+        description="Pulls metadata from cmf-server to users's machine.",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -143,7 +143,7 @@ def add_parser(subparsers, parent_parser):
         "-f",
         "--file_name",
         action="append",
-        help="Specify mlmd file name with full path.",
+        help="Specify output metadata file name.",
         metavar="<file_name>",
     )
 
