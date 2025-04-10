@@ -7,7 +7,7 @@ neo4j
 tabulate
 click
 minio
-paramiko
+paramiko==3.4.1
 scikit_learn
 boto3
 scitokens
