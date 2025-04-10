@@ -15,9 +15,9 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
-import json
 import os
+import json
+import argparse
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -48,7 +48,7 @@ class CmdMetadataExport(CmdBase):
         else:
             raise MsgFailure(msg_str = "Provide path with file name.")
         
-    def run(self):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -91,7 +91,7 @@ class CmdMetadataExport(CmdBase):
             if json_file_name:
                 if not json_file_name.endswith(".json"):
                     json_file_name = json_file_name+".json" # Added .json extention to json file name.
-                if os.path.exists(json_file_name): 
+                if os.path.exists(json_file_name):
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":    # Overwrite file.
                         full_path_to_dump = self.create_full_path(current_directory, json_file_name)
@@ -101,7 +101,7 @@ class CmdMetadataExport(CmdBase):
                     full_path_to_dump = self.create_full_path(current_directory, json_file_name)
             else: 
                 # Checking whether a json file exists in the directory based on pipeline name.
-                if os.path.exists(f"{pipeline_name}.json"): 
+                if os.path.exists(f"{pipeline_name}.json"):
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":
                         full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"

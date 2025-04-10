@@ -15,14 +15,15 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
 import json
+import argparse
+
 from cmflib import cmfquery
-from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
-from cmflib.server_interface import server_interface
+from cmflib.cli.command import CmdBase
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.server_interface import server_interface
 from cmflib.cmf_exception_handling import (
     TensorboardPushSuccess, 
     TensorboardPushFailure, 
@@ -39,6 +40,7 @@ from cmflib.cmf_exception_handling import (
     MissingArgument,
     DuplicateArgumentNotAllowed
 )
+
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
 
@@ -54,7 +56,7 @@ class CmdMetadataPush(CmdBase):
                         found_files[file_name] = file_path
         return found_files
 
-    def run(self):
+    def run(self, live):
         current_directory = mlmd_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
         # Get url from config
