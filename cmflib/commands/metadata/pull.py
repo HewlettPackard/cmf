@@ -17,11 +17,11 @@
 #!/usr/bin/env python3
 import argparse
 import os
+from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf import create_unique_executions
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
@@ -48,7 +48,7 @@ class CmdMetadataPull(CmdBase):
             raise CmfNotConfigured(output)
         config_file_path = os.path.join(output, cmfconfig)
         attr_dict = CmfConfig.read_config(config_file_path)
-        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
+        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:8080")
         current_directory = os.getcwd()
         full_path_to_dump = ""
         cmd = "pull"
@@ -86,6 +86,8 @@ class CmdMetadataPull(CmdBase):
         
         if self.args.execution_uuid:
             exec_uuid = self.args.execution_uuid[0]
+
+        query = cmfquery.CmfQuery(full_path_to_dump)
         output = server_interface.call_mlmd_pull(
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
@@ -98,7 +100,7 @@ class CmdMetadataPull(CmdBase):
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
         else:
-            response = create_unique_executions(full_path_to_dump, output.content, "pull", exec_uuid)
+            response = query.create_unique_executions(output.content, "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":

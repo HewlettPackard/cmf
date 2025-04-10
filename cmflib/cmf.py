@@ -28,7 +28,6 @@ from cmflib import cmfquery, cmf_merger
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import (
     dvc_get_url,
     dvc_get_hash,
@@ -43,6 +42,8 @@ from cmflib.dvc_wrapper import (
     git_commit,
 )
 from cmflib import graph_wrapper
+from cmflib.store.sqllite_store import SqlliteStore
+from cmflib.store.postgres import PostgresStore 
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
@@ -57,7 +58,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -137,17 +138,20 @@ class Cmf:
 					else  os.getcwd()
 
         logging_dir = change_dir(self.cmf_init_path)
+        temp_store = ""
         if is_server is False:
             Cmf.__prechecks()
+            temp_store = SqlliteStore({"filename":filepath})
+        else:
+            config_dict = get_postgres_config()
+            temp_store = PostgresStore(config_dict)
         if custom_properties is None:
             custom_properties = {}
         if not pipeline_name:
             # assign folder name as pipeline name 
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
-        config = mlpb.ConnectionConfig()
-        config.sqlite.filename_uri = filepath
-        self.store = metadata_store.MetadataStore(config)
+        self.store = temp_store.connect()
         self.filepath = filepath
         self.child_context = None
         self.execution = None
@@ -410,7 +414,7 @@ class Cmf:
         if uuids:
             self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
         else:
-            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())            
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())          
         self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
@@ -420,7 +424,7 @@ class Cmf:
         self.execution_label_props["Execution_Name"] = (
             execution_type + ":" + str(self.execution.id)
         )
-        
+
         self.execution_label_props["execution_command"] = cmd
 
         # The following lines create an artifact of type 'Environment'.  
@@ -649,6 +653,7 @@ class Cmf:
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")
         return commit_dvc_lock_file(file_path, self.execution.id)
+
 
     def log_dataset(
         self,
@@ -1934,95 +1939,3 @@ def repo_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = "")
     output = _repo_pull(pipeline_name, filepath, execution_uuid)
     return output
 
-def create_unique_executions(path: str, req_info: str, cmd: str, exe_uuid: str) -> str:
-    """
-    Creates a list of unique executions by checking if they already exist on the server or not.
-    Locking is introduced to avoid data corruption on the server when multiple similar pipelines are pushed at the same time.
-
-    Args:
-        path (str): Path to the MLMD file — server-side for push commands, client-side for pull commands.  
-        req_info (str): Contains MLMD data — client-side for push, server-side for pull.  
-        cmd (str): The command being executed, either "push" or "pull."  
-        exe_uuid (str, optional): User-provided execution UUID (default: None).  
-
-    Returns:
-        str: A status message indicating the result of the operation:
-            - "exists": Execution already exists on the CMF server.
-            - "success": Execution successfully pushed to the CMF server.
-            - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
-    """
-    # Load the MLMD data from the request info
-    mlmd_data = json.loads(req_info)
-    # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
-    pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
-    if not pipelines:
-        return "invalid_json_payload"  # No pipelines found in payload
-    pipeline = pipelines[0]
-    pipeline_name = pipeline.get("name")  # Extract pipeline name, use .get() to avoid KeyError
-    if not pipeline_name:
-        return "invalid_json_payload"  # Missing pipeline name
-
-    executions_from_path = []  # Stores existing execution UUIDs from the path
-    list_executions_exists = []  # Stores the intersection of existing and new executions
-
-    # Check if the given path exists (server-side for push, client-side for pull)
-    if os.path.exists(path):
-        # For metadata push → path is the server MLMD store path
-        # For metadata pull → path is the client MLMD store path
-        query = cmfquery.CmfQuery(path)
-        executions = query.get_all_executions_in_pipeline(pipeline_name)
-        
-        # Collect all execution UUIDs from the queried data
-        for i in executions.index:
-            for uuid in executions['Execution_uuid'][i].split(","):
-                executions_from_path.append(uuid)
-    
-        # Extract execution UUIDs from the MLMD data payload
-        executions_from_req = []
-        # For metadata push → mlmd_data comes from client MLMD file
-        # For metadata pull → mlmd_data comes from server MLMD file
-        for stage in mlmd_data['Pipeline'][0]["stages"]:  # checks if given execution_id present in mlmd
-            for execution in stage["executions"]:
-                if execution['name'] != "": #If executions have name , they are reusable executions
-                    continue       #which needs to be merged in irrespective of whether already
-                                #present or not so that new artifacts associated with it gets in.
-                if 'Execution_uuid' in execution['properties']:
-                    for uuid in execution['properties']['Execution_uuid'].split(","):
-                        executions_from_req.append(uuid)
-                else:
-                    # mlmd push is failed here
-                    status="version_update"
-                    return status
-        
-        # Intersection check:
-        # For metadata push → ensures only new executions get pushed
-        # For metadata pull → ensures only missing executions get pull
-        if executions_from_path != []:
-            list_executions_exists = list(set(executions_from_path).intersection(set(executions_from_req)))
-        
-        # remove already existing executions from the data
-        for pipeline in mlmd_data["Pipeline"]:
-            for stage in pipeline['stages']:
-                # Iterate through executions and remove the ones that already exist
-                for cmf_exec in stage['executions'][:]:
-                    uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
-                    for uuid in uuids:
-                        if uuid in list_executions_exists:
-                            stage['executions'].remove(cmf_exec)
-        
-        # remove empty stages (those without remaining executions)
-        for pipeline in mlmd_data["Pipeline"]:
-            pipeline['stages']=[stage for stage in pipeline['stages'] if stage['executions']!=[]]
-            
-    # determine if data remains to push/pull
-    for piepline in mlmd_data["Pipeline"]:
-        if len(piepline['stages']) == 0 :
-            status="exists"
-        else:
-            # metadata push → merge client data into server path
-            # metadata pull → merge server data into client path
-            cmf_merger.parse_json_to_mlmd(
-                json.dumps(mlmd_data), path, cmd, exe_uuid
-            )
-            status='success'
-    return status
