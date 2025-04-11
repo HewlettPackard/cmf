@@ -71,9 +71,13 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
         store = metadata_store.MetadataStore(config)
 
         # Initialize the cmf class with pipeline_name and graph_status
-        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+        if cmd == "pull":
+            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                            graph=graph)
+        else:
+            # in else, we are assuming cmd="push"
+            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph, is_server=True)
-        
         for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
             if exec_uuid is None:  #if exec_uuid is None we pass all the executions.
                 list_executions = [execution for execution in stage["executions"]]
@@ -181,42 +185,42 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
 # create_time_since_epoch is appended to mlmd pushed to cmf-server as original_create_time_since_epoch
 def create_original_time_since_epoch(mlmd_data):
     stages = []
-    execution = []
+    executions = []
     artifact = []
     original_stages = []
-    original_execution = []
-    original_artifact = []
+    original_executions = []
+    original_artifacts = []
     mlmd_data["Pipeline"][0]["original_create_time_since_epoch"] = mlmd_data[
         "Pipeline"
     ][0]["create_time_since_epoch"]
-    for i in mlmd_data["Pipeline"][0]["stages"]:
-        i["custom_properties"]["original_create_time_since_epoch"] = i[
+    for stage in mlmd_data["Pipeline"][0]["stages"]:
+        stage["custom_properties"]["original_create_time_since_epoch"] = str(stage[
             "create_time_since_epoch"
-        ]
+        ])
         original_stages.append(
-            i["custom_properties"]["original_create_time_since_epoch"]
+            stage["custom_properties"]["original_create_time_since_epoch"]
         )
-        stages.append(i["create_time_since_epoch"])
-        # print(i['custom_properties']['original_create_time_since_epoch'])
-        for j in i["executions"]:
-            j["custom_properties"]["original_create_time_since_epoch"] = j[
+        stages.append(stage["create_time_since_epoch"])
+        # print(stage['custom_properties']['original_create_time_since_epoch'])
+        for execution in stage["executions"]:
+            execution["custom_properties"]["original_create_time_since_epoch"] = str(execution[
                 "create_time_since_epoch"
-            ]
-            original_execution.append(
-                j["custom_properties"]["original_create_time_since_epoch"]
+            ])
+            original_executions.append(
+                execution["custom_properties"]["original_create_time_since_epoch"]
             )
-            execution.append(j["create_time_since_epoch"])
-            # print(j['custom_properties']['original_create_time_since_epoch'])
-            for k in j["events"]:
-                k["artifact"]["custom_properties"][
+            executions.append(execution["create_time_since_epoch"])
+            # print(execution['custom_properties']['original_create_time_since_epoch'])
+            for event in execution["events"]:
+                event["artifact"]["custom_properties"][
                     "original_create_time_since_epoch"
-                ] = k["artifact"]["create_time_since_epoch"]
-                original_artifact.append(
-                    k["artifact"]["custom_properties"][
+                ] = str(event["artifact"]["create_time_since_epoch"])
+                original_artifacts.append(
+                    event["artifact"]["custom_properties"][
                         "original_create_time_since_epoch"
                     ]
                 )
-                artifact.append(k["artifact"]["create_time_since_epoch"])
-                # print(k['artifact']['custom_properties']['original_create_time_since_epoch'])
+                artifact.append(event["artifact"]["create_time_since_epoch"])
+                # print(event['artifact']['custom_properties']['original_create_time_since_epoch'])
 
     return mlmd_data
