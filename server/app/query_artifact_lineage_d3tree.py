@@ -1,15 +1,12 @@
-import time
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 from collections import deque, defaultdict
-#from get_data import get_all_artifact_ids, get_all_exe_ids
 from typing import List, Dict, Any
 from server.app.utils import modify_arti_name
 
-def query_artifact_lineage_d3tree(mlmd_path: str, pipeline_name: str, dict_of_art_ids: dict) -> List[List[Dict[str, Any]]]:
-    query = cmfquery.CmfQuery(mlmd_path)
-    env_list: List[Any] = []
-    id_name: Dict[Any, str] = {}
-    child_parent_artifact_id: Dict[Any, List[Any]] = {}
+def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
+    env_list = []
+    id_name = {}
+    child_parent_artifact_id = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         if type_ == "Environment":
             env_list = list(df["id"])

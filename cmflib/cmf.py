@@ -26,7 +26,6 @@ import typing as t
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-from ml_metadata.metadata_store import metadata_store
 from cmflib.dvc_wrapper import (
     dvc_get_url,
     dvc_get_hash,
@@ -41,6 +40,8 @@ from cmflib.dvc_wrapper import (
     git_commit,
 )
 from cmflib import graph_wrapper
+from cmflib.store.sqllite_store import SqlliteStore
+from cmflib.store.postgres import PostgresStore 
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
@@ -55,7 +56,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -142,8 +143,13 @@ class Cmf:
 					else  os.getcwd()
 
         logging_dir = change_dir(self.cmf_init_path)
+        temp_store = ""
         if is_server is False:
             Cmf.__prechecks()
+            temp_store = SqlliteStore({"filename":filepath})
+        else:
+            config_dict = get_postgres_config()
+            temp_store = PostgresStore(config_dict)
         if custom_properties is None:
             custom_properties = {}
         # If pipeline_name is not provided, derive it from the current folder name 
@@ -151,12 +157,8 @@ class Cmf:
         if not pipeline_name:
             # assign folder name as pipeline name 
             cur_folder = os.path.basename(os.getcwd())
-            self.pipeline_name = cur_folder
-        else:
-            self.pipeline_name = pipeline_name
-        config = getattr(mlpb, "ConnectionConfig")() # Use getattr to avoid mypy error due to dynamic attribute generation
-        config.sqlite.filename_uri = filepath
-        self.store = metadata_store.MetadataStore(config)
+            pipeline_name = cur_folder
+        self.store = temp_store.connect()
         self.filepath = filepath
         self.child_context = None
         self.execution = None
@@ -432,7 +434,7 @@ class Cmf:
         if uuids:
             self.execution.properties["Execution_uuid"].string_value = uuids+","+str(uuid.uuid1())
         else:
-            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())            
+            self.execution.properties["Execution_uuid"].string_value = str(uuid.uuid1())          
         self.store.put_executions([self.execution])
         self.execution_name = str(self.execution.id) + "," + execution_type
         self.execution_command = cmd
@@ -442,7 +444,7 @@ class Cmf:
         self.execution_label_props["Execution_Name"] = (
             execution_type + ":" + str(self.execution.id)
         )
-        
+
         self.execution_label_props["execution_command"] = cmd
 
         # The following lines create an artifact of type 'Environment'.  
@@ -678,6 +680,7 @@ class Cmf:
             self.create_execution(execution_type=self.name_without_extension)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
         return commit_dvc_lock_file(file_path, self.execution.id)
+
 
     def log_dataset(
         self,

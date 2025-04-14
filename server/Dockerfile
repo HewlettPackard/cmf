@@ -39,9 +39,6 @@ RUN apt-get update -y && apt-get install -y curl
 # Copy the requirements.txt file from the server to the cmf-server.
 COPY ./server/requirements.txt /cmf-server/requirements.txt
 
-# library required for lineage
-RUN apt-get install -y graphviz graphviz-dev 
-
 # Install requirements.txt
 RUN pip install --no-cache-dir --upgrade -r /cmf-server/requirements.txt
 
@@ -61,7 +58,7 @@ RUN pip install /cmf-server/dist/*
 COPY ./server/app /cmf-server/server/app
 
 # Run the server with uvicorn
-CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 RUN cd /cmf-server/data/static
 

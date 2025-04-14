@@ -45,7 +45,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -74,7 +74,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -145,7 +145,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -177,7 +177,7 @@ Required Arguments
 Optional Arguments
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -197,7 +197,7 @@ Usage: cmf init osdfremote [-h] --path [path]
 ```
 `cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
 ```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 Required Arguments
 ```
@@ -211,7 +211,7 @@ Optional Arguments
 ```
   --cache [cache]                     Specify FQDN for OSDF cache including including port and directory path if any
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)

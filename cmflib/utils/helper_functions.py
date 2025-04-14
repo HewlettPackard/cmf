@@ -192,3 +192,24 @@ def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     if res.status_code == 200:
         return True
     return False
+
+def get_postgres_config() -> dict:
+    """
+    Get PostgreSQL configuration from environment variables.
+
+    Returns:
+        dict: A dictionary containing PostgreSQL configuration.
+    """
+    IP = os.getenv('MYIP')
+    HOSTNAME = os.getenv('HOSTNAME')
+    HOST = ""
+    if(HOSTNAME!="localhost"):
+        HOST = HOSTNAME
+    else:
+        HOST = IP
+    POSTGRES_DB = os.getenv('POSTGRES_DB')
+    POSTGRES_USER = os.getenv('POSTGRES_USER')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+    config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    #print("config_dict = ", config_dict)
+    return config_dict

@@ -1,4 +1,4 @@
-"""This module contains all the public API for CMF"""
+"""This module contains all the APIs for CMF server"""
 ###
 # Copyright (2022) Hewlett Packard Enterprise Development LP
 #
