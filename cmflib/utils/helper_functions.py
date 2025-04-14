@@ -278,3 +278,25 @@ def fetch_cmf_config_path() -> tuple[dict, str]:
     # Construct the full path to the configuration file 
     config_file_path = os.path.join(cmf_config_root, cmf_config)
     return dvc_output, config_file_path
+
+
+def get_postgres_config() -> dict:
+    """
+    Get PostgreSQL configuration from environment variables.
+
+    Returns:
+        dict: A dictionary containing PostgreSQL configuration.
+    """
+    IP = os.getenv('MYIP')
+    HOSTNAME = os.getenv('HOSTNAME')
+    HOST = ""
+    if(HOSTNAME!="localhost"):
+        HOST = HOSTNAME
+    else:
+        HOST = IP
+    POSTGRES_DB = os.getenv('POSTGRES_DB')
+    POSTGRES_USER = os.getenv('POSTGRES_USER')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+    config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    #print("config_dict = ", config_dict)
+    return config_dict
