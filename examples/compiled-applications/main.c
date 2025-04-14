@@ -23,10 +23,10 @@ int main() {
     // Commit metrics
     commit_metrics("test_metrics");
 
-    const char *keys1[] = {"train1_loss"};
-    const char *values1[] = {"10"};
+    const char *keys1[] = {"train1_loss","train2_loss","train3_loss"};
+    const char *values1[] = {"10","10.12","[10,10.00,12]"};
 
-    log_metric("test1_metrics", keys1, values1, 1);
+    log_metric("test1_metrics", keys1, values1, 3);
 
     // Commit metrics
     commit_metrics("test1_metrics");
@@ -36,10 +36,3 @@ int main() {
 
     return 0;
 }
-
-/*
-Compilation command
-gcc -o main main.c log_metric_lib.c     -I$(python -c "from sysconfig import get_path; print(get_path('include'))")     -L$(python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")     -lpython$(python -c "import sys; print('.'.join(map(str, sys.version_info[:2])))")     -lpthread     -Wl,-rpath,$(python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))")
-
-export LD_LIBRARY_PATH=$(python -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))"):$LD_LIBRARY_PATH
-*/
