@@ -63,7 +63,7 @@ services:
     depends_on:
       - neo4j
   neo4j:
-    image: neo4j:4.4
+    image: neo4j:5.26
     container_name: neo4j
     hostname: neo4j
     ports:
