@@ -204,9 +204,9 @@ def get_postgres_config() -> dict:
     HOSTNAME = os.getenv('HOSTNAME')
     HOST = ""
     if(HOSTNAME!="localhost"):
-        HOST = HOSTNAME
+        HOST = HOSTNAME if HOSTNAME else ""
     else:
-        HOST = IP
+        HOST = IP if IP else ""
     POSTGRES_DB = os.getenv('POSTGRES_DB')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')

@@ -98,7 +98,7 @@ def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:
     return df
 
 
-def get_all_exe_ids(query: CmfQuery, pipeline_name: str = None) -> t.Dict[str, pd.DataFrame]:
+def get_all_exe_ids(query: CmfQuery, pipeline_name: t.Optional[str] = None) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
     returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
@@ -125,14 +125,14 @@ def get_all_exe_ids(query: CmfQuery, pipeline_name: str = None) -> t.Dict[str, p
                 execution_ids[name] = pd.DataFrame()
     return execution_ids
 
-def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
+def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Optional[str] = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
     # following is a dictionary of dictionaries
 
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
     # Nested dictionary key is type i.e. Dataset, Model, etc.
     # Nested dictionary value is a pandas df with id and artifact name
-    artifact_ids = {}
+    artifact_ids: t.Dict[str, t.Dict[str, pd.DataFrame]] = {}
     artifacts = pd.DataFrame()
     if pipeline_name:
         if not execution_ids.get(pipeline_name).empty:

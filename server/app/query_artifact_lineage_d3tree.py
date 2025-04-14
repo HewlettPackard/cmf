@@ -6,7 +6,7 @@ from server.app.utils import modify_arti_name
 def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
     env_list = []
     id_name = {}
-    child_parent_artifact_id = {}
+    child_parent_artifact_id: Dict[int, List[int]] = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
         if type_ == "Environment":
             env_list = list(df["id"])
