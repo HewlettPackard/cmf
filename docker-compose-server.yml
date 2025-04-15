@@ -39,11 +39,11 @@ services:
   tensorboard:
     image: tensorflow/tensorflow
     command: tensorboard --logdir /logs --host 0.0.0.0
-    expose:
-      - 6006
     volumes:
       # directory path should be updated as per user's environment
       - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
+    expose:
+      - 6006
     container_name: tensorboard
     network_mode: host
 
@@ -76,7 +76,6 @@ services:
       postgres:
         condition: service_healthy
     network_mode: host
-
   ui:
     image: ui:latest
     container_name: ui-server
