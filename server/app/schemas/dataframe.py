@@ -7,7 +7,7 @@ import json
 class MLMDPushRequest(BaseModel): 
     # ... indicates required field
     exec_uuid: Optional[str] = Field(None, description="Optional execution uuid for the request")
-    pipeline_name: str = Field(..., min_length=1, description="Name of the pipeline")
+    pipeline_name: str = Field(None, description="Name of the pipeline")
     json_payload: str = Field(..., description="JSON payload for the pipeline")
 
     # Custom validation for pipeline name and JSON payload

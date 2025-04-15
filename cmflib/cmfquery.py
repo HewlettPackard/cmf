@@ -1003,11 +1003,8 @@ class CmfQuery(object):
         pipelines = []
         print("i am inside extract to json")
         for pipeline in self._get_pipelines():
-            print("pipeline = ", pipeline)
             pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
-            print("pipeline_attrs = ", pipeline_attrs)
             pipelines.append(pipeline_attrs)
-        print(pipelines)
         return json.dumps({"Pipeline": pipelines})
     
     def get_all_executions_for_artifact_id(self, artifact_id: int) -> pd.DataFrame:
@@ -1119,7 +1116,7 @@ class CmfQuery(object):
 
         return executions_from_path, list_executions_exists, executions_from_req, status
 
-    def create_unique_executions(self, req_info, cmd: str, exe_uuid: str) -> str:
+    def create_unique_executions(self, req_info, pipeline_name, cmd: str, exe_uuid: str) -> str:
         """
         Creates list of unique executions by checking if they already exist on server or not.
         locking is introduced lock to avoid data corruption on server, 
@@ -1135,20 +1132,20 @@ class CmfQuery(object):
                 - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
                 - "version_update": Mlmd push failed due to version update. 
         """
-        print(req_info)
+        #print(req_info)
         mlmd_data = json.loads(req_info)
         # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
         pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
+        print("type of pipelines = ", type(pipelines))
         if not pipelines:
             return "invalid_json_payload"  # No pipelines found in payload
         
         # pipeline_name = req_info['pipeline_name']
-        pipeline_name = None
-        print(pipeline_name)
-        # check pipelines list contais one pipeline or multiple piplens
+        # check if pipeline_name is given
+        # if pipeline_name is given - it is command otherwise sync
         if pipeline_name:
             # in case of push check pipeline name exists inside mlmd_data
-            pipeline = [pipeline for pipeline in pipelines if pipeline.get("name") == pipeline_name]
+            #pipeline = [pipeline for pipeline in pipelines if pipeline.get("name") == pipeline_name]
             executions_from_path, list_executions_exists, executions_from_req, status = self.identify_existing_and_new_executions(
                 mlmd_data, pipeline_name
             )  
@@ -1188,11 +1185,8 @@ class CmfQuery(object):
             else:
                 return "pipeline name not found"
         else:
-            p_list = []
+            print("enrtered here in create unique executions")
             for pipeline in pipelines:
-                p_list.append(pipeline)
-            
-            for pipeline in p_list:
                 pipeline_name = pipeline.get("name")
                 executions_from_path, list_executions_exists, executions_from_req, status = self.identify_existing_and_new_executions(
                     mlmd_data, pipeline_name
@@ -1229,7 +1223,7 @@ class CmfQuery(object):
                                 json.dumps(mlmd_data), "", cmd, exe_uuid
                             )
                 status = "success"
-                return status
+            return status
             
             
     def get_unique_executions(self, client_mlmd_json: str) -> list:

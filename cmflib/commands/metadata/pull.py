@@ -108,7 +108,7 @@ class CmdMetadataPull(CmdBase):
                 return ExecutionsAlreadyExists()
 
             # Create unique executions
-            response = query.create_unique_executions(output.content, "pull", exec_uuid)
+            response = query.create_unique_executions(output.content, self.args.pipeline_name[0], "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":

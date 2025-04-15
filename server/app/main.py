@@ -103,14 +103,20 @@ async def mlmd_push(info: MLMDPushRequest):
     print("mlmd push started")
     print("......................")
     req_info = info.model_dump()  # Serializing the input data into a dictionary using model_dump()
-    pipeline_name = req_info["pipeline_name"]
+    pipeline_name = req_info.get("pipeline_name", "")
     if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
         pipeline_locks[pipeline_name] = asyncio.Lock()
     pipeline_lock = pipeline_locks[pipeline_name]   
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(query.create_unique_executions, req_info["json_payload"], "push", req_info["exec_uuid"])
+            if pipeline_name:
+                # this is excuted when cmf metadata command is fired
+                status = await async_api(query.create_unique_executions, req_info["json_payload"], pipeline_name, "push", req_info["exec_uuid"])
+            else:
+                print("i am inside mlmd push's else")
+                # this is executed in case of first sync
+                status = await async_api(query.create_unique_executions, req_info["json_payload"], None, "push", None)
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
@@ -566,11 +572,12 @@ async def sync_metadata(request: ServerRegistrationRequest):
             json_data = {
                 "exec_uuid": None,
                 "json_payload": json.dumps(json_payload),
-                "pipeline_name": "Test-env"
+                "pipeline_name": None
             }
 
             # this will need some update too - can't always have a pipeline name in mlmd push
             # Push the JSON payload to the host server
+            print("push is next")
             status = await mlmd_push(MLMDPushRequest(**json_data))
 
         else:  # Subsequent sync
@@ -583,11 +590,12 @@ async def sync_metadata(request: ServerRegistrationRequest):
             json_data = {
                 "exec_uuid": None,
                 "json_payload": json.dumps(json_payload),
-                "pipeline_name": "Test-env"
+                "pipeline_name": None
             }
 
             # this will need some update too
             # Push the JSON payload to the host server
+            print("push is next")
             status = await mlmd_push(MLMDPushRequest(**json_data))            
 
         # Update the last_sync_time in the database only if sync status is successful
