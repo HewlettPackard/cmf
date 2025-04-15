@@ -46,7 +46,7 @@ class ArtifactRequest(BaseRequest):
 class ServerRegistrationRequest(BaseModel):
     server_name: str
     host_info: str
-    last_sync_time: Optional[str] = Field(None, description="")
+    last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
 
 
 class AcknowledgeRequest(BaseModel):
@@ -57,7 +57,7 @@ class AcknowledgeRequest(BaseModel):
 class MLMDPullRequest(BaseModel):
     pipeline_name:Optional[str] = Field(None, description="")
     exec_uuid: Optional[str] = Field(None, description="")
-    last_sync_time: Optional[str] = Field(None, description="")
+    last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
     
 
     

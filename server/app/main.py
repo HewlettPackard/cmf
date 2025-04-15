@@ -145,7 +145,7 @@ async def mlmd_pull(info: MLMDPullRequest):
         #json_payload values can be json data, none or no_exec_id.
         json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, last_sync_time, dict_of_exe_ids)
     else:
-        json_payload = await async_api(get_mlmd_from_server, query, last_sync_time=last_sync_time)
+        json_payload = await async_api(get_mlmd_from_server, query, None, None, last_sync_time)
     if json_payload == None:
         raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
@@ -499,16 +499,18 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
         # Access the data from the Pydantic model
         host_info = request.host_info
         last_sync_time = request.last_sync_time
+        print(type(last_sync_time))
+        print("last_sync_time in server mlmd pull = ", last_sync_time)
         # Step 1: Send a request to the target server to fetch mlmd data
         async with httpx.AsyncClient() as client:
             try:
-                response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={"last_sync_time": last_sync_time})
+                response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={'last_sync_time': last_sync_time})
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
                 json_payload = response.json()
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
-
+        print(json_payload)
         return json_payload
 
     except Exception as e:
@@ -553,13 +555,13 @@ async def sync_metadata(request: ServerRegistrationRequest):
 
         last_sync_time = row['last_sync_time']
         current_utc_epoch_time = int(time.time() * 1000)
+        request.last_sync_time = last_sync_time
 
         if not last_sync_time:  # First-time sync
             message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
 
             # Call mlmd_pull to fetch the JSON payload
-            json_payload = await server_mlmd_pull(request)
-            print(json_payload)            
+            json_payload = await server_mlmd_pull(request)      
             # Use the JSON payload in json_data
             json_data = {
                 "exec_uuid": None,
@@ -567,7 +569,7 @@ async def sync_metadata(request: ServerRegistrationRequest):
                 "pipeline_name": "Test-env"
             }
 
-            # this will need some update too
+            # this will need some update too - can't always have a pipeline name in mlmd push
             # Push the JSON payload to the host server
             status = await mlmd_push(MLMDPushRequest(**json_data))
 
@@ -587,7 +589,6 @@ async def sync_metadata(request: ServerRegistrationRequest):
             # this will need some update too
             # Push the JSON payload to the host server
             status = await mlmd_push(MLMDPushRequest(**json_data))            
-            status = {"status": "success"}  # Ensure status is defined
 
         # Update the last_sync_time in the database only if sync status is successful
         if status.get("status") == "success":

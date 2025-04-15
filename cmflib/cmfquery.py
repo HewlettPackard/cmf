@@ -999,8 +999,15 @@ class CmfQuery(object):
         return json.dumps({"Pipeline": pipelines})
 
     def extract_to_json(self, last_sync_time: str):
-        print("into extratc to json")
-        return 
+        pipelines = []
+        print("i am inside extract to json")
+        for pipeline in self._get_pipelines():
+            print("pipeline = ", pipeline)
+            pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+            print("pipeline_attrs = ", pipeline_attrs)
+            pipelines.append(pipeline_attrs)
+        print(pipelines)
+        return json.dumps({"Pipeline": pipelines})
     
     def get_all_executions_for_artifact_id(self, artifact_id: int) -> pd.DataFrame:
         """Return executions that consumed and produced given artifact.
@@ -1129,11 +1136,17 @@ class CmfQuery(object):
         """
         # Load the MLMD data from the request info
         mlmd_data = json.loads(req_info)
+        print("type of mlmd data = ", type(mlmd_data))
         # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
         pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
+        print("pipelines = ", pipeline)
         if not pipelines:
             return "invalid_json_payload"  # No pipelines found in payload
-        pipeline = pipelines[0]
+        pipeline = []
+        # pipeline = pipeline[0]
+        pipeline.append(pipelines[0])
+        pipeline.append(pipelines[1])
+        print("in create unique executions = ", type(pipeline))
         pipeline_name = pipeline.get("name")  # Extract pipeline name, use .get() to avoid KeyError
         if not pipeline_name:
             return "invalid_json_payload"  # Missing pipeline name
@@ -1159,8 +1172,8 @@ class CmfQuery(object):
             pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
 
         # determine if data remains to push/pull
-        for piepline in mlmd_data["Pipeline"]:
-            if len(piepline['stages']) == 0 :
+        for pipeline in mlmd_data["Pipeline"]:
+            if len(pipeline['stages']) == 0 :
                 status="exists"
             else:
                 # metadata push → merge client data into server path
