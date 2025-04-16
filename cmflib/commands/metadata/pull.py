@@ -93,10 +93,11 @@ class CmdMetadataPull(CmdBase):
         )  # calls cmf-server api to get mlmd file data(Json format)
          
         status = output.status_code
+        print("Status code: ", status)
         # Checks if given pipeline does not exist
         # or if the execution UUID not present inside the mlmd file
         # else pulls the mlmd file
-        if status == 406:
+        if status == 404:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
