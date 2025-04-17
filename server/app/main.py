@@ -1,10 +1,13 @@
 # cmf-server api's
+import io
 import time
+import zipfile
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
+from flask import jsonify, send_file
 import pandas as pd
 from typing import List, Dict, Any
 from cmflib.cmfquery import CmfQuery
@@ -152,6 +155,7 @@ async def mlmd_pull(info: MLMDPullRequest):
         json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, last_sync_time, dict_of_exe_ids)
     else:
         json_payload = await async_api(get_mlmd_from_server, query, None, None, last_sync_time)
+    print("json_payload", json_payload)
     if json_payload == None:
         raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
@@ -514,9 +518,42 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
                 json_payload = response.json()
+                
+                python_env_store_path = "./cmf-server/data/env/"
+                python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env")
+                
+                if python_env_zip.status_code == 200:
+                    try:
+                        # Create the directory if it doesn't exist
+                        os.makedirs(python_env_store_path, exist_ok=True)
+
+                        # Unzip the zip file content
+                        with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
+                            # Extract all files to a temporary directory
+                            temp_dir = os.path.join(python_env_store_path, "temp_extracted")
+                            os.makedirs(temp_dir, exist_ok=True)
+                            zf.extractall(temp_dir)
+
+                            # Move all extracted files to the target directory
+                            for root, dirs, files in os.walk(temp_dir):
+                                for file in files:
+                                    src_file = os.path.join(root, file)
+                                    dest_file = os.path.join(python_env_store_path, file)
+                                    os.rename(src_file, dest_file)
+
+                            # Clean up the temporary directory
+                            os.rmdir(temp_dir)
+
+                        print(f"All files have been successfully extracted and stored in {python_env_store_path}")
+                    except Exception as e:
+                        raise HTTPException(status_code=500, detail=f"Failed to extract and store files: {e}")
+                else:
+                    raise HTTPException(status_code=500, detail="Failed to download python env zip file")
+
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
         print(json_payload)
+
         return json_payload
 
     except Exception as e:
@@ -626,6 +663,40 @@ async def server_list():
     rows = await conn.fetch('''SELECT * FROM registred_servers;''')
     print(rows)
     return rows
+
+
+@app.get("/download-python-env")
+def download_python_env(request: Request):
+    """
+    API endpoint to compress and download the entire folder as a ZIP file.
+    """
+    try:
+        DIRECTORY = "../cmf-server/data/env/"  # Directory to be compressed
+        # Check if the directory exists
+        if not os.path.exists(DIRECTORY):
+            return jsonify({"error": "Directory does not exist"}), 404
+
+        # Create an in-memory ZIP file
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for root, dirs, files in os.walk(DIRECTORY):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(file_path, DIRECTORY)  # Relative path for the ZIP
+                    zip_file.write(file_path, arcname)
+
+        # Reset the buffer's position to the beginning
+        zip_buffer.seek(0)
+
+        # Send the ZIP file as a response
+        return send_file(
+            zip_buffer,
+            mimetype="application/zip",
+            as_attachment=True,
+            download_name="folder.zip"  # Name of the downloaded file
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 async def update_global_art_dict(pipeline_name):
