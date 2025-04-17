@@ -13,6 +13,8 @@ boto3
 scitokens
 cryptography
 ray==2.34.0
+# Development-only type checking tools like mypy are included here.
+# These are not needed at runtime and are used solely to ensure code quality during development.
 mypy
 pandas-stubs
 types-tabulate

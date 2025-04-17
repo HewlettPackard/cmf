@@ -294,8 +294,8 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, di
     flag=False
     if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
         if exec_uuid != None:
-            dict_of_exe_ids_df = pd.DataFrame(dict_of_exe_ids[pipeline_name])
-            for index, row in dict_of_exe_ids_df.iterrows():
+            dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+            for key, row in dict_of_exe_ids.items():
                 exec_uuid_list = row['Execution_uuid'].split(",")
                 if exec_uuid in exec_uuid_list:
                     flag=True

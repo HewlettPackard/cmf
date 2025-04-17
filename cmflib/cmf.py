@@ -394,10 +394,10 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
-        self.assigned_stage_name = os.path.splitext(file_name)[0]    # Assigning to an instance variable
+        assigned_stage_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.create_context(pipeline_stage=self.assigned_stage_name)
+            self.create_context(pipeline_stage=assigned_stage_name)
             assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # Initializing the execution related fields
@@ -578,14 +578,13 @@ class Cmf:
             Returns:
                     Artifact object from ML Metadata library associated with the new dataset artifact.
             """
-            # create execution if not already created
-            if not self.execution:
-                self.create_execution(execution_type=self.assigned_stage_name)
-                assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
             git_repo = git_get_repo()
             name = re.split("/", url)[-1]
-            existing_artifact = []
+            existing_artifact: list[mlpb.Artifact] = [] # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
 
+            if self.execution is None:
+                raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
+            
             commit_output(url, self.execution.id)
             c_hash = dvc_get_hash(url)
 
@@ -671,10 +670,8 @@ class Cmf:
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
         print("Entered dvc lock file commit")
-        # create execution if not already created
-        if not self.execution:
-            self.create_execution(execution_type=self.assigned_stage_name)
-            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+        if self.execution is None:
+            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
         return commit_dvc_lock_file(file_path, self.execution.id)
 
 
@@ -1279,15 +1276,8 @@ class Cmf:
         self, version: str, custom_properties: t.Optional[t.Dict] = None
     ) -> object: 
         uri = str(uuid.uuid1())
-        # create context if not already created
-        if not self.child_context:
-            self.create_context(pipeline_stage=self.assigned_stage_name)
-            assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
-
-        # create execution if not already created
-        if not self.execution:
-            self.create_execution(execution_type=self.assigned_stage_name)
-            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+        if self.execution is None:
+            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
         return create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -1361,11 +1351,9 @@ class Cmf:
 
     def read_dataslice(self, name: str) -> pd.DataFrame:
         """Reads the dataslice"""
-        # create execution if not already created
-        if not self.execution:
-            self.create_execution(execution_type=self.assigned_stage_name)
-            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
         # To do checkout if not there
+        if self.execution is None:
+            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
         directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
@@ -1388,10 +1376,8 @@ class Cmf:
         Returns:
            None
         """
-        # create execution if not already created
-        if not self.execution:
-            self.create_execution(execution_type=self.assigned_stage_name)
-            assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
+        if self.execution is None:
+            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
         directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)

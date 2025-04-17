@@ -75,14 +75,14 @@ def get_artifacts_by_id(store, artifact_id: List[int]) -> List[metadata_store_pb
         print('Failed to get artifact. Exception: "{}"'.format(str(e)), file=sys.stderr)
 
 
-def put_artifact(store, artifact: metadata_store_pb2.Artifact):  #type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
+def put_artifact(store, artifact: metadata_store_pb2.Artifact):  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
     try:
         store.put_artifacts([artifact])
     except Exception as e:
         print('Failed to put artifact . Exception: "{}"'.format(str(e)), file=sys.stderr)
 
 
-def get_or_create_artifact_type(store, type_name, properties: t.Optional[dict] = None) -> metadata_store_pb2.ArtifactType:   #type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
+def get_or_create_artifact_type(store, type_name, properties: t.Optional[dict] = None) -> metadata_store_pb2.ArtifactType:   # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
     try:
         artifact_type = store.get_artifact_type(type_name=type_name)
         return artifact_type
@@ -383,8 +383,8 @@ def associate_child_to_parent_context(store, parent_context: metadata_store_pb2.
 
 def create_new_execution_in_existing_run_context(
         store,
-        execution_type_name: str,  # TRAINING EXECUTION
-        execution_name: str,
+        execution_type_name: str = "",  # TRAINING EXECUTION
+        execution_name: str = "",
         context_id: int = 0,  # TRAINING CONTEXT ASSOCIATED WITH THIS EXECUTION
         execution: t.Optional[str] = None,
         pipeline_id: int = 0,  # THE PARENT CONTEXT

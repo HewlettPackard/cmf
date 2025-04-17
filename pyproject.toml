@@ -17,7 +17,6 @@ dependencies = [
 	"scitokens", 
 	"cryptography",   
 	"ray==2.34.0",
-	"mypy"
 ]
 authors = [
   { name = "Hewlett Packard Enterprise"}

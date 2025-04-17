@@ -656,7 +656,8 @@ def log_step_metrics_from_client(self, metrics_name: str, uri: str, props: t.Opt
     Returns:
         Artifact object from the ML Protocol Buffers library associated with the existing metrics artifact.
     """
-
+    # Ensure `props` is initialized as an empty dictionary if None to avoid attribute errors.
+    props = {} if props is None else props
     custom_props =  {} if custom_properties is None else custom_properties
     c_hash = uri.strip()
     existing_artifact = []
@@ -681,8 +682,8 @@ def log_step_metrics_from_client(self, metrics_name: str, uri: str, props: t.Opt
             event_type=mlpb.Event.Type.OUTPUT,  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
             properties={
                 # passing uri value to commit
-                "Commit": props.get("Commit", "") if props else "",
-                "url": props.get("url", "") if props else "",
+                "Commit": props.get("Commit", ""),
+                "url": props.get("url", ""),
             },
             artifact_type_properties={
                 "Commit": mlpb.STRING,  # type: ignore  # String type not recognized by mypy, using ignore to bypass
@@ -691,8 +692,7 @@ def log_step_metrics_from_client(self, metrics_name: str, uri: str, props: t.Opt
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
-    
-    metrics_commit = props.get("Commit", "") if props else ""
+    metrics_commit = props.get("Commit", "")
     custom_props["Commit"] = metrics_commit
     self.execution_label_props["Commit"] = metrics_commit
 
@@ -722,6 +722,7 @@ def log_step_metrics_from_client(self, metrics_name: str, uri: str, props: t.Opt
 # commit existing dataslice to server
 def log_dataslice_from_client(self, uri: str, props: t.Optional[t.Dict] = None, custom_properties: t.Optional[t.Dict] = None) -> None:
     custom_props = {} if custom_properties is None else custom_properties
+    props = {} if props is None else props
     c_hash = uri.strip()
     dataslice_commit = c_hash
     existing_artifact = []
@@ -747,9 +748,9 @@ def log_dataslice_from_client(self, uri: str, props: t.Optional[t.Dict] = None, 
             type_name="Dataslice",
             event_type=mlpb.Event.Type.OUTPUT,  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
             properties={
-                "git_repo": props.get("git_repo", "") if props else "",
-                "Commit": props.get("Commit", "") if props else "",
-                "url": props.get("url", " ") if props else " ",
+                "git_repo": props.get("git_repo", ""),
+                "Commit": props.get("Commit", ""),
+                "url": props.get("url", " "),
             },
             artifact_type_properties={
                 "git_repo": mlpb.STRING,    # type: ignore  # String type not recognized by mypy, using ignore to bypass
@@ -759,8 +760,8 @@ def log_dataslice_from_client(self, uri: str, props: t.Optional[t.Dict] = None, 
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),
         )
-    custom_props["git_repo"] = props.get("git_repo", "") if props else ""
-    custom_props["Commit"] = props.get("Commit", "") if props else ""
+    custom_props["git_repo"] = props.get("git_repo", "")
+    custom_props["Commit"] = props.get("Commit", "")
     if self.writer.graph:
         self.writer.driver.create_dataslice_node(
             self.name, self.name, c_hash, self.data_parent, custom_props
