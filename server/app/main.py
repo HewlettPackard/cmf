@@ -7,9 +7,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-from flask import jsonify, send_file
+from flask import send_file
 import pandas as pd
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from cmflib.cmfquery import CmfQuery
 import asyncio
 from collections import defaultdict
@@ -520,7 +520,9 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                 json_payload = response.json()
                 
                 python_env_store_path = "./cmf-server/data/env/"
-                python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env")
+                list_of_files = ["a", "b", "c"]
+                # Added list_of_files to the request as a optional query parameter 
+                python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
                 
                 if python_env_zip.status_code == 200:
                     try:
@@ -665,8 +667,8 @@ async def server_list():
     return rows
 
 
-@app.get("/download-python-env")
-def download_python_env(request: Request):
+@app.get("/download-python-env/")
+def download_python_env(request: Request, list_of_files: Optional[list[str]] = Query(None)):
     """
     API endpoint to compress and download the entire folder as a ZIP file.
     """
@@ -674,29 +676,44 @@ def download_python_env(request: Request):
         DIRECTORY = "../cmf-server/data/env/"  # Directory to be compressed
         # Check if the directory exists
         if not os.path.exists(DIRECTORY):
-            return jsonify({"error": "Directory does not exist"}), 404
+            return {"error": "Directory does not exist"}
 
-        # Create an in-memory ZIP file
-        zip_buffer = io.BytesIO()
-        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-            for root, dirs, files in os.walk(DIRECTORY):
+        # Determine files to include in the ZIP
+        files_to_zip = []
+        # if list_of_files is provided, include only those files
+        # else include all files in the directory
+        if list_of_files:
+            for file_name in list_of_files:
+                file_path = os.path.join(DIRECTORY, file_name)
+                if os.path.exists(file_path):
+                    files_to_zip.append((file_path, file_name))
+                else:
+                    return {"error": f"File {file_name} does not exist"}
+        else:
+            if not os.listdir(DIRECTORY):
+                return {"error": "Directory is empty"}
+            for root, _, files in os.walk(DIRECTORY):
                 for file in files:
                     file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(file_path, DIRECTORY)  # Relative path for the ZIP
-                    zip_file.write(file_path, arcname)
+                    arcname = os.path.relpath(file_path, DIRECTORY)
+                    files_to_zip.append((file_path, arcname))
 
-        # Reset the buffer's position to the beginning
+        # Create and send the ZIP file 
+        zip_buffer = io.BytesIO()
+        with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for file_path, arcname in files_to_zip:
+                zip_file.write(file_path, arcname)
+        
         zip_buffer.seek(0)
 
-        # Send the ZIP file as a response
         return send_file(
             zip_buffer,
             mimetype="application/zip",
             as_attachment=True,
-            download_name="folder.zip"  # Name of the downloaded file
+            download_name="python_env_files.zip" if list_of_files else "python_env_folder.zip"
         )
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return {"error": str(e)}
 
 
 async def update_global_art_dict(pipeline_name):
