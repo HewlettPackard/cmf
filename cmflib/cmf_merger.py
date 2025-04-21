@@ -150,7 +150,7 @@ def process_execution(cmf_class, store, stage, execution):
         except Exception as e:
             print(f"Error in event processing: {e}")
 
-def process_stage(stage, path_to_store, pipeline_name, graph, exec_uuid, cmd):
+def process_stage(cmf_class, stage, exec_uuid):
     """
     Processes a single stage including its executions and events.
     
@@ -162,14 +162,6 @@ def process_stage(stage, path_to_store, pipeline_name, graph, exec_uuid, cmd):
         exec_uuid: Optional execution UUID to filter executions.
         cmd (str): The command to execute. If "push", the original_time_since_epoch is added to the custom_properties.
     """
-    # Initialize the cmf class with pipeline_name and graph_status
-    if cmd == "pull":
-        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                            graph=graph)
-    else:
-        # in else, we are assuming cmd="push"
-        cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                            graph=graph, is_server=True)
 
     # Filter executions based on execution UUID (if provided)
     if exec_uuid is None:   #if exec_uuid is None we pass all the executions.
@@ -216,10 +208,19 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
         # if cmf is configured with 'neo4j' make graph True.
         graph = bool(os.getenv('NEO4J_URI', ""))
 
+        # Initialize the cmf class with pipeline_name and graph_status
+        if cmd == "pull":
+            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                                graph=graph)
+        else:
+            # in else, we are assuming cmd="push"
+            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                                graph=graph, is_server=True)
+
         # Process each stage sequentially
         for stage in data["Pipeline"][0]["stages"]:
             try:
-                process_stage(stage, path_to_store, pipeline_name, graph, exec_uuid, cmd)
+                process_stage(cmf_class, stage, exec_uuid)
             except Exception as e:
                 print(f"Error in stage processing: {e}")
 
@@ -272,4 +273,3 @@ def create_original_time_since_epoch(mlmd_data):
                 # print(event['artifact']['custom_properties']['original_create_time_since_epoch'])
 
     return mlmd_data
-            
