@@ -162,10 +162,6 @@ def process_stage(stage, path_to_store, pipeline_name, graph, exec_uuid, cmd):
         exec_uuid: Optional execution UUID to filter executions.
         cmd (str): The command to execute. If "push", the original_time_since_epoch is added to the custom_properties.
     """
-    # Initialize the connection configuration and metadata store
-    config = getattr(mlpb, "ConnectionConfig")()
-    config.sqlite.filename_uri = path_to_store
-    store = metadata_store.MetadataStore(config)
     # Initialize the cmf class with pipeline_name and graph_status
     if cmd == "pull":
         cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
@@ -189,7 +185,7 @@ def process_stage(stage, path_to_store, pipeline_name, graph, exec_uuid, cmd):
     # Process each execution sequentially within the stage
     for execution in list_executions:
         try:
-            process_execution(cmf_class, store, stage, execution)
+            process_execution(cmf_class, cmf_class.store, stage, execution)
         except Exception as e:
             print(f"Error in execution processing: {e}")
 
@@ -276,3 +272,4 @@ def create_original_time_since_epoch(mlmd_data):
                 # print(event['artifact']['custom_properties']['original_create_time_since_epoch'])
 
     return mlmd_data
+            
