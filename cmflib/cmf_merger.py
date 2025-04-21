@@ -47,18 +47,24 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
     INPUT = 3
     OUTPUT = 4
 
+    # from now we are going to make it like this 
+    # we will online pass the data of only one pipeline
     try:
-        mlmd_data = json.loads(mlmd_json)
-        pipelines = mlmd_data["Pipeline"]
-        pipeline = pipelines[0]
-        pipeline_name = pipeline["name"]
+        print("Parsing JSON to MLMD...")
+        #mlmd_data = json.loads(mlmd_json)
+        pipeline_data = json.loads(mlmd_json)
+        # this line won't be needed
+        # pipelines = mlmd_data["Pipeline"]
+        # print("pipelines = ", pipelines)
+        # pipeline = pipelines[0]
+        pipeline_name = pipeline_data["name"]
         stage = {}
         
         # When the command is "push", add the original_time_since_epoch to the custom_properties in the metadata while pulling mlmd no need
         if cmd == "push":   
-            data = create_original_time_since_epoch(mlmd_data)
+            data = create_original_time_since_epoch(pipeline_data)
         else:
-            data = mlmd_data
+            data = pipeline_data
 
         graph = False
         # if cmf is configured with 'neo4j' make graph True.
@@ -78,7 +84,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
             # in else, we are assuming cmd="push"
             cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph, is_server=True)
-        for stage in data["Pipeline"][0]["stages"]:  # Iterates over all the stages
+        for stage in data["stages"]:  # Iterates over all the stages
             if exec_uuid is None:  #if exec_uuid is None we pass all the executions.
                 list_executions = [execution for execution in stage["executions"]]
             elif exec_uuid is not None:  # elif exec_uuid is not None, we pass executions for that specific uuid.
@@ -178,6 +184,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
                             ) 
                     except Exception as e:
                             print(f"Error in log_{artifact_type}_with_version" , e)
+        print("MLMD data parsed and stored successfully.")
     except Exception as e:
         print(f"An error occurred in parse_json_to_mlmd: {e}")
         traceback.print_exc()
@@ -190,10 +197,8 @@ def create_original_time_since_epoch(mlmd_data):
     original_stages = []
     original_executions = []
     original_artifacts = []
-    mlmd_data["Pipeline"][0]["original_create_time_since_epoch"] = mlmd_data[
-        "Pipeline"
-    ][0]["create_time_since_epoch"]
-    for stage in mlmd_data["Pipeline"][0]["stages"]:
+    mlmd_data["original_create_time_since_epoch"] = mlmd_data["create_time_since_epoch"]
+    for stage in mlmd_data["stages"]:
         stage["custom_properties"]["original_create_time_since_epoch"] = str(stage[
             "create_time_since_epoch"
         ])

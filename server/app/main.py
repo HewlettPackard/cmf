@@ -119,6 +119,7 @@ async def mlmd_push(info: MLMDPushRequest):
                 print("i am inside mlmd push's else")
                 # this is executed in case of first sync
                 status = await async_api(query.create_unique_executions, req_info["json_payload"], None, "push", None)
+                print("status in mlmd push = ", status)
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
@@ -129,11 +130,14 @@ async def mlmd_push(info: MLMDPushRequest):
             # async function
                 await update_global_exe_dict(pipeline_name)
                 await update_global_art_dict(pipeline_name)
+            print("i am here - ")
         finally:
             lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
             if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
+            print("i should be here too")
+        print("status = ", status)
     return {"status": status}
 
 
@@ -517,47 +521,50 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
                 json_payload = response.json()
+
+                # json_payload = ""
+
+                # # logic for how to get list_of_python_files is still remaining
                 
-                python_env_store_path = "./cmf-server/data/env/"
-                if last_sync_time:
-                    list_of_files = ["a", "b", "c"]
-                    # Added list_of_files to the request as a optional query parameter 
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
-                else:
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
+                # python_env_store_path = "./cmf-server/data/env/"
+                # if last_sync_time:
+                #     list_of_files = ["a", "b", "c"]
+                #     # Added list_of_files to the request as a optional query parameter 
+                #     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
+                # else:
+                #     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
 
-                if python_env_zip.status_code == 200:
-                    try:
-                        # Create the directory if it doesn't exist
-                        os.makedirs(python_env_store_path, exist_ok=True)
+                # if python_env_zip.status_code == 200:
+                #     try:
+                #         # Create the directory if it doesn't exist
+                #         os.makedirs(python_env_store_path, exist_ok=True)
 
-                        # Unzip the zip file content
-                        with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
-                            # Extract all files to a temporary directory
-                            temp_dir = os.path.join(python_env_store_path, "temp_extracted")
-                            os.makedirs(temp_dir, exist_ok=True)
-                            zf.extractall(temp_dir)
+                #         # Unzip the zip file content
+                #         with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
+                #             # Extract all files to a temporary directory
+                #             temp_dir = os.path.join(python_env_store_path, "temp_extracted")
+                #             os.makedirs(temp_dir, exist_ok=True)
+                #             zf.extractall(temp_dir)
 
-                            # Move all extracted files to the target directory
-                            for root, dirs, files in os.walk(temp_dir):
-                                for file in files:
-                                    src_file = os.path.join(root, file)
-                                    dest_file = os.path.join(python_env_store_path, file)
-                                    os.rename(src_file, dest_file)
+                #             # Move all extracted files to the target directory
+                #             for root, dirs, files in os.walk(temp_dir):
+                #                 for file in files:
+                #                     src_file = os.path.join(root, file)
+                #                     dest_file = os.path.join(python_env_store_path, file)
+                #                     os.rename(src_file, dest_file)
 
-                            # Clean up the temporary directory
-                            os.rmdir(temp_dir)
+                #             # Clean up the temporary directory
+                #             os.rmdir(temp_dir)
 
-                        print(f"All files have been successfully extracted and stored in {python_env_store_path}")
-                    except Exception as e:
-                        raise HTTPException(status_code=500, detail=f"Failed to extract and store files: {e}")
-                else:
-                    raise HTTPException(status_code=500, detail="Failed to download python env zip file")
+                #         print(f"All files have been successfully extracted and stored in {python_env_store_path}")
+                #     except Exception as e:
+                #         raise HTTPException(status_code=500, detail=f"Failed to extract and store files: {e}")
+                # else:
+                #     raise HTTPException(status_code=500, detail="Failed to download python env zip file")
 
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
-        print(json_payload)
-
+        #print(json_payload)
         return json_payload
 
     except Exception as e:
@@ -637,7 +644,8 @@ async def sync_metadata(request: ServerRegistrationRequest):
             # this will need some update too
             # Push the JSON payload to the host server
             print("push is next")
-            status = await mlmd_push(MLMDPushRequest(**json_data))            
+            status = await mlmd_push(MLMDPushRequest(**json_data))        
+            print("reached here")    
 
         # Update the last_sync_time in the database only if sync status is successful
         if status.get("status") == "success":
@@ -718,18 +726,22 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
 
 
 async def update_global_art_dict(pipeline_name):
+    print("inside update global art dict")
     global dict_of_art_ids
     output_dict = await async_api(get_all_artifact_ids, query, dict_of_exe_ids, pipeline_name)
     # type(dict_of_art_ids[pipeline_name]) = Dict[ <class 'pandas.core.frame.DataFrame'> ]
     dict_of_art_ids[pipeline_name]=output_dict[pipeline_name]
+    print("exited update global art dict")
     return
 
 
 async def update_global_exe_dict(pipeline_name):
+    print("inside update global exe dict")
     global dict_of_exe_ids
     output_dict = await async_api(get_all_exe_ids, query, pipeline_name)
     # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
+    print("exited update global exe dict")
     return
 
 

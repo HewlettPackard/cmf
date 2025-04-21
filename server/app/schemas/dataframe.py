@@ -7,14 +7,14 @@ import json
 class MLMDPushRequest(BaseModel): 
     # ... indicates required field
     exec_uuid: Optional[str] = Field(None, description="Optional execution uuid for the request")
-    pipeline_name: str = Field(None, description="Name of the pipeline")
+    pipeline_name: Optional[str] = Field(None, description="Name of the pipeline")
     json_payload: str = Field(..., description="JSON payload for the pipeline")
 
     # Custom validation for pipeline name and JSON payload
     @model_validator(mode="after")
     def validate_fields(cls, values):
-        if not values.pipeline_name.strip():
-            raise ValueError("Pipeline name must not be empty or whitespace")
+        # if not values.pipeline_name.strip():
+        #     raise ValueError("Pipeline name must not be empty or whitespace")
         if not values.json_payload:
             raise ValueError("JSON payload must not be empty")
         # Attempt to parse the JSON payload to ensure it is valid JSON
