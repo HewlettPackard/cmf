@@ -520,10 +520,13 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                 json_payload = response.json()
                 
                 python_env_store_path = "./cmf-server/data/env/"
-                list_of_files = ["a", "b", "c"]
-                # Added list_of_files to the request as a optional query parameter 
-                python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
-                
+                if last_sync_time:
+                    list_of_files = ["a", "b", "c"]
+                    # Added list_of_files to the request as a optional query parameter 
+                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
+                else:
+                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
+
                 if python_env_zip.status_code == 200:
                     try:
                         # Create the directory if it doesn't exist
