@@ -1054,8 +1054,75 @@ def test_prefix_mapper() -> None:
     dm = _PrefixMapper("nested_", on_collision=_KeyMapper.OnCollision.DO_NOTHING)
     tc.assertEqual("nested_existing_key", dm.get({"nested_existing_key": "value"}, "existing_key"))
 
+def test_get_artifact() -> None:
+    from unittest import TestCase
+    from unittest.mock import MagicMock
+    from ml_metadata.proto.metadata_store_pb2 import Artifact
+
+    tc = TestCase()
+
+    # Arrange
+    print("running test_get_artifact")
+    mock_store = MagicMock()
+    query = CmfQuery()
+    query.store = mock_store
+
+    # Mock the return value of `get_artifacts`
+    mock_artifact1 = Artifact(name="artifact1")
+    mock_artifact2 = Artifact(name="artifact2")
+    mock_store.get_artifacts.return_value = [mock_artifact1, mock_artifact2]
+
+    # Act
+    result = query._get_artifact("artifact1")
+    print(result)
+
+    # Assert
+    tc.assertIsNotNone(result)
+    tc.assertEqual(result.name, "artifact1")
+    mock_store.get_artifacts.assert_called_once()   # assert that get_artifacts was called once
+
+    # Test for non-existent artifact
+    result = query._get_artifact("non_existent_artifact")
+    print(result)
+    tc.assertIsNone(result)
+
+
+def test_get_pipeline_id() -> None:
+    from unittest import TestCase
+    from unittest.mock import MagicMock
+    from ml_metadata.proto.metadata_store_pb2 import Context
+
+    tc = TestCase()
+
+    # Arrange
+    print("running test_get_pipeline_id")
+    mock_store = MagicMock()
+    query = CmfQuery()
+    query.store = mock_store
+
+    # Mock the return value of `get_contexts_by_type`
+    mock_pipeline1 = Context(id=1, name="pipeline1")
+    mock_pipeline2 = Context(id=2, name="pipeline2")
+    mock_store.get_contexts_by_type.return_value = [mock_pipeline1, mock_pipeline2]
+
+    # Act
+    pipeline_id = query.get_pipeline_id("pipeline1")
+    print(pipeline_id)
+    # pipeline_id = query.get_pipeline_id("pipeline2")
+    # print(pipeline_id)
+    # Assert
+    tc.assertEqual(pipeline_id, 1)
+    mock_store.get_contexts_by_type.assert_called_once_with("Parent_Context")
+
+    # Test for non-existent pipeline
+    pipeline_id = query.get_pipeline_id("non_existent_pipeline")
+    print(pipeline_id)
+    tc.assertEqual(pipeline_id, -1)
+
 
 if __name__ == "__main__":
     test_on_collision()
     test_dict_mapper()
     test_prefix_mapper()
+    test_get_artifact()
+    test_get_pipeline_id()
