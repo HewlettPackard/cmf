@@ -4,10 +4,9 @@ import time
 import zipfile
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-from flask import send_file
 import pandas as pd
 from typing import List, Dict, Any, Optional
 from cmflib.cmfquery import CmfQuery
@@ -709,11 +708,10 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
         
         zip_buffer.seek(0)
 
-        return send_file(
+        return FileResponse(
             zip_buffer,
             mimetype="application/zip",
-            as_attachment=True,
-            download_name="python_env_files.zip" if list_of_files else "python_env_folder.zip"
+            file_name="python_env_files.zip" if list_of_files else "python_env_folder.zip"
         )
     except Exception as e:
         return {"error": str(e)}
