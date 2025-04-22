@@ -243,11 +243,11 @@ Optional Arguments
 ```
 ### cmf artifact push
 ```
-Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
+Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name] -j [jobs]
 ```
 `cmf artifact push` command push artifacts from the user's local machine to the user configured artifact repository.
 ```
-cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name'
+cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name' -j 32
 ```
 Required Arguments
 ```
@@ -257,6 +257,7 @@ Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
   -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -j [jobs], --jobs [jobs]                              Specify the parallelism level for uploading data to remote storage. The default value is 4 * cpu_count(). This can also be configured using the 'jobs' option with 'dvc remote modify'. Using more jobs may speed up the operation.
 ```
 ### cmf artifact list
 ```

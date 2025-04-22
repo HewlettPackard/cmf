@@ -73,8 +73,10 @@ class CmdArtifactPush(CmdBase):
             dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            # Handle case where jobs is not provided
+            num_jobs = self.args.jobs if self.args.jobs is not None else os.cpu_count() * 4
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
-            result = dvc_push()
+            result = dvc_push(num_jobs=num_jobs)
             #print(result)
             return result
 
@@ -142,7 +144,8 @@ class CmdArtifactPush(CmdBase):
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
         #print("file_set = ", final_list)
-        result = dvc_push(list(final_list))
+        num_jobs = self.args.jobs if self.args.jobs is not None else os.cpu_count() * 4
+        result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
     
 def add_parser(subparsers, parent_parser):
@@ -173,6 +176,14 @@ def add_parser(subparsers, parent_parser):
         action="append",
         help="Specify mlmd file name.",
         metavar="<file_name>"
+    )
+
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        type=int,
+        help="Specify the parallelism level for uploading data to remote storage. The default value is 4 * cpu_count. Using more jobs may speed up the operation",
+        metavar="<jobs>"
     )
 
     parser.set_defaults(func=CmdArtifactPush)
