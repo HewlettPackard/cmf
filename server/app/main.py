@@ -104,6 +104,7 @@ async def read_root(request: Request):
 async def mlmd_push(info: MLMDPushRequest):
     print("mlmd push started")
     print("......................")
+    status = "unknown_error"
     req_info = info.model_dump()  # Serializing the input data into a dictionary using model_dump()
     pipeline_name = req_info.get("pipeline_name", "")
     if pipeline_name not in pipeline_locks:    # create lock object for pipeline if it doesn't exists in lock
@@ -119,7 +120,7 @@ async def mlmd_push(info: MLMDPushRequest):
                 print("i am inside mlmd push's else")
                 # this is executed in case of first sync
                 status = await async_api(query.create_unique_executions, req_info["json_payload"], None, "push", None)
-                print("status in mlmd push = ", status)
+                print("status of create unique executions = ", status)
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
@@ -137,7 +138,7 @@ async def mlmd_push(info: MLMDPushRequest):
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
             print("i should be here too")
-        print("status = ", status)
+        print("this status is not getting printed= ", status)
     return {"status": status}
 
 
@@ -158,7 +159,6 @@ async def mlmd_pull(info: MLMDPullRequest):
         json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, last_sync_time, dict_of_exe_ids)
     else:
         json_payload = await async_api(get_mlmd_from_server, query, None, None, last_sync_time)
-    print("json_payload", json_payload)
     if json_payload == None:
         raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
@@ -518,6 +518,7 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={'last_sync_time': last_sync_time})
+                print("response = ", response)
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
                 json_payload = response.json()
@@ -526,13 +527,15 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
 
                 # # logic for how to get list_of_python_files is still remaining
                 
-                # python_env_store_path = "./cmf-server/data/env/"
+                # python_env_store_path = "/cmf-server/data/env/"
                 # if last_sync_time:
                 #     list_of_files = ["a", "b", "c"]
                 #     # Added list_of_files to the request as a optional query parameter 
                 #     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
                 # else:
+                #     print("i am inside else")
                 #     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
+                #     print(python_env_zip)
 
                 # if python_env_zip.status_code == 200:
                 #     try:
@@ -644,7 +647,18 @@ async def sync_metadata(request: ServerRegistrationRequest):
             # this will need some update too
             # Push the JSON payload to the host server
             print("push is next")
-            status = await mlmd_push(MLMDPushRequest(**json_data))        
+            try:
+                print("inside try")
+                status = await mlmd_push(MLMDPushRequest(**json_data))
+            except HTTPException as http_exc:
+                print(f"mlmd_push raised HTTPException: {http_exc.detail}")
+                raise  # Let FastAPI catch and respond
+            except Exception as e:
+                print(f"mlmd_push raised unexpected exception: {e}")
+                raise HTTPException(status_code=500, detail="Unexpected error during mlmd_push")
+
+            # status = await mlmd_push(MLMDPushRequest(**json_data)) 
+            print("status of mlmd push = ", status)       
             print("reached here")    
 
         # Update the last_sync_time in the database only if sync status is successful
@@ -661,6 +675,8 @@ async def sync_metadata(request: ServerRegistrationRequest):
         }
 
     except Exception as e:
+        print("i am coming here for some reason i think")
+        print(e)
         raise HTTPException(status_code=500, detail=f"Failed to sync metadata: {e}")
 
 
@@ -677,13 +693,13 @@ async def server_list():
     return rows
 
 
-@app.get("/download-python-env/")
+@app.get("/download-python-env")
 def download_python_env(request: Request, list_of_files: Optional[list[str]] = Query(None)):
     """
     API endpoint to compress and download the entire folder as a ZIP file.
     """
     try:
-        DIRECTORY = "../cmf-server/data/env/"  # Directory to be compressed
+        DIRECTORY = "/cmf-server/data/env/"  # Directory to be compressed
         # Check if the directory exists
         if not os.path.exists(DIRECTORY):
             return {"error": "Directory does not exist"}

@@ -104,7 +104,7 @@ class CmdMetadataPull(CmdBase):
         else:
             # Get unique executions
             unique_executions = query.get_unique_executions(output.content)
-            # print("Delta between executions: ", unique_executions)
+            print("Delta between executions: ", unique_executions)
             if not unique_executions:
                 return ExecutionsAlreadyExists()
 
