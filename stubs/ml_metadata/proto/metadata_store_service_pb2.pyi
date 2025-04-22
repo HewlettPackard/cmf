@@ -661,7 +661,7 @@ class PutAttributionsAndAssociationsRequest(_message.Message):
     def __init__(self, attributions: _Optional[_Iterable[_Union[_metadata_store_pb2.Attribution, _Mapping]]] = ..., associations: _Optional[_Iterable[_Union[_metadata_store_pb2.Association, _Mapping]]] = ..., transaction_options: _Optional[_Union[_metadata_store_pb2.TransactionOptions, _Mapping]] = ...) -> None: ...
 
 class PutAttributionsAndAssociationsResponse(_message.Message):
-    __slots__: list[str] = []
+    __slots__ = []
     def __init__(self) -> None: ...
 
 class PutContextTypeRequest(_message.Message):
@@ -709,7 +709,7 @@ class PutEventsRequest(_message.Message):
     def __init__(self, events: _Optional[_Iterable[_Union[_metadata_store_pb2.Event, _Mapping]]] = ..., transaction_options: _Optional[_Union[_metadata_store_pb2.TransactionOptions, _Mapping]] = ...) -> None: ...
 
 class PutEventsResponse(_message.Message):
-    __slots__: list[str] = []
+    __slots__ = []
     def __init__(self) -> None: ...
 
 class PutExecutionRequest(_message.Message):
@@ -837,7 +837,7 @@ class PutParentContextsRequest(_message.Message):
     def __init__(self, parent_contexts: _Optional[_Iterable[_Union[_metadata_store_pb2.ParentContext, _Mapping]]] = ..., transaction_options: _Optional[_Union[_metadata_store_pb2.TransactionOptions, _Mapping]] = ...) -> None: ...
 
 class PutParentContextsResponse(_message.Message):
-    __slots__: list[str] = []
+    __slots__ = []
     def __init__(self) -> None: ...
 
 class PutTypesRequest(_message.Message):

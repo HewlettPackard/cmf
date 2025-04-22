@@ -704,15 +704,15 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
-        name_without_extension = os.path.splitext(file_name)[0]
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.create_context(pipeline_stage=name_without_extension)
+            self.create_context(pipeline_stage=assigned_name)
             assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            self.create_execution(execution_type=name_without_extension)
+            self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
                 ### To Do : Technical Debt. 
@@ -920,15 +920,15 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
-        name_without_extension = os.path.splitext(file_name)[0]
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.create_context(pipeline_stage=name_without_extension)
+            self.create_context(pipeline_stage=assigned_name)
             assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            self.create_execution(execution_type=name_without_extension)
+            self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
 
@@ -1080,15 +1080,15 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
-        name_without_extension = os.path.splitext(file_name)[0]
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.create_context(pipeline_stage=name_without_extension)
+            self.create_context(pipeline_stage=assigned_name)
             assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            self.create_execution(execution_type=name_without_extension)
+            self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
         custom_props = {} if custom_properties is None else custom_properties
@@ -1181,15 +1181,15 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         file_name = os.path.basename(current_script)
-        name_without_extension = os.path.splitext(file_name)[0]
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
-            self.create_context(pipeline_stage=name_without_extension)
+            self.create_context(pipeline_stage=assigned_name)
             assert self.child_context is not None, f"Failed to create context for {self.pipeline_name}!!"
 
         # create execution if not already created
         if not self.execution:
-            self.create_execution(execution_type=name_without_extension)
+            self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
         
@@ -1454,15 +1454,15 @@ class Cmf:
             # Assigning current file name as stage and execution name
             current_script = sys.argv[0]
             file_name = os.path.basename(current_script)
-            name_without_extension = os.path.splitext(file_name)[0]
+            assigned_name = os.path.splitext(file_name)[0]
             # create context if not already created
             if not self.writer.child_context:
-                self.writer.create_context(pipeline_stage=name_without_extension)
+                self.writer.create_context(pipeline_stage=assigned_name)
                 assert self.writer.child_context is not None, f"Failed to create context for {self.writer.pipeline_name}!!"
 
             # create execution if not already created
             if not self.writer.execution:
-                self.writer.create_execution(execution_type=name_without_extension)
+                self.writer.create_execution(execution_type=assigned_name)
                 assert self.writer.execution is not None, f"Failed to create execution for {self.writer.pipeline_name}!!"
 
             directory_path = os.path.join(self.writer.ARTIFACTS_PATH, self.writer.execution.properties["Execution_uuid"].string_value.split(',')[0], self.writer.DATASLICE_PATH)
