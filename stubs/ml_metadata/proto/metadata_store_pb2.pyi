@@ -15,7 +15,7 @@ INT: PropertyType
 PROTO: PropertyType
 STRING: PropertyType
 STRUCT: PropertyType
-SYSTEM_TYPE_EXTENSION_FIELD_NUMBER: int
+SYSTEM_TYPE_EXTENSION_FIELD_NUMBER: _ClassVar[int]  # type: ignore # mypy error: ClassVar can only be used for assignments in class body
 UNKNOWN: PropertyType
 system_type_extension: _descriptor.FieldDescriptor
 
