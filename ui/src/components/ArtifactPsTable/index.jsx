@@ -35,7 +35,14 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder,
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
     setData(artifacts);
-    //setSortedData([data]);
+    // handle expanded row based on filter value
+    if (filterValue.trim() !== ""){
+      // expand all rows when filter value is set
+      setExpandedRow("all");
+    }else{
+      // collapse all rows when filter value is empty
+      setExpandedRow(null);
+    }
   }, [artifacts]);
 
 
@@ -78,11 +85,9 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder,
   };
 
   const toggleRow = (rowId) => {
-    if (expandedRow === rowId) {
-      setExpandedRow(null);
-    } else {
-      setExpandedRow(rowId);
-    }
+    // disable manual toggle when all rows are expanded 
+    if (expandedRow === "all") return; 
+    setExpandedRow(expandedRow === rowId ? null : rowId);
   };
 
   const toggleSortOrder = () => {
@@ -140,7 +145,7 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder,
                         className="px-6 py-4 cursor-pointer"
                         onClick={() => toggleRow(index)}
                       >
-                        {expandedRow === index ? "-" : "+"}
+                        {expandedRow === index || expandedRow === "all" ? "-" : "+"}
                   </td>
                   { /* Convert artifact ID to string and render it with highlighted search term if it matches the filter value */}
                   <td className="px-6 py-4"><Highlight text={String(artifact.artifact_id)} highlight={filterValue}/></td>
@@ -174,16 +179,16 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder,
                   <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "git_repo")} highlight={filterValue}/></td>
                   <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "Commit")} highlight={filterValue}/></td>
                 </tr>
-                {expandedRow === index && (
-                <tr>
-                <td colSpan="6">
-                <table className="expanded-table">
-                  <tbody>
-                  {artifact.artifact_properties.map((property, idx) => (
-                  <tr key={idx}>
-                  <td>{property.name}</td>
-                  <td><Highlight text={String(property.value)} highlight={filterValue}/></td>
-                  </tr>
+                {(expandedRow === "all" || expandedRow === index) && (
+                  <tr>
+                  <td colSpan="6">
+                  <table className="expanded-table">
+                    <tbody>
+                    {artifact.artifact_properties.map((property, idx) => (
+                    <tr key={idx}>
+                    <td>{property.name}</td>
+                    <td><Highlight text={String(property.value)} highlight={filterValue}/></td>
+                    </tr>
                   ))}
                   </tbody>
               </table>
