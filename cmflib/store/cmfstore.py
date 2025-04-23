@@ -8,6 +8,6 @@ class CmfStore(ABC):
         super().__init__()
 
     @abstractmethod
-    def connect(self)-> metadata_store:
+    def connect(self) -> metadata_store.MetadataStore:
         cmf_store = metadata_store.MetadataStore(self.config)
         return cmf_store

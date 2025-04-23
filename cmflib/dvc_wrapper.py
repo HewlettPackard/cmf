@@ -16,12 +16,14 @@
 
 import os
 import subprocess
-import dvc.api
-import dvc.exceptions
-from typing import List, Optional
+# Error: Skipping analyzing "dvc.api": module is installed, but missing library stubs or py.typed marker
+import dvc.api  # type: ignore
+# Error: Skipping analyzing "dvc.exceptions": module is installed, but missing library stubs or py.typed marker
+import dvc.exceptions   # type: ignore
+import typing as t
 
 def check_git_remote() -> bool:
-    process = ""
+    process: subprocess.Popen
     commit = ""
     git_remote_configured = False
     try:
@@ -41,7 +43,7 @@ def check_git_remote() -> bool:
 
 
 def check_default_remote() -> bool:
-    process = ""
+    process: subprocess.Popen
     commit = ""
     dvc_configured = False
     try:
@@ -102,7 +104,7 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
 
 def check_git_repo() -> bool:
 
-    process = ""
+    process: subprocess.Popen
     commit = ""
     is_git_repo = False
     try:
@@ -114,8 +116,7 @@ def check_git_repo() -> bool:
                                    universal_newlines=True)
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)
-
-        is_git_repo = output.strip()
+        is_git_repo = output.strip().lower() == 'true'  # Ensure function returns a bool (Fix MyPy error: Function is expected to return bool but returns str)
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
@@ -124,7 +125,7 @@ def check_git_repo() -> bool:
 
 def git_checkout_new_branch(branch_name: str):
 
-    process = ""
+    process: subprocess.Popen
     commit = ""
     try:
         process = subprocess.Popen(['git',
@@ -151,7 +152,7 @@ def git_checkout_new_branch(branch_name: str):
 
 
 def git_get_commit() -> str:
-    process = ""
+    process: subprocess.Popen
     commit = ""
     try:
         process = subprocess.Popen(['git', 'rev-parse', 'HEAD'],
@@ -171,7 +172,7 @@ def git_get_commit() -> str:
 
 def commit_dvc_lock_file(file_path: str, execution_id) -> str:
     commit = ""
-    process = ""
+    process: subprocess.Popen
     try:
         process = subprocess.Popen(['git', 'add', file_path],
                                    stdout=subprocess.PIPE,
@@ -235,7 +236,7 @@ def git_commit(execution_id: str) -> str:
 
 def commit_output(folder: str, execution_id: str) -> str:
     commit = ""
-    process = ""
+    process: subprocess.Popen
     try:
         if os.path.exists(os.getcwd() + '/' + folder):
             sub_dir_file = True
@@ -282,7 +283,7 @@ def commit_output(folder: str, execution_id: str) -> str:
 # Get the remote repo
 def git_get_repo() -> str:
     commit = ""
-    process = ""
+    process: subprocess.Popen
     output = ""
     errs = ""
     try:
@@ -436,7 +437,7 @@ def dvc_get_config() -> str:
 
 
 # dvc push
-def dvc_push(file_list: Optional[List[str]] = None) -> str:
+def dvc_push(file_list: t.Optional[t.List[str]] = None) -> str:
     commit = ""
     if file_list is None:
        try:
@@ -496,7 +497,7 @@ def git_modify_remote_url(git_url) -> str:
     return commit
 
 # Pulling code from branch
-def git_get_pull(branch_name: str) -> str:
+def git_get_pull(branch_name: str) -> t.Tuple[str, str, int]:
     process = subprocess.Popen(f'git pull cmf_origin {branch_name}', 
                                 cwd=None, 
                                 shell=True,
@@ -510,7 +511,7 @@ def git_get_pull(branch_name: str) -> str:
             )
 
 # Pusing code inside branch
-def git_get_push(branch_name: str) -> str:
+def git_get_push(branch_name: str) -> t.Tuple[str, str, int]:
     process = subprocess.Popen(f'git push -u cmf_origin {branch_name}', 
                                 cwd=None, 
                                 shell=True,

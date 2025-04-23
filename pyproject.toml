@@ -7,7 +7,7 @@ dependencies = [
 	"pandas",
 	"retrying",
 	"pyarrow",
-	"neo4j",
+	"neo4j==5.26",
 	"tabulate",
 	"click",
 	"minio",
@@ -16,7 +16,7 @@ dependencies = [
 	"boto3",
 	"scitokens", 
 	"cryptography",   
-	"ray==2.34.0"
+	"ray==2.34.0",
 ]
 authors = [
   { name = "Hewlett Packard Enterprise"}
