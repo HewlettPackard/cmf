@@ -72,12 +72,13 @@ class CmdArtifactsList(CmdBase):
         # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
         while True:
             end_index = start_index + 20
-            records_per_page = df.iloc[start_index:end_index]
-            
+            # Convert the DataFrame slice to a list of lists.
+            records_per_page = df.iloc[start_index:end_index].values.tolist()
+
             # Display the table.
             table = tabulate(
                 records_per_page,
-                headers=df.columns,
+                headers=list(df.columns),
                 tablefmt="grid",
                 showindex=False,
             )

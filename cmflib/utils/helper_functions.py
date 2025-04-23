@@ -132,7 +132,8 @@ def list_conda_packages_json() -> list:
 def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     #for SciToken Generation & Validation
-    import scitokens
+    # Error: Skipping analyzing "scitokens": module is installed, but missing library stubs or py.typed marker
+    import scitokens    # type: ignore
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.backends import default_backend
 
@@ -203,9 +204,9 @@ def get_postgres_config() -> dict:
     HOSTNAME = os.getenv('HOSTNAME')
     HOST = ""
     if(HOSTNAME!="localhost"):
-        HOST = HOSTNAME
+        HOST = HOSTNAME if HOSTNAME else ""
     else:
-        HOST = IP
+        HOST = IP if IP else ""
     POSTGRES_DB = os.getenv('POSTGRES_DB')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')

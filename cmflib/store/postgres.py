@@ -14,7 +14,7 @@ class PostgresStore(CmfStore):
         self.connection_config.postgresql.dbname = config["dbname"]
         super().__init__(self.connection_config)
 
-    def connect(self)-> metadata_store:
+    def connect(self) -> metadata_store.MetadataStore:
         cmf_store = super().connect()
         return cmf_store
 
