@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.11">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
     
     
       
@@ -28,7 +28,7 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.4af4bdda.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.2afb09e1.min.css">
       
       
 
@@ -1026,11 +1026,11 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 
                   <details class="quote">
                     <summary>Source code in <code>cmflib/cmf.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1369</span>
-<span class="normal">1370</span>
-<span class="normal">1371</span>
-<span class="normal">1372</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">props</span> <span class="o">=</span> <span class="p">{}</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1398</span>
+<span class="normal">1399</span>
+<span class="normal">1400</span>
+<span class="normal">1401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">writer</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">props</span><span class="p">:</span><span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">writer</span> <span class="o">=</span> <span class="n">writer</span>
 </code></pre></div></td></tr></table></div>
@@ -1072,28 +1072,28 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1377</span>
-<span class="normal">1378</span>
-<span class="normal">1379</span>
-<span class="normal">1380</span>
-<span class="normal">1381</span>
-<span class="normal">1382</span>
-<span class="normal">1383</span>
-<span class="normal">1384</span>
-<span class="normal">1385</span>
-<span class="normal">1386</span>
-<span class="normal">1387</span>
-<span class="normal">1388</span>
-<span class="normal">1389</span>
-<span class="normal">1390</span>
-<span class="normal">1391</span>
-<span class="normal">1392</span>
-<span class="normal">1393</span>
-<span class="normal">1394</span>
-<span class="normal">1395</span>
-<span class="normal">1396</span>
-<span class="normal">1397</span>
-<span class="normal">1398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_data</span><span class="p">(</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1409</span>
+<span class="normal">1410</span>
+<span class="normal">1411</span>
+<span class="normal">1412</span>
+<span class="normal">1413</span>
+<span class="normal">1414</span>
+<span class="normal">1415</span>
+<span class="normal">1416</span>
+<span class="normal">1417</span>
+<span class="normal">1418</span>
+<span class="normal">1419</span>
+<span class="normal">1420</span>
+<span class="normal">1421</span>
+<span class="normal">1422</span>
+<span class="normal">1423</span>
+<span class="normal">1424</span>
+<span class="normal">1425</span>
+<span class="normal">1426</span>
+<span class="normal">1427</span>
+<span class="normal">1428</span>
+<span class="normal">1429</span>
+<span class="normal">1430</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_data</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Add data to create the dataslice.</span>
@@ -1145,39 +1145,7 @@ Example:</p>
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1408</span>
-<span class="normal">1409</span>
-<span class="normal">1410</span>
-<span class="normal">1411</span>
-<span class="normal">1412</span>
-<span class="normal">1413</span>
-<span class="normal">1414</span>
-<span class="normal">1415</span>
-<span class="normal">1416</span>
-<span class="normal">1417</span>
-<span class="normal">1418</span>
-<span class="normal">1419</span>
-<span class="normal">1420</span>
-<span class="normal">1421</span>
-<span class="normal">1422</span>
-<span class="normal">1423</span>
-<span class="normal">1424</span>
-<span class="normal">1425</span>
-<span class="normal">1426</span>
-<span class="normal">1427</span>
-<span class="normal">1428</span>
-<span class="normal">1429</span>
-<span class="normal">1430</span>
-<span class="normal">1431</span>
-<span class="normal">1432</span>
-<span class="normal">1433</span>
-<span class="normal">1434</span>
-<span class="normal">1435</span>
-<span class="normal">1436</span>
-<span class="normal">1437</span>
-<span class="normal">1438</span>
-<span class="normal">1439</span>
-<span class="normal">1440</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1440</span>
 <span class="normal">1441</span>
 <span class="normal">1442</span>
 <span class="normal">1443</span>
@@ -1237,7 +1205,39 @@ Example:</p>
 <span class="normal">1497</span>
 <span class="normal">1498</span>
 <span class="normal">1499</span>
-<span class="normal">1500</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="normal">1500</span>
+<span class="normal">1501</span>
+<span class="normal">1502</span>
+<span class="normal">1503</span>
+<span class="normal">1504</span>
+<span class="normal">1505</span>
+<span class="normal">1506</span>
+<span class="normal">1507</span>
+<span class="normal">1508</span>
+<span class="normal">1509</span>
+<span class="normal">1510</span>
+<span class="normal">1511</span>
+<span class="normal">1512</span>
+<span class="normal">1513</span>
+<span class="normal">1514</span>
+<span class="normal">1515</span>
+<span class="normal">1516</span>
+<span class="normal">1517</span>
+<span class="normal">1518</span>
+<span class="normal">1519</span>
+<span class="normal">1520</span>
+<span class="normal">1521</span>
+<span class="normal">1522</span>
+<span class="normal">1523</span>
+<span class="normal">1524</span>
+<span class="normal">1525</span>
+<span class="normal">1526</span>
+<span class="normal">1527</span>
+<span class="normal">1528</span>
+<span class="normal">1529</span>
+<span class="normal">1530</span>
+<span class="normal">1531</span>
+<span class="normal">1532</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Commit the dataslice.</span>
 <span class="sd">    The created dataslice is versioned and added to underneath data versioning software.</span>
 <span class="sd">    Example:</span>
@@ -1254,16 +1254,16 @@ Example:</p>
     <span class="c1"># Assigning current file name as stage and execution name</span>
     <span class="n">current_script</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">current_script</span><span class="p">)</span>
-    <span class="n">name_without_extension</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">assigned_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
     <span class="c1"># create context if not already created</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">child_context</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">create_context</span><span class="p">(</span><span class="n">pipeline_stage</span><span class="o">=</span><span class="n">name_without_extension</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">child_context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create context for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">create_context</span><span class="p">(</span><span class="n">pipeline_stage</span><span class="o">=</span><span class="n">assigned_name</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">child_context</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create context for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
 
     <span class="c1"># create execution if not already created</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="o">=</span><span class="n">name_without_extension</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create execution for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="o">=</span><span class="n">assigned_name</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create execution for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
 
     <span class="n">directory_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">ARTIFACTS_PATH</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">execution</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;Execution_uuid&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">string_value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">writer</span><span class="o">.</span><span class="n">DATASLICE_PATH</span><span class="p">)</span>
     <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -1304,7 +1304,7 @@ Example:</p>
             <span class="n">uri</span><span class="o">=</span><span class="n">c_hash</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="n">dataslice_path</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="n">c_hash</span><span class="p">,</span>
             <span class="n">type_name</span><span class="o">=</span><span class="s2">&quot;Dataslice&quot;</span><span class="p">,</span>
-            <span class="n">event_type</span><span class="o">=</span><span class="n">mlpb</span><span class="o">.</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">,</span>
+            <span class="n">event_type</span><span class="o">=</span><span class="n">mlpb</span><span class="o">.</span><span class="n">Event</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">OUTPUT</span><span class="p">,</span>  <span class="c1"># type: ignore  # Event type not recognized by mypy, using ignore to bypass</span>
             <span class="n">properties</span><span class="o">=</span><span class="p">{</span>
                 <span class="s2">&quot;git_repo&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">git_repo</span><span class="p">),</span>
                 <span class="c1"># passing c_hash value to commit</span>
@@ -1312,9 +1312,9 @@ Example:</p>
                 <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">dvc_url_with_pipeline</span><span class="p">),</span>
             <span class="p">},</span>
             <span class="n">artifact_type_properties</span><span class="o">=</span><span class="p">{</span>
-                <span class="s2">&quot;git_repo&quot;</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
-                <span class="s2">&quot;Commit&quot;</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
-                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>
+                <span class="s2">&quot;git_repo&quot;</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>    <span class="c1"># type: ignore  # String type not recognized by mypy, using ignore to bypass</span>
+                <span class="s2">&quot;Commit&quot;</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span>  <span class="c1"># type: ignore  # String type not recognized by mypy, using ignore to bypass</span>
+                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">STRING</span><span class="p">,</span> <span class="c1"># type: ignore  # String type not recognized by mypy, using ignore to bypass</span>
             <span class="p">},</span>
             <span class="n">custom_properties</span><span class="o">=</span><span class="n">custom_props</span><span class="p">,</span>
             <span class="n">milliseconds_since_epoch</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">),</span>
