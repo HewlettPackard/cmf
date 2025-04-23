@@ -707,7 +707,7 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-f", "--file_name", action="append", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", "--file_name", action="append", help="Specify input metadata file name.", metavar="<file_name>"
     )
 
     parser.add_argument(

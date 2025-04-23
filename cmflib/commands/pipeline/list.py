@@ -51,12 +51,12 @@ class CmdPipelineList(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    PIPELINE_LIST_HELP = "Display a list of pipeline name(s) from the available mlmd file."
+    PIPELINE_LIST_HELP = "Display a list of pipeline name(s) from the available input metadata file."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display a list of pipeline name(s) from the available mlmd file.",
+        description="Display a list of pipeline name(s) from the available input metadata file.",
         help=PIPELINE_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -65,7 +65,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.",
+        help="Specify input metadata file name.",
         metavar="<file_name>",
     )
 
