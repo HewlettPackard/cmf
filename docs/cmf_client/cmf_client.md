@@ -299,7 +299,7 @@ Optional Arguments
 ```
 -h, --help                                                show this help message and exit.
 -e [exec_uuid], --execution_uuid [exec_uuid]              Specify execution uuid.
--f [file_name], --file_name [file_name]                   Specify mlmd file name with full path(either relative or absolute).
+-f [file_name], --file_name [file_name]                   Specify the desired file name with full path for the MLMD file(either relative or absolute).
 ```
 ### cmf metadata push
 ```
