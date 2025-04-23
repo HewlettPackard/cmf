@@ -96,7 +96,7 @@ def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:
     return df
 
 
-def get_all_exe_ids(query: CmfQuery, pipeline_name: str = None) -> t.Dict[str, pd.DataFrame]:
+def get_all_exe_ids(query: CmfQuery, pipeline_name: t.Optional[str] = None) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
     returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
@@ -123,14 +123,14 @@ def get_all_exe_ids(query: CmfQuery, pipeline_name: str = None) -> t.Dict[str, p
                 execution_ids[name] = pd.DataFrame()
     return execution_ids
 
-def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
+def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Optional[str] = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
     # following is a dictionary of dictionaries
 
     # First level dictionary key is pipeline_name
     # First level dicitonary value is nested dictionary
     # Nested dictionary key is type i.e. Dataset, Model, etc.
     # Nested dictionary value is a pandas df with id and artifact name
-    artifact_ids = {}
+    artifact_ids: t.Dict[str, t.Dict[str, pd.DataFrame]] = {}
     artifacts = pd.DataFrame()
     if pipeline_name:
         if not execution_ids.get(pipeline_name).empty:
@@ -138,7 +138,7 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = No
             artifacts = query.get_all_artifacts_for_executions(exe_ids)
             #acknowledging pipeline exist even if df is empty. 
             if artifacts.empty:
-                artifact_ids[pipeline_name] = pd.DataFrame()   # { pipeline_name: {empty df} }
+                artifact_ids[pipeline_name] = {}   # { pipeline_name: {empty dict} }
             else:
                 artifact_ids[pipeline_name] = {}
                 for art_type in artifacts['type']:
@@ -147,7 +147,7 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = No
         # if execution_ids is empty then create dictionary with key as pipeline name
         # and value as empty df
         else:
-            artifact_ids[pipeline_name] = pd.DataFrame()
+            artifact_ids[pipeline_name] = {}
     else:
         names = query.get_pipeline_names()
         for name in names:
@@ -156,7 +156,7 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = No
                 artifacts = query.get_all_artifacts_for_executions(exe_ids)
                 #acknowledging pipeline exist even if df is empty. 
                 if artifacts.empty:
-                    artifact_ids[name] = pd.DataFrame()   # { pipeline_name: {empty df} }
+                    artifact_ids[name] = {}   # { pipeline_name: {empty dict} }
                 else:
                     artifact_ids[name] = {}
                     for art_type in artifacts['type']:
@@ -165,7 +165,7 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: str = No
             # if execution_ids is empty then create dictionary with key as pipeline name
             # and value as empty df
             else:
-                artifact_ids[name] = pd.DataFrame()
+                artifact_ids[name] = {}
     return artifact_ids
 
 
@@ -231,10 +231,10 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
         print("second sync")
         json_payload = query.extract_to_json(last_sync_time)
     else:
-        if(pipeline_name in query.get_pipeline_names()):  # checks if pipeline name is available in mlmd
+        if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
             if exec_uuid != None:
                 dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
-                for index, row in dict_of_exe_ids.iterrows():
+                for index, row in dict_of_exe_ids.items():
                     exec_uuid_list = row['Execution_uuid'].split(",")
                     if exec_uuid in exec_uuid_list:
                         flag=True
@@ -244,6 +244,7 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
                     return json_payload
             json_payload = query.dumptojson(pipeline_name, exec_uuid)
     return json_payload
+
 
 def get_lineage_data(
         query: CmfQuery, 
@@ -275,5 +276,5 @@ def get_lineage_data(
     elif type=="Execution":
         lineage_data = query_list_of_executions(pipeline_name, dict_of_exe_ids)
     else:
-        lineage_data = query_visualization_ArtifactExecution(query, pipeline_name)
+        pass
     return lineage_data

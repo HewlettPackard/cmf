@@ -144,7 +144,7 @@ def add_parser(subparsers, parent_parser):
         "-f",
         "--file_name",
         action="append",
-        help="Specify mlmd file name with full path.",
+        help="Specify the desired file name with full path for the MLMD file.",
         metavar="<file_name>",
     )
 
