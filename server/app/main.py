@@ -141,7 +141,6 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     return json_payload
 
 
-
 @app.get("/artifacts/{pipeline_name}/{artifact_type}")
 async def get_artifacts(
     pipeline_name: str, 
@@ -169,7 +168,6 @@ async def execution(request: Request,
     return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
     
 
-
 @app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
 async def artifact_execution_lineage(request: Request, 
                                      pipeline_name: str,
@@ -177,7 +175,6 @@ async def artifact_execution_lineage(request: Request,
     print("i am inside artifact_execution_lineage")
     #  checks if mlmd file exists on server
     return await fetch_artifact_execution_lineage(db, pipeline_name)
-
 
 
 @app.get("/list-of-executions/{pipeline_name}")
