@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from cmflib.cmfquery import CmfQuery
 import asyncio
 from collections import defaultdict
@@ -39,7 +39,7 @@ query = CmfQuery(is_server=True)
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
 pipeline_locks = {}
-lock_counts = defaultdict(int)
+lock_counts: defaultdict[str, int] = defaultdict(int)
 #lifespan used to prevent multiple loading and save time for visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -238,7 +238,7 @@ async def artifacts(
             "total_items": 0,      #empty page when art_ids_dict is {}
             "items": None
             }
-        art_ids_initial = []
+        art_ids_initial: pd.DataFrame = pd.DataFrame()
         if art_type in art_ids_dict:
             art_ids_initial = art_ids_dict[art_type]
         else:
@@ -276,7 +276,7 @@ async def artifacts(
 
 
 @app.get("/artifact-lineage/tangled-tree/{pipeline_name}")
-async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Dict[str, Any]]]:
+async def artifact_lineage_tangled(request: Request, pipeline_name: str) -> Optional[List[List[Dict[str, Any]]]]:
     '''
       Returns:
       A nested list of dictionaries with 'id' and 'parents' keys.
@@ -320,6 +320,8 @@ async def pipelines(request: Request):
 async def upload_file(request:Request, pipeline_name: str = Query(..., description="Pipeline name"),
     file: UploadFile = File(..., description="The file to upload")):
     try:
+        if file.filename is None:
+            raise HTTPException(status_code=400, detail="No file uploaded")
         file_path = os.path.join("/cmf-server/data/tensorboard-logs", pipeline_name, file.filename)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb") as buffer:
@@ -370,7 +372,9 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
 @app.post("/python-env")
 async def upload_python_env(request:Request, file: UploadFile = File(..., description="The file to upload")):
     try:
-        file_path = os.path.join("/cmf-server/data/env/",  os.path.basename(file.filename))
+        if file.filename is None:
+            raise HTTPException(status_code=400, detail="No file uploaded")
+        file_path = os.path.join("/cmf-server/data/env/", os.path.basename(file.filename))
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())

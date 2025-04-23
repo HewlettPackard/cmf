@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
-from cmflib.cli import main
+# Error: Skipping analyzing "cmflib.cli": module is installed, but missing library stubs or py.typed marker
+from cmflib.cli import main # type: ignore
 
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])

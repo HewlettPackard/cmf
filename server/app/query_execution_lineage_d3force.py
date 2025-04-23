@@ -16,7 +16,7 @@ def query_execution_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_exe_
         "links" : [{1:2},{2:3}]
          }
     """
-    data = {}
+    data: Dict[str, list] = {}
     df=dict_of_exe_ids[pipeline_name]
     #finding Context_Type by comparing Execution_uuid (d09fdb26-0e9d-11ef-944f-4bf54f5aca7f) and uuid_server ('u3tr')  
     result = df[df['Execution_uuid'].str[:4] == uuid_server]  ##result = df[id: "1","Execution_type_name", "Execution_uuid"]
