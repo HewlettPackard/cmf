@@ -257,7 +257,8 @@ Optional Arguments
 ```
   -h, --help                                            show this help message and exit.
   -f [file_name], --file-name [file_name]               Specify mlmd file name.
-  -j [jobs], --jobs [jobs]                              Specify Number of jobs to run simultaneously. The default value is 4 * cpu_count().
+  -j [jobs], --jobs [jobs]                              Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count().
+                                                        Increasing jobs may speed up uploads but will use more resources.
 ```
 ### cmf artifact list
 ```
@@ -405,7 +406,8 @@ Optional Arguments
   -f [file_name], --file-name [file_name]                        Specify mlmd file name.
   -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
   -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
-  -j [jobs], --jobs [jobs]                                       Specify Number of jobs to run simultaneously. The default value is 4 * cpu_count().
+  -j [jobs], --jobs [jobs]                                       Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count().
+                                                                 Increasing jobs may speed up uploads but will use more resources.
 ```
 ### cmf repo pull
 ```
