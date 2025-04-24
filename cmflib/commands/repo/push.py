@@ -124,10 +124,8 @@ class CmdRepoPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         
-        try:
-            num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
-        except (ValueError, TypeError):
-            num_jobs = 4 * os.cpu_count()
+        # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
+        num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
         
         # If the remote is OSDF, generate a dynamic password and update the DVC configuration.
         if dvc_config_op["core.remote"] == "osdf":
@@ -270,7 +268,7 @@ def add_parser(subparsers, parent_parser):
         "-j",
         "--jobs",
         action="append",
-        help="Specify number of jobs to run simultaneously. The default value is 4 * cpu_count().",
+        help="Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count(). Increasing jobs may speed up uploads but will use more resources.",
         metavar="<jobs>"
     )
 

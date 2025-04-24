@@ -441,6 +441,7 @@ def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
     commit = ""
     if file_list is None:
         try:
+            # num_jobs must be passed as a string (`str(num_jobs)`) when constructing the command.
             process = subprocess.Popen(['dvc', 'push', '-j', str(num_jobs)],
                                        stdout=subprocess.PIPE,
                                        universal_newlines=True)

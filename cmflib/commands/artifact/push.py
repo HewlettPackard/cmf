@@ -67,11 +67,8 @@ class CmdArtifactPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         
-        # If self.args.jobs is not a valid integer, set it to 4 * cpu_count
-        try:
-            num_jobs = int(self.args.jobs[0]) if self.args.jobs[0].isdigit() else 4 * os.cpu_count()
-        except (ValueError, TypeError):
-            num_jobs = 4 * os.cpu_count()
+        # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
+        num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
         
         if dvc_config_op["core.remote"] == "osdf":
             config_file_path = os.path.join(output, cmf_config_file)
@@ -81,8 +78,6 @@ class CmdArtifactPush(CmdBase):
             dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
-            # Handle case where jobs is not provided
-            num_jobs = self.args.jobs if self.args.jobs is not None else os.cpu_count() * 4
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
             result = dvc_push(num_jobs=num_jobs)
             #print(result)
@@ -189,7 +184,7 @@ def add_parser(subparsers, parent_parser):
         "-j",
         "--jobs",
         action="append",
-        help="Specify number of jobs to run simultaneously. The default value is 4 * cpu_count().",
+        help="Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count(). Increasing jobs may speed up uploads but will use more resources.",
         metavar="<jobs>"
     )
 

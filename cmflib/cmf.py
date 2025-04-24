@@ -1654,7 +1654,7 @@ def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 4 * os.cp
 
     Example:
     ```python
-         result = artifact_push("example_pipeline", "./mlmd_directory")
+         result = artifact_push("example_pipeline", "./mlmd_directory", 32)
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
@@ -1933,7 +1933,7 @@ def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Example: 
     ```python 
-        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path") 
+        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path", 32) 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
