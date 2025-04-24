@@ -53,7 +53,8 @@ class CmdArtifactPush(CmdBase):
         
         cmd_args = {
             "file_name": self.args.file_name,
-            "pipeline_name": self.args.pipeline_name
+            "pipeline_name": self.args.pipeline_name, 
+            "jobs": self.args.jobs,
         }
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
@@ -65,6 +66,13 @@ class CmdArtifactPush(CmdBase):
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
+        
+        # If self.args.jobs is not a valid integer, set it to 4 * cpu_count
+        try:
+            num_jobs = int(self.args.jobs[0]) if self.args.jobs[0].isdigit() else 4 * os.cpu_count()
+        except (ValueError, TypeError):
+            num_jobs = 4 * os.cpu_count()
+        
         if dvc_config_op["core.remote"] == "osdf":
             config_file_path = os.path.join(output, cmf_config_file)
             cmf_config={}
@@ -144,7 +152,6 @@ class CmdArtifactPush(CmdBase):
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
         #print("file_set = ", final_list)
-        num_jobs = self.args.jobs if self.args.jobs is not None else os.cpu_count() * 4
         result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
     
@@ -181,8 +188,8 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-j",
         "--jobs",
-        type=int,
-        help="Specify the parallelism level for uploading data to remote storage. The default value is 4 * cpu_count. Using more jobs may speed up the operation",
+        action="append",
+        help="Specify number of jobs to run simultaneously. The default value is 4 * cpu_count().",
         metavar="<jobs>"
     )
 
