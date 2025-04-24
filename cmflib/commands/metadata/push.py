@@ -118,6 +118,7 @@ class CmdMetadataPush(CmdBase):
             else:
                 exec_uuid = self.args.execution_uuid[0]
                 mlmd_data = json.loads(json_payload)["Pipeline"]
+                execution_flag = 0
                 # checks if given execution present in mlmd
                 for i in mlmd_data[0]["stages"]:
                     for j in i["executions"]:
