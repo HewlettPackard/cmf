@@ -62,7 +62,7 @@ async def fetch_artifacts(
             artifact.c.name,
             context.c.name.label('execution'),
             artifact.c.uri,
-            artifact.c.create_time_since_epoch,
+            func.timezone('UTC', func.to_timestamp(artifact.c.create_time_since_epoch / 1000)).label('create_time_since_epoch'),
             artifact.c.last_update_time_since_epoch
         )
         .join(
@@ -222,98 +222,3 @@ async def fetch_executions(
         "total_items": total_record,
         "items": [dict(row) for row in rows]
     }
-
-
-async def fetch_artifact_execution_lineage(
-    db: AsyncSession,
-    pipeline_name: str,
-    page_number: int = 1,
-    page_size: int = 5,
-    sort_column: str = "id",
-    sort_order: str = "ASC"
-):
-    print("i am inside psql query")
-    # Step 1: Get relevant contexts
-    relevant_contexts = select(
-        parentcontext.c.context_id
-    ).join(
-        context, parentcontext.c.parent_context_id == context.c.id
-    ).where(
-        context.c.name == bindparam("pipeline_name")
-    ).subquery("relevant_contexts")
-
-    # Step 2: Join event with artifact and execution_property tables
-    query = (
-        select(
-            event.c.id,
-            artifact.c.name.label("artifact_name"),
-            case(
-                (executionproperty.c.name == "Context_Type", func.coalesce(
-                    executionproperty.c.string_value,
-                    func.cast(executionproperty.c.bool_value, String),
-                    func.cast(executionproperty.c.double_value, String),
-                    func.cast(executionproperty.c.int_value, String),
-                    func.cast(executionproperty.c.byte_value, String),
-                    func.cast(executionproperty.c.proto_value, String),
-                    text("NULL")
-                )),
-                else_=text("NULL")
-            ).label("execution_context_type"),
-            event.c.type
-        )
-        .join(
-            artifact, event.c.artifact_id == artifact.c.id
-        )
-        .join(
-            execution, event.c.execution_id == execution.c.id
-        )
-        .join(
-            executionproperty, execution.c.id == executionproperty.c.execution_id
-        )
-        .where(
-            executionproperty.c.name == "Context_Type",
-            association.c.context_id.in_(select(relevant_contexts.c.context_id))
-        )
-        .order_by(event.c.id.asc())
-    )
-
-    # Step 4: Execute the query
-    result = await db.execute(query, {"pipeline_name": pipeline_name})
-    rows = result.mappings().all()
-
-    # Step 6: Create dictionary of pairs based on type of event
-    combined_dict = []
-    for row in rows:
-        if row['type'] == 4:
-            combined_dict.append({'id': row['artifact_name'], 'parents': [row['execution_context_type']]})
-        elif row['type'] == 3:
-            # Check whether artifact name exists as an id inside combined_dict
-            # If not exists then create id as artifact name and parents as empty
-            if not any(d['id'] == row['artifact_name'] for d in combined_dict):
-                combined_dict.append({'id': row['artifact_name'], 'parents': []})
-            combined_dict.append({'id': row['execution_context_type'], 'parents': [row['artifact_name']]})
-
-
-    # Remove duplicates from combined_dict
-    combined_dict = [i for n, i in enumerate(combined_dict) if i not in combined_dict[n + 1:]]
-    # print(combined_dict)
-
-    from collections import defaultdict
-
-    # Step 1: Create a mapping of parents to their children
-    parent_map = defaultdict(list)
-    independent_nodes = []
-
-    for item in combined_dict:
-        if not item['parents']:  # If the node has no parents, treat it as an independent group
-            independent_nodes.append([item])
-        else:
-            for parent in item['parents']:
-                parent_map[parent].append(item)
-
-    # Step 2: Collect all grouped lists
-    grouped_data = independent_nodes + list(parent_map.values())
-
-    # Step 6: Return paginated data
-    return grouped_data
-
