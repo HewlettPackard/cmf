@@ -62,7 +62,10 @@ async def fetch_artifacts(
             artifact.c.name,
             context.c.name.label('execution'),
             artifact.c.uri,
-            func.timezone('UTC', func.to_timestamp(artifact.c.create_time_since_epoch / 1000)).label('create_time_since_epoch'),
+            func.to_char(
+                func.timezone('GMT', func.to_timestamp(artifact.c.create_time_since_epoch / 1000)),
+                'Dy, DD Mon YYYY HH24:MI:SS GMT'
+            ).label('create_time_since_epoch'),
             artifact.c.last_update_time_since_epoch
         )
         .join(
