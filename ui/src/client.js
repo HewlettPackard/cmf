@@ -155,20 +155,6 @@ class FastAPIClient {
         return response.data;
       });
   }
-
-  async getArtifactExecution(pipeline, page, sortField, sortOrder, filterValue) {
-    return this.apiClient
-      .get(`/artifact-execution/${pipeline}/${filterValue}`, {
-        params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-        },
-      })
-      .then(({ data }) => {
-        return data;
-      });
-  }
 } 
 
 
