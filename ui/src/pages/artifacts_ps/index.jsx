@@ -40,6 +40,10 @@ const Artifacts_ps = () => {
   const [activePage, setActivePage] = useState(1);
   const [clickedButton, setClickedButton] = useState("page"); 
   const [selectedCol, setSelectedCol] = useState("name");
+  
+  useEffect(() => {
+    fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
+  },[]);
 
   // Fetch pipelines on component mount
   const fetchPipelines = () => {
@@ -47,91 +51,91 @@ const Artifacts_ps = () => {
       setPipelines(data);
       const defaultPipeline = data[0];
       setSelectedPipeline(defaultPipeline); // Set the first pipeline as default
-      fetchArtifactTypes(defaultPipeline); // Fetch artifact types once the pipeline is selected
     });
-  };
-
-  const fetchArtifactTypes = (pipeline) => {
+  };  
+  
+  useEffect(() => {
+    if (selectedPipeline){
+      fetchArtifactTypes(selectedPipeline);
+    }
+  },[selectedPipeline]);
+  
+  const fetchArtifactTypes = () => {
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
       const defaultArtifactType = types[0];
       setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(pipeline, defaultArtifactType, sortOrder, activePage, filter, selectedCol); // Fetch artifacts for the first artifact type and default pipeline
-    });
-  };
+      fetchArtifacts(selectedPipeline, defaultArtifactType, sortOrder, activePage, filter, selectedCol); // Fetch artifacts for the first artifact type and default pipeline
+    });  
+  };  
+ 
+  useEffect(() => {
+    if ( selectedPipeline && selectedArtifactType ){
+      fetchArtifacts(selectedPipeline, selectedArtifactType, sortOrder, activePage, filter, selectedCol);
+    }
+  }, [selectedArtifactType, sortOrder, activePage, selectedCol, filter]);
 
   const fetchArtifacts = (pipelineName, artifactType, sortOrder, activePage, filter="", selectedCol) => {
     client.getArtifacts(pipelineName, artifactType, sortOrder, activePage, filter, selectedCol)
       .then((data) => {
         setArtifacts(data.items);
         setTotalItems(data.total_items);
-      });
-  };
-
+      });  
+  };    
+  
   const handleArtifactTypeClick = (artifactType) => {
-    setSelectedArtifactType(artifactType); // Set the selected artifact type
-    setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    if (selectedPipeline) {
-      fetchArtifacts(selectedPipeline, artifactType, sortOrder, activePage, filter, selectedCol); // Fetch artifacts based on the selected artifact type and pipeline
-    }
+    if (selectedArtifactType !== artifactType) {
+      // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
+      setArtifacts(null);
+    }  
+    setSelectedArtifactType(artifactType);
     setActivePage(1);
-  };
+  };  
 
   const handlePipelineClick = (pipeline) => {
-    setSelectedPipeline(pipeline); // Set the selected pipeline
-    setArtifacts(null); // Reset artifacts to null to indicate a new fetch
-    fetchArtifacts(pipeline, selectedArtifactType, sortOrder, activePage, filter, selectedCol); // Fetch artifacts based on the selected pipeline and artifact type
+    if (selectedPipeline !== pipeline) {
+      // this condition sets page as null.
+      setArtifacts(null);
+    }  
+    setSelectedPipeline(pipeline);
     setActivePage(1);
-  };
+  };  
 
   const handleFilter = (value) => {
     setFilter(value); // Update the filter string
-    // console.log("value",value)
-  };
+    setActivePage(1);
+ };   
 
   const toggleSortOrder = (newSortOrder) => {
     setSortOrder(newSortOrder);
     setSelectedCol("name");
-    if (selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType, newSortOrder, activePage, filter, "name");
-    }
-  };
+  };  
 
   const toggleSortTime = (newSortOrder) => {
     setSortOrder(newSortOrder);
     setSelectedCol("create_time_since_epoch");
-    if (selectedPipeline && selectedArtifactType) {
-      fetchArtifacts(selectedPipeline, selectedArtifactType, newSortOrder, activePage, filter, "create_time_since_epoch");
-    }
-  };
+  };  
 
   const handlePageClick = (page) => {
     setActivePage(page);
-    fetchArtifacts(selectedPipeline, selectedArtifactType, sortOrder, page, filter, selectedCol);
     setClickedButton("page");
-  };
+  };  
 
   const handlePrevClick = () => {
     if (activePage > 1) {
       setActivePage(activePage - 1);
       setClickedButton("prev");
       handlePageClick(activePage - 1);
-      fetchArtifacts(selectedPipeline, selectedArtifactType, sortOrder, activePage, filter, selectedCol);
-    }
-  };
+    }  
+  };  
 
   const handleNextClick = () => {
     if (activePage < Math.ceil(totalItems / 5)) {
       setActivePage(activePage + 1);
       setClickedButton("next");
       handlePageClick(activePage + 1);
-      fetchArtifacts(selectedPipeline, selectedArtifactType, sortOrder, activePage, filter, selectedCol);
-    }
-  };
-
-  useEffect(() => {
-    fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
-  }, [filter]);
+    }  
+  };  
 
   return (
     <>

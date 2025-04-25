@@ -94,6 +94,7 @@ const Executions_ps = () => {
 
   const handleFilter = (value) => {
     setFilterValue(value);
+    setActivePage(1);  //Searching result displayed from page 1
   };
 
   return (
