@@ -24,7 +24,7 @@ import "./index.css";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue}) => {
+const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue}) => {
   const [data, setData] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
@@ -204,4 +204,4 @@ const ArtifactPsTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder,
     </div>
   );
 };
-export default ArtifactPsTable;
+export default ArtifactPTable;

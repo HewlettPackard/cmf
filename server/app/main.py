@@ -284,12 +284,13 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
 
 @app.get("/artifact-execution-lineage/tangled-tree/{pipeline_name}")
 async def artifact_execution_lineage(request: Request, pipeline_name: str):
-    #  checks if mlmd file exists on server
-    response = None
-    if os.path.exists(server_store_path):
-        if (pipeline_name in query.get_pipeline_names()):
-            response = await query_visualization_artifact_execution(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+    # checks if mlmd file exists on server
+    await check_mlmd_file_exists()
+    # checks if pipeline exists
+    await check_pipeline_exists(pipeline_name)
+    response = await query_visualization_artifact_execution(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
     return response
+
 
 # Rest api is for pushing python env to upload python env
 @app.post("/python-env")
@@ -305,6 +306,7 @@ async def upload_python_env(request:Request, file: UploadFile = File(..., descri
     except Exception as e:
         return {"error": f"Failed to up load file: {e}"}
     
+
 # Rest api to fetch the env data from the /cmf-server/data/env folder
 @app.get("/python-env", response_class=PlainTextResponse)
 async def get_python_env(file_name: str) -> str:

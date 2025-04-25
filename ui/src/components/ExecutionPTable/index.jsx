@@ -16,15 +16,15 @@
 
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
-import Highlight from "../../components/Highlight";
+import Highlight from "../Highlight";
 import "./index.module.css";
 import config from "../../config";
 import FastAPIClient from "../../client";
-import PythonEnvPopup from "../../components/PythonEnvPopup";
+import PythonEnvPopup from "../PythonEnvPopup";
 
 const client = new FastAPIClient(config);
 
-const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
+const ExecutionPTable = ({ executions, onSort, onFilter }) => {
   const [sortOrder, setSortOrder] = useState(onSort);
   const [sortedData, setSortedData] = useState([]);
   const [filterValue, setFilterValue] = useState("");
@@ -172,4 +172,4 @@ const ExecutionPsTable = ({ executions, onSort, onFilter }) => {
   );
 };
 
-export default ExecutionPsTable;
+export default ExecutionPTable;

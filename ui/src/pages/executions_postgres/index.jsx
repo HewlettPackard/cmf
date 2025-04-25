@@ -18,14 +18,14 @@ import React, { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
-import ExecutionPsTable from "../../components/ExecutionPsTable";
+import ExecutionPTable from "../../components/ExecutionPTable";
 import Footer from "../../components/Footer";
 import "./index.module.css";
 import Sidebar from "../../components/Sidebar";
 
 const client = new FastAPIClient(config);
 
-const Executions_ps = () => {
+const ExecutionsPostgres = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [executions, setExecutions] = useState([]);
@@ -108,7 +108,7 @@ const Executions_ps = () => {
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
             <div>
               {selectedPipeline !== null && executions !== null && (
-                <ExecutionPsTable executions={executions} onSort={handleSort} onFilter={handleFilter} />
+                <ExecutionPTable executions={executions} onSort={handleSort} onFilter={handleFilter} />
               )}
               <div>
                 {executions !== null && totalItems > 0 && (
@@ -177,4 +177,4 @@ const Executions_ps = () => {
   );
 };
 
-export default Executions_ps;
+export default ExecutionsPostgres;

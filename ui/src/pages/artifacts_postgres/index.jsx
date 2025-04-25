@@ -18,15 +18,15 @@ import React, { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
-import ArtifactPsTable from "../../components/ArtifactPsTable";
+import ArtifactPTable from "../../components/ArtifactPTable";
 import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
-import ArtifactPsTypeSidebar from "../../components/ArtifactPsTypeSidebar";
+import ArtifactPTypeSidebar from "../../components/ArtifactPTypeSidebar";
 
 const client = new FastAPIClient(config);
 
-const Artifacts_ps = () => {
+const ArtifactsPostgres = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
   const [pipelines, setPipelines] = useState([]);
   // undefined state is to check whether artifacts data is set
@@ -155,7 +155,7 @@ const Artifacts_ps = () => {
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
             <div className="flex flex-col w-full">
                 {selectedPipeline !== null && (
-                  <ArtifactPsTypeSidebar
+                  <ArtifactPTypeSidebar
                     artifactTypes={artifactTypes}
                     handleArtifactTypeClick={handleArtifactTypeClick}
                     onFilter={handleFilter}
@@ -164,7 +164,7 @@ const Artifacts_ps = () => {
             </div>
             <div>
                 {artifacts !== null && artifacts.length > 0 ? (
-                  <ArtifactPsTable 
+                  <ArtifactPTable 
                     artifacts={artifacts}
                     artifactType={selectedArtifactType}
                     onsortOrder={toggleSortOrder}
@@ -259,4 +259,4 @@ const Artifacts_ps = () => {
     </>
   );
 };
-export default Artifacts_ps;
+export default ArtifactsPostgres;

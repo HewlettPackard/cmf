@@ -17,7 +17,7 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
-const ArtifactPsTypeSidebar = ({
+const ArtifactPTypeSidebar = ({
   artifactTypes,
   handleArtifactTypeClick,
   onFilter
@@ -95,4 +95,4 @@ const ArtifactPsTypeSidebar = ({
   );
 };
 
-export default ArtifactPsTypeSidebar;
+export default ArtifactPTypeSidebar;
