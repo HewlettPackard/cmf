@@ -39,6 +39,20 @@ class FastAPIClient {
     return client;
   }
 
+  async getArtifacts(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
+    return this.apiClient
+      .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
+        params: {
+          filter_value: filterValue,
+          sort_order: sort_order,
+          page_number: page_number,
+          col_name: col_name,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
 
   async getArtifactTypes() {
     return this.apiClient.get(`/artifact_types`).then(({ data }) => {
@@ -93,6 +107,20 @@ class FastAPIClient {
     }); 
   }
 
+  async getExecutions(pipeline_name, active_page, filter_value, sort_order){
+    return this.apiClient
+    .get(`/executions/${pipeline_name}`,{
+      params: {
+        active_page: active_page,
+        filter_value: filter_value,
+        sort_order: sort_order,
+      },
+    }).
+    then(({data}) => {
+      return data;
+    }); 
+  }
+
   async getPipelines(value) {
     try {
       const { data } = await this.apiClient.get(`/pipelines`);
@@ -112,35 +140,6 @@ class FastAPIClient {
       .then(({ data }) => {
         return data;
       });
-  }
-
-  async getArtifacts(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
-    return this.apiClient
-      .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
-        params: {
-          filter_value: filterValue,
-          sort_order: sort_order,
-          page_number: page_number,
-          col_name: col_name,
-        },
-      })
-      .then(({ data }) => {
-        return data;
-      });
-  }
-
-  async getExecutions(pipeline_name, active_page, filter_value, sort_order){
-    return this.apiClient
-    .get(`/executions/${pipeline_name}`,{
-      params: {
-        active_page: active_page,
-        filter_value: filter_value,
-        sort_order: sort_order,
-      },
-    }).
-    then(({data}) => {
-      return data;
-    }); 
   }
 
   async getPythonEnv(file_name) {
