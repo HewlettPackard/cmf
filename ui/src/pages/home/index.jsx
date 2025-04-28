@@ -54,13 +54,11 @@ const Home = () => {
             </thead>
             <tbody className="divide-y divide-gray-200">
               {pipelines !== null && pipelines.length > 0 ? (
-                <div>
-                 {pipelines.map((data, i) => (
+                pipelines.map((data, i) => (
                   <tr key={i}>
                     <td className="text-center"> {data} </td>
                   </tr>
-                ))}
-                </div>
+                ))
                 ) : (
                   <div>No pipeline available</div> // Display message when there are no artifacts
                 )}
