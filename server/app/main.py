@@ -4,7 +4,7 @@ import time
 import zipfile
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, PlainTextResponse, FileResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
@@ -526,52 +526,53 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
                 json_payload = response.json()
-
-                # json_payload = ""
-
-                # # logic for how to get list_of_python_files is still remaining
                 
-                # python_env_store_path = "/cmf-server/data/env/"
-                # if last_sync_time:
-                #     list_of_files = ["a", "b", "c"]
-                #     # Added list_of_files to the request as a optional query parameter 
-                #     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
-                # else:
-                #     print("i am inside else")
-                #     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
-                #     print(python_env_zip)
+                python_env_store_path = "/cmf-server/data/env"
+                if last_sync_time:
+                    list_of_files = ["a", "b", "c"]
+                    # Added list_of_files to the request as a optional query parameter 
+                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
+                else:
+                    # print("i am inside else")
+                    python_env_zip = await client.get("http://192.168.20.67:8080/download-python-env", params=None)
+                    # print("type of python_env_zip", type(python_env_zip))
+                    # print("python_env_zip", python_env_zip)
+                if python_env_zip.status_code == 200:
+                    try:
+                        # Create the directory if it doesn't exist
+                        os.makedirs(python_env_store_path, exist_ok=True)
 
-                # if python_env_zip.status_code == 200:
-                #     try:
-                #         # Create the directory if it doesn't exist
-                #         os.makedirs(python_env_store_path, exist_ok=True)
+                        # Unzip the zip file content
+                        # print("Length of python_env_zip.content:", (python_env_zip.content))
+                        with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
+                            # Extract all files to a temporary directory
+                            temp_dir = os.path.join(python_env_store_path, "temp_extracted")
+                            os.makedirs(temp_dir, exist_ok=True)
+                            zf.extractall(temp_dir)
+                            # print("Files in temp_dir after extraction:", os.listdir(temp_dir))
 
-                #         # Unzip the zip file content
-                #         with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
-                #             # Extract all files to a temporary directory
-                #             temp_dir = os.path.join(python_env_store_path, "temp_extracted")
-                #             os.makedirs(temp_dir, exist_ok=True)
-                #             zf.extractall(temp_dir)
+                            # Move all extracted files to the target directory
+                            for root, dirs, files in os.walk(temp_dir):
+                                for file in files:
+                                    src_file = os.path.join(root, file)
+                                    dest_file = os.path.join(python_env_store_path, file)
+                                    try:
+                                        os.rename(src_file, dest_file)
+                                        print(f"Moved {src_file} to {dest_file}")
+                                    except Exception as e:
+                                        print(f"Failed to move {src_file} to {dest_file}: {e}")
 
-                #             # Move all extracted files to the target directory
-                #             for root, dirs, files in os.walk(temp_dir):
-                #                 for file in files:
-                #                     src_file = os.path.join(root, file)
-                #                     dest_file = os.path.join(python_env_store_path, file)
-                #                     os.rename(src_file, dest_file)
-
-                #             # Clean up the temporary directory
-                #             os.rmdir(temp_dir)
-
-                #         print(f"All files have been successfully extracted and stored in {python_env_store_path}")
-                #     except Exception as e:
-                #         raise HTTPException(status_code=500, detail=f"Failed to extract and store files: {e}")
-                # else:
-                #     raise HTTPException(status_code=500, detail="Failed to download python env zip file")
-
+                            # Clean up the temporary directory
+                            os.rmdir(temp_dir)
+                        # print("Storing at:", os.path.abspath(python_env_store_path))
+                        # print("Files in target directory:", os.listdir(python_env_store_path))
+                        print("All files stored successfully.")
+                    except Exception as e:
+                        print(f"Error during file extraction or storage: {e}")
+                else:
+                    print(f"Failed to download ZIP file. Status code: {python_env_zip.status_code}")
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
-        #print(json_payload)
         return json_payload
 
     except Exception as e:
@@ -736,10 +737,12 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
         
         zip_buffer.seek(0)
 
-        return FileResponse(
+        return StreamingResponse(
             zip_buffer,
-            mimetype="application/zip",
-            file_name="python_env_files.zip" if list_of_files else "python_env_folder.zip"
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f"attachment; filename={'python_env_files.zip' if list_of_files else 'python_env_folder.zip'}"
+            }
         )
     except Exception as e:
         return {"error": str(e)}
