@@ -35,7 +35,7 @@ from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitCompl
 import sys
 
 class CmdInitAmazonS3(CmdBase):
-    def run(self):
+    def run(self, live):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 

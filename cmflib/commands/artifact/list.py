@@ -14,15 +14,16 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
-import pandas as pd
+import argparse
 import textwrap
+import readchar
+import pandas as pd
 
+from cmflib import cmfquery
 from tabulate import tabulate
 from typing import Union, List
 from cmflib.cli.command import CmdBase
-from cmflib import cmfquery
 from cmflib.cmf_exception_handling import ( 
     PipelineNotFound,
     FileNotFound,
@@ -88,10 +89,10 @@ class CmdArtifactsList(CmdBase):
             if end_index >= total_records:
                 print("\nEnd of records.")
                 break
-
             # Ask the user for input to navigate pages.
-            user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
-            if user_input == 'q':
+            print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+            user_input = readchar.readchar()
+            if user_input.lower() == 'q':
                 break
             
             # Update start index for the next page.
@@ -135,7 +136,7 @@ class CmdArtifactsList(CmdBase):
             return matched_ids
         return -1
 
-    def run(self):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -217,8 +218,9 @@ class CmdArtifactsList(CmdBase):
                         print(table)
                         print()
 
-                        user_input = input("Press Enter to see more records if exists or 'q' to quit: ").strip().lower()
-                        if user_input == 'q':
+                        print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+                        user_input = readchar.readchar()
+                        if user_input.lower() == 'q':
                             break
                     return MsgSuccess(msg_str = "End of records..")
                 else:
