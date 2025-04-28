@@ -52,14 +52,17 @@ class SSHremoteArtifacts:
             # creates subfolders needed as per artifacts' folder structure
             os.makedirs(dir_path, mode=0o777, exist_ok=True) 
 
-        response = ""
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
         try:
-            response = sftp.put(object_name, abs_download_loc)
+            local_file_size = os.stat(object_name).st_size  # Get the size of the local file being uploaded
+            # The put() method returns an SFTPAttributes object, which contains metadata about the uploaded file.
+            # Therefore, response should be typed as SFTPAttributes.
+            response: paramiko.SFTPAttributes = sftp.put(object_name, abs_download_loc)
             # we can close sftp connection as we have already downloaded the file
             sftp.close()
             ssh.close()
-            if response:
+            # After upload, check if the uploaded file size matches the local file size
+            if response.st_size == local_file_size:
                 return object_name, abs_download_loc, True
             return  object_name, abs_download_loc, False
         except Exception as e:

@@ -69,8 +69,8 @@ class CmdArtifactPull(CmdBase):
             if len(token) > 1:
                 # in case of metrics we have multiple ':' in its url
                 # concating remaining tokens after removing pipeline_name using ':' delimiter
-                token = ":".join(token)
-                return token
+                token_str = ":".join(token)
+                return token_str
             return "".join(token)
 
     def extract_repo_args(self, type: str, name: str, url: str, current_directory: str):
