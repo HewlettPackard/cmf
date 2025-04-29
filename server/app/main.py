@@ -11,7 +11,6 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
 from server.app.get_data import (
-    get_artifacts,
     get_lineage_data,
     create_unique_executions,
     get_mlmd_from_server,
@@ -19,7 +18,6 @@ from server.app.get_data import (
     get_all_artifact_ids,
     get_all_exe_ids,
     async_api,
-    get_executions,
     get_model_data
 
 )

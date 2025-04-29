@@ -208,8 +208,6 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
 def create_unique_executions(query: CmfQuery, req_info) -> str:
     """
     Creates list of unique executions by checking if they already exist on server or not.
-    Locking is introduced to avoid data corruption on server, 
-    when multiple similar pipelines pushed on server at same time.
     Args:
         query (CmfQuery): The CmfQuery object.
         req_info (dict): A dictionary containing the request information.

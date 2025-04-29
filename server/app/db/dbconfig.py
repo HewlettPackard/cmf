@@ -9,26 +9,32 @@ load_dotenv()
 
 # Database configuration
 DB_CONFIG = {
-    "user": os.getenv("POSTGRES_USER"),
-    "password": os.getenv("POSTGRES_PASSWORD"),
-    "database": os.getenv("POSTGRES_DB"),
-    "host": os.getenv("POSTGRES_HOST"),
-    "port": os.getenv("POSTGRES_PORT"),
+    "db_user": os.getenv("POSTGRES_USER"),
+    "db_password": os.getenv("POSTGRES_PASSWORD"),
+    "db": os.getenv("POSTGRES_DB"),
+    "db_host_ip": os.getenv("MYIP"),
+    "db_host_name": os.getenv("HOSTNAME"),
+    "db_port": 5432, # Default PostgreSQL port
 }
 
-user='myuser'
-password='mypassword'
-host='192.168.20.67'
-port=5432
-database='mlmd'
+if DB_CONFIG['db_host_ip'] and DB_CONFIG['db_host_ip'] != "127.0.0.1":
+    DB_CONFIG["db_host"] = DB_CONFIG['db_host_ip']
+else:
+    DB_CONFIG["db_host"] = DB_CONFIG['db_host_name']
 
+
+# print("ip:", DB_CONFIG["db_host_ip"])
+# print("hostname:", DB_CONFIG["db_host_name"])
+# print("Host:", DB_CONFIG["db_host"])
+# print("User:", DB_CONFIG["db_user"])
+# print("Password:", DB_CONFIG["db_password"])
+# print("DB:", DB_CONFIG["db"])
+# print("Port:", DB_CONFIG["db_port"])
 
 DATABASE_URL = "postgresql+asyncpg://{0}:{1}@{2}:{3}/{4}".format(
-            user, password, host, port, database
+        DB_CONFIG["db_user"], DB_CONFIG["db_password"], DB_CONFIG["db_host"],
+        DB_CONFIG["db_port"], DB_CONFIG["db"]
         )
-
-#engine = create_async_engine(DATABASE_URL, echo=True)
-#async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 # Create an asynchronous engine with connection pooling
@@ -36,10 +42,6 @@ engine = create_async_engine(
     DATABASE_URL,
     echo=True,  # For debugging, log SQL statements
 )
-#     poolclass=NullPool,  # You can also use other pool classes like QueuePool
-#     pool_size=10,         # Number of connections to maintain in the pool
-#     max_overflow=20,      # Number of connections to allow above pool_size
-# )
 
 # Create a session maker
 async_session = sessionmaker(
