@@ -153,7 +153,7 @@ const ExecutionPTable = ({ executions, onSort, onFilter }) => {
                           <tbody>
                             {data.execution_properties.map((property, idx) => (
                               <tr key={idx}>
-                                <td>{property.name}</td>
+                                <td><Highlight text={property.name} highlight={filterValue} /></td>
                                 <td><Highlight text={property.value} highlight={filterValue} /></td>
                               </tr>
                             ))}
