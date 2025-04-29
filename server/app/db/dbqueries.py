@@ -17,7 +17,7 @@ async def fetch_artifacts(
     db: AsyncSession,   # Used to interact with the database
     pipeline_name: str, 
     artifact_type: str, 
-    search_query: str, 
+    filter_value: str, 
     page_number: int = 1, 
     page_size: int = 5,  # Number of records per page
     sort_column: str = "name", 
@@ -101,15 +101,15 @@ async def fetch_artifacts(
         .outerjoin(artifact_properties_agg, base_data.c.artifact_id == artifact_properties_agg.c.artifact_id)
         .where(
             # Apply search filter to all columns of base_data
-            (base_data.c.artifact_id.cast(String).ilike(f"%{search_query}%")) |
-            (base_data.c.name.ilike(f"%{search_query}%")) |
-            (base_data.c.execution.ilike(f"%{search_query}%")) |
-            (base_data.c.uri.ilike(f"%{search_query}%")) |
-            (base_data.c.create_time_since_epoch.cast(String).ilike(f"%{search_query}%")) |
-            (base_data.c.last_update_time_since_epoch.cast(String).ilike(f"%{search_query}%")) |
+            (base_data.c.artifact_id.cast(String).ilike(f"%{filter_value}%")) |
+            (base_data.c.name.ilike(f"%{filter_value}%")) |
+            (base_data.c.execution.ilike(f"%{filter_value}%")) |
+            (base_data.c.uri.ilike(f"%{filter_value}%")) |
+            (base_data.c.create_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
+            (base_data.c.last_update_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
             
             # Apply search filter to artifact properties aggregation
-            (artifact_properties_agg.c.artifact_properties.cast(String).ilike(f"%{search_query}%"))
+            (artifact_properties_agg.c.artifact_properties.cast(String).ilike(f"%{filter_value}%"))
         )
         .limit(page_size)
         .offset((page_number - 1) * page_size)
@@ -141,6 +141,7 @@ async def fetch_executions(
     filter_value: str, 
     active_page: int = 1, 
     record_per_page: int = 5,
+    sort_column: str = "Context_Type", 
     sort_order: str = "ASC"
 ):
     # Step 1: Get relevant contexts

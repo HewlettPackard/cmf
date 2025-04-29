@@ -39,14 +39,14 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
+  async getArtifacts(pipeline_name, artifact_type, sort_order, active_page, filter_value, sort_field) {
     return this.apiClient
       .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
         params: {
-          filter_value: filterValue,
+          filter_value: filter_value,
           sort_order: sort_order,
-          page_number: page_number,
-          col_name: col_name,
+          active_page: active_page,
+          sort_field: sort_field,
         },
       })
       .then(({ data }) => {

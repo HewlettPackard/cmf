@@ -142,27 +142,35 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
 async def get_artifacts(
     pipeline_name: str, 
     artifact_type: str, 
-    filter_value: str = Query(None, description="Search based on value"), 
-    sort_column: str = Query("name"),
-    sort_order: str = Query("ASC"),
-    page_number: int = Query(1, ge=1),
+    query_params: ArtifactRequest = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
+
+    filter_value = query_params.filter_value
+    active_page = query_params.page
+    sort_field = query_params.sort_field
+    sort_order = query_params.sort_order
+    record_per_page = query_params.record_per_page
+
     """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
-    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, page_number, 5, sort_column, sort_order)
+    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
 
 
 # api to display executions available in mlmd file[from postgres]
 @app.get("/executions/{pipeline_name}")
 async def execution(request: Request,
                    pipeline_name: str,
-                   active_page: int = Query(1, description="Page number", gt=0),
-                   filter_value: str = Query("", description="Search based on value"),  
-                   sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
+                   query_params: ExecutionRequest = Depends(),
                    db: AsyncSession = Depends(get_db)
                    ):
+    filter_value = query_params.filter_value
+    active_page = query_params.page
+    sort_order = query_params.sort_order
+    sort_field = query_params.sort_field
+    record_per_page = query_params.record_per_page
+
     """Retrieve paginated executions with filtering, sorting, and full-text search."""
-    return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
+    return await fetch_executions(db, pipeline_name, filter_value, active_page, record_per_page, sort_field, sort_order)
     
 
 @app.get("/list-of-executions/{pipeline_name}")
