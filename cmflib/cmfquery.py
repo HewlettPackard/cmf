@@ -985,12 +985,20 @@ class CmfQuery(object):
 
         return json.dumps({"Pipeline": pipelines})
 
-    def extract_to_json(self, last_sync_time: str):
+    def extract_to_json(self, last_sync_time: int):
         pipelines = []
         print("i am inside extract to json")
-        for pipeline in self._get_pipelines():
-            pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
-            pipelines.append(pipeline_attrs)
+        if last_sync_time:
+            for pipeline in self._get_pipelines():
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+                print("pipeline_attrs = ", pipeline_attrs)
+                if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
+                    pipelines.append(pipeline_attrs)
+        else:
+            for pipeline in self._get_pipelines():
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+                pipelines.append(pipeline_attrs)
+
         return json.dumps({"Pipeline": pipelines})
     
     def get_all_executions_for_artifact_id(self, artifact_id: int) -> pd.DataFrame:

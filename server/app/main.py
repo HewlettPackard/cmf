@@ -114,14 +114,7 @@ async def mlmd_push(info: MLMDPushRequest):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            if pipeline_name:
-                # this is excuted when cmf metadata command is fired
-                status = await async_api(query.create_unique_executions, req_info["json_payload"], pipeline_name, "push", req_info["exec_uuid"])
-            else:
-                print("i am inside mlmd push's else")
-                # this is executed in case of first sync
-                status = await async_api(query.create_unique_executions, req_info["json_payload"], None, "push", None)
-                print("status of create unique executions = ", status)
+            status = await async_api(query.create_unique_executions, req_info["json_payload"], pipeline_name, "push", req_info["exec_uuid"])
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
@@ -132,14 +125,11 @@ async def mlmd_push(info: MLMDPushRequest):
             # async function
                 await update_global_exe_dict(pipeline_name)
                 await update_global_art_dict(pipeline_name)
-            print("i am here - ")
         finally:
             lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
             if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
-            print("i should be here too")
-        print("this status is not getting printed= ", status)
     return {"status": status}
 
 
@@ -401,7 +391,7 @@ async def register_server(request: ServerRegistrationRequest):
             rows = "Registration failed: Cannot register the server with its own details."
         else:
             # Insert the server details into the database
-            rows = await conn.fetch('''INSERT INTO registred_servers (server_name, ip_or_host)
+            rows = await conn.fetch('''INSERT INTO registered_servers (server_name, ip_or_host)
             VALUES ($1, $2) RETURNING *;''', server_name, host_info)
         return rows
 
@@ -446,50 +436,50 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
                 json_payload = response.json()
                 
-                python_env_store_path = "/cmf-server/data/env"
-                if last_sync_time:
-                    list_of_files = ["a", "b", "c"]
-                    # Added list_of_files to the request as a optional query parameter 
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
-                else:
-                    # print("i am inside else")
-                    python_env_zip = await client.get("http://192.168.20.67:8080/download-python-env", params=None)
-                    # print("type of python_env_zip", type(python_env_zip))
-                    # print("python_env_zip", python_env_zip)
-                if python_env_zip.status_code == 200:
-                    try:
-                        # Create the directory if it doesn't exist
-                        os.makedirs(python_env_store_path, exist_ok=True)
+            #     python_env_store_path = "/cmf-server/data/env"
+            #     if last_sync_time:
+            #         list_of_files = ["a", "b", "c"]
+            #         # Added list_of_files to the request as a optional query parameter 
+            #         python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
+            #     else:
+            #         print("i am inside else")
+            #         python_env_zip = await client.get("http://{host_info}:8080/download-python-env", params=None)
+            #         print("type of python_env_zip", type(python_env_zip))
+            #         print("python_env_zip", python_env_zip)
+            #     if python_env_zip.status_code == 200:
+            #         try:
+            #             # Create the directory if it doesn't exist
+            #             os.makedirs(python_env_store_path, exist_ok=True)
 
-                        # Unzip the zip file content
-                        # print("Length of python_env_zip.content:", (python_env_zip.content))
-                        with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
-                            # Extract all files to a temporary directory
-                            temp_dir = os.path.join(python_env_store_path, "temp_extracted")
-                            os.makedirs(temp_dir, exist_ok=True)
-                            zf.extractall(temp_dir)
-                            # print("Files in temp_dir after extraction:", os.listdir(temp_dir))
+            #             # Unzip the zip file content
+            #             # print("Length of python_env_zip.content:", (python_env_zip.content))
+            #             with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
+            #                 # Extract all files to a temporary directory
+            #                 temp_dir = os.path.join(python_env_store_path, "temp_extracted")
+            #                 os.makedirs(temp_dir, exist_ok=True)
+            #                 zf.extractall(temp_dir)
+            #                 # print("Files in temp_dir after extraction:", os.listdir(temp_dir))
 
-                            # Move all extracted files to the target directory
-                            for root, dirs, files in os.walk(temp_dir):
-                                for file in files:
-                                    src_file = os.path.join(root, file)
-                                    dest_file = os.path.join(python_env_store_path, file)
-                                    try:
-                                        os.rename(src_file, dest_file)
-                                        print(f"Moved {src_file} to {dest_file}")
-                                    except Exception as e:
-                                        print(f"Failed to move {src_file} to {dest_file}: {e}")
+            #                 # Move all extracted files to the target directory
+            #                 for root, dirs, files in os.walk(temp_dir):
+            #                     for file in files:
+            #                         src_file = os.path.join(root, file)
+            #                         dest_file = os.path.join(python_env_store_path, file)
+            #                         try:
+            #                             os.rename(src_file, dest_file)
+            #                             print(f"Moved {src_file} to {dest_file}")
+            #                         except Exception as e:
+            #                             print(f"Failed to move {src_file} to {dest_file}: {e}")
 
-                            # Clean up the temporary directory
-                            os.rmdir(temp_dir)
-                        # print("Storing at:", os.path.abspath(python_env_store_path))
-                        # print("Files in target directory:", os.listdir(python_env_store_path))
-                        print("All files stored successfully.")
-                    except Exception as e:
-                        print(f"Error during file extraction or storage: {e}")
-                else:
-                    print(f"Failed to download ZIP file. Status code: {python_env_zip.status_code}")
+            #                 # Clean up the temporary directory
+            #                 os.rmdir(temp_dir)
+            #             # print("Storing at:", os.path.abspath(python_env_store_path))
+            #             # print("Files in target directory:", os.listdir(python_env_store_path))
+            #             print("All files stored successfully.")
+            #         except Exception as e:
+            #             print(f"Error during file extraction or storage: {e}")
+            #     else:
+            #         print(f"Failed to download ZIP file. Status code: {python_env_zip.status_code}")
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
         return json_payload
@@ -527,7 +517,7 @@ async def sync_metadata(request: ServerRegistrationRequest):
 
         # Fetch the server details from the database
         row = await conn.fetchrow(
-            '''SELECT last_sync_time FROM registred_servers WHERE server_name = $1 AND ip_or_host = $2;''',
+            '''SELECT last_sync_time FROM registered_servers WHERE server_name = $1 AND ip_or_host = $2;''',
             server_name, host_info
         )
 
@@ -538,63 +528,70 @@ async def sync_metadata(request: ServerRegistrationRequest):
         current_utc_epoch_time = int(time.time() * 1000)
         request.last_sync_time = last_sync_time
 
-        if not last_sync_time:  # First-time sync
+        message = ""
+        if not last_sync_time:
             message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
-
-            # Call mlmd_pull to fetch the JSON payload
-            json_payload = await server_mlmd_pull(request)      
-            # Use the JSON payload in json_data
-            json_data = {
-                "exec_uuid": None,
-                "json_payload": json.dumps(json_payload),
-                "pipeline_name": None
-            }
-
-            # this will need some update too - can't always have a pipeline name in mlmd push
-            # Push the JSON payload to the host server
-            print("push is next")
-            status = await mlmd_push(MLMDPushRequest(**json_data))
-
-        else:  # Subsequent sync
+        else:
             message = f"Host server is being synced with the selected server '{server_name}' at address '{host_info}'."
-            # will be able to use server_mlmd_pull is the first question ?
-            # Call extract_to_json method (replace with actual implementation)
-            # await extract_to_json(server_name, host_info)
-            json_payload = await server_mlmd_pull(request)          
-            # Use the JSON payload in json_data
-            json_data = {
-                "exec_uuid": None,
-                "json_payload": json.dumps(json_payload),
-                "pipeline_name": None
-            }
 
-            # this will need some update too
-            # Push the JSON payload to the host server
-            print("push is next")
-            try:
-                print("inside try")
-                status = await mlmd_push(MLMDPushRequest(**json_data))
-            except HTTPException as http_exc:
-                print(f"mlmd_push raised HTTPException: {http_exc.detail}")
-                raise  # Let FastAPI catch and respond
-            except Exception as e:
-                print(f"mlmd_push raised unexpected exception: {e}")
-                raise HTTPException(status_code=500, detail="Unexpected error during mlmd_push")
+        # Call mlmd_pull to fetch the JSON payload
+        json_payload = await server_mlmd_pull(request)      
+        # Use the JSON payload in json_data
+        json_data = {
+            "exec_uuid": None,
+            "json_payload": json.dumps(json_payload),
+            "pipeline_name": None
+        }
 
-            # status = await mlmd_push(MLMDPushRequest(**json_data)) 
-            print("status of mlmd push = ", status)       
-            print("reached here")    
+            
+        print("type of json_payload = ", type(json_payload))
+        # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
+        pipelines = json_payload.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
+        # pipelines contain full mlmd data with the tag - 'Pipeline'
+        print("type of pipelines = ", type(pipelines))
+        # tell us number of pipelines
+        len_pipelines = len(pipelines)
+        print("length of pipelines = ", len_pipelines)
+        pipeline_names = []
+
+        # in case of push check pipeline name exists inside mlmd_data
+        pipeline_names = [pipeline.get("name") for pipeline in pipelines]
+
+        # Push the JSON payload to the host server
+        status = await async_api(query.create_unique_executions, json_data["json_payload"], None, "push", None)
+        if status == "invalid_json_payload":
+            # Invalid JSON payload, return 400 Bad Request
+            raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
+        if status == "version_update":
+            # Raise an HTTPException with status code 422
+            raise HTTPException(status_code=422, detail="version_update")
+        global dict_of_art_ids
+        global dict_of_exe_ids
+        if status != "exists":
+            # async function
+            # how should we handle this - i don't understand how to get pipeline names - oh i just got 
+            for pipeline_name in pipeline_names:
+                print("pipeline_name =", pipeline_name)
+                #dict_of_exe_ids = get_all_exe_ids(query)
+                #dict_of_art_ids = get_all_artifact_ids(query, dict_of_exe_ids)
+                update_global_exe_dict(pipeline_name)
+                update_global_art_dict(pipeline_name)
+        print("dict of exe ids = ", dict_of_exe_ids)
+        print("dict of art ids = ", dict_of_art_ids)
+        print("i am here in if")
+        print("status of mlmd push = ", status)       
+        print("reached here")                
 
         # Update the last_sync_time in the database only if sync status is successful
-        if status.get("status") == "success":
+        if status == "success":
             await conn.execute(
-            '''UPDATE registred_servers SET last_sync_time = $1 WHERE server_name = $2 AND ip_or_host = $3;''',
+            '''UPDATE registered_servers SET last_sync_time = $1 WHERE server_name = $2 AND ip_or_host = $3;''',
             current_utc_epoch_time, server_name, host_info
         )
 
         return {
             "message": message,
-            "status": status.get("status", "failed"),
+            "status": status,
             "last_sync_time": current_utc_epoch_time
         }
 
@@ -612,7 +609,7 @@ async def server_list():
         database=os.getenv("POSTGRES_DB"),
         host='10.93.244.204'
     )
-    rows = await conn.fetch('''SELECT * FROM registred_servers;''')
+    rows = await conn.fetch('''SELECT * FROM registered_servers;''')
     print(rows)
     return rows
 
@@ -680,6 +677,8 @@ async def update_global_art_dict(pipeline_name):
 async def update_global_exe_dict(pipeline_name):
     print("inside update global exe dict")
     global dict_of_exe_ids
+    print("query = ", query)
+    print("type of query = ", type(query))
     output_dict = await async_api(get_all_exe_ids, query, pipeline_name)
     # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
