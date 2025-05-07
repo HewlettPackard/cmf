@@ -929,7 +929,7 @@ class CmfQuery(object):
             events.append(event_attrs)
         return events
 
-    def _get_execution_attributes(self, stage_id: int, exec_uuid: t.Optional[str] = None) -> t.List[t.Dict]:
+    def _get_execution_attributes(self, stage_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
         """
         Extract execution attributes for a given stage ID.
 
@@ -950,10 +950,21 @@ class CmfQuery(object):
                     "events": self._get_event_attributes(execution.id),
                 },
             )
-            executions.append(exec_attrs)
+
+            # what is usual situtaion - 
+            #it does not matter if last sync time is given or not we have to add exec_attrs 
+            #however if last sync timr is given then we have to check if last_update_time_since_epoch > last_sync_time
+            # last_update_time_since epoch
+
+            if last_sync_time:
+                if exec_attrs["last_update_time_since_epoch"] > last_sync_time:
+                    executions.append(exec_attrs)
+            else:
+                executions.append(exec_attrs)
+
         return executions
 
-    def _get_stage_attributes(self, pipeline_id: int, exec_uuid: t.Optional[str] = None) -> t.List[t.Dict]:
+    def _get_stage_attributes(self, pipeline_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
         """
         Extract stage attributes for a given pipeline ID.
 
@@ -966,8 +977,13 @@ class CmfQuery(object):
         """
         stages = []
         for stage in self._get_stages(pipeline_id):
-            stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid)})
-            stages.append(stage_attrs)
+            stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid, last_sync_time)})
+            print("stage_attrs = ", stage_attrs)
+            if last_sync_time:
+                if stage_attrs["last_update_time_since_epoch"] > last_sync_time:
+                    stages.append(stage_attrs)
+                else:
+                    stages.append(stage_attrs)
         return stages
 
     def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
@@ -990,14 +1006,19 @@ class CmfQuery(object):
         print("i am inside extract to json")
         if last_sync_time:
             for pipeline in self._get_pipelines():
-                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, None, last_sync_time)})
+                #pipelines.append(pipeline_attrs)
                 print("pipeline_attrs = ", pipeline_attrs)
-                if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
-                    pipelines.append(pipeline_attrs)
-        else:
-            for pipeline in self._get_pipelines():
-                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
-                pipelines.append(pipeline_attrs)
+                if last_sync_time:
+                    if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        pipelines.append(pipeline_attrs)
+                    else:
+                        pipelines.append(pipeline_attrs)
+                else:
+                    print("for first time sync i should be here")
+                    for pipeline in self._get_pipelines():
+                        pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+                        pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
     
