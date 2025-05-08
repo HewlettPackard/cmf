@@ -2,7 +2,7 @@ function RegisteredServers({ serverList }) {
   const formatEpochToHumanReadable = (epoch) => {
     if (!epoch) return "Never Synced";
     const date = new Date(epoch);
-    return date.toLocaleString(); // Converts to human-readable format
+    return date.toUTCString();
   };
 
   if (serverList.length === 0) {
