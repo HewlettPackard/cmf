@@ -26,11 +26,11 @@ import config from '../../config';
 const client = new FastAPIClient(config);
 
 const Metahub = () => {
-  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(true);
   const [showRegisteredServers, setShowRegisteredServers] = useState(false);
   const [showDataSync, setShowDataSync] = useState(false);
   const [serverList, setServerList] = useState([]);
-  const [buttonType, setButtonType] = useState("registration");
+  const [activeButton, setActiveButton] = useState("registration");
 
   const closeForm = () => {
     setShowRegistrationForm(false);
@@ -64,42 +64,48 @@ const Metahub = () => {
         <div className="flex flex-row">
           <div className="container justify-center items-center mx-auto px-4">
             <button
-              className="bg-blue-500 text-white font-bold py-2 px-4 rounded m-2"
+              className={`py-2 px-4 rounded m-2 font-bold ${
+                activeButton === "registration" ? "bg-teal-900 text-white" : "bg-teal-600 text-white hover:bg-teal-900"
+              }`}
               onClick={() => {
                 setShowRegistrationForm(true);
                 setShowRegisteredServers(false);
                 setShowDataSync(false);
-                setButtonType("registration");
+                setActiveButton("registration");
               }}
             >
               Registration
             </button>
             <button
-              className="bg-green-500 text-white font-bold py-2 px-4 rounded m-2"
+              className={`py-2 px-4 rounded m-2 font-bold ${
+                activeButton === "sync" ? "bg-teal-900 text-white" : "bg-teal-600 text-white hover:bg-teal-900"
+              }`}
               onClick={() => {
                 clearScreen();
                 setShowDataSync(true);
                 getRegistredServers();
-                setButtonType("sync");
+                setActiveButton("sync");
               }}
             >
               Sync server
             </button>
             <button
-              className="bg-cyan-500 text-white font-bold py-2 px-4 rounded m-2"
+              className={`py-2 px-4 rounded m-2 font-bold ${
+                activeButton === "registered" ? "bg-teal-900 text-white" : "bg-teal-600 text-white hover:bg-teal-900"
+              }`}
               onClick={() => {
                 setShowRegisteredServers(true);
                 getRegistredServers();
-                setButtonType("registered");
+                setActiveButton("registered");
               }}
             >
-              Registered server
+              Registered servers
             </button>
           </div>
         </div>
-        {buttonType === "registration" && showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
-        {buttonType === "registered" && showRegisteredServers && <RegisteredServers serverList={serverList}/>}
-        {buttonType === "sync" && showDataSync && <DataSync servers={serverList} onClearScreen={clearScreen} />}
+        {activeButton === "registration" && showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
+        {activeButton === "registered" && showRegisteredServers && <RegisteredServers serverList={serverList}/>}
+        {activeButton === "sync" && showDataSync && <DataSync servers={serverList} onClearScreen={clearScreen} />}
         <Footer />
       </section>
     </>

@@ -112,7 +112,7 @@ const RegistrationForm = () => {
             </div>
             <button
                 type="submit"
-                className="bg-violet-500 text-white font-bold py-2 px-4 rounded m-2">
+                className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded m-2 border-5">
                 Submit
             </button>
         </form>
