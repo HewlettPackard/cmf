@@ -43,6 +43,7 @@ from server.app.schemas.dataframe import (
 )
 import httpx
 import asyncpg
+from jsonpath_ng.ext import parse
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
@@ -150,6 +151,7 @@ async def mlmd_pull(info: MLMDPullRequest):
         json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, last_sync_time, dict_of_exe_ids)
     else:
         json_payload = await async_api(get_mlmd_from_server, query, None, None, last_sync_time)
+
     if json_payload == None:
         raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
@@ -382,7 +384,7 @@ async def register_server(request: ServerRegistrationRequest):
             user=os.getenv("POSTGRES_USER"),
             password=os.getenv("POSTGRES_PASSWORD"),
             database=os.getenv("POSTGRES_DB"),
-            host='10.93.244.204'
+            host='192.168.52.209'
         )
 
         # Check user is registring with own details
@@ -432,14 +434,28 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
             try:
                 response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={'last_sync_time': last_sync_time})
                 print("response = ", response)
+                
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
-                json_payload = response.json()
                 
+                json_payload = response.json()
                 python_env_store_path = "/cmf-server/data/env"
+                
                 if last_sync_time:
-                    # Ayesha needs to work on this part of code
-                    list_of_files = ["a", "b", "c"]
+                    # Extract the Environment file names from the JSON payload
+                    data = json.loads(json_payload)
+                    jsonpath_expr = parse('$..events[?(@.artifact.type == "Environment")].artifact.name')
+                    environment_names = {match.value.split(":")[0].split("/")[-1] for match in jsonpath_expr.find(data)}
+                    # Print the extracted Environment artifact names
+                    print("Environment artifact names:", environment_names)
+                    
+                    # Check if the list is empty or not
+                    # if list is empty then no need to download the zip file
+                    if len(environment_names) == 0: 
+                        print("No Environment files are found inside json payload.")
+                        return json_payload
+                    
+                    list_of_files = list(environment_names)
                     # Added list_of_files to the request as a optional query parameter 
                     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
                 else:
@@ -447,6 +463,7 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
                     python_env_zip = await client.get("http://{host_info}:8080/download-python-env", params=None)
                     print("type of python_env_zip", type(python_env_zip))
                     print("python_env_zip", python_env_zip)
+
                 if python_env_zip.status_code == 200:
                     try:
                         # Create the directory if it doesn't exist
@@ -513,7 +530,7 @@ async def sync_metadata(request: ServerRegistrationRequest):
             user=os.getenv("POSTGRES_USER"),
             password=os.getenv("POSTGRES_PASSWORD"),
             database=os.getenv("POSTGRES_DB"),
-            host='10.93.244.204'
+            host='192.168.52.209'
         )
 
         # Fetch the server details from the database
@@ -630,7 +647,7 @@ async def server_list():
         user=os.getenv("POSTGRES_USER"),
         password=os.getenv("POSTGRES_PASSWORD"),
         database=os.getenv("POSTGRES_DB"),
-        host='10.93.244.204'
+        host='192.168.52.209'
     )
     rows = await conn.fetch('''SELECT * FROM registered_servers;''')
     print(rows)
