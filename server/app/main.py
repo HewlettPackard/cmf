@@ -408,14 +408,14 @@ async def acknowledge(request: AcknowledgeRequest):
         "message": f"Hi, I acknowledge your request.",
     }
 
-# we may not even need this as a rest api, we can make it a simple function 
-@app.post("/server_mlmd_pull")
-async def server_mlmd_pull(request: ServerRegistrationRequest):
+
+async def server_mlmd_pull(host_info, last_sync_time):
     """
     Fetch mlmd data from a specified server.
 
     Args:
-        request (ServerRegistrationRequest): The request containing server details.
+        host_info (str): The host information (IP or hostname) of the target server.
+        last_sync_time (int): The last sync time in milliseconds since epoch.
 
     Returns:
         dict: The mlmd data fetched from the specified server.
@@ -424,9 +424,6 @@ async def server_mlmd_pull(request: ServerRegistrationRequest):
         HTTPException: If the server is not reachable or an error occurs during the request.
     """
     try:
-        # Access the data from the Pydantic model
-        host_info = request.host_info
-        last_sync_time = request.last_sync_time
         print(type(last_sync_time))
         print("last_sync_time in server mlmd pull = ", last_sync_time)
         # Step 1: Send a request to the target server to fetch mlmd data
@@ -544,10 +541,9 @@ async def sync_metadata(request: ServerRegistrationRequest):
 
         last_sync_time = row['last_sync_time']
         current_utc_epoch_time = int(time.time() * 1000)
-        request.last_sync_time = last_sync_time
 
-        # Call mlmd_pull to fetch the JSON payload
-        json_payload = await server_mlmd_pull(request)      
+        # Call the function to fetch the JSON payload
+        json_payload = await server_mlmd_pull(host_info, last_sync_time)      
 
         # needs to be removed        
         print("json_payload = ", json_payload)
