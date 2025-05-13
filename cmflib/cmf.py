@@ -1387,6 +1387,140 @@ class Cmf:
         dataslice_df.index.names = ["Path"]
         dataslice_df.to_parquet(name)
 
+    def log_label(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        # description remianing
+        logging_dir = change_dir(self.cmf_init_path)
+        current_script = sys.argv[0]
+        file_name = os.path.basename(current_script)
+        assigned_name = os.path.splitext(file_name)[0]
+        
+        # Create context if not already created
+        if not self.child_context:
+            self.create_context(pipeline_stage = assigned_name)
+            assert self.child_context is not None,  f"Failed to create context for {self.pipeline_name}!!"
+
+        # Create execution if not already created
+        if not self.execution:
+            self.create_execution(execution_name = assigned_name)
+            assert self.execution is not None,  f"Failed to create execution for {self.pipeline_name}!!"
+
+        ### To Do : Technical Debt. 
+        # If the dataset already exist , then we just link the existing dataset to the execution
+        # We do not update the dataset properties . 
+        # We need to append the new properties to the existing dataset properties
+        custom_props = {} if custom_properties is None else custom_properties
+        git_repo = git_get_repo()
+        name = re.split("/", url)[-1]
+
+        # Assigning event_type
+        event_type = mlpb.Event.Type.OUTPUT if event.lower() == "output" else mlpb.Event.Type.INPUT
+
+        # Creating hash value for label dataset using hashlib library
+        if not os.path.isfile(url):
+            print(f"Error: File '{url}' not found.")
+            return
+
+        with open(url, "r") as file:
+            hash_value = get_md5_hash(file.read())
+
+        dataset_commit = hash_value
+        existing_artifact = []
+        dvc_url = dvc_get_url(url)
+        dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
+        url = url + ":" + hash_value
+        if hash_value and hash_value.strip:
+            existing_artifact.extend(self.store.get_artifacts_by_uri(hash_value))
+
+        # To Do - What happens when uri is the same but names are different
+        if existing_artifact and len(existing_artifact) != 0:
+            existing_artifact = existing_artifact[0]
+
+            # Quick fix- Updating only the name
+            if custom_properties is not None:
+                self.update_existing_artifact(
+                    existing_artifact, custom_properties)
+            uri = hash_value
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
+            artifact = link_execution_to_artifact(
+                store=self.store,
+                execution_id=self.execution.id,
+                uri=uri,
+                input_name=url,
+                event_type=event_type,
+            )
+        else:
+            uri = hash_value if hash_value and hash_value.strip() else str(uuid.uuid1())
+            artifact = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=url,
+                type_name="Label",
+                event_type=event_type,
+                properties={
+                    "git_repo": str(git_repo),
+                    # passing hash_value value to commit
+                    "Commit": str(dataset_commit),
+                    "url": str(dvc_url_with_pipeline),
+                },
+                artifact_type_properties={
+                    "git_repo": mlpb.STRING,
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
+                },
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
+        custom_props["git_repo"] = git_repo
+        custom_props["Commit"] = dataset_commit
+        self.execution_label_props["git_repo"] = git_repo
+        self.execution_label_props["Commit"] = dataset_commit
+
+        if self.graph:
+            self.driver.create_dataset_node(
+                name,
+                url,
+                uri,
+                event,
+                self.execution.id,
+                self.parent_context,
+                custom_props,
+            )
+            if event.lower() == "input":
+                self.input_artifacts.append(
+                    {
+                        "Name": name,
+                        "Path": url,
+                        "URI": uri,
+                        "Event": event.lower(),
+                        "Execution_Name": self.execution_name,
+                        "Type": "Dataset",
+                        "Execution_Command": self.execution_command,
+                        "Pipeline_Id": self.parent_context.id,
+                        "Pipeline_Name": self.parent_context.name,
+                    }
+                )
+                self.driver.create_execution_links(uri, name, "Label")
+            else:
+                child_artifact = {
+                    "Name": name,
+                    "Path": url,
+                    "URI": uri,
+                    "Event": event.lower(),
+                    "Execution_Name": self.execution_name,
+                    "Type": "Dataset",
+                    "Execution_Command": self.execution_command,
+                    "Pipeline_Id": self.parent_context.id,
+                    "Pipeline_Name": self.parent_context.name,
+                }
+                self.driver.create_artifact_relationships(
+                    self.input_artifacts, child_artifact, self.execution_label_props
+                )
+        os.chdir(logging_dir)
+        return artifact
+
     class DataSlice:
         """A data slice represents a named subset of data.
         It can be used to track performance of an ML model on different slices of the training or testing dataset
