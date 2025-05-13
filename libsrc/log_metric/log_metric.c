@@ -71,7 +71,7 @@ void log_metric(const char *key, const char **dict_keys, const char **dict_value
         PyObject *pValue = NULL;
         int is_integer = 1, is_float = 1;
         int has_comma = 0;
-        
+
         // Check value type
         for (const char *ch = dict_values[i]; *ch != '\0'; ch++) {
             if (!isdigit(*ch) && *ch != '-' && *ch != '.') {
@@ -87,7 +87,7 @@ void log_metric(const char *key, const char **dict_keys, const char **dict_value
                 is_integer = 0;
             }
         }
-        
+
         if (has_comma) {
             // Convert comma-separated values to a Python list
             PyObject *pList = PyList_New(0);
@@ -125,10 +125,10 @@ void log_metric(const char *key, const char **dict_keys, const char **dict_value
 
     // Call Python function with key and dictionary as arguments
     PyObject *result = PyObject_CallMethod(Cmf.cmf_pyobject, "log_metric", "sO", key, pDict);
-    
+
     // Clean up
     Py_DECREF(pDict);
-    
+
     if (!result) {
         PyErr_Print();
     } else {

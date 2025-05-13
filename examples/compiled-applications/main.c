@@ -5,7 +5,7 @@
 
 // Example to use log_metric_lib
 int main() {
-    cmf_init("/home/kulkashr/test/mlmd", "testsk", "testsk", "testsk");
+    cmf_init("/tmp/test/mlmd", "testsk", "testsk", "testsk");
 
     if (!is_cmf_initialized()) {
         printf("CMF initialization failed.\n");

@@ -1,10 +1,13 @@
 module cmflib
 
-  use iso_c_binding, only : c_null_char, c_char, c_int
+  use iso_c_binding, only : c_null_char, c_char, c_int, c_size_t, c_ptr, c_loc, c_null_ptr
 
   implicit none
   private
 
+#ifndef C_MAX_STRING
+  integer, parameter :: C_MAX_STRING = 256
+#endif
   ! Define interfaces to C-routines
   interface
     subroutine cmf_init(mlmd_path, pipeline_name, context_name, execution_name) bind(C)
@@ -20,12 +23,12 @@ module cmflib
   end interface
 
   interface
-    subroutine log_metric_c(key, dict_keys, dict_values, dict_size) bind(C, name="log_metric")
-      use iso_c_binding, only : c_char, c_int
-      character(kind=c_char), intent(in) :: key(*)
-      character(kind=c_char), intent(in) :: dict_keys(*)
-      character(kind=c_char), intent(in) :: dict_values(*)
-      integer(kind=c_int), intent(in) :: dict_size
+    subroutine log_metric_c(key, dict_keys_ptr, dict_values_ptr, dict_size) bind(C, name="log_metric")
+      use iso_c_binding, only : c_char, c_int, c_ptr
+      character(kind=c_char),     intent(in) :: key(*)
+      type(c_ptr), value,         intent(in) :: dict_keys_ptr
+      type(c_ptr), value,         intent(in) :: dict_values_ptr
+      integer(kind=c_int), value, intent(in) :: dict_size
     end subroutine log_metric_c
   end interface
 
@@ -75,17 +78,23 @@ contains
   end function initialized
 
   !> Log a metric with a key and dictionary of values (key-value pairs)
-  subroutine log_metric(self, key, dict_keys, dict_values, dict_size)
-    class(cmf_type), intent(in) :: self
-    character(len=*), intent(in) :: key
+  subroutine log_metric(self, key, dict_keys, dict_values)
+    class(cmf_type),                intent(in) :: self
+    character(len=*),               intent(in) :: key
     character(len=*), dimension(:), intent(in) :: dict_keys, dict_values
 
+    integer :: i
     integer(kind=c_int) :: dict_size
+    character(kind=c_char, len=C_MAX_STRING), allocatable, target :: c_keys(:), c_values(:)
+    type(c_ptr), dimension(:), target, allocatable :: c_keys_ptr, c_values_ptr
 
     dict_size = size(dict_keys)
+    call convert_char_array_to_c(dict_keys, dict_size, c_keys, c_keys_ptr)
+    call convert_char_array_to_c(dict_values, dict_size, c_values, c_values_ptr)
+    call log_metric_c(trim(key)//c_null_char, c_keys_ptr, c_values_ptr, dict_size)
 
-    call log_metric_c(trim(key)//c_null_char, trim(dict_keys(1))//c_null_char, &
-                      trim(dict_values(1))//c_null_char, dict_size)
+    if(allocated(c_keys)) deallocate(c_keys)
+    if(allocated(c_values)) deallocate(c_values)
 
   end subroutine log_metric
 
@@ -105,5 +114,39 @@ contains
     call cmf_finalize()
 
   end subroutine finalize
+
+  !> Returns pointers to the start of each string and lengths for each string in a Fortran character array
+  subroutine convert_char_array_to_c(character_array_f, n_strings, character_array_c, string_ptrs)
+  !> The 2D Fortran character array
+  character(len=*),             dimension(:),                       intent(in   ) :: character_array_f
+  !> The length of each string
+  integer(kind=c_int),                                              intent(in   ) :: n_strings
+  !> The character array converted to c_character types
+  character(kind=c_char, len=C_MAX_STRING), dimension(:), allocatable, target, intent(  out) :: character_array_c
+  !> C-style pointers to the start of each string
+  type(c_ptr),                   dimension(:), allocatable,         intent(  out) :: string_ptrs
+
+  integer :: max_length, length
+  integer(kind=c_size_t) :: i
+
+  ! Find the size of the 2D array and allocate some of the 1D arrays
+  allocate(string_ptrs(n_strings))
+
+  ! Need to find the length of the string, so we can allocate the c_array
+  max_length = 0
+  do i=1,n_strings
+    length = len_trim(character_array_f(i))
+    max_length = max(max_length, length)
+  enddo
+
+  allocate(character_array_c(n_strings))
+
+  ! Copy the character into a c_char and create pointers to each of the strings
+  do i=1,n_strings
+    character_array_c(i) = TRIM(character_array_f(i))//c_null_char
+    string_ptrs(i) = c_loc(character_array_c(i))
+  enddo
+
+end subroutine convert_char_array_to_c
 
 end module cmflib
