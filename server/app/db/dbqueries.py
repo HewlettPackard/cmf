@@ -14,31 +14,50 @@ from server.app.db.dbmodels import (
     executionproperty,
 )
 
-
-async def register_server_details(
-    server_name: str,
-    ip_or_host: str,
-    db: AsyncSession = Depends(get_db())):
+async def register_server_details(db: AsyncSession, server_name: str, host_info: str):
     """
     Register server details in the database.
     """
     # Use a raw SQL query to insert into the registered_servers table
     query = text("""
-        INSERT INTO registred_servers (server_name, ip_or_host)
-        VALUES (:server_name, :ip_or_host)
+        INSERT INTO registered_servers (server_name, host_info)
+        VALUES (:server_name, :host_info)
     """)
-    await db.execute(query, {"server_name": server_name, "ip_or_host": ip_or_host})
+    await db.execute(query, {"server_name": server_name, "host_info": host_info})
     await db.commit()  # Commit the transaction
     return {"message": "Added records inside table"}
 
 
-async def get_registred_server_details(db: AsyncSession = Depends(get_db())):
+async def get_registred_server_details(db: AsyncSession):
     """
     Get all registered server details from the database.
     """
-    query = text("""SELECT * FROM registred_servers""")  # Correct table name
+    query = text("""SELECT * FROM registered_servers""")  # Correct table name
     result = await db.execute(query)
     return result.fetchall()
+
+
+async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
+    """
+    Get the sync status from the database.
+    """
+    query = text("""SELECT last_sync_time FROM registered_servers WHERE server_name = :server_name AND host_info = :host_info""")
+    result = await db.execute(query, {"server_name": server_name, "host_info": host_info})
+    return result.fetchall()
+
+
+async def update_sync_status(db: AsyncSession, current_utc_time: str, server_name: str, host_info: str):
+    """
+    Update the sync status in the database.
+    """
+    query = text("""
+        UPDATE registered_servers
+        SET last_sync_time = :current_utc_time
+        WHERE server_name = :server_name AND host_info = :host_info
+    """)
+    await db.execute(query, {"current_utc_time": current_utc_time, "server_name": server_name, "host_info": host_info})
+    await db.commit()  # Commit the transaction
+    
 
 async def fetch_artifacts(
     db: AsyncSession,   # Used to interact with the database

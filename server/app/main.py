@@ -28,7 +28,14 @@ from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
 from server.app.db.dbconfig import get_db
-from server.app.db.dbqueries import fetch_artifacts, fetch_executions
+from server.app.db.dbqueries import (
+    fetch_artifacts, 
+    fetch_executions, 
+    register_server_details, 
+    get_registred_server_details, 
+    get_sync_status, 
+    update_sync_status
+)
 from pathlib import Path
 import os
 import json
@@ -42,7 +49,6 @@ from server.app.schemas.dataframe import (
     MLMDPullRequest,
 )
 import httpx
-import asyncpg
 from jsonpath_ng.ext import parse
 
 server_store_path = "/cmf-server/data/postgres_data"
@@ -360,7 +366,7 @@ async def get_python_env(file_name: str) -> str:
 
 
 @app.post("/register-server")
-async def register_server(request: ServerRegistrationRequest):
+async def register_server(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
     try:
         # Access the data from the Pydantic model
         server_name = request.server_name
@@ -379,22 +385,13 @@ async def register_server(request: ServerRegistrationRequest):
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
 
-        # Step 2: Register the server details in the database
-        conn = await asyncpg.connect(
-            user=os.getenv("POSTGRES_USER"),
-            password=os.getenv("POSTGRES_PASSWORD"),
-            database=os.getenv("POSTGRES_DB"),
-            host='192.168.52.209'
-        )
-
         # Check user is registring with own details
         if host_info == my_ip or host_info == hostname or host_info == "127.0.0.1" or host_info == "localhost":
             # Restrict the user from registering with own details
             rows = "Registration failed: Cannot register the server with its own details."
         else:
             # Insert the server details into the database
-            rows = await conn.fetch('''INSERT INTO registered_servers (server_name, ip_or_host)
-            VALUES ($1, $2) RETURNING *;''', server_name, host_info)
+            rows = await register_server_details(db, server_name, host_info)
         return rows
 
     except Exception as e:
@@ -504,7 +501,7 @@ async def server_mlmd_pull(host_info, last_sync_time):
 
 
 @app.post("/sync")
-async def sync_metadata(request: ServerRegistrationRequest):
+async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
     """
     Synchronize metadata for a registered server.
 
@@ -522,20 +519,9 @@ async def sync_metadata(request: ServerRegistrationRequest):
         server_name = request.server_name
         host_info = request.host_info
 
-        # Connect to the database - this needs to be changed
-        conn = await asyncpg.connect(
-            user=os.getenv("POSTGRES_USER"),
-            password=os.getenv("POSTGRES_PASSWORD"),
-            database=os.getenv("POSTGRES_DB"),
-            host='192.168.52.209'
-        )
-
         # Fetch the server details from the database
-        row = await conn.fetchrow(
-            '''SELECT last_sync_time FROM registered_servers WHERE server_name = $1 AND ip_or_host = $2;''',
-            server_name, host_info
-        )
-
+        row = await get_sync_status(db, server_name, host_info)
+       
         if not row:
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
 
@@ -620,11 +606,7 @@ async def sync_metadata(request: ServerRegistrationRequest):
 
         # Update the last_sync_time in the database only if sync status is successful
         if status == "success":
-            await conn.execute(
-            '''UPDATE registered_servers SET last_sync_time = $1 WHERE server_name = $2 AND ip_or_host = $3;''',
-            current_utc_epoch_time, server_name, host_info
-        )
-
+            await update_sync_status(db, current_utc_epoch_time, server_name, host_info)
         return {
             "message": message,
             "status": status,
@@ -638,14 +620,8 @@ async def sync_metadata(request: ServerRegistrationRequest):
 
 
 @app.get("/server-list")
-async def server_list():
-    conn = await asyncpg.connect(
-        user=os.getenv("POSTGRES_USER"),
-        password=os.getenv("POSTGRES_PASSWORD"),
-        database=os.getenv("POSTGRES_DB"),
-        host='192.168.52.209'
-    )
-    rows = await conn.fetch('''SELECT * FROM registered_servers;''')
+async def server_list(db: AsyncSession = Depends(get_db)):
+    rows = await get_registred_server_details(db)
     print(rows)
     return rows
 
