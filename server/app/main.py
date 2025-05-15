@@ -421,6 +421,42 @@ async def get_python_env(file_name: str) -> str:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
 
+# Rest api to fetch the label data from the /cmf-server/data/labels folder
+@app.get("/label-data", response_class=PlainTextResponse)
+async def get_label_data(file_name: str) -> str:
+    """
+    API endpoint to fetch the content of a requirements file.
+
+    Args:
+        file_name (str): The name of the file to be fetched. Must end with .csv.
+
+    Returns:
+        str: The content of the file as plain text.
+
+    Raises:
+        HTTPException: If the file does not exist or the extension is unsupported.
+    """
+    file_name = "artifact.csv"
+    # Validate file extension
+    if not (file_name.endswith(".csv")):
+        raise HTTPException(
+            status_code=400, detail="Unsupported file extension. Use .csv"
+        )
+    
+    # Check if the file exists
+    file_path = os.path.join("/cmf-server/data/labels/", os.path.basename(file_name))
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Read and return the file content as plain text
+    try:
+        with open(file_path, "r") as file:
+            content = file.read()
+        return content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+
+
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
     output_dict = await async_api(get_all_artifact_ids, query, dict_of_exe_ids, pipeline_name)
