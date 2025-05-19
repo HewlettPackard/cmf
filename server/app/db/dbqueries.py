@@ -84,12 +84,24 @@ async def fetch_artifacts(
         .subquery()
     )
 
-    # Step 6: Base data query
+    # Step 6: Aggregate execution type names per artifact
+    artifact_execution_types_agg = (
+        select(
+            event.c.artifact_id,
+            func.string_agg(func.distinct(context.c.name), ', ').label("execution")
+        )
+        .join(execution, event.c.execution_id == execution.c.id)
+        .join(association, execution.c.id == association.c.execution_id)
+        .join(context, association.c.context_id == context.c.id)
+        .group_by(event.c.artifact_id)
+        .subquery()
+    )
+
+    # Step 7: Base artifact metadata
     base_data = (
         select(
             artifact.c.id.label('artifact_id'),
             artifact.c.name,
-            context.c.name.label('execution'),
             artifact.c.uri,
             func.to_char(
                 func.timezone('GMT', func.to_timestamp(artifact.c.create_time_since_epoch / 1000)),
@@ -113,12 +125,12 @@ async def fetch_artifacts(
         .subquery("base_data")
     )
 
-    # Step 7: Query for fetching paginated data
+    # Step 8: Query for fetching paginated data
     query = (
         select(
             base_data.c.artifact_id,
             base_data.c.name,
-            base_data.c.execution,
+            artifact_execution_types_agg.c.execution,
             base_data.c.uri,
             base_data.c.create_time_since_epoch,
             base_data.c.last_update_time_since_epoch,
@@ -127,11 +139,12 @@ async def fetch_artifacts(
         )
         .select_from(base_data)
         .outerjoin(artifact_properties_agg, base_data.c.artifact_id == artifact_properties_agg.c.artifact_id)
+        .outerjoin(artifact_execution_types_agg, base_data.c.artifact_id == artifact_execution_types_agg.c.artifact_id)
         .where(
             # Apply search filter to all columns of base_data
             (base_data.c.artifact_id.cast(String).ilike(f"%{filter_value}%")) |
             (base_data.c.name.ilike(f"%{filter_value}%")) |
-            (base_data.c.execution.ilike(f"%{filter_value}%")) |
+            (artifact_execution_types_agg.c.execution.ilike(f"%{filter_value}%")) |
             (base_data.c.uri.ilike(f"%{filter_value}%")) |
             (base_data.c.create_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
             (base_data.c.last_update_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
@@ -143,18 +156,17 @@ async def fetch_artifacts(
         .offset((page_number - 1) * page_size)  # Offset for pagination
     )
 
-    # Step 8: Apply sorting (order by the specified column and order)
+    # Step 9: Apply sorting (order by the specified column and order)
     if sort_order.lower() == "desc":
         query = query.order_by(getattr(base_data.c, sort_column).desc())
     else:
         query = query.order_by(getattr(base_data.c, sort_column).asc())
 
-    # Step 9: Execute the query
+    # Step 10: Execute the query
     result = await db.execute(query)
     rows = result.mappings().all()
-    print("rows", rows)
 
-    # Step 10: Extract total records and format results
+    # Step 11: Extract total records and format results
     total_records = rows[0]["total_records"] if rows else 0
     return {
         "total_items": total_records,
