@@ -56,7 +56,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config, calculate_md5
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -1387,7 +1387,7 @@ class Cmf:
         dataslice_df.index.names = ["Path"]
         dataslice_df.to_parquet(name)
 
-    def log_label(self, url: str, event: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+    def log_label(self, url: str, dataset_uri: t.Optional[str] = None, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         # description remianing
         logging_dir = change_dir(self.cmf_init_path)
         current_script = sys.argv[0]
@@ -1412,21 +1412,16 @@ class Cmf:
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
 
-        # Assigning event_type
-        event_type = mlpb.Event.Type.OUTPUT if event.lower() == "output" else mlpb.Event.Type.INPUT
-
         # Creating hash value for label dataset using hashlib library
         if not os.path.isfile(url):
             print(f"Error: File '{url}' not found.")
             return
 
-        with open(url, "r") as file:
-            hash_value = get_md5_hash(file.read())
+        hash_value = calculate_md5(url)
 
-        dataset_commit = hash_value
+        # dataset_commit = hash_value
         existing_artifact = []
-        dvc_url = dvc_get_url(url)
-        dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
+        # need to think about it
         url = url + ":" + hash_value
         if hash_value and hash_value.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(hash_value))
@@ -1441,13 +1436,13 @@ class Cmf:
                     existing_artifact, custom_properties)
             uri = hash_value
             # update url for existing artifact
-            self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
+            self.update_dataset_url(existing_artifact, url)
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
                 uri=uri,
                 input_name=url,
-                event_type=event_type,
+                event_type=mlpb.Event.Type.INPUT,
             )
         else:
             uri = hash_value if hash_value and hash_value.strip() else str(uuid.uuid1())
@@ -1458,32 +1453,35 @@ class Cmf:
                 uri=uri,
                 name=url,
                 type_name="Label",
-                event_type=event_type,
+                event_type=mlpb.Event.Type.INPUT,
                 properties={
                     "git_repo": str(git_repo),
                     # passing hash_value value to commit
-                    "Commit": str(dataset_commit),
-                    "url": str(dvc_url_with_pipeline),
+                    "Commit": str(hash_value),
+                    "url": str(url),
+                    "dataset_uri": str(dataset_uri),
                 },
                 artifact_type_properties={
                     "git_repo": mlpb.STRING,
                     "Commit": mlpb.STRING,
                     "url": mlpb.STRING,
+                    "dataset_uri": mlpb.STRING,
                 },
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
         custom_props["git_repo"] = git_repo
-        custom_props["Commit"] = dataset_commit
+        custom_props["Commit"] = hash_value
+        custom_props["dataset_uri"] = dataset_uri
         self.execution_label_props["git_repo"] = git_repo
-        self.execution_label_props["Commit"] = dataset_commit
+        self.execution_label_props["Commit"] = hash_value
 
         if self.graph:
             self.driver.create_dataset_node(
                 name,
                 url,
                 uri,
-                event,
+                # event,
                 self.execution.id,
                 self.parent_context,
                 custom_props,
