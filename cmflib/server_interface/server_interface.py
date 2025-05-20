@@ -47,3 +47,9 @@ def call_python_env(url, file_name, file_path):
     files = {'file': (file_name, open(file_path, 'rb'))}
     response = requests.post(url_to_pass, files=files)
     return response
+
+def call_label_dataset(url, file_name, path):
+    url_to_pass = f"{url}/label-dataset"
+    files = {'file': (file_name, open(path, 'rb'))}
+    response = requests.post(url_to_pass, files=files)
+    return response

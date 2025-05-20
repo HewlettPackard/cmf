@@ -165,9 +165,16 @@ class CmdMetadataPush(CmdBase):
                         # push valid files on cmf-server
                         if found_files:
                             for name, path in found_files.items():
+                                print("url", url, "  name", name, "  path", path)
                                 env_response = server_interface.call_python_env(url, name, path)
                                 # keeping record of status but this won't affect the mlmd success.
                                 print(env_response.json())
+
+                    label_dataset = "artifacts/type.csv"
+                    path = os.getcwd() +"/"+ label_dataset
+                    print("url", url, "  name", label_dataset, "  path", path)
+                    env_response = server_interface.call_label_dataset(url, label_dataset, path)
+                    print(env_response.json())
 
                 output = ""
                 display_output = ""
