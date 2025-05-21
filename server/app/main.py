@@ -29,11 +29,11 @@ from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tr
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
 from server.app.db.dbconfig import get_db
 from server.app.db.dbqueries import (
-    fetch_artifacts, 
-    fetch_executions, 
-    register_server_details, 
-    get_registred_server_details, 
-    get_sync_status, 
+    fetch_artifacts,
+    fetch_executions,
+    register_server_details,
+    get_registered_server_details,
+    get_sync_status,
     update_sync_status
 )
 from pathlib import Path
@@ -437,7 +437,7 @@ async def server_mlmd_pull(host_info, last_sync_time):
                 
                 if last_sync_time:
                     # Extract the Environment file names from the JSON payload
-                    data = json.loads(json_payload)
+                    data = json_payload
                     jsonpath_expr = parse('$..events[?(@.artifact.type == "Environment")].artifact.name')
                     environment_names = {match.value.split(":")[0].split("/")[-1] for match in jsonpath_expr.find(data)}
                     # Print the extracted Environment artifact names
@@ -454,7 +454,7 @@ async def server_mlmd_pull(host_info, last_sync_time):
                     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
                 else:
                     print("i am inside else")
-                    python_env_zip = await client.get("http://{host_info}:8080/download-python-env", params=None)
+                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
                     print("type of python_env_zip", type(python_env_zip))
                     print("python_env_zip", python_env_zip)
 
@@ -525,7 +525,9 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         if not row:
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
 
-        last_sync_time = row['last_sync_time']
+        print("row  = ", row)
+        print("row type = ", type(row))
+        last_sync_time = row[0]['last_sync_time']
         current_utc_epoch_time = int(time.time() * 1000)
 
         # Call the function to fetch the JSON payload
@@ -621,8 +623,7 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
 
 @app.get("/server-list")
 async def server_list(db: AsyncSession = Depends(get_db)):
-    rows = await get_registred_server_details(db)
-    print(rows)
+    rows = await get_registered_server_details(db)
     return rows
 
 

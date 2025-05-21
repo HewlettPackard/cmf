@@ -19,22 +19,32 @@ async def register_server_details(db: AsyncSession, server_name: str, host_info:
     Register server details in the database.
     """
     # Use a raw SQL query to insert into the registered_servers table
+    # is raw query is the problem, i guess, let's try to use sqlalchemy ORM
+    # query = text("""
+    #     INSERT INTO registered_servers (server_name, host_info)
+    #     VALUES (:server_name, :host_info)
+    # """)
+
     query = text("""
-        INSERT INTO registered_servers (server_name, host_info)
-        VALUES (:server_name, :host_info)
+    INSERT INTO registered_servers (server_name, host_info)
+    SELECT :server_name, :host_info
+    WHERE NOT EXISTS (
+        SELECT 1 FROM registered_servers
+        WHERE server_name = :server_name AND host_info = :host_info
+    )
     """)
     await db.execute(query, {"server_name": server_name, "host_info": host_info})
     await db.commit()  # Commit the transaction
     return {"message": "Added records inside table"}
 
 
-async def get_registred_server_details(db: AsyncSession):
+async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     """
     Get all registered server details from the database.
     """
-    query = text("""SELECT * FROM registered_servers""")  # Correct table name
+    query = text("""SELECT * FROM registered_servers""")
     result = await db.execute(query)
-    return result.fetchall()
+    return result.mappings().all()
 
 
 async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
@@ -43,7 +53,7 @@ async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
     """
     query = text("""SELECT last_sync_time FROM registered_servers WHERE server_name = :server_name AND host_info = :host_info""")
     result = await db.execute(query, {"server_name": server_name, "host_info": host_info})
-    return result.fetchall()
+    return result.mappings().all()
 
 
 async def update_sync_status(db: AsyncSession, current_utc_time: str, server_name: str, host_info: str):

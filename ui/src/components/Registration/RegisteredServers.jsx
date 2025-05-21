@@ -21,7 +21,7 @@ function RegisteredServers({ serverList }) {
               server_name
             </th>
             <th scope="col" className="exe_uuid px-6 py-3">
-              host_or_ip
+              host
             </th>
             <th scope="col" className="exe_uuid px-6 py-3">
               last_sync_time
@@ -38,7 +38,7 @@ function RegisteredServers({ serverList }) {
                 {server.server_name}
               </td>
               <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {server.ip_or_host}
+                {server.host_info}
               </td>
               <td className="exe_uuid px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                 {formatEpochToHumanReadable(server.last_sync_time)}
