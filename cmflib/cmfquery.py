@@ -980,8 +980,13 @@ class CmfQuery(object):
             stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid, last_sync_time)})
             print("stage_attrs executions = ", stage_attrs['executions'])
             if last_sync_time:
-                if stage_attrs['executions'] is not None and stage_attrs["last_update_time_since_epoch"] > last_sync_time:
+                print("last sync time in stage arrtibutes= ", last_sync_time)
+                if stage_attrs['executions'] is not None:
                     stages.append(stage_attrs)
+                else:
+                    print("stage attr last update time since epoch = ", stage_attrs["last_update_time_since_epoch"])
+                    if stage_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        stages.append(stage_attrs)
             else:
                 stages.append(stage_attrs)
 
@@ -1008,13 +1013,12 @@ class CmfQuery(object):
         if last_sync_time:
             for pipeline in self._get_pipelines():
                 pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, None, last_sync_time)})
-                # pipelines.append(pipeline_attrs)
-                # print("pipeline_attrs = ", pipeline_attrs)
-                # if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
-                #     pipelines.append(pipeline_attrs)
                 print("pipelines attrs stages = ", pipeline_attrs["stages"])
-                if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time and pipeline_attrs['stages'] is not None:
+                if pipeline_attrs['stages'] is not None:
                     pipelines.append(pipeline_attrs)
+                else:
+                    if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        pipelines.append(pipeline_attrs)
         else:
             print("for first time sync i should be here")
             for pipeline in self._get_pipelines():
