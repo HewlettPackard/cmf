@@ -23,7 +23,7 @@ async def query_visualization_artifact_execution(query: CmfQuery, pipeline_name:
             if df_row['id'] in env_list:
                 continue
             # Fetching executions based on artifact id 
-            # When the same artifacts are is shared between two pipelines (e.g., Test-env1 and Test-env2),
+            # When the same artifact is shared between two pipelines (e.g., Test-env1 and Test-env2),
             # the function returns executions from both pipelines, not just the current one.
             data = query.get_all_executions_for_artifact_id(df_row['id'])
             
