@@ -25,7 +25,7 @@ services:
     expose:
       - 5432
     volumes:
-      - /home/sharvark/cmf-server/data/postgres_data:/var/lib/postgresql/data
+      - /home/xxxx/cmf-server/data/postgres_data:/var/lib/postgresql/data
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql # Mount SQL script
       - ./custom-entrypoint.sh:/custom-entrypoint.sh # Mount custom entrypoint script
     entrypoint: ["/bin/bash", "/custom-entrypoint.sh"] # Use the custom entrypoint script
@@ -41,7 +41,7 @@ services:
     command: tensorboard --logdir /logs --host 0.0.0.0
     volumes:
       # directory path should be updated as per user's environment
-      - /home/sharvark/cmf-server/data/tensorboard-logs:/logs
+      - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
     expose:
       - 6006
     container_name: tensorboard
@@ -51,10 +51,10 @@ services:
     image: server:latest
     # both the directory paths should be updated as per user's environment
     volumes:
-      - /home/sharvark/cmf-server/data:/cmf-server/data
-      - /home/sharvark/cmf-server/data/env:/cmf-server/data/env
-      - /home/sharvark/cmf-server/data/static:/cmf-server/data/static
-      - /home/sharvark/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
+      - /home/xxxx/cmf-server/data:/cmf-server/data
+      - /home/xxxx/cmf-server/data/env:/cmf-server/data/env
+      - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
+      - /home/xxxx/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
     container_name: cmf-server
     build:
       context: ./
