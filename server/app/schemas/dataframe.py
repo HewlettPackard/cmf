@@ -27,7 +27,7 @@ class MLMDPushRequest(BaseModel):
 
 # Base query parameters for pagination, sorting, and filtering.
 class BaseRequest(BaseModel):
-    page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
+    active_page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
     sort_order: str = Field("asc", description="Sort order (asc or desc)")
     record_per_page: int = Field(5, gt=0, description="Number of records per page")  # Records per page must be > 0
     filter_value: Optional[str] = Field("", description="Search based on value")

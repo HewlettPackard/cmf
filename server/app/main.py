@@ -147,7 +147,7 @@ async def get_artifacts(
 ):
 
     filter_value = query_params.filter_value
-    active_page = query_params.page
+    active_page = query_params.active_page
     sort_field = query_params.sort_field
     sort_order = query_params.sort_order
     record_per_page = query_params.record_per_page
@@ -164,7 +164,7 @@ async def execution(request: Request,
                    db: AsyncSession = Depends(get_db)
                    ):
     filter_value = query_params.filter_value
-    active_page = query_params.page
+    active_page = query_params.active_page
     sort_order = query_params.sort_order
     sort_field = query_params.sort_field
     record_per_page = query_params.record_per_page

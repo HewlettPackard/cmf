@@ -18,7 +18,7 @@ async def fetch_artifacts(
     pipeline_name: str, 
     artifact_type: str, 
     filter_value: str, 
-    page_number: int = 1, 
+    active_page: int = 1, 
     page_size: int = 5,  # Number of records per page
     sort_column: str = "name", 
     sort_order: str = "ASC"
@@ -153,7 +153,7 @@ async def fetch_artifacts(
             (artifact_properties_agg.c.artifact_properties.cast(String).ilike(f"%{filter_value}%"))
         )
         .limit(page_size)  # Limit the number of records per page
-        .offset((page_number - 1) * page_size)  # Offset for pagination
+        .offset((active_page - 1) * page_size)  # Offset for pagination
     )
 
     # Step 9: Apply sorting (order by the specified column and order)
