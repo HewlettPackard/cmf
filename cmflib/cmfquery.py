@@ -979,13 +979,16 @@ class CmfQuery(object):
         for stage in self._get_stages(pipeline_id):
             stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid, last_sync_time)})
             print("stage_attrs executions = ", stage_attrs['executions'])
+            print("type stage_attrs executions = ", type(stage_attrs['executions']))
             if last_sync_time:
                 print("last sync time in stage arrtibutes= ", last_sync_time)
-                if stage_attrs['executions'] is not None:
+                if len(stage_attrs['executions']) != 0:
+                    print("i am inside if of stage arrts")
                     stages.append(stage_attrs)
                 else:
                     print("stage attr last update time since epoch = ", stage_attrs["last_update_time_since_epoch"])
                     if stage_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        print("i am inside elseof  stage attrs")
                         stages.append(stage_attrs)
             else:
                 stages.append(stage_attrs)
@@ -1014,7 +1017,7 @@ class CmfQuery(object):
             for pipeline in self._get_pipelines():
                 pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, None, last_sync_time)})
                 print("pipelines attrs stages = ", pipeline_attrs["stages"])
-                if pipeline_attrs['stages'] is not None:
+                if len(pipeline_attrs['stages']) !=0:
                     pipelines.append(pipeline_attrs)
                 else:
                     if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
