@@ -14,18 +14,19 @@
 # limitations under the License.
 ###
 import abc
-import os
+import time
 import json
 import logging
 import typing as t
+import pandas as pd
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from itertools import chain
-import pandas as pd
-from cmflib.store.sqllite_store import SqlliteStore
-from cmflib.store.postgres import PostgresStore
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.mlmd_objects import CONTEXT_LIST
+from cmflib.cmf_merger import parse_json_to_mlmd
+from cmflib.store.postgres import PostgresStore
+from cmflib.store.sqllite_store import SqlliteStore
 from cmflib.utils.helper_functions import get_postgres_config
 
 __all__ = ["CmfQuery"]
@@ -57,7 +58,7 @@ class _KeyMapper(abc.ABC):
         Args:
             d: Dictionary to update with the mapped key.
             key: Source key name.
-         Returns:
+        Returns:
             A mapped (target) key to be used with the `d` dictionary.
         """
         new_key = self._get(key)
@@ -118,6 +119,7 @@ class CmfQuery(object):
     """
 
     def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
+        self.filepath = filepath
         temp_store: t.Union[PostgresStore, SqlliteStore]
         if is_server:
             config_dict = get_postgres_config()
@@ -883,6 +885,116 @@ class CmfQuery(object):
                 )
         return df
 
+    def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
+        """
+        Extract attributes from a node and return them as a dictionary.
+
+        Args:
+            _node (Union[mlpb.Context, mlpb.Execution, mlpb.Event]): The MLMD node (Context, Execution, or Event) to extract attributes from.
+            _attrs (Dict): A dictionary to populate with extracted attributes.
+
+        Returns:
+            Dict: A dictionary containing the extracted attributes from the node.
+        """
+        for attr in CONTEXT_LIST:
+            if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
+                _attrs[attr] = getattr(_node, attr)
+
+        if "properties" in _attrs:
+            _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
+        if "custom_properties" in _attrs:
+            _attrs["custom_properties"] = CmfQuery._copy(
+                _attrs["custom_properties"], key_mapper={"type": "user_type"}
+            )
+        return _attrs
+
+    def _get_event_attributes(self, execution_id: int) -> t.List[t.Dict]:
+        """
+        Extract event attributes for a given execution ID.
+
+        Args:
+            execution_id (int): The ID of the execution for which event attributes are to be extracted.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of an event associated with the execution.
+        """
+        events = []
+        for event in self.store.get_events_by_execution_ids([execution_id]):
+            event_attrs = self._get_node_attributes(event, {})
+            artifacts = self.store.get_artifacts_by_id([event.artifact_id])
+            artifact_attrs = self._get_node_attributes(
+                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
+            )
+            event_attrs["artifact"] = artifact_attrs
+            events.append(event_attrs)
+        return events
+
+    def _get_execution_attributes(self, stage_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
+        """
+        Extract execution attributes for a given stage ID.
+
+        Args:
+            stage_id (int): The ID of the stage for which execution attributes are to be extracted.
+            exec_uuid (Optional[str]): An optional execution UUID to filter executions. If None, all executions are included.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of an execution associated with the stage.
+        """
+        executions = []
+        for execution in self.get_all_executions_by_stage(stage_id, execution_uuid=exec_uuid):
+            exec_attrs = self._get_node_attributes(
+                execution,
+                {
+                    "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
+                    "name": execution.name if execution.name != "" else "",
+                    "events": self._get_event_attributes(execution.id),
+                },
+            )
+
+            # what is usual situtaion - 
+            #it does not matter if last sync time is given or not we have to add exec_attrs 
+            #however if last sync timr is given then we have to check if last_update_time_since_epoch > last_sync_time
+            # last_update_time_since epoch
+
+            if last_sync_time:
+                if exec_attrs["last_update_time_since_epoch"] > last_sync_time:
+                    executions.append(exec_attrs)
+            else:
+                executions.append(exec_attrs)
+
+        return executions
+
+    def _get_stage_attributes(self, pipeline_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
+        """
+        Extract stage attributes for a given pipeline ID.
+
+        Args:
+            pipeline_id (int): The ID of the pipeline for which stage attributes are to be extracted.
+            exec_uuid (Optional[str]): An optional execution UUID to filter stages. If None, all stages are included.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of a stage associated with the pipeline.
+        """
+        stages = []
+        for stage in self._get_stages(pipeline_id):
+            stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid, last_sync_time)})
+            print("stage_attrs executions = ", stage_attrs['executions'])
+            print("type stage_attrs executions = ", type(stage_attrs['executions']))
+            if last_sync_time:
+                print("last sync time in stage arrtibutes= ", last_sync_time)
+                if len(stage_attrs['executions']) != 0:
+                    print("i am inside if of stage arrts")
+                    stages.append(stage_attrs)
+                else:
+                    print("stage attr last update time since epoch = ", stage_attrs["last_update_time_since_epoch"])
+                    if stage_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        print("i am inside elseof  stage attrs")
+                        stages.append(stage_attrs)
+            else:
+                stages.append(stage_attrs)
+
+        return stages
+
     def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
         Args:
@@ -891,54 +1003,30 @@ class CmfQuery(object):
         Returns:
             Pipeline in JSON format.
         """
-        def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:   # type: ignore  # Context type not recognized by mypy, using ignore to bypass
-            for attr in CONTEXT_LIST:
-                #Artifacts getattr call on Type was giving empty string, which was overwriting 
-                # the defined types such as Dataset, Metrics, Models
-                if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
-                    _attrs[attr] = getattr(_node, attr)
-
-            if "properties" in _attrs:
-                _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
-            if "custom_properties" in _attrs:
-                # TODO: (sergey) why do we need to rename "type" to "user_type" if we just copy into a new dictionary?
-                _attrs["custom_properties"] = CmfQuery._copy(
-                    _attrs["custom_properties"], key_mapper={"type": "user_type"}
-                )
-            return _attrs
-
         pipelines: t.List[t.Dict] = []
         for pipeline in self._get_pipelines(pipeline_name):
-            pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
-            for stage in self._get_stages(pipeline.id):
-                stage_attrs = _get_node_attributes(stage, {"executions": []})
-                for execution in self.get_all_executions_by_stage(stage.id, execution_uuid=exec_uuid):
-                    # name will be an empty string for executions that are created with
-                    # create new execution as true(default)
-                    # In other words name property will there only for execution
-                    # that are created with create new execution flag set to false(special case)
-                    exec_attrs = _get_node_attributes(
-                        execution,
-                        {
-                            "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
-                            "name": execution.name if execution.name != "" else "",
-                            "events": [],
-                        },
-                    )
-                    for event in self.store.get_events_by_execution_ids([execution.id]):
-                        event_attrs = _get_node_attributes(event, {})
-                        # An event has only a single Artifact associated with it. 
-                        # For every artifact we create an event to link it to the execution.
-
-                        artifacts =  self.store.get_artifacts_by_id([event.artifact_id])
-                        artifact_attrs = _get_node_attributes(
-                                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
-                            )
-                        event_attrs["artifact"] = artifact_attrs
-                        exec_attrs["events"].append(event_attrs)
-                    stage_attrs["executions"].append(exec_attrs)
-                pipeline_attrs["stages"].append(stage_attrs)
+            pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, exec_uuid)})
             pipelines.append(pipeline_attrs)
+
+        return json.dumps({"Pipeline": pipelines})
+
+    def extract_to_json(self, last_sync_time: int):
+        pipelines = []
+        print("i am inside extract to json")
+        if last_sync_time:
+            for pipeline in self._get_pipelines():
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, None, last_sync_time)})
+                print("pipelines attrs stages = ", pipeline_attrs["stages"])
+                if len(pipeline_attrs['stages']) !=0:
+                    pipelines.append(pipeline_attrs)
+                else:
+                    if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        pipelines.append(pipeline_attrs)
+        else:
+            print("for first time sync i should be here")
+            for pipeline in self._get_pipelines():
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+                pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
     
@@ -996,6 +1084,215 @@ class CmfQuery(object):
             if execution_uuid in exec_uuid_list:
                 executions_with_uuid.append(execution)
         return executions_with_uuid
+
+    def identify_existing_and_new_executions(self, pipeline_data: dict, pipeline_name: str) -> t.Tuple[list, list]:
+        """
+        Identifies and compares existing executions from a given MLMD store path with those in the MLMD payload.
+        This method supports both push and pull operations by analyzing execution UUIDs and identifying overlap
+        and differences between the source and target MLMD stores.
+
+        Args:
+            mlmd_data (dict): MLMD data in dictionary format.
+            pipeline_name (str): The name of the pipeline.
+
+        Returns:
+             tuple: A 4-element tuple containing:
+            - executions_from_path (list): All execution UUIDs found in the MLMD store at the given path.
+            - list_executions_exists (list): Intersection of execution UUIDs between store and request (already present).
+            - executions_from_req (list): Execution UUIDs present in the incoming MLMD payload.
+            - status (str): Returns "version_update" if the payload is malformed or missing execution UUIDs.
+        """
+        executions_from_path = []  # Stores existing execution UUIDs from the path
+        list_executions_exists = []  # Stores the intersection of existing and new executions
+        executions_from_req = []  # Extract execution UUIDs from the MLMD data payload
+        status = ""
+ 
+        print("inside identify_existing_and_new_executions")
+        # For metadata push → path is the server MLMD store path
+        # For metadata pull → path is the client MLMD store path
+        executions = self.get_all_executions_in_pipeline(pipeline_name)
+
+        # Collect all execution UUIDs from the queried data
+        for i in executions.index:
+            for uuid in executions['Execution_uuid'][i].split(","):
+                executions_from_path.append(uuid)
+
+        # For metadata push → mlmd_data comes from client MLMD file
+        # For metadata pull → mlmd_data comes from server MLMD file
+        for stage in pipeline_data['stages']:  # checks if given execution_id present in mlmd
+            for execution in stage["executions"]:
+                if execution['name'] != "":  # If executions have name , they are reusable executions
+                    continue                # which needs to be merged in irrespective of whether already
+                                            # present or not so that new artifacts associated with it gets in.
+                if 'Execution_uuid' in execution['properties']:
+                    for uuid in execution['properties']['Execution_uuid'].split(","):
+                        executions_from_req.append(uuid)
+                else:
+                    # mlmd push is failed here
+                    status = "version_update"
+                    return executions_from_path, list_executions_exists, executions_from_req, status
+
+        # Intersection check:
+        # For metadata push → ensures only new executions get pushed
+        # For metadata pull → ensures only missing executions get pull
+        if executions_from_path != []:
+            list_executions_exists = list(set(executions_from_path).intersection(set(executions_from_req)))
+        print('successfully exited from identify existing and new executions')
+
+        return executions_from_path, list_executions_exists, executions_from_req, status
+
+    def create_unique_executions(self, req_info, pipeline_name, cmd: str, exe_uuid: str) -> str:
+        """
+        Creates list of unique executions by checking if they already exist on server or not.
+        locking is introduced lock to avoid data corruption on server, 
+        when multiple similar pipelines pushed on server at same time.
+        Args:
+            req_info (str): Contains MLMD data — client-side for push, server-side for pull.  
+            cmd (str): The command being executed, either "push" or "pull."  
+            exe_uuid (str, optional): User-provided execution UUID (default: None).  
+        Returns:
+            str: A status message indicating the result of the operation:
+                - "exists": Execution already exists on the CMF server.
+                - "success": Execution successfully pushed to the CMF server.
+                - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
+                - "version_update": Mlmd push failed due to version update. 
+        """
+        # load the mlmd_data from the request info
+        # in create executions we get full mlmd data
+        mlmd_data = json.loads(req_info)
+        # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
+        pipelines = mlmd_data.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
+        # pipelines contain full mlmd data with the tag - 'Pipeline'
+
+        if not pipelines:
+            return "invalid_json_payload"  # No pipelines found in payload
+    
+        # tell us number of pipelines
+        len_pipelines = len(pipelines)
+        print("length of pipelines = ", len_pipelines)
+
+        if pipeline_name:
+            # in case of push check pipeline name exists inside mlmd_data
+            pipeline = [pipeline for pipeline in pipelines if pipeline.get("name") == pipeline_name]
+            if not pipeline:
+                return "pipeline_not_exist"
+            # this needs to be looked at - why this is  needed is the question
+            pipeline = pipeline[0]  # Extract the first matching pipeline
+            _, list_executions_exists, _, status = self.identify_existing_and_new_executions(
+                pipeline, pipeline_name
+            ) 
+
+            if status == "version_update":
+                return status
+            # remove already existing executions from the data
+            for stage in pipeline['stages']:
+                # Iterate through executions and remove the ones that already exist
+                for cmf_exec in stage['executions'][:]:
+                    uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+                    for uuid in uuids:
+                        if uuid in list_executions_exists:
+                            stage['executions'].remove(cmf_exec)
+            
+
+            # remove empty stages (those without remaining executions)
+            pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
+
+            # determine if data remains to push/pull
+            if len(pipeline['stages']) == 0 :
+                status="exists"
+            else:
+                # metadata push → merge client data into server path
+                # metadata pull → merge server data into client path
+                if cmd == "pull":
+                    parse_json_to_mlmd(
+                        json.dumps(pipeline), self.filepath, cmd, exe_uuid
+                    )
+                else:
+                    parse_json_to_mlmd(
+                        json.dumps(pipeline), "", cmd, exe_uuid
+                    )
+                status = "success"
+            return status
+        else:
+            print("enrtered here in create unique executions")
+            for pipeline in pipelines:
+                pipeline_name = pipeline.get("name")
+                print("pipeline name = ", pipeline_name)
+
+                _, list_executions_exists, _, status = self.identify_existing_and_new_executions(
+                    pipeline, pipeline_name
+                )  
+                if status == "version_update":
+                    return status
+
+                for stage in pipeline['stages']:
+                    # Iterate through executions and remove the ones that already exist
+                    for cmf_exec in stage['executions'][:]:
+                        uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+                        for uuid in uuids:
+                            if uuid in list_executions_exists:
+                                stage['executions'].remove(cmf_exec)
+
+                # remove empty stages (those without remaining executions)
+                pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
+
+                # determine if data remains to push/pull
+                if len(pipeline['stages']) == 0 :
+                    status="exists"
+                else:
+                    # metadata push → merge client data into server path
+                    # metadata pull → merge server data into client path
+                    if cmd == "pull":
+                        parse_json_to_mlmd(
+                            json.dumps(pipeline), self.filepath, cmd, exe_uuid
+                        )
+                    else:
+                        parse_json_to_mlmd(
+                            json.dumps(pipeline), "", cmd, exe_uuid
+                        )
+                print("out of create unique executions")
+                # we are passing this success in a very wrong way
+                status = "success"
+
+            return status
+            
+            
+    def get_unique_executions(self, client_mlmd_json: str) -> list:
+        """
+        This function for now is only used 'cmf metadata pull' command
+        Get unique executions from the server MLMD data that are not present in the client MLMD data.
+
+        Args:
+            client_mlmd_json (str): JSON string of the client MLMD data.
+            pipeline_name (str): The name of the pipeline.
+
+        Returns:
+            list: A list of unique executions with Execution_uuid and utc_time in epoch format.
+    """
+        mlmd_data = json.loads(client_mlmd_json)
+        # extracting the Pipeline data
+        pipeline = mlmd_data["Pipeline"][0]
+        pipeline_name = pipeline["name"]
+
+        # Use identify_existing_and_new_executions to find new executions
+        _, list_executions_exists, _, status = self.identify_existing_and_new_executions(
+            pipeline, pipeline_name
+        )
+        if status == "version_update":
+            return []
+
+        # Extract details of unique executions
+        unique_executions = []
+        for stage in pipeline["stages"]:
+            for execution in stage["executions"]:
+                if execution["properties"]["Execution_uuid"] not in list_executions_exists:
+                    utc_time_epoch = int(time.time() * 1000)
+                    unique_executions.append({
+                        "Execution_uuid": execution["properties"]["Execution_uuid"],
+                        "last_sync_time": utc_time_epoch
+                    })
+
+        return unique_executions
 
 
 def test_on_collision() -> None:

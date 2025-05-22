@@ -17,7 +17,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from cmflib import cmf_merger
+from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
@@ -30,17 +30,17 @@ from cmflib.cmf_exception_handling import (
     ExecutionUUIDNotFound,
     MlmdNotFoundOnServer,
     MlmdFilePullSuccess,
-    CmfServerNotAvailable, 
-    InternalServerError,
-    MlmdFilePullFailure,
     DirectoryNotfound,
-    FileNameNotfound
+    FileNameNotfound,
+    ExecutionsAlreadyExists,
+    UpdateCmfVersion,
 )
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
 
     def run(self):
+         
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
@@ -70,7 +70,7 @@ class CmdMetadataPull(CmdBase):
         
         if not self.args.execution_uuid:         # If self.args.execution_uuid[0] is None or an empty list ([]). 
             pass
-        
+         
         if self.args.file_name:  # setting directory where mlmd file will be dumped
             if not os.path.isdir(self.args.file_name[0]):
                 temp = os.path.dirname(self.args.file_name[0])
@@ -84,39 +84,40 @@ class CmdMetadataPull(CmdBase):
                 raise FileNameNotfound
         else:
             full_path_to_dump = os.getcwd() + "/mlmd"
-        
+         
+        query = cmfquery.CmfQuery(full_path_to_dump)
         if self.args.execution_uuid:
             exec_uuid = self.args.execution_uuid[0]
         output = server_interface.call_mlmd_pull(
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
+         
         status = output.status_code
-        # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
-        if output.content.decode() == None:
+        print("Status code: ", status)
+        # Checks if given pipeline does not exist
+        # or if the execution UUID not present inside the mlmd file
+        # else pulls the mlmd file
+        if status == 404:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
-      
-        elif output.content:
-            if status == 200:
-                try:
-                    cmf_merger.parse_json_to_mlmd(
-                        output.content, full_path_to_dump, cmd, exec_uuid
-                    )  # converts mlmd json data to mlmd file
-                    pull_status = MlmdFilePullSuccess(full_path_to_dump)
-                    return pull_status
-                except Exception as e:
-                    return e
-            elif status == 413:
+        else:
+            # Get unique executions
+            unique_executions = query.get_unique_executions(output.content)
+            print("Delta between executions: ", unique_executions)
+            if not unique_executions:
+                return ExecutionsAlreadyExists()
+
+            # Create unique executions
+            response = query.create_unique_executions(output.content, self.args.pipeline_name[0], "pull", exec_uuid)
+            if response =="success":
+                return MlmdFilePullSuccess(full_path_to_dump)
+            elif response == "exists":
+                return ExecutionsAlreadyExists()
+            elif response == "invalid_json_payload":
                 raise MlmdNotFoundOnServer
-            elif status == 406:
-                raise PipelineNotFound(self.args.pipeline_name[0])
-            elif status == 404:
-                raise CmfServerNotAvailable
-            elif status == 500:
-                raise InternalServerError
-            else:
-                raise MlmdFilePullFailure
+            elif response == "version_update":
+                raise UpdateCmfVersion
             
 def add_parser(subparsers, parent_parser):
     PULL_HELP = "Pulls mlmd from cmf-server to users's machine."
