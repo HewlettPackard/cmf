@@ -31,6 +31,7 @@ import os
 import json
 import typing as t
 from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
+from cmflib.temp import create_unique_executions
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
@@ -100,7 +101,7 @@ async def mlmd_push(info: MLMDPushRequest):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(query.create_unique_executions, req_info["json_payload"], "push", req_info["exec_uuid"])
+            status = await async_api(create_unique_executions, query, req_info["json_payload"], pipeline_name, "push", req_info["exec_uuid"])
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
