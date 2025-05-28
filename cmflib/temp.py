@@ -82,89 +82,45 @@ def create_unique_executions(query:CmfQuery, req_info:str, pipeline_name:str, cm
 
     if not pipelines:
         return "invalid_json_payload"  # No pipelines found in payload
-
-    # tell us number of pipelines
-    len_pipelines = len(pipelines)
   
-    if pipeline_name:
-        # in case of push check pipeline name exists inside mlmd_data
-        pipeline = [pipeline for pipeline in pipelines if pipeline.get("name") == pipeline_name]
-        if not pipeline:
-            return "pipeline_not_exist"
-        # this needs to be looked at - why this is  needed is the question
-        pipeline = pipeline[0]  # Extract the first matching pipeline
-        _, list_executions_exists, _, status = identify_existing_and_new_executions(
-            query, pipeline, pipeline_name
-        ) 
+    # in case of push check pipeline name exists inside mlmd_data
+    pipeline = [pipeline for pipeline in pipelines if pipeline.get("name") == pipeline_name]
+    if not pipeline:
+        return "pipeline_not_exist"
+    # this needs to be looked at - why this is  needed is the question
+    pipeline = pipeline[0]  # Extract the first matching pipeline
+    _, list_executions_exists, _, status = identify_existing_and_new_executions(
+        query, pipeline, pipeline_name
+    ) 
 
-        if status == "version_update":
-            return status
-        # remove already existing executions from the data
-        for stage in pipeline['stages']:
-            # Iterate through executions and remove the ones that already exist
-            for cmf_exec in stage['executions'][:]:
-                uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
-                for uuid in uuids:
-                    if uuid in list_executions_exists:
-                        stage['executions'].remove(cmf_exec)
-        
-
-        # remove empty stages (those without remaining executions)
-        pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
-
-        # determine if data remains to push/pull
-        if len(pipeline['stages']) == 0 :
-            status="exists"
-        else:
-            # metadata push → merge client data into server path
-            # metadata pull → merge server data into client path
-            if cmd == "pull":
-                parse_json_to_mlmd(
-                    json.dumps(pipeline), query.filepath, cmd, exe_uuid
-                )
-            else:
-                parse_json_to_mlmd(
-                    json.dumps(pipeline), "", cmd, exe_uuid
-                )
-            status = "success"
+    if status == "version_update":
         return status
+    # remove already existing executions from the data
+    for stage in pipeline['stages']:
+        # Iterate through executions and remove the ones that already exist
+        for cmf_exec in stage['executions'][:]:
+            uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+            for uuid in uuids:
+                if uuid in list_executions_exists:
+                    stage['executions'].remove(cmf_exec)
+    
+
+    # remove empty stages (those without remaining executions)
+    pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
+
+    # determine if data remains to push/pull
+    if len(pipeline['stages']) == 0 :
+        status="exists"
     else:
-        for pipeline in pipelines:
-            pipeline_name = pipeline.get("name")
-        
-            _, list_executions_exists, _, status = identify_existing_and_new_executions( 
-                query, pipeline, pipeline_name
-            )  
-            if status == "version_update":
-                return status
-
-            for stage in pipeline['stages']:
-                # Iterate through executions and remove the ones that already exist
-                for cmf_exec in stage['executions'][:]:
-                    uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
-                    for uuid in uuids:
-                        if uuid in list_executions_exists:
-                            stage['executions'].remove(cmf_exec)
-
-            # remove empty stages (those without remaining executions)
-            pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
-
-            # determine if data remains to push/pull
-            if len(pipeline['stages']) == 0 :
-                status="exists"
-            else:
-                # metadata push → merge client data into server path
-                # metadata pull → merge server data into client path
-                if cmd == "pull":
-                    parse_json_to_mlmd(
-                        json.dumps(pipeline), query.filepath, cmd, exe_uuid
-                    )
-                else:
-                    parse_json_to_mlmd(
-                        json.dumps(pipeline), "", cmd, exe_uuid
-                    )
-            # we are passing this success in a very wrong way
-            status = "success"
-
-        return status
-  
+        # metadata push → merge client data into server path
+        # metadata pull → merge server data into client path
+        if cmd == "pull":
+            parse_json_to_mlmd(
+                json.dumps(pipeline), query.filepath, cmd, exe_uuid
+            )
+        else:
+            parse_json_to_mlmd(
+                json.dumps(pipeline), "", cmd, exe_uuid
+            )
+        status = "success"
+    return status
