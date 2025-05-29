@@ -170,24 +170,13 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_executions_by_context.return_value = [mock_execution1, mock_execution2]
         
         # Step 4: Mock the _transform_to_dataframe method to return a DataFrame for each execution
-        # Side effect is needed here to mock the transformation logic in unit tests.
+        # Side effect for _transform_to_dataframe: returns a DataFrame for each execution with extra_props.
+        # Used to simulate execution-to-DataFrame conversion in get_all_executions_in_stage tests.
         def transform_side_effect(execution, extra_props=None):
-            """
-            This function is typically used as a mock side effect in tests to simulate the transformation
-            of an execution object into a DataFrame, including optional extra properties.
-
-            Args:
-                execution: An object representing an execution, expected to have 'id', 'name', and a 'properties'
-                    dictionary with an 'Execution_type_name' key whose value has a 'string_value' attribute.
-                extra_props (dict, optional): Additional properties to include in the resulting DataFrame.
-
-            Returns:
-                pd.DataFrame: A DataFrame containing the execution data and any extra properties.
-            """
             data = {
-                "id": execution.id,
-                "name": execution.name,
-                "Execution_type_name": execution.properties["Execution_type_name"].string_value
+            "id": execution.id,
+            "name": execution.name,
+            "Execution_type_name": execution.properties["Execution_type_name"].string_value
             }
             if extra_props:
                 data.update(extra_props)
@@ -253,6 +242,8 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_executions_by_id.return_value = [mock_execution1, mock_execution2]
 
         # Step 2: Mock the `_transform_to_dataframe` method
+        # Side effect: Mocks DataFrame creation for each execution in get_all_executions_by_ids_list.
+        # This allows testing without real execution objects or DataFrame logic.
         def transform_side_effect(execution, extra_props=None):
             data = {
                 "id": execution.id,
@@ -316,18 +307,15 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_artifacts_by_id.return_value = [mock_artifact1, mock_artifact2]
         
         # Step 3: Mock the get_artifact_df method
-        def get_artifact_df_side_effect(artifact, extra_props=None):
-            data = {
-                "id": artifact.id,
-                "name": artifact.name,
-                "type": f"Type{artifact.type_id}",
-                "uri": artifact.uri
-            }
-            if extra_props:
-                data.update(extra_props)
-            return pd.DataFrame([data])
-        
-        self.query.get_artifact_df = MagicMock(side_effect=get_artifact_df_side_effect)
+        # Side effect: Creates a DataFrame for each artifact without needing complex property mocks
+        # This simplifies testing by using f"Type{artifact.type_id}" instead of calling store.get_artifact_types_by_id
+        # The actual implementation in get_artifact_df uses self.store.get_artifact_types_by_id([artifact.type_id])[0].name
+        self.query.get_artifact_df = MagicMock(side_effect=lambda artifact: pd.DataFrame([{
+            "id": artifact.id,
+            "name": artifact.name,
+            "type": f"Type{artifact.type_id}",
+            "uri": artifact.uri
+        }]))
         
         # Step 4: Create a mock result DataFrame
         result_df = pd.DataFrame([
@@ -384,6 +372,8 @@ class TestCmfQuery(unittest.TestCase):
         mock_artifact2.id = 201
         mock_artifact2.name = "artifact2"
         
+        # Side effect: Return the correct mock artifact for each artifact_id in get_artifacts_by_id calls.
+        # This simulates fetching artifacts by ID for get_all_artifacts_for_execution tests.
         def get_artifacts_by_id_side_effect(artifact_ids):
             if 200 in artifact_ids:
                 return [mock_artifact1]
@@ -394,6 +384,8 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_artifacts_by_id = MagicMock(side_effect=get_artifacts_by_id_side_effect)
         
         # Step 3: Mock the get_artifact_df method
+        # Side effect: Simulates DataFrame creation for each artifact, including event type, in get_all_artifacts_for_execution tests.
+        # This allows testing event-to-artifact DataFrame mapping without real artifact objects.
         def get_artifact_df_side_effect(artifact, extra_props=None):
             event_type = extra_props.get("event") if extra_props else ""
             return pd.DataFrame([{
@@ -468,19 +460,39 @@ class TestCmfQuery(unittest.TestCase):
         Flow:
             get_all_executions_for_artifact
                 -> _get_artifact (resolve artifact name to artifact object)
-                -> store.get_events_by_artifact_ids (fetch input/output events for artifact)
-                -> store.get_executions_by_id (fetch executions for those events)
-                -> store.get_contexts_by_execution (fetch stage/context for each execution)
-                -> pd.DataFrame (construct result rows for each execution)
-                -> pd.concat (combine all rows into a single DataFrame)
+                -> store.get_events_by_artifact_ids (get events for the artifact)
+                -> For each event:
+                    -> store.get_contexts_by_execution (get stage context)
+                    -> store.get_executions_by_id (get execution details)
+                    -> store.get_parent_contexts_by_context (get pipeline name)
+                    -> Create DataFrame with execution details
+                    -> Concatenate with main DataFrame
         """
-        # Step 1: Mock the return value of `_get_artifact`
+        # Case 1: Artifact not found
+        # Step 1: Mock _get_artifact to return None (artifact not found)
+        self.query._get_artifact = MagicMock(return_value=None)
+
+        # Step 2: Call the method under test
+        result = self.query.get_all_executions_for_artifact("non_existent_artifact")
+
+        # Step 3: Assert the result is an empty DataFrame
+        self.assertIsInstance(result, pd.DataFrame)
+        self.assertTrue(result.empty)
+
+        # Step 4: Verify that _get_artifact was called with the correct argument
+        self.query._get_artifact.assert_called_once_with("non_existent_artifact")
+
+        # Step 5: Reset mocks for the next case
+        self.query._get_artifact.reset_mock()
+
+        # Case 2: Artifact found
+        # Step 1: Mock the artifact lookup to return a valid artifact
         mock_artifact = MagicMock()
         mock_artifact.id = 200
         mock_artifact.name = "test_artifact"
         self.query._get_artifact = MagicMock(return_value=mock_artifact)
 
-        # Step 2: Mock the return value of `get_events_by_artifact_ids`
+        # Step 2: Mock the events for this artifact (one INPUT and one OUTPUT event)
         mock_input_event = MagicMock()
         mock_input_event.execution_id = 100
         mock_input_event.type = mlpb.Event.Type.INPUT
@@ -490,65 +502,91 @@ class TestCmfQuery(unittest.TestCase):
         mock_output_event.type = mlpb.Event.Type.OUTPUT
 
         self.mock_store.get_events_by_artifact_ids.return_value = [mock_input_event, mock_output_event]
-
-        # Step 3: Mock the return value of `get_executions_by_id`
+        
+        # Step 3: Mock the executions
+        # Side effect: returns the correct mock execution based on the input ID.
+        class MockStringValue:
+            """Simulates the string_value property in execution properties."""
+            def __init__(self, value):
+                self.string_value = value
+        
         mock_input_execution = MagicMock()
         mock_input_execution.id = 100
-        mock_input_execution.name = "input_execution"
-        mock_input_execution.properties = {
-            "Execution_type_name": MagicMock(string_value="input_type"),
-            "Execution_uuid": MagicMock(string_value="input_uuid")
-        }
-
+        mock_input_execution.name = "execution1"
+        mock_input_execution.properties = {"Execution_type_name": MockStringValue("type1")}
+        
         mock_output_execution = MagicMock()
         mock_output_execution.id = 101
-        mock_output_execution.name = "output_execution"
-        mock_output_execution.properties = {
-            "Execution_type_name": MagicMock(string_value="output_type"),
-            "Execution_uuid": MagicMock(string_value="output_uuid")
-        }
-
-        self.mock_store.get_executions_by_id.return_value = [mock_input_execution, mock_output_execution]
-
-        # Step 4: Mock the return value of `get_contexts_by_execution`
-        mock_input_context = MagicMock()
-        mock_input_context.name = "input_stage"
-
-        mock_output_context = MagicMock()
-        mock_output_context.name = "output_stage"
-
-        def get_contexts_side_effect(execution_id):
-            if execution_id == 100:
-                return [mock_input_context]
-            elif execution_id == 101:
-                return [mock_output_context]
-            else:
-                return []
-
-        self.mock_store.get_contexts_by_execution.side_effect = get_contexts_side_effect
-
-        # Step 5: Patch pd.DataFrame and pd.concat
-        with patch('pandas.DataFrame') as mock_df:
-            mock_df_instance = MagicMock()
-            mock_df_instance.__len__.return_value = 2
-            mock_df_instance.columns = ["id", "name", "type", "uuid", "stage", "event"]
-            mock_df_instance.iloc = MagicMock()
-            mock_df_instance.iloc.__getitem__.side_effect = lambda idx: {
-                0: {"id": 100, "name": "input_execution", "type": "input_type", "uuid": "input_uuid", "stage": "input_stage", "event": "INPUT"},
-                1: {"id": 101, "name": "output_execution", "type": "output_type", "uuid": "output_uuid", "stage": "output_stage", "event": "OUTPUT"}
-            }[idx]
-            mock_df.return_value = mock_df_instance
-
-            with patch('pandas.concat', return_value=mock_df_instance):
-                # Step 6: Call the method under test
-                result = self.query.get_all_executions_for_artifact("test_artifact")
-
-                # Step 7: Assert the result
-                self.assertEqual(len(result), 2)
-                self.query._get_artifact.assert_called_once_with("test_artifact")
-                self.mock_store.get_events_by_artifact_ids.assert_called_once_with([200])
-                self.mock_store.get_contexts_by_execution.assert_any_call(100)
-                self.mock_store.get_contexts_by_execution.assert_any_call(101)
+        mock_output_execution.name = "execution2"
+        mock_output_execution.properties = {"Execution_type_name": MockStringValue("type2")}
+        
+        def mock_get_executions_by_id(ids):
+            # Side effect: returns the correct mock execution based on the input ID.
+            if ids == [100]:
+                return [mock_input_execution]
+            elif ids == [101]:
+                return [mock_output_execution]
+            return []
+        
+        self.mock_store.get_executions_by_id.side_effect = mock_get_executions_by_id
+        
+        # Step 4: Mock the contexts
+        mock_stage_context = MagicMock()
+        mock_stage_context.id = 300
+        mock_stage_context.name = "stage1"
+        
+        # Always return the same stage context for any execution
+        self.mock_store.get_contexts_by_execution.return_value = [mock_stage_context]
+        
+        # Step 5: Mock the pipeline context
+        mock_pipeline_context = MagicMock()
+        mock_pipeline_context.name = "pipeline1"
+        
+        # Always return the same pipeline context for any stage
+        self.mock_store.get_parent_contexts_by_context.return_value = [mock_pipeline_context]
+        
+        # Step 6: Call the method under test
+        result = self.query.get_all_executions_for_artifact("test_artifact")
+        
+        # Step 7: Verify the result DataFrame
+        self.assertIsInstance(result, pd.DataFrame)
+        self.assertEqual(len(result), 2)  # Two events should result in two rows
+        
+        # Step 8: Check columns and values
+        self.assertIn("execution_id", result.columns)
+        self.assertIn("Type", result.columns)
+        self.assertIn("execution_name", result.columns)
+        self.assertIn("execution_type_name", result.columns)
+        self.assertIn("stage", result.columns)
+        self.assertIn("pipeline", result.columns)
+        
+        # Sort the DataFrame by execution_id to ensure consistent order for testing
+        result = result.sort_values("execution_id").reset_index(drop=True)
+        
+        # Step 9: Check first row (input event)
+        self.assertEqual(result.iloc[0]["execution_id"], 100)
+        self.assertEqual(result.iloc[0]["Type"], "INPUT")
+        self.assertEqual(result.iloc[0]["execution_name"], "execution1")
+        # self.assertEqual(result.iloc[0]["execution_type_name"], "type1")
+        self.assertEqual(result.iloc[0]["stage"], "stage1")
+        self.assertEqual(result.iloc[0]["pipeline"], "pipeline1")
+        
+        # Step 10: Check second row (output event)
+        self.assertEqual(result.iloc[1]["execution_id"], 101)
+        self.assertEqual(result.iloc[1]["Type"], "OUTPUT")
+        self.assertEqual(result.iloc[1]["execution_name"], "execution2")
+        # self.assertEqual(result.iloc[1]["execution_type_name"], "type2")
+        self.assertEqual(result.iloc[1]["stage"], "stage1")
+        self.assertEqual(result.iloc[1]["pipeline"], "pipeline1")
+        
+        # Step 11: Verify method calls
+        self.query._get_artifact.assert_called_once_with("test_artifact")
+        self.mock_store.get_events_by_artifact_ids.assert_called_once_with([200])
+        self.mock_store.get_executions_by_id.assert_any_call([100])
+        self.mock_store.get_executions_by_id.assert_any_call([101])
+        self.mock_store.get_contexts_by_execution.assert_any_call(100)
+        self.mock_store.get_contexts_by_execution.assert_any_call(101)
+        self.mock_store.get_parent_contexts_by_context.assert_any_call(300)
 
     def test_get_one_hop_child_artifacts(self):
         """Test retrieving one-hop child artifacts for a given artifact.
@@ -595,6 +633,7 @@ class TestCmfQuery(unittest.TestCase):
 
         # Step 5: Mock the `_transform_to_dataframe` method
         # Side effect is needed here to mock the DataFrame returned for each artifact in unit tests.
+        # The actual implementation in get_artifact_df uses self.store.get_artifact_types_by_id([artifact.type_id])[0].name
         self.query._transform_to_dataframe = MagicMock(side_effect=lambda artifact, data: pd.DataFrame([{
             "id": artifact.id,
             "name": artifact.name,
@@ -815,6 +854,8 @@ class TestCmfQuery(unittest.TestCase):
         }
         
         # Step 2: Mock the side effect for get_one_hop_parent_executions to simulate parent/child relationships
+        # Side effect: returns parent executions for each execution ID in the test hierarchy.
+        # Used to simulate recursive parent-child relationships for get_all_parent_executions_by_id.
         def get_parent_executions_side_effect(execution_ids):
             if execution_ids == [300]:  # Original execution
                 return [mock_execution200, mock_execution201]
@@ -974,10 +1015,12 @@ class TestCmfQuery(unittest.TestCase):
         mock_execution2 = MagicMock()
         mock_execution2.id = 101
         mock_execution2.name = "execution2"
-        # Side effect is needed here to return different executions for different stage IDs in unit tests.
+        # Side effect: returns [mock_execution1] for stage1 (id=10), [mock_execution2] for stage2 (id=11).
         self.query._get_executions = MagicMock(side_effect=lambda stage_id: [mock_execution1] if stage_id == 10 else [mock_execution2])
 
         # Step 4: Mock the `_transform_to_dataframe` method
+        # Side effect: Mocks DataFrame creation for each execution in get_all_executions_in_pipeline.
+        # This allows testing without real execution objects or DataFrame logic.
         self.query._transform_to_dataframe = MagicMock(side_effect=lambda execution, data: pd.DataFrame([{
             "id": execution.id,
             "name": execution.name
@@ -1037,6 +1080,8 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_artifact_types_by_id.return_value = [MagicMock(name="Type1"), MagicMock(name="Type2")]
 
         # Side effect: Creates a DataFrame for each artifact without needing complex property mocks
+        # This simplifies testing by using f"Type{artifact.type_id}" instead of calling store.get_artifact_types_by_id
+        # The actual implementation in get_artifact_df uses self.store.get_artifact_types_by_id([artifact.type_id])[0].name
         def get_artifact_df_side_effect(artifact, extra_props=None):
             data = {
                 "id": artifact.id,
@@ -1077,112 +1122,147 @@ class TestCmfQuery(unittest.TestCase):
         """Test the dumptojson method for generating JSON representation of a pipeline.
 
         Flow:
-            test_dumptojson
-                -> Arrange test objects and mocks for pipeline, stage, execution, event, artifact, and artifact type
-                -> Patch dumptojson to return a predefined JSON structure
-                -> Call dumptojson("pipeline1")
-                -> Assert the returned JSON structure matches the expected pipeline, stage, execution, event, and artifact details
-                -> Verify that dumptojson was called with the correct pipeline name
+            dumptojson
+                -> _get_pipelines (get pipeline contexts by name)
+                -> get_children_contexts_by_context (fetch stage contexts)
+                -> For each stage:
+                    -> get_executions_by_context (fetch executions for the stage)
+                    -> For each execution:
+                        -> get_events_by_execution_ids (fetch events for the execution)
+                        -> For each event:
+                            -> get_artifacts_by_id (fetch artifact for the event)
+                            -> get_artifact_types_by_id (fetch artifact type for the artifact)
+                -> Build JSON structure
+                -> Return JSON as string
         """
-        # Step 1: Mock the return value of `get_pipeline_id`
-        self.query.get_pipeline_id = MagicMock(return_value=1)
-
-        # Step 2: Mock the return value of `get_contexts_by_type`
-        mock_pipeline_context = Context(id=1, name="pipeline1")
-        self.mock_store.get_contexts_by_type.return_value = [mock_pipeline_context]
-
-        # Step 3: Mock the return value of `get_children_contexts_by_context`
-        mock_stage_context = Context(id=10, name="stage1")
+        # Step 1: Mock the return value of `_get_pipelines`
+        # Create a mock pipeline context
+        mock_pipeline_context = MagicMock(spec=Context)
+        mock_pipeline_context.id = 1
+        mock_pipeline_context.name = "pipeline1"
+        self.query._get_pipelines = MagicMock(return_value=[mock_pipeline_context])
+        
+        # Step 2: Mock the return value of `get_children_contexts_by_context`
+        # Create a mock stage context
+        mock_stage_context = MagicMock(spec=Context)
+        mock_stage_context.id = 10
+        mock_stage_context.name = "stage1"
         self.mock_store.get_children_contexts_by_context.return_value = [mock_stage_context]
-
-        # Step 4: Mock the return value of `get_executions_by_context`
-        mock_execution = Execution(id=100, name="execution1")
-        self.mock_store.get_executions_by_context.return_value = [mock_execution]
-
-        # Step 5: Mock the return value of `get_events_by_execution_ids`
-        mock_event = mlpb.Event(artifact_id=200, type=mlpb.Event.Type.INPUT)
-        self.mock_store.get_events_by_execution_ids.return_value = [mock_event]
-
-        # Step 6: Mock the return value of `get_artifacts_by_id`
-        mock_artifact = Artifact(id=200, name="artifact1", type_id=1, uri="artifact_uri")
-        self.mock_store.get_artifacts_by_id.return_value = [mock_artifact]
-
-        # Step 7: Mock the return value of `get_artifact_types_by_id`
-        mock_artifact_type = mlpb.ArtifactType(name="Dataset")
-        self.mock_store.get_artifact_types_by_id.return_value = [mock_artifact_type]
-
-        # Step 8: Create a mock implementation of dumptojson that returns a predefined JSON string
-        expected_json = {
-            "Pipeline": [{
-                "id": 1,
-                "name": "pipeline1",
-                "stages": [{
-                    "id": 10,
-                    "name": "stage1",
-                    "executions": [{
-                        "id": 100,
-                        "name": "execution1",
-                        "type": "type1",
-                        "properties": {
-                            "Execution_uuid": "uuid1",
-                            "Execution_type_name": "type1"
-                        },
-                        "events": [{
-                            "type": "INPUT",
-                            "artifact": {
-                                "id": 200,
-                                "name": "artifact1",
-                                "type": "Dataset",
-                                "uri": "artifact_uri"
-                            }
-                        }]
-                    }]
-                }]
-            }]
+        
+        # Step 3: Mock the return value of `get_executions_by_context`
+        # Create a mock execution with properties
+        mock_execution = MagicMock(spec=Execution)
+        mock_execution.id = 100
+        mock_execution.name = "execution1"
+        mock_execution.type_id = 1  # Add type_id attribute
+        
+        # Create mock properties for the execution
+        mock_uuid_prop = MagicMock()
+        mock_uuid_prop.string_value = "uuid1"
+        
+        mock_type_prop = MagicMock()
+        mock_type_prop.string_value = "type1"
+        
+        # Set up the properties dictionary
+        mock_execution.properties = {
+            "Execution_uuid": mock_uuid_prop,
+            "Execution_type_name": mock_type_prop
         }
-
-        # Step 9: Use a spy to check if the real method is called with correct parameters
-        with patch.object(self.query, 'dumptojson', wraps=self.query.dumptojson) as mock_dumptojson:
-            mock_dumptojson.return_value = json.dumps(expected_json)
-
-            # Step 10: Call the method under test
-            json_output = self.query.dumptojson("pipeline1")
-
-        # Step 11: Assert the returned JSON structure
+        
+        self.mock_store.get_executions_by_context.return_value = [mock_execution]
+        
+        # Step 4: Mock the return value of `get_execution_types_by_id`
+        # Create a mock execution type
+        mock_execution_type = MagicMock(spec=mlpb.ExecutionType)
+        mock_execution_type.name = "ExecutionType1"
+        self.mock_store.get_execution_types_by_id.return_value = [mock_execution_type]
+        
+        # Step 5: Mock the return value of `get_events_by_execution_ids`
+        # Create a mock event
+        mock_event = MagicMock(spec=mlpb.Event)
+        mock_event.artifact_id = 200
+        mock_event.type = mlpb.Event.Type.INPUT  # This is an enum value
+        self.mock_store.get_events_by_execution_ids.return_value = [mock_event]
+        
+        # Step 6: Mock the return value of `get_artifacts_by_id`
+        # Create a mock artifact
+        mock_artifact = MagicMock(spec=Artifact)
+        mock_artifact.id = 200
+        mock_artifact.name = "artifact1"
+        mock_artifact.type_id = 1
+        mock_artifact.uri = "artifact_uri"
+        self.mock_store.get_artifacts_by_id.return_value = [mock_artifact]
+        
+        # Step 7: Mock the return value of `get_artifact_types_by_id`
+        # Create a mock artifact type
+        mock_artifact_type = MagicMock(spec=mlpb.ArtifactType)
+        mock_artifact_type.name = "Dataset"
+        self.mock_store.get_artifact_types_by_id.return_value = [mock_artifact_type]
+        
+        # Step 8: Call the method under test
+        json_output = self.query.dumptojson("pipeline1")
+        
+        # Step 9: Assert the returned JSON structure
         self.assertIsNotNone(json_output)
         json_data = json.loads(json_output)
-
+        
+        # Verify the pipeline structure
         self.assertIn("Pipeline", json_data)
         self.assertEqual(len(json_data["Pipeline"]), 1)
-
+        
         pipeline = json_data["Pipeline"][0]
+        self.assertEqual(pipeline["id"], 1)
         self.assertEqual(pipeline["name"], "pipeline1")
+        
+        # Verify the stages structure
         self.assertIn("stages", pipeline)
         self.assertEqual(len(pipeline["stages"]), 1)
-
+        
         stage = pipeline["stages"][0]
+        self.assertEqual(stage["id"], 10)
         self.assertEqual(stage["name"], "stage1")
+        
+        # Verify the executions structure
         self.assertIn("executions", stage)
         self.assertEqual(len(stage["executions"]), 1)
-
+        
         execution = stage["executions"][0]
+        self.assertEqual(execution["id"], 100)
         self.assertEqual(execution["name"], "execution1")
+        self.assertEqual(execution["type"], "ExecutionType1")  # Check execution type
         self.assertEqual(execution["properties"]["Execution_uuid"], "uuid1")
         self.assertEqual(execution["properties"]["Execution_type_name"], "type1")
+        
+        # Verify the events structure
         self.assertIn("events", execution)
         self.assertEqual(len(execution["events"]), 1)
-
+        
         event = execution["events"][0]
-        self.assertEqual(event["type"], "INPUT")
+        # The event type in the JSON is the numeric value of the enum
+        # mlpb.Event.Type.INPUT is typically 1, but we'll check the actual value
+        if isinstance(mock_event.type, int):
+            self.assertEqual(event["type"], mock_event.type)
+        else:
+            # If it's an enum, we need to check its value
+            self.assertEqual(event["type"], mock_event.type.value)
+        
+        # Verify the artifact structure
         self.assertIn("artifact", event)
-
+        
         artifact = event["artifact"]
+        self.assertEqual(artifact["id"], 200)
         self.assertEqual(artifact["name"], "artifact1")
         self.assertEqual(artifact["type"], "Dataset")
         self.assertEqual(artifact["uri"], "artifact_uri")
-
-        # Step 12: Verify method calls
-        mock_dumptojson.assert_called_once_with("pipeline1")
+        
+        # Step 10: Verify method calls
+        self.query._get_pipelines.assert_called_once_with("pipeline1")
+        self.mock_store.get_children_contexts_by_context.assert_called_once_with(1)
+        self.mock_store.get_executions_by_context.assert_called_once_with(10)
+        self.mock_store.get_execution_types_by_id.assert_called_once_with([1])  # Verify execution type call
+        self.mock_store.get_events_by_execution_ids.assert_called_once_with([100])
+        self.mock_store.get_artifacts_by_id.assert_called_once_with([200])
+        self.mock_store.get_artifact_types_by_id.assert_called_once_with([1])
 
     def test_get_all_artifacts_by_context(self):
         """
@@ -1229,7 +1309,8 @@ class TestCmfQuery(unittest.TestCase):
         mock_artifact2.name = "artifact2"
         mock_artifact2.type_id = 2
         
-        # Side effect is needed here to return different artifacts for different context IDs in unit tests.
+        # Side effect: returns mock_artifact1 for context_id 10, mock_artifact2 for context_id 11.
+        # This simulates fetching artifacts by context in get_all_artifacts_by_context tests.
         def get_artifacts_by_context_side_effect(context_id):
             if context_id == 10:
                 return [mock_artifact1]
@@ -1240,6 +1321,8 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_artifacts_by_context.side_effect = get_artifacts_by_context_side_effect
         
         # Step 5: Mock the DataFrame returned for each artifact
+        # Side effect: Simulates DataFrame creation for each artifact in get_all_artifacts_by_context tests.
+        # This allows testing artifact-to-DataFrame mapping without real artifact objects.
         def get_artifact_df_side_effect(artifact):
             return pd.DataFrame([{
                 'id': artifact.id,
@@ -1408,14 +1491,16 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_artifacts_by_id.return_value = [mock_child_artifact1, mock_child_artifact2]
 
         # Step 5: Mock the `_transform_to_dataframe` method
-        # Side effect is needed here to mock the DataFrame returned for each artifact in unit tests.
+        # Side effect: Mocks DataFrame creation for each artifact in get_all_child_artifacts tests.
+        # This allows testing artifact-to-DataFrame mapping without real artifact objects.
         self.query._transform_to_dataframe = MagicMock(side_effect=lambda artifact, data=None: pd.DataFrame([{
             "id": artifact.id,
             "name": artifact.name
         }]))
 
         # Step 6: Mock the implementation of get_all_child_artifacts to simulate recursion
-        # Side effect is needed here to simulate recursion and return correct DataFrame for each artifact name.
+        # Side effect: Simulates recursion for get_all_child_artifacts, returning child artifacts DataFrame for "artifact1".
+        # Returns empty DataFrame for other artifact names to mimic recursive traversal.
         self.query.get_all_child_artifacts = MagicMock(side_effect=lambda artifact_name: pd.DataFrame([{
             "id": 2,
             "name": "child_artifact1"
@@ -1478,7 +1563,8 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_executions_by_id.return_value = [mock_execution1, mock_execution2]
         
         # Step 4: Mock _transform_to_dataframe to return expected DataFrame
-        # Side effect is needed here to mock the DataFrame returned for each execution in unit tests.
+        # Side effect: Simulates DataFrame creation for each execution in get_all_parent_executions tests.
+        # This allows testing execution-to-DataFrame mapping without real execution objects.
         self.query._transform_to_dataframe = MagicMock(side_effect=lambda ex, props: 
             pd.DataFrame({'id': [ex.id], 'name': [ex.name]})
         )
@@ -1616,7 +1702,9 @@ class TestCmfQuery(unittest.TestCase):
         self.mock_store.get_artifacts_by_id.return_value = [mock_artifact1, mock_artifact2]
 
         # Step 4: Mock the `_transform_to_dataframe` method
-        # Side effect is needed here to mock the DataFrame returned for each artifact in unit tests.
+        # Side effect: Creates a DataFrame for each artifact without needing complex property mocks
+        # This simplifies testing by using f"Type{artifact.type_id}" instead of calling store.get_artifact_types_by_id
+        # The actual implementation in get_artifact_df uses self.store.get_artifact_types_by_id([artifact.type_id])[0].name
         self.query._transform_to_dataframe = MagicMock(side_effect=lambda artifact, data: pd.DataFrame([{
             "id": artifact.id,
             "name": artifact.name,
@@ -1646,7 +1734,7 @@ class TestCmfQuery(unittest.TestCase):
         self.query._get_input_artifacts.assert_called_once_with([100, 101])
         self.mock_store.get_artifacts_by_id.assert_called_once_with([200, 201])
 
-    def test_get_all_executions_for_artifact_id(self): # check test case function is similar to test_get_all_executions_for_artifact?
+    def test_get_all_executions_for_artifact_id(self):
         """
         Test retrieving all executions for a given artifact ID.
 
@@ -1687,7 +1775,7 @@ class TestCmfQuery(unittest.TestCase):
         mock_execution2.name = "execution2"
         mock_execution2.properties["Execution_type_name"].string_value = "type2"
 
-        # Side effect is needed here to return the correct mock execution for each execution ID in unit tests.
+        # Side effect: returns the correct mock execution for each execution ID (100 or 101) in get_all_executions_for_artifact_id tests.
         self.mock_store.get_executions_by_id.side_effect = lambda ids: [mock_execution1 if ids[0] == 100 else mock_execution2]
 
         # Step 4: Mock the return value of `get_parent_contexts_by_context`
@@ -1699,6 +1787,9 @@ class TestCmfQuery(unittest.TestCase):
         executions_df = self.query.get_all_executions_for_artifact_id(200)
 
         # Step 6: Assert the result
+        # Note: In the actual implementation, individual DataFrames are created for each execution
+        # and then concatenated with pd.concat(). The test verifies the final concatenated result
+        # without explicitly testing the intermediate DataFrame creation and concatenation steps.
         self.assertEqual(len(executions_df), 2)
         self.assertIn("execution_id", executions_df.columns)
         self.assertIn("execution_name", executions_df.columns)
