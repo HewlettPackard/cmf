@@ -223,7 +223,7 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, di
     if(pipeline_name in query.get_pipeline_names()):  # checks if pipeline name is available in mlmd
         if exec_uuid != None:
             dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
-            for key, row in dict_of_exe_ids.items():
+            for key, row in dict_of_exe_ids.iterrows():
                 exec_uuid_list = row['Execution_uuid'].split(",")
                 if exec_uuid in exec_uuid_list:
                     flag=True

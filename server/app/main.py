@@ -31,7 +31,7 @@ import os
 import json
 import typing as t
 from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
-from cmflib.temp import create_unique_executions
+from cmflib.cmf_iteration import create_unique_executions
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)

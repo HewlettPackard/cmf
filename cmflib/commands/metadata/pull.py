@@ -35,7 +35,7 @@ from cmflib.cmf_exception_handling import (
     ExecutionsAlreadyExists,
     UpdateCmfVersion,
 )
-from cmflib.temp import create_unique_executions
+from cmflib.cmf_iteration import create_unique_executions
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
