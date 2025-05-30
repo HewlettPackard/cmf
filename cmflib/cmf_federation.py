@@ -4,7 +4,7 @@ from cmflib.cmfquery import CmfQuery
 from cmflib.cmf_merger import parse_json_to_mlmd
 
 
-def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, pipeline_name: str) -> t.Tuple[list, list]:
+def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, pipeline_name: str) -> t.Tuple[list, list, list, str]:
     """
     Identifies and compares existing executions from a given MLMD store path with those in the MLMD payload.
     This method supports both push and pull operations by analyzing execution UUIDs and identifying overlap
@@ -23,7 +23,7 @@ def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, p
         - status (str): Returns "version_update" if the payload is malformed or missing execution UUIDs.
     """
     executions_from_path = []  # Stores existing execution UUIDs from the path
-    list_executions_exists = []  # Stores the intersection of existing and new executions
+    list_executions_exists: list[str] = []  # Stores the intersection of existing and new executions
     executions_from_req = []  # Extract execution UUIDs from the MLMD data payload
     status = ""
 
@@ -60,7 +60,7 @@ def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, p
     return executions_from_path, list_executions_exists, executions_from_req, status
 
 
-def update_mlmd(query: CmfQuery, req_info: dict, pipeline_name: str, cmd: str, exe_uuid: str) -> str:
+def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, exe_uuid: str) -> str:
     """
     Updates metadata for a given pipeline by filtering out executions that already exist
     on the server and then pushing or pulling the remaining data.

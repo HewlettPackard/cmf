@@ -205,7 +205,7 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: dict):
+def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: pd.Series):
     """
     Retrieves metadata from the server for a given pipeline and execution UUID.
 
