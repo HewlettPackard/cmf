@@ -35,7 +35,7 @@ from cmflib.cmf_exception_handling import (
     ExecutionsAlreadyExists,
     UpdateCmfVersion,
 )
-from cmflib.cmf_iteration import create_unique_executions
+from cmflib.cmf_federation import update_mlmd
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
@@ -101,7 +101,7 @@ class CmdMetadataPull(CmdBase):
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
         else:
-            response = create_unique_executions(query, output.content, self.args.pipeline_name[0], "pull", exec_uuid)
+            response = update_mlmd(query, output.content, self.args.pipeline_name[0], "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":

@@ -16,7 +16,7 @@ def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, p
         pipeline_name (str): The name of the pipeline.
 
     Returns:
-            tuple: A 4-element tuple containing:
+        tuple: A 4-element tuple containing:
         - executions_from_path (list): All execution UUIDs found in the MLMD store at the given path.
         - list_executions_exists (list): Intersection of execution UUIDs between store and request (already present).
         - executions_from_req (list): Execution UUIDs present in the incoming MLMD payload.
@@ -60,76 +60,24 @@ def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, p
     return executions_from_path, list_executions_exists, executions_from_req, status
 
 
-def update_mlmd(query: CmfQuery, pipeline_data: dict, pipeline_name:str, cmd: str, exe_uuid: str) -> str:
+def update_mlmd(query: CmfQuery, req_info: dict, pipeline_name: str, cmd: str, exe_uuid: str) -> str:
     """
-    To merge new execution data into the MLMD store (either during push or pull), excluding already existing executions.
-    Args:
-        query (CmfQuery): The CmfQuery object.
-        pipeline_data (dict): Parsed MLMD data specific to a pipeline.
-        pipeline_name (str): The name of the pipeline to update.
-        cmd (str): The command being executed, either "push" or "pull."  
-        exe_uuid (str, optional): User-provided execution UUID (default: None).  
-    Returns:
-        "success": Metadata successfully updated.
-        "exists": No new data to merge (everything already exists).
-        "version_update": Malformed payload; execution UUID missing.
-    """
-    _, list_executions_exists, _, status = identify_existing_and_new_executions(
-        query, pipeline_data, pipeline_name
-    ) 
-
-    if status == "version_update":
-        return status
+    Updates metadata for a given pipeline by filtering out executions that already exist
+    on the server and then pushing or pulling the remaining data.
     
-    # remove already existing executions from the data
-    for stage in pipeline_data['stages']:
-        # Iterate through executions and remove the ones that already exist
-        for cmf_exec in stage['executions'][:]:
-            uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
-            for uuid in uuids:
-                if uuid in list_executions_exists:
-                    stage['executions'].remove(cmf_exec)
-    
-
-    # remove empty stages (those without remaining executions)
-    pipeline_data['stages'] = [stage for stage in pipeline_data['stages'] if stage['executions'] != []]
-
-    # determine if data remains to push/pull
-    if len(pipeline_data['stages']) == 0 :
-        status="exists"
-    else:
-        # metadata push → merge client data into server path
-        # metadata pull → merge server data into client path
-        if cmd == "pull":
-            parse_json_to_mlmd(
-                json.dumps(pipeline_data), query.filepath, cmd, exe_uuid
-            )
-        else:
-            parse_json_to_mlmd(
-                json.dumps(pipeline_data), "", cmd, exe_uuid
-            )
-        status = "success"
-    return status
-
-
-
-def create_unique_executions(query:CmfQuery, req_info:str, pipeline_name:str, cmd: str, exe_uuid: str) -> str:
-    """
-    Creates list of unique executions by checking if they already exist on server or not.
-    locking is introduced lock to avoid data corruption on server, 
-    when multiple similar pipelines pushed on server at same time.
     Args:
         query (CmfQuery): The CmfQuery object.
         req_info (str): Contains MLMD data — client-side for push, server-side for pull.  
+        pipeline_name (str): The name of the pipeline to update.
         cmd (str): The command being executed, either "push" or "pull."  
         exe_uuid (str, optional): User-provided execution UUID (default: None).  
-    Returns:
-        str: A status message indicating the result of the operation:
-            - "pipeline_not_exist": Pipeline does not exists inside CMF server.
-            - "exists": Execution already exists on the CMF server.
-            - "success": Execution successfully pushed to the CMF server.
-            - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
-            - "version_update": Mlmd push failed due to version update. 
+    
+    Returns: A status message indicating the result of the operation:
+        - "pipeline_not_exist": Pipeline does not exists inside CMF server.
+        - "exists": Execution already exists on the CMF server.
+        - "success": Execution successfully pushed to the CMF server.
+        - "invalid_json_payload": If the JSON payload is invalid or incorrectly formatted.
+        - "version_update": Mlmd push failed due to version update. 
     """
     # load the mlmd_data from the request info
     # in create executions we get full mlmd data
@@ -146,7 +94,41 @@ def create_unique_executions(query:CmfQuery, req_info:str, pipeline_name:str, cm
     if not pipeline:
         return "pipeline_not_exist"
 
-    pipeline = pipeline[0]  # Extract the first matching pipeline
-    status = update_mlmd(query, pipeline, pipeline_name, cmd, exe_uuid)
-    return status
+    pipeline = pipeline[0]  # Extract the first matching pipeline    
+
+    _, list_executions_exists, _, status = identify_existing_and_new_executions(
+        query, pipeline, pipeline_name
+    ) 
+
+    if status == "version_update":
+        return status
     
+    # remove already existing executions from the data
+    for stage in pipeline['stages']:
+        # Iterate through executions and remove the ones that already exist
+        for cmf_exec in stage['executions'][:]:
+            uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
+            for uuid in uuids:
+                if uuid in list_executions_exists:
+                    stage['executions'].remove(cmf_exec)
+
+    # remove empty stages (those without remaining executions)
+    pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
+
+    # determine if data remains to push/pull
+    if len(pipeline['stages']) == 0 :
+        status="exists"
+    else:
+        # metadata push → merge client data into server path
+        # metadata pull → merge server data into client path
+        if cmd == "pull":
+            parse_json_to_mlmd(
+                json.dumps(pipeline), query.filepath, cmd, exe_uuid
+            )
+        else:
+            parse_json_to_mlmd(
+                json.dumps(pipeline), "", cmd, exe_uuid
+            )
+        status = "success"
+    return status
+
