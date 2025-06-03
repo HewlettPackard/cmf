@@ -576,7 +576,7 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
             raise HTTPException(status_code=422, detail="version_update")
         global dict_of_art_ids
         global dict_of_exe_ids
-        message = ""
+        message = "Nothing to sync."
         if status != "exists":
             print("inside if")
             if not last_sync_time:

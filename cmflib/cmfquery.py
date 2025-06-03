@@ -1250,9 +1250,9 @@ class CmfQuery(object):
                         parse_json_to_mlmd(
                             json.dumps(pipeline), "", cmd, exe_uuid
                         )
-                print("out of create unique executions")
-                # we are passing this success in a very wrong way
-                status = "success"
+                    print("out of create unique executions")
+                    # we are passing this success in a very wrong way
+                    status = "success"
 
             return status
             
