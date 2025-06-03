@@ -386,13 +386,15 @@ async def register_server(request: ServerRegistrationRequest, db: AsyncSession =
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
 
         # Check user is registring with own details
-        if host_info == my_ip or host_info == hostname or host_info == "127.0.0.1" or host_info == "localhost":
+        if host_info in [my_ip, hostname, "127.0.0.1", "localhost"]:
             # Restrict the user from registering with own details
-            rows = "Registration failed: Cannot register the server with its own details."
-        else:
-            # Insert the server details into the database
-            rows = await register_server_details(db, server_name, host_info)
-        return rows
+            return {"message": "Registration failed: Cannot register the server with its own details."}
+
+        return await register_server_details(db, server_name, host_info)
+    
+    except HTTPException as e:
+        # Re-raise known error without wrapping
+        raise e
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to register server: {e}")

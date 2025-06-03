@@ -42,11 +42,13 @@ const RegistrationForm = () => {
 
         client.getServerRegistration(serverName, addressValue)
             .then((data) => {
-                if (typeof data === 'object') {
-                    alert('Server registered successfully');
-                }else {
-                    alert(data);
+                if (data && typeof data === 'object' && 'message' in data) {
+                    alert(data.message);
+                } else {
+                    alert('Unexpected response from server.');
                 }
+
+                // Reset form fields
                 setFormData({
                     serverName: '',
                     addressType: 'ipAddress',
@@ -55,8 +57,13 @@ const RegistrationForm = () => {
                 });
             })
             .catch((error) => {
-                console.error('Error:', error);
-                alert('Failed to register server. Please try again.');
+                console.error('Error while registering server:', error);
+
+                if (error.response?.data?.detail) {
+                    alert(`Error: ${error.response.data.detail}`);
+                } else {
+                    alert('Failed to register server. Please try again.');
+                }
             });
     };
 

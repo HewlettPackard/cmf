@@ -18,24 +18,26 @@ async def register_server_details(db: AsyncSession, server_name: str, host_info:
     """
     Register server details in the database.
     """
-    # Use a raw SQL query to insert into the registered_servers table
-    # is raw query is the problem, i guess, let's try to use sqlalchemy ORM
-    # query = text("""
-    #     INSERT INTO registered_servers (server_name, host_info)
-    #     VALUES (:server_name, :host_info)
-    # """)
-
-    query = text("""
-    INSERT INTO registered_servers (server_name, host_info)
-    SELECT :server_name, :host_info
-    WHERE NOT EXISTS (
-        SELECT 1 FROM registered_servers
-        WHERE server_name = :server_name AND host_info = :host_info
-    )
+    # Step 1: Check if the server is already registered
+    query_check = text("""
+        SELECT 1 FROM registered_servers WHERE host_info = :host_info
     """)
-    await db.execute(query, {"server_name": server_name, "host_info": host_info})
-    await db.commit()  # Commit the transaction
-    return {"message": "Added records inside table"}
+    result = await db.execute(query_check, {"host_info": host_info})
+    # If a matching row exists, scalar() returns 1 (from SELECT 1). If not, it returns None
+    exists = result.scalar()
+
+    if exists:
+        return {"message": "Server is already registered"}
+
+    # Step 2: Insert new server
+    query_insert = text("""
+        INSERT INTO registered_servers (server_name, host_info)
+        VALUES (:server_name, :host_info)
+    """)
+    await db.execute(query_insert, {"server_name": server_name, "host_info": host_info})
+    await db.commit()
+
+    return {"message": "Server registered successfully"}
 
 
 async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
