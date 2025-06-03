@@ -1649,7 +1649,8 @@ def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
     output = _artifact_pull_single(pipeline_name, filepath, artifact_name)
     return output
 
-def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 4 * os.cpu_count()):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     """ Pushes artifacts to the initialized repository.
 
     Example:
@@ -1928,8 +1929,8 @@ def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = 
     output = _artifact_list(pipeline_name, filepath, artifact_name)
     return output
 
-
-def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 4 * os.cpu_count()):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Example: 
     ```python 

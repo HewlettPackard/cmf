@@ -885,7 +885,7 @@ class CmfQuery(object):
                 )
         return df
 
-    def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
+    def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict: # type: ignore  # Execution, Context, Event type not recognized by mypy, using ignore to bypass
         """
         Extract attributes from a node and return them as a dictionary.
 
@@ -1085,7 +1085,7 @@ class CmfQuery(object):
                 executions_with_uuid.append(execution)
         return executions_with_uuid
 
-    def identify_existing_and_new_executions(self, pipeline_data: dict, pipeline_name: str) -> t.Tuple[list, list]:
+    def identify_existing_and_new_executions(self, pipeline_data: dict, pipeline_name: str) -> t.Tuple[list, list, list, str]:
         """
         Identifies and compares existing executions from a given MLMD store path with those in the MLMD payload.
         This method supports both push and pull operations by analyzing execution UUIDs and identifying overlap
@@ -1103,7 +1103,7 @@ class CmfQuery(object):
             - status (str): Returns "version_update" if the payload is malformed or missing execution UUIDs.
         """
         executions_from_path = []  # Stores existing execution UUIDs from the path
-        list_executions_exists = []  # Stores the intersection of existing and new executions
+        list_executions_exists: list[str] = []  # Stores the intersection of existing and new executions
         executions_from_req = []  # Extract execution UUIDs from the MLMD data payload
         status = ""
  
