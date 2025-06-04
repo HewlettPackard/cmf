@@ -30,7 +30,7 @@ class BaseRequest(BaseModel):
     active_page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
     sort_order: str = Field("asc", description="Sort order (asc or desc)")
     record_per_page: int = Field(5, gt=0, description="Number of records per page")  # Records per page must be > 0
-    filter_value: Optional[str] = Field("", description="Search based on value")
+    filter_value: str = Field("", description="Search based on value")
 
 # Query parameters for execution.
 class ExecutionRequest(BaseRequest):
