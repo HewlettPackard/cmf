@@ -9,7 +9,7 @@ click
 minio
 paramiko
 scikit_learn
-boto3
+boto3==1.37.3
 scitokens
 cryptography
 ray==2.34.0

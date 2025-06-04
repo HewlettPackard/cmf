@@ -232,9 +232,10 @@ def display_table(df: pd.DataFrame, columns: list) -> None:
         records_per_page = df.iloc[start_index:end_index]
         
         # Display the table.
+        # Fix mypy warning by converting DataFrame to list of lists and columns to list of strings.
         table = tabulate(
-            records_per_page,
-            headers=df.columns,
+            records_per_page.values.tolist(),  # Convert DataFrame to list of lists for tabulate
+            headers=[str(col) for col in df.columns],  # Ensure headers are list of strings
             tablefmt="grid",
             showindex=False,
         )
