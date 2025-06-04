@@ -56,7 +56,6 @@ def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, p
     # For metadata pull → ensures only missing executions get pull
     if executions_from_path != []:
         list_executions_exists = list(set(executions_from_path).intersection(set(executions_from_req)))
-
     return executions_from_path, list_executions_exists, executions_from_req, status
 
 
@@ -105,12 +104,15 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
     
     # remove already existing executions from the data
     for stage in pipeline['stages']:
+        # Create a new filtered list to avoid modifying while iterating
+        filtered_executions = []
         # Iterate through executions and remove the ones that already exist
-        for cmf_exec in stage['executions'][:]:
+        for cmf_exec in stage['executions']:
             uuids = cmf_exec["properties"]["Execution_uuid"].split(",")
             for uuid in uuids:
-                if uuid in list_executions_exists:
-                    stage['executions'].remove(cmf_exec)
+                if not any(uuid in list_executions_exists for uuid in uuids):
+                    filtered_executions.append(cmf_exec)
+        stage['executions'] = filtered_executions
 
     # remove empty stages (those without remaining executions)
     pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
