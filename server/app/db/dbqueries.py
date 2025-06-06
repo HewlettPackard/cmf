@@ -58,7 +58,7 @@ async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
     return result.mappings().all()
 
 
-async def update_sync_status(db: AsyncSession, current_utc_time: str, server_name: str, host_info: str):
+async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, host_info: str):
     """
     Update the sync status in the database.
     """

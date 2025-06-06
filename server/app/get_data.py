@@ -205,7 +205,7 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
 
 
 def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[str] = None, 
-                         dict_of_exe_ids: t.Optional[dict] = None) -> str:
+                         dict_of_exe_ids: t.Optional[dict] = None) -> t.Optional[str]:
     """
     Retrieves metadata from the server for a given pipeline and execution UUID if mentioned.
 
@@ -226,12 +226,13 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
     if pipeline_name == None and not last_sync_time:
         print("first sync")
         # in case of first sync or second sync we don't know if there is one pipeline or multiple pipelines
-        json_payload = query.extract_to_json(last_sync_time)
+        if last_sync_time is None:
+            json_payload = query.extract_to_json(0)
     elif pipeline_name == None and last_sync_time:
         print("second sync")
-        json_payload = query.extract_to_json(last_sync_time)
+        json_payload = query.extract_to_json(int(last_sync_time))
     else:
-        if(query.get_pipeline_id(pipeline_name)!=-1):  # checks if pipeline name is available in mlmd
+        if(pipeline_name is not None and query.get_pipeline_id(pipeline_name) != -1 and dict_of_exe_ids is not None):  # checks if pipeline name is available in mlmd
             if exec_uuid != None:
                 dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
                 for index, row in dict_of_exe_ids.items():
