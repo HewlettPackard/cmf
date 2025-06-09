@@ -118,6 +118,7 @@ class CmfQuery(object):
     """
 
     def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
+        self.filepath = filepath
         temp_store: t.Union[PostgresStore, SqlliteStore]
         if is_server:
             config_dict = get_postgres_config()

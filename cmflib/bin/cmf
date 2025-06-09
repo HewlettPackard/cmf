@@ -5,10 +5,6 @@ import sys
 # Error: Skipping analyzing "cmflib.cli": module is installed, but missing library stubs or py.typed marker
 from cmflib.cli import main # type: ignore
 
-# this is temporary - need to remove after TripleDES warning goes away from paramiko
-import warnings
-warnings.filterwarnings(action='ignore', module='.*paramiko.*')
-
 if __name__ == '__main__':
     sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
     sys.exit(main())
