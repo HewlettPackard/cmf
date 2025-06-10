@@ -35,6 +35,7 @@ from cmflib.cmf_exception_handling import (
     ExecutionsAlreadyExists,
     UpdateCmfVersion,
 )
+from cmflib.cmf_federation import update_mlmd
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
@@ -88,6 +89,8 @@ class CmdMetadataPull(CmdBase):
         query = cmfquery.CmfQuery(full_path_to_dump)
         if self.args.execution_uuid:
             exec_uuid = self.args.execution_uuid[0]
+
+        query = cmfquery.CmfQuery(full_path_to_dump)
         output = server_interface.call_mlmd_pull(
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
@@ -108,8 +111,7 @@ class CmdMetadataPull(CmdBase):
             if not unique_executions:
                 return ExecutionsAlreadyExists()
 
-            # Create unique executions
-            response = query.create_unique_executions(output.content, self.args.pipeline_name[0], "pull", exec_uuid)
+            response = update_mlmd(query, output.content, self.args.pipeline_name[0], "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
             elif response == "exists":

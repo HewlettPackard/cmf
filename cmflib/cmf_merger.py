@@ -258,7 +258,7 @@ def create_original_time_since_epoch(mlmd_data):
             stage["custom_properties"]["original_create_time_since_epoch"]
         )
         stages.append(stage["create_time_since_epoch"])
-        # print(stage['custom_properties']['original_create_time_since_epoch'])
+        
         for execution in stage["executions"]:
             execution["custom_properties"]["original_create_time_since_epoch"] = str(execution[
                 "create_time_since_epoch"
@@ -267,7 +267,7 @@ def create_original_time_since_epoch(mlmd_data):
                 execution["custom_properties"]["original_create_time_since_epoch"]
             )
             executions.append(execution["create_time_since_epoch"])
-            # print(execution['custom_properties']['original_create_time_since_epoch'])
+            
             for event in execution["events"]:
                 event["artifact"]["custom_properties"][
                     "original_create_time_since_epoch"
@@ -278,6 +278,5 @@ def create_original_time_since_epoch(mlmd_data):
                     ]
                 )
                 artifact.append(event["artifact"]["create_time_since_epoch"])
-                # print(event['artifact']['custom_properties']['original_create_time_since_epoch'])
-
+        
     return mlmd_data

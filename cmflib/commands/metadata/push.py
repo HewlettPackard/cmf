@@ -100,7 +100,6 @@ class CmdMetadataPush(CmdBase):
             raise FileNotFound(mlmd_file_name, mlmd_directory)
 
         query = cmfquery.CmfQuery(mlmd_file_name)
-        # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         status_code = 0
 
         # Checks if pipeline name exists
