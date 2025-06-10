@@ -1651,21 +1651,22 @@ def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
     output = _artifact_pull_single(pipeline_name, filepath, artifact_name)
     return output
 
-def artifact_push(pipeline_name: str, filepath = "./mlmd"):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     """ Pushes artifacts to the initialized repository.
 
     Example:
     ```python
-         result = artifact_push("example_pipeline", "./mlmd_directory")
+         result = artifact_push("example_pipeline", "./mlmd_directory", 32)
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the artifact. 
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
         Output from the _artifact_push function.
     """
-
-    output = _artifact_push(pipeline_name, filepath)
+    output = _artifact_push(pipeline_name, filepath, jobs)
     return output
 
 def cmf_init_show():
@@ -1930,25 +1931,26 @@ def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = 
     output = _artifact_list(pipeline_name, filepath, artifact_name)
     return output
 
-
-def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Example: 
     ```python 
-        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path") 
+        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path", 32) 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the mlmd file.
        execution_uuid: Executions for particular execution uuid.
        tensorboard_path: Path to tensorboard logs.
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
        Output from the _repo_push function. 
     """
 
     # Required arguments: pipeline_name
-    # Optional arguments: filepath, execution_uuid, tensorboard_path
-    output = _repo_push(pipeline_name, filepath, execution_uuid, tensorboard_path)
+    # Optional arguments: filepath, execution_uuid, tensorboard_path, jobs
+    output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, jobs)
     return output
 
 

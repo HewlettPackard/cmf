@@ -39,23 +39,14 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(
-    pipelineName,
-    type,
-    page,
-    sortField,
-    sortOrder,
-    filterBy,
-    filterValue,
-  ) {
+  async getArtifacts(pipeline_name, artifact_type, sort_order, page_number, filterValue, col_name) {
     return this.apiClient
-      .get(`/artifacts/${pipelineName}/${type}`, {
+      .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
         params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-          filter_by: filterBy,
           filter_value: filterValue,
+          sort_order: sort_order,
+          page_number: page_number,
+          col_name: col_name,
         },
       })
       .then(({ data }) => {
@@ -116,20 +107,18 @@ class FastAPIClient {
     }); 
   }
 
-  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
+  async getExecutions(pipeline_name, active_page, filter_value, sort_order){
     return this.apiClient
-      .get(`/executions/${pipelineName}`, {
-        params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-          filter_by: filterBy,
-          filter_value: filterValue,
-        },
-      })
-      .then(({ data }) => {
-        return data;
-      });
+    .get(`/executions/${pipeline_name}`,{
+      params: {
+        active_page: active_page,
+        filter_value: filter_value,
+        sort_order: sort_order,
+      },
+    }).
+    then(({data}) => {
+      return data;
+    }); 
   }
 
   async getPipelines(value) {
@@ -166,8 +155,39 @@ class FastAPIClient {
       });
   }
 
+  async getServerRegistration(server_name, host_info){
+    return this.apiClient
+      .post(`/register-server`, {
+          server_name: server_name,
+          host_info: host_info,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getRegistredServerList(){
+    return this.apiClient
+      .get(`/server-list`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async sync(serverName, addressType) {
+    return this.apiClient
+      .post(`/sync`, {
+        server_name: serverName,
+        host_info: addressType,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
 }
 
 
 
 export default FastAPIClient;
+

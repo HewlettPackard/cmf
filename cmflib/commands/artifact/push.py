@@ -53,7 +53,8 @@ class CmdArtifactPush(CmdBase):
         
         cmd_args = {
             "file_name": self.args.file_name,
-            "pipeline_name": self.args.pipeline_name
+            "pipeline_name": self.args.pipeline_name, 
+            "jobs": self.args.jobs,
         }
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
@@ -65,6 +66,10 @@ class CmdArtifactPush(CmdBase):
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
+        
+        # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
+        num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
+        
         if dvc_config_op["core.remote"] == "osdf":
             config_file_path = os.path.join(output, cmf_config_file)
             cmf_config={}
@@ -74,7 +79,7 @@ class CmdArtifactPush(CmdBase):
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
-            result = dvc_push()
+            result = dvc_push(num_jobs=num_jobs)
             #print(result)
             return result
 
@@ -142,7 +147,7 @@ class CmdArtifactPush(CmdBase):
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
         #print("file_set = ", final_list)
-        result = dvc_push(list(final_list))
+        result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
     
 def add_parser(subparsers, parent_parser):
@@ -173,6 +178,14 @@ def add_parser(subparsers, parent_parser):
         action="append",
         help="Specify mlmd file name.",
         metavar="<file_name>"
+    )
+
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        action="append",
+        help="Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count(). Increasing jobs may speed up uploads but will use more resources.",
+        metavar="<jobs>"
     )
 
     parser.set_defaults(func=CmdArtifactPush)

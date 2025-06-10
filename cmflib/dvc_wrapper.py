@@ -437,17 +437,18 @@ def dvc_get_config() -> str:
 
 
 # dvc push
-def dvc_push(file_list: t.Optional[t.List[str]] = None) -> str:
+def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
     commit = ""
     if file_list is None:
-       try:
-           process = subprocess.Popen(['dvc', 'push'],
-                                  stdout=subprocess.PIPE,
-                                   universal_newlines=True)
-           output, errs = process.communicate()
-           commit = output.strip()
+        try:
+            # num_jobs must be passed as a string (`str(num_jobs)`) when constructing the command.
+            process = subprocess.Popen(['dvc', 'push', '-j', str(num_jobs)],
+                                       stdout=subprocess.PIPE,
+                                       universal_newlines=True)
+            output, errs = process.communicate()
+            commit = output.strip()
 
-       except Exception as err:
+        except Exception as err:
            print(f"Unexpected {err}, {type(err)}")
            if isinstance(object, subprocess.Popen):
               process.kill()
@@ -459,7 +460,7 @@ def dvc_push(file_list: t.Optional[t.List[str]] = None) -> str:
         file_list.insert(0, 'dvc')
         file_list.insert(1, 'push')
         file_list.insert(2, '-j')
-        file_list.insert(3, '16')
+        file_list.insert(3, str(num_jobs))
         try:
             process = subprocess.Popen(file_list,
                                    stdout=subprocess.PIPE,

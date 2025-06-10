@@ -84,6 +84,13 @@ function DashboardHeader() {
           >
             TensorBoard
           </NavLink>
+          <NavLink
+            to="/metahub"
+            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
+            activeClassName="active"
+          >
+            Metahub
+          </NavLink>
           <a
             href={"https://hewlettpackard.github.io/cmf/api/public/cmf/"}
             target={"_blank"}
