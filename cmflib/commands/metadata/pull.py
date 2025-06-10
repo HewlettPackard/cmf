@@ -19,6 +19,7 @@ import os
 import argparse
 
 from cmflib import cmf_merger
+from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import fetch_cmf_config_path
@@ -30,12 +31,12 @@ from cmflib.cmf_exception_handling import (
     ExecutionUUIDNotFound,
     MlmdNotFoundOnServer,
     MlmdFilePullSuccess,
-    CmfServerNotAvailable, 
-    InternalServerError,
-    MlmdFilePullFailure,
     DirectoryNotfound,
-    FileNameNotfound
+    FileNameNotfound,
+    ExecutionsAlreadyExists,
+    UpdateCmfVersion,
 )
+from cmflib.cmf_federation import update_mlmd
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
@@ -82,36 +83,29 @@ class CmdMetadataPull(CmdBase):
         
         if self.args.execution_uuid:
             exec_uuid = self.args.execution_uuid[0]
+
+        query = cmfquery.CmfQuery(full_path_to_dump)
         output = server_interface.call_mlmd_pull(
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
         status = output.status_code
-        
-        # checks If given pipeline does not exists/ elif pull mlmd file/ else mlmd file is not available
-        if output.content.decode() == None:
+        # Checks if given pipeline does not exist
+        # or if the execution UUID not present inside the mlmd file
+        # else pulls the mlmd file
+        if status == 406:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
-        elif output.content:
-            if status == 200:
-                try:
-                    cmf_merger.parse_json_to_mlmd(
-                        output.content, full_path_to_dump, cmd, exec_uuid
-                    )  # converts mlmd json data to mlmd file
-                    pull_status = MlmdFilePullSuccess(full_path_to_dump)
-                    return pull_status
-                except Exception as e:
-                    return e
-            elif status == 413:
+        else:
+            response = update_mlmd(query, output.content, self.args.pipeline_name[0], "pull", exec_uuid)
+            if response =="success":
+                return MlmdFilePullSuccess(full_path_to_dump)
+            elif response == "exists":
+                return ExecutionsAlreadyExists()
+            elif response == "invalid_json_payload":
                 raise MlmdNotFoundOnServer
-            elif status == 406:
-                raise PipelineNotFound(self.args.pipeline_name[0])
-            elif status == 404:
-                raise CmfServerNotAvailable
-            elif status == 500:
-                raise InternalServerError
-            else:
-                raise MlmdFilePullFailure
+            elif response == "version_update":
+                raise UpdateCmfVersion
             
 def add_parser(subparsers, parent_parser):
     PULL_HELP = "Pulls mlmd from cmf-server to users's machine."

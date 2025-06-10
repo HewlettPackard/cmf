@@ -7,7 +7,7 @@ neo4j==5.26
 tabulate
 click
 minio
-paramiko
+paramiko==3.4.1
 scikit_learn
 boto3==1.37.3
 scitokens
@@ -19,7 +19,6 @@ mypy
 pandas-stubs
 types-tabulate
 types-requests
-boto3-stubs
 types-paramiko
 types-setuptools
 types-PyYAML

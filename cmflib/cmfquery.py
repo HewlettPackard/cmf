@@ -118,6 +118,7 @@ class CmfQuery(object):
     """
 
     def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
+        self.filepath = filepath
         temp_store: t.Union[PostgresStore, SqlliteStore]
         if is_server:
             config_dict = get_postgres_config()
@@ -1013,7 +1014,6 @@ class CmfQuery(object):
             if execution_uuid in exec_uuid_list:
                 executions_with_uuid.append(execution)
         return executions_with_uuid
-
 
 def test_on_collision() -> None:
     from unittest import TestCase
