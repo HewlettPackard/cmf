@@ -132,7 +132,8 @@ def list_conda_packages_json() -> list:
 def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     #for SciToken Generation & Validation
-    import scitokens
+    # Error: Skipping analyzing "scitokens": module is installed, but missing library stubs or py.typed marker
+    import scitokens    # type: ignore
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.backends import default_backend
 
@@ -191,3 +192,24 @@ def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     if res.status_code == 200:
         return True
     return False
+
+def get_postgres_config() -> dict:
+    """
+    Get PostgreSQL configuration from environment variables.
+
+    Returns:
+        dict: A dictionary containing PostgreSQL configuration.
+    """
+    IP = os.getenv('MYIP')
+    HOSTNAME = os.getenv('HOSTNAME')
+    HOST = ""
+    if(HOSTNAME!="localhost"):
+        HOST = HOSTNAME if HOSTNAME else ""
+    else:
+        HOST = IP if IP else ""
+    POSTGRES_DB = os.getenv('POSTGRES_DB')
+    POSTGRES_USER = os.getenv('POSTGRES_USER')
+    POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
+    config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    #print("config_dict = ", config_dict)
+    return config_dict
