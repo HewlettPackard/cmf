@@ -143,7 +143,7 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
                 print("pipeline name = ", pipeline_name)
 
                 _, list_executions_exists, _, status = identify_existing_and_new_executions(
-                    pipeline, pipeline_name
+                    query, pipeline, pipeline_name
                 )  
                 if status == "version_update":
                     return status
