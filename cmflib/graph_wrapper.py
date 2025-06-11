@@ -42,7 +42,7 @@ class GraphDriver:
                 self._run_transaction, pipeline_syntax)
             self.pipeline_id = node[0]["node_id"]
 
-    def create_stage_node(self, name: str, parent_context: mlpb.Context, stage_id: int, props=None):
+    def create_stage_node(self, name: str, parent_context: mlpb.Context, stage_id: int, props=None):    # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         if props is None:
             props = {}
         parent_id = parent_context.id
@@ -57,7 +57,7 @@ class GraphDriver:
                 "Pipeline", "Stage", self.pipeline_id, self.stage_id, "contains")
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
-    def create_execution_node(self, name: str, parent_id: int, pipeline_context: mlpb.Context, command: str,
+    def create_execution_node(self, name: str, parent_id: int, pipeline_context: mlpb.Context, command: str,    # type: ignore  # Context type not recognized by mypy, using ignore to bypass
                               execution_id: int,
                               props=None):
         if props is None:
@@ -75,7 +75,7 @@ class GraphDriver:
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     def create_dataset_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
-                            pipeline_context: mlpb.Context,
+                            pipeline_context: mlpb.Context, # type: ignore  # Context type not recognized by mypy, using ignore to bypass
                             custom_properties=None):
         if custom_properties is None:
             custom_properties = {}
@@ -92,7 +92,7 @@ class GraphDriver:
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
     def create_env_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
-                            pipeline_context: mlpb.Context, custom_properties=None):
+                            pipeline_context: mlpb.Context, custom_properties=None):    # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         if custom_properties is None:
             custom_properties = {}
         pipeline_id = pipeline_context.id
@@ -131,7 +131,7 @@ class GraphDriver:
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
 
-    def create_model_node(self, name: str, uri: str, event: str, execution_id: str, pipeline_context: mlpb.Context,
+    def create_model_node(self, name: str, uri: str, event: str, execution_id: str, pipeline_context: mlpb.Context, # type: ignore  # Context type not recognized by mypy, using ignore to bypass
                           custom_properties=None):
         if custom_properties is None:
             custom_properties = {}
@@ -147,7 +147,7 @@ class GraphDriver:
                 "Execution", "Model", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
-    def create_metrics_node(self, name: str, uri: str, event: str, execution_id: int, pipeline_context: mlpb.Context,
+    def create_metrics_node(self, name: str, uri: str, event: str, execution_id: int, pipeline_context: mlpb.Context,   # type: ignore  # Context type not recognized by mypy, using ignore to bypass
                             custom_properties=None):
         if custom_properties is None:
             custom_properties = {}
@@ -163,7 +163,7 @@ class GraphDriver:
                 "Execution", "Metrics", self.execution_id, node_id, event)
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
-    def create_step_metrics_node(self, name: str, uri: str, event: str, execution_id: int, pipeline_context: mlpb.Context,
+    def create_step_metrics_node(self, name: str, uri: str, event: str, execution_id: int, pipeline_context: mlpb.Context,  # type: ignore  # Context type not recognized by mypy, using ignore to bypass
                             custom_properties=None):
         if custom_properties is None:
             custom_properties = {}

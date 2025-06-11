@@ -5,14 +5,13 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 import pandas as pd
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from cmflib.cmfquery import CmfQuery
 import asyncio
 from collections import defaultdict
 from server.app.get_data import (
     get_artifacts,
     get_lineage_data,
-    create_unique_executions,
     get_mlmd_from_server,
     get_artifact_types,
     get_all_artifact_ids,
@@ -32,6 +31,7 @@ import os
 import json
 import typing as t
 from server.app.schemas.dataframe import MLMDPushRequest, ExecutionRequest, ArtifactRequest
+from cmflib.cmf_federation import update_mlmd
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
@@ -40,7 +40,7 @@ query = CmfQuery(is_server=True)
 dict_of_art_ids = {}
 dict_of_exe_ids = {}
 pipeline_locks = {}
-lock_counts = defaultdict(int)
+lock_counts: defaultdict[str, int] = defaultdict(int)
 #lifespan used to prevent multiple loading and save time for visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -101,13 +101,10 @@ async def mlmd_push(info: MLMDPushRequest):
     lock_counts[pipeline_name] += 1 # increment lock count by 1 if pipeline going to enter inside lock section
     async with pipeline_lock:
         try:
-            status = await async_api(create_unique_executions, query, req_info)
+            status = await async_api(update_mlmd, query, req_info["json_payload"], pipeline_name, "push", req_info["exec_uuid"])
             if status == "invalid_json_payload":
                 # Invalid JSON payload, return 400 Bad Request
                 raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
-            if status == "pipeline_not_exist":
-                # Pipeline name does not exist in the server, return 404 Not Found
-                raise HTTPException(status_code=404, detail=f"Pipeline name '{pipeline_name}' does not exist.")
             if status == "version_update":
                 # Raise an HTTPException with status code 422
                 raise HTTPException(status_code=422, detail="version_update")
@@ -130,10 +127,10 @@ async def mlmd_pull(pipeline_name: str, exec_uuid: t.Optional[str]= None):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    #json_payload values can be json data, NULL or no_exec_id.
+    #json_payload values can be json data, none or no_exec_id.
     json_payload= await async_api(get_mlmd_from_server, query, pipeline_name, exec_uuid, dict_of_exe_ids)
     if json_payload == None:
-            raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
+        raise HTTPException(status_code=406, detail=f"Pipeline {pipeline_name} not found.")
     return json_payload
 
 
@@ -242,7 +239,7 @@ async def artifacts(
             "total_items": 0,      #empty page when art_ids_dict is {}
             "items": None
             }
-        art_ids_initial = []
+        art_ids_initial: pd.DataFrame = pd.DataFrame()
         if art_type in art_ids_dict:
             art_ids_initial = art_ids_dict[art_type]
         else:
@@ -280,7 +277,7 @@ async def artifacts(
 
 
 @app.get("/artifact-lineage/tangled-tree/{pipeline_name}")
-async def artifact_lineage(request: Request, pipeline_name: str) -> List[List[Dict[str, Any]]]:
+async def artifact_lineage_tangled(request: Request, pipeline_name: str) -> Optional[List[List[Dict[str, Any]]]]:
     '''
       Returns:
       A nested list of dictionaries with 'id' and 'parents' keys.
@@ -324,6 +321,8 @@ async def pipelines(request: Request):
 async def upload_file(request:Request, pipeline_name: str = Query(..., description="Pipeline name"),
     file: UploadFile = File(..., description="The file to upload")):
     try:
+        if file.filename is None:
+            raise HTTPException(status_code=400, detail="No file uploaded")
         file_path = os.path.join("/cmf-server/data/tensorboard-logs", pipeline_name, file.filename)
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb") as buffer:
@@ -374,7 +373,9 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
 @app.post("/python-env")
 async def upload_python_env(request:Request, file: UploadFile = File(..., description="The file to upload")):
     try:
-        file_path = os.path.join("/cmf-server/data/env/",  os.path.basename(file.filename))
+        if file.filename is None:
+            raise HTTPException(status_code=400, detail="No file uploaded")
+        file_path = os.path.join("/cmf-server/data/env/", os.path.basename(file.filename))
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
