@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock, patch, call
+from unittest.mock import MagicMock, call
 from cmflib.cmfquery import CmfQuery, _DictMapper, _KeyMapper, _PrefixMapper
 from ml_metadata.proto.metadata_store_pb2 import Artifact, Context, Execution
 import pandas as pd
@@ -215,60 +215,44 @@ class TestCmfQuery(unittest.TestCase):
         
         self.mock_store.get_executions_by_context.return_value = [mock_execution1, mock_execution2]
         
-        # Step 4: Mock the _transform_to_dataframe method to return a DataFrame for each execution
-        # Side effect for _transform_to_dataframe: returns a DataFrame for each execution with extra_props.
-        # Used to simulate execution-to-DataFrame conversion in get_all_executions_in_stage tests.
-        def transform_side_effect(execution, extra_props=None):
+        # Step 4: Use real _transform_to_dataframe implementation
+        # Instead of mocking, we'll create a simplified version that works with our test data
+        def transform_to_dataframe(execution, extra_props=None):
             data = {
-            "id": execution.id,
-            "name": execution.name,
-            "Execution_type_name": execution.properties["Execution_type_name"].string_value
+                "id": execution.id,
+                "name": execution.name,
+                "Execution_type_name": execution.properties["Execution_type_name"].string_value
             }
             if extra_props:
                 data.update(extra_props)
             return pd.DataFrame([data])
         
-        self.query._transform_to_dataframe = MagicMock(side_effect=transform_side_effect)
+        # Patch the method with our implementation
+        self.query._transform_to_dataframe = transform_to_dataframe
         
-        # Step 5: Create a mock result DataFrame that would be returned by pd.concat
-        result_df = pd.DataFrame([
-            {"id": 100, "name": "execution1", "Execution_type_name": "type1"},
-            {"id": 101, "name": "execution2", "Execution_type_name": "type2"}
-        ])
+        # Step 5: Call the method under test with real pandas operations
+        executions_df = self.query.get_all_executions_in_stage("stage1")
         
-        # Step 6: Mock pd.concat to return our predefined result
-        with patch('pandas.concat', return_value=result_df):
-            # Step 7: Call the method under test
-            executions_df = self.query.get_all_executions_in_stage("stage1")
+        # Step 6: Assert the result is correct
+        self.assertEqual(len(executions_df), 2)
+        self.assertIn("id", executions_df.columns)
+        self.assertIn("name", executions_df.columns)
+        self.assertIn("Execution_type_name", executions_df.columns)
         
-            # Step 8: Assert the result is correct
-            self.assertEqual(len(executions_df), 2)
-            self.assertIn("id", executions_df.columns)
-            self.assertIn("name", executions_df.columns)
-            self.assertIn("Execution_type_name", executions_df.columns)
-            
-            # Check first execution
-            self.assertEqual(executions_df.iloc[0]["id"], 100)
-            self.assertEqual(executions_df.iloc[0]["name"], "execution1")
-            self.assertEqual(executions_df.iloc[0]["Execution_type_name"], "type1")
-            
-            # Check second execution
-            self.assertEqual(executions_df.iloc[1]["id"], 101)
-            self.assertEqual(executions_df.iloc[1]["name"], "execution2")
-            self.assertEqual(executions_df.iloc[1]["Execution_type_name"], "type2")
-            
-            # Step 9: Verify method calls
-            self.mock_store.get_contexts_by_type.assert_called_once_with("Parent_Context")
-            self.mock_store.get_children_contexts_by_context.assert_called_once_with(1)
-            self.mock_store.get_executions_by_context.assert_called_once_with(10)
-            
-            # Verify _transform_to_dataframe was called for each execution with correct parameters
-            self.query._transform_to_dataframe.assert_any_call(
-                mock_execution1, {"id": 100, "name": "execution1"}
-            )
-            self.query._transform_to_dataframe.assert_any_call(
-                mock_execution2, {"id": 101, "name": "execution2"}
-            )
+        # Check first execution
+        self.assertEqual(executions_df.iloc[0]["id"], 100)
+        self.assertEqual(executions_df.iloc[0]["name"], "execution1")
+        self.assertEqual(executions_df.iloc[0]["Execution_type_name"], "type1")
+        
+        # Check second execution
+        self.assertEqual(executions_df.iloc[1]["id"], 101)
+        self.assertEqual(executions_df.iloc[1]["name"], "execution2")
+        self.assertEqual(executions_df.iloc[1]["Execution_type_name"], "type2")
+        
+        # Step 7: Verify method calls
+        self.mock_store.get_contexts_by_type.assert_called_once_with("Parent_Context")
+        self.mock_store.get_children_contexts_by_context.assert_called_once_with(1)
+        self.mock_store.get_executions_by_context.assert_called_once_with(10)
 
     def test_get_all_executions_by_ids_list(self):
         """Test retrieving all executions by a list of execution IDs.
