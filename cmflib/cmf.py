@@ -23,6 +23,8 @@ import sys
 import yaml
 import pandas as pd
 import typing as t
+import json
+from cmflib import cmfquery, cmf_merger
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -2100,3 +2102,4 @@ def repo_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = "")
     # Optional arguments: filepath, execution_uuid
     output = _repo_pull(pipeline_name, filepath, execution_uuid)
     return output
+

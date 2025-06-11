@@ -100,7 +100,6 @@ class CmdMetadataPush(CmdBase):
             raise FileNotFound(mlmd_file_name, mlmd_directory)
 
         query = cmfquery.CmfQuery(mlmd_file_name)
-        # print(json.dumps(json.loads(json_payload), indent=4, sort_keys=True))
         status_code = 0
 
         # Checks if pipeline name exists
@@ -116,6 +115,7 @@ class CmdMetadataPush(CmdBase):
                 exec_uuid = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_uuid, pipeline_name)
             else:
+                execution_flag = 0
                 exec_uuid = self.args.execution_uuid[0]
                 mlmd_data = json.loads(json_payload)["Pipeline"]
                 # checks if given execution present in mlmd
@@ -142,7 +142,7 @@ class CmdMetadataPush(CmdBase):
 
             if status_code==422 and response.json()["status"]=="version_update":
                 raise UpdateCmfVersion
-            elif status_code == 404:
+            elif status_code == 400:
                 raise CmfServerNotAvailable
             elif status_code == 500:
                 raise InternalServerError

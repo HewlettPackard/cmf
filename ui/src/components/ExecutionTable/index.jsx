@@ -220,7 +220,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     >
                       {expandedRow === index ? "-" : "+"}
                     </td>
-                    <td className="px-6 py-4">{data.Execution_uuid}</td>
+                    <td className="px-6 py-4 break-words whitespace-normal max-w-xs">{data.Execution_uuid}</td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
                     <td className="px-6 py-4">{data.Execution}</td>
                     <td className="px-6 py-4">
@@ -258,7 +258,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                                   <React.Fragment key={key}>
                                     <tr>
                                       <td key={key}>{key}</td>
-                                      <td key={value}>
+                                      <td key={value} className="break-words whitespace-normal max-w-md">
                                         {value ? value : "Null"}
                                       </td>
                                     </tr>
