@@ -826,7 +826,7 @@ class CmfQuery(object):
 
         return executions[0]
 
-     get_producer_execution = find_producer_execution
+    get_producer_execution = find_producer_execution
 
     def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
         """Return metric data frame.
