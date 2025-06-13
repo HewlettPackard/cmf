@@ -516,6 +516,8 @@ class CmfQuery(object):
         """
         return [artifact.name for artifact in self.store.get_artifacts()]
 
+    get_artifact_names = get_all_artifacts
+
     def get_artifact(self, name: str) -> t.Optional[pd.DataFrame]:
         """Return artifact's data frame representation using artifact name.
 
@@ -824,6 +826,7 @@ class CmfQuery(object):
 
         return executions[0]
 
+     get_producer_execution = find_producer_execution
 
     def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
         """Return metric data frame.

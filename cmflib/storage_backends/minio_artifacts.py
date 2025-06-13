@@ -117,6 +117,9 @@ class MinioArtifacts:
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/temp_dir"
         try:
+            # Download the .dir file containing metadata about tracked files.
+            response = self.client.fget_object(bucket_name, object_name, temp_dir)
+
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 

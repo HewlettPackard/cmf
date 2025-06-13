@@ -111,6 +111,9 @@ class LocalArtifacts():
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/dir"
         try:
+            # Download the .dir file containing metadata about tracked files.
+            response = self.fs.get_file(object_name, temp_dir)
+            
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 

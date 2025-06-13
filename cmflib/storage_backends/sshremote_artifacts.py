@@ -105,6 +105,9 @@ class SSHremoteArtifacts:
         # download .dir object
         temp_dir = f"{abs_download_loc}/temp_dir"
         try:
+            # The put() method returns an SFTPAttributes object, which contains metadata about the uploaded file.
+            # Therefore, response should be typed as SFTPAttributes.
+            response: paramiko.SFTPAttributes = sftp.put(object_name, temp_dir)
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 

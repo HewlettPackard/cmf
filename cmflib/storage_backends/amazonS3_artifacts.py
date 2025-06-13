@@ -127,6 +127,9 @@ class AmazonS3Artifacts:
         # Temporary file to download the .dir metadata object.
         temp_dir = f"{download_loc}/temp_dir"
         try:
+            # Download the .dir file containing metadata about tracked files.
+            response = self.s3.download_file(bucket_name, object_name, temp_dir)
+            
             # Read the .dir metadata to get file information.
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())

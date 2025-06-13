@@ -13,7 +13,6 @@ dependencies = [
 	"minio",
 	"paramiko==3.4.1",
 	"scikit_learn",
-	"boto3==1.37.3",
 	"scitokens", 
 	"cryptography",   
 	"ray==2.34.0",
