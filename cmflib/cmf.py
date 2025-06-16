@@ -1333,19 +1333,19 @@ class Cmf:
              None 
        """
         for key, value in custom_properties.items():
-            if key == "labels":
-                # Convert the new value to string
-                new_value = str(value)
-                if key in artifact.custom_properties:
-                    # Get existing value if present
-                    existing_value = artifact.custom_properties[key].string_value
-                    artifact.custom_properties[key].string_value = existing_value + "," + new_value
-                else:
-                    artifact.custom_properties[key].string_value = new_value
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                artifact.custom_properties[key].string_value = str(value)
+                if key == "labels":
+                    print("going in here")
+                    existing_value = artifact.custom_properties[key].string_value
+                    if existing_value:
+                        print("inside this too")
+                        artifact.custom_properties[key].string_value = existing_value + "," + str(value)
+                    else: 
+                        artifact.custom_properties[key].string_value = str(value)
+                else:
+                    artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
         
 
