@@ -17,14 +17,13 @@
 from cmflib import cli
 
 
-def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard):
-    """ Pushes MLMD file to CMF-server.
+def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
+    """ Pushes metadata file to CMF-server.
     Args:
         pipeline_name: Name of the pipeline.
-        filepath: Path to the MLMD file.
+        file_name: Specify input metadata file name.
         execution_uuid: Optional execution UUID.
         tensorboard_path: Path to tensorboard logs.
-
     Returns:
         Output from the metadata push command.
     """
@@ -39,7 +38,7 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard):
                "-e",
                execution_uuid,
                "-t",
-               tensorboard
+               tensorboard_path
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -48,10 +47,10 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard):
     return msg
 
 def _metadata_pull(pipeline_name, file_name, execution_uuid):
-    """ Pulls MLMD file from CMF-server. 
+    """ Pulls metadata file from CMF-server. 
      Args: 
         pipeline_name: Name of the pipeline. 
-        filepath: File path to store the MLMD file. 
+        file_name: Specify output metadata file name.
         execution_uuid: Optional execution UUID. 
      Returns: 
         Output from the metadata pull command. 
@@ -73,11 +72,11 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
     print(msg)
 
 def _metadata_export(pipeline_name, json_file_name, file_name):
-    """ Export local mlmd's metadata in json format to a json file. 
+    """ Export local metadata's metadata in json format to a json file. 
      Args: 
         pipeline_name: Name of the pipeline. 
-        jsonfilepath: File path of json file. 
-        filepath: File path to store the MLMD file. 
+        json_file_name: File path of json file. 
+        file_name: Specify input metadata file name. 
      Returns: 
         Output from the metadata export command. 
      """
@@ -102,7 +101,7 @@ def _artifact_push(pipeline_name, file_name):
     """ Pushes artifacts to the initialized repository.
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the artifact. 
+       file_name: Specify input metadata file name.
     Returns:
         Output from the artifact push command.
     """
@@ -126,7 +125,7 @@ def _artifact_pull(pipeline_name, file_name):
     """ Pulls artifacts from the initialized repository.
     Args:
         pipeline_name: Name of the pipeline.
-        filepath: Path to store artifacts.
+        file_name: Specify input metadata file name.
     Returns:
         Output from the artifact pull command.
     """
@@ -149,7 +148,7 @@ def _artifact_pull_single(pipeline_name, file_name, artifact_name):
     """ Pulls a single artifact from the initialized repository. 
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the artifact. 
+       file_name: Specify input metadata file name.
        artifact_name: Name of the artifact. 
     Returns:
        Output from the artifact pull command. 
@@ -341,10 +340,10 @@ def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, 
     return msg
     
 def _artifact_list(pipeline_name, file_name, artifact_name):
-    """ Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+    """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
+       file_name: Specify input metadata file name. 
        artifact_name: Artifacts for particular artifact name.
     Returns:
        Output from the artifact list command. 
@@ -367,9 +366,9 @@ def _artifact_list(pipeline_name, file_name, artifact_name):
     return msg
 
 def _pipeline_list(file_name):
-    """ Display a list of pipeline name(s) from the available mlmd file.
+    """ Display a list of pipeline name(s) from the available input metadata file.
     Args:
-        filepath: File path to store the MLMD file. 
+        file_name: Specify input metadata file name. 
     Returns:
         Output from the pipeline list command.
     """
@@ -387,11 +386,11 @@ def _pipeline_list(file_name):
     return msg
 
 def _execution_list(pipeline_name, file_name, execution_uuid):
-    """Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+    """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify input metadata file name.
+       execution_uuid: Specify the execution uuid to retrieve execution.
     Returns:
        Output from the execution list command. 
     """
@@ -416,8 +415,8 @@ def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file.
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify input metadata file name.
+       execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
     Returns:
        Output from the repo push command. 
@@ -445,8 +444,8 @@ def _repo_pull(pipeline_name, file_name, execution_uuid):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify output metadata file name.
+       execution_uuid: Specify execution uuid.
     Returns:
        Output from the repo pull command. 
     """

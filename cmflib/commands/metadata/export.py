@@ -123,12 +123,12 @@ class CmdMetadataExport(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    PULL_HELP = "Exports local mlmd's metadata to a json file."
+    PULL_HELP = "Export local metadata's metadata in json format to a json file. "
 
     parser = subparsers.add_parser(
         "export",
         parents=[parent_parser],
-        description="Export local mlmd's metadata in json format to a json file.",
+        description="Export local metadata's metadata in json format to a json file.",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -155,7 +155,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.", 
+        help="Specify the absolute or relative path for the input metadata file.", 
         metavar="<file_name>",
     )
 
