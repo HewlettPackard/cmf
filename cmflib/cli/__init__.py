@@ -17,10 +17,15 @@ from rich.live import Live               # To manage live-updating output
 from rich.console import Console         # For rendering to the terminal
 from rich.spinner import Spinner         # Provides a ready-made spinner widget
 from cmflib.cmf_exception_handling import CmfResponse
+import sys
+
+# Reconfigure the standard output stream to use UTF-8 encoding.
+# This ensures that printing Unicode characters (such as emojis or special symbols)
+# will not cause encoding errors, regardless of the system's default encoding.
+sys.stdout.reconfigure(encoding='utf-8')
 
 console = Console() # Create a console object
 spinner = Spinner("dots", text="Loading...") # Create a spinner object
-
 
 class CmfParserError(Exception):
     """Base class for CLI parser errors."""
