@@ -1,11 +1,11 @@
 # Getting started with cmf
-Common metadata framework (cmf) has the following components:
+Common Metadata Framework (CMF) has the following components:
 
-- **Metadata Library** exposes APIs to track the pipeline metadata. It also provides APIs to query the stored metadata.
-- **cmf-client** interacts with the cmf-server to pull or push metadata
+- **Metadata Library** exposes APIs to track pipeline metadata. It also provides APIs to query the stored metadata.
+- **cmf-client** interacts with the cmf-server to pull or push metadata.
 - **cmf-server with GUI** interacts with remote cmf-clients and merges the metadata transferred by each
   client. This server also provides a GUI that can render the stored metadata.
-- **Central Artifact Repositories** hosts the code and data.
+- **Central Artifact Repositories** host the code and data.
 
 ## Setup a cmf-client
 `cmf-client` is a tool that facilitates metadata collaboration between different teams and team members. These clients
@@ -31,10 +31,10 @@ cmf-server is the primary interface for the user to explore and track their ML t
 metadata. Users can retrieve the saved metadata file and can view the content of the saved metadata file using
 the UI provided by the cmf-server.
 
-Details on how to setup a cmf-server can be found [here](../cmf_server/cmf-server.md).
+Details on how to set up a cmf-server can be found [here](../cmf_server/cmf-server.md).
 
 ## Simple Example of using the CMF Client
-In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a minio)
+In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a MinIO
 
 S3 bucket as the artifact repository and a cmf-server.
 
@@ -45,8 +45,8 @@ mkdir example-folder && cd example-folder
 
 **Initialize cmf**
 
-CMF must be initialized to use cmf-client commands. The following command configures authenticates to an S3 bucket and
-specifies the connectio to a CMF server.
+CMF must be initialized to use cmf-client commands. The following command configures authentication to an S3 bucket and
+specifies the connection to a CMF server.
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 \
   --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git \
@@ -68,7 +68,7 @@ More info is available [here](https://hewlettpackard.github.io/cmf/examples/gett
 
 **Push artifacts**
 
-Push artifacts in the artifact repo initialised in the [Initialize cmf](#initialize-cmf) step.
+Push artifacts in the artifact repo initialized in the [Initialize cmf](#initialize-cmf) step.
 ```
 cmf artifact push
 ```

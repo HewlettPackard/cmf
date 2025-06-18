@@ -10,15 +10,15 @@ There are two ways to start a cmf server -
 - Using docker compose file
 - Using docker run
 
-### Pre-requisites
-1. Clone the [Github repository](https://github.com/HewlettPackard/cmf).
+### Prerequisites
+1. Clone the [GitHub repository](https://github.com/HewlettPackard/cmf).
    ```
    git clone https://github.com/HewlettPackard/cmf
    ```
 
-2. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+2. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
 3. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
-   > In earlier versions of docker compose, `docker compose` was independent of docker. Hence, `docker-compose` was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
+   > In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
 4. **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
 
 ## Using `docker compose` file
@@ -39,14 +39,14 @@ There are two ways to start a cmf server -
     ....
     ```
 
-3. Execute one the following commands to start both containers. `IP` variable is the IP address and `hostname` is host name of the machine on which you are executing the following command.
+3. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
    ```
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
               OR
    hostname=host_name docker compose -f docker-compose-server.yml up
    ```
    > Replace `docker compose` with `docker-compose` for older versions.
-   > Also you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying
+   > Also, you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying
     IP=200.200.200.200.
      ```
      .......
@@ -60,7 +60,7 @@ There are two ways to start a cmf server -
       docker compose -f docker-compose-server.yml stop
     ```
 
-> It is neccessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling latest cmf code from git.
+> It is necessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling the latest cmf code from git.
 
  **<h3 align="center">OR</h3>**
 
@@ -97,7 +97,7 @@ There are two ways to start a cmf server -
    docker run --name cmf-server -p 0.0.0.0:8080:80 -v /home/user/cmf-server/data:/cmf-server/data -e MYIP=0.0.0.0 server_image
    ```
 
-6. After cmf-server container is up, start `ui-server`, Go to `cmf/ui` folder.
+6. After the cmf-server container is up, start `ui-server`. Go to `cmf/ui` folder.
    ```
    cd cmf/ui
    ```
@@ -120,9 +120,9 @@ There are two ways to start a cmf server -
    docker run --name ui-server -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 ui_image
    ```
       Note:
-      If you face issue regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
+      If you face issues regarding `Libzbar-dev` similar to the snapshot, add proxies to '/.docker/config.json'
 
-      ![Screentshot (115)](https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4)
+      ![Screenshot (115)](https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4)
 
       ```
       {
@@ -159,10 +159,10 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 | Method | URL                          | Description                                                              |
 |--------|------------------------------|------------------------------------------------------------------------  |
-| `Post` | `/mlmd_push`                 | Used to push Json Encoded data to cmf-server                             |
+| `Post` | `/mlmd_push`                 | Used to push JSON encoded data to cmf-server                             |
 | `Get`  | `/mlmd_pull/{pipeline_name}` | Retrieves a mlmd file from cmf-server                                    |
 | `Get`  | `/display_executions`                             | Retrieves all executions from cmf-server            |
-| `Get`  | `/display_artifacts/{pipeline_name}/{data_type}`  | Retrieves all artifacts from cmf-server for resp datat type             |
+| `Get`  | `/display_artifacts/{pipeline_name}/{data_type}`  | Retrieves all artifacts from cmf-server for resp data type             |
 | `Get`  | `/display_lineage/{lineage_type}/{pipeline_name}` | Creates lineage data from cmf-server            |
 | `Get`  | `/display_pipelines`                             | Retrieves all pipelines present in mlmd file            |
 

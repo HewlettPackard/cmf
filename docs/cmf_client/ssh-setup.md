@@ -1,14 +1,14 @@
 # SSH Remote Artifact Repo Setup
-## Steps to set up a SSH Remote Repo
+## Steps to set up an SSH Remote Repo
 SSH (Secure Shell) remote storage refers to using the SSH protocol to securely
 access and manage files and data on a remote server or storage system over a
 network. SSH is a cryptographic network protocol that allows secure
 communication and data transfer between a local computer and a remote server.
 
-Proceed with the following steps to set up a SSH Remote Repository:
+Proceed with the following steps to set up an SSH Remote Repository:
 
-1. Get started with initializing `project directory` with SSH repo.
-2. Check whether cmf is initialized in your project directory with following command.
+1. Initialize the `project directory` with an SSH remote.
+2. Check whether cmf is initialized in your project directory with the following command.
    ```
    cmf init show
    ```
@@ -26,7 +26,7 @@ Proceed with the following steps to set up a SSH Remote Repository:
         --cmf-server-url http://127.0.0.1:80
     ```
     > When running `cmf init sshremote`, ensure that the specified IP address allows access for \
-    the specified user ('XXXX'). If the IP address or user does not exist, this command will fail.
+    the specified user XXXX. If the IP address or user does not exist, this command will fail.
 
 4. Execute `cmf init show` to check the CMF configuration.
 5. To troubleshoot SSH permissions-related issues, check the `/etc/ssh/sshd_config` file on the

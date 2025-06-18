@@ -6,12 +6,12 @@
 >
 > - `Ubuntu-22.04 with python-3.10`
 
-This example demonstrates how CMF tracks a metadata associated with executions of various machine learning (ML)
+This example demonstrates how CMF tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
 ML steps, such as training and testing ML models. More comprehensive ML pipelines may include steps such as deploying a
-trained model and tracking its inference parameters (such as response latency, memory consumption etc.). This example,
-located [here](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) implements a simple
-pipeline consisting of four steps:
+trained model and tracking its inference parameters (such as response latency, memory consumption, etc.). This example,
+located [here](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started), implements a simple
+pipeline consisting of five steps:
 
 - The [parse](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py) step splits
   the [raw data](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started/artifacts) into
@@ -28,7 +28,7 @@ pipeline consisting of four steps:
   evaluates the performance and execution of the ML model trained in the `train` step. This step registers two input
   artifacts (ML model and test dataset) and one output artifact (performance metrics).
 - The last [query](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py) step
-  is displays each step of the pipeline's metadata as retrieved from the CMF server, aggregated over all executions.
+  displays each step of the pipeline's metadata as retrieved from the CMF server, aggregated over all executions.
   For example, if you rerun the pipeline again, the output will include not only metadata associated with the latest
   run, but also the metadata associated with previous runs.
 
@@ -36,7 +36,7 @@ pipeline consisting of four steps:
 ## Pre-requisites
 
 The initial setup requires creating a workspace directory that will contain all files for this example, a python
-virtual environment, and clone the CMF repository that contains source code and data for this example.
+virtual environment, and cloning the CMF repository that contains source code and data for this example.
 ```shell
 # Create workspace directory
 mkdir cmf_getting_started_example
@@ -53,14 +53,14 @@ pip install ./cmf
 
 ### Setup a cmf-server
 
-__cmf-server__ is a key interface for the user to explore and track their ML training runs allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.
+__cmf-server__ is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.
 
-Follow [here](./../cmf_server/cmf-server.md) to setup a common cmf-server.
+Follow [here](./../cmf_server/cmf-server.md) to set up a common cmf-server.
 
 ## Project initialization
 First, copy the code and data for this example into its own directory (that must be outside the CMF source tree). Execute the `cmf init` command
-specifying the Data Version Control (dvc) directory, the url of the git remote, address of the cmf server, and neo4j credentials along with the
-appropriate dvc backend for this project .
+specifying the Data Version Control (dvc) directory, the URL of the git remote, address of the cmf server, and neo4j credentials along with the
+appropriate dvc backend for this project.
 
 ```shell
 # Create a separate copy of the example project
@@ -76,7 +76,7 @@ Usage: cmf init local [-h] --path [path] -
                            --neo4j-password [neo4j_password]
                            --neo4j-uri [neo4j_uri]
 </pre>
-`cmf init local` initialises local directory as a cmf artifact repository.
+`cmf init local` initializes the local directory as a cmf artifact repository.
 ```
 cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
@@ -109,7 +109,7 @@ execution of these steps (and parent pipeline) will be recorded by the CMF.
 sh ./test_script.sh
 ```
 
-Metadata generated at each step of the people will be stored in a sqlite file named mlmd. Commits in this
+Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
 repository correspond to the creation of pipeline artifacts and can be viewed with `git log`.
 
 In production settings, the next steps would be to:
@@ -119,12 +119,12 @@ In production settings, the next steps would be to:
 Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
 
 ## Query
-The stored metadata can be explored using the query layer of cmf. The jupyter notebook
+The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
 [Query_Tester-base_mlmd.ipynb](../../examples/example-get-started/Query_Tester-base_mlmd.ipynb) demonstrates this
 functionality and can be adapted for your own uses.
 
 ## Clean Up
-Metadata is stored in sqlite file named "mlmd". To clean up, delete the "mlmd" file.
+Metadata is stored in a sqlite file named "mlmd". To clean up, delete the "mlmd" file.
 
 ## Steps to test dataslice
 Run the following command: `python test-data-slice.py`.
