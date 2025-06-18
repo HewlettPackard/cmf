@@ -92,8 +92,10 @@ class CmdMetadataExport(CmdBase):
                 if not json_file_name.endswith(".json"):
                     json_file_name = json_file_name+".json" # Added .json extention to json file name.
                 if os.path.exists(json_file_name):
+                    live.stop()
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":    # Overwrite file.
+                        live.start()
                         full_path_to_dump = self.create_full_path(current_directory, json_file_name)
                     else: 
                         raise NoChangesMadeInfo()
@@ -102,8 +104,10 @@ class CmdMetadataExport(CmdBase):
             else: 
                 # Checking whether a json file exists in the directory based on pipeline name.
                 if os.path.exists(f"{pipeline_name}.json"):
+                    live.stop()
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":
+                        live.start()
                         full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
                     else:
                         raise NoChangesMadeInfo()
