@@ -29,7 +29,7 @@ class CmdRepoPull(CmdBase):
     def git_pull(self):
         # Getting GitHub URL from cmf init command
         url = git_get_repo()
-        # Example url = https://github.com/ABC/my-repo
+        # Example url = https://github.com/ABC/my-repo OR https://github.com/ABC/my-repo.git
         # Check if the URL is a GitHub URL
         if "github.com" not in url:
             raise MsgFailure(msg_str="The repository URL is not a GitHub URL.")
@@ -38,7 +38,7 @@ class CmdRepoPull(CmdBase):
         # repo_owner = ABC, repo_name = my-repo
         url_parts = url.split("/")
         repo_owner = url_parts[-2]
-        repo_name = url_parts[-1]
+        repo_name = url_parts[-1].split(".")[0]
         
         # Getting the current branch name
         branch_name = git_get_branch()[0]
@@ -66,6 +66,7 @@ class CmdRepoPull(CmdBase):
             if artifact_pull_result.status == "success":
                 print(artifact_pull_result.handle())   # Print the message returned by the handle() method of the artifact_pull_result object.
                 print("Executing git pull command..")
+                live.stop()
                 return self.git_pull()
 
 
