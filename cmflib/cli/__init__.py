@@ -66,10 +66,8 @@ def main(argv=None):
             with Live(spinner, refresh_per_second=10, console=console, transient=True) as live:
                 msg = cmd.do_run(live)
                 print(msg.handle())
-        except Exception as e:
-            print(e)
-    except CmfResponse as e:  
-        print(e.handle())
+        except CmfResponse as e:  
+            print(e.handle())
     except CmfParserError:
         pass    
     except KeyboardInterrupt:
