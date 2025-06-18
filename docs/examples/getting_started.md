@@ -1,14 +1,14 @@
 # Getting Started
 
 ## Overview
-This example demonstrates how CMF tracks metadata associated of a machine learning (ML) pipeline. ML pipelines
+This example demonstrates how CMF tracks metadata associated with a machine learning (ML) pipeline. ML pipelines
 differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the inclusion of ML-specific steps,
 such as training and testing ML models which may have metrics associated with their execution. More comprehensive
 ML pipelines may include steps such as deploying a trained model and tracking its performance metrics (such as
 response latency, memory consumption etc.).
 
-This example trains a binary classifer (using a random forest architecture) on posts from Stack Overflow to identify
-whether the content is related to Python. The code and data is located
+This example trains a binary classifier (using a random forest architecture) on posts from Stack Overflow to identify
+whether the content is related to Python. The code and data are located
 [here](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started).  The pipeline here consists
 of four steps described below:
 
@@ -23,10 +23,10 @@ of four steps described below:
   this step to register two input artifacts (the parsed `train` and `test` datasets) and two output artifacts (the
   transformed `train` and `test` datasets).
 - The next [train](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/train.py) step
-  trains the RCF itself and saves the model. It registers one input artifact (the transformed `train`) and one output
+  trains the Random forest classifier (RFC) itself and saves the model. It registers one input artifact (the transformed `train`) and one output
   artifact (the trained ML model).
 - The fourth [test](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/test.py) step
-  evaluates the ML model trained in the third `train` step against the training datset itself. This is done by
+  evaluates the ML model trained in the third `train` step against the training dataset itself. This is done by
   computing the receiver operating (ROC) and precision recall (PRC) curves. Metrics derived from these curves are
   stored in JSON files. Calls to CMF register the two input artifacts (the trained ML model and the transformed
   `train` dataset) and two output artifacts (the ROC and PRC JSON files).
@@ -49,7 +49,7 @@ cd cmf_getting_started_example
 
 # Create and activate Python virtual environment (the Python version may need to be adjusted depending on your system)
 python -m venv cmf/
-source activate cmf/bin/activate
+source cmf/bin/activate
 
 # Clone the CMF project from GitHub and install CMF
 git clone https://github.com/HewlettPackard/cmf
@@ -96,7 +96,7 @@ cmf init local --path /home/XXXX/local-storage \
 ```
 
 > Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage and x.x.x.x
-> the address of of the CMF server
+> the address of the CMF server
 
 Required Arguments
 ```
@@ -122,15 +122,15 @@ described in the Overview section above.
 sh ./test_script.sh
 ```
 
-This script will run the pipeline and will store its metadata in a sqlite file named mlmd. Verify that all were completed by running the `git log` command. Each created artifact should be associated with its own commit.
+This script will run the pipeline and store its metadata in a sqlite file named `mlmd`. You can verify the execution by running the `git log` command. Note that, unlike previous versions, a commit is no longer created for every artifact. Instead, a single commit is made at the start and another at the end of the pipeline execution. When a dataset is logged, it is staged with `git add`, but the commit occurs only at the end.
 
-In typical produciton environments, the next steps would be to: (1) execute the `cmf artifact push` command to push the artifacts to the central artifact repository and (2) execute the `cmf metadata push` command to integrate the metadata of the generated artifacts on a common [cmf server](./../cmf_server/cmf-server.md).
+In typical production environments, the next steps would be to: (1) execute the `cmf artifact push` command to push the artifacts to the central artifact repository and (2) execute the `cmf metadata push` command to integrate the metadata of the generated artifacts on a common [cmf server](./../cmf_server/cmf-server.md).
 
 Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
 
 
 ## Query
-The stored metadata can be explored using the query layer. An xample Jupyter notebook
+The stored metadata can be explored using the query layer. An example Jupyter notebook
 [Query_Tester-base_mlmd.ipynb](../../examples/example-get-started/Query_Tester-base_mlmd.ipynb) can be found in this directory.
 
 ## Clean Up
