@@ -1289,34 +1289,74 @@ They accept and return JSON-encoded request bodies and responses and return stan
 </thead>
 <tbody>
 <tr>
-<td><code>Post</code></td>
+<td><code>POST</code></td>
 <td><code>/mlmd_push</code></td>
-<td>Used to push Json Encoded data to cmf-server</td>
+<td>Pushes JSON-encoded data to the cmf-server.</td>
 </tr>
 <tr>
-<td><code>Get</code></td>
+<td><code>GET</code></td>
 <td><code>/mlmd_pull/{pipeline_name}</code></td>
-<td>Retrieves a mlmd file from cmf-server</td>
+<td>Retrieves an MLMD file from the cmf-server.</td>
 </tr>
 <tr>
-<td><code>Get</code></td>
-<td><code>/display_executions</code></td>
-<td>Retrieves all executions from cmf-server</td>
+<td><code>GET</code></td>
+<td><code>/executions/{pipeline_name}</code></td>
+<td>Retrieves all executions from the cmf-server.</td>
 </tr>
 <tr>
-<td><code>Get</code></td>
-<td><code>/display_artifacts/{pipeline_name}/{data_type}</code></td>
-<td>Retrieves all artifacts from cmf-server for resp datat type</td>
+<td><code>GET</code></td>
+<td><code>/list-of-executions/{pipeline_name}</code></td>
+<td>Retrieves a list of execution types.</td>
 </tr>
 <tr>
-<td><code>Get</code></td>
-<td><code>/display_lineage/{lineage_type}/{pipeline_name}</code></td>
-<td>Creates lineage data from cmf-server</td>
+<td><code>GET</code></td>
+<td><code>/execution-lineage/tangled-tree/{uuid}/{pipeline_name}</code></td>
+<td>Retrieves a dictionary of nodes and links for a given execution type.</td>
 </tr>
 <tr>
-<td><code>Get</code></td>
-<td><code>/display_pipelines</code></td>
-<td>Retrieves all pipelines present in mlmd file</td>
+<td><code>GET</code></td>
+<td><code>/artifacts/{pipeline_name}/{type}</code></td>
+<td>Retrieves all artifacts of the specified type from the cmf-server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/artifact-lineage/tangled-tree/{pipeline_name}</code></td>
+<td>Retrieves a nested list of dictionaries with <code>id</code> and <code>parents</code> keys for artifacts.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/artifact_types</code></td>
+<td>Retrieves a list of artifact types.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/pipelines</code></td>
+<td>Retrieves all pipelines present in the MLMD file.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/tensorboard</code></td>
+<td>Uploads TensorBoard logs to the cmf-server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/model-card</code></td>
+<td>Retrieves model data, input/output artifacts, and executions for a model.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/artifact-execution-lineage/tangled-tree/{pipeline_name}</code></td>
+<td>Retrieves a nested list of dictionaries with <code>id</code> and <code>parents</code> keys for artifacts and executions.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/python-env</code></td>
+<td>Pushes Python environment data to the cmf-server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/python-env</code></td>
+<td>Retrieves environment data from the <code>/cmf-server/data/env</code> folder.</td>
 </tr>
 </tbody>
 </table>

@@ -925,90 +925,90 @@
 
 <h1 id="getting-started-with-cmf-client-commands">Getting started with cmf-client commands<a class="headerlink" href="#getting-started-with-cmf-client-commands" title="Permanent link">&para;</a></h1>
 <h1 id="cmf">cmf<a class="headerlink" href="#cmf" title="Permanent link">&para;</a></h1>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
+<div class="highlight"><pre><span></span><code>Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
 </code></pre></div>
-The <code>cmf</code> command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.</p>
+<p>The <code>cmf</code> command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.</p>
 <h2 id="cmf-init">cmf init<a class="headerlink" href="#cmf-init" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf init [-h] {minioS3,amazonS3,local,sshremote,osdfremote,show}
+<div class="highlight"><pre><span></span><code>Usage: cmf init [-h] {minioS3, amazonS3, local, sshremote, osdfremote, show}
 </code></pre></div>
-<code>cmf init</code> initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available. Additionally, user can provide cmf-server url.</p>
+<p><code>cmf init</code> initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available. Additionally, user can provide cmf-server url.</p>
 <h3 id="cmf-init-show">cmf init show<a class="headerlink" href="#cmf-init-show" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf init show
+<div class="highlight"><pre><span></span><code>Usage: cmf init show
 </code></pre></div>
-<code>cmf init show</code> displays current cmf configuration.</p>
+<p><code>cmf init show</code> displays current cmf configuration.</p>
 <h3 id="cmf-init-minios3">cmf init minioS3<a class="headerlink" href="#cmf-init-minios3" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf init minioS3 [-h] --url [url] 
+<div class="highlight"><pre><span></span><code>Usage: cmf init minioS3 [-h] --url [url]
                              --endpoint-url [endpoint_url]
-                             --access-key-id [access_key_id] 
-                             --secret-key [secret_key] 
-                             --git-remote-url[git_remote_url]  
+                             --access-key-id [access_key_id]
+                             --secret-key [secret_key]
+                             --git-remote-url[git_remote_url]
                              --cmf-server-url [cmf_server_url]
                              --neo4j-user [neo4j_user]
                              --neo4j-password [neo4j_password]
                              --neo4j-uri [neo4j_uri]
 </code></pre></div>
-<code>cmf init minioS3</code> configures Minio S3 bucket as a cmf artifact repository. Refer <a href="../minio-server/#steps-to-set-up-a-minio-server">minio-server.md</a> to set up a minio server.
+<p><code>cmf init minioS3</code> configures Minio S3 bucket as a cmf artifact repository. Refer <a href="../minio-server/#steps-to-set-up-a-minio-server">minio-server.md</a> to set up a minio server.</p>
 <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
-</code></pre></div></p>
+</code></pre></div>
 <blockquote>
 <p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.</p>
 </blockquote>
-<p>Required Arguments
-<div class="highlight"><pre><span></span><code>  --url [url]                           Specify bucket url.
-  --endpoint-url [endpoint_url]         Specify the endpoint url of minio UI.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  --url [url]                           Specify MinioS3 bucket url.
+  --endpoint-url [endpoint_url]         Specify the endpoint url which is used to accedd Minio&#39;s locally/remotely running UI.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
-  --git-remote-url [git_remote_url]     Specify git repo url.
+  --git-remote-url [git_remote_url]     Specify git repo url. eg: https://github.com/XXX/example.git
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
-</code></pre></div></p>
+</code></pre></div>
 <h3 id="cmf-init-local">cmf init local<a class="headerlink" href="#cmf-init-local" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf init local [-h] --path [path] -
+<div class="highlight"><pre><span></span><code>Usage: cmf init local [-h] --path [path] -
                            --git-remote-url [git_remote_url]
                            --cmf-server-url [cmf_server_url]
                            --neo4j-user [neo4j_user]
                            --neo4j-password [neo4j_password]
                            --neo4j-uri [neo4j_uri]
 </code></pre></div>
-<code>cmf init local</code> initialises local directory as a cmf artifact repository.
+<p><code>cmf init local</code> initialises local directory as a cmf artifact repository.</p>
 <div class="highlight"><pre><span></span><code>cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
-</code></pre></div></p>
+</code></pre></div>
 <blockquote>
 <p>Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage</p>
 </blockquote>
-<p>Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  --path [path]                         Specify local directory path.
-  --git-remote-url [git_remote_url]     Specify git repo url.
+  --git-remote-url [git_remote_url]     Specify git repo url. eg: https://github.com/XXX/example.git
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
-</code></pre></div></p>
+</code></pre></div>
 <h3 id="cmf-init-amazons3">cmf init amazonS3<a class="headerlink" href="#cmf-init-amazons3" title="Permanent link">&para;</a></h3>
-<p>Before setting up, obtain AWS temporary security credentials using the AWS Security Token Service (STS). These credentials are short-term and can last from minutes to hours. They are dynamically generated and provided to trusted users upon request, and expire after use. Users with appropriate permissions can request new credentials before or upon expiration. For further information, refer to the  <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html">Temporary security credentials in IAM</a> page.</p>
-<p>To retrieve temporary security credentials using multi-factor authentication (MFA) for an IAM user, you can use the below command.
+<p>Before setting up, obtain AWS temporary security credentials using the AWS Security Token Service (STS). These credentials are short-term and can last from minutes to hours. They are dynamically generated and provided to trusted users upon request, and expire after use. Users with appropriate permissions can request new credentials before or upon expiration. For further information, refer to the <a href="https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp.html">Temporary security credentials in IAM</a> page.</p>
+<p>To retrieve temporary security credentials using multi-factor authentication (MFA) for an IAM user, you can use the below command.</p>
 <div class="highlight"><pre><span></span><code>aws sts get-session-token --duration-seconds &lt;duration&gt; --serial-number &lt;MFA_device_serial_number&gt; --token-code &lt;MFA_token_code&gt;
 </code></pre></div>
-Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  --serial-number                Specifies the serial number of the MFA device associated with the IAM user.
   --token-code                   Specifies the one-time code generated by the MFA device.
-</code></pre></div></p>
-<p>Optional Arguments
+</code></pre></div>
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  --duration-seconds             Specifies the duration for which the temporary credentials will be valid, in seconds.
-</code></pre></div></p>
-<p>Example
+</code></pre></div>
+<p>Example</p>
 <div class="highlight"><pre><span></span><code>aws sts get-session-token --duration-seconds 3600 --serial-number arn:aws:iam::123456789012:mfa/user --token-code 123456
-</code></pre></div></p>
-<p>This will return output like </p>
-<p><div class="highlight"><pre><span></span><code>{
+</code></pre></div>
+<p>This will return output like</p>
+<div class="highlight"><pre><span></span><code>{
     &quot;Credentials&quot;: {
         &quot;AccessKeyId&quot;: &quot;ABCDEFGHIJKLMNO123456&quot;,
         &quot;SecretAccessKey&quot;: &quot;PQRSTUVWXYZ789101112131415&quot;,
@@ -1017,253 +1017,252 @@ Required Arguments
     }
 }
 </code></pre></div>
-Initialization of amazonS3
-<div class="highlight"><pre><span></span><code>Usage: cmf init amazonS3 [-h] --url [url] 
+<p>Initialization of amazonS3</p>
+<div class="highlight"><pre><span></span><code>Usage: cmf init amazonS3 [-h] --url [url]
                               --access-key-id [access_key_id]
                               --secret-key [secret_key]
                               --session-token [session_token]
                               --git-remote-url [git_remote_url]
                               --cmf-server-url [cmf_server_url]
                               --neo4j-user [neo4j_user]
-                              --neo4j-password neo4j_password]
+                              --neo4j-password [neo4j_password]
                               --neo4j-uri [neo4j_uri]
 </code></pre></div>
-<code>cmf init amazonS3</code> initialises Amazon S3 bucket as a CMF artifact repository.
-<div class="highlight"><pre><span></span><code>cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687 
-</code></pre></div></p>
+<p><code>cmf init amazonS3</code> initialises Amazon S3 bucket as a CMF artifact repository.</p>
+<div class="highlight"><pre><span></span><code>cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+</code></pre></div>
 <blockquote>
 <p>Here, use the --access-key-id, --secret-key and --session-token generated from the <code>aws sts</code> command which is mentioned above.</p>
 <p>The bucket-name must exist within Amazon S3 before executing the <code>cmf artifact push</code> command.</p>
 </blockquote>
-<p>Required Arguments
-<div class="highlight"><pre><span></span><code>  --url [url]                           Specify bucket url.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  --url [url]                           Specify Amazon S3 bucket url.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
-  --session-token                       Specify session token. (default: )
-  --git-remote-url [git_remote_url]     Specify git repo url.
+  --session-token                       Specify session token. (default: None)
+  --git-remote-url [git_remote_url]     Specify git repo url. eg: https://github.com/XXX/example.git
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
-</code></pre></div></p>
+</code></pre></div>
 <h3 id="cmf-init-sshremote">cmf init sshremote<a class="headerlink" href="#cmf-init-sshremote" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf init sshremote [-h] --path [path] 
+<div class="highlight"><pre><span></span><code>Usage: cmf init sshremote [-h] --path [path]
                                --user [user]
                                --port [port]
-                               --password [password]  
-                               --git-remote-url [git_remote_url] 
+                               --password [password]
+                               --git-remote-url [git_remote_url]
                                --cmf-server-url [cmf_server_url]
                                --neo4j-user [neo4j_user]
-                               --neo4j-password neo4j_password]
+                               --neo4j-password [neo4j_password]
                                --neo4j-uri [neo4j_uri]
 </code></pre></div>
-<code>cmf init sshremote</code> command initialises remote ssh directory as a cmf artifact repository.
+<p><code>cmf init sshremote</code> command initialises remote ssh directory as a cmf artifact repository.</p>
 <div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div>
-Required Arguments
-<div class="highlight"><pre><span></span><code>  --path [path]                           Specify ssh directory path.
-  --user [user]                           Specify user.
-  --port [port]                           Specify Port.
-  --password [password]                   Specify password.
-  --git-remote-url [git_remote_url]       Specify git repo url.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  --path [path]                           Specify remote ssh directory path.
+  --user [user]                           Specify username.
+  --port [port]                           Specify port.
+  --password [password]                   Specify password. This will be saved only on local.
+  --git-remote-url [git_remote_url]       Specify git repo url. eg: https://github.com/XXX/example.git
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
-</code></pre></div></p>
+</code></pre></div>
 <h3 id="cmf-init-osdfremote">cmf init osdfremote<a class="headerlink" href="#cmf-init-osdfremote" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf init osdfremote [-h] --path [path] 
+<div class="highlight"><pre><span></span><code>Usage: cmf init osdfremote [-h] --path [path]
                              --cache [cache]
                              --key-id [key_id]
-                             --key-path [key_path] 
-                             --key-issuer [key_issuer] 
-                             --git-remote-url[git_remote_url]  
+                             --key-path [key_path]
+                             --key-issuer [key_issuer]
+                             --git-remote-url[git_remote_url]
                              --cmf-server-url [cmf_server_url]
                              --neo4j-user [neo4j_user]
                              --neo4j-password [neo4j_password]
                              --neo4j-uri [neo4j_uri]
 </code></pre></div>
-<code>cmf init osdfremote</code> configures a OSDF Origin as a cmf artifact repository.
-<div class="highlight"><pre><span></span><code>cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer]] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+<p><code>cmf init osdfremote</code> configures a OSDF Origin as a cmf artifact repository.</p>
+<div class="highlight"><pre><span></span><code>cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div>
-Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  --path [path]                        Specify FQDN for OSDF origin including including port and directory path if any
   --key-id [key_id]                    Specify key_id for provided private key. eg. b2d3
   --key-path [key_path]                Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem
   --key-issuer [key_issuer]            Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX
   --git-remote-url [git_remote_url]    Specify git repo url. eg: https://github.com/XXX/example.git
 </code></pre></div>
-Optional Arguments
-<div class="highlight"><pre><span></span><code>  --cache [cache]                     Specify FQDN for OSDF cache including including port and directory path if any
-  -h, --help                          show this help message and exit
+<p>Optional Arguments</p>
+<div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
   --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
-</code></pre></div></p>
+</code></pre></div>
 <h2 id="cmf-artifact">cmf artifact<a class="headerlink" href="#cmf-artifact" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf artifact [-h] {pull,push,list}
+<div class="highlight"><pre><span></span><code>Usage: cmf artifact [-h] {pull, push, list}
 </code></pre></div>
-<code>cmf artifact</code> pull, push or list artifacts from or to the user configured artifact repository, respectively.</p>
+<p><code>cmf artifact</code> pull, push or list artifacts from or to the user configured artifact repository, respectively.</p>
 <h3 id="cmf-artifact-pull">cmf artifact pull<a class="headerlink" href="#cmf-artifact-pull" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] -a [artifact_name]
+<div class="highlight"><pre><span></span><code>Usage: cmf artifact pull [-h] -p [pipeline_name] -f [file_name] -a [artifact_name]
 </code></pre></div>
-<code>cmf artifact pull</code> command pull artifacts from the user configured repository to the user's local machine.
+<p><code>cmf artifact pull</code> command pull artifacts from the user configured repository to the user's local machine.</p>
 <div class="highlight"><pre><span></span><code>cmf artifact pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -a &#39;artifact-name&#39;
 </code></pre></div>
-Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
   -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name only; don&#39;t use folder name or absolute path.
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
-</code></pre></div></p>
-<h3 id="cmf-artifact-push">cmf artifact push<a class="headerlink" href="#cmf-artifact-push" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
+  -f [file_name], --file_name [file_name]               Specify input metadata file name.
 </code></pre></div>
-<code>cmf artifact push</code> command push artifacts from the user's local machine to the user configured artifact repository.
+<h3 id="cmf-artifact-push">cmf artifact push<a class="headerlink" href="#cmf-artifact-push" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
+</code></pre></div>
+<p><code>cmf artifact push</code> command push artifacts from the user's local machine to the user configured artifact repository.</p>
 <div class="highlight"><pre><span></span><code>cmf artifact push -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39;
 </code></pre></div>
-Required Arguments
-<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]   Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
-  -f [file_name], --file-name [file_name]               Specify mlmd file name.
-</code></pre></div></p>
+<p>Optional Arguments</p>
+<div class="highlight"><pre><span></span><code>  -h, --help                                             show this help message and exit.
+  -f [file_name], --file_name [file_name]                Specify input metadata file name.
+</code></pre></div>
 <h3 id="cmf-artifact-list">cmf artifact list<a class="headerlink" href="#cmf-artifact-list" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name] 
+<div class="highlight"><pre><span></span><code>Usage: cmf artifact list [-h] -p [pipeline_name] -f [file_name] -a [artifact_name]
 </code></pre></div>
-<code>cmf artifact list</code> command displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
-<div class="highlight"><pre><span></span><code>cmf artifact list -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39; -a &#39;artifact_name&#39; 
+<p><code>cmf artifact list</code> command displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</p>
+<div class="highlight"><pre><span></span><code>cmf artifact list -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39; -a &#39;artifact_name&#39;
 </code></pre></div>
-Required Arguments
-<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]   Specify Pipeline name.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]   Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
-  -f [file_name], --file-name [file_name]               Specify the absolute or relative path for the input MLMD file. 
-  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.                                                   
-</code></pre></div></p>
+  -f [file_name], --file_name [file_name]               Specify input metadata file name.
+  -a [artifact_name], --artifact_name [artifact_name]   Specify the artifact name to display detailed information about the given artifact name.
+</code></pre></div>
 <h2 id="cmf-metadata">cmf metadata<a class="headerlink" href="#cmf-metadata" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata [-h] {pull,push,export}
+<div class="highlight"><pre><span></span><code>Usage: cmf metadata [-h] {pull, push, export}
 </code></pre></div>
-<code>cmf metadata</code> push, pull or export the metadata file to and from the cmf-server, respectively.</p>
+<p><code>cmf metadata</code> push, pull or export the metadata file to and from the cmf-server, respectively.</p>
 <h3 id="cmf-metadata-pull">cmf metadata pull<a class="headerlink" href="#cmf-metadata-pull" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_uuid]
+<div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_uuid]
 </code></pre></div>
-<code>cmf metadata pull</code> command pulls the metadata file from the cmf-server to the user's local machine.
+<p><code>cmf metadata pull</code> command pulls the metadata file from the cmf-server to the user's local machine.</p>
 <div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
 </code></pre></div>
-Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>-h, --help                                                show this help message and exit.
 -e [exec_uuid], --execution_uuid [exec_uuid]              Specify execution uuid.
--f [file_name], --file_name [file_name]                   Specify the desired file name with full path for the MLMD file(either relative or absolute).
-</code></pre></div></p>
-<h3 id="cmf-metadata-push">cmf metadata push<a class="headerlink" href="#cmf-metadata-push" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
+-f [file_name], --file_name [file_name]                   Specify output metadata file name.
 </code></pre></div>
-<code>cmf metadata push</code> command pushes the metadata file from the local machine to the cmf-server.
+<h3 id="cmf-metadata-push">cmf metadata push<a class="headerlink" href="#cmf-metadata-push" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard_path]
+</code></pre></div>
+<p><code>cmf metadata push</code> command pushes the metadata file from the local machine to the cmf-server.</p>
 <div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; -t &#39;/path/to/tensorboard-log&#39;
 </code></pre></div>
-Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>-p [pipeline_name], --pipeline_name [pipeline_name]     Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                             show this help message and exit.
-  -f [file_name], --file_name [file_name]                Specify mlmd file name.
-  -e [exec_uuid], --execution [exec_uuid]                Specify execution uuid.
-  -t [tensorboard], --tensorboard [tensorboard]          Specify path to tensorboard logs for the pipeline.
-</code></pre></div></p>
-<h3 id="cmf-metadata-export">cmf metadata export<a class="headerlink" href="#cmf-metadata-export" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_name]
+<p>Optional Arguments</p>
+<div class="highlight"><pre><span></span><code>  -h, --help                                                            show this help message and exit.
+  -f [file_name], --file_name [file_name]                               Specify input metadata file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                          Specify execution uuid.
+  -t [tensorboard_path], --tensorboard_path [tensorboard_path]          Specify path to tensorboard logs for the pipeline.
 </code></pre></div>
-<code>cmf metadata export</code> export local mlmd's metadata in json format to a json file.
+<h3 id="cmf-metadata-export">cmf metadata export<a class="headerlink" href="#cmf-metadata-export" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Usage: cmf metadata export [-h] -p [pipeline_name] -j [json_file_name] -f [file_name]
+</code></pre></div>
+<p><code>cmf metadata export</code> export local metadata's metadata in json format to a json file.</p>
 <div class="highlight"><pre><span></span><code>cmf metadata export -p &#39;pipeline-name&#39; -j &#39;/path/to/json-file-name&#39; -f &#39;/path/to/mlmd-file-name&#39;
 </code></pre></div>
-Required Arguments
+<p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>-p [pipeline_name], --pipeline_name [pipeline_name]        Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                                               show this help message and exit.
-  -f [file_name], --file_name [file_name]                  Specify the absolute or relative path for the input MLMD file.
+  -f [file_name], --file_name [file_name]                  Specify the absolute or relative path for the input metadata file.
   -j [json_file_name], --json_file_name [json_file_name]   Specify output json file name with full path.
-</code></pre></div></p>
+</code></pre></div>
 <h2 id="cmf-execution">cmf execution<a class="headerlink" href="#cmf-execution" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf execution [-h] {list}
+<div class="highlight"><pre><span></span><code>Usage: cmf execution [-h] {list}
 </code></pre></div>
-<code>cmf execution</code> command to displays executions from the MLMD file.</p>
-<h3 id="cmf-executions-list">cmf executions list<a class="headerlink" href="#cmf-executions-list" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_uuid] 
+<p><code>cmf execution</code> command to displays executions from the metadata file.</p>
+<h3 id="cmf-execution-list">cmf execution list<a class="headerlink" href="#cmf-execution-list" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>Usage: cmf execution list [-h] -p [pipeline_name] -f [file_name] -e [execution_uuid]
 </code></pre></div>
-<code>cmf execution list</code> command to displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
-<div class="highlight"><pre><span></span><code>cmf execution list -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; 
+<p><code>cmf execution list</code> command to displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</p>
+<div class="highlight"><pre><span></span><code>cmf execution list -p &#39;pipeline_name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
 </code></pre></div>
-Required Arguments
-<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]       Specify Pipeline name.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]       Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                                show this help message and exit.
-  --f [file_name], --file-name [file_name]                  Specify the absolute or relative path for the input MLMD file.
-  -e [exe_uuid], --execution_id [exe_uuid]                  Specify the execution uuid to retrieve execution.
-</code></pre></div></p>
+<p>Optional Arguments</p>
+<div class="highlight"><pre><span></span><code>  -h, --help                                                    show this help message and exit.
+  --f [file_name], --file_name [file_name]                      Specify input metadata file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                  Specify the execution uuid to retrieve execution.
+</code></pre></div>
 <h2 id="cmf-pipeline">cmf pipeline<a class="headerlink" href="#cmf-pipeline" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf pipeline [-h] {list}
+<div class="highlight"><pre><span></span><code>Usage: cmf pipeline [-h] {list}
 </code></pre></div>
-<code>cmf pipeline</code> command displays a list of pipeline name(s) from the available mlmd file.</p>
+<p><code>cmf pipeline</code> command displays a list of pipeline name(s) from the available metadatafile.</p>
 <h3 id="cmf-pipeline-list">cmf pipeline list<a class="headerlink" href="#cmf-pipeline-list" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf pipeline list [-h] -f [file_name]
+<div class="highlight"><pre><span></span><code>Usage: cmf pipeline list [-h] -f [file_name]
 </code></pre></div>
-<code>cmf pipeline list</code> command displays a list of pipeline name(s) from the available mlmd file.
+<p><code>cmf pipeline list</code> command displays a list of pipeline name(s) from the available metadatafile.</p>
 <div class="highlight"><pre><span></span><code>cmf pipeline list -f &#39;/path/to/mlmd-file-name&#39;
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
-  --f [file_name], --file-name [file_name]              Specify the absolute or relative path for the input MLMD file.
-</code></pre></div></p>
+  --f [file_name], --file_name [file_name]              Specify input metadata file name.
+</code></pre></div>
 <h2 id="cmf-repo">cmf repo<a class="headerlink" href="#cmf-repo" title="Permanent link">&para;</a></h2>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf repo [-h] {push, pull}
+<div class="highlight"><pre><span></span><code>Usage: cmf repo [-h] {push, pull}
 </code></pre></div>
-<code>cmf repo</code> command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.</p>
+<p><code>cmf repo</code> command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.</p>
 <h3 id="cmf-repo-push">cmf repo push<a class="headerlink" href="#cmf-repo-push" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard]
+<div class="highlight"><pre><span></span><code>Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard_path]
 </code></pre></div>
-<code>cmf repo push</code> command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+<p><code>cmf repo push</code> command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.</p>
 <div class="highlight"><pre><span></span><code>cmf repo push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; -t &#39;tensorboard_log_path&#39;
 </code></pre></div>
-Required Arguments
-<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]            Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
-<div class="highlight"><pre><span></span><code>  -h, --help                                                     show this help message and exit.
-  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
-  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
-  -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
-</code></pre></div></p>
+<p>Optional Arguments</p>
+<div class="highlight"><pre><span></span><code>  -h, --help                                                                    show this help message and exit.
+  -f [file_name], --file_name [file_name]                                       Specify input metadata file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                                  Specify execution uuid.
+  -t [tensorboard_path], --tensorboard_path [tensorboard_path]                  Specify path to tensorboard logs for the pipeline.
+</code></pre></div>
 <h3 id="cmf-repo-pull">cmf repo pull<a class="headerlink" href="#cmf-repo-pull" title="Permanent link">&para;</a></h3>
-<p><div class="highlight"><pre><span></span><code>Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid]
+<div class="highlight"><pre><span></span><code>Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid]
 </code></pre></div>
-<code>cmf repo pull</code> command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+<p><code>cmf repo pull</code> command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.</p>
 <div class="highlight"><pre><span></span><code>cmf repo pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
 </code></pre></div>
-Required Arguments
-<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline-name [pipeline_name]            Specify Pipeline name.
+<p>Required Arguments</p>
+<div class="highlight"><pre><span></span><code>  -p [pipeline_name], --pipeline_name [pipeline_name]            Specify Pipeline name.
 </code></pre></div>
-Optional Arguments
+<p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                                                     show this help message and exit.
-  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -f [file_name], --file_name [file_name]                        Specify output metadata file name.
   -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
-</code></pre></div></p>
+</code></pre></div>
 
 
 

@@ -909,6 +909,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cmflib.cmf.metadata_export" class="md-nav__link">
+    <span class="md-ellipsis">
+      metadata_export
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cmflib.cmf.artifact_pull" class="md-nav__link">
     <span class="md-ellipsis">
       artifact_pull
@@ -930,6 +939,51 @@
   <a href="#cmflib.cmf.artifact_push" class="md-nav__link">
     <span class="md-ellipsis">
       artifact_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_list
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.pipeline_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      pipeline_list
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.execution_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      execution_list
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.repo_push" class="md-nav__link">
+    <span class="md-ellipsis">
+      repo_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.repo_pull" class="md-nav__link">
+    <span class="md-ellipsis">
+      repo_pull
     </span>
   </a>
   
@@ -1209,6 +1263,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cmflib.cmf.metadata_export" class="md-nav__link">
+    <span class="md-ellipsis">
+      metadata_export
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#cmflib.cmf.artifact_pull" class="md-nav__link">
     <span class="md-ellipsis">
       artifact_pull
@@ -1230,6 +1293,51 @@
   <a href="#cmflib.cmf.artifact_push" class="md-nav__link">
     <span class="md-ellipsis">
       artifact_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.artifact_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      artifact_list
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.pipeline_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      pipeline_list
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.execution_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      execution_list
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.repo_push" class="md-nav__link">
+    <span class="md-ellipsis">
+      repo_push
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cmflib.cmf.repo_pull" class="md-nav__link">
+    <span class="md-ellipsis">
+      repo_pull
     </span>
   </a>
   
@@ -3348,9 +3456,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1671</span>
-<span class="normal">1672</span>
-<span class="normal">1673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1673</span>
 <span class="normal">1674</span>
 <span class="normal">1675</span>
 <span class="normal">1676</span>
@@ -3359,7 +3465,8 @@ Returns:
 <span class="normal">1679</span>
 <span class="normal">1680</span>
 <span class="normal">1681</span>
-<span class="normal">1682</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init_show</span><span class="p">():</span>
+<span class="normal">1682</span>
+<span class="normal">1683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init_show</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes and shows details of the CMF command. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -3368,7 +3475,6 @@ Returns:
 <span class="sd">    Returns: </span>
 <span class="sd">       Output from the _cmf_cmd_init function. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">output</span><span class="o">=</span><span class="n">_cmf_cmd_init</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
@@ -3400,7 +3506,7 @@ Example:
            <span class="p">)</span>
 </code></pre></div>
 Args: 
-   type: Type of repository ("local", "minioS3", "amazonS3", "sshremote")
+   type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
    path: Path for the local repository. 
    git_remote_url: Git remote URL for version control.
    cmf_server_url: CMF server URL.
@@ -3426,9 +3532,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1684</span>
-<span class="normal">1685</span>
-<span class="normal">1686</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1686</span>
 <span class="normal">1687</span>
 <span class="normal">1688</span>
 <span class="normal">1689</span>
@@ -3597,7 +3701,14 @@ Returns:
 <span class="normal">1852</span>
 <span class="normal">1853</span>
 <span class="normal">1854</span>
-<span class="normal">1855</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="normal">1855</span>
+<span class="normal">1856</span>
+<span class="normal">1857</span>
+<span class="normal">1858</span>
+<span class="normal">1859</span>
+<span class="normal">1860</span>
+<span class="normal">1861</span>
+<span class="normal">1862</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">cmf_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -3632,7 +3743,7 @@ Returns:
 <span class="sd">               )</span>
 <span class="sd">    ```</span>
 <span class="sd">    Args: </span>
-<span class="sd">       type: Type of repository (&quot;local&quot;, &quot;minioS3&quot;, &quot;amazonS3&quot;, &quot;sshremote&quot;)</span>
+<span class="sd">       type: Type of repository (&quot;local&quot;, &quot;minioS3&quot;, &quot;amazonS3&quot;, &quot;sshremote&quot;, &quot;osdfremote&quot;)</span>
 <span class="sd">       path: Path for the local repository. </span>
 <span class="sd">       git_remote_url: Git remote URL for version control.</span>
 <span class="sd">       cmf_server_url: CMF server URL.</span>
@@ -3689,7 +3800,12 @@ Returns:
     <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s2">&quot;local&quot;</span> <span class="ow">and</span> <span class="n">path</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span>  <span class="n">git_remote_url</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize local repository&quot;&quot;&quot;</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">_init_local</span><span class="p">(</span>
-            <span class="n">path</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="p">,</span> <span class="n">neo4j_uri</span>
+            <span class="n">path</span><span class="p">,</span> 
+            <span class="n">git_remote_url</span><span class="p">,</span> 
+            <span class="n">cmf_server_url</span><span class="p">,</span> 
+            <span class="n">neo4j_user</span><span class="p">,</span> 
+            <span class="n">neo4j_password</span><span class="p">,</span> 
+            <span class="n">neo4j_uri</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">status_args</span> <span class="o">!=</span> <span class="p">[]:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;There are non-related arguments: &quot;</span><span class="o">+</span><span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">status_args</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;.Please remove them.&quot;</span><span class="p">)</span>
@@ -3779,20 +3895,20 @@ Returns:
 
 
 <h2 id="cmflib.cmf.metadata_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Pushes MLMD file to CMF-server.
+        <p>Pushes metadata file to CMF-server.
 Example:
 <div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;mlmd_file&quot;</span><span class="p">,</span> <span class="s2">&quot;eg_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;tensorboard_log&quot;</span><span class="p">)</span>
 </code></pre></div>
 Args:
     pipeline_name: Name of the pipeline.
-    filepath: Path to the MLMD file.
+    file_name: Specify input metadata file name.
     execution_uuid: Optional execution UUID.
     tensorboard_path: Path to tensorboard logs.</p>
 
@@ -3839,24 +3955,24 @@ Args:
 <span class="normal">1574</span>
 <span class="normal">1575</span>
 <span class="normal">1576</span>
-<span class="normal">1577</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes MLMD file to CMF-server.</span>
+<span class="normal">1577</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes metadata file to CMF-server.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
 <span class="sd">         result = metadata_push(&quot;example_pipeline&quot;, &quot;mlmd_file&quot;, &quot;eg_execution_uuid&quot;, &quot;tensorboard_log&quot;)</span>
 <span class="sd">    ```</span>
 <span class="sd">    Args:</span>
 <span class="sd">        pipeline_name: Name of the pipeline.</span>
-<span class="sd">        filepath: Path to the MLMD file.</span>
+<span class="sd">        file_name: Specify input metadata file name.</span>
 <span class="sd">        execution_uuid: Optional execution UUID.</span>
 <span class="sd">        tensorboard_path: Path to tensorboard logs.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        Response output from the _metadata_push function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments:  pipeline_name</span>
-    <span class="c1"># Optional arguments: Execution_UUID, filepath (mlmd file path), tensorboard_path</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">)</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: execution_UUID, file_name, tensorboard_path</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3868,20 +3984,20 @@ Args:
 
 
 <h2 id="cmflib.cmf.metadata_pull" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_pull" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Pulls MLMD file from CMF-server. 
+        <p>Pulls metadata file from CMF-server. 
 Example: 
 <div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;eg_execution_uuid&quot;</span><span class="p">)</span> 
 </code></pre></div>
 Args: 
    pipeline_name: Name of the pipeline. 
-   filepath: File path to store the MLMD file. 
+   file_name: Specify output metadata file name.
    execution_uuid: Optional execution UUID. 
 Returns: 
    Message from the _metadata_pull function.</p>
@@ -3889,8 +4005,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1579</span>
-<span class="normal">1580</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1580</span>
 <span class="normal">1581</span>
 <span class="normal">1582</span>
 <span class="normal">1583</span>
@@ -3905,22 +4020,87 @@ Returns:
 <span class="normal">1592</span>
 <span class="normal">1593</span>
 <span class="normal">1594</span>
-<span class="normal">1595</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls MLMD file from CMF-server. </span>
+<span class="normal">1595</span>
+<span class="normal">1596</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls metadata file from CMF-server. </span>
 <span class="sd">     Example: </span>
 <span class="sd">     ```python </span>
 <span class="sd">          result = metadata_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;eg_execution_uuid&quot;) </span>
 <span class="sd">     ``` </span>
 <span class="sd">     Args: </span>
 <span class="sd">        pipeline_name: Name of the pipeline. </span>
-<span class="sd">        filepath: File path to store the MLMD file. </span>
+<span class="sd">        file_name: Specify output metadata file name.</span>
 <span class="sd">        execution_uuid: Optional execution UUID. </span>
 <span class="sd">     Returns: </span>
 <span class="sd">        Message from the _metadata_pull function. </span>
 <span class="sd">     &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments:  pipeline_name </span>
-    <span class="c1">#Optional arguments: Execution_UUID, filepath(file path to store mlmd file) </span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">)</span>
+    <span class="c1"># Required arguments: pipeline_name </span>
+    <span class="c1"># Optional arguments: execution_UUID, file_name </span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.metadata_export" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">json_file_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.metadata_export" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Export local mlmd's metadata in json format to a json file. 
+Example: 
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./jsonfile&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   json_file_name: File path of json file. 
+   file_name: Specify input metadata file name. 
+Returns: 
+   Message from the _metadata_export function.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1599</span>
+<span class="normal">1600</span>
+<span class="normal">1601</span>
+<span class="normal">1602</span>
+<span class="normal">1603</span>
+<span class="normal">1604</span>
+<span class="normal">1605</span>
+<span class="normal">1606</span>
+<span class="normal">1607</span>
+<span class="normal">1608</span>
+<span class="normal">1609</span>
+<span class="normal">1610</span>
+<span class="normal">1611</span>
+<span class="normal">1612</span>
+<span class="normal">1613</span>
+<span class="normal">1614</span>
+<span class="normal">1615</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Export local mlmd&#39;s metadata in json format to a json file. </span>
+<span class="sd">     Example: </span>
+<span class="sd">     ```python </span>
+<span class="sd">          result = metadata_pull(&quot;example_pipeline&quot;, &quot;./jsonfile&quot;, &quot;./mlmd_directory&quot;) </span>
+<span class="sd">     ``` </span>
+<span class="sd">     Args: </span>
+<span class="sd">        pipeline_name: Name of the pipeline. </span>
+<span class="sd">        json_file_name: File path of json file. </span>
+<span class="sd">        file_name: Specify input metadata file name. </span>
+<span class="sd">     Returns: </span>
+<span class="sd">        Message from the _metadata_export function. </span>
+<span class="sd">     &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments: pipeline_name </span>
+    <span class="c1"># Optional arguments: json_file_name, file_name</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">json_file_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -3932,73 +4112,27 @@ Returns:
 
 
 <h2 id="cmflib.cmf.artifact_pull" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_pull" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Pulls artifacts from the initialized repository.</p>
-<p>Example:
+        <p>Pulls artifacts from the initialized repository.
+Example:
 <div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
-</code></pre></div></p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>pipeline_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of the pipeline.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>filepath</code>
-            </td>
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Path to store artifacts.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;./mlmd&#39;</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-        <p>Returns:
+</code></pre></div>
+Args:
+    pipeline_name: Name of the pipeline.
+    file_name: Specify input metadata file name.
+Returns:
     Output from the _artifact_pull function.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1615</span>
-<span class="normal">1616</span>
-<span class="normal">1617</span>
-<span class="normal">1618</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1618</span>
 <span class="normal">1619</span>
 <span class="normal">1620</span>
 <span class="normal">1621</span>
@@ -4013,24 +4147,21 @@ Returns:
 <span class="normal">1630</span>
 <span class="normal">1631</span>
 <span class="normal">1632</span>
-<span class="normal">1633</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">1633</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls artifacts from the initialized repository.</span>
-
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
 <span class="sd">         result = artifact_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
 <span class="sd">    ```</span>
-
 <span class="sd">    Args:</span>
 <span class="sd">        pipeline_name: Name of the pipeline.</span>
-<span class="sd">        filepath: Path to store artifacts.</span>
+<span class="sd">        file_name: Specify input metadata file name.</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Output from the _artifact_pull function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Required arguments: Pipeline_name</span>
-    <span class="c1"># Optional arguments: filepath( path to store artifacts)</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4042,7 +4173,7 @@ Returns:
 
 
 <h2 id="cmflib.cmf.artifact_pull_single" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_pull_single" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -4055,7 +4186,7 @@ Example:
 </code></pre></div>
 Args: 
    pipeline_name: Name of the pipeline. 
-   filepath: Path to store the artifact. 
+   file_name: Specify input metadata file name.
    artifact_name: Name of the artifact. 
 Returns:
    Output from the _artifact_pull_single function.</p>
@@ -4063,8 +4194,7 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1635</span>
-<span class="normal">1636</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1636</span>
 <span class="normal">1637</span>
 <span class="normal">1638</span>
 <span class="normal">1639</span>
@@ -4080,7 +4210,7 @@ Returns:
 <span class="normal">1649</span>
 <span class="normal">1650</span>
 <span class="normal">1651</span>
-<span class="normal">1652</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">1652</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls a single artifact from the initialized repository. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4088,15 +4218,14 @@ Returns:
 <span class="sd">    ```</span>
 <span class="sd">    Args: </span>
 <span class="sd">       pipeline_name: Name of the pipeline. </span>
-<span class="sd">       filepath: Path to store the artifact. </span>
+<span class="sd">       file_name: Specify input metadata file name.</span>
 <span class="sd">       artifact_name: Name of the artifact. </span>
 <span class="sd">    Returns:</span>
 <span class="sd">       Output from the _artifact_pull_single function. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># Required arguments: Pipeline_name</span>
-    <span class="c1"># Optional arguments: filepath( path to store artifacts), artifact_name</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name, artifact_name</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4108,28 +4237,27 @@ Returns:
 
 
 <h2 id="cmflib.cmf.artifact_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Pushes artifacts to the initialized repository.</p>
-<p>Example:
+        <p>Pushes artifacts to the initialized repository.
+Example:
 <div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
 </code></pre></div>
 Args: 
    pipeline_name: Name of the pipeline. 
-   filepath: Path to store the artifact. 
+   file_name: Specify input metadata file name.
 Returns:
     Output from the _artifact_push function.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1654</span>
-<span class="normal">1655</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1655</span>
 <span class="normal">1656</span>
 <span class="normal">1657</span>
 <span class="normal">1658</span>
@@ -4143,21 +4271,339 @@ Returns:
 <span class="normal">1666</span>
 <span class="normal">1667</span>
 <span class="normal">1668</span>
-<span class="normal">1669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">1669</span>
+<span class="normal">1670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes artifacts to the initialized repository.</span>
-
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
 <span class="sd">         result = artifact_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
 <span class="sd">    ```</span>
 <span class="sd">    Args: </span>
 <span class="sd">       pipeline_name: Name of the pipeline. </span>
-<span class="sd">       filepath: Path to store the artifact. </span>
+<span class="sd">       file_name: Specify input metadata file name.</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Output from the _artifact_push function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
 
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.artifact_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.artifact_list" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
+Example: 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_artifact_list</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact_name&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   file_name: Specify input metadata file name. 
+   artifact_name: Artifacts for particular artifact name.
+Returns:
+   Output from the _artifact_list function.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1918</span>
+<span class="normal">1919</span>
+<span class="normal">1920</span>
+<span class="normal">1921</span>
+<span class="normal">1922</span>
+<span class="normal">1923</span>
+<span class="normal">1924</span>
+<span class="normal">1925</span>
+<span class="normal">1926</span>
+<span class="normal">1927</span>
+<span class="normal">1928</span>
+<span class="normal">1929</span>
+<span class="normal">1930</span>
+<span class="normal">1931</span>
+<span class="normal">1932</span>
+<span class="normal">1933</span>
+<span class="normal">1934</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">        result = _artifact_list(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_artifact_name&quot;) </span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       file_name: Specify input metadata file name. </span>
+<span class="sd">       artifact_name: Artifacts for particular artifact name.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output from the _artifact_list function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name, artifact_name</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.pipeline_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pipeline_list</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.pipeline_list" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Display a list of pipeline name(s) from the available input metadata file.</p>
+<p>Example:
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">_pipeline_list</span><span class="p">(</span><span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+</code></pre></div>
+Args:
+    file_name: Specify input metadata file name.
+Returns:
+    Output from the _pipeline_list function.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1882</span>
+<span class="normal">1883</span>
+<span class="normal">1884</span>
+<span class="normal">1885</span>
+<span class="normal">1886</span>
+<span class="normal">1887</span>
+<span class="normal">1888</span>
+<span class="normal">1889</span>
+<span class="normal">1890</span>
+<span class="normal">1891</span>
+<span class="normal">1892</span>
+<span class="normal">1893</span>
+<span class="normal">1894</span>
+<span class="normal">1895</span>
+<span class="normal">1896</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pipeline_list</span><span class="p">(</span><span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Display a list of pipeline name(s) from the available input metadata file.</span>
+
+<span class="sd">    Example:</span>
+<span class="sd">    ```python</span>
+<span class="sd">         result = _pipeline_list(&quot;./mlmd_directory&quot;)</span>
+<span class="sd">    ```</span>
+<span class="sd">    Args:</span>
+<span class="sd">        file_name: Specify input metadata file name.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Output from the _pipeline_list function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Optional arguments: file_name( path to store the MLMD file)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_pipeline_list</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.execution_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.execution_list" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
+Example: 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_execution_list</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   file_name: Specify input metadata file name.
+   execution_uuid: Specify the execution uuid to retrieve execution.
+Returns:
+   Output from the _execution_list function.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1899</span>
+<span class="normal">1900</span>
+<span class="normal">1901</span>
+<span class="normal">1902</span>
+<span class="normal">1903</span>
+<span class="normal">1904</span>
+<span class="normal">1905</span>
+<span class="normal">1906</span>
+<span class="normal">1907</span>
+<span class="normal">1908</span>
+<span class="normal">1909</span>
+<span class="normal">1910</span>
+<span class="normal">1911</span>
+<span class="normal">1912</span>
+<span class="normal">1913</span>
+<span class="normal">1914</span>
+<span class="normal">1915</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">        result = _execution_list(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_execution_uuid&quot;) </span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       file_name: Specify input metadata file name.</span>
+<span class="sd">       execution_uuid: Specify the execution uuid to retrieve execution.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output from the _execution_list function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name, execution_uuid</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.repo_push" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.repo_push" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
+Example: 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;./tensorboard_path&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   file_name: Specify input metadata file name.
+   execution_uuid: Specify execution uuid.
+   tensorboard_path: Path to tensorboard logs.
+Returns:
+   Output from the _repo_push function.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1937</span>
+<span class="normal">1938</span>
+<span class="normal">1939</span>
+<span class="normal">1940</span>
+<span class="normal">1941</span>
+<span class="normal">1942</span>
+<span class="normal">1943</span>
+<span class="normal">1944</span>
+<span class="normal">1945</span>
+<span class="normal">1946</span>
+<span class="normal">1947</span>
+<span class="normal">1948</span>
+<span class="normal">1949</span>
+<span class="normal">1950</span>
+<span class="normal">1951</span>
+<span class="normal">1952</span>
+<span class="normal">1953</span>
+<span class="normal">1954</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Push artifacts, metadata files, and source code to the user&#39;s artifact repository, cmf-server, and git respectively.</span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">        result = _repo_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_execution_uuid&quot;, &quot;./tensorboard_path&quot;) </span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       file_name: Specify input metadata file name.</span>
+<span class="sd">       execution_uuid: Specify execution uuid.</span>
+<span class="sd">       tensorboard_path: Path to tensorboard logs.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output from the _repo_push function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name, execution_uuid, tensorboard_path</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="cmflib.cmf.repo_pull" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.repo_pull" class="headerlink" title="Permanent link">&para;</a></h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
+Example: 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_repo_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">)</span> 
+</code></pre></div>
+Args: 
+   pipeline_name: Name of the pipeline. 
+   file_name: Specify output metadata file name.
+   execution_uuid: Specify execution uuid.
+Returns:
+   Output from the _repo_pull function.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>cmflib/cmf.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1957</span>
+<span class="normal">1958</span>
+<span class="normal">1959</span>
+<span class="normal">1960</span>
+<span class="normal">1961</span>
+<span class="normal">1962</span>
+<span class="normal">1963</span>
+<span class="normal">1964</span>
+<span class="normal">1965</span>
+<span class="normal">1966</span>
+<span class="normal">1967</span>
+<span class="normal">1968</span>
+<span class="normal">1969</span>
+<span class="normal">1970</span>
+<span class="normal">1971</span>
+<span class="normal">1972</span>
+<span class="normal">1973</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Pull artifacts, metadata files, and source code from the user&#39;s artifact repository, cmf-server, and git respectively.</span>
+<span class="sd">    Example: </span>
+<span class="sd">    ```python </span>
+<span class="sd">        result = _repo_pull(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_execution_uuid&quot;) </span>
+<span class="sd">    ```</span>
+<span class="sd">    Args: </span>
+<span class="sd">       pipeline_name: Name of the pipeline. </span>
+<span class="sd">       file_name: Specify output metadata file name.</span>
+<span class="sd">       execution_uuid: Specify execution uuid.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">       Output from the _repo_pull function. </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Required arguments: pipeline_name</span>
+    <span class="c1"># Optional arguments: file_name, execution_uuid</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
