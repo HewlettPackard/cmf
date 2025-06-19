@@ -80,9 +80,11 @@ class CmdArtifactPull(CmdBase):
         #          Second-env:/home/user/local-storage/files/md5/06/d100ff3e04e2c"
         # s_url = Url without pipeline name
         s_url = self.split_url_pipeline(url, self.args.pipeline_name[0])
+
         # got url in the form of /home/user/local-storage/files/md5/06/d100ff3e04e2c
         # spliting url using '/' delimiter
         token = s_url.split("/")
+
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
         if type == "minio":
@@ -179,7 +181,7 @@ class CmdArtifactPull(CmdBase):
             raise ArtifactNotFound(artifact_name)
         return name, url
 
-    def run(self):
+    def run(self, live):
         output, config_file_path = fetch_cmf_config_path()
         
         cmd_args = {
@@ -257,6 +259,7 @@ class CmdArtifactPull(CmdBase):
                    download all files from directory
                      
         """
+
         dvc_config_op = output
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
@@ -691,7 +694,7 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        "-f", "--file_name", action="append", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", "--file_name", action="append", help="Specify input metadata file name.", metavar="<file_name>"
     )
 
     parser.add_argument(
@@ -699,3 +702,4 @@ def add_parser(subparsers, parent_parser):
     )
 
     parser.set_defaults(func=CmdArtifactPull)
+

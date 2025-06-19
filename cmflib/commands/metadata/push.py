@@ -15,9 +15,9 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
 import json
+import argparse
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -39,6 +39,7 @@ from cmflib.cmf_exception_handling import (
     MissingArgument,
     DuplicateArgumentNotAllowed
 )
+
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
 
@@ -54,7 +55,7 @@ class CmdMetadataPush(CmdBase):
                         found_files[file_name] = file_path
         return found_files
 
-    def run(self):
+    def run(self, live):
         current_directory = mlmd_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
         
@@ -66,7 +67,7 @@ class CmdMetadataPush(CmdBase):
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
-            "tensorboad": self.args.tensorboard
+            "tensorboard_path": self.args.tensorboard_path
         }  
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
@@ -168,7 +169,7 @@ class CmdMetadataPush(CmdBase):
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
                     output = ExecutionsAlreadyExists()
-                if not self.args.tensorboard:
+                if not self.args.tensorboard_path:
                     return output
                 print(display_output)
                 # /tensorboard api call is done only if mlmd push is successfully completed
@@ -178,7 +179,7 @@ class CmdMetadataPush(CmdBase):
                 print("......................................")
 
 
-                tensorboard = self.args.tensorboard[0]
+                tensorboard = self.args.tensorboard_path[0]
                 # check if the path provided is for a file
                 if os.path.isfile(tensorboard):
                     file_name = os.path.basename(tensorboard)
@@ -213,12 +214,12 @@ class CmdMetadataPush(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipelines."
+    PUSH_HELP = "Push user-generated metadata file to server to create one single metadata file for all the pipelines."
 
     parser = subparsers.add_parser(
         "push",
         parents=[parent_parser],
-        description="Push user's mlmd to cmf-server.",
+        description="Push user's metadata file to cmf-server.",
         help=PUSH_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -237,7 +238,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.", 
+        help="Specify input metadata file name.", 
         metavar="<file_name>"
     )
 
@@ -251,10 +252,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-t",
-        "--tensorboard",
+        "--tensorboard_path",
         action="append",
         help="Specify path to tensorboard logs for the pipeline.",
-        metavar="<tensorboard>"
+        metavar="<tensorboard_path>"
     )
 
     parser.set_defaults(func=CmdMetadataPush)

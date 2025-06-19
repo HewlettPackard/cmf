@@ -23,7 +23,7 @@ from cmflib.cmf_exception_handling import CmfInitShow
 from cmflib.utils.helper_functions import fetch_cmf_config_path
 
 class CmdInitShow(CmdBase):
-    def run(self):
+    def run(self, live):
         output, config_file_path = fetch_cmf_config_path()
         attr_dict = CmfConfig.read_config(config_file_path)
         # Combine the two dictionaries

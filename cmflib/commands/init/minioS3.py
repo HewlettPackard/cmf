@@ -35,7 +35,7 @@ from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitCompl
 from cmflib.cmf_exception_handling import MissingArgument, DuplicateArgumentNotAllowed
 
 class CmdInitMinioS3(CmdBase):
-    def run(self):
+    def run(self, live):
         # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")

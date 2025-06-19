@@ -16,6 +16,7 @@
 
 import os
 import json
+import readchar
 import requests
 import textwrap
 import subprocess
@@ -247,8 +248,9 @@ def display_table(df: pd.DataFrame, columns: list) -> None:
             break
 
         # Ask the user for input to navigate pages.
-        user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
-        if user_input == 'q':
+        print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+        user_input = readchar.readchar()
+        if user_input.lower() == 'q':
             break
         
         # Update start index for the next page.

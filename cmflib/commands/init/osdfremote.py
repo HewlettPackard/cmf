@@ -35,7 +35,7 @@ from cmflib.utils.helper_functions import is_git_repo
 from cmflib.utils.helper_functions import generate_osdf_token
 
 class CmdInitOSDFRemote(CmdBase):
-    def run(self):
+    def run(self, live):
         # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")

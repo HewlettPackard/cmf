@@ -23,8 +23,7 @@ from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
 from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path
-from cmflib.dvc_wrapper import dvc_push
-from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, Minios3ServerInactive, 
@@ -36,7 +35,7 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdArtifactPush(CmdBase):
-    def run(self):
+    def run(self, live):
         dvc_config_op, config_file_path = fetch_cmf_config_path()
         
         cmd_args = {
@@ -128,7 +127,6 @@ class CmdArtifactPush(CmdBase):
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        #print("file_set = ", final_list)
         result = dvc_push(list(final_list))
         return ArtifactPushSuccess(result)
     
@@ -158,7 +156,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.",
+        help="Specify input metadata file name.",
         metavar="<file_name>"
     )
 

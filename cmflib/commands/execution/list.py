@@ -17,6 +17,8 @@
 import os
 import argparse
 import textwrap
+import readchar
+import pandas as pd
 
 from cmflib import cmfquery
 from tabulate import tabulate
@@ -32,7 +34,7 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdExecutionList(CmdBase):
-    def run(self):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -109,12 +111,12 @@ class CmdExecutionList(CmdBase):
     
     
 def add_parser(subparsers, parent_parser):
-    EXECUTION_LIST_HELP = "Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page."
+    EXECUTION_LIST_HELP = "Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.",
+        description="Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.",
         help=EXECUTION_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -134,7 +136,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.",
+        help="Specify input metadata file name.",
         metavar="<file_name>",
     )
 
@@ -143,7 +145,7 @@ def add_parser(subparsers, parent_parser):
         "--execution_uuid", 
         action="append",
         help="Specify the execution uuid to retrieve execution.",
-        metavar="<exe_uuid>",
+        metavar="<exec_uuid>",
     )
 
     parser.set_defaults(func=CmdExecutionList)
