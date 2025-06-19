@@ -15,9 +15,9 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
-import json
 import os
+import json
+import argparse
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
@@ -48,7 +48,7 @@ class CmdMetadataExport(CmdBase):
         else:
             raise MsgFailure(msg_str = "Provide path with file name.")
         
-    def run(self):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -91,9 +91,11 @@ class CmdMetadataExport(CmdBase):
             if json_file_name:
                 if not json_file_name.endswith(".json"):
                     json_file_name = json_file_name+".json" # Added .json extention to json file name.
-                if os.path.exists(json_file_name): 
+                if os.path.exists(json_file_name):
+                    live.stop()
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":    # Overwrite file.
+                        live.start()
                         full_path_to_dump = self.create_full_path(current_directory, json_file_name)
                     else: 
                         raise NoChangesMadeInfo()
@@ -101,9 +103,11 @@ class CmdMetadataExport(CmdBase):
                     full_path_to_dump = self.create_full_path(current_directory, json_file_name)
             else: 
                 # Checking whether a json file exists in the directory based on pipeline name.
-                if os.path.exists(f"{pipeline_name}.json"): 
+                if os.path.exists(f"{pipeline_name}.json"):
+                    live.stop()
                     userRespone = input("File name already exists do you want to continue press yes/no: ")
                     if userRespone.lower() == "yes":
+                        live.start()
                         full_path_to_dump = os.getcwd() + f"/{pipeline_name}.json"
                     else:
                         raise NoChangesMadeInfo()
@@ -123,12 +127,12 @@ class CmdMetadataExport(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    PULL_HELP = "Exports local mlmd's metadata to a json file."
+    PULL_HELP = "Export local metadata's metadata in json format to a json file. "
 
     parser = subparsers.add_parser(
         "export",
         parents=[parent_parser],
-        description="Export local mlmd's metadata in json format to a json file.",
+        description="Export local metadata's metadata in json format to a json file.",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -155,7 +159,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.", 
+        help="Specify the absolute or relative path for the input metadata file.", 
         metavar="<file_name>",
     )
 

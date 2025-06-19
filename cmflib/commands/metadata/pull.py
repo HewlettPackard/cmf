@@ -20,8 +20,9 @@ import os
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import find_root
-from cmflib.server_interface import server_interface
+from cmflib.cli.command import CmdBase
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.server_interface import server_interface
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
@@ -39,8 +40,7 @@ from cmflib.cmf_federation import update_mlmd
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
-
-    def run(self):
+    def run(self, live):
         cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
         # find root_dir of .cmfconfig
         output = find_root(cmfconfig)
@@ -79,7 +79,7 @@ class CmdMetadataPull(CmdBase):
                 if os.path.exists(current_directory):
                     full_path_to_dump  = self.args.file_name[0]
                 else:
-                    raise DirectoryNotfound(current_dir= current_directory)
+                    raise DirectoryNotfound(dir = current_directory)
             else:
                 raise FileNameNotfound
         else:
@@ -112,12 +112,12 @@ class CmdMetadataPull(CmdBase):
                 raise UpdateCmfVersion
             
 def add_parser(subparsers, parent_parser):
-    PULL_HELP = "Pulls mlmd from cmf-server to users's machine."
+    PULL_HELP = "Pulls metadata from cmf-server to users's machine."
 
     parser = subparsers.add_parser(
         "pull",
         parents=[parent_parser],
-        description="Pulls mlmd from cmf-server to users's machine.",
+        description="Pulls metadata from cmf-server to users's machine.",
         help=PULL_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -136,7 +136,7 @@ def add_parser(subparsers, parent_parser):
         "-f",
         "--file_name",
         action="append",
-        help="Specify the desired file name with full path for the MLMD file.",
+        help="Specify output metadata file name.",
         metavar="<file_name>",
     )
 
