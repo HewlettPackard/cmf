@@ -23,6 +23,8 @@ async def query_visualization_artifact_execution(query: CmfQuery, pipeline_name:
             if df_row['id'] in env_list:
                 continue
             # Fetching executions based on artifact id 
+            # When the same artifact is shared between two pipelines (e.g., Test-env1 and Test-env2),
+            # the function returns executions from both pipelines, not just the current one.
             data = query.get_all_executions_for_artifact_id(df_row['id'])
             
             # Mapping artifact id with artifact name
@@ -51,19 +53,20 @@ async def query_visualization_artifact_execution(query: CmfQuery, pipeline_name:
                     ]  
                     Here the logic is if type is input then we need to specify executions as a id and artifacts as parents
                     otherwise we need to specify artifacts as id and executions as parents'''
-
-                    if data_row['Type'] == "INPUT":
-                        # if same key present then append respective values of that key otherwise create new key value pair
-                        if 'e_'+str(data_row['execution_id']) in dict_output.keys():
-                            dict_output['e_'+str(data_row['execution_id'])].append("a_"+str(df_row['id']))
+                    # Taken executions based on pipeline name
+                    if data_row['pipeline'] == pipeline_name:
+                        if data_row['Type'] == "INPUT":
+                            # if same key present then append respective values of that key otherwise create new key value pair
+                            if 'e_'+str(data_row['execution_id']) in dict_output.keys():
+                                dict_output['e_'+str(data_row['execution_id'])].append("a_"+str(df_row['id']))
+                            else:
+                                dict_output['e_'+str(data_row['execution_id'])] =  ["a_"+str(df_row['id'])]
                         else:
-                            dict_output['e_'+str(data_row['execution_id'])] =  ["a_"+str(df_row['id'])]
-                    else:
-                        if 'a_'+str(df_row['id']) in dict_output.keys():
-                            dict_output['a_'+str(df_row['id'])].append("e_"+str(data_row['execution_id']))
-                        else:
-                            dict_output['a_'+str(df_row['id'])]=["e_"+str(data_row['execution_id'])]
-                        output_flag = True
+                            if 'a_'+str(df_row['id']) in dict_output.keys():
+                                dict_output['a_'+str(df_row['id'])].append("e_"+str(data_row['execution_id']))
+                            else:
+                                dict_output['a_'+str(df_row['id'])]=["e_"+str(data_row['execution_id'])]
+                            output_flag = True
             else:
                 dict_output["a_"+str(df_row['id'])] = []
             
