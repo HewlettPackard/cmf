@@ -70,8 +70,7 @@ class MinioArtifacts:
             # Check if the response indicates success.
             if response:
                 return object_name, download_loc, True
-            else:
-                return object_name, download_loc, False
+            return object_name, download_loc, False
         except S3Error as exception:
             print(exception)
             return object_name, download_loc, False
@@ -119,9 +118,8 @@ class MinioArtifacts:
         temp_dir = f"{download_loc}/temp_dir"
         try:
             # Download the .dir file containing metadata about tracked files.
-
             response = self.client.fget_object(bucket_name, object_name, temp_dir)
-                
+
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 
@@ -163,8 +161,7 @@ class MinioArtifacts:
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False  
+            return total_files_in_directory, files_downloaded, False  
         except S3Error as exception:
             print(exception)
             total_files_in_directory = 1 

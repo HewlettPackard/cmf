@@ -70,7 +70,6 @@ def get_artifacts_by_id(store, artifact_id: List[int]) -> List[metadata_store_pb
     try:
         artifacts = store.get_artifacts_by_id(artifact_id)
         return artifacts
-
     except Exception as e:
         print('Failed to get artifact. Exception: "{}"'.format(str(e)), file=sys.stderr)
 
@@ -120,6 +119,7 @@ def get_or_create_context_type(store, type_name, properties: t.Optional[dict] = 
         )
         context_type.id = store.put_context_type(context_type)  # Returns ID
         return context_type
+
 
 def update_context_custom_properties(store, context_id, context_name: str, properties: dict, custom_properties: dict) -> metadata_store_pb2.Context:    # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         context = metadata_store_pb2.Context(   # type: ignore  # Context type not recognized by mypy, using ignore to bypass

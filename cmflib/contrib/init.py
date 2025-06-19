@@ -16,9 +16,7 @@
 
 import os
 import uuid
-
 import click
-
 
 @click.command()
 @click.argument("project_path", required=False, default=os.getcwd(), type=str)

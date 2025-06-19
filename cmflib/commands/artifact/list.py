@@ -24,6 +24,7 @@ from cmflib import cmfquery
 from tabulate import tabulate
 from typing import Union, List
 from cmflib.cli.command import CmdBase
+from cmflib.utils.helper_functions import display_table
 from cmflib.cmf_exception_handling import ( 
     PipelineNotFound,
     FileNotFound,
@@ -50,54 +51,6 @@ class CmdArtifactsList(CmdBase):
         
         return df
     
-    def display_table(self, df: pd.DataFrame) -> None:
-        """
-        Display the DataFrame in a paginated table format with text wrapping for better readability.
-        Parameters:
-        - df: The DataFrame to display.
-        """
-        # Rearranging columns
-        updated_columns = ["id", "name", "type", "create_time_since_epoch", "url", "Commit", "uri"] 
-        df = df[updated_columns]
-        df = df.copy()
-       
-        # Wrap text in object-type columns to a width of 14 characters.
-        # This ensures that long strings are displayed neatly within the table.
-        for col in df.select_dtypes(include=["object"]).columns:
-            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
-
-        total_records = len(df)
-        start_index = 0  
-
-        # Display up to 20 records per page for better readability. 
-        # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
-        while True:
-            end_index = start_index + 20
-            # Convert the DataFrame slice to a list of lists.
-            records_per_page = df.iloc[start_index:end_index].values.tolist()
-
-            # Display the table.
-            table = tabulate(
-                records_per_page,
-                headers=list(df.columns),
-                tablefmt="grid",
-                showindex=False,
-            )
-            print(table)
-
-            # Check if we've reached the end of the records.
-            if end_index >= total_records:
-                print("\nEnd of records.")
-                break
-            # Ask the user for input to navigate pages.
-            print("Press any key to see more or 'q' to quit: ", end="", flush=True)
-            user_input = readchar.readchar()
-            if user_input.lower() == 'q':
-                break
-            
-            # Update start index for the next page.
-            start_index = end_index 
-
     def search_artifact(self, df: pd.DataFrame) -> Union[int, List[int]]:
         """
         Searches for the specified 'artifact_name' in the DataFrame and returns matching IDs.
@@ -227,7 +180,7 @@ class CmdArtifactsList(CmdBase):
                     raise ArtifactNotFound(self.args.artifact_name[0])
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
-        self.display_table(df)
+        display_table(df, ["id", "name", "type", "create_time_since_epoch", "url", "Commit", "uri"])
 
         return MsgSuccess(msg_str = "Done.")
 

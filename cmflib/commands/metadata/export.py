@@ -74,14 +74,13 @@ class CmdMetadataExport(CmdBase):
         current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name): 
             raise FileNotFound(mlmd_file_name, current_directory)
-
+        
         # Initialising cmfquery class.
         query = cmfquery.CmfQuery(mlmd_file_name)
 
         pipeline_name = self.args.pipeline_name[0]
-        pipeline = query.get_pipeline_id(pipeline_name)
 
-        if pipeline > 0:
+        if pipeline_name in query.get_pipeline_names():
             if not self.args.json_file_name:         # If self.args.json_file_name is None or an empty list ([]). 
                 json_file_name = self.args.json_file_name
             else:

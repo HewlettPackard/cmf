@@ -46,6 +46,7 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
     print(msg)
     return msg
 
+
 def _metadata_pull(pipeline_name, file_name, execution_uuid):
     """ Pulls metadata file from CMF-server. 
      Args: 
@@ -70,6 +71,7 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
+
 
 def _metadata_export(pipeline_name, json_file_name, file_name):
     """ Export local metadata's metadata in json format to a json file. 
@@ -96,6 +98,7 @@ def _metadata_export(pipeline_name, json_file_name, file_name):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _artifact_push(pipeline_name, file_name):
     """ Pushes artifacts to the initialized repository.
@@ -144,6 +147,7 @@ def _artifact_pull(pipeline_name, file_name):
     print(msg)
     return msg
 
+
 def _artifact_pull_single(pipeline_name, file_name, artifact_name):
     """ Pulls a single artifact from the initialized repository. 
     Args: 
@@ -186,6 +190,7 @@ def _cmf_cmd_init():
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _init_local(path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize local repository"""
@@ -244,6 +249,7 @@ def _init_minioS3(url, endpoint_url, access_key_id, secret_key, git_remote_url, 
     print(msg)
     return msg
     
+
 def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize amazonS3 repository"""
     cli_args = cli.parse_args(
@@ -275,6 +281,7 @@ def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url
     print(msg)
     return msg
 
+
 def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize sshremote repository"""
     cli_args = cli.parse_args(
@@ -305,6 +312,7 @@ def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, n
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize osdfremote repository"""
@@ -338,6 +346,7 @@ def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, 
     msg = cmd.do_run()
     print(msg)
     return msg
+  
     
 def _artifact_list(pipeline_name, file_name, artifact_name):
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
@@ -365,6 +374,7 @@ def _artifact_list(pipeline_name, file_name, artifact_name):
     print(msg)
     return msg
 
+
 def _pipeline_list(file_name):
     """ Display a list of pipeline name(s) from the available input metadata file.
     Args:
@@ -384,6 +394,7 @@ def _pipeline_list(file_name):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _execution_list(pipeline_name, file_name, execution_uuid):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
@@ -410,6 +421,7 @@ def _execution_list(pipeline_name, file_name, execution_uuid):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
@@ -439,6 +451,7 @@ def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _repo_pull(pipeline_name, file_name, execution_uuid):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
