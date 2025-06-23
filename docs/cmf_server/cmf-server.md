@@ -22,10 +22,10 @@ There are two ways to start a cmf server -
 4. **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
 
 ## Using `docker compose` file
-> This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
+> This is the recommended way as docker compose starts cmf-server, postgres db and ui-server in one go. It is neccessary to start postgres db before cmf-server.
 
-1. Go to the root of the `cmf` directory.
-2. Replace `xxxx` with your user name in docker-compose-server.yml available in the root cmf directory.
+1. Go to root `cmf` directory.
+2. Replace `xxxx` with user-name in docker-compose-server.yml available in the root cmf directory.
     ```
     ......
     services:
@@ -39,7 +39,14 @@ There are two ways to start a cmf server -
     ....
     ```
 
-3. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
+3. Create a `.env` file in the same directory as `docker-compose-server.yml` and add the necessary environment variables.
+   ```
+   POSTGRES_USER=myuser
+   POSTGRES_PASSWORD=mypassword
+   ``` 
+   > 
+4. Execute following command to start both the containers. `IP` variable is the IP address and `hostname` is host name of the machine on which you are executing the following command.
+   You can use either way.
    ```
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
               OR
@@ -55,7 +62,7 @@ There are two ways to start a cmf server -
      ......
      ```
 
- 4. Stop the containers.
+ 5. Stop the containers.
     ```
       docker compose -f docker-compose-server.yml stop
     ```
