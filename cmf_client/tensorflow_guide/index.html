@@ -926,103 +926,107 @@
 <h1 id="how-to-use-tensorboard-with-cmf">How to Use TensorBoard with CMF<a class="headerlink" href="#how-to-use-tensorboard-with-cmf" title="Permanent link">&para;</a></h1>
 <ol>
 <li>
-<p>Copy the contents of the 'example-get-started' directory from <code>cmf/examples/example-get-started</code> into a separate directory outside cmf repository.</p>
+<p>Copy the contents of the <code>example-get-started</code> directory from<br />
+<code>cmf/examples/example-get-started</code> into a separate directory outside the CMF repository.</p>
 </li>
 <li>
-<p>Execute the following command to install the TensorFlow library in the current directory:
-     <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>tensorflow
+<p>Execute the following command to install the TensorFlow library in the
+    current directory:
+    <div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>tensorflow
 </code></pre></div></p>
 </li>
 <li>
 <p>Create a new Python file (e.g., <code>tensorflow_log.py</code>) and copy the following code:</p>
-</li>
-</ol>
-<p><div class="highlight"><pre><span></span><code> import datetime
- import tensorflow as tf
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tensorflow</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tf</span>
 
- mnist = tf.keras.datasets.mnist
- (x_train, y_train),(x_test, y_test) = mnist.load_data()
- x_train, x_test = x_train / 255.0, x_test / 255.0
+<span class="n">mnist</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">datasets</span><span class="o">.</span><span class="n">mnist</span>
+<span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span> <span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">=</span> <span class="n">mnist</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
+<span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span> <span class="o">=</span> <span class="n">x_train</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span> <span class="n">x_test</span> <span class="o">/</span> <span class="mf">255.0</span>
 
- def create_model():
- return tf.keras.models.Sequential([
-     tf.keras.layers.Flatten(input_shape=(28, 28), name=&#39;layers_flatten&#39;),
-     tf.keras.layers.Dense(512, activation=&#39;relu&#39;, name=&#39;layers_dense&#39;), 
-     tf.keras.layers.Dropout(0.2, name=&#39;layers_dropout&#39;),
-     tf.keras.layers.Dense(10, activation=&#39;softmax&#39;, name=&#39;layers_dense_2&#39;)
- ])
+<span class="k">def</span><span class="w"> </span><span class="nf">create_model</span><span class="p">():</span>
+     <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(</span><span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;layers_flatten&#39;</span><span class="p">),</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;layers_dense&#39;</span><span class="p">),</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;layers_dropout&#39;</span><span class="p">),</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s1">&#39;softmax&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;layers_dense_2&#39;</span><span class="p">)</span>
+     <span class="p">])</span>
 
- model = create_model()
- model.compile(optimizer=&#39;adam&#39;,
-     loss=&#39;sparse_categorical_crossentropy&#39;,
-     metrics=[&#39;accuracy&#39;])
+<span class="n">model</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">()</span>
+<span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+     <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;adam&#39;</span><span class="p">,</span>
+     <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;sparse_categorical_crossentropy&#39;</span><span class="p">,</span>
+     <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">]</span>
+<span class="p">)</span>
 
- log_dir = &quot;logs/fit/&quot; + datetime.datetime.now().strftime(&quot;%Y%m%d-%H%M%S&quot;)
- tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
- model.fit(x=x_train,y=y_train,epochs=5,validation_data=(x_test, y_test),callbacks=[tensorboard_callback])
+<span class="n">log_dir</span> <span class="o">=</span> <span class="s2">&quot;logs/fit/&quot;</span> <span class="o">+</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
+<span class="n">tensorboard_callback</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">TensorBoard</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">histogram_freq</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x_train</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span><span class="n">epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">),</span><span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">tensorboard_callback</span><span class="p">])</span>
 
- train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train))
- test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test))
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">))</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">))</span>
 
- train_dataset = train_dataset.shuffle(60000).batch(64)
- test_dataset = test_dataset.batch(64)
+<span class="n">train_dataset</span> <span class="o">=</span> <span class="n">train_dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">60000</span><span class="p">)</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
+<span class="n">test_dataset</span> <span class="o">=</span> <span class="n">test_dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span>
 
- loss_object = tf.keras.losses.SparseCategoricalCrossentropy()
- optimizer = tf.keras.optimizers.Adam()
+<span class="n">loss_object</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">SparseCategoricalCrossentropy</span><span class="p">()</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">()</span>
 
- # Define our metrics
- train_loss = tf.keras.metrics.Mean(&#39;train_loss&#39;, dtype=tf.float32)
- train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(&#39;train_accuracy&#39;)
- test_loss = tf.keras.metrics.Mean(&#39;test_loss&#39;, dtype=tf.float32)
- test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(&#39;test_accuracy&#39;)
+<span class="c1"># Define our metrics</span>
+<span class="n">train_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">Mean</span><span class="p">(</span><span class="s1">&#39;train_loss&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">train_accuracy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">SparseCategoricalAccuracy</span><span class="p">(</span><span class="s1">&#39;train_accuracy&#39;</span><span class="p">)</span>
+<span class="n">test_loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">Mean</span><span class="p">(</span><span class="s1">&#39;test_loss&#39;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">test_accuracy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">SparseCategoricalAccuracy</span><span class="p">(</span><span class="s1">&#39;test_accuracy&#39;</span><span class="p">)</span>
 
- def train_step(model, optimizer, x_train, y_train):
-      with tf.GradientTape() as tape:
-          predictions = model(x_train, training=True)
-          loss = loss_object(y_train, predictions)
-      grads = tape.gradient(loss, model.trainable_variables)
-      optimizer.apply_gradients(zip(grads, model.trainable_variables))
-      train_loss(loss)
-      train_accuracy(y_train, predictions)
+<span class="k">def</span><span class="w"> </span><span class="nf">train_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">):</span>
+     <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">GradientTape</span><span class="p">()</span> <span class="k">as</span> <span class="n">tape</span><span class="p">:</span>
+          <span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+          <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_object</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+     <span class="n">grads</span> <span class="o">=</span> <span class="n">tape</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">)</span>
+     <span class="n">optimizer</span><span class="o">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">))</span>
+     <span class="n">train_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+     <span class="n">train_accuracy</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
 
- def test_step(model, x_test, y_test):
-      predictions = model(x_test)
-      loss = loss_object(y_test, predictions)
-      test_loss(loss)
-      test_accuracy(y_test, predictions)
+<span class="k">def</span><span class="w"> </span><span class="nf">test_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">):</span>
+     <span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+     <span class="n">loss</span> <span class="o">=</span> <span class="n">loss_object</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
+     <span class="n">test_loss</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+     <span class="n">test_accuracy</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span>
 
- current_time = datetime.datetime.now().strftime(&quot;%Y%m%d-%H%M%S&quot;)
- train_log_dir = &#39;logs/gradient_tape/&#39; + current_time + &#39;/train&#39;
- test_log_dir = &#39;logs/gradient_tape/&#39; + current_time + &#39;/test&#39;
- train_summary_writer = tf.summary.create_file_writer(train_log_dir)
- test_summary_writer = tf.summary.create_file_writer(test_log_dir)
+<span class="n">current_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y%m</span><span class="si">%d</span><span class="s2">-%H%M%S&quot;</span><span class="p">)</span>
+<span class="n">train_log_dir</span> <span class="o">=</span> <span class="s1">&#39;logs/gradient_tape/&#39;</span> <span class="o">+</span> <span class="n">current_time</span> <span class="o">+</span> <span class="s1">&#39;/train&#39;</span>
+<span class="n">test_log_dir</span> <span class="o">=</span> <span class="s1">&#39;logs/gradient_tape/&#39;</span> <span class="o">+</span> <span class="n">current_time</span> <span class="o">+</span> <span class="s1">&#39;/test&#39;</span>
+<span class="n">train_summary_writer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">create_file_writer</span><span class="p">(</span><span class="n">train_log_dir</span><span class="p">)</span>
+<span class="n">test_summary_writer</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">create_file_writer</span><span class="p">(</span><span class="n">test_log_dir</span><span class="p">)</span>
 
- model = create_model() # reset our model
- EPOCHS = 5
- for epoch in range(EPOCHS):
-      for (x_train, y_train) in train_dataset:
-          train_step(model, optimizer, x_train, y_train)
-      with train_summary_writer.as_default():
-          tf.summary.scalar(&#39;loss&#39;, train_loss.result(), step=epoch)
-          tf.summary.scalar(&#39;accuracy&#39;, train_accuracy.result(), step=epoch)
+<span class="n">model</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">()</span>  <span class="c1"># reset our model</span>
+<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">EPOCHS</span><span class="p">):</span>
+     <span class="k">for</span> <span class="p">(</span><span class="n">x_batch</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span> <span class="ow">in</span> <span class="n">train_dataset</span><span class="p">:</span>
+          <span class="n">train_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">x_batch</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span>
+     <span class="k">with</span> <span class="n">train_summary_writer</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">&#39;loss&#39;</span><span class="p">,</span> <span class="n">train_loss</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="n">step</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">&#39;accuracy&#39;</span><span class="p">,</span> <span class="n">train_accuracy</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="n">step</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
 
-      for (x_test, y_test) in test_dataset:
-          test_step(model, x_test, y_test)
-      with test_summary_writer.as_default():
-          tf.summary.scalar(&#39;loss&#39;, test_loss.result(), step=epoch)
-          tf.summary.scalar(&#39;accuracy&#39;, test_accuracy.result(), step=epoch)
-      template = &#39;Epoch {}, Loss: {}, Accuracy: {}, Test Loss: {}, Test Accuracy: {}&#39;
-      print (template.format(epoch+1,
-                              train_loss.result(),
-                              train_accuracy.result()*100,
-                              test_loss.result(),
-                              test_accuracy.result()*100))
+     <span class="k">for</span> <span class="p">(</span><span class="n">x_batch</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span> <span class="ow">in</span> <span class="n">test_dataset</span><span class="p">:</span>
+          <span class="n">test_step</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">x_batch</span><span class="p">,</span> <span class="n">y_batch</span><span class="p">)</span>
+     <span class="k">with</span> <span class="n">test_summary_writer</span><span class="o">.</span><span class="n">as_default</span><span class="p">():</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">&#39;loss&#39;</span><span class="p">,</span> <span class="n">test_loss</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="n">step</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
+          <span class="n">tf</span><span class="o">.</span><span class="n">summary</span><span class="o">.</span><span class="n">scalar</span><span class="p">(</span><span class="s1">&#39;accuracy&#39;</span><span class="p">,</span> <span class="n">test_accuracy</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span> <span class="n">step</span><span class="o">=</span><span class="n">epoch</span><span class="p">)</span>
+     <span class="n">template</span> <span class="o">=</span> <span class="s1">&#39;Epoch </span><span class="si">{}</span><span class="s1">, Loss: </span><span class="si">{}</span><span class="s1">, Accuracy: </span><span class="si">{}</span><span class="s1">, Test Loss: </span><span class="si">{}</span><span class="s1">, Test Accuracy: </span><span class="si">{}</span><span class="s1">&#39;</span>
+     <span class="nb">print</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+          <span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+          <span class="n">train_loss</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span>
+          <span class="n">train_accuracy</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span><span class="p">,</span>
+          <span class="n">test_loss</span><span class="o">.</span><span class="n">result</span><span class="p">(),</span>
+          <span class="n">test_accuracy</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="o">*</span> <span class="mi">100</span>
+     <span class="p">))</span>
 </code></pre></div>
-   For more detailed information, check out the <a href="https://www.tensorflow.org/tensorboard/get_started">TensorBoard documentation</a>.</p>
-<ol>
+<p>For more detailed information, check out the <a href="https://www.tensorflow.org/tensorboard/get_started">TensorBoard documentation</a>.</p>
+</li>
 <li>
 <p>Execute the TensorFlow log script using the following command:
-     <div class="highlight"><pre><span></span><code>python3<span class="w"> </span>tensorflow_log.py
+    <div class="highlight"><pre><span></span><code>python3<span class="w"> </span>tensorflow_log.py
 </code></pre></div></p>
 </li>
 <li>
@@ -1033,17 +1037,18 @@
 </li>
 <li>
 <p>Use the following command to run the test script, which will generate the MLMD file:
-     <div class="highlight"><pre><span></span><code>sh<span class="w"> </span>test_script.sh
+    <div class="highlight"><pre><span></span><code>sh<span class="w"> </span>test_script.sh
+</code></pre></div>
+    <code>Note</code> - <code>MLMD</code> stands for ML Metadata, which is typically stored as a SQLite file generated during pipeline runs. The file extension and name may vary depending on your setup.</p>
+</li>
+<li>
+<p>Use the following command to push the generated MLMD and TensorFlow log files to the CMF server:
+    <div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>metadata<span class="w"> </span>push<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;pipeline-name&#39;</span><span class="w"> </span>-t<span class="w"> </span><span class="s1">&#39;tensorboard-log-file-name&#39;</span>
 </code></pre></div></p>
 </li>
 <li>
-<p>Use the following command to push the generated MLMD and TensorFlow log files to the CMF server: 
-     <div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>metadata<span class="w"> </span>push<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;pipeline-name&#39;</span><span class="w"> </span>-t<span class="w"> </span><span class="s1">&#39;tensorboard-log-file-name&#39;</span>
-</code></pre></div></p>
-</li>
-<li>
-<p>Go to the CMF server and navigate to the TensorBoard tab. You will see an interface similar to the following image.
-    <img alt="image" src="../../assets/Tensorboard.png" /></p>
+<p>Go to the CMF server and navigate to the TensorBoard tab. You will see an interface similar to the following image:<br />
+<img alt="image" src="../../assets/Tensorboard.png" /></p>
 </li>
 </ol>
 <hr />

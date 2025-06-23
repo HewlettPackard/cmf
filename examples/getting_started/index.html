@@ -1133,48 +1133,48 @@
 
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p>This example depends on the following packages: <code>git</code>. We also recommend installing 
+<p>This example depends on the following packages: <code>git</code>. We also recommend installing
 <a href="https://docs.anaconda.com/anaconda/install/linux/">anaconda</a> to manage python virtual environments.
-This example was tested in the following environments: </p>
+This example was tested in the following environments:</p>
 <ul>
 <li><code>Ubuntu-22.04 with python-3.10</code></li>
 </ul>
 </blockquote>
-<p>This example demonstrates how CMF tracks a metadata associated with executions of various machine learning (ML) 
+<p>This example demonstrates how CMF tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
 ML steps, such as training and testing ML models. More comprehensive ML pipelines may include steps such as deploying a
-trained model and tracking its inference parameters (such as response latency, memory consumption etc.). This example, 
-located <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started">here</a> implements a simple
-pipeline consisting of four steps:</p>
+trained model and tracking its inference parameters (such as response latency, memory consumption, etc.). This example,
+located <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started">here</a>, implements a simple
+pipeline consisting of five steps:</p>
 <ul>
 <li>The <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py">parse</a> step splits
-  the <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started/artifacts">raw data</a> into 
+  the <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started/artifacts">raw data</a> into
   <code>train</code> and <code>test</code> raw datasets for training and testing a machine learning model. This step registers one
-  input artifact (raw <code>dataset</code>) and two output artifacts (train and test <code>datasets</code>). </li>
+  input artifact (raw <code>dataset</code>) and two output artifacts (train and test <code>datasets</code>).</li>
 <li>The <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/featurize.py">featurize</a>
   step creates two machine learning splits - train and test splits - that will be used by an ML training algorithm to
   train ML models. This step registers two input artifacts (raw train and test datasets) and two output artifacts (
-  train and test ML datasets). </li>
+  train and test ML datasets).</li>
 <li>The next <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/train.py">train</a> step
-  trains an ML model (random forest classifier). It registers one input artifact (train ML dataset) and one
-  output artifact (trained ML model).</li>
+  trains an ML model (random forest classifier). It registers one input artifact (the dataset from the previous step)
+  and one output artifact (trained ML model).</li>
 <li>The fourth <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/test.py">test</a> step
-  tests the ML model trained in the third <code>train</code> step. This step registers two input artifacts (ML model and test
-  dataset) and one output artifact (performance metrics).</li>
+  evaluates the performance and execution of the ML model trained in the <code>train</code> step. This step registers two input
+  artifacts (ML model and test dataset) and one output artifact (performance metrics).</li>
 <li>The last <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py">query</a> step
-  is a demonstration that shows how pipeline metadata can be retrieved from CMF. It will print metadata associated with
-  all executions of the above steps. This means that if you rerun the pipeline again, the output will include not only
-  metadata associated with the last run, but also metadata associated with all previous runs.</li>
+  displays each step of the pipeline's metadata as retrieved from the CMF server, aggregated over all executions.
+  For example, if you rerun the pipeline again, the output will include not only metadata associated with the latest
+  run, but also the metadata associated with previous runs.</li>
 </ul>
 <h2 id="pre-requisites">Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h2>
-<p>We start by creating (1) a workspace directory that will contain all files for this example and (2) a python virtual 
-environment. Then we will clone the CMF project that contains this example project.
+<p>The initial setup requires creating a workspace directory that will contain all files for this example, a python
+virtual environment, and cloning the CMF repository that contains source code and data for this example.
 <div class="highlight"><pre><span></span><code><span class="c1"># Create workspace directory</span>
 mkdir<span class="w"> </span>cmf_getting_started_example
 <span class="nb">cd</span><span class="w"> </span>cmf_getting_started_example
 
 <span class="c1"># Create and activate Python virtual environment (the Python version may need to be adjusted depending on your system)</span>
-conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>cmf_getting_started_example<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10<span class="w"> </span>
+conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>cmf_getting_started_example<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
 conda<span class="w"> </span>activate<span class="w"> </span>cmf_getting_started_example
 
 <span class="c1"># Clone the CMF project from GitHub and install CMF</span>
@@ -1182,11 +1182,12 @@ git<span class="w"> </span>clone<span class="w"> </span>https://github.com/Hewle
 pip<span class="w"> </span>install<span class="w"> </span>./cmf
 </code></pre></div></p>
 <h3 id="setup-a-cmf-server">Setup a cmf-server<a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">&para;</a></h3>
-<p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
-<p>Follow <a href="../../cmf_server/cmf-server/">here</a> to setup a common cmf-server.</p>
+<p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.</p>
+<p>Follow <a href="../../cmf_server/cmf-server/">here</a> to set up a common cmf-server.</p>
 <h2 id="project-initialization">Project initialization<a class="headerlink" href="#project-initialization" title="Permanent link">&para;</a></h2>
-<p>We need to copy the source tree of the example in its own directory (that must be outside the CMF source tree), and using <code>cmf init</code> command
-initialize dvc remote directory, git remote url, cmf server and neo4j with appropriate dvc backend for this project .</p>
+<p>First, copy the code and data for this example into its own directory (that must be outside the CMF source tree). Execute the <code>cmf init</code> command
+specifying the Data Version Control (dvc) directory, the URL of the git remote, address of the cmf server, and neo4j credentials along with the
+appropriate dvc backend for this project.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a separate copy of the example project</span>
 cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-started/<span class="w"> </span>./example-get-started
 <span class="nb">cd</span><span class="w"> </span>./example-get-started
@@ -1200,7 +1201,7 @@ Usage: cmf init local [-h] --path [path] -
                            --neo4j-password [neo4j_password]
                            --neo4j-uri [neo4j_uri]
 </pre>
-<p><code>cmf init local</code> initialises local directory as a cmf artifact repository.
+<p><code>cmf init local</code> initializes the local directory as a cmf artifact repository.
 <div class="highlight"><pre><span></span><code>cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 <blockquote>
@@ -1219,23 +1220,26 @@ Optional Arguments
 </code></pre></div>
 Follow <a href="../../cmf_client/cmf_client/#cmf-init">here</a> for more details.</p>
 <h2 id="project-execution">Project execution<a class="headerlink" href="#project-execution" title="Permanent link">&para;</a></h2>
-<p>To execute the example pipeline, run the 
-<a href="../../examples/example-get-started/test_script.sh">test_script.sh</a> 
-file (before that, study the contents of that file). Basically, that script will run a sequence of steps
-common for a typical machine learning project - getting raw data, converting it into machine learning train/test splits,
-training and testing a model. The execution of these steps (and parent pipeline) will be recorded by the CMF.
+<p>To execute the example pipeline, run the
+<a href="../../examples/example-get-started/test_script.sh">test_script.sh</a>
+file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
+splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
+execution of these steps (and parent pipeline) will be recorded by the CMF.
 <div class="highlight"><pre><span></span><code><span class="c1"># Run the example pipeline</span>
 sh<span class="w"> </span>./test_script.sh
 </code></pre></div></p>
-<p>This script will run the pipeline and will store its metadata in a sqlite file named mlmd. Verify that all stages are 
-done using <code>git log</code> command. You should see commits corresponding to the artifacts that were created.</p>
-<p>Under normal conditions, the next steps would be to: (1) execute the <code>cmf artifact push</code> command to push the artifacts to the central artifact repository and (2) execute the <code>cmf metadata push</code> command to track the metadata of the generated artifacts on a common <a href="../../cmf_server/cmf-server/">cmf server</a>.</p>
+<p>Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
+repository correspond to the creation of pipeline artifacts and can be viewed with <code>git log</code>.</p>
+<p>In production settings, the next steps would be to:
+1. Execute the <code>cmf artifact push</code> command to push the artifacts to the central artifact repository
+2. Execute the <code>cmf metadata push</code> command to track the metadata of the generated artifacts on a common <a href="../../cmf_server/cmf-server/">cmf server</a>.</p>
 <p>Follow <a href="../../cmf_client/cmf_client/#cmf-init">here</a> for more details on <code>cmf artifact</code> and <code>cmf metadata</code> commands.</p>
 <h2 id="query">Query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h2>
-<p>The stored metadata can be explored using the query layer. Example Jupyter notebook 
-<a href="../../examples/example-get-started/Query_Tester-base_mlmd.ipynb">Query_Tester-base_mlmd.ipynb</a> can be found in this directory.</p>
+<p>The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
+<a href="../../examples/example-get-started/Query_Tester-base_mlmd.ipynb">Query_Tester-base_mlmd.ipynb</a> demonstrates this
+functionality and can be adapted for your own uses.</p>
 <h2 id="clean-up">Clean Up<a class="headerlink" href="#clean-up" title="Permanent link">&para;</a></h2>
-<p>Metadata is stored in sqlite file named "mlmd". To clean up, delete the "mlmd" file.</p>
+<p>Metadata is stored in a sqlite file named "mlmd". To clean up, delete the "mlmd" file.</p>
 <h2 id="steps-to-test-dataslice">Steps to test dataslice<a class="headerlink" href="#steps-to-test-dataslice" title="Permanent link">&para;</a></h2>
 <p>Run the following command: <code>python test-data-slice.py</code>.</p>
 

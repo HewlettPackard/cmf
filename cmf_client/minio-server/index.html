@@ -983,31 +983,35 @@
 
 <h1 id="minio-s3-artifact-repo-setup">MinIO S3 Artifact Repo Setup<a class="headerlink" href="#minio-s3-artifact-repo-setup" title="Permanent link">&para;</a></h1>
 <h2 id="steps-to-set-up-a-minio-server">Steps to set up a MinIO server<a class="headerlink" href="#steps-to-set-up-a-minio-server" title="Permanent link">&para;</a></h2>
-<p>Object storage is an abstraction layer above the file system and helps to work with data using API.
-MinIO is the fastest way to start working with object storage.
-It is compatible with S3, easy to deploy, manage locally, and upscale if needed.</p>
-<p>Follow the below mentioned steps to set up a MinIO server:</p>
+<p>Object storage is an abstraction layer above the file system that provides an API to
+interact with data. MinIO is an easy way to start working with object storage. It
+is compatible with S3, easy to deploy, manage locally, and scale if needed.</p>
+<p>Follow the steps below to set up a MinIO server:</p>
 <ol>
 <li>
-<p>Copy contents of the <code>example-get-started</code> directory to a separate directory outside the cmf repository.</p>
+<p>Copy the contents of the <code>example-get-started</code> directory to a separate directory outside the cmf repository.</p>
 </li>
 <li>
 <p>Check whether cmf is initialized.
    <div class="highlight"><pre><span></span><code>cmf init show
 </code></pre></div>
-   If cmf is not initialized, the following message will appear on the screen.
+   If cmf is not initialized, the following message will appear on the screen:
    <div class="highlight"><pre><span></span><code>&#39;cmf&#39; is not configured.
 Execute the &#39;cmf init&#39; command.
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository.
-    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+<p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository:
+    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
+  --access-key-id minioadmin --secret-key minioadmin \
+  --git-remote-url https://github.com/user/experiment-repo.git \
+  --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j \
+  --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 </li>
 </ol>
 <blockquote>
-<p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
+<p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
 </blockquote>
 <ol>
 <li>
@@ -1020,24 +1024,30 @@ core.remote=minio
 </code></pre></div></p>
 </li>
 <li>
-<p>Build a MinIO server using a Docker container. <code>docker-compose.yml</code> available in <code>example-get-started</code> directory provides two services: <code>minio</code> and <code>aws-cli</code>.
-   User will initialise the repository with bucket name, storage URL, and credentials to access MinIO.</p>
+<p>Build a MinIO server using a Docker container. The <code>docker-compose.yml</code> available in the
+   <code>example-get-started</code> directory provides two services: <code>minio</code> and <code>aws-cli</code>. The user
+   will initialize the repository with the bucket name, storage URL, and credentials to
+   access MinIO.</p>
 </li>
-<li>Execute the following command to start the docker container. MYIP variable is the IP address of the machine on which you are executing the following command. Following command requires root privileges.
-   <div class="highlight"><pre><span></span><code>MYIP= XX.XX.XXX.XXX docker-compose up
+<li>
+<p>Execute the following command to start the Docker container. The MYIP variable is the IP address of the machine on which you are executing the following command. The following command requires root privileges.
+   <div class="highlight"><pre><span></span><code>MYIP=XX.XX.XXX.XXX docker-compose up
 </code></pre></div>
    or
-   <div class="highlight"><pre><span></span><code>MYIP= XX.XX.XXX.XXX docker compose up
+   <div class="highlight"><pre><span></span><code>MYIP=XX.XX.XXX.XXX docker compose up
 </code></pre></div>
-   After executing the above command, following messages confirm that MinIO is up and running.<blockquote>
-<p>Also you can adjust <code>$MYIP</code> in <code>examples/example-get-started/docker-compose.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying </p>
+   You should see output confirming that MinIO is up and running.</p>
+<blockquote>
+<p>Also, you can adjust <code>$MYIP</code> in <code>examples/example-get-started/docker-compose.yml</code> to specify
+    the server IP and run the <code>docker compose</code> command without specifying MYIP above.</p>
 </blockquote>
 </li>
 <li>
-<p>Login into <code>remote.minio.endpointurl</code> (in the above example - http://localhost:9000) using access-key and secret-key mentioned in cmf configuration.</p>
+<p>Login into <code>remote.minio.endpointurl</code> (in the above example - http://localhost:9000) using
+   the access-key and the secret-key defined in the <code>cmf init</code> command.</p>
 </li>
 <li>
-<p>Following image is an example snapshot of the MinIO server with bucket named 'dvc-art'.</p>
+<p>The following image is a snapshot of this example using a MinIO server and a bucket named 'dvc-art'.</p>
 </li>
 </ol>
 <p><img alt="image" src="https://miro.medium.com/max/1100/1*sIOUllU2O6YGdT7ARoY-xw.webp" /></p>

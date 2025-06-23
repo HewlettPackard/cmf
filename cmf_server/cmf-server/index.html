@@ -666,9 +666,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pre-requisites" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Pre-requisites
+      Prerequisites
     </span>
   </a>
   
@@ -1033,9 +1033,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#pre-requisites" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Pre-requisites
+      Prerequisites
     </span>
   </a>
   
@@ -1114,25 +1114,25 @@
 
 
 <h1 id="getting-started-with-cmf-server">Getting started with cmf-server<a class="headerlink" href="#getting-started-with-cmf-server" title="Permanent link">&para;</a></h1>
-<p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
+<p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs, storing the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
 <h2 id="setup-a-cmf-server">Setup a cmf-server<a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">&para;</a></h2>
-<p>There are two ways to start cmf server - </p>
+<p>There are two ways to start a cmf server -</p>
 <ul>
 <li>Using docker compose file</li>
 <li>Using docker run</li>
 </ul>
-<h3 id="pre-requisites">Pre-requisites<a class="headerlink" href="#pre-requisites" title="Permanent link">&para;</a></h3>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ol>
 <li>
-<p>Clone the <a href="https://github.com/HewlettPackard/cmf">Github repository</a>. 
+<p>Clone the <a href="https://github.com/HewlettPackard/cmf">GitHub repository</a>.
    <div class="highlight"><pre><span></span><code>git clone https://github.com/HewlettPackard/cmf
 </code></pre></div></p>
 </li>
 <li>
-<p>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker Engine</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non root user</a> privileges.</p>
+<p>Install <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">Docker Engine</a> with <a href="https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository">non-root user</a> privileges.</p>
 </li>
 <li>Install <a href="https://docs.docker.com/compose/install/linux/">Docker Compose Plugin</a>.<blockquote>
-<p>In earlier versions of docker compose, <code>docker compose</code> was independent of docker. Hence, <code>docker-compose</code> was command. However, after introduction of Docker Compose Desktop V2, compose command become part of docker engine. The recommended way to install docker compose is installing a docker compose plugin on docker engine. For more information - <a href="https://docs.docker.com/compose/reference/">Docker Compose Reference</a>.</p>
+<p>In earlier versions of Docker Compose, <code>docker compose</code> was independent of Docker. Hence, <code>docker-compose</code> was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - <a href="https://docs.docker.com/compose/reference/">Docker Compose Reference</a>.</p>
 </blockquote>
 </li>
 <li><strong>Docker Proxy Settings</strong> are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: <a href="https://docs.docker.com/network/proxy/#configure-the-docker-client">Configure the Docker Client for Proxy</a>.</li>
@@ -1150,7 +1150,7 @@ services:
 server:
   image: server:latest
   volumes:
-     - /home/xxxx/cmf-server/data:/cmf-server/data                 # for example /home/hpe-user/cmf-server/data:/cmf-server/data 
+     - /home/xxxx/cmf-server/data:/cmf-server/data                 # for example /home/hpe-user/cmf-server/data:/cmf-server/data
      - /home/xxxx/cmf-server/data/static:/cmf-server/data/static   # for example /home/hpe-user/cmf-server/data/static:/cmf-server/data/static
   container_name: cmf-server
   build:
@@ -1173,7 +1173,7 @@ hostname=host_name docker compose -f docker-compose-server.yml up
 </code></pre></div></p>
 <blockquote>
 <p>Replace <code>docker compose</code> with <code>docker-compose</code> for older versions.
-Also you can adjust <code>$IP</code> in <code>docker-compose-server.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying 
+Also, you can adjust <code>$IP</code> in <code>docker-compose-server.yml</code> to reflect the server IP and run the <code>docker compose</code> command without specifying
     IP=200.200.200.200.
      <div class="highlight"><pre><span></span><code>.......
 environment:
@@ -1189,7 +1189,7 @@ REACT_APP_MY_IP: ${IP}
 </li>
 </ol>
 <blockquote>
-<p>It is neccessary to rebuild images for cmf-server and ui-server after <code>cmf version update</code> or after pulling latest cmf code from git.</p>
+<p>It is necessary to rebuild images for cmf-server and ui-server after <code>cmf version update</code> or after pulling the latest cmf code from git.</p>
 </blockquote>
 <p><strong><h3 align="center">OR</h3></strong></p>
 <h2 id="using-docker-run-command">Using <code>docker run</code> command<a class="headerlink" href="#using-docker-run-command" title="Permanent link">&para;</a></h2>
@@ -1198,7 +1198,7 @@ REACT_APP_MY_IP: ${IP}
 <p>Install <a href="../../#installation">cmflib</a> on your system.</p>
 </li>
 <li>
-<p>Go to <code>cmf/server</code> directory. 
+<p>Go to <code>cmf/server</code> directory.
    <div class="highlight"><pre><span></span><code>cd server
 </code></pre></div></p>
 </li>
@@ -1208,7 +1208,7 @@ REACT_APP_MY_IP: ${IP}
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute the below-mentioned command to create a <code>cmf-server</code> docker image.
+<p>Execute the following command to create a <code>cmf-server</code> docker image.
    <div class="highlight"><pre><span></span><code>Usage:  docker build -t [image_name] -f ./Dockerfile ../
 </code></pre></div>
    Example:
@@ -1226,7 +1226,7 @@ REACT_APP_MY_IP: ${IP}
 </code></pre></div></p>
 </li>
 <li>
-<p>After cmf-server container is up, start <code>ui-server</code>, Go to <code>cmf/ui</code> folder.
+<p>After the cmf-server container is up, start <code>ui-server</code>. Go to <code>cmf/ui</code> folder.
    <div class="highlight"><pre><span></span><code>cd cmf/ui
 </code></pre></div></p>
 </li>
@@ -1246,8 +1246,8 @@ REACT_APP_MY_IP: ${IP}
    <div class="highlight"><pre><span></span><code>docker run --name ui-server -p 0.0.0.0:3000:3000 -e REACT_APP_MY_IP=0.0.0.0 ui_image
 </code></pre></div>
       Note:
-      If you face issue regarding <code>Libzbar-dev</code> similar to the snapshot, add proxies to '/.docker/config.json'</p>
-<p><img alt="Screentshot (115)" src="https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4" /></p>
+      If you face issues regarding <code>Libzbar-dev</code> similar to the snapshot, add proxies to '/.docker/config.json'</p>
+<p><img alt="Screenshot (115)" src="https://github.com/varkha-d-sharma/cmf/assets/111754147/9830cbe9-bad8-404a-8abe-5470fc2303c4" /></p>
 <div class="highlight"><pre><span></span><code>{
    proxies: {
         &quot;default&quot;: {
@@ -1266,12 +1266,12 @@ REACT_APP_MY_IP: ${IP}
 </li>
 <li>
 <p>To delete the docker container.
-    <div class="highlight"><pre><span></span><code>docker rm [container_name] 
+    <div class="highlight"><pre><span></span><code>docker rm [container_name]
 </code></pre></div></p>
 </li>
 <li>
 <p>To remove the docker image.
-    <div class="highlight"><pre><span></span><code>docker image rm [image_name] 
+    <div class="highlight"><pre><span></span><code>docker image rm [image_name]
 </code></pre></div></p>
 </li>
 </ol>

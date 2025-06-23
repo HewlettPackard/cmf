@@ -900,9 +900,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#steps-to-set-up-a-ssh-remote-repo" class="md-nav__link">
+  <a href="#steps-to-set-up-an-ssh-remote-repo" class="md-nav__link">
     <span class="md-ellipsis">
-      Steps to set up a SSH Remote Repo
+      Steps to set up an SSH Remote Repo
     </span>
   </a>
   
@@ -925,13 +925,16 @@
 
 
 <h1 id="ssh-remote-artifact-repo-setup">SSH Remote Artifact Repo Setup<a class="headerlink" href="#ssh-remote-artifact-repo-setup" title="Permanent link">&para;</a></h1>
-<h2 id="steps-to-set-up-a-ssh-remote-repo">Steps to set up a SSH Remote Repo<a class="headerlink" href="#steps-to-set-up-a-ssh-remote-repo" title="Permanent link">&para;</a></h2>
-<p>SSH (Secure Shell) remote storage refers to using the SSH protocol to securely access and manage files and data on a remote server or storage system over a network. SSH is a cryptographic network protocol that allows secure communication and data transfer between a local computer and a remote server.</p>
-<p>Proceed with the following steps to set up a SSH Remote Repository:</p>
+<h2 id="steps-to-set-up-an-ssh-remote-repo">Steps to set up an SSH Remote Repo<a class="headerlink" href="#steps-to-set-up-an-ssh-remote-repo" title="Permanent link">&para;</a></h2>
+<p>SSH (Secure Shell) remote storage refers to using the SSH protocol to securely
+access and manage files and data on a remote server or storage system over a
+network. SSH is a cryptographic network protocol that allows secure
+communication and data transfer between a local computer and a remote server.</p>
+<p>Proceed with the following steps to set up an SSH Remote Repository:</p>
 <ol>
-<li>Get started with initializing <code>project directory</code> with SSH repo.                                       </li>
+<li>Initialize the <code>project directory</code> with an SSH remote.</li>
 <li>
-<p>Check whether cmf is initialized in your project directory with following command.
+<p>Check whether cmf is initialized in your project directory with the following command.
    <div class="highlight"><pre><span></span><code>cmf init show
 </code></pre></div>
    If cmf is not initialized, the following message will appear on the screen.
@@ -941,14 +944,20 @@ Execute the &#39;cmf init&#39; command.
 </li>
 <li>
 <p>Execute the following command to initialize the SSH remote storage as a CMF artifact repository.
-    <div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 
+    <div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
+    --user XXXXX --port 22 --password example@123 \
+    --git-remote-url https://github.com/user/experiment-repo.git \
+    --cmf-server-url http://127.0.0.1:80
 </code></pre></div>
-    &gt; When running <code>cmf init sshremote</code>, please ensure that the specified IP address has the necessary permissions to allow access using the specified user ('XXXX'). If the IP address or user lacks the required permissions, the command will fail.</p>
+    &gt; When running <code>cmf init sshremote</code>, ensure that the specified IP address allows access for \
+    the specified user XXXX. If the IP address or user does not exist, this command will fail.</p>
 </li>
 <li>
 <p>Execute <code>cmf init show</code> to check the CMF configuration.</p>
 </li>
-<li>To address permissions issues related to SSH, it is recommended to initiate troubleshooting by examining the <code>/etc/ssh/sshd_config file</code>. This configuration file serves as the primary starting point for diagnosing and resolving SSH permission-related challenges.</li>
+<li>To troubleshoot SSH permissions-related issues, check the <code>/etc/ssh/sshd_config</code> file on the
+   remote machine. This configuration file serves as the primary starting point for diagnosing
+   and resolving SSH permission-related challenges.</li>
 </ol>
 
 
