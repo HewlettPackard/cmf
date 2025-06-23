@@ -1,14 +1,25 @@
-ml-metadata==1.11.0
-dvc[s3,ssh]==2.27.0
+ml-metadata==1.15.0
+dvc[s3,ssh]==3.51.1
 pandas
 retrying
 pyarrow
-neo4j
+neo4j==5.26
 tabulate
 click
 minio
-paramiko
+paramiko==3.4.1
 scikit_learn
-boto3
-textwrap
-typing
+scitokens
+cryptography
+ray==2.34.0
+readchar
+# Development-only type checking tools like mypy are included here.
+# These are not needed at runtime and are used solely to ensure code quality during development.
+mypy
+pandas-stubs
+types-tabulate
+types-requests
+types-paramiko
+types-setuptools
+types-PyYAML
+types-protobuf

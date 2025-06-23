@@ -15,7 +15,8 @@
 ###
 
 import os
-from dvc.api import DVCFileSystem
+# Error: Skipping analyzing "dvc.api": module is installed, but missing library stubs or py.typed marker
+from dvc.api import DVCFileSystem # type: ignore
 
 class LocalArtifacts():
     """

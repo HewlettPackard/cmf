@@ -77,6 +77,8 @@ def parse(input_file: str, output_dir: str) -> None:
 
     _ = metawriter.log_dataset(output_ds.train, "output")
     _ = metawriter.log_dataset(output_ds.test, "output")
+    # Automatically commits code, ensuring no need to manually commit before using the 'git repo push' command.
+    metawriter.finalize()
 
 
 @click.command()
