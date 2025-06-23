@@ -17,11 +17,11 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
-import Artifacts from "./pages/artifacts";
-import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
 import "./App.css";
+import ArtifactsPostgres from "./pages/artifacts_postgres";
+import ExecutionsPostgres from "./pages/executions_postgres";
 
 function App() {
   return (
@@ -29,8 +29,8 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route exact path="/artifacts" element={<Artifacts />} />
-          <Route exact path="/executions" element={<Executions />} />
+          <Route exact path="/artifacts" element={<ArtifactsPostgres />} />
+          <Route exact path="/executions" element={<ExecutionsPostgres />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
           <Route exact path="/tensorboard" element={<TensorBoard />} />
         </Routes>
