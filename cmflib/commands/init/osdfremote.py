@@ -34,7 +34,7 @@ from cmflib.utils.helper_functions import is_git_repo
 from cmflib.utils.helper_functions import generate_osdf_token
 
 class CmdInitOSDFRemote(CmdBase):
-    def run(self):
+    def run(self, live):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
         # checking if config file exists

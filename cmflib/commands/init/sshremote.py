@@ -34,7 +34,7 @@ from cmflib.utils.helper_functions import is_git_repo
 from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, DuplicateArgumentNotAllowed, MissingArgument
 
 class CmdInitSSHRemote(CmdBase):
-    def run(self):
+    def run(self, live):
         # Reading CONFIG_FILE variable
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
         
