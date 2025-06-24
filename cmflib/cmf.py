@@ -854,9 +854,18 @@ class Cmf:
         for key, value in artifact.properties.items():
             if key == "url":
                 old_url = value.string_value
-                if updated_url not in old_url:
+                # If the old URL is empty or only contains spaces, assign the new URL directly.
+                if not old_url.strip():
+                    new_url = updated_url
+
+                # If the updated URL is not already present, append it with a comma separator.
+                elif updated_url not in old_url:
                     new_url = f"{old_url},{updated_url}"
-                    artifact.properties[key].string_value = new_url
+
+                # If the updated URL is already present, keep the old URL unchanged.
+                else:
+                    new_url = old_url
+                artifact.properties[key].string_value = new_url
         put_artifact(self.store, artifact)
 
     def update_model_url(self, dup_artifact: list, updated_url: str):
@@ -878,9 +887,18 @@ class Cmf:
             for key, value in dup_art.properties.items():
                 if key == "url":
                     old_url = value.string_value
-                    if updated_url not in old_url:
+                    # If the old URL is empty or only contains spaces, assign the new URL directly.
+                    if not old_url.strip():
+                        new_url = updated_url
+
+                    # If the updated URL is not already present, append it with a comma separator.
+                    elif updated_url not in old_url:
                         new_url = f"{old_url},{updated_url}"
-                        dup_art.properties[key].string_value = new_url
+
+                    # If the updated URL is already present, keep the old URL unchanged.
+                    else:
+                        new_url = old_url
+                    dup_art.properties[key].string_value = new_url
             put_artifact(self.store, dup_art)
         return dup_artifact
 
