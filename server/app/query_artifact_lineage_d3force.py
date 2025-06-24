@@ -1,5 +1,5 @@
 import pandas as pd
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 import warnings
 import typing as t
 
@@ -13,10 +13,9 @@ def truncate_artifact_name(my_str):
     temp=":".join(temp)
     return temp
 
-def query_artifact_lineage_d3force(mlmd_path: str, pipeline_name: str, dict_of_art_ids: t.Dict[str, t.Dict[str, pd.DataFrame]]) -> dict:
+def query_artifact_lineage_d3force(query: CmfQuery, pipeline_name, dict_of_art_ids: t.Dict[str, t.Dict[str, pd.DataFrame]]) -> dict:
     art_name_id = {}
     artifact_name_list = []
-    query = cmfquery.CmfQuery(mlmd_path)
     node_id_name_list = []
     pipeline_id=query.get_pipeline_id(pipeline_name)
     for type_, df in dict_of_art_ids[pipeline_name].items():

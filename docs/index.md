@@ -291,7 +291,7 @@ Click the terminal icon<br>
 ***Quick Start***
 ```
 cd example-get-started
-cmf init local --path /home/user/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init local --path /home/user/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 sh test_script.sh
 cmf artifact push -p 'Test-env'
 ```

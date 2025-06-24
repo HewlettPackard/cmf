@@ -15,23 +15,31 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
 import re
+import argparse
 
 from cmflib import cmfquery
-from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import check_minio_server
-from cmflib.utils.helper_functions import generate_osdf_token
-from cmflib.utils.dvc_config import DvcConfig
-from cmflib.dvc_wrapper import dvc_push
-from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.cli.utils import find_root
+from cmflib.cli.command import CmdBase
+from cmflib.dvc_wrapper import dvc_push
+from cmflib.utils.dvc_config import DvcConfig
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import PipelineNotFound, Minios3ServerInactive, FileNotFound, ExecutionsNotFound, CmfNotConfigured, ArtifactPushSuccess, MissingArgument, DuplicateArgumentNotAllowed
+from cmflib.cli.utils import check_minio_server
+from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.cmf_exception_handling import (
+    PipelineNotFound, Minios3ServerInactive, 
+    FileNotFound, 
+    ExecutionsNotFound, 
+    CmfNotConfigured, 
+    ArtifactPushSuccess, 
+    MissingArgument, 
+    DuplicateArgumentNotAllowed
+)
 
 class CmdArtifactPush(CmdBase):
-    def run(self):
+    def run(self, live):
         result = ""
         dvc_config_op = DvcConfig.get_dvc_config()
         cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
@@ -43,6 +51,16 @@ class CmdArtifactPush(CmdBase):
         if output.find("'cmf' is not configured.") != -1:
             raise CmfNotConfigured(output)
         
+        cmd_args = {
+            "file_name": self.args.file_name,
+            "pipeline_name": self.args.pipeline_name
+        }
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
 
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
@@ -61,20 +79,22 @@ class CmdArtifactPush(CmdBase):
             return result
 
         # Default path of mlmd file
-        mlmd_file_name = "./mlmd"
         current_directory = os.getcwd()
-        if self.args.file_name:
-            mlmd_file_name = self.args.file_name
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
             if mlmd_file_name == "mlmd":
                 mlmd_file_name = "./mlmd"
-            current_directory = os.path.dirname(mlmd_file_name)
+        current_directory = os.path.dirname(mlmd_file_name)
         if not os.path.exists(mlmd_file_name):
             raise FileNotFound(mlmd_file_name, current_directory)
+        
         # creating cmfquery object
         query = cmfquery.CmfQuery(mlmd_file_name)
         
-         # Put a check to see whether pipline exists or not
-        pipeline_name = self.args.pipeline_name
+        pipeline_name = self.args.pipeline_name[0]
+        # Put a check to see whether pipline exists or not
         if not query.get_pipeline_id(pipeline_name) > 0:
             raise PipelineNotFound(pipeline_name)
 
@@ -121,10 +141,9 @@ class CmdArtifactPush(CmdBase):
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        #print("file_set = ", final_list)
         result = dvc_push(list(final_list))
         return ArtifactPushSuccess(result)
-      
+    
 def add_parser(subparsers, parent_parser):
     HELP = "Push artifacts to the user configured artifact repo."
 
@@ -142,12 +161,17 @@ def add_parser(subparsers, parent_parser):
         "-p",
         "--pipeline_name",
         required=True,
+        action="append",
         help="Specify Pipeline name.",
         metavar="<pipeline_name>",
     )
 
     parser.add_argument(
-        "-f", "--file_name", help="Specify mlmd file name.", metavar="<file_name>"
+        "-f", 
+        "--file_name", 
+        action="append",
+        help="Specify input metadata file name.",
+        metavar="<file_name>"
     )
 
     parser.set_defaults(func=CmdArtifactPush)

@@ -25,6 +25,19 @@ folder_path = "artifacts/raw_data"
 
 
 def generate_dataset():
+    """
+    Generates a dataset of 100 text files, each containing a random string of 100 characters.
+    
+    The function performs the following steps:
+    1. Constructs the full path to the dataset folder using the current working directory and the provided folder path.
+    2. If the folder already exists, it is removed.
+    3. Creates a new folder at the specified path.
+    4. Generates a list of 4 random strings, each 100 characters long, consisting of ASCII letters and digits.
+    5. Creates 100 text files in the folder, each named with an incrementing number (1.txt, 2.txt, ..., 100.txt).
+       Each file contains one of the 4 generated random strings, chosen at random.
+    
+    Note: The function assumes that the variables `os`, `rmtree`, `random`, `string`, and `folder_path` are already imported and defined.
+    """
     path = os.path.join(os.getcwd(), folder_path)
     if os.path.exists(path):
         rmtree(path)
@@ -87,3 +100,5 @@ print("After update")
 for label, content in df.iterrows():
     if label == record:
         print(content)
+
+metawriter.finalize()

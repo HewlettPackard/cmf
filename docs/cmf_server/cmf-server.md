@@ -21,11 +21,11 @@ There are two ways to start a cmf server -
    > In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
 4. **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
 
-## Using `docker compose` file
-> This is the recommended way as docker compose starts both ui-server and cmf-server in one go.
+## Using `docker compose` file 
+> This is the recommended way as docker compose starts cmf-server, postgres db and ui-server in one go. It is neccessary to start postgres db before cmf-server.
 
-1. Go to the root of the `cmf` directory.
-2. Replace `xxxx` with your user name in docker-compose-server.yml available in the root cmf directory.
+1. Go to root `cmf` directory. 
+2. Replace `xxxx` with your user-name in docker-compose-server.yml available in the root cmf directory.
     ```
     ......
     services:
@@ -37,9 +37,14 @@ There are two ways to start a cmf server -
       container_name: cmf-server
       build:
     ....
-    ```
-
-3. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
+    ``` 
+3. Create a `.env` file in the same directory as `docker-compose-server.yml` and add the necessary environment variables.
+   ```
+   POSTGRES_USER=myuser
+   POSTGRES_PASSWORD=mypassword
+   ``` 
+   > 
+4. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
    ```
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
               OR
@@ -55,7 +60,7 @@ There are two ways to start a cmf server -
      ......
      ```
 
- 4. Stop the containers.
+5. Stop the containers.
     ```
       docker compose -f docker-compose-server.yml stop
     ```
@@ -157,15 +162,22 @@ They accept and return JSON-encoded request bodies and responses and return stan
 
 ### List of APIs
 
-| Method | URL                          | Description                                                              |
-|--------|------------------------------|------------------------------------------------------------------------  |
-| `Post` | `/mlmd_push`                 | Used to push JSON encoded data to cmf-server                             |
-| `Get`  | `/mlmd_pull/{pipeline_name}` | Retrieves a mlmd file from cmf-server                                    |
-| `Get`  | `/display_executions`                             | Retrieves all executions from cmf-server            |
-| `Get`  | `/display_artifacts/{pipeline_name}/{data_type}`  | Retrieves all artifacts from cmf-server for resp data type             |
-| `Get`  | `/display_lineage/{lineage_type}/{pipeline_name}` | Creates lineage data from cmf-server            |
-| `Get`  | `/display_pipelines`                             | Retrieves all pipelines present in mlmd file            |
-
+| Method | URL                                                        | Description                                                                                        |
+| ------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `POST` | `/mlmd_push`                                               | Pushes JSON-encoded data to the cmf-server.                                                        |
+| `GET`  | `/mlmd_pull/{pipeline_name}`                               | Retrieves an MLMD file from the cmf-server.                                                        |
+| `GET`  | `/executions/{pipeline_name}`                              | Retrieves all executions from the cmf-server.                                                      |
+| `GET`  | `/list-of-executions/{pipeline_name}`                      | Retrieves a list of execution types.                                                               |
+| `GET`  | `/execution-lineage/tangled-tree/{uuid}/{pipeline_name}`   | Retrieves a dictionary of nodes and links for a given execution type.                              |
+| `GET`  | `/artifacts/{pipeline_name}/{type}`                        | Retrieves all artifacts of the specified type from the cmf-server.                                 |
+| `GET`  | `/artifact-lineage/tangled-tree/{pipeline_name}`           | Retrieves a nested list of dictionaries with `id` and `parents` keys for artifacts.                |
+| `GET`  | `/artifact_types`                                          | Retrieves a list of artifact types.                                                                |
+| `GET`  | `/pipelines`                                               | Retrieves all pipelines present in the MLMD file.                                                  |
+| `POST` | `/tensorboard`                                             | Uploads TensorBoard logs to the cmf-server.                                                        |
+| `GET`  | `/model-card`                                              | Retrieves model data, input/output artifacts, and executions for a model.                          |
+| `GET`  | `/artifact-execution-lineage/tangled-tree/{pipeline_name}` | Retrieves a nested list of dictionaries with `id` and `parents` keys for artifacts and executions. |
+| `POST` | `/python-env`                                              | Pushes Python environment data to the cmf-server.                                                  |
+| `GET`  | `/python-env`                                              | Retrieves environment data from the `/cmf-server/data/env` folder.                                 |
 
 ### HTTP Response Status codes
 

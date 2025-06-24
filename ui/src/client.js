@@ -39,23 +39,14 @@ class FastAPIClient {
     return client;
   }
 
-  async getArtifacts(
-    pipelineName,
-    type,
-    page,
-    sortField,
-    sortOrder,
-    filterBy,
-    filterValue,
-  ) {
+  async getArtifacts(pipeline_name, artifact_type, sort_order, active_page, filter_value, sort_field) {
     return this.apiClient
-      .get(`/artifacts/${pipelineName}/${type}`, {
+      .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
         params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-          filter_by: filterBy,
-          filter_value: filterValue,
+          filter_value: filter_value,
+          sort_order: sort_order,
+          active_page: active_page,
+          sort_field: sort_field,
         },
       })
       .then(({ data }) => {
@@ -116,20 +107,18 @@ class FastAPIClient {
     }); 
   }
 
-  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
+  async getExecutions(pipeline_name, active_page, filter_value, sort_order){
     return this.apiClient
-      .get(`/executions/${pipelineName}`, {
-        params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-          filter_by: filterBy,
-          filter_value: filterValue,
-        },
-      })
-      .then(({ data }) => {
-        return data;
-      });
+    .get(`/executions/${pipeline_name}`,{
+      params: {
+        active_page: active_page,
+        filter_value: filter_value,
+        sort_order: sort_order,
+      },
+    }).
+    then(({data}) => {
+      return data;
+    }); 
   }
 
   async getPipelines(value) {
@@ -152,6 +141,21 @@ class FastAPIClient {
         return data;
       });
   }
-}
+
+  async getPythonEnv(file_name) {
+    return this.apiClient
+      .get(`/python-env`, {
+        params: {
+          file_name: file_name
+        },
+        responseType: "text", // Explicitly specify response type as text
+      })
+      .then(( response ) => {
+        return response.data;
+      });
+  }
+} 
+
 
 export default FastAPIClient;
+
