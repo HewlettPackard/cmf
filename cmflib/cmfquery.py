@@ -14,14 +14,14 @@
 # limitations under the License.
 ###
 import abc
-import os
 import json
 import logging
 import typing as t
+import pandas as pd
+
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
 from itertools import chain
-import pandas as pd
 from cmflib.store.sqllite_store import SqlliteStore
 from cmflib.store.postgres import PostgresStore
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -212,7 +212,6 @@ class CmfQuery(object):
         return df
 
     def _get_pipelines(self, name: t.Optional[str] = None) -> t.List[mlpb.Context]: # type: ignore  # Context type not recognized by mypy, using ignore to bypass
-        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context") # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Return list of pipelines with the given name.
 
         Args:
@@ -220,12 +219,14 @@ class CmfQuery(object):
         Returns:
             List of objects associated with pipelines.
         """
+        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context") # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         if name is not None:
             pipelines = [pipeline for pipeline in pipelines if pipeline.name == name]
         return pipelines
 
     def _get_pipeline(self, name: str) -> t.Optional[mlpb.Context]: # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Return a pipeline with the given name or None if one does not exist.
+
         Args:
             name: Pipeline name.
         Returns:
@@ -310,6 +311,7 @@ class CmfQuery(object):
 
     def _get_artifact(self, name: str) -> t.Optional[mlpb.Artifact]:    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Return artifact with the given name or None.
+
         Args:
             name: Fully-qualified name (e.g., artifact hash is added to the name), so name collisions across different
                   artifact types are not issues here.
@@ -372,6 +374,7 @@ class CmfQuery(object):
 
     def get_pipeline_id(self, pipeline_name: str) -> int:
         """Return pipeline identifier for the pipeline names `pipeline_name`.
+
         Args:
             pipeline_name: Name of the pipeline.
         Returns:
@@ -614,8 +617,7 @@ class CmfQuery(object):
         Return:
             Output artifacts of all executions that consumed given artifact.
         """
-        artifacts_input=self._get_input_artifacts(execution_id)
-        arti = self.store.get_artifacts_by_id(artifacts_input)
+        artifacts_input = self._get_input_artifacts(execution_id)
         list_exec = []
         exec_ids_added = []
         for i in artifacts_input:
@@ -628,6 +630,7 @@ class CmfQuery(object):
 
     def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Get parent execution ids for given execution id
+
         Args: 
            execution_id : Execution id for which parent execution are required
                           It is passed in list, for example execution_id: [1]  
@@ -647,11 +650,12 @@ class CmfQuery(object):
         return exe_ids
 
     def get_executions_with_execution_ids(self, exe_ids: t.List[int]) -> pd.DataFrame:
-        """For list of execution ids it returns df with "id,Execution_type_name, Execution_uuid"
+        """For list of execution ids it returns df with "id, Execution_type_name, Execution_uuid"
+
         Args:
             execution ids: List of execution ids.
         Return:
-            df["id","Execution_type_name","Execution_uuid"]
+            df["id", "Execution_type_name", "Execution_uuid"]
         """
         df = pd.DataFrame()
         executions = self.store.get_executions_by_id(exe_ids)
@@ -677,7 +681,6 @@ class CmfQuery(object):
         """
         df = pd.DataFrame()
         d1 = self.get_one_hop_child_artifacts(artifact_name)
-        # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
             d1 = self.get_all_child_artifacts(str(row.name))    # Convert row.name to string to ensure compatibility with get_all_child_artifacts method
@@ -688,10 +691,11 @@ class CmfQuery(object):
 
     def get_one_hop_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return input artifacts for the execution that produced the given artifact.
+
         Args:
             artifact_name: Artifact name.
         Returns:
-            Data frame containing immediate parent artifactog of given artifact.
+            Data frame containing immediate parent artifact of given artifact.
         """
         artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name) # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if not artifact:
@@ -705,6 +709,7 @@ class CmfQuery(object):
 
     def get_all_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return all upstream artifacts.
+
         Args:
             artifact_name: Artifact name.
         Returns:
@@ -712,7 +717,6 @@ class CmfQuery(object):
         """
         df = pd.DataFrame()
         d1 = self.get_one_hop_parent_artifacts(artifact_name)
-        # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
             d1 = self.get_all_parent_artifacts(str(row.name))   # Convert row.name to string to ensure compatibility with get_all_parent_artifacts method
@@ -722,6 +726,21 @@ class CmfQuery(object):
         return df
 
     def get_all_parent_executions_by_id(self, execution_id: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[t.List[t.Any]]:
+        """
+        Retrieve all parent executions for a given execution ID.
+
+        This method recursively finds all parent executions for the provided execution ID(s) within an optional pipeline context.
+        It returns a list containing two lists: one with parent execution details and another with source-target links.
+
+        Args:
+            execution_id: A list of execution IDs for which to find parent executions.
+            pipeline_id: An optional pipeline ID to filter the parent executions. Defaults to None.
+
+        Returns:
+            List[int]: A list containing two lists:
+            - The first list contains details of parent executions, where each entry is a list with the execution ID, execution type name, and execution UUID.
+            - The second list contains dictionaries representing source-target links between executions.
+        """
         parent_executions: t.List[t.List[t.Any]] = [[],[]]
         current_execution_id: t.List[int] = execution_id
         list_of_parent_execution_id: t.List[t.List[t.Any]] = []
@@ -750,6 +769,7 @@ class CmfQuery(object):
 
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
         """Return all executions that produced upstream artifacts for the given artifact.
+
         Args:
             artifact_name: Artifact name.
         Returns:

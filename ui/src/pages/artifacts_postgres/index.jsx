@@ -22,7 +22,7 @@ import ArtifactPTable from "../../components/ArtifactPTable";
 import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
-import ArtifactPTypeSidebar from "../../components/ArtifactPTypeSidebar";
+import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
 
 const client = new FastAPIClient(config);
 
@@ -155,7 +155,7 @@ const ArtifactsPostgres = () => {
           <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
             <div className="flex flex-col w-full">
                 {selectedPipeline !== null && (
-                  <ArtifactPTypeSidebar
+                  <ArtifactTypeSidebar
                     artifactTypes={artifactTypes}
                     handleArtifactTypeClick={handleArtifactTypeClick}
                     onFilter={handleFilter}

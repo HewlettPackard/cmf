@@ -148,7 +148,7 @@ const ExecutionPTable = ({ executions, onSort, onFilter }) => {
                   </tr>
                   {(expandedRow === "all" || expandedRow === index) && (
                     <tr>
-                      <td colSpan="6">
+                      <td colSpan="7">
                         <table className="expanded-table">
                           <tbody>
                             {data.execution_properties.map((property, idx) => (

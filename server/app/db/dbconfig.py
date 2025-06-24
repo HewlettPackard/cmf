@@ -22,14 +22,6 @@ else:
     DB_CONFIG["db_host"] = DB_CONFIG['db_host_name']
 
 
-# print("ip:", DB_CONFIG["db_host_ip"])
-# print("hostname:", DB_CONFIG["db_host_name"])
-# print("Host:", DB_CONFIG["db_host"])
-# print("User:", DB_CONFIG["db_user"])
-# print("Password:", DB_CONFIG["db_password"])
-# print("DB:", DB_CONFIG["db"])
-# print("Port:", DB_CONFIG["db_port"])
-
 DATABASE_URL = "postgresql+asyncpg://{0}:{1}@{2}:{3}/{4}".format(
         DB_CONFIG["db_user"], DB_CONFIG["db_password"], DB_CONFIG["db_host"],
         DB_CONFIG["db_port"], DB_CONFIG["db"]
