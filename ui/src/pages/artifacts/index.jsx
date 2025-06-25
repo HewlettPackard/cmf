@@ -102,7 +102,7 @@ const Artifacts = () => {
       fetchArtifactTypes(selectedPipeline);
     }
     // eslint-disable-next-line
-  }, [selectedPipeline]);
+  }, [selectedPipeline, fetchArtifactTypes]);
 
   const fetchArtifacts = (
     pipelineName,
@@ -147,6 +147,7 @@ const Artifacts = () => {
       );
     }
   }, [
+    selectedPipeline,
     selectedArtifactType,
     activePage,
     sortField,

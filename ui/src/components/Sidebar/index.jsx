@@ -42,17 +42,13 @@ const Sidebar = ({ pipelines, handlePipelineClick }) => {
         <ul>
           {pipelines.map((pipeline, index) => (
             <li key={index}>
-              <a
-                href="#"
-                className={`block p-1 mt-1 custom-fam text-black no-underline bg-transparent break-words rounded transition-all duration-300 whitespace-normal ${
-                  toggleState === index
-                    ? "bg-white text-black m-2px"
-                    : "hover:bg-white hover:text-black"
-                }`}
+              <button
+                type="button"
+                className="w-full border-none hover:bg-gray-200"
                 onClick={() => handleClick(pipeline, index)}
               >
                 {pipeline}
-              </a>
+              </button>
             </li>
           ))}
         </ul>

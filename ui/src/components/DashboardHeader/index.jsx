@@ -22,14 +22,14 @@ function DashboardHeader() {
   const [toggleMenu, setToggleMenu] = useState(false);
 
   let displayButton;
-  
+
   return (
     <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200 mb-1">
       <div className="flex items-center flex-shrink-0 mr-6 ">
         <NavLink
           className="bg-custom-green cursor-pointer color-black px-3 py-1.5 rounded-full border-none hover:bg-custom-green active:bg-custom-green font-semibold text-2xl tracking-tight"
-          onClick={()=> {window.location.href="/"}}
-          activeClassName="active"
+          onClick={() => { window.location.href = "/" }}
+          activeclassname="active"
         >
           CMF SERVER
         </NavLink>
@@ -50,36 +50,35 @@ function DashboardHeader() {
         </button>
       </div>
       <div
-        className={`animate-fade-in-down w-full ${
-          toggleMenu ? "block" : "hidden"
-        } flex-grow lg:flex lg:items-center lg:w-auto`}
+        className={`animate-fade-in-down w-full ${toggleMenu ? "block" : "hidden"
+          } flex-grow lg:flex lg:items-center lg:w-auto`}
       >
         <div className="text-xl font-semibold lg:flex-grow">
           <NavLink
             to="/artifacts"
             className="text-black no-underline px-3 py-1.5 bg-white rounded-full border-none transition-colors duration-300 ease-in-out inline-block hover:bg-custom-white hover:cursor-pointer active:bg-custom-white block mt-4 lg:inline-block lg:mt-0 mx-4"
-            activeClassName="active"
+            activeclassname="active"
           >
             Artifacts
           </NavLink>
           <NavLink
             to="/executions"
             className="text-black no-underline px-3 py-1.5 bg-white rounded-full border-none transition-colors duration-300 ease-in-out inline-block hover:bg-custom-white hover:cursor-pointer active:bg-custom-white block mt-4 lg:inline-block lg:mt-0  mx-4"
-            activeClassName="active"
+            activeclassname="active"
           >
             Executions
           </NavLink>
           <NavLink
             to="/display_lineage"
             className="text-black no-underline px-3 py-1.5 bg-white rounded-full border-none transition-colors duration-300 ease-in-out inline-block hover:bg-custom-white hover:cursor-pointer active:bg-custom-white block mt-4 lg:inline-block lg:mt-0 mx-4"
-            activeClassName="active"
+            activeclassname="active"
           >
             Lineage
           </NavLink>
           <NavLink
             to="/tensorboard"
             className="text-black no-underline px-3 py-1.5 bg-white rounded-full border-none transition-colors duration-300 ease-in-out inline-block hover:bg-custom-white hover:cursor-pointer active:bg-custom-white block mt-4 lg:inline-block lg:mt-0  mx-4"
-            activeClassName="active"
+            activeclassname="active"
           >
             TensorBoard
           </NavLink>

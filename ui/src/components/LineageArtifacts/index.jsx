@@ -17,12 +17,12 @@ const LineageArtifacts = ({ data }) => {
 
   useEffect(() => {
     setJsonData(data);
-    if (!jsondata) {
+    if (!data) {
       // Data is not yet available
       return;
     }
-    jsondata.nodes.forEach((node) => {
-      const hasIncomingLinks = jsondata.links.some(
+    data.nodes.forEach((node) => {
+      const hasIncomingLinks = data.links.some(
         (link) => link.target === node.id,
       );
       if (!hasIncomingLinks) {
@@ -33,8 +33,8 @@ const LineageArtifacts = ({ data }) => {
 
     var width = window.innerWidth;
     var height = window.innerHeight;
-    const links = jsondata.links.map((d) => ({ ...d }));
-    const nodes = jsondata.nodes.map((d) => ({ ...d }));
+    const links = data.links.map((d) => ({ ...d }));
+    const nodes = data.nodes.map((d) => ({ ...d }));
 
     var svg = d3
       .select("#chart-container")
@@ -185,7 +185,7 @@ const LineageArtifacts = ({ data }) => {
     return () => {
       svg.remove(); // Remove the SVG when the component is unmounted
     };
-  }, [jsondata]);
+  }, [data]);
 
   return <div id="chart-container"></div>;
 };
