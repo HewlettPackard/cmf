@@ -14,7 +14,7 @@
  * limitations under the License.
  ***/
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
@@ -59,8 +59,8 @@ const ArtifactsPostgres = () => {
       fetchArtifactTypes(selectedPipeline);
     }
   },[selectedPipeline]);
-  
-  const fetchArtifactTypes = () => {
+
+  const fetchArtifactTypes = (selectedPipeline) => {
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
       const defaultArtifactType = types[0];

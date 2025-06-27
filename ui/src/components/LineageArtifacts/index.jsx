@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as d3 from "d3";
 // import "./index.css"; // Adjust the path if needed
 

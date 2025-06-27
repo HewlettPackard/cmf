@@ -14,7 +14,7 @@
  * limitations under the License.
  ***/
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
 
 const ArtifactTypeSidebar = ({
@@ -25,7 +25,6 @@ const ArtifactTypeSidebar = ({
   const [clickedArtifactType, setClickedArtifactType] = useState(
     artifactTypes[0],
   );
-
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
 
@@ -33,10 +32,12 @@ const ArtifactTypeSidebar = ({
     handleClick(artifactTypes[0]);
     // eslint-disable-next-line
   }, []);
+
   useEffect(() => {
     setClickedArtifactType(artifactTypes[0]);
     // eslint-disable-next-line
   }, [artifactTypes]);
+  
   const handleClick = (artifactType) => {
     setClickedArtifactType(artifactType);
     handleArtifactTypeClick(artifactType);

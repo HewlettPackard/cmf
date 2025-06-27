@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ***/
-
-import React from 'react';
-
 const Highlight = ({ text, highlight }) => {
     // If the highlight text is empty or contains only whitespace, return the original text
     if (!highlight.trim()) {

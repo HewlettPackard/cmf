@@ -16,7 +16,7 @@
 
 // Sidebar.js
 
-import React, { useState } from "react";
+import { useState } from "react";
 
 const Sidebar = ({ pipelines, handlePipelineClick }) => {
   /*const [clickedPipeline, setClickedPipeline] = useState(pipelines[0] || '')*/
@@ -44,7 +44,7 @@ const Sidebar = ({ pipelines, handlePipelineClick }) => {
             <li key={index}>
               <button
                 type="button"
-                className="w-full border-none hover:bg-gray-200"
+                className={`w-full border-none ${toggleState === index ? "bg-white" : ""} hover:bg-gray-200`}
                 onClick={() => handleClick(pipeline, index)}
               >
                 {pipeline}

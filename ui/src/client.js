@@ -101,24 +101,25 @@ class FastAPIClient {
   }
 
   async getArtiExeTreeLineage(pipeline) {
-    return this.apiClient.get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
-    .then(({ data }) => {
-      return data;
-    }); 
+    return this.apiClient
+      .get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
+      .then(({ data }) => {
+        return data;
+      });
   }
 
-  async getExecutions(pipeline_name, active_page, filter_value, sort_order){
+  async getExecutions(pipeline_name, active_page, filter_value, sort_order) {
     return this.apiClient
-    .get(`/executions/${pipeline_name}`,{
-      params: {
-        active_page: active_page,
-        filter_value: filter_value,
-        sort_order: sort_order,
-      },
-    }).
-    then(({data}) => {
-      return data;
-    }); 
+      .get(`/executions/${pipeline_name}`, {
+        params: {
+          active_page: active_page,
+          filter_value: filter_value,
+          sort_order: sort_order,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
   }
 
   async getPipelines(value) {
