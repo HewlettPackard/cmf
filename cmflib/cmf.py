@@ -68,6 +68,7 @@ from cmflib.cmf_server import (
     log_execution_metrics_from_client, 
     log_step_metrics_from_client,
     log_dataslice_from_client,
+    log_label_with_version,
 )
 
 from cmflib.cmf_commands_wrapper import (
@@ -201,6 +202,7 @@ class Cmf:
     log_model_with_version: t.Callable[..., t.Any]
     log_execution_metrics_from_client: t.Callable[..., t.Any]
     log_step_metrics_from_client: t.Callable[..., t.Any]
+    log_label_with_version: t.Callable[..., t.Any]
 
     # function used to load neo4j params for cmf client
     @staticmethod
@@ -683,10 +685,10 @@ class Cmf:
         event: str,
         custom_properties: t.Optional[t.Dict] = None,
         label: t.Optional[str] = None,
-        label_custom_properties: t.Optional[t.Dict] = None,
+        label_properties: t.Optional[t.Dict] = None,
         external: bool = False,
     ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
-        # need to update the log_dataset_with_version too
+        # need to update the log_dataset_with_version too - no need
         """Logs a dataset as artifact.
         This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
@@ -751,15 +753,16 @@ class Cmf:
 
         uri = c_hash
         label_hash = 0
-        if label:     
+        if label:
             if not os.path.isfile(label):
                 print(f"Error: File '{label}' not found.")
             else:
                 label_hash = calculate_md5(label)
-                label_custom_props = {} if label_custom_properties is None else label_custom_properties
+                label_custom_props = {} if label_properties is None else label_properties
                 self.log_label(label, label_hash, uri, label_custom_props)
                 # update custom_props
                 custom_props["labels"] = label
+                custom_props["labels_uri"] = label_hash
                 # i don't think this line is needed 
                 # label = label + ":" + label_hash
 
@@ -1336,11 +1339,13 @@ class Cmf:
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                if key == "labels":
-                    print("going in here")
+                if key == "labels" or key == "labels_uri":
                     existing_value = artifact.custom_properties[key].string_value
+                    existing_list  =  existing_value.split(",")
+                    print(existing_list)
+                    existing_value = ",".join(set(existing_list))
+                    print(existing_value)
                     if existing_value:
-                        print("inside this too")
                         artifact.custom_properties[key].string_value = existing_value + "," + str(value)
                     else: 
                         artifact.custom_properties[key].string_value = str(value)
@@ -1424,23 +1429,6 @@ class Cmf:
     def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         # Labels currently are not visible in lineage as we are not sure where to display in them in Artifact lineage.
         # description remianing 
-        ## following lines should only be added to this function if we intend to use this function independently - starting here
-        # logging_dir = change_dir(self.cmf_init_path)
-        # current_script = sys.argv[0]
-        # file_name = os.path.basename(current_script)
-        # assigned_name = os.path.splitext(file_name)[0]
-        
-        # # Create context if not already created
-        # if not self.child_context:
-        #     self.create_context(pipeline_stage = assigned_name)
-        #     assert self.child_context is not None,  f"Failed to create context for {self.pipeline_name}!!"
-
-        # # Create execution if not already created
-        # if not self.execution:
-        #     self.create_execution(execution_name = assigned_name)
-        #     assert self.execution is not None,  f"Failed to create execution for {self.pipeline_name}!!"
-
-        ## ending here 
 
         ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
@@ -1448,20 +1436,8 @@ class Cmf:
         # We need to append the new properties to the existing dataset properties
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
-        name = re.split("/", url)[-1]
 
-        # Creating hash value for label dataset using hashlib library
-        # if not os.path.isfile(url):
-        #     print(f"Error: File '{url}' not found.")
-        #     return
-
-
-        #hash_value = calculate_md5(url)
-
-        # dataset_commit = hash_value
         existing_artifact = []
-        # need to think about it
-        # url = url + ":" + hash_value
         if label_hash and label_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
 
@@ -1512,53 +1488,6 @@ class Cmf:
         custom_props["git_repo"] = git_repo
         custom_props["Commit"] = label_hash
         custom_props["dataset_uri"] = dataset_uri
-        # self.execution_label_props["git_repo"] = git_repo
-        # self.execution_label_props["Commit"] = hash_value
-        # self.execution_label_props["dataset_uri"] = dataset_uri
-
-        # neo4j part is remaining for log_label 
-        # event = "input"
-        # if self.graph:
-        #     self.driver.create_dataset_node(
-        #         name,
-        #         url,
-        #         uri,
-        #         event,
-        #         self.execution.id,
-        #         self.parent_context,
-        #         custom_props,
-        #     )
-        #     if event.lower() == "input":
-        #         self.input_artifacts.append(
-        #             {
-        #                 "Name": name,
-        #                 "Path": url,
-        #                 "URI": uri,
-        #                 "Event": event.lower(),
-        #                 "Execution_Name": self.execution_name,
-        #                 "Type": "Dataset",
-        #                 "Execution_Command": self.execution_command,
-        #                 "Pipeline_Id": self.parent_context.id,
-        #                 "Pipeline_Name": self.parent_context.name,
-        #             }
-        #         )
-        #         self.driver.create_execution_links(uri, name, "Label")
-        #     else:
-        #         child_artifact = {
-        #             "Name": name,
-        #             "Path": url,
-        #             "URI": uri,
-        #             "Event": event.lower(),
-        #             "Execution_Name": self.execution_name,
-        #             "Type": "Dataset",
-        #             "Execution_Command": self.execution_command,
-        #             "Pipeline_Id": self.parent_context.id,
-        #             "Pipeline_Name": self.parent_context.name,
-        #         }
-        #         self.driver.create_artifact_relationships(
-        #             self.input_artifacts, child_artifact, self.execution_label_props
-        #         )
-        # os.chdir(logging_dir)
         return artifact
 
     class DataSlice:
@@ -1727,6 +1656,7 @@ Cmf.log_model_with_version = log_model_with_version
 Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
+Cmf.log_label_with_version = log_label_with_version
 
 def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
     """ Pushes metadata file to CMF-server.
