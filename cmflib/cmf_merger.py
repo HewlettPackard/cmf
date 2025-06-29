@@ -171,6 +171,8 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
                                                                    custom_props)
                         elif artifact_type == "Environment":
                             cmf_class.log_python_env_from_client(artifact_name, uri, props)
+                        elif artifact_type == "Label":
+                            cmf_class.log_label_with_version(artifact_name, uri, props, custom_props)
                         else:
                             pass
                     except AlreadyExistsError as e:
