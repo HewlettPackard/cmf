@@ -20,19 +20,15 @@ import re
 import argparse
 
 from cmflib import cmfquery
-from cmflib.cli.utils import find_root
 from cmflib.cli.command import CmdBase
-from cmflib.dvc_wrapper import dvc_push
-from cmflib.utils.dvc_config import DvcConfig
-from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cli.utils import check_minio_server
-from cmflib.dvc_wrapper import dvc_add_attribute
-from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path
+from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute
+from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, Minios3ServerInactive, 
     FileNotFound, 
-    ExecutionsNotFound, 
-    CmfNotConfigured, 
+    ExecutionsNotFound,
     ArtifactPushSuccess, 
     MissingArgument, 
     DuplicateArgumentNotAllowed
@@ -40,16 +36,7 @@ from cmflib.cmf_exception_handling import (
 
 class CmdArtifactPush(CmdBase):
     def run(self, live):
-        result = ""
-        dvc_config_op = DvcConfig.get_dvc_config()
-        cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
-
-        # find root_dir of .cmfconfig
-        output = find_root(cmf_config_file)
-
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is not configured.") != -1:
-            raise CmfNotConfigured(output)
+        dvc_config_op, config_file_path = fetch_cmf_config_path()
         
         cmd_args = {
             "file_name": self.args.file_name,
@@ -66,7 +53,6 @@ class CmdArtifactPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         if dvc_config_op["core.remote"] == "osdf":
-            config_file_path = os.path.join(output, cmf_config_file)
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)
             #print("key_id="+cmf_config["osdf-key_id"])
@@ -95,7 +81,7 @@ class CmdArtifactPush(CmdBase):
         
         pipeline_name = self.args.pipeline_name[0]
         # Put a check to see whether pipline exists or not
-        if not query.get_pipeline_id(pipeline_name) > 0:
+        if not pipeline_name in query.get_pipeline_names():
             raise PipelineNotFound(pipeline_name)
 
         stages = query.get_pipeline_stages(pipeline_name)
@@ -134,10 +120,10 @@ class CmdArtifactPush(CmdBase):
                 final_list.append(file)
             # checking if the .dvc exists in user's project working directory
             elif os.path.isabs(file):
-                    file = re.split("/",file)[-1]
-                    file = os.path.join(os.getcwd(), file)
-                    if os.path.exists(file):
-                        final_list.append(file)
+                file = re.split("/",file)[-1]
+                file = os.path.join(os.getcwd(), file)
+                if os.path.exists(file):
+                    final_list.append(file)
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass

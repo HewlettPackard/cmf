@@ -15,19 +15,19 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
+import argparse
+
+from cmflib import cmf_merger
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import find_root
-from cmflib.cli.command import CmdBase
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 from cmflib.server_interface import server_interface
 from cmflib.cmf_exception_handling import (
     DuplicateArgumentNotAllowed,
     PipelineNotFound,
     MissingArgument,
-    CmfNotConfigured, 
     ExecutionUUIDNotFound,
     MlmdNotFoundOnServer,
     MlmdFilePullSuccess,
@@ -40,16 +40,12 @@ from cmflib.cmf_federation import update_mlmd
 
 # This class pulls mlmd file from cmf-server
 class CmdMetadataPull(CmdBase):
+
     def run(self, live):
-        cmfconfig = os.environ.get("CONFIG_FILE", ".cmfconfig")
-        # find root_dir of .cmfconfig
-        output = find_root(cmfconfig)
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is not configured") != -1:
-            raise CmfNotConfigured(output)
-        config_file_path = os.path.join(output, cmfconfig)
-        attr_dict = CmfConfig.read_config(config_file_path)
-        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:8080")
+        output, cmf_config_path = fetch_cmf_config_path()
+        
+        attr_dict = CmfConfig.read_config(cmf_config_path)
+        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
         current_directory = os.getcwd()
         full_path_to_dump = ""
         cmd = "pull"
