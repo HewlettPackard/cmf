@@ -64,7 +64,7 @@ pip install cmflib
 
 ### Server Setup
 
-📖 Follow the guide in [`docs/cmf_server/cmf-server.md`](docs/cmf_server/cmf-server.md)
+📖 Follow the guide in <a href="docs/cmf_server/cmf-server.md" target="_blank">docs/cmf_server/cmf-server.md</a>
 
 ---
 
@@ -73,6 +73,7 @@ pip install cmflib
 - [Getting Started](https://hewlettpackard.github.io/cmf/)
 - [API Reference](https://hewlettpackard.github.io/cmf/api/public/cmf)
 - [Full Docs](./docs/README.md)
+- [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/cmf_client)
 - [Related Docs](https://deepwiki.com/HewlettPackard/cmf)
 
 ---
@@ -84,7 +85,7 @@ CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decen
 - Artifacts are versioned using DVC (`.dvc` files)
 - Code is tracked with Git
 - Metadata is logged to relational DB (e.g., SQLite, MLMD)
-- Sync metadata with `cmf push` and `cmf pull`
+- Sync metadata with `cmf metadata push` and `cmf metadata pull`
 
 ---
 
@@ -119,14 +120,16 @@ cmf.log_metrics({"accuracy": 0.95})
 ```
 
 ```bash
-cmf                          # Comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata
-cmf init                     # Initialize an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available
-cmf init show                # Display current cmf configuration
-cmf metadata push            # Push the metadata file from the local machine to the cmf-serve
-cmf metadata pull            # Pull the metadata file from the cmf-server to the user's local machine
-
+cmf                          # CLI to manage metadata and artifacts
+cmf init                     # Initialize artifact repository
+cmf init show                # Show current CMF config
+cmf metadata push            # Push metadata to server
+cmf metadata pull            # Pull metadata from server
 ```
-Please read our [Command Reference](https://hewlettpackard.github.io/cmf/docs/cmf_client.md) for a complete list.
+	
+➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_client/cmf_client">Command Reference</a>
+
+
 ---
 
 ## ✅ Benefits
@@ -139,7 +142,7 @@ Please read our [Command Reference](https://hewlettpackard.github.io/cmf/docs/cm
 
 ---
 
-## 🎤 Talks & Publications
+## 🎤 Talks & PublicationsAdd commentMore actions
 
 - 🎙 [Monterey Data Conference 2022](https://drive.google.com/file/d/1Oqs0AN0RsAjt_y9ZjzYOmBxI8H0yqSpB/view)
 - 📄 *Constructing a Metadata Knowledge Graph as an Atlas of ML Pipelines* – [Frontiers in Big Data, 2025](https://www.frontiersin.org/articles/10.3389/fdata.2024.1176506/full)
@@ -150,11 +153,9 @@ Please read our [Command Reference](https://hewlettpackard.github.io/cmf/docs/cm
 
 - [📚 Common Metadata Ontology](https://hewlettpackard.github.io/cmf/common-metadata-ontology/readme/)
 - [🧠 AI Metadata Knowledge Graph (AIMKG)](https://github.com/HewlettPackard/ai-metadata-knowledge-graph)
-- [📦 CMF Plugin for DVC](LINK_TO_PLUGIN_IF_ANY)
-
 ---
 
-## 🤝 Community
+## 🤝 CommunityAdd commentMore actions
 
 - 💬 [Join CMF on Slack](https://commonmetadata.slack.com/)
 - 📧 Contact: **annmary.roy@hpe.com**
