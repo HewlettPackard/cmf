@@ -16,8 +16,16 @@
 
 import os
 import json
+import readchar
 import requests
+import textwrap
 import subprocess
+import pandas as pd
+
+from tabulate import tabulate
+from cmflib.cli.utils import find_root
+from cmflib.utils.dvc_config import DvcConfig
+from cmflib.cmf_exception_handling import CmfNotConfigured
 
 def is_url(url)-> bool:
     from urllib.parse import urlparse
@@ -27,6 +35,7 @@ def is_url(url)-> bool:
     except ValueError:
         return False
 
+
 def is_git_repo():
     git_dir = os.path.join(os.getcwd(), '.git')
     print("git_dir", git_dir)
@@ -35,6 +44,7 @@ def is_git_repo():
         return f"A Git repository already exists in {git_dir}."
     else:
         return
+
 
 def get_python_env(env_name='cmf'):
     # what this is supposed to return 
@@ -85,6 +95,7 @@ def get_python_env(env_name='cmf'):
 
     return
 
+
 def get_md5_hash(output):
     import hashlib
 
@@ -102,6 +113,7 @@ def get_md5_hash(output):
 
     return hash_for_op
         
+
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
     if not logging_dir == cmf_init_path:
@@ -174,6 +186,7 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     return dynamic_pass
 
+
 def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     """
     Check if a branch exists in a GitHub repository.
@@ -192,6 +205,84 @@ def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     if res.status_code == 200:
         return True
     return False
+
+
+def display_table(df: pd.DataFrame, columns: list) -> None:
+    """
+    Display the DataFrame in a paginated table format with text wrapping for better readability.
+    Parameters:
+    - df: The DataFrame to display.
+    - columns: The columns to display in the table.
+    """
+    # Rearranging columns
+    df = df[columns]
+    df = df.copy()
+    
+    # Wrap text in object-type columns to a width of 14 characters.
+    # This ensures that long strings are displayed neatly within the table.
+    for col in df.select_dtypes(include=["object"]).columns:
+        df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
+
+    total_records = len(df)
+    start_index = 0  
+
+    # Display up to 20 records per page for better readability. 
+    # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
+    while True:
+        end_index = start_index + 20
+        records_per_page = df.iloc[start_index:end_index]
+        
+        # Display the table.
+        # Fix mypy warning by converting DataFrame to list of lists and columns to list of strings.
+        table = tabulate(
+            records_per_page.values.tolist(),  # Convert DataFrame to list of lists for tabulate
+            headers=[str(col) for col in df.columns],  # Ensure headers are list of strings
+            tablefmt="grid",
+            showindex=False,
+        )
+        print(table)
+
+        # Check if we've reached the end of the records.
+        if end_index >= total_records:
+            print("\nEnd of records.")
+            break
+
+        # Ask the user for input to navigate pages.
+        print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+        user_input = readchar.readchar()
+        if user_input.lower() == 'q':
+            break
+        
+        # Update start index for the next page.
+        start_index = end_index 
+
+
+def fetch_cmf_config_path() -> tuple[dict, str]: 
+    """ Fetches the CMF configuration and its file path.
+    Returns: 
+        tuple[dict, str]: A tuple containing the DVC configuration (dict) and the CMF config file path (str).
+    Raises: 
+        CmfNotConfigured: If the CMF configuration is missing or not properly set up.
+    """
+    # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
+    # If CONFIG_FILE is not provided, default file name is .cmfconfig
+    cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig") 
+    error_message = "'cmf' is not configured.\nExecute 'cmf init' command."
+    
+    # Fetch DVC configuration 
+    dvc_output = DvcConfig.get_dvc_config() 
+    if not isinstance(dvc_output, dict): 
+        raise CmfNotConfigured(error_message)
+    
+    # Find the root directory containing the CMF config file 
+    cmf_config_root = find_root(cmf_config) 
+    if "'cmf' is not configured" in cmf_config_root: 
+        raise CmfNotConfigured(error_message)
+    
+    # Construct the full path to the configuration file 
+    config_file_path = os.path.join(cmf_config_root, cmf_config)
+    return dvc_output, config_file_path
+
 
 def get_postgres_config() -> dict:
     """

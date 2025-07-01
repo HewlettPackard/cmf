@@ -36,7 +36,8 @@ from cmflib.cmf_exception_handling import MissingArgument, DuplicateArgumentNotA
 
 class CmdInitMinioS3(CmdBase):
     def run(self, live):
-        # Reading CONFIG_FILE variable
+        # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
+        # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
         cmd_args = {
@@ -56,18 +57,12 @@ class CmdInitMinioS3(CmdBase):
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
-        # checking if config file exists
-        if not os.path.exists(cmf_config):
-            # writing default value to config file
-            attr_dict = {}
-            attr_dict["server-url"] = "http://127.0.0.1:8080"
-            CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
-        # if user gave --cmf-server-url, override the config file
-        if self.args.cmf_server_url:
-            attr_dict = {}
-            attr_dict["server-url"] = self.args.cmf_server_url
-            CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
+        attr_dict = {}
+        # cmf_server_url is default parameter for cmf init command 
+        # if user does not provide cmf-server-url, default value is http://127.0.0.1:80
+        attr_dict["server-ip"] = self.args.cmf_server_url
+        CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
         # read --neo4j details and add to the exsting file
         if self.args.neo4j_user and self.args.neo4j_password and self.args.neo4j_uri:
@@ -84,6 +79,7 @@ class CmdInitMinioS3(CmdBase):
             pass
         else:
             raise Neo4jArgumentNotProvided
+
         output = is_git_repo()
         if not output:
             branch_name = "master"
