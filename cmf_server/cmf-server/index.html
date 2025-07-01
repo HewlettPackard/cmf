@@ -1143,8 +1143,7 @@
 </blockquote>
 <ol>
 <li>Go to root <code>cmf</code> directory. </li>
-<li>
-<p>Replace <code>xxxx</code> with user-name in docker-compose-server.yml available in the root cmf directory.
+<li>Replace <code>xxxx</code> with your user-name in docker-compose-server.yml available in the root cmf directory.
     <div class="highlight"><pre><span></span><code>......
 services:
 server:
@@ -1155,18 +1154,14 @@ server:
   container_name: cmf-server
   build:
 ....
-</code></pre></div></p>
-</li>
-<li>
-<p>Create a <code>.env</code> file in the same directory as <code>docker-compose-server.yml</code> and add the necessary environment variables.
+</code></pre></div></li>
+<li>Create a <code>.env</code> file in the same directory as <code>docker-compose-server.yml</code> and add the necessary environment variables.
    <div class="highlight"><pre><span></span><code>POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword
-</code></pre></div></p>
-<blockquote></blockquote>
+</code></pre></div><blockquote></blockquote>
 </li>
 <li>
-<p>Execute following command to start both the containers. <code>IP</code> variable is the IP address and <code>hostname</code> is host name of the machine on which you are executing the following command.
-   You can use either way.
+<p>Execute one of the following commands to start both containers. <code>IP</code> variable is the IP address and <code>hostname</code> is the host name of the machine on which you are executing the following command.
    <div class="highlight"><pre><span></span><code>IP=200.200.200.200 docker compose -f docker-compose-server.yml up
            OR
 hostname=host_name docker compose -f docker-compose-server.yml up
