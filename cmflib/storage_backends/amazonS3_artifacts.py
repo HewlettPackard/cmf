@@ -129,7 +129,7 @@ class AmazonS3Artifacts:
         try:
             # Download the .dir file containing metadata about tracked files.
             response = self.s3.download_file(bucket_name, object_name, temp_dir)
-
+            
             # Read the .dir metadata to get file information.
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
@@ -166,18 +166,16 @@ class AmazonS3Artifacts:
             # Check if all files were successfully downloaded.
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False   
+            return total_files_in_directory, files_downloaded, False   
         except self.s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist
             if e.response['Error']['Code'] == '404':
                 print(f"{bucket_name}  doesn't exists!!")
                 total_files_in_directory = 1 
                 return total_files_in_directory, files_downloaded, False    
-            else:
-                print(e)
-                total_files_in_directory = 1 
-                return total_files_in_directory, files_downloaded, False
+            print(e)
+            total_files_in_directory = 1 
+            return total_files_in_directory, files_downloaded, False
         except Exception as e:
             print(f"object {object_name} is not downloaded.")
             # Handle failure to download the .dir metadata.

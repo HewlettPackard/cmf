@@ -14,15 +14,17 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
-import pandas as pd
+import argparse
 import textwrap
+import readchar
+import pandas as pd
 
+from cmflib import cmfquery
 from tabulate import tabulate
 from typing import Union, List
 from cmflib.cli.command import CmdBase
-from cmflib import cmfquery
+from cmflib.utils.helper_functions import display_table
 from cmflib.cmf_exception_handling import ( 
     PipelineNotFound,
     FileNotFound,
@@ -49,54 +51,6 @@ class CmdArtifactsList(CmdBase):
         
         return df
     
-    def display_table(self, df: pd.DataFrame) -> None:
-        """
-        Display the DataFrame in a paginated table format with text wrapping for better readability.
-        Parameters:
-        - df: The DataFrame to display.
-        """
-        # Rearranging columns
-        updated_columns = ["id", "name", "type", "create_time_since_epoch", "url", "Commit", "uri"] 
-        df = df[updated_columns]
-        df = df.copy()
-       
-        # Wrap text in object-type columns to a width of 14 characters.
-        # This ensures that long strings are displayed neatly within the table.
-        for col in df.select_dtypes(include=["object"]).columns:
-            df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
-
-        total_records = len(df)
-        start_index = 0  
-
-        # Display up to 20 records per page for better readability. 
-        # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
-        while True:
-            end_index = start_index + 20
-            # Convert the DataFrame slice to a list of lists.
-            records_per_page = df.iloc[start_index:end_index].values.tolist()
-
-            # Display the table.
-            table = tabulate(
-                records_per_page,
-                headers=list(df.columns),
-                tablefmt="grid",
-                showindex=False,
-            )
-            print(table)
-
-            # Check if we've reached the end of the records.
-            if end_index >= total_records:
-                print("\nEnd of records.")
-                break
-
-            # Ask the user for input to navigate pages.
-            user_input = input("Press Enter to see more or 'q' to quit: ").strip().lower()
-            if user_input == 'q':
-                break
-            
-            # Update start index for the next page.
-            start_index = end_index 
-
     def search_artifact(self, df: pd.DataFrame) -> Union[int, List[int]]:
         """
         Searches for the specified 'artifact_name' in the DataFrame and returns matching IDs.
@@ -135,7 +89,7 @@ class CmdArtifactsList(CmdBase):
             return matched_ids
         return -1
 
-    def run(self):
+    def run(self, live):
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
@@ -217,26 +171,27 @@ class CmdArtifactsList(CmdBase):
                         print(table)
                         print()
 
-                        user_input = input("Press Enter to see more records if exists or 'q' to quit: ").strip().lower()
-                        if user_input == 'q':
+                        print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+                        user_input = readchar.readchar()
+                        if user_input.lower() == 'q':
                             break
                     return MsgSuccess(msg_str = "End of records..")
                 else:
                     raise ArtifactNotFound(self.args.artifact_name[0])
         
         df = self.convert_to_datetime(df, "create_time_since_epoch")
-        self.display_table(df)
+        display_table(df, ["id", "name", "type", "create_time_since_epoch", "url", "Commit", "uri"])
 
         return MsgSuccess(msg_str = "Done.")
 
 
 def add_parser(subparsers, parent_parser):
-    ARTIFACT_LIST_HELP = "Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page."
+    ARTIFACT_LIST_HELP = "Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.",
+        description="Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.",
         help=ARTIFACT_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -256,7 +211,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name",
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.",
+        help="Specify input metadata file name.",
         metavar="<file_name>",
     )
 

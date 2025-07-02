@@ -116,8 +116,8 @@ const ExecutionPTable = ({ executions, onSort, onFilter }) => {
             <tbody className="body divide-y divide-gray-200">
               {sortedData.map((data, index) => (
                 <React.Fragment key={index}>
-                  <tr key={index} className="text-sm font-medium text-gray-800">
-                    <td className="px-6 py-4 cursor-pointer" onClick={() => toggleRow(index)}>
+                  <tr key={index} onClick={() => toggleRow(index)} className="text-sm font-medium text-gray-800">
+                    <td className="px-6 py-4 cursor-pointer">
                       {expandedRow === index || expandedRow === "all" ? "-" : "+"}
                     </td>
                     <td className="px-6 py-4"><Highlight text={getPropertyValue(data.execution_properties, "Context_Type")} highlight={filterValue} /></td>
@@ -148,12 +148,12 @@ const ExecutionPTable = ({ executions, onSort, onFilter }) => {
                   </tr>
                   {(expandedRow === "all" || expandedRow === index) && (
                     <tr>
-                      <td colSpan="6">
+                      <td colSpan="7">
                         <table className="expanded-table">
                           <tbody>
                             {data.execution_properties.map((property, idx) => (
                               <tr key={idx}>
-                                <td>{property.name}</td>
+                                <td><Highlight text={property.name} highlight={filterValue} /></td>
                                 <td><Highlight text={property.value} highlight={filterValue} /></td>
                               </tr>
                             ))}

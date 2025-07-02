@@ -1556,45 +1556,47 @@ Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 
-def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
-    """ Pushes MLMD file to CMF-server.
+def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+    """ Pushes metadata file to CMF-server.
     Example:
     ```python
          result = metadata_push("example_pipeline", "mlmd_file", "eg_execution_uuid", "tensorboard_log")
     ```
     Args:
         pipeline_name: Name of the pipeline.
-        filepath: Path to the MLMD file.
+        file_name: Specify input metadata file name.
         execution_uuid: Optional execution UUID.
         tensorboard_path: Path to tensorboard logs.
 
     Returns:
         Response output from the _metadata_push function.
     """
-    # Required arguments:  pipeline_name
-    # Optional arguments: Execution_UUID, filepath (mlmd file path), tensorboard_path
-    output = _metadata_push(pipeline_name, filepath, execution_uuid, tensorboard_path)
+    # Required arguments: pipeline_name
+    # Optional arguments: execution_UUID, file_name, tensorboard_path
+    output = _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path)
     return output
 
-def metadata_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = ""):
-    """ Pulls MLMD file from CMF-server. 
+
+def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+    """ Pulls metadata file from CMF-server. 
      Example: 
      ```python 
           result = metadata_pull("example_pipeline", "./mlmd_directory", "eg_execution_uuid") 
      ``` 
      Args: 
         pipeline_name: Name of the pipeline. 
-        filepath: File path to store the MLMD file. 
+        file_name: Specify output metadata file name.
         execution_uuid: Optional execution UUID. 
      Returns: 
         Message from the _metadata_pull function. 
      """
-    # Required arguments:  pipeline_name 
-    #Optional arguments: Execution_UUID, filepath(file path to store mlmd file) 
-    output = _metadata_pull(pipeline_name, filepath, execution_uuid)
+    # Required arguments: pipeline_name 
+    # Optional arguments: execution_UUID, file_name 
+    output = _metadata_pull(pipeline_name, file_name, execution_uuid)
     return output
 
-def metadata_export(pipeline_name: str, jsonfilepath: str = "", filepath = "./mlmd"):
+
+def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = "./mlmd"):
     """ Export local mlmd's metadata in json format to a json file. 
      Example: 
      ```python 
@@ -1602,37 +1604,36 @@ def metadata_export(pipeline_name: str, jsonfilepath: str = "", filepath = "./ml
      ``` 
      Args: 
         pipeline_name: Name of the pipeline. 
-        jsonfilepath: File path of json file. 
-        filepath: File path to store the MLMD file. 
+        json_file_name: File path of json file. 
+        file_name: Specify input metadata file name. 
      Returns: 
-        Message from the _metadata_pull function. 
+        Message from the _metadata_export function. 
      """
-    # Required arguments:  pipeline_name 
-    #Optional arguments: jsonfilepath, filepath(file path to store mlmd file) 
-    output = _metadata_export(pipeline_name, jsonfilepath, filepath)
+    # Required arguments: pipeline_name 
+    # Optional arguments: json_file_name, file_name
+    output = _metadata_export(pipeline_name, json_file_name, file_name)
     return output
 
-def artifact_pull(pipeline_name: str, filepath = "./mlmd"):
-    """ Pulls artifacts from the initialized repository.
 
+def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
+    """ Pulls artifacts from the initialized repository.
     Example:
     ```python
          result = artifact_pull("example_pipeline", "./mlmd_directory")
     ```
-
     Args:
         pipeline_name: Name of the pipeline.
-        filepath: Path to store artifacts.
+        file_name: Specify input metadata file name.
     Returns:
         Output from the _artifact_pull function.
     """
-
-    # Required arguments: Pipeline_name
-    # Optional arguments: filepath( path to store artifacts)
-    output = _artifact_pull(pipeline_name, filepath)
+    # Required arguments: pipeline_name
+    # Optional arguments: file_name
+    output = _artifact_pull(pipeline_name, file_name)
     return output
 
-def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
+
+def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str):
     """ Pulls a single artifact from the initialized repository. 
     Example: 
     ```python 
@@ -1640,21 +1641,19 @@ def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the artifact. 
+       file_name: Specify input metadata file name.
        artifact_name: Name of the artifact. 
     Returns:
        Output from the _artifact_pull_single function. 
     """
-
-    # Required arguments: Pipeline_name
-    # Optional arguments: filepath( path to store artifacts), artifact_name
-    output = _artifact_pull_single(pipeline_name, filepath, artifact_name)
+    # Required arguments: pipeline_name
+    # Optional arguments: file_name, artifact_name
+    output = _artifact_pull_single(pipeline_name, file_name, artifact_name)
     return output
 
 # Prevent multiplying int with NoneType; added default value to jobs.
 def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     """ Pushes artifacts to the initialized repository.
-
     Example:
     ```python
          result = artifact_push("example_pipeline", "./mlmd_directory", 32)
@@ -1669,6 +1668,7 @@ def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     output = _artifact_push(pipeline_name, filepath, jobs)
     return output
 
+
 def cmf_init_show():
     """ Initializes and shows details of the CMF command. 
     Example: 
@@ -1678,9 +1678,9 @@ def cmf_init_show():
     Returns: 
        Output from the _cmf_cmd_init function. 
     """
-
     output=_cmf_cmd_init()
     return output
+
 
 def cmf_init(type: str = "",
         path: str = "",
@@ -1717,7 +1717,7 @@ def cmf_init(type: str = "",
                )
     ```
     Args: 
-       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote")
+       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
        path: Path for the local repository. 
        git_remote_url: Git remote URL for version control.
        cmf_server_url: CMF server URL.
@@ -1774,7 +1774,12 @@ def cmf_init(type: str = "",
     if type == "local" and path != "" and  git_remote_url != "" :
         """Initialize local repository"""
         output = _init_local(
-            path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
+            path, 
+            git_remote_url, 
+            cmf_server_url, 
+            neo4j_user, 
+            neo4j_password, 
+            neo4j_uri
         )
         if status_args != []:
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
@@ -1873,62 +1878,58 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list(filepath = "./mlmd"):
-    """ Display a list of pipeline name(s) from the available mlmd file.
+def pipeline_list(file_name = "./mlmd"):
+    """ Display a list of pipeline name(s) from the available input metadata file.
 
     Example:
     ```python
          result = _pipeline_list("./mlmd_directory")
     ```
-
     Args:
-        filepath: File path to store the MLMD file. 
+        file_name: Specify input metadata file name.
     Returns:
         Output from the _pipeline_list function.
     """
-
-    # Optional arguments: filepath( path to store the MLMD file)
-    output = _pipeline_list(filepath)
+    # Optional arguments: file_name( path to store the MLMD file)
+    output = _pipeline_list(file_name)
     return output
 
 
-def execution_list(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = ""):
-    """Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+    """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
         result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify input metadata file name.
+       execution_uuid: Specify the execution uuid to retrieve execution.
     Returns:
        Output from the _execution_list function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), execution_uuid
-    output = _execution_list(pipeline_name, filepath, execution_uuid)
+    # Optional arguments: file_name, execution_uuid
+    output = _execution_list(pipeline_name, file_name, execution_uuid)
     return output
 
 
-def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = ""):
-    """ Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str = ""):
+    """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
         result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
+       file_name: Specify input metadata file name. 
        artifact_name: Artifacts for particular artifact name.
     Returns:
        Output from the _artifact_list function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), artifact_name
-    output = _artifact_list(pipeline_name, filepath, artifact_name)
+    # Optional arguments: file_name, artifact_name
+    output = _artifact_list(pipeline_name, file_name, artifact_name)
     return output
 
 # Prevent multiplying int with NoneType; added default value to jobs.
@@ -1940,21 +1941,20 @@ def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file.
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify input metadata file name.
+       execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
        jobs: Number of jobs to use for pushing artifacts.
     Returns:
        Output from the _repo_push function. 
     """
-
     # Required arguments: pipeline_name
     # Optional arguments: filepath, execution_uuid, tensorboard_path, jobs
     output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, jobs)
     return output
 
 
-def repo_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = ""):
+def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     Example: 
     ```python 
@@ -1962,14 +1962,12 @@ def repo_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = "")
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify output metadata file name.
+       execution_uuid: Specify execution uuid.
     Returns:
        Output from the _repo_pull function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath, execution_uuid
-    output = _repo_pull(pipeline_name, filepath, execution_uuid)
+    # Optional arguments: file_name, execution_uuid
+    output = _repo_pull(pipeline_name, file_name, execution_uuid)
     return output
-

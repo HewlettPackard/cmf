@@ -186,7 +186,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                     <tbody>
                     {artifact.artifact_properties.map((property, idx) => (
                     <tr key={idx}>
-                    <td>{property.name}</td>
+                    <td><Highlight text={String(property.name)} highlight={filterValue}/></td>
                     <td><Highlight text={String(property.value)} highlight={filterValue}/></td>
                     </tr>
                   ))}

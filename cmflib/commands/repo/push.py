@@ -75,7 +75,7 @@ class CmdRepoPush(CmdBase):
         
         return MsgSuccess(msg_str="cmf repo push command executed successfully.")
     
-    def artifact_push(self):
+    def artifact_push(self, live):
         """
         Pushes artifacts to the remote storage.
 
@@ -197,23 +197,24 @@ class CmdRepoPush(CmdBase):
         return ArtifactPushSuccess(result)
         
 
-    def run(self):
+    def run(self, live):
         print("Executing cmf artifact push command..")
         if(self.args.execution_uuid):
             # If an execution uuid exists, push the artifacts associated with that execution. 
-            artifact_push_result = self.artifact_push()
+            artifact_push_result = self.artifact_push(live)
         else:
             # Pushing all artifacts. 
             artifact_push_instance = CmdArtifactPush(self.args)
-            artifact_push_result = artifact_push_instance.run()
+            artifact_push_result = artifact_push_instance.run(live)
 
         if artifact_push_result.status == "success":
             print("Executing cmf metadata push command..")
             metadata_push_instance = CmdMetadataPush(self.args)
-            metadata_push_result = metadata_push_instance.run()
+            metadata_push_result = metadata_push_instance.run(live)
             if metadata_push_result.status == "success":
                 print(metadata_push_result.handle())  # Print the message returned by the handle() method of the metadata_push_result object.
                 print("Executing git push command..")
+                live.stop()
                 return self.git_push()
     
 
@@ -243,7 +244,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.", 
+        help="Specify input metadata file name.", 
         metavar="<file_name>"
     )
 
@@ -258,10 +259,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-t",
-        "--tensorboard",
+        "--tensorboard_path",
         action="append",
         help="Specify path to tensorboard logs for the pipeline.",
-        metavar="<tensorboard>"
+        metavar="<tensorboard_path>"
     )
 
     parser.add_argument(
