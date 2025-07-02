@@ -91,7 +91,6 @@ class CmdMetadataPull(CmdBase):
         )  # calls cmf-server api to get mlmd file data(Json format)
          
         status = output.status_code
-        print("Status code: ", status)
         # Checks if given pipeline does not exist
         # or if the execution UUID not present inside the mlmd file
         # else pulls the mlmd file
@@ -102,7 +101,6 @@ class CmdMetadataPull(CmdBase):
         else:
             # Get unique executions
             unique_executions = query.get_unique_executions(output.content)
-            print("Delta between executions: ", unique_executions)
             if not unique_executions:
                 return ExecutionsAlreadyExists()
 

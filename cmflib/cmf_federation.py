@@ -89,7 +89,6 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
         return "invalid_json_payload"  # No pipelines found in payload
   
     len_pipelines = len(pipelines)
-    print(len_pipelines)
     if pipeline_name:
         # in case of push check pipeline name exists inside mlmd_data
         pipeline = [pipeline for pipeline in pipelines if pipeline.get("name") == pipeline_name]
@@ -137,10 +136,8 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
             status = "success"
         return status
     else:
-            print("enrtered here in create unique executions")
             for pipeline in pipelines:
                 pipeline_name = pipeline.get("name")
-                print("pipeline name = ", pipeline_name)
 
                 _, list_executions_exists, _, status = identify_existing_and_new_executions(
                     query, pipeline, pipeline_name
@@ -173,7 +170,6 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
                         parse_json_to_mlmd(
                             json.dumps(pipeline), "", cmd, exe_uuid
                         )
-                    print("out of create unique executions")
                     # we are passing this success in a very wrong way
                     status = "success"
 

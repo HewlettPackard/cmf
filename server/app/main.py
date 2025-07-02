@@ -45,6 +45,8 @@ from server.app.schemas.dataframe import (
     ServerRegistrationRequest, 
     AcknowledgeRequest,
     MLMDPullRequest,
+    ArtifactRequest,
+    ExecutionRequest,
 )
 import httpx
 from jsonpath_ng.ext import parse

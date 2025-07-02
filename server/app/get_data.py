@@ -221,15 +221,11 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
     """
     json_payload = None
     flag=False
-    print("pipeline_name = ", pipeline_name)
-    print("last_sync_time = ", last_sync_time)
     if pipeline_name == None and not last_sync_time:
-        print("first sync")
         # in case of first sync or second sync we don't know if there is one pipeline or multiple pipelines
         if last_sync_time is None:
             json_payload = query.extract_to_json(0)
     elif pipeline_name == None and last_sync_time:
-        print("second sync")
         json_payload = query.extract_to_json(int(last_sync_time))
     else:
         if(pipeline_name is not None and query.get_pipeline_id(pipeline_name) != -1 and dict_of_exe_ids is not None):  # checks if pipeline name is available in mlmd
