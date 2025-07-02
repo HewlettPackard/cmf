@@ -14,7 +14,6 @@
 # limitations under the License.
 ###
 
-#!/usr/bin/env python3
 import os
 import yaml
 import uuid
@@ -26,6 +25,7 @@ from cmflib import cmfquery, cmf
 from cmflib.cli.command import CmdBase
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 from cmflib.cmf_exception_handling import MsgSuccess, FileNotFound
 
 class CmdDVCIngest(CmdBase):
@@ -43,7 +43,7 @@ class CmdDVCIngest(CmdBase):
         cmf_levels = execution_lineage.split(',')
         return cmf_levels[-1], cmf_levels[1], cmf_levels[0]
 
-    def ingest_metadata(self, execution_lineage:str, metadata:dict, metawriter:cmf.Cmf, command:str = "") :
+    def ingest_metadata(self, execution_lineage: str, metadata: dict, metawriter: cmf.Cmf, tracked: dict, command: str = "" ) :
         """
         Ingest the metadata into cmf
         args
@@ -54,7 +54,6 @@ class CmdDVCIngest(CmdBase):
             execution_exist : True if it exeist, False otherwise
             metawrite: cmf object 
         """
-        tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
         pipeline_name, context_name, execution = self.get_cmf_hierarchy(execution_lineage)
 
         _ = metawriter.create_execution(
@@ -64,17 +63,28 @@ class CmdDVCIngest(CmdBase):
             create_new_execution=False
             )
             
+        output, config_file_path = fetch_cmf_config_path()
+        artifact_repo = list(output.values())[0]
+
         for k, v in metadata.items():
+            props={}
             if k == "deps":
                 for dep in v:
-                    metawriter.log_dataset_with_version(dep["path"], dep["md5"], "input")
                     if dep["path"] not in tracked:
                         metawriter.log_dataset(dep["path"], 'input')
+                    else:
+                        md5_value = dep["md5"] 
+                        url = pipeline_name + ":" + artifact_repo + "/files/md5/" + md5_value[:2] + "/" + md5_value[2:]
+                        props["url"] =  url
+                        metawriter.log_dataset_with_version(dep["path"], md5_value, "input", props)
             if k == "outs":
                 for out in v:
-                    metawriter.log_dataset_with_version(out["path"], out["md5"], "output")
+                    md5_value = out["md5"] 
+                    url = pipeline_name + ":" + artifact_repo + "/files/md5/" + md5_value[:2] + "/" + md5_value[2:]
+                    props["url"] =  url
+                    metawriter.log_dataset_with_version(out["path"], md5_value, "output", props)
                     tracked[out["path"]] = True
-
+        return tracked
 
     def run(self, live):
         """
@@ -89,15 +99,15 @@ class CmdDVCIngest(CmdBase):
         uuid_ = str(uuid.uuid4())
         pipeline_name = ""
         cmd_exe: t.Dict[str, str] = {}
-        cmf_query = cmfquery.CmfQuery(self.args.file_name)
-        pipelines: t.List[str] = cmf_query.get_pipeline_names()
+        query = cmfquery.CmfQuery(self.args.file_name)
+        pipelines: t.List[str] = query.get_pipeline_names()
 
         # Query mlmd to get all the executions and its commands
         for pipeline in pipelines:
             pipeline_name = pipeline
-            stages: t.List[str] = cmf_query.get_pipeline_stages(pipeline)
+            stages: t.List[str] = query.get_pipeline_stages(pipeline)
             for stage in stages:
-                exe_df: pd.DataFrame = cmf_query.get_all_executions_in_stage(stage)
+                exe_df: pd.DataFrame = query.get_all_executions_in_stage(stage)
                 """
                 Parse all the executions in a stage
                 eg- exe_step = ['demo_eval.py', '--trained_model', 'data/model-1', '--enable_df', 'True', '--round', '1']
@@ -137,6 +147,7 @@ class CmdDVCIngest(CmdBase):
 
         for k in valuesYaml['stages']:
             pipeline_dict[k] = {}
+            commands=[]
             deps = []
             outs = []
             k_dict = {}
@@ -144,12 +155,16 @@ class CmdDVCIngest(CmdBase):
             
             for kk in valuesYaml['stages'][k]:
                 if kk == 'cmd':
-                    k_dict['cmd'] = valuesYaml['stages'][k][kk].split()
+                    cmd_list = valuesYaml['stages'][k][kk].split()
+                    commands.append(cmd_list)
+                    k_dict['cmd'] = cmd_list
                     i = i + 1
                 if kk == 'deps':
-                    k_dict['deps'] = valuesYaml['stages'][k][kk]
+                    deps = valuesYaml['stages'][k][kk]
+                    k_dict['deps'] = deps
                 if kk == 'outs':
-                    k_dict['outs'] = valuesYaml['stages'][k][kk]
+                    outs = valuesYaml['stages'][k][kk]
+                    k_dict['outs'] = outs
 
             pipeline_dict[k][str(i)] = k_dict
 
@@ -158,6 +173,7 @@ class CmdDVCIngest(CmdBase):
         metawriter = cmf.Cmf(filepath = "mlmd", pipeline_name=pipeline_name, graph=True)
 
         # Parse the dvc.lock dictionary and get the command section
+        tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
         for k, v in pipeline_dict.items():
             for kk, vv in v.items():
                 for kkk, vvv in vv.items():
@@ -187,8 +203,7 @@ class CmdDVCIngest(CmdBase):
                         cmd_str = ' '.join(t.cast(t.List[str], vvv))
                         cmd = cmd_exe.get(cmd_str, None)
                         _ = metawriter.create_context(pipeline_stage=context_name)
-
-                        self.ingest_metadata(lineage, vv, metawriter, cmd_str)
+                        tracked = self.ingest_metadata(lineage, vv, metawriter, tracked, cmd_str)
         metawriter.log_dvc_lock("dvc.lock")
         return MsgSuccess(msg_str="Command has completed running..")
 

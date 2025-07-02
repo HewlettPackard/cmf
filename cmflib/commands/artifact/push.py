@@ -17,6 +17,7 @@
 #!/usr/bin/env python3
 import os
 import re
+import yaml
 import argparse
 
 from cmflib import cmfquery
@@ -113,20 +114,30 @@ class CmdArtifactPush(CmdBase):
                 # adding .dvc at the end of every file as it is needed for pull
                 artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
                 names.extend(artifacts['name'].tolist())
-        final_list = []
+        final_list = set()
         for file in set(names):
             # checking if the .dvc exists
             if os.path.exists(file):
-                final_list.append(file)
+                final_list.add(file)
             # checking if the .dvc exists in user's project working directory
             elif os.path.isabs(file):
                 file = re.split("/",file)[-1]
                 file = os.path.join(os.getcwd(), file)
                 if os.path.exists(file):
-                    final_list.append(file)
+                    final_list.add(file)
             else:
-                # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
-                pass
+                # in case of dvc_ingest_command
+                # fetching remaining artifacts from dvc.lock file
+                if os.path.exists("dvc.lock"):
+                    with open("dvc.lock", "r") as f:
+                        str_data = f.read()
+                    data = yaml.safe_load(str_data)
+                    # Traverse all stages and collect all 'path' keys from both 'deps' and 'outs'
+                    for stage in data.get('stages', {}).values():
+                        for section in ['deps', 'outs']:
+                            for item in stage.get(section, []):
+                                if isinstance(item, dict) and 'path' in item:
+                                    final_list.add(item['path'])
         result = dvc_push(list(final_list))
         return ArtifactPushSuccess(result)
     
