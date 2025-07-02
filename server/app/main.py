@@ -445,42 +445,34 @@ async def server_mlmd_pull(host_info, last_sync_time):
         HTTPException: If the server is not reachable or an error occurs during the request.
     """
     try:
-        print(type(last_sync_time))
-        print("last_sync_time in server mlmd pull = ", last_sync_time)
         # Step 1: Send a request to the target server to fetch mlmd data
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=300.0) as client:
             try:
                 response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={'last_sync_time': last_sync_time})
-                print("response = ", response)
-                
+
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
-                
+
                 json_payload = response.json()
                 python_env_store_path = "/cmf-server/data/env"
-                
+
                 if last_sync_time:
                     # Extract the Environment file names from the JSON payload
                     data = json_payload
                     jsonpath_expr = parse('$..events[?(@.artifact.type == "Environment")].artifact.name')
                     environment_names = {match.value.split(":")[0].split("/")[-1] for match in jsonpath_expr.find(data)}
-                    # Print the extracted Environment artifact names
-                    print("Environment artifact names:", environment_names)
-                    
+
                     # Check if the list is empty or not
                     # if list is empty then no need to download the zip file
                     if len(environment_names) == 0: 
                         print("No Environment files are found inside json payload.")
                         return json_payload
-                    
+
                     list_of_files = list(environment_names)
                     # Added list_of_files to the request as a optional query parameter 
                     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
                 else:
-                    print("i am inside else")
                     python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
-                    print("type of python_env_zip", type(python_env_zip))
-                    print("python_env_zip", python_env_zip)
 
                 if python_env_zip.status_code == 200:
                     try:
@@ -488,13 +480,11 @@ async def server_mlmd_pull(host_info, last_sync_time):
                         os.makedirs(python_env_store_path, exist_ok=True)
 
                         # Unzip the zip file content
-                        # print("Length of python_env_zip.content:", (python_env_zip.content))
                         with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
                             # Extract all files to a temporary directory
                             temp_dir = os.path.join(python_env_store_path, "temp_extracted")
                             os.makedirs(temp_dir, exist_ok=True)
                             zf.extractall(temp_dir)
-                            # print("Files in temp_dir after extraction:", os.listdir(temp_dir))
 
                             # Move all extracted files to the target directory
                             for root, dirs, files in os.walk(temp_dir):
@@ -545,20 +535,16 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
 
         # Fetch the server details from the database
         row = await get_sync_status(db, server_name, host_info)
-       
+
         if not row:
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
 
-        print("row  = ", row)
-        print("row type = ", type(row))
         last_sync_time = row[0]['last_sync_time']
         current_utc_epoch_time = int(time.time() * 1000)
 
         # Call the function to fetch the JSON payload
         json_payload = await server_mlmd_pull(host_info, last_sync_time)      
 
-        # needs to be removed        
-        print("json_payload = ", json_payload)
 
         # Use the JSON payload in json_data
         json_data = {
@@ -570,14 +556,11 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
         pipelines = json_payload.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
         # pipelines contain full mlmd data with the tag - 'Pipeline'
-        print("type of pipelines = ", type(pipelines))
+        # print("type of pipelines = ", type(pipelines))
         # tell us number of pipelines
         len_pipelines = len(pipelines)
-        print("length of pipelines = ", len_pipelines)
         pipeline_names = []
 
-        print("type of json_payload = ", type(json_payload))
-        print("pipelines = ", pipelines)
         if not pipelines:
             return {
                 "message": "Nothing to sync",
@@ -600,35 +583,19 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         global dict_of_exe_ids
         message = "Nothing to sync."
         if status != "exists":
-            print("inside if")
             if not last_sync_time:
                 # this is not completely correct 
                 # as before we do the sync first time, it is entirely possible that there exists a 
                 # pipeline on the server 1  - test this scenario
                 message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
                 for pipeline_name in pipeline_names:
-                    print("pipeline_name =", pipeline_name)
-                    print("dict of exe ids = ", dict_of_exe_ids)
-                    print  ("dict of art ids = ", dict_of_art_ids)
                     dict_of_exe_ids = get_all_exe_ids(query)
                     dict_of_art_ids = get_all_artifact_ids(query, dict_of_exe_ids)
-                print("dict after calling get all exe ids and get all art ids")
-                print("dict of exe ids = ", dict_of_exe_ids)
-                print("dict of art ids = ", dict_of_art_ids)
-                print("status of mlmd push = ", status)
             else:
-                print("inside else")
                 message = f"Host server is being synced with the selected server '{server_name}' at address '{host_info}'."
                 for pipeline_name in pipeline_names:
-                    print("pipeline_name =", pipeline_name)
-                    print("dict of exe ids = ", dict_of_exe_ids)
-                    print  ("dict of art ids = ", dict_of_art_ids)
                     update_global_exe_dict(pipeline_name)
                     update_global_art_dict(pipeline_name)
-                print("dict after calling update all exe ids and update all art ids")
-                print("dict of exe ids = ", dict_of_exe_ids)
-                print("dict of art ids = ", dict_of_art_ids)
-                print("status of mlmd push = ", status)             
 
         # Update the last_sync_time in the database only if sync status is successful
         if status == "success":
@@ -640,7 +607,6 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         }
 
     except Exception as e:
-        print("i am coming here for some reason i think")
         print(e)
         raise HTTPException(status_code=500, detail=f"Failed to sync metadata: {e}")
 
@@ -702,24 +668,16 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
 
 
 async def update_global_art_dict(pipeline_name):
-    print("inside update global art dict")
     global dict_of_art_ids
     output_dict = await async_api(get_all_artifact_ids, query, dict_of_exe_ids, pipeline_name)
-    # type(dict_of_art_ids[pipeline_name]) = Dict[ <class 'pandas.core.frame.DataFrame'> ]
     dict_of_art_ids[pipeline_name]=output_dict[pipeline_name]
-    print("exited update global art dict")
     return
 
 
 async def update_global_exe_dict(pipeline_name):
-    print("inside update global exe dict")
     global dict_of_exe_ids
-    #print("query = ", query)
-    #print("type of query = ", type(query))
     output_dict = await async_api(get_all_exe_ids, query, pipeline_name)
-    # type(dict_of_exe_ids[pipeline_name]) = <class 'pandas.core.frame.DataFrame'>
     dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]  
-    print("exited update global exe dict")
     return
 
 
