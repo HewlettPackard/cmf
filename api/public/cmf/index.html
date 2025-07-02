@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.14">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.15">
     
     
       
@@ -3456,7 +3456,8 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1673</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1672</span>
+<span class="normal">1673</span>
 <span class="normal">1674</span>
 <span class="normal">1675</span>
 <span class="normal">1676</span>
@@ -3465,8 +3466,7 @@ Returns:
 <span class="normal">1679</span>
 <span class="normal">1680</span>
 <span class="normal">1681</span>
-<span class="normal">1682</span>
-<span class="normal">1683</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init_show</span><span class="p">():</span>
+<span class="normal">1682</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init_show</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes and shows details of the CMF command. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -3532,7 +3532,8 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1686</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1685</span>
+<span class="normal">1686</span>
 <span class="normal">1687</span>
 <span class="normal">1688</span>
 <span class="normal">1689</span>
@@ -3707,8 +3708,7 @@ Returns:
 <span class="normal">1858</span>
 <span class="normal">1859</span>
 <span class="normal">1860</span>
-<span class="normal">1861</span>
-<span class="normal">1862</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="normal">1861</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">cmf_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -4237,7 +4237,7 @@ Returns:
 
 
 <h2 id="cmflib.cmf.artifact_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -4246,11 +4246,12 @@ Returns:
 
         <p>Pushes artifacts to the initialized repository.
 Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
 </code></pre></div>
 Args: 
    pipeline_name: Name of the pipeline. 
-   file_name: Specify input metadata file name.
+   filepath: Path to store the artifact. 
+   jobs: Number of jobs to use for pushing artifacts.
 Returns:
     Output from the _artifact_push function.</p>
 
@@ -4271,22 +4272,20 @@ Returns:
 <span class="normal">1666</span>
 <span class="normal">1667</span>
 <span class="normal">1668</span>
-<span class="normal">1669</span>
-<span class="normal">1670</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">1669</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes artifacts to the initialized repository.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
-<span class="sd">         result = artifact_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;)</span>
+<span class="sd">         result = artifact_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, 32)</span>
 <span class="sd">    ```</span>
 <span class="sd">    Args: </span>
 <span class="sd">       pipeline_name: Name of the pipeline. </span>
-<span class="sd">       file_name: Specify input metadata file name.</span>
+<span class="sd">       filepath: Path to store the artifact. </span>
+<span class="sd">       jobs: Number of jobs to use for pushing artifacts.</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        Output from the _artifact_push function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Required arguments: pipeline_name</span>
-    <span class="c1"># Optional arguments: file_name</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">jobs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4319,7 +4318,8 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1918</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1917</span>
+<span class="normal">1918</span>
 <span class="normal">1919</span>
 <span class="normal">1920</span>
 <span class="normal">1921</span>
@@ -4334,8 +4334,7 @@ Returns:
 <span class="normal">1930</span>
 <span class="normal">1931</span>
 <span class="normal">1932</span>
-<span class="normal">1933</span>
-<span class="normal">1934</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1933</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4381,7 +4380,8 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1882</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1881</span>
+<span class="normal">1882</span>
 <span class="normal">1883</span>
 <span class="normal">1884</span>
 <span class="normal">1885</span>
@@ -4394,8 +4394,7 @@ Returns:
 <span class="normal">1892</span>
 <span class="normal">1893</span>
 <span class="normal">1894</span>
-<span class="normal">1895</span>
-<span class="normal">1896</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pipeline_list</span><span class="p">(</span><span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">1895</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pipeline_list</span><span class="p">(</span><span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Display a list of pipeline name(s) from the available input metadata file.</span>
 
 <span class="sd">    Example:</span>
@@ -4441,7 +4440,8 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1899</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1898</span>
+<span class="normal">1899</span>
 <span class="normal">1900</span>
 <span class="normal">1901</span>
 <span class="normal">1902</span>
@@ -4456,8 +4456,7 @@ Returns:
 <span class="normal">1911</span>
 <span class="normal">1912</span>
 <span class="normal">1913</span>
-<span class="normal">1914</span>
-<span class="normal">1915</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1914</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4484,7 +4483,7 @@ Returns:
 
 
 <h2 id="cmflib.cmf.repo_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.repo_push" class="headerlink" title="Permanent link">&para;</a></h2>
 
@@ -4493,20 +4492,22 @@ Returns:
 
         <p>Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
 Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;./tensorboard_path&quot;</span><span class="p">)</span> 
+<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;./tensorboard_path&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> 
 </code></pre></div>
 Args: 
    pipeline_name: Name of the pipeline. 
    file_name: Specify input metadata file name.
    execution_uuid: Specify execution uuid.
    tensorboard_path: Path to tensorboard logs.
+   jobs: Number of jobs to use for pushing artifacts.
 Returns:
    Output from the _repo_push function.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1937</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1936</span>
+<span class="normal">1937</span>
 <span class="normal">1938</span>
 <span class="normal">1939</span>
 <span class="normal">1940</span>
@@ -4523,23 +4524,24 @@ Returns:
 <span class="normal">1951</span>
 <span class="normal">1952</span>
 <span class="normal">1953</span>
-<span class="normal">1954</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1954</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Push artifacts, metadata files, and source code to the user&#39;s artifact repository, cmf-server, and git respectively.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
-<span class="sd">        result = _repo_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_execution_uuid&quot;, &quot;./tensorboard_path&quot;) </span>
+<span class="sd">        result = _repo_push(&quot;example_pipeline&quot;, &quot;./mlmd_directory&quot;, &quot;example_execution_uuid&quot;, &quot;./tensorboard_path&quot;, 32) </span>
 <span class="sd">    ```</span>
 <span class="sd">    Args: </span>
 <span class="sd">       pipeline_name: Name of the pipeline. </span>
 <span class="sd">       file_name: Specify input metadata file name.</span>
 <span class="sd">       execution_uuid: Specify execution uuid.</span>
 <span class="sd">       tensorboard_path: Path to tensorboard logs.</span>
+<span class="sd">       jobs: Number of jobs to use for pushing artifacts.</span>
 <span class="sd">    Returns:</span>
 <span class="sd">       Output from the _repo_push function. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Required arguments: pipeline_name</span>
-    <span class="c1"># Optional arguments: file_name, execution_uuid, tensorboard_path</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">)</span>
+    <span class="c1"># Optional arguments: filepath, execution_uuid, tensorboard_path, jobs</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">,</span> <span class="n">jobs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -4695,7 +4697,7 @@ Returns:
       <script id="__config" type="application/json">{"base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.13a4f30d.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.56ea9cef.min.js"></script>
       
     
   </body>
