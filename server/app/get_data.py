@@ -1,8 +1,6 @@
-from cmflib import cmf_merger
 from cmflib.cmfquery import CmfQuery
 import pandas as pd
 import json
-import os
 import typing as t
 from fastapi.concurrency import run_in_threadpool
 from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
@@ -205,9 +203,11 @@ def get_artifact_types(query: CmfQuery) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
-def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, dict_of_exe_ids: pd.Series):
+
+def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[str] = None, 
+                         dict_of_exe_ids: t.Optional[dict] = None) -> t.Optional[str]:
     """
-    Retrieves metadata from the server for a given pipeline and execution UUID.
+    Retrieves metadata from the server for a given pipeline and execution UUID if mentioned.
 
     Args:
         query (CmfQuery): The CmfQuery object.
@@ -216,23 +216,32 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: str, exec_uuid: str, di
         dict_of_exe_ids (dict): A dictionary containing execution IDs for pipelines.
 
     Returns:
-        json_payload (str or None): The metadata in JSON format if found, "no_exec_uuid" if the execution UUID is not found, or None if the pipeline name is not available.
+        json_payload (str or None): The metadata in JSON format if found, "no_exec_uuid" 
+        if the execution UUID is not found, or None if the pipeline name is not available.
     """
     json_payload = None
     flag=False
-    if(pipeline_name in query.get_pipeline_names()):  # checks if pipeline name is available in mlmd
-        if exec_uuid != None:
-            dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
-            for key, row in dict_of_exe_ids.iterrows():
-                exec_uuid_list = row['Execution_uuid'].split(",")
-                if exec_uuid in exec_uuid_list:
-                    flag=True
-                    break
-            if not flag:
-                json_payload = "no_exec_uuid"
-                return json_payload
-        json_payload = query.dumptojson(pipeline_name, exec_uuid)
+    if pipeline_name == None and not last_sync_time:
+        # in case of first sync or second sync we don't know if there is one pipeline or multiple pipelines
+        if last_sync_time is None:
+            json_payload = query.extract_to_json(0)
+    elif pipeline_name == None and last_sync_time:
+        json_payload = query.extract_to_json(int(last_sync_time))
+    else:
+        if(pipeline_name is not None and query.get_pipeline_id(pipeline_name) != -1 and dict_of_exe_ids is not None):  # checks if pipeline name is available in mlmd
+            if exec_uuid != None:
+                dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+                for index, row in dict_of_exe_ids.items():
+                    exec_uuid_list = row['Execution_uuid'].split(",")
+                    if exec_uuid in exec_uuid_list:
+                        flag=True
+                        break
+                if not flag:
+                    json_payload = "no_exec_uuid"
+                    return json_payload
+            json_payload = query.dumptojson(pipeline_name, exec_uuid)
     return json_payload
+
 
 def get_lineage_data(
         query: CmfQuery, 

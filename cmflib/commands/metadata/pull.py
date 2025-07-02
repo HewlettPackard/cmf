@@ -66,7 +66,7 @@ class CmdMetadataPull(CmdBase):
         
         if not self.args.execution_uuid:         # If self.args.execution_uuid[0] is None or an empty list ([]). 
             pass
-        
+         
         if self.args.file_name:  # setting directory where mlmd file will be dumped
             if not os.path.isdir(self.args.file_name[0]):
                 temp = os.path.dirname(self.args.file_name[0])
@@ -80,7 +80,8 @@ class CmdMetadataPull(CmdBase):
                 raise FileNameNotfound
         else:
             full_path_to_dump = os.getcwd() + "/mlmd"
-        
+         
+        query = cmfquery.CmfQuery(full_path_to_dump)
         if self.args.execution_uuid:
             exec_uuid = self.args.execution_uuid[0]
 
@@ -88,15 +89,21 @@ class CmdMetadataPull(CmdBase):
         output = server_interface.call_mlmd_pull(
             url, self.args.pipeline_name[0], exec_uuid
         )  # calls cmf-server api to get mlmd file data(Json format)
+         
         status = output.status_code
         # Checks if given pipeline does not exist
         # or if the execution UUID not present inside the mlmd file
         # else pulls the mlmd file
-        if status == 406:
+        if status == 404:
             raise PipelineNotFound(self.args.pipeline_name[0])
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
         else:
+            # Get unique executions
+            unique_executions = query.get_unique_executions(output.content)
+            if not unique_executions:
+                return ExecutionsAlreadyExists()
+
             response = update_mlmd(query, output.content, self.args.pipeline_name[0], "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)

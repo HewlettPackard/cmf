@@ -47,10 +47,10 @@ def is_git_repo():
 
 
 def get_python_env(env_name='cmf'):
-    # what this is supposed to return 
+    # Determine the type of Python environment and return its details
     try:
-        # Check if the environment is conda
-        if is_conda_installed():  # If conda is installed and the command succeeds
+        # Check if the environment is a Conda environment
+        if os.getenv('CONDA_PREFIX') is not None:  # If Conda is activated
 
             # Step 1: Get the list of conda packages
             conda_packages = subprocess.check_output(['conda', 'list', '--export']).decode('utf-8').splitlines()
@@ -119,17 +119,6 @@ def change_dir(cmf_init_path):
     if not logging_dir == cmf_init_path:
         os.chdir(cmf_init_path)
     return logging_dir
-
-
-def is_conda_installed() -> bool:
-    """Check if Conda is installed by running 'conda --version'."""
-    try:
-        # Run the 'conda --version' command and capture the output
-        subprocess.run(['conda', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
-
 
 def list_conda_packages_json() -> list:
     """Return a list of installed Conda packages and their versions."""
