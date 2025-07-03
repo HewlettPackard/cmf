@@ -168,7 +168,38 @@ class FastAPIClient {
     });
   }
 
+  async getServerRegistration(server_name, host_info){
+    return this.apiClient
+      .post(`/register-server`, {
+          server_name: server_name,
+          host_info: host_info,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getRegistredServerList(){
+    return this.apiClient
+      .get(`/server-list`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async sync(serverName, addressType) {
+    return this.apiClient
+      .post(`/sync`, {
+        server_name: serverName,
+        host_info: addressType,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
 }
+
 
 
 export default FastAPIClient;
