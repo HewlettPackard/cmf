@@ -21,6 +21,7 @@ import typing as t
 import uuid
 from cmflib import cmfquery
 from cmflib import cmf
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 
 
 """
@@ -72,15 +73,26 @@ def ingest_metadata(execution_lineage:str, metadata:dict, metawriter:cmf.Cmf, co
         create_new_execution=False
         )
         
+    output, config_file_path = fetch_cmf_config_path()
+
     for k, v in metadata.items():
+        props={}
         if k == "deps":
+            print("deps")
             for dep in v:
                 metawriter.log_dataset_with_version(dep["path"], dep["md5"], "input")
                 if dep["path"] not in tracked:
                     metawriter.log_dataset(dep["path"], 'input')
         if k == "outs":
+            print("outs")
             for out in v:
-                metawriter.log_dataset_with_version(out["path"], out["md5"], "output")
+                md5_value = out["md5"] 
+                url = pipeline_name+":"+output["remote.local-storage.url"]+"/files/md5/"+md5_value[:2]+"/"+md5_value
+                # print(md5_value)
+                print("url", url)
+                props["url"] =  url
+                print("props", props)
+                metawriter.log_dataset_with_version(out["path"], md5_value, "output", props)
                 tracked[out["path"]] = True
 
 def find_location(string, elements):

@@ -308,11 +308,13 @@ def log_dataset_with_version(
             Returns:
             Artifact object from the ML Protocol Buffers library associated with the new dataset artifact. 
     """
-
+    print("inside log_dataset_with_version")
+    print("url", url)
     props = {} if props is None else props
     custom_props = {} if custom_properties is None else custom_properties
     git_repo = props.get("git_repo", "")
     name = url
+    print("name",name)
     event_type = mlpb.Event.Type.OUTPUT # type: ignore  # Event type not recognized by mypy, using ignore to bypass
     existing_artifact = []
     c_hash = version
@@ -323,11 +325,13 @@ def log_dataset_with_version(
 
     dataset_commit = version
     url = url + ":" + c_hash
+    print("url", url)
     if c_hash and c_hash.strip():
         existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
     # To Do - What happens when uri is the same but names are different
     if existing_artifact and len(existing_artifact) != 0:
+        print("inside if")
         existing_artifact = existing_artifact[0]
 
         # Quick fix- Updating only the name
@@ -345,6 +349,7 @@ def log_dataset_with_version(
             event_type=event_type,
         )
     else:
+        print("inside else")
         # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
         #   url = url + ":" + str(self.execution.id)
         uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())

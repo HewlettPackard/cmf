@@ -702,6 +702,8 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+        print("inside log_dataset")
+        print("url", url)
         logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
@@ -724,6 +726,7 @@ class Cmf:
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
+        print("name", name)
         event_type = mlpb.Event.Type.OUTPUT
         existing_artifact = []
         if event.lower() == "input":
@@ -740,11 +743,13 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
+        print("url", url)
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
+            print("insid  if")
             existing_artifact = existing_artifact[0]
 
             # Quick fix- Updating only the name
@@ -762,6 +767,7 @@ class Cmf:
                 event_type=event_type,
             )
         else:
+            print("inside else")
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
@@ -854,9 +860,18 @@ class Cmf:
         for key, value in artifact.properties.items():
             if key == "url":
                 old_url = value.string_value
-                if updated_url not in old_url:
+                # If the old URL is empty or only contains spaces, assign the new URL directly.
+                if not old_url.strip():
+                    new_url = updated_url
+
+                # If the updated URL is not already present, append it with a comma separator.
+                elif updated_url not in old_url:
                     new_url = f"{old_url},{updated_url}"
-                    artifact.properties[key].string_value = new_url
+
+                # If the updated URL is already present, keep the old URL unchanged.
+                else:
+                    new_url = old_url
+                artifact.properties[key].string_value = new_url
         put_artifact(self.store, artifact)
 
     def update_model_url(self, dup_artifact: list, updated_url: str):
@@ -878,9 +893,18 @@ class Cmf:
             for key, value in dup_art.properties.items():
                 if key == "url":
                     old_url = value.string_value
-                    if updated_url not in old_url:
+                    # If the old URL is empty or only contains spaces, assign the new URL directly.
+                    if not old_url.strip():
+                        new_url = updated_url
+
+                    # If the updated URL is not already present, append it with a comma separator.
+                    elif updated_url not in old_url:
                         new_url = f"{old_url},{updated_url}"
-                        dup_art.properties[key].string_value = new_url
+
+                    # If the updated URL is already present, keep the old URL unchanged.
+                    else:
+                        new_url = old_url
+                    dup_art.properties[key].string_value = new_url
             put_artifact(self.store, dup_art)
         return dup_artifact
 
