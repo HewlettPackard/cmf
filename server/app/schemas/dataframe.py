@@ -7,7 +7,7 @@ import json
 class MLMDPushRequest(BaseModel): 
     # ... indicates required field
     exec_uuid: Optional[str] = Field(None, description="Optional execution uuid for the request")
-    pipeline_name: str = Field(..., min_length=1, description="Name of the pipeline")
+    pipeline_name: Optional[str] = Field(..., min_length=1, description="Name of the pipeline")
     json_payload: str = Field(..., description="JSON payload for the pipeline")
 
     # Custom validation for pipeline name and JSON payload
@@ -39,3 +39,24 @@ class ExecutionRequest(BaseRequest):
 # Query parameters for artifact.
 class ArtifactRequest(BaseRequest):
     sort_field: str = Field("name", description="Column to sort by (default: name)")
+
+
+# Define a Pydantic model for the request body
+class ServerRegistrationRequest(BaseModel):
+    server_name: str
+    host_info: str
+    last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
+
+
+class AcknowledgeRequest(BaseModel):
+    server_name: str
+    host_info: str
+
+# Don't forget description
+class MLMDPullRequest(BaseModel):
+    pipeline_name:Optional[str] = Field(None, description="")
+    exec_uuid: Optional[str] = Field(None, description="")
+    last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
+    
+
+    

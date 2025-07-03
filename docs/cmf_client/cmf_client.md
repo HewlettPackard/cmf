@@ -307,13 +307,13 @@ Optional Arguments
 ### cmf artifact push
 
 ```
-Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
+Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name] -j [jobs]
 ```
 
 `cmf artifact push` command push artifacts from the user's local machine to the user configured artifact repository.
 
 ```
-cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name'
+cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name' -j 'jobs'
 ```
 
 Required Arguments
@@ -325,8 +325,10 @@ Required Arguments
 Optional Arguments
 
 ```
-  -h, --help                                             show this help message and exit.
-  -f [file_name], --file_name [file_name]                Specify input metadata file name.
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -j [jobs], --jobs [jobs]                              Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count().
+                                                        Increasing jobs may speed up uploads but will use more resources.
 ```
 
 ### cmf artifact list
@@ -514,13 +516,13 @@ Usage: cmf repo [-h] {push, pull}
 ### cmf repo push
 
 ```
-Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard_path]
+Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard] -j [jobs]
 ```
 
 `cmf repo push` command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
 
 ```
-cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t 'tensorboard_log_path'
+cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t 'tensorboard_log_path' -j 'jobs'
 ```
 
 Required Arguments
@@ -532,10 +534,12 @@ Required Arguments
 Optional Arguments
 
 ```
-  -h, --help                                                                    show this help message and exit.
-  -f [file_name], --file_name [file_name]                                       Specify input metadata file name.
-  -e [exec_uuid], --execution_uuid [exec_uuid]                                  Specify execution uuid.
-  -t [tensorboard_path], --tensorboard_path [tensorboard_path]                  Specify path to tensorboard logs for the pipeline.
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
+  -j [jobs], --jobs [jobs]                                       Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count().
+                                                                 Increasing jobs may speed up uploads but will use more resources.
 ```
 
 ### cmf repo pull

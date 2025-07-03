@@ -1,4 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
+from server.app.db.dbconfig import get_db
 from sqlalchemy import select, func, text, String, bindparam, case, distinct
 from server.app.db.dbmodels import (
     artifact, 
@@ -12,6 +14,63 @@ from server.app.db.dbmodels import (
     executionproperty,
     event,
 )
+
+async def register_server_details(db: AsyncSession, server_name: str, host_info: str):
+    """
+    Register server details in the database.
+    """
+    # Step 1: Check if the server is already registered
+    query_check = text("""
+        SELECT 1 FROM registered_servers WHERE host_info = :host_info
+    """)
+    result = await db.execute(query_check, {"host_info": host_info})
+    # If a matching row exists, scalar() returns 1 (from SELECT 1). If not, it returns None
+    exists = result.scalar()
+
+    if exists:
+        return {"message": "Server is already registered"}
+
+    # Step 2: Insert new server
+    query_insert = text("""
+        INSERT INTO registered_servers (server_name, host_info)
+        VALUES (:server_name, :host_info)
+    """)
+    await db.execute(query_insert, {"server_name": server_name, "host_info": host_info})
+    await db.commit()
+
+    return {"message": "Server registered successfully"}
+
+
+async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
+    """
+    Get all registered server details from the database.
+    """
+    query = text("""SELECT * FROM registered_servers""")
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
+    """
+    Get the sync status from the database.
+    """
+    query = text("""SELECT last_sync_time FROM registered_servers WHERE server_name = :server_name AND host_info = :host_info""")
+    result = await db.execute(query, {"server_name": server_name, "host_info": host_info})
+    return result.mappings().all()
+
+
+async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, host_info: str):
+    """
+    Update the sync status in the database.
+    """
+    query = text("""
+        UPDATE registered_servers
+        SET last_sync_time = :current_utc_time
+        WHERE server_name = :server_name AND host_info = :host_info
+    """)
+    await db.execute(query, {"current_utc_time": current_utc_time, "server_name": server_name, "host_info": host_info})
+    await db.commit()  # Commit the transaction
+
 
 async def fetch_artifacts(
     db: AsyncSession,   # Used to interact with the database
