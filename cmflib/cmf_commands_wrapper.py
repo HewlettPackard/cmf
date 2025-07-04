@@ -483,3 +483,25 @@ def _repo_pull(pipeline_name, file_name, execution_uuid):
     print(msg)
     return msg
 
+
+def _dvc_ingest(file_name):
+   """ Ingests metadata from the dvc.lock file into the CMF. 
+       If an existing MLMD file is provided, it merges and updates execution metadata 
+       based on matching commands, or creates new executions if none exist.
+    Args: 
+       file_name: Specify input metadata file name.
+    Returns:
+       Output from the dvc ingest command. 
+   """
+   cli_args = cli.parse_args(
+            [
+               "dvc",
+               "ingest",
+               "-f",
+               file_name,
+            ]
+           )
+   cmd = cli_args.func(cli_args)
+   msg = cmd.do_run()
+   print(msg)
+   return msg

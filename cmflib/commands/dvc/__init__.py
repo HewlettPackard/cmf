@@ -23,12 +23,12 @@ SUB_COMMANDS = [ingest]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):
-    DVC_HELP = "Command for dvc ingest."
+    DVC_HELP = "Ingests metadata from the dvc.lock file into CMF."
 
     dvc_parser = subparsers.add_parser(
         "dvc",
         parents=[parent_parser],
-        description="Ingest mlmd to CMF server",
+        description="Ingests metadata from the dvc.lock file into the CMF.",
         help=DVC_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )

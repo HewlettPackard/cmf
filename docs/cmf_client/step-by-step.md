@@ -7,7 +7,7 @@ Common metadata framework (cmf) has the following components:
 - **Central Artifact Repositories** host the code and data.
 
 ## Install cmf library i.e. cmflib
-Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided inside the [CMF in a nutshell](../index.md) page.
+Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided in the [Overview](../index.md) page.
 
 ## Install cmf-server
 cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
@@ -35,7 +35,7 @@ Let's assume we are tracking the metadata for a pipeline named `Test-env` with a
 mkdir example-folder
 ```
 
-**Initialize cmf**
+### Initialize cmf
 
 CMF initialization is the first and foremost step to use cmf-client commands. This command, in one go, completes the initialization process, making cmf-client user friendly. Execute `cmf init` in the `example-folder` directory created in the above step.
 ```

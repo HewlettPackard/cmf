@@ -89,7 +89,7 @@ class CmdDVCIngest(CmdBase):
     def run(self, live):
         """
             Ingest the metadata in dvc.lock file into CMF.
-            If cmf mlmd file exist with metadata from metrics logging or logging for other
+            If mlmd file exist with metadata from metrics logging or logging for other
             metadata not captured in dvc.lock file, pass that mlmd file as the input file.
             This code queries the file for existing pipelines, stages and executions and stores 
             as a dictionary. If the execution cmd in the stored dict, matches the execution command
@@ -209,12 +209,12 @@ class CmdDVCIngest(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    HELP = "Ingest the metadata in dvc.lock file into CMF."
+    HELP = "Ingests metadata from the dvc.lock file into the CMF."
 
     parser = subparsers.add_parser(
         "ingest",
         parents=[parent_parser],
-        description="""Ingest the metadata in dvc.lock file into CMF.""",
+        description="Ingests metadata from the dvc.lock file into the CMF. If an existing MLMD file is provided, it merges and updates execution metadata based on matching commands, or creates new executions if none exist.",
         help=HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -224,7 +224,7 @@ def add_parser(subparsers, parent_parser):
         "--file_name", 
         type=str,
         default="mlmd",
-        help="Specify mlmd file name.",
+        help="Specify input mlmd file name. (default: mlmd)",
         metavar="<file_name>"
     )
 
