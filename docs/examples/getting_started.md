@@ -100,12 +100,14 @@ Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
 
 ## Project execution
 To execute the example pipeline, run the
-[test_script.sh](../../examples/example-get-started/test_script.sh)
+[test_script.sh](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/test_script.sh)
 file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
 splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
 execution of these steps (and parent pipeline) will be recorded by the CMF.
 ```shell
-# Run the example pipeline
+# Download and run the example pipeline
+wget https://raw.githubusercontent.com/HewlettPackard/cmf/master/examples/example-get-started/test_script.sh
+chmod +x test_script.sh
 sh ./test_script.sh
 ```
 
@@ -120,8 +122,17 @@ Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf a
 
 ## Query
 The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
-[Query_Tester-base_mlmd.ipynb](../../examples/example-get-started/Query_Tester-base_mlmd.ipynb) demonstrates this
+[Query_Tester-base_mlmd.ipynb](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/Query_Tester-base_mlmd.ipynb) demonstrates this
 functionality and can be adapted for your own uses.
+
+To use the notebook locally:
+```shell
+# Download the Jupyter notebook
+wget https://raw.githubusercontent.com/HewlettPackard/cmf/master/examples/example-get-started/Query_Tester-base_mlmd.ipynb
+
+# Start Jupyter and open the notebook
+jupyter notebook Query_Tester-base_mlmd.ipynb
+```
 
 ## Clean Up
 Metadata is stored in a sqlite file named "mlmd". To clean up, delete the "mlmd" file.

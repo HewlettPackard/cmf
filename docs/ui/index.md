@@ -10,7 +10,19 @@ The web interface provides dedicated pages for browsing and analyzing pipeline a
 
 The Artifacts page allows users to explore all datasets, models, and metrics tracked by CMF:
 
-## Image #
+```mermaid
+graph TB
+    subgraph "Artifacts Page Features"
+        FILTER["Filter Panel<br/>• Type (Dataset/Model/Metrics)<br/>• Pipeline Name<br/>• Date Range<br/>• Custom Properties"]
+        TABLE["Artifacts Table<br/>• Name and Path<br/>• Type and Framework<br/>• Creation Time<br/>• Associated Pipeline"]
+        DETAILS["Artifact Details<br/>• Properties and Metadata<br/>• Lineage Preview<br/>• Download Links<br/>• Version History"]
+        SEARCH["Search and Sort<br/>• Full-text Search<br/>• Column Sorting<br/>• Pagination<br/>• Export Options"]
+    end
+
+    FILTER --> TABLE
+    TABLE --> DETAILS
+    TABLE --> SEARCH
+```
 
 #### Key Features
 
@@ -38,7 +50,19 @@ Each artifact provides comprehensive information:
 
 The Executions page provides insights into pipeline runs and their performance:
 
-## Image #
+```mermaid
+graph TB
+    subgraph "Executions Page Features"
+        EXEC_FILTER["Execution Filters<br/>• Pipeline Name<br/>• Execution Type<br/>• Status (Running/Complete/Failed)<br/>• Date Range"]
+        EXEC_TABLE["Executions Table<br/>• Execution ID and Name<br/>• Pipeline and Stage<br/>• Status and Duration<br/>• Input/Output Artifacts"]
+        EXEC_DETAILS["Execution Details<br/>• Parameters and Properties<br/>• Git Commit Information<br/>• Environment Details<br/>• Performance Metrics"]
+        EXEC_TIMELINE["Timeline View<br/>• Execution Duration<br/>• Stage Dependencies<br/>• Resource Usage<br/>• Error Logs"]
+    end
+
+    EXEC_FILTER --> EXEC_TABLE
+    EXEC_TABLE --> EXEC_DETAILS
+    EXEC_TABLE --> EXEC_TIMELINE
+```
 
 #### Execution Information
 
@@ -58,7 +82,19 @@ The lineage visualization system provides interactive, graph-based exploration o
 
 ### Interactive Lineage Graph
 
-## Image #
+```mermaid
+graph LR
+    subgraph "Lineage Visualization Features"
+        GRAPH_VIEW["D3.js Graph<br/>• Interactive Nodes<br/>• Zoom and Pan<br/>• Drag and Drop<br/>• Click to Explore"]
+        CONTROLS["Graph Controls<br/>• Layout Options<br/>• Filter Controls<br/>• Zoom Controls<br/>• Export Options"]
+        SIDEBAR["Information Sidebar<br/>• Node Details<br/>• Relationship Info<br/>• Properties Panel<br/>• Action Buttons"]
+        MINIMAP["Navigation Minimap<br/>• Overview of Graph<br/>• Current View Indicator<br/>• Quick Navigation<br/>• Zoom to Fit"]
+    end
+
+    GRAPH_VIEW --> CONTROLS
+    GRAPH_VIEW --> SIDEBAR
+    GRAPH_VIEW --> MINIMAP
+```
 
 ### Graph Elements
 
@@ -117,13 +153,28 @@ const layouts = {
 
 Trace data lineage backwards to understand data sources:
 
-## Image #
+```mermaid
+graph RL
+    MODEL["Trained Model<br/>model.pkl"] --> TRAIN["Training Execution"]
+    TRAIN --> PROCESSED["Processed Data<br/>clean_data.csv"]
+    PROCESSED --> PREPROCESS["Preprocessing Execution"]
+    PREPROCESS --> RAW["Raw Data<br/>raw_data.csv"]
+    RAW --> COLLECT["Data Collection Execution"]
+```
 
 #### Downstream Analysis
 
 Trace forward to see how artifacts are used:
 
-## Image#
+```mermaid
+graph LR
+    RAW["Raw Data<br/>raw_data.csv"] --> PREPROCESS["Preprocessing Execution"]
+    PREPROCESS --> PROCESSED["Processed Data<br/>clean_data.csv"]
+    PROCESSED --> TRAIN["Training Execution"]
+    TRAIN --> MODEL["Trained Model<br/>model.pkl"]
+    MODEL --> EVAL["Evaluation Execution"]
+    EVAL --> METRICS["Performance Metrics<br/>accuracy: 0.95"]
+```
 
 #### Impact Analysis
 
@@ -140,7 +191,21 @@ The web interface seamlessly integrates with TensorBoard for detailed training m
 
 #### TensorBoard Features
 
-## Image #
+![TensorBoard Integration](../assets/Tensorboard.png)
+
+```mermaid
+graph TB
+    subgraph "TensorBoard Integration"
+        METRICS_VIEW["Metrics Dashboard<br/>• Training Loss<br/>• Validation Accuracy<br/>• Learning Rate<br/>• Custom Metrics"]
+        GRAPHS_VIEW["Model Graphs<br/>• Network Architecture<br/>• Computation Graph<br/>• Operation Details<br/>• Tensor Shapes"]
+        IMAGES_VIEW["Image Visualization<br/>• Training Images<br/>• Activation Maps<br/>• Feature Visualizations<br/>• Confusion Matrices"]
+        EMBEDDINGS_VIEW["Embeddings<br/>• High-dimensional Data<br/>• t-SNE Projections<br/>• PCA Analysis<br/>• Interactive Exploration"]
+    end
+
+    METRICS_VIEW --> GRAPHS_VIEW
+    GRAPHS_VIEW --> IMAGES_VIEW
+    IMAGES_VIEW --> EMBEDDINGS_VIEW
+```
 
 #### Integration Points
 

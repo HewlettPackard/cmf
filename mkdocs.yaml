@@ -49,7 +49,11 @@ markdown_extensions:
       generic: true
   - pymdownx.tasklist
   - pymdownx.details       # Allowing hidden expandable regions denoted by ???
-  - pymdownx.superfences   # Seems to enable syntax highlighting when used with the Material theme.
+  - pymdownx.superfences:  # Enables syntax highlighting and Mermaid diagrams
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - toc:
@@ -59,6 +63,9 @@ markdown_extensions:
 
 extra_css:
   - extra.css         # This defines custom properties, in particular, enforces custom HTML tables to be 100% width.
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
 
 
 plugins:
@@ -86,20 +93,31 @@ nav:
   - CMF Server: server/index.md
   - Web User Interface: ui/index.md
   - Getting Started: getting-started/index.md
-  - Development and Deployment: development/index.md
   - Architecture:
       - System Overview: architecture/overview.md
       - Core Components: architecture/components.md
       - Key Advantages: architecture/advantages.md
+  - Client:
+      - CMF Client Overview: cmf_client/cmf_client.md
+      - Quick Start with CMF Client: cmf_client/step-by-step.md
+      - Getting Started with CMF: cmf_client/Getting Started with cmf.md
+      - MinIO Backend Setup: cmf_client/minio-server.md
+      - SSH Setup Guide: cmf_client/ssh-setup.md
+  - Server:
+      - Getting Started with CMF Server: cmf_server/cmf-server.md
+  - TensorBoard:
+      - Getting Started with TensorBoard: cmf_client/tensorflow_guide.md
   - Public API:
       - CMF: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
       - CmfQuery: api/public/cmfquery.md
-  - Examples and Tutorials:
-      - Quick Start Guide: cmf_client/step-by-step.md
+      - API Reference: api/public/API.md
+      - Ray Logger: api/public/cmf_ray_logger.md
+  - Examples:
       - Getting Started Tutorial: examples/getting_started.md
-      - TensorBoard Integration: cmf_client/tensorflow_guide.md
-      - MinIO Backend Setup: cmf_client/minio-server.md
-      - SSH Setup Guide: cmf_client/ssh-setup.md
   - Common Metadata Ontology: common-metadata-ontology/readme.md
+  - Development and Deployment:
+      - development/index.md
+      - Development Environment: development/environment.md
+      - Documentation System: development/documentation.md
 

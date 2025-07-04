@@ -43,7 +43,7 @@ S3 bucket as the artifact repository and a cmf-server.
 mkdir example-folder && cd example-folder
 ```
 
-**Initialize cmf**
+### Initialize cmf
 
 CMF must be initialized to use cmf-client commands. The following command configures authentication to an S3 bucket and
 specifies the connection to a CMF server.
