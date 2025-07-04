@@ -1,6 +1,6 @@
 # Common Metadata Framework (CMF)
 
-[![CI](https://github.com/HewlettPackard/cmf/actions/workflows/ci.yml/badge.svg)](https://github.com/HewlettPackard/cmf/actions)
+[![Deploy Docs](https://github.com/HewlettPackard/cmf/actions/workflows/deploy_docs_to_gh_pages.yaml/badge.svg)](https://github.com/HewlettPackard/cmf/actions)
 [![PyPI version](https://badge.fury.io/py/cmflib.svg)](https://pypi.org/project/cmflib/)
 [![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://hewlettpackard.github.io/cmf/)
 [![License](https://img.shields.io/github/license/HewlettPackard/cmf)](./LICENSE)
