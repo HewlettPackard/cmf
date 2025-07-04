@@ -155,6 +155,19 @@ class FastAPIClient {
       });
   }
 
+  async getLabelData(file_name) {
+    return this.apiClient
+    .get(`/label-data`,{
+      params: {
+        file_name: file_name
+      },
+      responseType: "text",
+    })
+    .then(( response ) => {
+      return response.data;
+    });
+  }
+
   async getServerRegistration(server_name, host_info){
     return this.apiClient
       .post(`/register-server`, {

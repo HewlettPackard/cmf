@@ -386,6 +386,51 @@ async def get_python_env(file_name: str) -> str:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
+# Rest api to push the label dataset to /cmf-server/data/labels dir.
+@app.post("/label-dataset")
+async def upload_label_dataset(request:Request, file: UploadFile = File(..., description="The file to upload")):
+    try:
+        # print("file_path", file_path)
+        if file.filename is None:
+            raise HTTPException(status_code=400, description="No file uploaded") 
+        file_path = os.path.join("/cmf-server/data/labels/", os.path.basename(file.filename))
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)    
+        with open(file_path, 'wb') as buffer:
+            buffer.write(await file.read())
+        return {"message": f"File '{file.filename}' uploaded successfully"}
+    except Exception as e:
+        return {"error": f"Failed to up load file: {e}"}
+    
+
+# Rest api to fetch the label data from the /cmf-server/data/labels folder
+@app.get("/label-data", response_class=PlainTextResponse)
+async def get_label_data(file_name: str) -> str:
+    """
+    API endpoint to fetch the content of a requirements file.
+
+    Args:
+        file_name (str): The name of the file to be fetched. Must end with .csv.
+
+    Returns:
+        str: The content of the file as plain text.
+
+    Raises:
+        HTTPException: If the file does not exist or the extension is unsupported.
+    """
+    
+    # Check if the file exists
+    file_path = os.path.join("/cmf-server/data/labels/", os.path.basename(file_name))
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+
+    # Read and return the file content as plain text
+    try:
+        with open(file_path, "r") as file:
+            content = file.read()
+        return content
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
+
 
 @app.post("/register-server")
 async def register_server(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):

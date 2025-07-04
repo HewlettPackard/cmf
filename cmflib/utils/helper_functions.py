@@ -20,6 +20,8 @@ import readchar
 import requests
 import textwrap
 import subprocess
+import hashlib
+import sys
 import pandas as pd
 
 from tabulate import tabulate
@@ -293,3 +295,31 @@ def get_postgres_config() -> dict:
     config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
     #print("config_dict = ", config_dict)
     return config_dict
+
+
+def calculate_md5(file_path):
+    """
+    Calculate MD5 hash for a file
+    
+    Args:
+        file_path (str): Path to the file
+        
+    Returns:
+        str: MD5 hash of the file
+    """
+    # Check if file exists
+    if not os.path.isfile(file_path):
+        print(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+        
+    # Calculate MD5 hash
+    md5_hash = hashlib.md5()
+    
+    # Read file in chunks to handle large files efficiently
+    with open(file_path, 'rb') as file:
+        # Read in 4MB chunks
+        for chunk in iter(lambda: file.read(4096 * 1024), b''):
+            md5_hash.update(chunk)
+            
+    # Return the hexadecimal digest
+    return md5_hash.hexdigest()

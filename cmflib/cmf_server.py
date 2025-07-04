@@ -308,13 +308,10 @@ def log_dataset_with_version(
             Returns:
             Artifact object from the ML Protocol Buffers library associated with the new dataset artifact. 
     """
-    print("inside log_dataset_with_version")
-    print("url", url)
     props = {} if props is None else props
     custom_props = {} if custom_properties is None else custom_properties
     git_repo = props.get("git_repo", "")
     name = url
-    print("name",name)
     event_type = mlpb.Event.Type.OUTPUT # type: ignore  # Event type not recognized by mypy, using ignore to bypass
     existing_artifact = []
     c_hash = version
@@ -325,13 +322,11 @@ def log_dataset_with_version(
 
     dataset_commit = version
     url = url + ":" + c_hash
-    print("url", url)
     if c_hash and c_hash.strip():
         existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
     # To Do - What happens when uri is the same but names are different
     if existing_artifact and len(existing_artifact) != 0:
-        print("inside if")
         existing_artifact = existing_artifact[0]
 
         # Quick fix- Updating only the name
@@ -349,7 +344,6 @@ def log_dataset_with_version(
             event_type=event_type,
         )
     else:
-        print("inside else")
         # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
         #   url = url + ":" + str(self.execution.id)
         uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
@@ -419,6 +413,73 @@ def log_dataset_with_version(
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+    return artifact
+
+
+def log_label_with_version(self, url: str, version:str, props: t.Optional[t.Dict] = None, 
+                           custom_properties: t.Optional[t.Dict] = None
+) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
+    """
+        needs to be added 
+    """
+    props = {} if props is None else props
+    custom_props = {} if custom_properties is None else custom_properties
+    git_repo = props.get("git_repo", "")
+    existing_artifact = []
+    c_hash = version
+
+    label_commit = version
+    url = url + ":" + c_hash
+    if c_hash and c_hash.strip():
+        existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
+
+    # To Do - What happens when uri is the same but names are different
+    if existing_artifact and len(existing_artifact) != 0:
+        existing_artifact = existing_artifact[0]
+
+        # Quick fix- Updating only the name
+        if custom_properties is not None:
+            self.update_existing_artifact(
+                existing_artifact, custom_properties)
+        uri = c_hash
+        # update url for existing artifact
+        self.update_dataset_url(existing_artifact, props.get("url", ""))
+        artifact = link_execution_to_artifact(
+            store=self.store,
+            execution_id=self.execution.id,
+            uri=uri,
+            input_name=url,
+            event_type=mlpb.Event.Type.INPUT,
+        )
+    else:
+        # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
+        #   url = url + ":" + str(self.execution.id)
+        uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
+        artifact = create_new_artifact_event_and_attribution(
+            store=self.store,
+            execution_id=self.execution.id,
+            context_id=self.child_context.id,
+            uri=uri,
+            name=url,
+            type_name="Label",
+            event_type=mlpb.Event.Type.INPUT,
+            properties={
+                "git_repo": str(git_repo),
+                "Commit": str(label_commit),
+                "url": props.get("url", " "),
+                "dataset_uri": props.get("dataset_uri", " ")
+            },
+            artifact_type_properties={
+                "git_repo": mlpb.STRING,    # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                "Commit": mlpb.STRING,      # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                "url": mlpb.STRING,         # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                "dataset_uri": mlpb.STRING, # type: ignore  # String type not recognized by mypy, using ignore to bypass
+            },
+            custom_properties=custom_props,
+            milliseconds_since_epoch=int(time.time() * 1000),
+        )
+    custom_props["git_repo"] = git_repo
+    custom_props["Commit"] = label_commit
     return artifact
 
 

@@ -58,7 +58,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config, calculate_md5
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -68,6 +68,7 @@ from cmflib.cmf_server import (
     log_execution_metrics_from_client, 
     log_step_metrics_from_client,
     log_dataslice_from_client,
+    log_label_with_version,
 )
 
 from cmflib.cmf_commands_wrapper import (
@@ -201,6 +202,7 @@ class Cmf:
     log_model_with_version: t.Callable[..., t.Any]
     log_execution_metrics_from_client: t.Callable[..., t.Any]
     log_step_metrics_from_client: t.Callable[..., t.Any]
+    log_label_with_version: t.Callable[..., t.Any]
 
     # function used to load neo4j params for cmf client
     @staticmethod
@@ -682,6 +684,8 @@ class Cmf:
         url: str,
         event: str,
         custom_properties: t.Optional[t.Dict] = None,
+        label: t.Optional[str] = None,
+        label_properties: t.Optional[t.Dict] = None,
         external: bool = False,
     ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Logs a dataset as artifact.
@@ -699,11 +703,11 @@ class Cmf:
              url: The path to the dataset.
              event: Takes arguments `INPUT` OR `OUTPUT`.
              custom_properties: Dataset properties (key/value pairs).
+             labels: Labels are usually .csv files containing information regarding the dataset.
+             label_properties: Custom properties for a label.
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
-        print("inside log_dataset")
-        print("url", url)
         logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
@@ -724,9 +728,9 @@ class Cmf:
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
         custom_props = {} if custom_properties is None else custom_properties
+
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
-        print("name", name)
         event_type = mlpb.Event.Type.OUTPUT
         existing_artifact = []
         if event.lower() == "input":
@@ -743,19 +747,33 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
-        print("url", url)
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
+        uri = c_hash
+        label_hash = 0
+        if label:
+            if not os.path.isfile(label):
+                print(f"Error: File '{label}' not found.")
+            else:
+                label_hash = calculate_md5(label)
+                label_custom_props = {} if label_properties is None else label_properties
+                self.log_label(label, label_hash, uri, label_custom_props)
+                # update custom_props
+                label_with_hash = label + ":" + label_hash
+                custom_props["labels"] = label
+                custom_props["labels_uri"] = label_with_hash
+
+
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
-            print("insid  if")
             existing_artifact = existing_artifact[0]
 
             # Quick fix- Updating only the name
             if custom_properties is not None:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
+
             uri = c_hash
             # update url for existing artifact
             self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
@@ -767,7 +785,6 @@ class Cmf:
                 event_type=event_type,
             )
         else:
-            print("inside else")
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
@@ -791,6 +808,7 @@ class Cmf:
                     "url": mlpb.STRING,
                 },
                 custom_properties=custom_props,
+
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
         custom_props["git_repo"] = git_repo
@@ -1337,9 +1355,20 @@ class Cmf:
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                artifact.custom_properties[key].string_value = str(value)
+                 if key == "labels" or key == "labels_uri":
+                     existing_value = artifact.custom_properties[key].string_value
+                     if existing_value:
+                         temp = existing_value + "," + str(value)
+                         new_temp = set(temp.split(","))
+                         # join the temp 
+                         new_new_temp = ",".join(list(new_temp))
+                         artifact.custom_properties[key].string_value = str(new_new_temp)
+                     else: 
+                        artifact.custom_properties[key].string_value = str(value)
+                 else:
+                     artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
-        
+
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Gets the artifact object from mlmd"""
@@ -1412,6 +1441,70 @@ class Cmf:
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient="index")
         dataslice_df.index.names = ["Path"]
         dataslice_df.to_parquet(name)
+
+    def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        # Labels currently are not visible in lineage as we are not sure where to display in them in Artifact lineage.
+        # description remianing 
+
+        ### To Do : Technical Debt. 
+        # If the dataset already exist , then we just link the existing dataset to the execution
+        # We do not update the dataset properties . 
+        # We need to append the new properties to the existing dataset properties
+        custom_props = {} if custom_properties is None else custom_properties
+        git_repo = git_get_repo()
+
+        existing_artifact = []
+        if label_hash and label_hash.strip:
+            existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
+
+        # To Do - What happens when uri is the same but names are different
+        if existing_artifact and len(existing_artifact) != 0:
+            existing_artifact = existing_artifact[0]
+
+            # Quick fix- Updating only the name
+            if custom_properties is not None:
+                self.update_existing_artifact(
+                    existing_artifact, custom_properties)
+            uri = label_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, url)
+            artifact = link_execution_to_artifact(
+                store=self.store,
+                execution_id=self.execution.id,
+                uri=uri,
+                input_name=url,
+                event_type=mlpb.Event.Type.INPUT,
+            )
+        else:
+            uri = label_hash if label_hash and label_hash.strip() else str(uuid.uuid1())
+            artifact = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=url,
+                type_name="Label",
+                event_type=mlpb.Event.Type.INPUT,
+                properties={
+                    "git_repo": str(git_repo),
+                    # passing hash_value value to commit
+                    "Commit": str(label_hash),
+                    "url": str(url),
+                    "dataset_uri": str(dataset_uri),
+                },
+                artifact_type_properties={
+                    "git_repo": mlpb.STRING,
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
+                    "dataset_uri": mlpb.STRING,
+                },
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
+        custom_props["git_repo"] = git_repo
+        custom_props["Commit"] = label_hash
+        custom_props["dataset_uri"] = dataset_uri
+        return artifact
 
     class DataSlice:
         """A data slice represents a named subset of data.
@@ -1579,6 +1672,7 @@ Cmf.log_model_with_version = log_model_with_version
 Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
+Cmf.log_label_with_version = log_label_with_version
 
 def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
     """ Pushes metadata file to CMF-server.
