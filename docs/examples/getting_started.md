@@ -68,14 +68,14 @@ cp -r ./cmf/examples/example-get-started/ ./example-get-started
 cd ./example-get-started
 ```
 ### cmf init
-<pre>
-Usage: cmf init local [-h] --path [path] -
+```bash
+Usage: cmf init local [-h] --path [path]
                            --git-remote-url [git_remote_url]
                            --cmf-server-url [cmf_server_url]
                            --neo4j-user [neo4j_user]
                            --neo4j-password [neo4j_password]
                            --neo4j-uri [neo4j_uri]
-</pre>
+```
 `cmf init local` initializes the local directory as a cmf artifact repository.
 ```
 cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687

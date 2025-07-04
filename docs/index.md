@@ -294,7 +294,7 @@ cmf = cmf.Cmf(
 )
 ```
 
-**Define a stage**. An ML pipeline can have multiple stages, and each stage can be associated with multiple executions. A stage is described by a context, which specifies its name and optional properties. You can create a context using the [create_context](api/public/cmf.md#cmflib.cmf.Cmf.create_context) method:
+**Define a stage**. An ML pipeline can have multiple stages, and each stage can be associated with multiple executions. A stage is described by a context, which specifies its name and optional properties. You can create a context using the [create_context](api/public/cmf.md) method:
 
 ```python
 context = cmf.create_context(
@@ -306,7 +306,7 @@ context = cmf.create_context(
 )
 ```
 
-**Create a stage execution**. A stage in an ML pipeline can have multiple executions. Every run is marked as an execution. This API helps to track the metadata associated with the execution, like stage parameters (e.g., number of epochs and learning rate for train stages). The stage execution name does not need to be the same as the name of its context. Moreover, the CMF will adjust this name to ensure every execution has a unique name. The CMF will internally associate this execution with the context created previously. Stage executions are created by calling the [create_execution](api/public/cmf.md#cmflib.cmf.Cmf.create_execution) method.
+**Create a stage execution**. A stage in an ML pipeline can have multiple executions. Every run is marked as an execution. This API helps to track the metadata associated with the execution, like stage parameters (e.g., number of epochs and learning rate for train stages). The stage execution name does not need to be the same as the name of its context. Moreover, the CMF will adjust this name to ensure every execution has a unique name. The CMF will internally associate this execution with the context created previously. Stage executions are created by calling the [create_execution](api/public/cmf.md) method.
 
 ```python
 execution = cmf.create_execution(
@@ -319,12 +319,12 @@ execution = cmf.create_execution(
 
 **Log artifacts**. A stage execution can consume (inputs) and produce (outputs) multiple artifacts (datasets, models, and performance metrics). The path of these artifacts must be relative to the project (repository) root path. Artifacts might have optional metadata associated with them. These metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for instance, number of trees in a random forest classifier).
 
-- **Datasets** are logged with the [log_dataset](api/public/cmf.md#cmflib.cmf.Cmf.log_dataset) method.
-- **ML models** produced by training stages are logged using the [log_model](api/public/cmf.md#cmflib.cmf.Cmf.log_model) API.
-- **Metrics** of every optimization step are logged using the [log_metric](api/public/cmf.md#cmflib.cmf.Cmf.log_metric) API.
-- **Stage metrics**, or final metrics, are logged with the [log_execution_metrics](api/public/cmf.md#cmflib.cmf.Cmf.log_execution_metrics) method.
+- **Datasets** are logged with the [log_dataset](api/public/cmf.md) method.
+- **ML models** produced by training stages are logged using the [log_model](api/public/cmf.md) API.
+- **Metrics** of every optimization step are logged using the [log_metric](api/public/cmf.md) API.
+- **Stage metrics**, or final metrics, are logged with the [log_execution_metrics](api/public/cmf.md) method.
 
-**Dataslices** are intended to be used to track subsets of the data. For instance, this can be used to track and compare accuracies of ML models on these subsets to identify model bias. [Data slices](api/public/dataslice.md) are created with the [create_dataslice](api/public/cmf.md#cmflib.cmf.Cmf.create_dataslice) method.
+**Dataslices** are intended to be used to track subsets of the data. For instance, this can be used to track and compare accuracies of ML models on these subsets to identify model bias. [Data slices](api/public/dataslice.md) are created with the [create_dataslice](api/public/cmf.md) method.
 
 ## Graph Layer Overview
 
@@ -347,24 +347,7 @@ cmf = cmf.Cmf(
 ```
 
 
-## Introduction
-Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
-each stage performs a particular task, such as data loading, pre-processing, ML model training, and testing stages.
-Each stage can have multiple Executions which:
 
-- consume `inputs` and produce `outputs`.
-- are parameterized by parameters that guide the process of producing outputs.
-
-<img src="assets/ml_pipeline_def.png" alt="ML Pipeline Definition Example" style="display: block; margin: 0 auto" />
-
-CMF uses the abstractions of `Pipeline`, `Context`, and `Executions` to store the metadata of complex ML pipelines.
-Each pipeline has a name. Users provide it when they initialize the CMF. Each stage is represented by a `Context` object.
-Metadata associated with each <u>run</u> of a <u>stage</u> is captured in the Execution object.
-Inputs and outputs of Executions can be logged as dataset, model, or metrics. While parameters of executions
-are recorded as properties of executions.
-
-
-<img src="assets/cmf_concepts.png" alt="CMF abstractions" style="display: block; margin: 0 auto" />
 
 <table markdown="block" style="border: 0">
 <tbody markdown="block" style="width: 100%; display: table">
@@ -520,7 +503,7 @@ instance, number of trees in a random forest classifier).
 
 **Dataslices** are intended to be used to track subsets of the data. For instance, this can be used to track and compare
 accuracies of ML models on these subsets to identify model bias. [Data slices](api/public/dataslice.md) are created with
-the [create_dataslice](api/public/cmf.md#cmflib.cmf.Cmf.create_dataslice) method.
+the [create_dataslice](api/public/cmf.md) method.
 ```python
 dataslice = cmf.create_dataslice("slice-a")
 for i in range(1, 20, 1):
@@ -594,8 +577,9 @@ docker-compose up --build -d
 ***Access the Jupyter notebook***
 http://[HOST.IP.AD.DR]:8888 (default token: `docker`)
 
-Click the terminal icon<br>
-<img src= "assets/jupyter.png" width=400> <br>
+Click the terminal icon
+
+![Jupyter Terminal](assets/jupyter.png)
 ***Quick Start***
 ```
 cd example-get-started
@@ -608,20 +592,26 @@ The artifacts created will be pushed to the configured dvc remote (default: /hom
 The stored metadata is displayed as
 ![image](assets/Metadata_stored.png)
 
-Metadata lineage can be accessed in neo4j.<br>
+Metadata lineage can be accessed in neo4j.
 Open http://host:7475/browser/
-Connect to the server with default password neo4j123 (To change this modify the .env file)<br>
-<img src="assets/neo4j_server.png" width=400> <br>
-Run the query <br>
+Connect to the server with default password neo4j123 (To change this modify the .env file)
+
+![Neo4j Server](assets/neo4j_server.png)
+
+Run the query
 ```
 MATCH (a:Execution)-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r, b
 ```
-Expected output<br>
-<img src="assets/neo4j_output.PNG" width=400> <br>
+Expected output
 
-***Jupyter Lab Notebook*** <br><br>
-Select the kernel as Python[conda env:python37]<br><br>
-<img src="assets/python_kernel_broader.png" width=400> <br><img src="assets/Python_kernel.png" width=200> <br>
+![Neo4j Output](assets/neo4j_output.PNG)
+
+### Jupyter Lab Notebook
+
+Select the kernel as Python[conda env:python37]
+
+![Python Kernel Broader](assets/python_kernel_broader.png)
+![Python Kernel](assets/Python_kernel.png)
 
 ***Shutdown/remove (Remove volumes as well)***
 ```
@@ -648,7 +638,8 @@ on GitHub.
 ```
 
 ## Community
-[<img src="assets/slack_logo.png" width='150' hight='60'>](https://commonmetadata.slack.com/)
+
+[![Slack Community](assets/slack_logo.png)](https://commonmetadata.slack.com/)
 
 !!! help
 
