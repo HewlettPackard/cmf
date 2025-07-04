@@ -31,8 +31,10 @@ theme:
   language: en
   features:
     - navigation.sections  # Sections are included in the navigation on the left.
-    - toc.integrate        # Table of contents is integrated on the left; does not appear separately on the right.
-    - header.autohide      # header disappears as you scroll
+    - navigation.expand    # All sections are expanded by default
+    - navigation.indexes   # Section index pages
+    - toc.follow          # Table of contents follows scroll position
+    - header.autohide     # header disappears as you scroll
   palette:
     primary: 'blue'
     accent: 'blue'
@@ -77,27 +79,27 @@ extra:
 
 
 # This defines the structure of the CMF documentation portal (all must be in `docs/` directory).
+# Structure follows the DeepWiki reference: https://deepwiki.com/HewlettPackard/cmf
 nav:
-  - index.md
-  - Quick start with cmf-client: cmf_client/step-by-step.md
-  - Examples:
-      - Getting Started: examples/getting_started.md
+  - Overview: index.md
+  - Core Library (cmflib): cmflib/index.md
+  - CMF Server: server/index.md
+  - Web User Interface: ui/index.md
+  - Getting Started: getting-started/index.md
+  - Development and Deployment: development/index.md
   - Architecture:
-      - Overview: architecture/overview.md
-      - Components: architecture/components.md
-      - Advantages: architecture/advantages.md
-  - Client:
-      - Overview: cmf_client/cmf_client.md
-      - Quick start with cmf-client: cmf_client/step-by-step.md
-      - dvc minio backend: cmf_client/minio-server.md
-  - Server:
-      - Getting started with cmf-server: cmf_server/cmf-server.md
-  - TensorBoard:
-      - Getting started with tensorboard: cmf_client/tensorflow_guide.md
+      - System Overview: architecture/overview.md
+      - Core Components: architecture/components.md
+      - Key Advantages: architecture/advantages.md
   - Public API:
       - CMF: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
       - CmfQuery: api/public/cmfquery.md
-  - Ontology:
-      - Ontology: common-metadata-ontology/readme.md
+  - Examples and Tutorials:
+      - Quick Start Guide: cmf_client/step-by-step.md
+      - Getting Started Tutorial: examples/getting_started.md
+      - TensorBoard Integration: cmf_client/tensorflow_guide.md
+      - MinIO Backend Setup: cmf_client/minio-server.md
+      - SSH Setup Guide: cmf_client/ssh-setup.md
+  - Common Metadata Ontology: common-metadata-ontology/readme.md
 
