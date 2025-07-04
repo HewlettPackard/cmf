@@ -99,12 +99,12 @@ def _metadata_export(pipeline_name, json_file_name, file_name):
     print(msg)
     return msg
 
-
-def _artifact_push(pipeline_name, file_name):
+def _artifact_push(pipeline_name, file_name, jobs):
     """ Pushes artifacts to the initialized repository.
     Args: 
        pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
+       filepath: Path to store the artifact. 
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
         Output from the artifact push command.
     """
@@ -116,6 +116,8 @@ def _artifact_push(pipeline_name, file_name):
                pipeline_name,
                "-f",
                file_name,
+               "-j",
+               jobs
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -422,14 +424,14 @@ def _execution_list(pipeline_name, file_name, execution_uuid):
     print(msg)
     return msg
 
-
-def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
+def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid, jobs):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify input metadata file name.
        execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
        Output from the repo push command. 
     """
@@ -444,7 +446,9 @@ def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
                "-e",
                execution_uuid,
                "-t",
-               tensorboard_path
+               tensorboard_path,
+               "-j",
+               jobs
             ]
            )
     cmd = cli_args.func(cli_args)

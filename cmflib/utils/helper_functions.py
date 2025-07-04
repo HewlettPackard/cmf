@@ -20,6 +20,8 @@ import readchar
 import requests
 import textwrap
 import subprocess
+import hashlib
+import sys
 import pandas as pd
 
 from tabulate import tabulate
@@ -47,10 +49,10 @@ def is_git_repo():
 
 
 def get_python_env(env_name='cmf'):
-    # what this is supposed to return 
+    # Determine the type of Python environment and return its details
     try:
-        # Check if the environment is conda
-        if is_conda_installed():  # If conda is installed and the command succeeds
+        # Check if the environment is a Conda environment
+        if os.getenv('CONDA_PREFIX') is not None:  # If Conda is activated
 
             # Step 1: Get the list of conda packages
             conda_packages = subprocess.check_output(['conda', 'list', '--export']).decode('utf-8').splitlines()
@@ -119,17 +121,6 @@ def change_dir(cmf_init_path):
     if not logging_dir == cmf_init_path:
         os.chdir(cmf_init_path)
     return logging_dir
-
-
-def is_conda_installed() -> bool:
-    """Check if Conda is installed by running 'conda --version'."""
-    try:
-        # Run the 'conda --version' command and capture the output
-        subprocess.run(['conda', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
-
 
 def list_conda_packages_json() -> list:
     """Return a list of installed Conda packages and their versions."""
@@ -304,3 +295,31 @@ def get_postgres_config() -> dict:
     config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
     #print("config_dict = ", config_dict)
     return config_dict
+
+
+def calculate_md5(file_path):
+    """
+    Calculate MD5 hash for a file
+    
+    Args:
+        file_path (str): Path to the file
+        
+    Returns:
+        str: MD5 hash of the file
+    """
+    # Check if file exists
+    if not os.path.isfile(file_path):
+        print(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+        
+    # Calculate MD5 hash
+    md5_hash = hashlib.md5()
+    
+    # Read file in chunks to handle large files efficiently
+    with open(file_path, 'rb') as file:
+        # Read in 4MB chunks
+        for chunk in iter(lambda: file.read(4096 * 1024), b''):
+            md5_hash.update(chunk)
+            
+    # Return the hexadecimal digest
+    return md5_hash.hexdigest()
