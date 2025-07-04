@@ -417,12 +417,6 @@ async def get_label_data(file_name: str) -> str:
     Raises:
         HTTPException: If the file does not exist or the extension is unsupported.
     """
-    file_name = "type.csv"
-    # Validate file extension
-    if not (file_name.endswith(".csv")):
-        raise HTTPException(
-            status_code=400, detail="Unsupported file extension. Use .csv"
-        )
     
     # Check if the file exists
     file_path = os.path.join("/cmf-server/data/labels/", os.path.basename(file_name))

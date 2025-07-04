@@ -120,6 +120,8 @@ def handle_event(cmf_class, store, event):
             )
         elif artifact_type == "Environment":
             cmf_class.log_python_env_from_client(artifact_name, uri, props)
+        elif artifact_type == "Label":
+            cmf_class.log_label_with_version(artifact_name, uri, props, custom_props)
         else:
             # Skip unsupported artifact types without raising an error
             pass

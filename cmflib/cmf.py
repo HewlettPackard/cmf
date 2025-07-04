@@ -688,7 +688,6 @@ class Cmf:
         label_properties: t.Optional[t.Dict] = None,
         external: bool = False,
     ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
-        # need to update the log_dataset_with_version too - no need
         """Logs a dataset as artifact.
         This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
@@ -704,13 +703,11 @@ class Cmf:
              url: The path to the dataset.
              event: Takes arguments `INPUT` OR `OUTPUT`.
              custom_properties: Dataset properties (key/value pairs).
-             labels: Labels(usually .csv files) - Dictionary - data is stored in key/value pairs -
-             key : name of label/name of .csv file, value = path of the label 
+             labels: Labels are usually .csv files containing information regarding the dataset.
+             label_properties: Custom properties for a label.
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
-        print("inside log_dataset")
-        print("url", url)
         logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
@@ -734,7 +731,6 @@ class Cmf:
 
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
-        print("name", name)
         event_type = mlpb.Event.Type.OUTPUT
         existing_artifact = []
         if event.lower() == "input":
@@ -751,7 +747,6 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
-        print("url", url)
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
@@ -765,15 +760,13 @@ class Cmf:
                 label_custom_props = {} if label_properties is None else label_properties
                 self.log_label(label, label_hash, uri, label_custom_props)
                 # update custom_props
+                label_with_hash = label + ":" + label_hash
                 custom_props["labels"] = label
-                custom_props["labels_uri"] = label_hash
-                # i don't think this line is needed 
-                # label = label + ":" + label_hash
+                custom_props["labels_uri"] = label_with_hash
 
 
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
-            print("insid  if")
             existing_artifact = existing_artifact[0]
 
             # Quick fix- Updating only the name
@@ -792,7 +785,6 @@ class Cmf:
                 event_type=event_type,
             )
         else:
-            print("inside else")
             # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
             #   url = url + ":" + str(self.execution.id)
             uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
@@ -1363,20 +1355,20 @@ class Cmf:
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                if key == "labels" or key == "labels_uri":
-                    existing_value = artifact.custom_properties[key].string_value
-                    existing_list  =  existing_value.split(",")
-                    print(existing_list)
-                    existing_value = ",".join(set(existing_list))
-                    print(existing_value)
-                    if existing_value:
-                        artifact.custom_properties[key].string_value = existing_value + "," + str(value)
-                    else: 
+                 if key == "labels" or key == "labels_uri":
+                     existing_value = artifact.custom_properties[key].string_value
+                     if existing_value:
+                         temp = existing_value + "," + str(value)
+                         new_temp = set(temp.split(","))
+                         # join the temp 
+                         new_new_temp = ",".join(list(new_temp))
+                         artifact.custom_properties[key].string_value = str(new_new_temp)
+                     else: 
                         artifact.custom_properties[key].string_value = str(value)
-                else:
-                    artifact.custom_properties[key].string_value = str(value)
+                 else:
+                     artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
-        
+
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Gets the artifact object from mlmd"""

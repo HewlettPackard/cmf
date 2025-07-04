@@ -200,11 +200,11 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                               href="#"
                               onClick={(e) => {
                                 e.preventDefault();
-                                getLabelData(label_name);
+                                getLabelData(label_name.split(":")[1] || label_name);
                                 setShowPopup(true);
                               }}
                             >
-                              {label_name}
+                              {label_name.split(":")[0] || label_name}
                             </a>
                             {showPopup && (
                               <LabelCardPopup

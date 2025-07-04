@@ -99,11 +99,6 @@ class CmdMetadataPull(CmdBase):
         elif output.content.decode() == "no_exec_uuid":
             raise ExecutionUUIDNotFound(exec_uuid)
         else:
-            # Get unique executions
-            unique_executions = query.get_unique_executions(output.content)
-            if not unique_executions:
-                return ExecutionsAlreadyExists()
-
             response = update_mlmd(query, output.content, self.args.pipeline_name[0], "pull", exec_uuid)
             if response =="success":
                 return MlmdFilePullSuccess(full_path_to_dump)
