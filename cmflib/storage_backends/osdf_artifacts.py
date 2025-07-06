@@ -20,6 +20,7 @@ import requests
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import hashlib
 import time
+
 from urllib.parse import urlparse
 
 def generate_cached_url(url, cache):
@@ -130,9 +131,8 @@ class OSDFremoteArtifacts:
             if success:
                 #print(result)
                 return success, result
-            else:
-                #print(f"Failed to download and verify file: {result}")
-                return success, f"Failed to download and verify file: {result}"
+            #print(f"Failed to download and verify file: {result}")
+            return success, f"Failed to download and verify file: {result}"
         else:
             #Generate Cached path for artifact
             cached_s_url=generate_cached_url(host,cache)
@@ -149,12 +149,8 @@ class OSDFremoteArtifacts:
                 if success: 
                     #print(origin_result)
                     return success, origin_result
-                else:
-                    #print(f"Failed to download and verify file: {result}")
-                    return success, f"Failed to download and verify file: {origin_result}"
-        
-
-        
+                #print(f"Failed to download and verify file: {result}")
+                return success, f"Failed to download and verify file: {origin_result}"
         
 
         

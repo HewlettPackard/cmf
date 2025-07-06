@@ -1,15 +1,15 @@
 # Getting started with cmf
-Common metadata framework (cmf) has the following components:
+Common Metadata Framework (CMF) has the following components:
 
-- **Metadata Library** exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
-- **cmf-client** interacts with the server to pull or push metadata from or to the cmf-server.
-- **cmf-server with GUI** interacts with all the remote clients and is responsible to merge the metadata transferred by the cmf-client and manage the consolidated metadata. GUI renders metadata for simplified tracking. 
-- **Central Artifact Repositories** hosts the code and data. 
+- **Metadata Library** exposes APIs to track pipeline metadata. It also provides APIs to query the stored metadata.
+- **cmf-client** interacts with the cmf-server to pull or push metadata.
+- **cmf-server with GUI** interacts with remote cmf-clients and merges the metadata transferred by each
+  client. This server also provides a GUI that can render the stored metadata.
+- **Central Artifact Repositories** host the code and data.
 
-## Setup a cmf-client 
-cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
-
-Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
+## Setup a cmf-client
+`cmf-client` is a tool that facilitates metadata collaboration between different teams and team members. These clients
+interact with the cmf-server to push/pull metadata.
 
 **Pre-Requisites**
 
@@ -24,27 +24,33 @@ pip install https://github.com/HewlettPackard/cmf
 ```
 pip install cmflib
 ```
-Check [here](https://hewlettpackard.github.io/cmf/) for more details.
+[Documentation](https://hewlettpackard.github.io/cmf/) for more details.
 
 ## Install cmf-server
-cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.
+cmf-server is the primary interface for the user to explore and track their ML training runs by browsing the stored
+metadata. Users can retrieve the saved metadata file and can view the content of the saved metadata file using
+the UI provided by the cmf-server.
 
-Follow [here](../cmf_server/cmf-server.md) for details on how to setup a cmf-server.
+Details on how to set up a cmf-server can be found [here](../cmf_server/cmf-server.md).
 
-## How to effectively use cmf-client?
+## Simple Example of using the CMF Client
+In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a MinIO
 
-Let's assume we are tracking the metadata for a pipeline named `Test-env` with minio S3 bucket as the artifact repository and a cmf-server.
+S3 bucket as the artifact repository and a cmf-server.
 
-**Create a folder**
+**Setup the example directory**
 ```
-mkdir example-folder
+mkdir example-folder && cd example-folder
 ```
-  
+
 **Initialize cmf**
 
-CMF initialization is the first and foremost to use cmf-client commads. This command in one go complete initialization process making cmf-client user friendly.     Execute `cmf init` in the `example-folder` directory created in the [above](#create-a-folder) step.
+CMF must be initialized to use cmf-client commands. The following command configures authentication to an S3 bucket and
+specifies the connection to a CMF server.
 ```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
+cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 \
+  --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git \
+  --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
 ```
 Check [here](./cmf_client.md) for more details.
 
@@ -61,10 +67,10 @@ Use [Sample projects](https://github.com/HewlettPackard/cmf/tree/master/examples
 More info is available [here](https://hewlettpackard.github.io/cmf/examples/getting_started/).
 
 **Push artifacts**
-  
-Push artifacts in the artifact repo initialised in the [Initialize cmf](#initialize-cmf) step.
+
+Push artifacts in the artifact repo initialized in the [Initialize cmf](#initialize-cmf) step.
 ```
-cmf artifact push 
+cmf artifact push
 ```
 Check [here](./cmf_client.md) for more details.
 

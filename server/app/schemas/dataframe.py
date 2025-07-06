@@ -7,7 +7,7 @@ import json
 class MLMDPushRequest(BaseModel): 
     # ... indicates required field
     exec_uuid: Optional[str] = Field(None, description="Optional execution uuid for the request")
-    pipeline_name: str = Field(..., min_length=1, description="Name of the pipeline")
+    pipeline_name: Optional[str] = Field(..., min_length=1, description="Name of the pipeline")
     json_payload: str = Field(..., description="JSON payload for the pipeline")
 
     # Custom validation for pipeline name and JSON payload
@@ -27,11 +27,10 @@ class MLMDPushRequest(BaseModel):
 
 # Base query parameters for pagination, sorting, and filtering.
 class BaseRequest(BaseModel):
-    page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
-    per_page: int = Field(5, le=100, description="Items per page, max 100")  # Limit per page to max 100
+    active_page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
     sort_order: str = Field("asc", description="Sort order (asc or desc)")
-    filter_by: Optional[str] = Field(None, description="Filter by column")
-    filter_value: Optional[str] = Field(None, description="Filter value")
+    record_per_page: int = Field(5, gt=0, description="Number of records per page")  # Records per page must be > 0
+    filter_value: str = Field("", description="Search based on value")
 
 # Query parameters for execution.
 class ExecutionRequest(BaseRequest):
@@ -40,3 +39,24 @@ class ExecutionRequest(BaseRequest):
 # Query parameters for artifact.
 class ArtifactRequest(BaseRequest):
     sort_field: str = Field("name", description="Column to sort by (default: name)")
+
+
+# Define a Pydantic model for the request body
+class ServerRegistrationRequest(BaseModel):
+    server_name: str
+    host_info: str
+    last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
+
+
+class AcknowledgeRequest(BaseModel):
+    server_name: str
+    host_info: str
+
+# Don't forget description
+class MLMDPullRequest(BaseModel):
+    pipeline_name:Optional[str] = Field(None, description="")
+    exec_uuid: Optional[str] = Field(None, description="")
+    last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
+    
+
+    
