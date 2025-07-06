@@ -26,7 +26,7 @@ class UniqueQueue:
         return value in self.seen
 
 
-def query_execution_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_exe_id, uuid):
+def query_execution_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_exe_id: dict, uuid: str):
     pipeline_id = query.get_pipeline_id(pipeline_name)
     df=dict_of_exe_id[pipeline_name]
     

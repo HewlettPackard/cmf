@@ -15,19 +15,19 @@
 ###
 
 import logging
+
 from abc import ABC, abstractmethod
 
 logger = logging.getLogger(__name__)
-
 
 # Abstract class for commands
 class CmdBase(ABC):
     def __init__(self, args):
         self.args = args
 
-    def do_run(self):
-        return self.run()
+    def do_run(self, live):
+        return self.run(live)
 
     @abstractmethod
-    def run(self):
+    def run(self, live):
         pass
