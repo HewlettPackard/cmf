@@ -16,33 +16,24 @@
 
 #!/usr/bin/env python3
 import argparse
-import os
 
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import find_root
-from cmflib.dvc_wrapper import dvc_get_config
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.cmf_exception_handling import CmfNotConfigured, CmfInitShow
+from cmflib.cmf_exception_handling import CmfInitShow
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 
 class CmdInitShow(CmdBase):
-    def run(self):
-        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
-        msg = "'cmf' is not configured.\nExecute 'cmf init' command."
-        result = dvc_get_config()
-        if len(result) == 0:
-            return CmfNotConfigured(msg)
-        else:
-            cmf_config_root = find_root(cmfconfig)
-            if cmf_config_root.find("'cmf' is not configured") != -1:
-                return CmfNotConfigured(msg)
-            config_file_path = os.path.join(cmf_config_root, cmfconfig)
-            attr_dict = CmfConfig.read_config(config_file_path)
-            attr_list = []
-            for key, value in attr_dict.items():
-                temp_str = f"{key} = {value}"
-                attr_list.append(temp_str)
-            attr_str = "\n".join(attr_list)
-            return CmfInitShow(result,attr_str)
+    def run(self, live):
+        output, config_file_path = fetch_cmf_config_path()
+        attr_dict = CmfConfig.read_config(config_file_path)
+        # Combine the two dictionaries
+        combined_dict = output | attr_dict
+        attr_list = []
+        for key, value in combined_dict.items():
+            temp_str = f"{key} = {value}"
+            attr_list.append(temp_str)
+        attr_str = "\n".join(attr_list)
+        return CmfInitShow(attr_str)
 
 
 def add_parser(subparsers, parent_parser):

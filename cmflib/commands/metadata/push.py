@@ -15,14 +15,15 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
 import json
+import argparse
+
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import find_root
 from cmflib.server_interface import server_interface
 from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 from cmflib.cmf_exception_handling import (
     TensorboardPushSuccess, 
     TensorboardPushFailure, 
@@ -34,11 +35,11 @@ from cmflib.cmf_exception_handling import (
     UpdateCmfVersion,
     CmfServerNotAvailable,
     InternalServerError,
-    CmfNotConfigured,
     InvalidTensorboardFilePath,
     MissingArgument,
     DuplicateArgumentNotAllowed
 )
+
 # This class pushes mlmd file to cmf-server
 class CmdMetadataPush(CmdBase):
 
@@ -54,28 +55,20 @@ class CmdMetadataPush(CmdBase):
                         found_files[file_name] = file_path
         return found_files
 
-    def run(self):
+    def run(self, live):
         current_directory = mlmd_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        # Get url from config
-        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
-
-        # find root_dir of .cmfconfig
-        output = find_root(cmfconfig)
-
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is not configured.") != -1:
-            raise CmfNotConfigured(output)
-
-        config_file_path = os.path.join(output, cmfconfig)
-        attr_dict = CmfConfig.read_config(config_file_path)
-        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:8080")
+        
+        output, cmf_config_path = fetch_cmf_config_path()
+        attr_dict = CmfConfig.read_config(cmf_config_path)
+        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:80")
+        #print(attr_dict)
 
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
-            "tensorboad": self.args.tensorboard
+            "tensorboard_path": self.args.tensorboard_path
         }  
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
@@ -169,6 +162,23 @@ class CmdMetadataPush(CmdBase):
                                 # keeping record of status but this won't affect the mlmd success.
                                 print(env_response.json())
 
+                
+                # get labels for every artifact
+                artifacts = query.get_all_artifacts_by_context(pipeline_name)
+                if not artifacts.empty:
+                    if "custom_properties_labels_uri" in artifacts.columns:
+                        labels_with_uri = artifacts["custom_properties_labels_uri"].dropna().drop_duplicates().tolist()
+                        # every artifacts can contain multiple labels. 
+                        # when 'labels' column has more than one label, it looks as follows 
+                        # labels = "labels.csv, labels1.csv, labels2.csv"
+                        for l in labels_with_uri:
+                            labels = l.split(",")
+                            for label in labels:
+                                label_name = label.split(":")[1]
+                                path = os.getcwd() +"/"+ label.split(":")[0]
+                                label_response = server_interface.call_label_dataset(url, label_name, path)
+                                print(label_response.json())
+
                 output = ""
                 display_output = ""
                 if response.json()['status']=="success":
@@ -177,7 +187,7 @@ class CmdMetadataPush(CmdBase):
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
                     output = ExecutionsAlreadyExists()
-                if not self.args.tensorboard:
+                if not self.args.tensorboard_path:
                     return output
                 print(display_output)
                 # /tensorboard api call is done only if mlmd push is successfully completed
@@ -187,7 +197,7 @@ class CmdMetadataPush(CmdBase):
                 print("......................................")
 
 
-                tensorboard = self.args.tensorboard[0]
+                tensorboard = self.args.tensorboard_path[0]
                 # check if the path provided is for a file
                 if os.path.isfile(tensorboard):
                     file_name = os.path.basename(tensorboard)
@@ -222,12 +232,12 @@ class CmdMetadataPush(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    PUSH_HELP = "Push user-generated mlmd to server to create one single mlmd file for all the pipelines."
+    PUSH_HELP = "Push user-generated metadata file to server to create one single metadata file for all the pipelines."
 
     parser = subparsers.add_parser(
         "push",
         parents=[parent_parser],
-        description="Push user's mlmd to cmf-server.",
+        description="Push user's metadata file to cmf-server.",
         help=PUSH_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -246,7 +256,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.", 
+        help="Specify input metadata file name.", 
         metavar="<file_name>"
     )
 
@@ -260,10 +270,10 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-t",
-        "--tensorboard",
+        "--tensorboard_path",
         action="append",
         help="Specify path to tensorboard logs for the pipeline.",
-        metavar="<tensorboard>"
+        metavar="<tensorboard_path>"
     )
 
     parser.set_defaults(func=CmdMetadataPush)

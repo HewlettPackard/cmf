@@ -16,6 +16,7 @@ dependencies = [
 	"scitokens", 
 	"cryptography",   
 	"ray==2.34.0",
+	"readchar",
 ]
 authors = [
   { name = "Hewlett Packard Enterprise"}

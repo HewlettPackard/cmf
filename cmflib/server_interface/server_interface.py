@@ -15,7 +15,6 @@
 ###
 
 import requests
-import json
 
 # This function posts mlmd data to mlmd_push api on cmf-server
 def call_mlmd_push(json_payload, url, exec_uuid, pipeline_name):
@@ -28,8 +27,8 @@ def call_mlmd_push(json_payload, url, exec_uuid, pipeline_name):
 
 # This function gets mlmd data from mlmd_pull api from cmf-server
 def call_mlmd_pull(url, pipeline_name, exec_uuid):
-    url_to_pass = f"{url}/mlmd_pull/{pipeline_name}"
-    response = requests.get(url_to_pass, params={"exec_uuid": exec_uuid})  # Get request
+    url_to_pass = f"{url}/mlmd_pull"
+    response = requests.post(url_to_pass, json={"pipeline_name":pipeline_name, "exec_uuid": exec_uuid})  
     return response
 
 
@@ -41,9 +40,20 @@ def call_tensorboard(url, pipeline_name, file_name, file_path):
     response = requests.post(url_to_pass, files=files, params=params)
     return response
 
+
 # This function posts env file to cmf-server
 def call_python_env(url, file_name, file_path):
     url_to_pass = f"{url}/python-env"
+    #print("file_name = ", file_name)
+    #print("file_path = ", file_path)
     files = {'file': (file_name, open(file_path, 'rb'))}
+    response = requests.post(url_to_pass, files=files)
+    return response
+
+def call_label_dataset(url, file_name, path):
+    url_to_pass = f"{url}/label-dataset"
+    #print("file_name = ", file_name)
+    #print("file_path = ", path)
+    files = {'file': (file_name, open(path, 'rb'))}
     response = requests.post(url_to_pass, files=files)
     return response

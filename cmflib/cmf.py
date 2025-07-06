@@ -58,7 +58,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config, calculate_md5
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -68,6 +68,7 @@ from cmflib.cmf_server import (
     log_execution_metrics_from_client, 
     log_step_metrics_from_client,
     log_dataslice_from_client,
+    log_label_with_version,
 )
 
 from cmflib.cmf_commands_wrapper import (
@@ -201,6 +202,7 @@ class Cmf:
     log_model_with_version: t.Callable[..., t.Any]
     log_execution_metrics_from_client: t.Callable[..., t.Any]
     log_step_metrics_from_client: t.Callable[..., t.Any]
+    log_label_with_version: t.Callable[..., t.Any]
 
     # function used to load neo4j params for cmf client
     @staticmethod
@@ -682,6 +684,8 @@ class Cmf:
         url: str,
         event: str,
         custom_properties: t.Optional[t.Dict] = None,
+        label: t.Optional[str] = None,
+        label_properties: t.Optional[t.Dict] = None,
         external: bool = False,
     ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Logs a dataset as artifact.
@@ -699,6 +703,8 @@ class Cmf:
              url: The path to the dataset.
              event: Takes arguments `INPUT` OR `OUTPUT`.
              custom_properties: Dataset properties (key/value pairs).
+             labels: Labels are usually .csv files containing information regarding the dataset.
+             label_properties: Custom properties for a label.
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
@@ -722,6 +728,7 @@ class Cmf:
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
         custom_props = {} if custom_properties is None else custom_properties
+
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
         event_type = mlpb.Event.Type.OUTPUT
@@ -743,6 +750,21 @@ class Cmf:
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
+        uri = c_hash
+        label_hash = 0
+        if label:
+            if not os.path.isfile(label):
+                print(f"Error: File '{label}' not found.")
+            else:
+                label_hash = calculate_md5(label)
+                label_custom_props = {} if label_properties is None else label_properties
+                self.log_label(label, label_hash, uri, label_custom_props)
+                # update custom_props
+                label_with_hash = label + ":" + label_hash
+                custom_props["labels"] = label
+                custom_props["labels_uri"] = label_with_hash
+
+
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
@@ -751,6 +773,7 @@ class Cmf:
             if custom_properties is not None:
                 self.update_existing_artifact(
                     existing_artifact, custom_properties)
+
             uri = c_hash
             # update url for existing artifact
             self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
@@ -785,6 +808,7 @@ class Cmf:
                     "url": mlpb.STRING,
                 },
                 custom_properties=custom_props,
+
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
         custom_props["git_repo"] = git_repo
@@ -854,9 +878,18 @@ class Cmf:
         for key, value in artifact.properties.items():
             if key == "url":
                 old_url = value.string_value
-                if updated_url not in old_url:
+                # If the old URL is empty or only contains spaces, assign the new URL directly.
+                if not old_url.strip():
+                    new_url = updated_url
+
+                # If the updated URL is not already present, append it with a comma separator.
+                elif updated_url not in old_url:
                     new_url = f"{old_url},{updated_url}"
-                    artifact.properties[key].string_value = new_url
+
+                # If the updated URL is already present, keep the old URL unchanged.
+                else:
+                    new_url = old_url
+                artifact.properties[key].string_value = new_url
         put_artifact(self.store, artifact)
 
     def update_model_url(self, dup_artifact: list, updated_url: str):
@@ -878,9 +911,18 @@ class Cmf:
             for key, value in dup_art.properties.items():
                 if key == "url":
                     old_url = value.string_value
-                    if updated_url not in old_url:
+                    # If the old URL is empty or only contains spaces, assign the new URL directly.
+                    if not old_url.strip():
+                        new_url = updated_url
+
+                    # If the updated URL is not already present, append it with a comma separator.
+                    elif updated_url not in old_url:
                         new_url = f"{old_url},{updated_url}"
-                        dup_art.properties[key].string_value = new_url
+
+                    # If the updated URL is already present, keep the old URL unchanged.
+                    else:
+                        new_url = old_url
+                    dup_art.properties[key].string_value = new_url
             put_artifact(self.store, dup_art)
         return dup_artifact
 
@@ -1313,9 +1355,20 @@ class Cmf:
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                artifact.custom_properties[key].string_value = str(value)
+                 if key == "labels" or key == "labels_uri":
+                     existing_value = artifact.custom_properties[key].string_value
+                     if existing_value:
+                         temp = existing_value + "," + str(value)
+                         new_temp = set(temp.split(","))
+                         # join the temp 
+                         new_new_temp = ",".join(list(new_temp))
+                         artifact.custom_properties[key].string_value = str(new_new_temp)
+                     else: 
+                        artifact.custom_properties[key].string_value = str(value)
+                 else:
+                     artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
-        
+
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Gets the artifact object from mlmd"""
@@ -1388,6 +1441,70 @@ class Cmf:
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient="index")
         dataslice_df.index.names = ["Path"]
         dataslice_df.to_parquet(name)
+
+    def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        # Labels currently are not visible in lineage as we are not sure where to display in them in Artifact lineage.
+        # description remianing 
+
+        ### To Do : Technical Debt. 
+        # If the dataset already exist , then we just link the existing dataset to the execution
+        # We do not update the dataset properties . 
+        # We need to append the new properties to the existing dataset properties
+        custom_props = {} if custom_properties is None else custom_properties
+        git_repo = git_get_repo()
+
+        existing_artifact = []
+        if label_hash and label_hash.strip:
+            existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
+
+        # To Do - What happens when uri is the same but names are different
+        if existing_artifact and len(existing_artifact) != 0:
+            existing_artifact = existing_artifact[0]
+
+            # Quick fix- Updating only the name
+            if custom_properties is not None:
+                self.update_existing_artifact(
+                    existing_artifact, custom_properties)
+            uri = label_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, url)
+            artifact = link_execution_to_artifact(
+                store=self.store,
+                execution_id=self.execution.id,
+                uri=uri,
+                input_name=url,
+                event_type=mlpb.Event.Type.INPUT,
+            )
+        else:
+            uri = label_hash if label_hash and label_hash.strip() else str(uuid.uuid1())
+            artifact = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=url,
+                type_name="Label",
+                event_type=mlpb.Event.Type.INPUT,
+                properties={
+                    "git_repo": str(git_repo),
+                    # passing hash_value value to commit
+                    "Commit": str(label_hash),
+                    "url": str(url),
+                    "dataset_uri": str(dataset_uri),
+                },
+                artifact_type_properties={
+                    "git_repo": mlpb.STRING,
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
+                    "dataset_uri": mlpb.STRING,
+                },
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
+        custom_props["git_repo"] = git_repo
+        custom_props["Commit"] = label_hash
+        custom_props["dataset_uri"] = dataset_uri
+        return artifact
 
     class DataSlice:
         """A data slice represents a named subset of data.
@@ -1555,46 +1672,49 @@ Cmf.log_model_with_version = log_model_with_version
 Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
+Cmf.log_label_with_version = log_label_with_version
 
-def metadata_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
-    """ Pushes MLMD file to CMF-server.
+def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+    """ Pushes metadata file to CMF-server.
     Example:
     ```python
          result = metadata_push("example_pipeline", "mlmd_file", "eg_execution_uuid", "tensorboard_log")
     ```
     Args:
         pipeline_name: Name of the pipeline.
-        filepath: Path to the MLMD file.
+        file_name: Specify input metadata file name.
         execution_uuid: Optional execution UUID.
         tensorboard_path: Path to tensorboard logs.
 
     Returns:
         Response output from the _metadata_push function.
     """
-    # Required arguments:  pipeline_name
-    # Optional arguments: Execution_UUID, filepath (mlmd file path), tensorboard_path
-    output = _metadata_push(pipeline_name, filepath, execution_uuid, tensorboard_path)
+    # Required arguments: pipeline_name
+    # Optional arguments: execution_UUID, file_name, tensorboard_path
+    output = _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path)
     return output
 
-def metadata_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = ""):
-    """ Pulls MLMD file from CMF-server. 
+
+def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+    """ Pulls metadata file from CMF-server. 
      Example: 
      ```python 
           result = metadata_pull("example_pipeline", "./mlmd_directory", "eg_execution_uuid") 
      ``` 
      Args: 
         pipeline_name: Name of the pipeline. 
-        filepath: File path to store the MLMD file. 
+        file_name: Specify output metadata file name.
         execution_uuid: Optional execution UUID. 
      Returns: 
         Message from the _metadata_pull function. 
      """
-    # Required arguments:  pipeline_name 
-    #Optional arguments: Execution_UUID, filepath(file path to store mlmd file) 
-    output = _metadata_pull(pipeline_name, filepath, execution_uuid)
+    # Required arguments: pipeline_name 
+    # Optional arguments: execution_UUID, file_name 
+    output = _metadata_pull(pipeline_name, file_name, execution_uuid)
     return output
 
-def metadata_export(pipeline_name: str, jsonfilepath: str = "", filepath = "./mlmd"):
+
+def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = "./mlmd"):
     """ Export local mlmd's metadata in json format to a json file. 
      Example: 
      ```python 
@@ -1602,37 +1722,36 @@ def metadata_export(pipeline_name: str, jsonfilepath: str = "", filepath = "./ml
      ``` 
      Args: 
         pipeline_name: Name of the pipeline. 
-        jsonfilepath: File path of json file. 
-        filepath: File path to store the MLMD file. 
+        json_file_name: File path of json file. 
+        file_name: Specify input metadata file name. 
      Returns: 
-        Message from the _metadata_pull function. 
+        Message from the _metadata_export function. 
      """
-    # Required arguments:  pipeline_name 
-    #Optional arguments: jsonfilepath, filepath(file path to store mlmd file) 
-    output = _metadata_export(pipeline_name, jsonfilepath, filepath)
+    # Required arguments: pipeline_name 
+    # Optional arguments: json_file_name, file_name
+    output = _metadata_export(pipeline_name, json_file_name, file_name)
     return output
 
-def artifact_pull(pipeline_name: str, filepath = "./mlmd"):
-    """ Pulls artifacts from the initialized repository.
 
+def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
+    """ Pulls artifacts from the initialized repository.
     Example:
     ```python
          result = artifact_pull("example_pipeline", "./mlmd_directory")
     ```
-
     Args:
         pipeline_name: Name of the pipeline.
-        filepath: Path to store artifacts.
+        file_name: Specify input metadata file name.
     Returns:
         Output from the _artifact_pull function.
     """
-
-    # Required arguments: Pipeline_name
-    # Optional arguments: filepath( path to store artifacts)
-    output = _artifact_pull(pipeline_name, filepath)
+    # Required arguments: pipeline_name
+    # Optional arguments: file_name
+    output = _artifact_pull(pipeline_name, file_name)
     return output
 
-def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
+
+def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str):
     """ Pulls a single artifact from the initialized repository. 
     Example: 
     ```python 
@@ -1640,33 +1759,33 @@ def artifact_pull_single(pipeline_name: str, filepath: str, artifact_name: str):
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the artifact. 
+       file_name: Specify input metadata file name.
        artifact_name: Name of the artifact. 
     Returns:
        Output from the _artifact_pull_single function. 
     """
-
-    # Required arguments: Pipeline_name
-    # Optional arguments: filepath( path to store artifacts), artifact_name
-    output = _artifact_pull_single(pipeline_name, filepath, artifact_name)
+    # Required arguments: pipeline_name
+    # Optional arguments: file_name, artifact_name
+    output = _artifact_pull_single(pipeline_name, file_name, artifact_name)
     return output
 
-def artifact_push(pipeline_name: str, filepath = "./mlmd"):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     """ Pushes artifacts to the initialized repository.
-
     Example:
     ```python
-         result = artifact_push("example_pipeline", "./mlmd_directory")
+         result = artifact_push("example_pipeline", "./mlmd_directory", 32)
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
        filepath: Path to store the artifact. 
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
         Output from the _artifact_push function.
     """
-
-    output = _artifact_push(pipeline_name, filepath)
+    output = _artifact_push(pipeline_name, filepath, jobs)
     return output
+
 
 def cmf_init_show():
     """ Initializes and shows details of the CMF command. 
@@ -1677,9 +1796,9 @@ def cmf_init_show():
     Returns: 
        Output from the _cmf_cmd_init function. 
     """
-
     output=_cmf_cmd_init()
     return output
+
 
 def cmf_init(type: str = "",
         path: str = "",
@@ -1716,7 +1835,7 @@ def cmf_init(type: str = "",
                )
     ```
     Args: 
-       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote")
+       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
        path: Path for the local repository. 
        git_remote_url: Git remote URL for version control.
        cmf_server_url: CMF server URL.
@@ -1773,7 +1892,12 @@ def cmf_init(type: str = "",
     if type == "local" and path != "" and  git_remote_url != "" :
         """Initialize local repository"""
         output = _init_local(
-            path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
+            path, 
+            git_remote_url, 
+            cmf_server_url, 
+            neo4j_user, 
+            neo4j_password, 
+            neo4j_uri
         )
         if status_args != []:
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
@@ -1872,87 +1996,83 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list(filepath = "./mlmd"):
-    """ Display a list of pipeline name(s) from the available mlmd file.
+def pipeline_list(file_name = "./mlmd"):
+    """ Display a list of pipeline name(s) from the available input metadata file.
 
     Example:
     ```python
          result = _pipeline_list("./mlmd_directory")
     ```
-
     Args:
-        filepath: File path to store the MLMD file. 
+        file_name: Specify input metadata file name.
     Returns:
         Output from the _pipeline_list function.
     """
-
-    # Optional arguments: filepath( path to store the MLMD file)
-    output = _pipeline_list(filepath)
+    # Optional arguments: file_name( path to store the MLMD file)
+    output = _pipeline_list(file_name)
     return output
 
 
-def execution_list(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = ""):
-    """Displays executions from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+    """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
         result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify input metadata file name.
+       execution_uuid: Specify the execution uuid to retrieve execution.
     Returns:
        Output from the _execution_list function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), execution_uuid
-    output = _execution_list(pipeline_name, filepath, execution_uuid)
+    # Optional arguments: file_name, execution_uuid
+    output = _execution_list(pipeline_name, file_name, execution_uuid)
     return output
 
 
-def artifact_list(pipeline_name: str, filepath = "./mlmd", artifact_name: str = ""):
-    """ Displays artifacts from the MLMD file with a few properties in a 7-column table, limited to 20 records per page.
+def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str = ""):
+    """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Example: 
     ```python 
         result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
+       file_name: Specify input metadata file name. 
        artifact_name: Artifacts for particular artifact name.
     Returns:
        Output from the _artifact_list function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath( path to store mlmd file), artifact_name
-    output = _artifact_list(pipeline_name, filepath, artifact_name)
+    # Optional arguments: file_name, artifact_name
+    output = _artifact_list(pipeline_name, file_name, artifact_name)
     return output
 
-
-def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Example: 
     ```python 
-        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path") 
+        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path", 32) 
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file.
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify input metadata file name.
+       execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
        Output from the _repo_push function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath, execution_uuid, tensorboard_path
-    output = _repo_push(pipeline_name, filepath, execution_uuid, tensorboard_path)
+    # Optional arguments: filepath, execution_uuid, tensorboard_path, jobs
+    output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, jobs)
     return output
 
 
-def repo_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = ""):
+def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     Example: 
     ```python 
@@ -1960,14 +2080,12 @@ def repo_pull(pipeline_name: str, filepath = "./mlmd", execution_uuid: str = "")
     ```
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the mlmd file. 
-       execution_uuid: Executions for particular execution uuid.
+       file_name: Specify output metadata file name.
+       execution_uuid: Specify execution uuid.
     Returns:
        Output from the _repo_pull function. 
     """
-
     # Required arguments: pipeline_name
-    # Optional arguments: filepath, execution_uuid
-    output = _repo_pull(pipeline_name, filepath, execution_uuid)
+    # Optional arguments: file_name, execution_uuid
+    output = _repo_pull(pipeline_name, file_name, execution_uuid)
     return output
-
