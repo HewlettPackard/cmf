@@ -278,7 +278,7 @@ async def pipelines(request: Request):
     if os.path.exists(server_store_path):
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
-    else:176
+    else:
         print("No mlmd file submitted.")
         pipeline_names = []
         return pipeline_names
