@@ -2423,8 +2423,7 @@ Returns:
 <span class="normal">856</span>
 <span class="normal">857</span>
 <span class="normal">858</span>
-<span class="normal">859</span>
-<span class="normal">860</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_dataset</span><span class="p">(</span>
+<span class="normal">859</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_dataset</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2468,7 +2467,7 @@ Returns:
         <span class="bp">self</span><span class="o">.</span><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="o">=</span><span class="n">assigned_name</span><span class="p">)</span>
         <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Failed to create execution for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span><span class="si">}</span><span class="s2">!!&quot;</span>
 
-            <span class="c1">### To Do : Technical Debt. </span>
+    <span class="c1">### To Do : Technical Debt. </span>
     <span class="c1"># If the dataset already exist , then we just link the existing dataset to the execution</span>
     <span class="c1"># We do not update the dataset properties . </span>
     <span class="c1"># We need to append the new properties to the existing dataset properties</span>
@@ -2509,15 +2508,14 @@ Returns:
             <span class="n">custom_props</span><span class="p">[</span><span class="s2">&quot;labels&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label</span>
             <span class="n">custom_props</span><span class="p">[</span><span class="s2">&quot;labels_uri&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_with_hash</span>
 
-
     <span class="c1"># To Do - What happens when uri is the same but names are different</span>
     <span class="k">if</span> <span class="n">existing_artifact</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing_artifact</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">existing_artifact</span> <span class="o">=</span> <span class="n">existing_artifact</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
         <span class="c1"># Quick fix- Updating only the name</span>
-        <span class="k">if</span> <span class="n">custom_properties</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">custom_props</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">update_existing_artifact</span><span class="p">(</span>
-                <span class="n">existing_artifact</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">)</span>
+                <span class="n">existing_artifact</span><span class="p">,</span> <span class="n">custom_props</span><span class="p">)</span>
 
         <span class="n">uri</span> <span class="o">=</span> <span class="n">c_hash</span>
         <span class="c1"># update url for existing artifact</span>
@@ -2644,7 +2642,8 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 931</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 930</span>
+<span class="normal"> 931</span>
 <span class="normal"> 932</span>
 <span class="normal"> 933</span>
 <span class="normal"> 934</span>
@@ -2810,11 +2809,7 @@ Returns:
 <span class="normal">1094</span>
 <span class="normal">1095</span>
 <span class="normal">1096</span>
-<span class="normal">1097</span>
-<span class="normal">1098</span>
-<span class="normal">1099</span>
-<span class="normal">1100</span>
-<span class="normal">1101</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_model</span><span class="p">(</span>
+<span class="normal">1097</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_model</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span>
     <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">event</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -2897,10 +2892,7 @@ Returns:
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Model commit failed, Model uri empty&quot;</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="p">(</span>
-        <span class="n">existing_artifact</span>
-        <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing_artifact</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span>
-    <span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">existing_artifact</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">existing_artifact</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
         <span class="c1"># update url for existing artifact</span>
         <span class="n">existing_artifact</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_model_url</span><span class="p">(</span>
             <span class="n">existing_artifact</span><span class="p">,</span> <span class="n">url_with_pipeline</span>
@@ -2942,7 +2934,7 @@ Returns:
             <span class="n">custom_properties</span><span class="o">=</span><span class="n">custom_props</span><span class="p">,</span>
             <span class="n">milliseconds_since_epoch</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">),</span>
         <span class="p">)</span>
-    <span class="n">custom_properties</span><span class="p">[</span><span class="s2">&quot;Commit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_commit</span>
+    <span class="n">custom_props</span><span class="p">[</span><span class="s2">&quot;Commit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_commit</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">execution_label_props</span><span class="p">[</span><span class="s2">&quot;Commit&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model_commit</span>
     <span class="c1">#To DO model nodes should be similar to dataset nodes when we create neo4j</span>
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">graph</span><span class="p">:</span>
@@ -3020,7 +3012,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1104</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1100</span>
+<span class="normal">1101</span>
+<span class="normal">1102</span>
+<span class="normal">1103</span>
+<span class="normal">1104</span>
 <span class="normal">1105</span>
 <span class="normal">1106</span>
 <span class="normal">1107</span>
@@ -3090,11 +3086,7 @@ Returns:
 <span class="normal">1171</span>
 <span class="normal">1172</span>
 <span class="normal">1173</span>
-<span class="normal">1174</span>
-<span class="normal">1175</span>
-<span class="normal">1176</span>
-<span class="normal">1177</span>
-<span class="normal">1178</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_execution_metrics</span><span class="p">(</span>
+<span class="normal">1174</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_execution_metrics</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span><span class="p">:</span> <span class="c1"># type: ignore  # Artifact type not recognized by mypy, using ignore to bypass</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Log the metadata associated with the execution (coarse-grained tracking).</span>
@@ -3204,7 +3196,11 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1180</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1176</span>
+<span class="normal">1177</span>
+<span class="normal">1178</span>
+<span class="normal">1179</span>
+<span class="normal">1180</span>
 <span class="normal">1181</span>
 <span class="normal">1182</span>
 <span class="normal">1183</span>
@@ -3225,11 +3221,7 @@ Args:
 <span class="normal">1198</span>
 <span class="normal">1199</span>
 <span class="normal">1200</span>
-<span class="normal">1201</span>
-<span class="normal">1202</span>
-<span class="normal">1203</span>
-<span class="normal">1204</span>
-<span class="normal">1205</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_metric</span><span class="p">(</span>
+<span class="normal">1201</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">log_metric</span><span class="p">(</span>
     <span class="bp">self</span><span class="p">,</span> <span class="n">metrics_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Optional</span><span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Stores the fine-grained (per step or per epoch) metrics to memory.</span>
@@ -3308,7 +3300,11 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1390</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1386</span>
+<span class="normal">1387</span>
+<span class="normal">1388</span>
+<span class="normal">1389</span>
+<span class="normal">1390</span>
 <span class="normal">1391</span>
 <span class="normal">1392</span>
 <span class="normal">1393</span>
@@ -3319,11 +3315,7 @@ Args:
 <span class="normal">1398</span>
 <span class="normal">1399</span>
 <span class="normal">1400</span>
-<span class="normal">1401</span>
-<span class="normal">1402</span>
-<span class="normal">1403</span>
-<span class="normal">1404</span>
-<span class="normal">1405</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
+<span class="normal">1401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">create_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Cmf.DataSlice&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates a dataslice object.</span>
 <span class="sd">    Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]</span>
 <span class="sd">    method. Users are also responsible for committing data slices by calling the</span>
@@ -3391,7 +3383,11 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1419</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1415</span>
+<span class="normal">1416</span>
+<span class="normal">1417</span>
+<span class="normal">1418</span>
+<span class="normal">1419</span>
 <span class="normal">1420</span>
 <span class="normal">1421</span>
 <span class="normal">1422</span>
@@ -3411,11 +3407,7 @@ Args:
 <span class="normal">1436</span>
 <span class="normal">1437</span>
 <span class="normal">1438</span>
-<span class="normal">1439</span>
-<span class="normal">1440</span>
-<span class="normal">1441</span>
-<span class="normal">1442</span>
-<span class="normal">1443</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+<span class="normal">1439</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_dataslice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">record</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">custom_properties</span><span class="p">:</span> <span class="n">t</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Updates a dataslice record in a Parquet file with the provided custom properties.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -3502,17 +3494,17 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1790</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1786</span>
+<span class="normal">1787</span>
+<span class="normal">1788</span>
+<span class="normal">1789</span>
+<span class="normal">1790</span>
 <span class="normal">1791</span>
 <span class="normal">1792</span>
 <span class="normal">1793</span>
 <span class="normal">1794</span>
 <span class="normal">1795</span>
-<span class="normal">1796</span>
-<span class="normal">1797</span>
-<span class="normal">1798</span>
-<span class="normal">1799</span>
-<span class="normal">1800</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init_show</span><span class="p">():</span>
+<span class="normal">1796</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init_show</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Initializes and shows details of the CMF command. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -3578,7 +3570,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1803</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1799</span>
+<span class="normal">1800</span>
+<span class="normal">1801</span>
+<span class="normal">1802</span>
+<span class="normal">1803</span>
 <span class="normal">1804</span>
 <span class="normal">1805</span>
 <span class="normal">1806</span>
@@ -3750,11 +3746,7 @@ Returns:
 <span class="normal">1972</span>
 <span class="normal">1973</span>
 <span class="normal">1974</span>
-<span class="normal">1975</span>
-<span class="normal">1976</span>
-<span class="normal">1977</span>
-<span class="normal">1978</span>
-<span class="normal">1979</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+<span class="normal">1975</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">git_remote_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
         <span class="n">cmf_server_url</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -3983,7 +3975,11 @@ Args:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1677</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1673</span>
+<span class="normal">1674</span>
+<span class="normal">1675</span>
+<span class="normal">1676</span>
+<span class="normal">1677</span>
 <span class="normal">1678</span>
 <span class="normal">1679</span>
 <span class="normal">1680</span>
@@ -3997,11 +3993,7 @@ Args:
 <span class="normal">1688</span>
 <span class="normal">1689</span>
 <span class="normal">1690</span>
-<span class="normal">1691</span>
-<span class="normal">1692</span>
-<span class="normal">1693</span>
-<span class="normal">1694</span>
-<span class="normal">1695</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1691</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes metadata file to CMF-server.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -4051,7 +4043,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1698</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1694</span>
+<span class="normal">1695</span>
+<span class="normal">1696</span>
+<span class="normal">1697</span>
+<span class="normal">1698</span>
 <span class="normal">1699</span>
 <span class="normal">1700</span>
 <span class="normal">1701</span>
@@ -4063,11 +4059,7 @@ Returns:
 <span class="normal">1707</span>
 <span class="normal">1708</span>
 <span class="normal">1709</span>
-<span class="normal">1710</span>
-<span class="normal">1711</span>
-<span class="normal">1712</span>
-<span class="normal">1713</span>
-<span class="normal">1714</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">1710</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls metadata file from CMF-server. </span>
 <span class="sd">     Example: </span>
 <span class="sd">     ```python </span>
@@ -4115,7 +4107,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1717</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1713</span>
+<span class="normal">1714</span>
+<span class="normal">1715</span>
+<span class="normal">1716</span>
+<span class="normal">1717</span>
 <span class="normal">1718</span>
 <span class="normal">1719</span>
 <span class="normal">1720</span>
@@ -4127,11 +4123,7 @@ Returns:
 <span class="normal">1726</span>
 <span class="normal">1727</span>
 <span class="normal">1728</span>
-<span class="normal">1729</span>
-<span class="normal">1730</span>
-<span class="normal">1731</span>
-<span class="normal">1732</span>
-<span class="normal">1733</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">1729</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">json_file_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Export local mlmd&#39;s metadata in json format to a json file. </span>
 <span class="sd">     Example: </span>
 <span class="sd">     ```python </span>
@@ -4178,7 +4170,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1736</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1732</span>
+<span class="normal">1733</span>
+<span class="normal">1734</span>
+<span class="normal">1735</span>
+<span class="normal">1736</span>
 <span class="normal">1737</span>
 <span class="normal">1738</span>
 <span class="normal">1739</span>
@@ -4189,11 +4185,7 @@ Returns:
 <span class="normal">1744</span>
 <span class="normal">1745</span>
 <span class="normal">1746</span>
-<span class="normal">1747</span>
-<span class="normal">1748</span>
-<span class="normal">1749</span>
-<span class="normal">1750</span>
-<span class="normal">1751</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">1747</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls artifacts from the initialized repository.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -4240,7 +4232,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1754</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1750</span>
+<span class="normal">1751</span>
+<span class="normal">1752</span>
+<span class="normal">1753</span>
+<span class="normal">1754</span>
 <span class="normal">1755</span>
 <span class="normal">1756</span>
 <span class="normal">1757</span>
@@ -4252,11 +4248,7 @@ Returns:
 <span class="normal">1763</span>
 <span class="normal">1764</span>
 <span class="normal">1765</span>
-<span class="normal">1766</span>
-<span class="normal">1767</span>
-<span class="normal">1768</span>
-<span class="normal">1769</span>
-<span class="normal">1770</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="normal">1766</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pulls a single artifact from the initialized repository. </span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4304,7 +4296,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1773</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1769</span>
+<span class="normal">1770</span>
+<span class="normal">1771</span>
+<span class="normal">1772</span>
+<span class="normal">1773</span>
 <span class="normal">1774</span>
 <span class="normal">1775</span>
 <span class="normal">1776</span>
@@ -4314,11 +4310,7 @@ Returns:
 <span class="normal">1780</span>
 <span class="normal">1781</span>
 <span class="normal">1782</span>
-<span class="normal">1783</span>
-<span class="normal">1784</span>
-<span class="normal">1785</span>
-<span class="normal">1786</span>
-<span class="normal">1787</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
+<span class="normal">1783</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pushes artifacts to the initialized repository.</span>
 <span class="sd">    Example:</span>
 <span class="sd">    ```python</span>
@@ -4364,7 +4356,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2035</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2031</span>
+<span class="normal">2032</span>
+<span class="normal">2033</span>
+<span class="normal">2034</span>
+<span class="normal">2035</span>
 <span class="normal">2036</span>
 <span class="normal">2037</span>
 <span class="normal">2038</span>
@@ -4376,11 +4372,7 @@ Returns:
 <span class="normal">2044</span>
 <span class="normal">2045</span>
 <span class="normal">2046</span>
-<span class="normal">2047</span>
-<span class="normal">2048</span>
-<span class="normal">2049</span>
-<span class="normal">2050</span>
-<span class="normal">2051</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">2047</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4426,7 +4418,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1999</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">1995</span>
+<span class="normal">1996</span>
+<span class="normal">1997</span>
+<span class="normal">1998</span>
+<span class="normal">1999</span>
 <span class="normal">2000</span>
 <span class="normal">2001</span>
 <span class="normal">2002</span>
@@ -4436,11 +4432,7 @@ Returns:
 <span class="normal">2006</span>
 <span class="normal">2007</span>
 <span class="normal">2008</span>
-<span class="normal">2009</span>
-<span class="normal">2010</span>
-<span class="normal">2011</span>
-<span class="normal">2012</span>
-<span class="normal">2013</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pipeline_list</span><span class="p">(</span><span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
+<span class="normal">2009</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pipeline_list</span><span class="p">(</span><span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Display a list of pipeline name(s) from the available input metadata file.</span>
 
 <span class="sd">    Example:</span>
@@ -4486,7 +4478,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2016</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2012</span>
+<span class="normal">2013</span>
+<span class="normal">2014</span>
+<span class="normal">2015</span>
+<span class="normal">2016</span>
 <span class="normal">2017</span>
 <span class="normal">2018</span>
 <span class="normal">2019</span>
@@ -4498,11 +4494,7 @@ Returns:
 <span class="normal">2025</span>
 <span class="normal">2026</span>
 <span class="normal">2027</span>
-<span class="normal">2028</span>
-<span class="normal">2029</span>
-<span class="normal">2030</span>
-<span class="normal">2031</span>
-<span class="normal">2032</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">2028</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4552,7 +4544,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2054</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2050</span>
+<span class="normal">2051</span>
+<span class="normal">2052</span>
+<span class="normal">2053</span>
+<span class="normal">2054</span>
 <span class="normal">2055</span>
 <span class="normal">2056</span>
 <span class="normal">2057</span>
@@ -4566,11 +4562,7 @@ Returns:
 <span class="normal">2065</span>
 <span class="normal">2066</span>
 <span class="normal">2067</span>
-<span class="normal">2068</span>
-<span class="normal">2069</span>
-<span class="normal">2070</span>
-<span class="normal">2071</span>
-<span class="normal">2072</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
+<span class="normal">2068</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">filepath</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">32</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Push artifacts, metadata files, and source code to the user&#39;s artifact repository, cmf-server, and git respectively.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
@@ -4620,7 +4612,11 @@ Returns:
 
             <details class="quote">
               <summary>Source code in <code>cmflib/cmf.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2075</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">2071</span>
+<span class="normal">2072</span>
+<span class="normal">2073</span>
+<span class="normal">2074</span>
+<span class="normal">2075</span>
 <span class="normal">2076</span>
 <span class="normal">2077</span>
 <span class="normal">2078</span>
@@ -4632,11 +4628,7 @@ Returns:
 <span class="normal">2084</span>
 <span class="normal">2085</span>
 <span class="normal">2086</span>
-<span class="normal">2087</span>
-<span class="normal">2088</span>
-<span class="normal">2089</span>
-<span class="normal">2090</span>
-<span class="normal">2091</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="normal">2087</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;./mlmd&quot;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Pull artifacts, metadata files, and source code from the user&#39;s artifact repository, cmf-server, and git respectively.</span>
 <span class="sd">    Example: </span>
 <span class="sd">    ```python </span>
