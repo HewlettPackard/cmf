@@ -220,6 +220,30 @@ For detailed setup instructions, see [Getting Started](getting-started/index.md)
 * 3.9 >= Python < 3.11
 * Git latest version
 
+!!! warning "Python 3.9 Installation Issue on Ubuntu"
+
+    **Issue**: When creating Python 3.9 virtual environments, you may encounter:
+    ```
+    ModuleNotFoundError: No module named 'distutils.cmd'
+    ```
+
+    **Root Cause**: Python 3.9 may be missing required modules like `distutils` or `venv` when installed on Ubuntu systems.
+
+    **Resolution**:
+
+    1. Add the deadsnakes PPA (provides newer Python versions):
+       ```bash
+       sudo add-apt-repository ppa:deadsnakes/ppa
+       sudo apt-get update
+       ```
+
+    2. Install Python 3.9 with required modules:
+       ```bash
+       sudo apt install python3.9 python3.9-dev python3.9-distutils
+       ```
+
+    This ensures Python 3.9 and its essential modules are fully installed.
+
 #### 2. Set up Python Virtual Environment:
 
 === "Using Conda"
