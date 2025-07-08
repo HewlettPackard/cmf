@@ -9,7 +9,7 @@
 
 ---
 
-## 🚀 Features
+## 🚀 Features (these needs to be updated - not correct info)
 
 - ✅ Track artifacts (datasets, models, metrics) using content-based hashes  
 - ✅ Automatically logs code versions (Git) and data versions (DVC)  
@@ -80,12 +80,12 @@ pip install cmflib
 
 ## 🧠 How It Works
 
-CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decentralized execution across datacenters, edge, and cloud. Journaling enables sync when offline.
+CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decentralized execution across datacenters, edge, and cloud.
 
-- Artifacts are versioned using DVC (`.dvc` files)
-- Code is tracked with Git
-- Metadata is logged to relational DB (e.g., SQLite, MLMD)
-- Sync metadata with `cmf metadata push` and `cmf metadata pull`
+- Artifacts are versioned using DVC (`.dvc` files).
+- Code is tracked with Git.
+- Metadata is logged to relational DB (e.g., SQLite, PostgreSQL)
+- Sync metadata with `cmf metadata push` and `cmf metadata pull`.
 
 ---
 
@@ -94,9 +94,9 @@ CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decen
 CMF is composed of:
 
 - **Metadata Library** – API to log/query metadata
-- **Client** – CLI to sync metadata with server
+- **Client** – CLI to sync metadata with server, push/pull artifacts to the user-specified repo, push/pull code from git.
 - **Server** – REST API for metadata merge
-- **Central Stores** – Git (code), DVC (artifacts), CMF (metadata)
+- **Central Repositories** – Git (code), DVC (artifacts), CMF (metadata)
 
 <p align="center">
   <img src="docs/assets/framework.png" height="350" />
@@ -111,12 +111,22 @@ CMF is composed of:
 ## 🔧 Sample Usage
 
 ```python
-from cmflib.cmf import Cmf
 
-cmf = Cmf(filename="mlmd", pipeline_name="demo")
-ctx = cmf.create_context(pipeline_stage="train")
-cmf.log_artifact(uri="data.csv", artifact_type="dataset", is_input=True)
-cmf.log_metrics({"accuracy": 0.95})
+from cmflib.cmf import Cmf
+from ml_metadata.proto import metadata_store_pb2 as mlpb
+cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+context: mlpb.proto.Context = cmf.create_context(
+    pipeline_stage="prepare",
+    custom_properties ={"user-metadata1": "metadata_value"}
+)
+execution: mlpb.proto.Execution = cmf.create_execution(
+    execution_type="Prepare",
+    custom_properties = {"split": split, "seed": seed}
+)
+artifact: mlpb.proto.Artifact = metawriter.log_dataset(
+	"artifacts/data.xml.gz", "input",
+	custom_properties={"user-metadata1": "metadata_value"}
+)
 ```
 
 ```bash
@@ -136,16 +146,14 @@ cmf metadata pull            # Pull metadata from server
 
 - Full ML pipeline observability
 - Unified metadata, artifact, and code tracking
-- Supports disconnected/offline data centers
 - Scalable metadata syncing
 - Team collaboration on metadata
 
 ---
 
-## 🎤 Talks & PublicationsAdd commentMore actions
+## 🎤 Talks & Publications
 
 - 🎙 [Monterey Data Conference 2022](https://drive.google.com/file/d/1Oqs0AN0RsAjt_y9ZjzYOmBxI8H0yqSpB/view)
-- 📄 *Constructing a Metadata Knowledge Graph as an Atlas of ML Pipelines* – [Frontiers in Big Data, 2025](https://www.frontiersin.org/articles/10.3389/fdata.2024.1176506/full)
 
 ---
 
@@ -155,7 +163,7 @@ cmf metadata pull            # Pull metadata from server
 - [🧠 AI Metadata Knowledge Graph (AIMKG)](https://github.com/HewlettPackard/ai-metadata-knowledge-graph)
 ---
 
-## 🤝 CommunityAdd commentMore actions
+## 🤝 Community
 
 - 💬 [Join CMF on Slack](https://commonmetadata.slack.com/)
 - 📧 Contact: **annmary.roy@hpe.com**
