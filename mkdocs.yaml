@@ -127,11 +127,11 @@ nav:
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: getting-started/index.md
-    - 🗄️ Server:
+    - 🗄️ cmf-server:
       - Getting Started with CMF Server: cmf_server/cmf-server.md
       - CMF Server Architecture: server/index.md
-    - 🏃🏼‍♂️ Quick Start with CMF Client: cmf_client/step-by-step.md
-    - 🖥️ Web Interface: ui/index.md
+    - 🏃🏼‍♂️ cmf-client: cmf_client/step-by-step.md
+    - 🖥️ cmf gui: ui/index.md
     - 🎯 Examples:
       - Getting Started Tutorial: examples/getting_started.md
     - 🐍 API Reference:
