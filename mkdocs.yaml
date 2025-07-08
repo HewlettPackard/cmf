@@ -146,7 +146,5 @@ nav:
       - Storage Backends:
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
-    - 📊 TensorBoard:
-      - Getting Started with TensorBoard: cmf_client/tensorflow_guide.md
-    - 🔗 Ontology:
-      - Common Metadata Ontology: common-metadata-ontology/readme.md
+    - 📊 TensorBoard: cmf_client/tensorflow_guide.md
+    - 🔗 Ontology: common-metadata-ontology/readme.md
