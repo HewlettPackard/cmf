@@ -724,7 +724,7 @@ class Cmf:
             self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-                ### To Do : Technical Debt. 
+        ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
@@ -765,15 +765,14 @@ class Cmf:
                 custom_props["labels"] = label
                 custom_props["labels_uri"] = label_with_hash
 
-
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
             # Quick fix- Updating only the name
-            if custom_properties is not None:
+            if custom_props is not None:
                 self.update_existing_artifact(
-                    existing_artifact, custom_properties)
+                    existing_artifact, custom_props)
 
             uri = c_hash
             # update url for existing artifact
@@ -1012,10 +1011,7 @@ class Cmf:
         else:
             raise RuntimeError("Model commit failed, Model uri empty")
 
-        if (
-            existing_artifact
-            and len(existing_artifact) != 0
-        ):
+        if (existing_artifact and len(existing_artifact) != 0):
             # update url for existing artifact
             existing_artifact = self.update_model_url(
                 existing_artifact, url_with_pipeline
@@ -1057,7 +1053,7 @@ class Cmf:
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        custom_properties["Commit"] = model_commit
+        custom_props["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
         #To DO model nodes should be similar to dataset nodes when we create neo4j
         if self.graph:
@@ -1444,9 +1440,7 @@ class Cmf:
         dataslice_df.to_parquet(name)
 
     def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
-        # Labels currently are not visible in lineage as we are not sure where to display in them in Artifact lineage.
-        # description remianing 
-
+        
         ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
@@ -1457,15 +1451,17 @@ class Cmf:
         existing_artifact = []
         if label_hash and label_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
+        
+        url = url + ":" + label_hash
 
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
             # Quick fix- Updating only the name
-            if custom_properties is not None:
+            if custom_props is not None:
                 self.update_existing_artifact(
-                    existing_artifact, custom_properties)
+                    existing_artifact, custom_props)
             uri = label_hash
             # update url for existing artifact
             self.update_dataset_url(existing_artifact, url)

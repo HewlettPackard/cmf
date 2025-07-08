@@ -203,7 +203,7 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
     try:
         # from now we are going to make it like this 
         # we will online pass the data of only one pipeline
-        print("Parsing JSON to MLMD...")
+        # print("Parsing JSON to MLMD...")
         #mlmd_data = json.loads(mlmd_json)
         pipeline_data = json.loads(mlmd_json)
         # this line won't be needed
