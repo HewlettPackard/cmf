@@ -55,7 +55,7 @@ Check [Getting started with cmf-client commands](./cmf_client.md) page for more 
 
 Use [Sample projects](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md) as a reference to create a new project to track metadata for ML pipelines.
 
-More information is available inside [Getting Started](https://hewlettpackard.github.io/cmf/examples/getting_started/).
+More information is available inside [Getting Started](../examples/getting_started/).
 
 
 > Before pushing artifacts or metadata, ensure that the cmf server and minioS3 are up and running.
