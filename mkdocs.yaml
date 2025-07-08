@@ -126,11 +126,10 @@ nav:
       - Overview: architecture/overview.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
-    - 📚 Installation & Setup: getting-started/index.md
+    - 📚 Installation & Setup: setup/index.md
     - 🗄️ cmf-server:
-      - Getting Started with CMF Server: cmf_server/cmf-server.md
-      - CMF Server Architecture: server/index.md
-    - 🏃🏼‍♂️ cmf-client: cmf_client/step-by-step.md
+      - Getting Started with CMF Server: cmf-server/cmf-server.md
+    - 🏃🏼‍♂️ cmf-client: cmf-client/step-by-step.md
     - 🖥️ cmf gui: ui/index.md
     - 🎯 Examples:
       - Getting Started Tutorial: examples/getting_started.md
@@ -143,13 +142,13 @@ nav:
       - Ray Logger: api/public/cmf_ray_logger.md
       - Complete API Documentation: api/public/API.md
     - 💻 CLI Reference:
-      - Overview: cmf_client/cmf_client.md
-      - Getting Started with CMF: cmf_client/Getting Started with cmf.md
+      - Overview: cmf-client/cmf_client.md
+      - Getting Started with CMF: cmf-client/Getting Started with cmf.md
       - Storage Backends:
-        - DVC MinIO Backend: cmf_client/minio-server.md
-        - SSH Setup: cmf_client/ssh-setup.md
+        - DVC MinIO Backend: cmf-client/minio-server.md
+        - SSH Setup: cmf-client/ssh-setup.md
     - 📊 TensorBoard:
-      - Getting Started with TensorBoard: cmf_client/tensorflow_guide.md
+      - Getting Started with TensorBoard: cmf-client/tensorflow_guide.md
     - 🔗 Ontology:
       - Common Metadata Ontology: common-metadata-ontology/readme.md
     - 🤝 Contributing:
