@@ -330,9 +330,9 @@ def log_dataset_with_version(
         existing_artifact = existing_artifact[0]
 
         # Quick fix- Updating only the name
-        if custom_properties is not None:
+        if custom_props is not None:
             self.update_existing_artifact(
-                existing_artifact, custom_properties)
+                existing_artifact, custom_props)
         uri = c_hash
         # update url for existing artifact
         self.update_dataset_url(existing_artifact, props.get("url", ""))
@@ -438,9 +438,9 @@ def log_label_with_version(self, url: str, version:str, props: t.Optional[t.Dict
         existing_artifact = existing_artifact[0]
 
         # Quick fix- Updating only the name
-        if custom_properties is not None:
+        if custom_props is not None:
             self.update_existing_artifact(
-                existing_artifact, custom_properties)
+                existing_artifact, custom_props)
         uri = c_hash
         # update url for existing artifact
         self.update_dataset_url(existing_artifact, props.get("url", ""))
