@@ -127,7 +127,7 @@ nav:
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: setup/index.md
-    - 🗄️ cmf-server: cmf_server/cmf_server.md
+    - 🗄️ cmf-server: cmf_server/cmf-server.md
     - 🏃🏼‍♂️ cmf-client: cmf_client/step-by-step.md
     - 🖥️ cmf gui: ui/index.md
     - 🎯 Examples:
