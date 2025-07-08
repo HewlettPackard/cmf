@@ -150,7 +150,3 @@ nav:
       - Getting Started with TensorBoard: cmf_client/tensorflow_guide.md
     - 🔗 Ontology:
       - Common Metadata Ontology: common-metadata-ontology/readme.md
-    - 🤝 Contributing:
-      - Overview: development/index.md
-      - Development Environment: development/environment.md
-      - Documentation System: development/documentation.md
