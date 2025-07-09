@@ -15,6 +15,7 @@ The installation process consists of following components:
 Before installing CMF, ensure you have the following prerequisites:
 
 - **Python**: Version 3.9 to 3.10 (3.10 recommended)
+  
   > ⚠️ **Warning:** "Python 3.9 Installation Issue on Ubuntu"
   >
   > **Issue**: When creating Python 3.9 virtual environments, you may encounter:
