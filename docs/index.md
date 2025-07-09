@@ -1,4 +1,4 @@
-# Overview
+# Getting started with cmf
 
 ## Purpose and Scope
 
@@ -157,6 +157,7 @@ CMF enables distributed teams to work independently while maintaining consistent
 ### Automatic Version Tracking
 
 CMF automatically captures:
+
 - **Code Version**: Git commit IDs for reproducibility
 - **Data Version**: DVC-managed artifact content hashes
 - **Environment**: Execution parameters and custom properties
@@ -165,6 +166,7 @@ CMF automatically captures:
 ### Query and Visualization
 
 The system provides multiple interfaces for exploring metadata:
+
 - **Programmatic**: `CmfQuery` class for custom queries
 - **Web UI**: React-based interface for browsing artifacts and executions
 - **Lineage Graphs**: D3.js visualizations showing data flow between pipeline stages
