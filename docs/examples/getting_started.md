@@ -88,7 +88,7 @@ Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
 
 ## Project execution
 To execute the example pipeline, run the
-[test_script.sh](../../examples/example-get-started/)
+[test_script.sh](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started)
 file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
 splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
 execution of these steps (and parent pipeline) will be recorded by the CMF.
@@ -117,7 +117,7 @@ Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf a
 
 ## Query
 The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
-[Query_Tester-base_mlmd.ipynb](../../examples/example-get-started/) demonstrates this
+[Query_Tester-base_mlmd.ipynb](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates this
 functionality and can be adapted for your own uses.
 
 ## Clean Up
