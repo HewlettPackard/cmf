@@ -292,7 +292,8 @@ def get_postgres_config() -> dict:
     POSTGRES_DB = os.getenv('POSTGRES_DB')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-    config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+    config_dict = {"host":HOST, "port": POSTGRES_PORT, "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
     #print("config_dict = ", config_dict)
     return config_dict
 
