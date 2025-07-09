@@ -244,9 +244,13 @@ class CmdArtifactPull(CmdBase):
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
-            temp_dict = dict(zip(get_artifacts['name'], get_artifacts['url'])) # getting dictionary of name and url pair
+            # skipping artifacts if it is type of label
+            temp_dict = {
+                name: url
+                for name, url, artifact_type in zip(get_artifacts['name'], get_artifacts['url'], get_artifacts['type'])
+                if artifact_type != "Label"
+            }
             name_url_dict.update(temp_dict) # updating name_url_dict with temp_dict
-        #print(name_url_dict)
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81'
         # name_url_dict = ('artifacts/parsed/test.tsv:6f597d341ceb7d8fbbe88859a892ef81', 'Test-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81,Second-env:/home/sharvark/local-storage/6f/597d341ceb7d8fbbe88859a892ef81')
         """
@@ -259,7 +263,6 @@ class CmdArtifactPull(CmdBase):
                    download all files from directory
                      
         """
-
         dvc_config_op = output
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
