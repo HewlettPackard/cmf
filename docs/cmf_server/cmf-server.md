@@ -42,6 +42,7 @@ There are two ways to start a cmf server -
    ```
    POSTGRES_USER=myuser
    POSTGRES_PASSWORD=mypassword
+   POSTGRES_PORT: 5470
    ``` 
    > 
 4. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
