@@ -9,7 +9,7 @@
 
 ---
 
-## 🚀 Features (these needs to be updated - not correct info)
+## 🚀 Features
 
 - ✅ Track artifacts (datasets, models, metrics) using content-based hashes  
 - ✅ Automatically logs code versions (Git) and data versions (DVC)  
