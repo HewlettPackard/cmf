@@ -134,7 +134,7 @@ nav:
       - Getting Started Tutorial: examples/getting_started.md
     - 🐍 API Reference:
       - Overview: api/public/cmf.md
-      - Core Library: cmflib/index.md
+      - cmflib: cmflib/index.md
       - Data Types:
         - DataSlice: api/public/dataslice.md
         - CmfQuery: api/public/cmfquery.md
