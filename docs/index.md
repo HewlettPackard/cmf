@@ -78,7 +78,7 @@ graph LR
 
 ## Component Architecture
 
-### Core Library (`cmflib`)
+### CMF Library (`cmflib`)
 
 The `cmflib` package provides the primary API for metadata tracking through the `Cmf` class and supporting modules:
 
