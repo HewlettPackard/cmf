@@ -93,9 +93,9 @@ CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decen
 
 CMF is composed of:
 
-- **Metadata Library** – API to log/query metadata
-- **Client** – CLI to sync metadata with server, push/pull artifacts to the user-specified repo, push/pull code from git.
-- **Server** – REST API for metadata merge
+- **cmflib** - metadata library provides API to log/query metadata
+- **cmf-client** – CLI to sync metadata with server, push/pull artifacts to the user-specified repo, push/pull code from git.
+- **cmf-server** – REST API for metadata merge
 - **Central Repositories** – Git (code), DVC (artifacts), CMF (metadata)
 
 <p align="center">
