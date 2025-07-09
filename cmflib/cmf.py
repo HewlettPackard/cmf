@@ -697,7 +697,9 @@ class Cmf:
             artifact: mlmd.proto.Artifact = cmf.log_dataset(
                 url="/repo/data.xml",
                 event="input",
-                custom_properties={"source":"kaggle"}
+                custom_properties={"source":"kaggle"},
+                label=artifacts/labels.csv,
+                label_properties={"user":"Ron"}
             )
             ```
         Args:
@@ -1440,6 +1442,22 @@ class Cmf:
         dataslice_df.to_parquet(name)
 
     def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        """
+        Logs a label artifact associated with a dataset.
+
+        This function checks whether a label artifact (identified by `label_hash`) already exists in the metadata store.
+        - If the artifact exists, it links it to the current execution and optionally updates its properties and URL.
+        - If the artifact does not exist, it creates a new artifact with the provided properties and links it to the execution context.
+
+        Args:
+            url (str): The base URL representing the label (e.g., path or storage location).
+            label_hash (str): A unique mdh5 hash calculated on the label content.
+            dataset_uri (str): The URI of the associated dataset.
+            custom_properties (Optional[Dict], optional): Additional metadata to associate with the artifact. Defaults to None.
+
+        Returns:
+            mlpb.Artifact: The logged or linked label artifact.
+        """
         
         ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
