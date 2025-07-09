@@ -71,7 +71,9 @@ def parse(input_file: str, output_dir: str) -> None:
     # Cmf class takes four parameters: filename, pipeline_name, custom_properties, graph
     # User can pass any combination of these four.
     metawriter = cmf.Cmf()
-    _ = metawriter.log_dataset(input_file, "input", custom_properties={"user-metadata1": "metadata_value"})
+    _ = metawriter.log_dataset(input_file, "input", custom_properties={"user-metadata1": "metadata_value"}, \
+                                label="artifacts/labels.csv", label_properties={"user1": "xyz"})
+
 
     os.makedirs(output_dir, exist_ok=True)
     Dataset = collections.namedtuple('Dataset', ['train', 'test'])

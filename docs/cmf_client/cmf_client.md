@@ -3,7 +3,7 @@
 # cmf
 
 ```
-Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
+Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo, dvc}
 ```
 
 The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
@@ -566,4 +566,31 @@ Optional Arguments
   -h, --help                                                     show this help message and exit.
   -f [file_name], --file_name [file_name]                        Specify output metadata file name.
   -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+```
+
+## cmf dvc
+
+```
+Usage: cmf dvc [-h] {ingest}
+```
+
+`cmf dvc` command ingests metadata from the dvc.lock file into CMF.
+
+### cmf dvc ingest
+
+```
+Usage: cmf dvc ingest [-h] -f [file_name]
+```
+
+`cmf dvc ingest` command ingests metadata from the dvc.lock file into the CMF. If an existing MLMD file is provided, it merges and updates execution metadata based on matching commands, or creates new executions if none exist.
+
+```
+cmf dvc ingest -f '/path/to/mlmd-file-name'
+```
+
+Optional Arguments
+
+```
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify input mlmd file name. (default: mlmd)
 ```
