@@ -70,7 +70,15 @@ class CmdDVCIngest(CmdBase):
             props={}
             if k == "deps":
                 for dep in v:
-                    if dep["path"] not in tracked:
+                    # A dependency path (dep["path"]) can be a full file path like "artifacts/parsed/train.tsv"
+                    # or just a directory like "artifacts/parsed".
+                    # Similarly, the tracked dictionary may contain either file or directory paths.
+                    # So we check if any existing tracked key is a parent or child of the current dep path
+                    # by using startswith in both directions.
+                    # If no such match is found, we log the dataset as a new input.
+                    # Otherwise, we log it with versioning info using the existing MD5.
+                    matched = any(dep["path"].startswith(key) or key.startswith(dep["path"]) for key in tracked)
+                    if not matched:
                         metawriter.log_dataset(dep["path"], 'input')
                     else:
                         md5_value = dep["md5"] 
