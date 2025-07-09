@@ -66,9 +66,9 @@ class CmdArtifactPush(CmdBase):
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
-            result = dvc_push(num_jobs=num_jobs)
+            #result = dvc_push(num_jobs=num_jobs)
             #print(result)
-            return result
+            #return ArtifactPushSuccess(result)
 
         # Default path of mlmd file
         current_directory = os.getcwd()
