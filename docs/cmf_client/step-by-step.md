@@ -1,10 +1,10 @@
 # Quick start with cmf-client
 Common metadata framework (cmf) has the following components:
 
-- **Metadata Library** exposes APIs to track the pipeline metadata. It also provides APIs to query the stored metadata.
-- **cmf-client** interacts with the server to pull or push metadata from or to the cmf-server.
-- **cmf-server** interacts with all the remote clients and is responsible for merging the metadata transferred by the `cmf-client` and managing the consolidated metadata.
-- **Central Artifact Repositories** host the code and data.
+- **Metadata Library**: exposes APIs for tracking pipeline metadata and provides endpoints to query stored metadata.
+- **cmf-client**: handles metadata exchange with the CMF server, pushes and pulls artifacts from the artifact repository, and syncs code to and from GitHub.
+- **cmf-server**: interacts with all the remote clients and is responsible for merging the metadata transferred by the `cmf-client` and managing the consolidated metadata.
+- **Central Artifact Repositories**: host the code and data.
 
 ## Install cmf library i.e. cmflib
 Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md) page.
@@ -15,7 +15,7 @@ cmf-server is a key interface for the user to explore and track their ML trainin
 Follow the instructions on the [Installation & Setup](../setup/index.md) page for details on how to setup a cmf-server.
 
 ## Setup a cmf-client
-cmf-client is a tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
+cmf-client is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
 
 Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 
