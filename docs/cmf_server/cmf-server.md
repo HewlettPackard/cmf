@@ -40,8 +40,8 @@ There are two ways to start a cmf server -
     ``` 
 3. Create a `.env` file in the same directory as `docker-compose-server.yml` and add the necessary environment variables.
    ```
-   POSTGRES_USER=myuser
-   POSTGRES_PASSWORD=mypassword
+   POSTGRES_USER: myuser
+   POSTGRES_PASSWORD: mypassword
    POSTGRES_PORT: 5470
    ``` 
    > 
