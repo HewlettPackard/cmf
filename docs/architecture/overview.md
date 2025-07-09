@@ -1,6 +1,7 @@
 # Architecture Overview
 
-**Common Metadata Framework (CMF)** implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.
+**Common Metadata Framework (CMF)** implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. 
+CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.
 CMF (Common Metadata Framework) collects and stores information associated with Machine Learning (ML) pipelines. It also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
 Interactions in data pipelines can be complex. The Different stages in the pipeline, (which may not be next to each other) may have to interact to produce or transform artifacts. As the artifacts navigates and undergo transformations through this pipeline, it can take a complicated path, which might also involve bidirectional movement across these stages.  Also there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the metrics at a subsequent stage.  It is important to track the metadata across a pipeline to provide features like, lineage tracking, provenance and reproducibility.  
