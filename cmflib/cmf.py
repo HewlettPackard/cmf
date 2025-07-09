@@ -89,6 +89,7 @@ from cmflib.cmf_commands_wrapper import (
     _execution_list,
     _repo_push,
     _repo_pull,
+    _dvc_ingest,
 )
 
 class Cmf:
@@ -2084,4 +2085,22 @@ def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""
     # Required arguments: pipeline_name
     # Optional arguments: file_name, execution_uuid
     output = _repo_pull(pipeline_name, file_name, execution_uuid)
+    return output
+
+
+def dvc_ingest(file_name = "./mlmd"):
+    """ Ingests metadata from the dvc.lock file into the CMF. 
+        If an existing MLMD file is provided, it merges and updates execution metadata 
+        based on matching commands, or creates new executions if none exist.
+    Example: 
+    ```python 
+        result = _dvc_ingest("./mlmd_directory") 
+    ```
+    Args: 
+       file_name: Specify input metadata file name.
+    Returns:
+       Output from the _dvc_ingest function. 
+    """
+    # Optional argument: file_name
+    output = _dvc_ingest(file_name)
     return output

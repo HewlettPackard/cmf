@@ -1,5 +1,7 @@
 # Example Machine Learning pipeline with metadata tracking and artifact versioning using CMF.
 
+See [Getting Started Tutorial](./../../docs/examples/getting_started/) page for an in-depth walkthrough of the example.
+
 ### Steps to reproduce
 
 1. Copy contents of `example-get-started` directory to a separate directory outside this repository.

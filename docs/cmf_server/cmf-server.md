@@ -71,7 +71,7 @@ There are two ways to start a cmf server -
 
 ## Using `docker run` command
 
-1.  Install [cmflib](../index.md#installation) on your system.
+1.  Install [cmflib](../setup/index.md) on your system.
 
 2. Go to `cmf/server` directory.
    ```
