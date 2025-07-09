@@ -1,69 +1,21 @@
-# Core Library (cmflib)
+# cmflib
 
 The `cmflib` package is the foundational Python library that provides the core metadata tracking capabilities for the Common Metadata Framework (CMF). It offers a unified API for logging metadata across distributed AI/ML pipelines, integrating with multiple storage backends and versioning systems.
 
-This document covers the core library components, main API classes, and integration mechanisms. For CLI usage patterns, see [Command Line Interface](#command-line-interface). For server-side components, see [CMF Server](../server/index.md). For deployment configurations, see [Server Deployment](../server/index.md#server-deployment).
+This document covers the core library components, main API classes, and integration mechanisms. For CLI usage patterns, see [Quick Start with cmf-client](../cmf_client/step-by-step.md). For server-side components, see [cmf-server](../cmf_server/cmf-server.md).
 
 ## Core Architecture
 
-The `cmflib` library follows a modular architecture centered around the main `Cmf` class, with specialized components for different aspects of metadata management.
+Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where each stage performs a particular task, such as data loading, pre-processing, ML model training, and testing stages. Each stage can have multiple Executions which:
 
-### Library Structure
+- consume `inputs` and produce `outputs`.
+- are parameterized by parameters that guide the process of producing outputs.
 
-```mermaid
-graph TB
-    subgraph "Public API Layer"
-        Cmf_Class["Cmf<br/>(cmf.py)"]
-        CLI_Wrapper["cmf_commands_wrapper"]
-        Query_API["cmfquery.py"]
-    end
-    
-    subgraph "Core Operations"
-        Metadata_Helper["metadata_helper.py<br/>MLMD Operations"]
-        CMF_Merger["cmf_merger.py<br/>Push/Pull Logic"]
-        CMF_Server["cmf_server.py<br/>Server Integration"]
-    end
-    
-    subgraph "Storage Backends"
-        SQLite_Store["SqlliteStore"]
-        Postgres_Store["PostgresStore"] 
-        DVC_Wrapper["dvc_wrapper.py<br/>Git/DVC Integration"]
-    end
-    
-    subgraph "External Integrations"
-        Graph_Wrapper["graph_wrapper.py<br/>Neo4j Integration"]
-        Utils["utils/<br/>helper_functions.py<br/>cmf_config.py"]
-    end
-    
-    subgraph "Storage Systems"
-        MLMD_DB[("ML Metadata Store<br/>SQLite/PostgreSQL")]
-        Neo4j_DB[("Neo4j Graph DB")]
-        Artifact_Store[("Artifact Storage<br/>S3/MinIO/SSH/Local")]
-        Git_Repo[("Git Repository")]
-    end
-    
-    %% API connections
-    Cmf_Class --> Metadata_Helper
-    Cmf_Class --> CMF_Merger
-    Cmf_Class --> DVC_Wrapper
-    Cmf_Class --> Graph_Wrapper
-    
-    %% Storage connections  
-    Metadata_Helper --> SQLite_Store
-    Metadata_Helper --> Postgres_Store
-    SQLite_Store --> MLMD_DB
-    Postgres_Store --> MLMD_DB
-    
-    %% External connections
-    DVC_Wrapper --> Artifact_Store
-    DVC_Wrapper --> Git_Repo
-    Graph_Wrapper --> Neo4j_DB
-    
-    %% Integration connections
-    CLI_Wrapper --> Cmf_Class
-    CMF_Server --> Cmf_Class
-    Query_API --> MLMD_DB
-```
+![ML Pipeline Definition Example](../assets/ml_pipeline_def.png)
+
+CMF uses the abstractions of `Pipeline`, `Context`, and `Executions` to store the metadata of complex ML pipelines. Each pipeline has a name. Users provide it when they initialize the CMF. Each stage is represented by a `Context` object. Metadata associated with each run of a stage is captured in the Execution object. Inputs and outputs of Executions can be logged as dataset, model, or metrics. While parameters of executions are recorded as properties of executions.
+
+![CMF abstractions](../assets/cmf_concepts.png)
 
 ## Main API (cmf.Cmf)
 
@@ -80,153 +32,272 @@ The `Cmf` class is the primary interface for metadata tracking in CMF. It provid
 | `log_model(path, event, model_framework)` | Log model artifacts | `cmf.log_model(path="model.pkl", event="output")` |
 | `log_metrics(metrics_name, custom_properties)` | Log metrics | `cmf.log_metrics(metrics_name="accuracy", custom_properties={"value": 0.95})` |
 
-### Basic Usage Example
+## Quick Example
 
+Go through the [Getting Started](../examples/getting_started.md) page to learn more about CMF API usage.
+
+## Step-by-Step Example
+
+| Step | Description | Code Example |
+|------|-------------|--------------|
+| **1. Init** | Start tracking the pipeline metadata by initializing the CMF runtime. The metadata will be associated with the pipeline named `test_pipeline`. | `from cmflib.cmf import Cmf`<br/>`cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")` |
+| **2. Stage type** | Before we can start tracking metadata, we need to let CMF know about the stage type. This is not yet associated with this particular execution. | `context = cmf.create_context(pipeline_stage="train")` |
+| **3. New execution** | Now we can create a new stage execution associated with the `train` stage. The CMF always creates a new execution, and will adjust its name, so it's unique. | `execution = cmf.create_execution(execution_type="train", custom_properties={"num_epochs": 100, "learning_rate": 0.01})` |
+| **4. Log Artifacts** | Finally, we can log an input (train dataset), and once trained, an output (ML model) artifact. | `cmf.log_dataset('artifacts/test_dataset.csv', "input")`<br/>`cmf.log_model("artifacts/model.pkl", event="output")` |
+
+![ML Pipeline Stage Execution](../assets/ml_pipeline_stage_execution.png)
+
+## API Overview
+
+**Import CMF**.
 ```python
 from cmflib import cmf
-
-# Initialize CMF
-cmf_instance = cmf.Cmf(filename="mlmd", pipeline_name="mnist_pipeline")
-
-# Create context and execution
-context = cmf_instance.create_context(pipeline_stage="train")
-execution = cmf_instance.create_execution(execution_type="training")
-
-# Log artifacts
-cmf_instance.log_dataset(url="train_data.csv", event="input")
-cmf_instance.log_model(path="trained_model.pkl", event="output", 
-                      model_framework="sklearn")
-cmf_instance.log_metrics(metrics_name="accuracy", 
-                        custom_properties={"value": 0.95, "epoch": 10})
 ```
 
-## Metadata Operations
+**Initialize CMF**. The CMF object is responsible for managing a CMF backend to record the pipeline metadata. Internally, it creates a pipeline abstraction that groups individual stages and their executions. All stages, their executions, and produced artifacts will be associated with a pipeline with the given name.
 
-CMF provides comprehensive metadata operations for tracking ML pipeline artifacts and their relationships.
+```python
+cmf = cmf.Cmf(
+   filename="mlmd",                # Path to ML Metadata file.
+   pipeline_name="mnist"           # Name of an ML pipeline.
+)
+```
 
-### Artifact Types
+**Define a stage**. An ML pipeline can have multiple stages, and each stage can be associated with multiple executions. A stage is described by a context, which specifies its name and optional properties. You can create a context using the [create_context](api/public/cmf.md) method:
 
-CMF supports three primary artifact types:
+```python
+context = cmf.create_context(
+    pipeline_stage="download",     # Stage name
+    custom_properties={            # Optional properties
+        "uses_network": True,      #  Downloads from the Internet
+        "disk_space": "10GB"       #  Needs this much space
+    }
+)
+```
 
-1. **Datasets**: Input/output data files with versioning
-2. **Models**: ML models with framework-specific metadata
-3. **Metrics**: Performance metrics and custom properties
+**Create a stage execution**. A stage in an ML pipeline can have multiple executions. Every run is marked as an execution. This API helps to track the metadata associated with the execution, like stage parameters (e.g., number of epochs and learning rate for train stages). The stage execution name does not need to be the same as the name of its context. Moreover, the CMF will adjust this name to ensure every execution has a unique name. The CMF will internally associate this execution with the context created previously. Stage executions are created by calling the [create_execution](api/public/cmf.md) method.
 
-### Execution Tracking
+```python
+execution = cmf.create_execution(
+    execution_type="download",            # Execution name.
+    custom_properties = {                 # Execution parameters
+        "url": "https://a.com/mnist.gz"   #  Data URL.
+    }
+)
+```
 
-Each execution automatically captures:
-- **Git commit hash**: For code reproducibility
-- **Execution parameters**: Custom properties and configurations
-- **Timestamps**: Start and end times
-- **Environment**: Python environment and dependencies
+**Log artifacts**. A stage execution can consume (inputs) and produce (outputs) multiple artifacts (datasets, models, and performance metrics). The path of these artifacts must be relative to the project (repository) root path. Artifacts might have optional metadata associated with them. These metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for instance, number of trees in a random forest classifier).
 
-## Command Line Interface
+- **Datasets** are logged with the [log_dataset](api/public/cmf.md) method.
+- **ML models** produced by training stages are logged using the [log_model](api/public/cmf.md) API.
+- **Metrics** of every optimization step are logged using the [log_metric](api/public/cmf.md) API.
+- **Stage metrics**, or final metrics, are logged with the [log_execution_metrics](api/public/cmf.md) method.
 
-CMF provides a comprehensive CLI for managing metadata and artifacts:
+**Dataslices** are intended to be used to track subsets of the data. For instance, this can be used to track and compare accuracies of ML models on these subsets to identify model bias. [Data slices](api/public/dataslice.md) are created with the [create_dataslice](api/public/cmf.md) method.
 
-### Core Commands
+## Graph Layer Overview
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `cmf init` | Initialize CMF configuration | `cmf init --type=local` |
-| `cmf metadata push` | Push metadata to server | `cmf metadata push --pipeline-name=my_pipeline` |
-| `cmf metadata pull` | Pull metadata from server | `cmf metadata pull --pipeline-name=my_pipeline` |
-| `cmf artifact push` | Push artifacts to storage | `cmf artifact push --pipeline-name=my_pipeline` |
-| `cmf artifact pull` | Pull artifacts from storage | `cmf artifact pull --pipeline-name=my_pipeline` |
-
-### Configuration Management
+The CMF library has an optional `graph layer` which stores the relationships in a Neo4J graph database. To use the graph layer, the `graph` parameter in the library init call must be set to true (it is set to false by default). The library reads the configuration parameters of the graph database from the `cmf config` generated by the `cmf init` command.
 
 ```bash
-# Initialize local configuration
-cmf init --type=local
-
-# Initialize with server configuration
-cmf init --type=server --url=http://cmf-server:8080
-
-# Configure artifact storage
-cmf init --type=s3 --endpoint-url=http://minio:9000 --access-key-id=minioadmin
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
-## Storage Backends
-
-CMF supports multiple storage backends for artifacts and metadata:
-
-### Metadata Storage
-
-- **SQLite**: Local development and single-user scenarios
-- **PostgreSQL**: Production deployments and multi-user environments
-
-### Artifact Storage
-
-- **Local**: File system storage for development
-- **Amazon S3**: Cloud storage with versioning
-- **MinIO**: Self-hosted S3-compatible storage
-- **SSH**: Remote server storage via SSH
-
-### Configuration Examples
-
-```python
-# Local storage
-cmf_instance = cmf.Cmf(
-    filename="mlmd",
-    pipeline_name="my_pipeline",
-    graph=False  # Disable Neo4j for local development
-)
-
-# Server-based storage
-cmf_instance = cmf.Cmf(
-    filename="postgresql://user:pass@server:5432/mlmd",
-    pipeline_name="my_pipeline",
-    graph=True,
-    neo4j_uri="bolt://neo4j:7687",
-    neo4j_user="neo4j",
-    neo4j_password="password"
-)
-```
-
-## External Integrations
-
-### Git Integration
-
-CMF automatically integrates with Git to track code versions:
-
-- **Commit tracking**: Automatically captures Git commit hashes
-- **Branch information**: Records current branch and remote URL
-- **Diff tracking**: Can optionally store code diffs
-
-### DVC Integration
-
-Data Version Control (DVC) integration provides:
-
-- **Data versioning**: Content-based versioning of datasets
-- **Remote storage**: Integration with cloud storage providers
-- **Pipeline tracking**: DVC pipeline stage integration
-
-### Neo4j Integration
-
-Graph database integration enables:
-
-- **Lineage visualization**: Interactive pipeline lineage graphs
-- **Relationship queries**: Complex queries across pipeline relationships
-- **Performance analytics**: Graph-based performance analysis
-
-### Example Integration Setup
+To use the graph layer, instantiate the CMF with the `graph=True` parameter:
 
 ```python
 from cmflib import cmf
 
-# Full integration setup
-cmf_instance = cmf.Cmf(
-    filename="postgresql://user:pass@server:5432/mlmd",
-    pipeline_name="production_pipeline",
-    graph=True,
-    neo4j_uri="bolt://neo4j:7687",
-    neo4j_user="neo4j",
-    neo4j_password="password",
-    git_repo="/path/to/repo",
-    is_server=True
+cmf = cmf.Cmf(
+   filename="mlmd",
+   pipeline_name="anomaly_detection_pipeline",
+   graph=True
 )
+```
 
-# Enable automatic Git tracking
-cmf_instance.log_execution_metrics_from_client()
+
+
+
+<table markdown="block" style="border: 0">
+<tbody markdown="block" style="width: 100%; display: table">
+<tr markdown="block">
+<td markdown="block">
+
+=== "1 Init"
+    Start tracking the pipeline metadata by initializing the CMF runtime. The metadata will be associated with the
+    pipeline named `test_pipeline`.
+    ```python
+    from cmflib.cmf import Cmf
+    from ml_metadata.proto import metadata_store_pb2 as mlpb
+
+    cmf = Cmf(
+        filename="mlmd",
+        pipeline_name="test_pipeline",
+    )
+    ```
+
+=== "2 Stage type"
+    Before we can start tracking metadata, we need to let CMF know about the stage type. This is not yet associated with
+    this particular execution.
+    ```python
+    context: mlmd.proto.Context = cmf.create_context(
+        pipeline_stage="train"
+    )
+    ```
+
+=== "3 New execution"
+    Now we can create a new stage execution associated with the `train` stage. The CMF always creates a new execution,
+    and will adjust its name, so it's unique. This is also the place where we can log execution `parameters` like seed, hyper-parameters, etc.
+    ```python
+    execution: mlmd.proto.Execution = cmf.create_execution(
+        execution_type="train",
+        custom_properties = {"num_epochs": 100, "learning_rate": 0.01}
+    )
+    ```
+
+=== "4 Log Artifacts"
+    Finally, we can log an input (train dataset), and once trained, an output (ML model) artifact.
+    ```python
+    cmf.log_dataset(
+        'artifacts/test_dataset.csv',   # Dataset path
+        "input"                         # This is INPUT artifact
+    )
+    cmf.log_model(
+        "artifacts/model.pkl",          # Model path
+        event="output"                  # This is OUTPUT artifact
+    )
+    ```
+
+
+</td>
+<td style="text-align: right; width: 450px">
+<img src="assets/ml_pipeline_stage_execution.png" alt="ML Pipeline Stage Execution" style="width: 450px; height: auto" />
+</td>
+</tr>
+</tbody>
+</table>
+
+## Quick Example
+Go through the [Getting Started](examples/getting_started.md) page to learn more about CMF API usage.
+
+## API Overview
+
+**Import CMF**.
+```python
+from cmflib import cmf
+```
+
+**Initialize CMF**. The [CMF](api/public/cmf.md) object is responsible for managing a CMF backend to record
+the pipeline metadata. Internally, it creates a pipeline abstraction that groups individual stages and their executions.
+All stages, their executions, and produced artifacts will be associated with a pipeline with the given name.
+```python
+cmf = cmf.Cmf(
+   filename="mlmd",                # Path to ML Metadata file.
+   pipeline_name="mnist"           # Name of an ML pipeline.
+)
+```
+
+**Define a stage**. An ML pipeline can have multiple stages, and each stage can be associated with multiple executions.
+A stage is described by a context, which specifies its name and optional properties. You can create a context using the
+[create_context][cmflib.cmf.Cmf.create_context] method:
+```python
+context = cmf.create_context(
+    pipeline_stage="download",     # Stage name
+    custom_properties={            # Optional properties
+        "uses_network": True,      #  Downloads from the Internet
+        "disk_space": "10GB"       #  Needs this much space
+    }
+)
+```
+
+**Create a stage execution**. A stage in an ML pipeline can have multiple executions. Every run is marked as an execution.
+This API helps to track the metadata associated with the execution, like stage parameters (e.g., number of epochs and
+learning rate for train stages). The stage execution name does not need to be the same as the name of its context.
+Moreover, the CMF will adjust this name to ensure every execution has a unique name. The CMF will internally associate
+this execution with the context created previously. Stage executions are created by calling the
+[create_execution][cmflib.cmf.Cmf.create_execution] method.
+```python
+execution = cmf.create_execution(
+    execution_type="download",            # Execution name.
+    custom_properties = {                 # Execution parameters
+        "url": "https://a.com/mnist.gz"   #  Data URL.
+    }
+)
+```
+
+**Log artifacts**. A stage execution can consume (inputs) and produce (outputs) multiple artifacts (datasets, models, and
+performance metrics). The path of these artifacts must be relative to the project (repository) root path. Artifacts
+might have optional metadata associated with them. These metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
+instance, number of trees in a random forest classifier).
+
+- **Datasets** are logged with the [log_dataset][cmflib.cmf.Cmf.log_dataset] method.
+    ```python
+    cmf.log_dataset('data/mnist.gz', "input", custom_properties={"name": "mnist", "type": 'raw'})
+    cmf.log_dataset('data/train.csv', "output", custom_properties={"name": "mnist", "type": "train_split"})
+    cmf.log_dataset('data/test.csv', "output", custom_properties={"name": "mnist", "type": "test_split"})
+    ```
+
+- **ML models** produced by training stages are logged using the [log_model][cmflib.cmf.Cmf.log_model] API. ML models can be
+  both input and output artifacts. The metadata associated with the artifact could be logged as an optional argument.
+    ```python
+    # In train stage
+    cmf.log_model(
+       path="model/rf.pkl", event="output", model_framework="scikit-learn", model_type="RandomForestClassifier",
+       model_name="RandomForestClassifier:default"
+    )
+
+    # In test stage
+    cmf.log_model(
+       path="model/rf.pkl", event="input"
+    )
+    ```
+
+- **Metrics** of every optimization step (one epoch of Stochastic Gradient Descent, or one boosting round in
+  Gradient Boosting Trees) are logged using the [log_metric][cmflib.cmf.Cmf.log_metric] API.
+    ```python
+    # Can be called at every epoch or every step in the training. This is logged to a parquet file and committed at the
+    # commit stage.
+
+    # Inside training loop
+    while True:
+         cmf.log_metric("training_metrics", {"loss": loss})
+    cmf.commit_metrics("training_metrics")
+    ```
+
+- **Stage metrics**, or final metrics, are logged with the [log_execution_metrics][cmflib.cmf.Cmf.log_execution_metrics]
+  method. These are final metrics of a stage, such as final train or test accuracy.
+    ```python
+    cmf.log_execution_metrics("metrics", {"avg_prec": avg_prec, "roc_auc": roc_auc})
+    ```
+
+**Dataslices** are intended to be used to track subsets of the data. For instance, this can be used to track and compare
+accuracies of ML models on these subsets to identify model bias. [Data slices](api/public/dataslice.md) are created with
+the [create_dataslice](api/public/cmf.md) method.
+```python
+dataslice = cmf.create_dataslice("slice-a")
+for i in range(1, 20, 1):
+    j = random.randrange(100)
+    dataslice.add_data("data/raw_data/"+str(j)+".xml")
+dataslice.commit()
+```
+
+## Graph Layer Overview
+The CMF library has an optional `graph layer` which stores the relationships in a Neo4J graph database. To use the graph
+layer, the `graph` parameter in the library init call must be set to true (it is set to false by default). The
+library reads the configuration parameters of the graph database from the `cmf config` generated by the `cmf init` command.
+
+```
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```
+> Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.
+
+To use the graph layer, instantiate the CMF with the `graph=True` parameter:
+```python
+from cmflib import cmf
+
+cmf =  cmf.Cmf(
+   filename="mlmd",
+   pipeline_name="anomaly_detection_pipeline",
+   graph=True
+)
 ```
