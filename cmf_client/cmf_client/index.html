@@ -1330,7 +1330,7 @@
                              --neo4j-uri [neo4j_uri]
 </code></pre></div>
 <p><code>cmf init osdfremote</code> configures a OSDF Origin as a cmf artifact repository.</p>
-<div class="highlight"><pre><span></span><code>cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+<div class="highlight"><pre><span></span><code>cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div>
 <p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  --path [path]                        Specify FQDN for OSDF origin including including port and directory path if any
