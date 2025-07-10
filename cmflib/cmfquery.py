@@ -378,6 +378,7 @@ class CmfQuery(object):
 
         Args:
             pipeline_name: Name of the pipeline.
+
         Returns:
             Pipeline identifier or -1 if one does not exist.
         """
@@ -390,6 +391,7 @@ class CmfQuery(object):
         Args:
             pipeline_name: Name of the pipeline for which stages need to be returned. In CMF, there are no different
                 pipelines with the same name.
+
         Returns:
             List of stage names associated with the given pipeline.
         """
@@ -404,6 +406,7 @@ class CmfQuery(object):
         Args:
             stage_name: Name of the stage. Before stages are recorded in MLMD, they are modified (e.g., pipeline name
                         will become part of the stage name). So stage names from different pipelines will not collide.
+        
         Returns:
             List of executions for the given stage.
         """
@@ -470,8 +473,10 @@ class CmfQuery(object):
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         """Return executions of the given stage as pandas data frame.
+        
         Args:
             stage_name: Stage name. See doc strings for the prev method.
+        
         Returns:
             Data frame with all executions associated with the given stage.
         """
@@ -492,6 +497,7 @@ class CmfQuery(object):
         Args:
             artifact: MLMD entity representing artifact.
             d: Optional initial content for data frame.
+        
         Returns:
             A data frame with the single row containing attributes of this artifact.
         """
@@ -524,6 +530,7 @@ class CmfQuery(object):
 
         Args:
             name: Artifact name.
+
         Returns:
             Pandas data frame with one row containing attributes of this artifact.
         """
@@ -537,7 +544,8 @@ class CmfQuery(object):
 
         Args:
             execution_id: Execution identifier.
-        Return:
+
+        Returns:
             Data frame containing input and output artifacts for the given execution, one artifact per row.
         """
         df = pd.DataFrame()
@@ -564,6 +572,7 @@ class CmfQuery(object):
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Pandas data frame containing stage executions, one execution per row.
         """
@@ -597,7 +606,8 @@ class CmfQuery(object):
 
         Args:
             artifact name: Name of an artifact.
-        Return:
+
+        Returns:
             Output artifacts of all executions that consumed given artifact.
         """
         artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name)    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
@@ -615,6 +625,7 @@ class CmfQuery(object):
 
         Args:
             artifact name: Name of an artifact.
+
         Return:
             Output artifacts of all executions that consumed given artifact.
         """
@@ -677,6 +688,7 @@ class CmfQuery(object):
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing all child artifacts.
         """
@@ -695,6 +707,7 @@ class CmfQuery(object):
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing immediate parent artifact of given artifact.
         """
@@ -713,6 +726,7 @@ class CmfQuery(object):
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing all parent artifacts.
         """
@@ -773,6 +787,7 @@ class CmfQuery(object):
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing all parent executions.
         """
@@ -831,8 +846,10 @@ class CmfQuery(object):
 
     def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
         """Return metric data frame.
+
         Args:
             metrics_name: Metrics name.
+        
         Returns:
             Data frame containing all metrics.
         """
@@ -1011,9 +1028,11 @@ class CmfQuery(object):
 
     def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
+        
         Args:
             pipeline_name: Name of an AI pipelines.
             exec_uuid: Optional stage execution_uuid - filter stages by this execution_uuid.
+        
         Returns:
             Pipeline in JSON format.
         """
