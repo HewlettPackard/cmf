@@ -40,6 +40,7 @@ Before installing CMF, ensure you have the following prerequisites:
   >   ```
   >   
   >   This ensures Python 3.9 and its essential modules are fully installed.
+
 - **Git**: Latest version for code versioning
 - **Docker**: For containerized deployment
 - **Storage Backend**: S3, MinIO, or local storage for artifacts
@@ -112,7 +113,7 @@ Before installing CMF, ensure you have the following prerequisites:
    POSTGRES_PASSWORD: mypassword
    POSTGRES_PORT: 5470
    ``` 
-   > 
+   > ⚠️**Warning:** Avoid using `@` character in `POSTGRES_PASSWORD` to prevent connection issues.
 4. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
    ```
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
