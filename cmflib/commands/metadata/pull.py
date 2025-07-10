@@ -45,7 +45,7 @@ class CmdMetadataPull(CmdBase):
         output, cmf_config_path = fetch_cmf_config_path()
         
         attr_dict = CmfConfig.read_config(cmf_config_path)
-        url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
+        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:80")
         current_directory = os.getcwd()
         full_path_to_dump = ""
         cmd = "pull"
