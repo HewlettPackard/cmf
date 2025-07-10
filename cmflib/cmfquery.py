@@ -525,6 +525,30 @@ class CmfQuery(object):
 
     get_artifact_names = get_all_artifacts
 
+    def get_label_artifact(self, artifact: mlpb.Artifact) -> t.Optional[pd.DataFrame]:
+        """Return artifact's label data frame .
+
+        Args:
+            artifact: dataset artifact object.
+
+        Returns:
+            Pandas data frame with one row containing label dataframe.
+        """
+        if hasattr(artifact,"custom_properties_labels"):
+            if artifact.custom_properties_labels is None or pd.isna( artifact.custom_properties_labels ) :
+                return None
+        if artifact.custom_properties_labels is not None:
+            label_artifact_name = artifact.custom_properties_labels_uri 
+            label_artifact: t.Optional[mlpb.Artifact] = self._get_artifact(label_artifact_name)
+            if label_artifact:
+                label_artifact_df = self.get_artifact_df(label_artifact)
+                label_artifact_df["path"] = label_artifact_df["name"].str.split(":").str[0]
+                return label_artifact_df
+            else:
+                return None
+        else:
+            return None
+
     def get_artifact(self, name: str) -> t.Optional[pd.DataFrame]:
         """Return artifact's data frame representation using artifact name.
 
@@ -538,6 +562,7 @@ class CmfQuery(object):
         if artifact:
             return self.get_artifact_df(artifact)
         return None
+
 
     def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame:
         """Return input and output artifacts for the given execution.
