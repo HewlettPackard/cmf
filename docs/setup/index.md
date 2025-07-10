@@ -40,6 +40,7 @@ Before installing CMF, ensure you have the following prerequisites:
   >   ```
   >   
   >   This ensures Python 3.9 and its essential modules are fully installed.
+
 - **Git**: Latest version for code versioning
 - **Docker**: For containerized deployment
 - **Storage Backend**: S3, MinIO, or local storage for artifacts
