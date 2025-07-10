@@ -40,8 +40,9 @@ There are two ways to start a cmf server -
     ``` 
 3. Create a `.env` file in the same directory as `docker-compose-server.yml` and add the necessary environment variables.
    ```
-   POSTGRES_USER=myuser
-   POSTGRES_PASSWORD=mypassword
+   POSTGRES_USER: myuser
+   POSTGRES_PASSWORD: mypassword
+   POSTGRES_PORT: 5470
    ``` 
    > 
 4. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
@@ -71,7 +72,7 @@ There are two ways to start a cmf server -
 
 ## Using `docker run` command
 
-1.  Install [cmflib](../index.md#installation) on your system.
+1.  Install [cmflib](../setup/index.md) on your system.
 
 2. Go to `cmf/server` directory.
    ```

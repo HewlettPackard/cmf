@@ -1,16 +1,13 @@
-# Getting Started
-
-> This example depends on the following packages: `git`. We also recommend installing
-> [anaconda](https://docs.anaconda.com/anaconda/install/linux/) to manage python virtual environments.
-> This example was tested in the following environments:
->
-> - `Ubuntu-22.04 with python-3.10`
+# Using CMF to track metadata for a ML Pipeline 
 
 This example demonstrates how CMF tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
-ML steps, such as training and testing ML models. More comprehensive ML pipelines may include steps such as deploying a
-trained model and tracking its inference parameters (such as response latency, memory consumption, etc.). This example,
-located [here](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started), implements a simple
+ML steps, such as training and testing ML models. 
+
+More comprehensive ML pipelines may include steps such as deploying a
+trained model and tracking its inference parameters (such as response latency, memory consumption, etc.).
+
+This example, located [here](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started), implements a simple
 pipeline consisting of five steps:
 
 - The [parse](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py) step splits
@@ -33,29 +30,20 @@ pipeline consisting of five steps:
   run, but also the metadata associated with previous runs.
 
 
-## Pre-requisites
+## Pre-requisites 
 
-The initial setup requires creating a workspace directory that will contain all files for this example, a python
-virtual environment, and cloning the CMF repository that contains source code and data for this example.
+Before proceeding, ensure that the CMF library (`cmflib`) is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md) page.
+
+The initial setup requires creating a workspace directory that will contain all files for this example, cloning the CMF repository that contains source code and data for this example.
+
 ```shell
 # Create workspace directory
-mkdir cmf_getting_started_example
-cd cmf_getting_started_example
-
-# Create and activate Python virtual environment (the Python version may need to be adjusted depending on your system)
-conda create -n cmf_getting_started_example python=3.10
-conda activate cmf_getting_started_example
+mkdir cmf_example
+cd cmf_example
 
 # Clone the CMF project from GitHub and install CMF
 git clone https://github.com/HewlettPackard/cmf
-pip install ./cmf
 ```
-
-### Setup a cmf-server
-
-__cmf-server__ is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.
-
-Follow [here](./../cmf_server/cmf-server.md) to set up a common cmf-server.
 
 ## Project initialization
 First, copy the code and data for this example into its own directory (that must be outside the CMF source tree). Execute the `cmf init` command
@@ -100,7 +88,7 @@ Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
 
 ## Project execution
 To execute the example pipeline, run the
-[test_script.sh](../../examples/example-get-started/test_script.sh)
+[test_script.sh](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started)
 file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
 splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
 execution of these steps (and parent pipeline) will be recorded by the CMF.
@@ -109,18 +97,27 @@ execution of these steps (and parent pipeline) will be recorded by the CMF.
 sh ./test_script.sh
 ```
 
+### Setup a cmf-server 
+
+> Note: This setup step is not required if the cmf-server is already configured.
+
+__cmf-server__ is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.
+
+Follow [here](./../cmf_server/cmf-server.md) to set up a common cmf-server.
+
+### Syncing metadata on the cmf-server
 Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
 repository correspond to the creation of pipeline artifacts and can be viewed with `git log`.
 
 In production settings, the next steps would be to:
-1. Execute the `cmf artifact push` command to push the artifacts to the central artifact repository
+1. Execute the `cmf artifact push` command to push the artifacts to the central artifact repository.
 2. Execute the `cmf metadata push` command to track the metadata of the generated artifacts on a common [cmf server](./../cmf_server/cmf-server.md).
 
 Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
 
 ## Query
 The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
-[Query_Tester-base_mlmd.ipynb](../../examples/example-get-started/Query_Tester-base_mlmd.ipynb) demonstrates this
+[Query_Tester-base_mlmd.ipynb](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates this
 functionality and can be adapted for your own uses.
 
 ## Clean Up

@@ -176,7 +176,7 @@ class CmdMetadataPush(CmdBase):
                             for label in labels:
                                 label_name = label.split(":")[1]
                                 path = os.getcwd() +"/"+ label.split(":")[0]
-                                label_response = server_interface.call_label_dataset(url, label_name, path)
+                                label_response = server_interface.call_label(url, label_name, path)
                                 print(label_response.json())
 
                 output = ""

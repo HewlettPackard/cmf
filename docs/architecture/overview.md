@@ -1,38 +1,30 @@
 # Architecture Overview
 
-Interactions between different stages of a data pipeline are often challenging to track, particularly when artifacts
-move bidirectionally between stages and/or when the stages themselves are executed on different platforms.
-Additionally, each stage might have multiple dependencies, where the metadata and metrics produced by one stage
-influence the execution of the remainder of the pipeline. Capturing metadata during the execution of
-this pipeline is thus crucial for lineage tracking, provenance, and reproducibility.
+**Common Metadata Framework (CMF)** implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. 
 
-The tracking of metadata through these complex pipelines has multiple challenges, including:
+CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.
 
-- Each stage in the pipeline could be executed in a different data center or at an edge site with intermittent connection
-  to the core data center.
-- Each stage in the pipeline could be managed by different teams.
-- The artifacts (input or output) need to be uniquely identified across different sites and multiple pipelines.
+CMF collects and stores information associated with Machine Learning (ML) pipelines. It also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML models and performance metrics) recorded by the framework are versioned and identified by their content hash.
 
-The Common Metadata Framework (CMF) addresses the problems associated with tracking pipeline metadata from distributed
-sites and tracks code, data, and metadata together for end-to-end traceability.
+Interactions in data pipelines can be complex. The Different stages in the pipeline, (which may not be next to each other) may have to interact to produce or transform artifacts. As the artifacts navigates and undergo transformations through this pipeline, it can take a complicated path, which might also involve bidirectional movement across these stages.  Also there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the metrics at a subsequent stage.  It is important to track the metadata across a pipeline to provide features like, lineage tracking, provenance and reproducibility.  
 
-The framework automatically tracks the code version as part of the pipeline's metadata execution. Additionally,
-data artifacts are also versioned automatically using a data versioning framework (like DVC), with the data version
-stored along with the code as metadata. The framework stores (1) the git commit ID of the metadata file associated with
-the artifact and (2) a hash of the artifact's content. The framework provides APIs to track the parameters and
-other metadata of pipelines. From the stored metadata, users can identify the hyperparameters, code version, and
-artifact version used for the experiment.
+The tracking of metadata through these complex pipelines have multiple challenges, some of them being,  
 
-Identifying an artifact by its hash allows the framework to uniquely identify it across distributed sites. These can
-subsequently be merged into a central repository, enabling a single source of truth for global metadata across
-multiple sites.
+- Each stage in the pipeline could be executed in a different datacenter or an edge site having intermittent connection to the core datacenter.   
+- Each stage in the pipeline could be possibly managed by different teams.  
+- The artifacts (input or output) needs to be uniquely identified across different sites and across multiple pipelines. 
 
-CMF thus provides a git-like experience for metadata, enabling users to push their local metadata to the
-remote repository, where it is merged to create the global metadata, and pull metadata from the global repository to the
-local environment, to create a local view containing only the metadata of interest.
 
-The framework can be used to track various types of data-oriented pipelines, for example, data processing or training
-AI models.
+Common metadata framework (CMF) addresses the problems associated with tracking of pipeline metadata from distributed sites and tracks code, data and metadata together for end-to-end traceability.   
 
-<img src="./../../assets/framework.png" alt="CMF Framework" style="display: block; margin: 0 auto" />
+The framework automatically tracks the code version as one of the metadata for an execution. Additionally the data artifacts are also versioned automatically using a data versioning framework (like DVC) and the metadata regarding the data version is stored along with the code. The framework stores the Git commit id of the metadata file associated with the artifact and content hash of the artifact as metadata. The framework provides API’s to track the hyper parameters and other metadata of pipelines.  Therefore from the metadata stored, users can zero in on the hyper parameters, code version and the artifact version used for the experiment. 
+
+Identifying the artifacts by content hash allows the framework, to uniquely identify an artifact anywhere in the distributed sites. This enables the metadata from the distributed sites to be precisely merged to a central repository, thereby providing a single global metadata from the distributed sites.   
+
+On this backbone, we build the Git like experience for metadata, enabling users to push their local metadata to the remote repository, where it is merged to create the global metadata and pull metadata from the global metadata to the local, to create a local view, which would contain only the metadata of interest. 
+
+The framework can be used to track various types of pipelines such as data pipelines or AI pipelines. 
+<p align="center">
+ <img src="../../assets/framework.png" height="400" align="center" />
+</p>
 
