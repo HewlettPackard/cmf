@@ -24,7 +24,7 @@ Proceed with the following steps to set up an OSDF Remote Repository:
    ```
    cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
        --cache https://osdf-director.osg-htc.org/ \
-       --key-id s0B-Y-8IFdSIXPhmBCxTvoTanvxe-Mpt9hUBnSoIKRE \
+       --key-id XXXX \
        --key-path ~/private_hpe.pem \
        --key-issuer https://t.nationalresearchplatform.org/fdp-hpe \
        --git-remote-url https://github.com/user/experiment-repo.git
@@ -76,7 +76,7 @@ Proceed with the following steps to set up an OSDF Remote Repository:
 - Running CMF's examples/example-getting-started workflow and pushing artifacts to a specific remote
 
 ```
-(cmf) tripataa@ai07:~/cmf-examples/example-get-started$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test           --cache https://osdf-director.osg-htc.org/   --key-id s0B-Y-8IFdSIXPhmBCxTvoTanvxe-Mpt9hUBnSoIKRE    --key-path ~/private_hpe.pem    --key-issuer https://t.nationalresearchplatform.org/fdp-hpe --git-remote-url https://github.com/user/experiment-repo.git
+(cmf) tripataa@ai07:~/cmf-examples/example-get-started$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test           --cache https://osdf-director.osg-htc.org/   --key-id XXXX    --key-path ~/private_hpe.pem    --key-issuer https://t.nationalresearchplatform.org/fdp-hpe --git-remote-url https://github.com/user/experiment-repo.git
 git_dir /home/tripataa/cmf-examples/example-get-started/.git
 Starting cmf init.
 Setting 'osdf' as a default remote.
@@ -125,7 +125,7 @@ Everything is up to date.
 mlmd
 (cmf) tripataa@ai07:~/cmf-examples/test$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
           --cache https://osdf-director.osg-htc.org/ \
-        --key-id s0B-Y-8IFdSIXPhmBCxTvoTanvxe-Mpt9hUBnSoIKRE \
+        --key-id XXX \
         --key-path ~/private_hpe.pem \
         --key-issuer https://t.nationalresearchplatform.org/fdp-hpe \
 --git-remote-url https://github.com/user/experiment-repo.git
