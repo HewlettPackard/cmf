@@ -24,7 +24,7 @@ services:
       POSTGRES_DB: mlmd
       POSTGRES_PORT: ${POSTGRES_PORT}
     volumes:
-      - /home/tripataa/cmf-server/data/postgres_data:/var/lib/postgresql/data
+      - ${HOME}/cmf-server/data/postgres_data:/var/lib/postgresql/data
       # - postgres_data:/var/lib/postgresql/data
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql # Mount SQL script
       - ./custom-entrypoint.sh:/custom-entrypoint.sh # Mount custom entrypoint script
@@ -43,7 +43,7 @@ services:
     command: tensorboard --logdir /logs --host 0.0.0.0
     volumes:
       # directory path should be updated as per user's environment
-      - /home/tripataa/cmf-server/data/tensorboard-logs:/logs
+      - ${HOME}/cmf-server/data/tensorboard-logs:/logs
       # - tensorboard_logs:/logs
     expose:
       - 6006
@@ -56,11 +56,11 @@ services:
     image: server:latest
     # both the directory paths should be updated as per user's environment
     volumes:
-      - /home/tripataa/cmf-server/data:/cmf-server/data
-      - /home/tripataa/cmf-server/data/env:/cmf-server/data/env
-      - /home/tripataa/cmf-server/data/static:/cmf-server/data/static
-      - /home/tripataa/cmf-server/data/labels:/cmf-server/data/labels
-      - /home/tripataa/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
+      - ${HOME}/cmf-server/data:/cmf-server/data
+      - ${HOME}/cmf-server/data/env:/cmf-server/data/env
+      - ${HOME}/cmf-server/data/static:/cmf-server/data/static
+      - ${HOME}/cmf-server/data/labels:/cmf-server/data/labels
+      - ${HOME}/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
       # - cmf_data:/cmf-server/data
       # - cmf_env:/cmf-server/data/env
       # - cmf_static:/cmf-server/data/static
@@ -72,8 +72,8 @@ services:
       dockerfile: ./server/Dockerfile
     restart: always
     environment:
-      MYIP: localhost
-      HOSTNAME: localhost
+      MYIP: ${IP:-127.0.0.1}
+      HOSTNAME: ${HOSTNAME:-localhost}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_PORT: ${POSTGRES_PORT}
