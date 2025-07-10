@@ -386,18 +386,31 @@ async def get_python_env(file_name: str) -> str:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
-# Rest api to push the label dataset to /cmf-server/data/labels dir.
-@app.post("/label-dataset")
-async def upload_label_dataset(request:Request, file: UploadFile = File(..., description="The file to upload")):
+# Rest api to push the label to /cmf-server/data/labels dir.
+@app.post("/label")
+async def upload_label(request:Request, file: UploadFile = File(..., description="The file to upload")):
     try:
-        # print("file_path", file_path)
-        if file.filename is None:
-            raise HTTPException(status_code=400, description="No file uploaded") 
-        file_path = os.path.join("/cmf-server/data/labels/", os.path.basename(file.filename))
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)    
-        with open(file_path, 'wb') as buffer:
+        if not file.filename:
+            raise HTTPException(status_code=400, detail="No file provided.")
+        
+        # Construct the full file path in /server/data/labels
+        labels_dir = "/cmf-server/data/labels"
+        file_path = os.path.join(labels_dir, os.path.basename(file.filename))
+        
+        # Ensure the directory exists
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        # Check if the file already exists
+        if os.path.exists(file_path):
+            return {"message": f"File '{file.filename}' already exists at {labels_dir}. Skipping upload."}
+
+
+        # Save the uploaded file
+        with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
-        return {"message": f"File '{file.filename}' uploaded successfully"}
+
+        return {"message": f"File '{file.filename}' uploaded successfully to {labels_dir}."}
+    
     except Exception as e:
         return {"error": f"Failed to up load file: {e}"}
     

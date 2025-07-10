@@ -160,7 +160,7 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
         if is_url(key_issuer):
             token = scitokens.SciToken(key=loaded_private_key, key_id=key_id) #Generate SciToken
             #token.update_claims({"iss": key_issuer, "scope": "write:/ read:/", "aud": "NRP", "sub": "NRP"})
-            token.update_claims({"scope": "write:/ read:/", "aud": "NRP", "sub": "NRP"}) #TODO: Figure out how to supply these as input params
+            token.update_claims({"scope": "storage.create:/ storage.modify:/ storage.read:/", "aud": "https://wlcg.cern.ch/jwt/v1/any", "sub": "anything",  "wlcg.ver": "1.0" }) #TODO: Consider supply these as input params
 
             # Serialize the token to a string
             token_ser = token.serialize(issuer=key_issuer) 
@@ -292,7 +292,8 @@ def get_postgres_config() -> dict:
     POSTGRES_DB = os.getenv('POSTGRES_DB')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-    config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+    config_dict = {"host":HOST, "port": POSTGRES_PORT, "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
     #print("config_dict = ", config_dict)
     return config_dict
 

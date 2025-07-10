@@ -204,7 +204,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                                 setShowPopup(true);
                               }}
                             >
-                              {label_name.split(":")[0] || label_name}
+                              {label_name}
                             </a>
                             {showPopup && (
                               <LabelCardPopup

@@ -138,7 +138,7 @@ class CmdRepoPush(CmdBase):
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
             result = dvc_push(num_jobs)
-            return result
+            return ArtifactPushSuccess(result)
 
         # Determines the mlmd file name and checks its existence.
         current_directory = os.getcwd()
@@ -216,6 +216,10 @@ class CmdRepoPush(CmdBase):
                 print("Executing git push command..")
                 live.stop()
                 return self.git_push()
+            else:
+                return metadata_push_result
+        else:
+            return artifact_push_result
     
 
 def add_parser(subparsers, parent_parser):

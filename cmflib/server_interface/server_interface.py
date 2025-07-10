@@ -44,16 +44,12 @@ def call_tensorboard(url, pipeline_name, file_name, file_path):
 # This function posts env file to cmf-server
 def call_python_env(url, file_name, file_path):
     url_to_pass = f"{url}/python-env"
-    #print("file_name = ", file_name)
-    #print("file_path = ", file_path)
     files = {'file': (file_name, open(file_path, 'rb'))}
     response = requests.post(url_to_pass, files=files)
     return response
 
-def call_label_dataset(url, file_name, path):
-    url_to_pass = f"{url}/label-dataset"
-    #print("file_name = ", file_name)
-    #print("file_path = ", path)
+def call_label(url, file_name, path):
+    url_to_pass = f"{url}/label"
     files = {'file': (file_name, open(path, 'rb'))}
     response = requests.post(url_to_pass, files=files)
     return response
