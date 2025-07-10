@@ -203,7 +203,7 @@ SUCCESS: Number of files downloaded = 8.
 (cmf) tripataa@ai07:~/cmf-examples/test2$ ls
 mlmd
 (cmf) tripataa@ai07:~/cmf-examples/test2$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
-        --key-id s0B-Y-8IFdSIXPhmBCxTvoTanvxe-Mpt9hUBnSoIKRE \
+        --key-id XXXX \
         --key-path ~/private_hpe.pem \
         --key-issuer https://t.nationalresearchplatform.org/fdp-hpe \
 --git-remote-url https://github.com/user/experiment-repo.git
