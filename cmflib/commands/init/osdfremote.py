@@ -101,7 +101,7 @@ class CmdInitOSDFRemote(CmdBase):
         attr_dict["key_issuer"] = self.args.key_issuer
         CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
 
-        return CmfInitComplete
+        return CmfInitComplete()
 
 
 def add_parser(subparsers, parent_parser):
