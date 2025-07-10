@@ -946,6 +946,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cmflib.cmf.dvc_ingest" class="md-nav__link">
+    <span class="md-ellipsis">
+      dvc_ingest
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1242,6 +1251,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../../cmf_client/neo4j_docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Start Neo4j with Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1251,10 +1283,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_5" >
         
           
-          <label class="md-nav__link" for="__nav_1_9_4" id="__nav_1_9_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_9_5" id="__nav_1_9_5_label" tabindex="0">
             
   
   
@@ -1267,8 +1299,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_9_4">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_9_5">
             <span class="md-nav__icon md-icon"></span>
             Storage Backends
           </label>
@@ -1638,6 +1670,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cmflib.cmf.dvc_ingest" class="md-nav__link">
+    <span class="md-ellipsis">
+      dvc_ingest
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1678,7 +1719,7 @@
         <p>This class provides methods to log metadata for distributed AI pipelines.
 The class instance creates an ML metadata store to store the metadata.
 It creates a driver to store nodes and its relationships to neo4j.
-The user has to provide the name of the pipeline, that needs to be recorded with CMF.
+The user has to provide the name of the pipeline, that needs to be recorded with CMF.</p>
 <div class="highlight"><pre><span></span><code><span class="n">cmflib</span><span class="o">.</span><span class="n">cmf</span><span class="o">.</span><span class="n">Cmf</span><span class="p">(</span>
     <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
     <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">,</span>
@@ -1686,18 +1727,92 @@ The user has to provide the name of the pipeline, that needs to be recorded with
     <span class="n">graph</span><span class="o">=</span><span class="kc">False</span>
 <span class="p">)</span>
 </code></pre></div>
-Args:
-    filepath: Path  to the sqlite file to store the metadata
-    pipeline_name: Name to uniquely identify the pipeline.
-    Note that name is the unique identifier for a pipeline.
-    If a pipeline already exist with the same name, the existing pipeline object is reused.
-    custom_properties: Additional properties of the pipeline that needs to be stored.
-    graph: If set to true, the libray also stores the relationships in the provided graph database.
-    The following
-    variables should be set: <code>neo4j_uri</code> (graph server URI), <code>neo4j_user</code> (user name) and
-    <code>neo4j_password</code> (user password), e.g.:
-    <div class="highlight"><pre><span></span><code>cmf init local --path /home/user/local-storage --git-remote-url https://github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j
-                      --neo4j-uri bolt://localhost:7687
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>filepath</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path  to the sqlite file to store the metadata</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name to uniquely identify the pipeline.
+Note that name is the unique identifier for a pipeline.
+If a pipeline already exist with the same name, the existing pipeline object is reused.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional properties of the pipeline that needs to be stored.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>graph</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If set to true, the libray also stores the relationships in the provided graph database.</p>
+              </div>
+            </td>
+            <td>
+                  <code>False</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+        <p>The following
+variables should be set: <code>neo4j_uri</code> (graph server URI), <code>neo4j_user</code> (user name) and
+<code>neo4j_password</code> (user password), e.g.:
+<div class="highlight"><pre><span></span><code>cmf init local --path /home/user/local-storage --git-remote-url https://github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j
+                        --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 
 
@@ -1732,9 +1847,8 @@ Args:
 
         <p>Create's a  context(stage).
 Every call creates a unique pipeline stage.
-Updates Pipeline_stage name.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="c1">#Create context</span>
+Updates Pipeline_stage name.</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#Create context</span>
 <span class="c1"># Import CMF</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cmflib.cmf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cmf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ml_metadata.proto</span><span class="w"> </span><span class="kn">import</span> <span class="n">metadata_store_pb2</span> <span class="k">as</span> <span class="n">mlpb</span>
@@ -1746,12 +1860,76 @@ Example:
     <span class="n">custom_properties</span> <span class="o">=</span><span class="p">{</span><span class="s2">&quot;user-metadata1&quot;</span><span class="p">:</span> <span class="s2">&quot;metadata_value&quot;</span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-    Args:
-        Pipeline_stage: Name of the Stage.
-        custom_properties: Developers can provide key value pairs with additional properties of the execution that
-            need to be stored.
-    Returns:
-        Context object from ML Metadata library associated with the new context for this stage.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>Pipeline_stage</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the Stage.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Developers can provide key value pairs with additional properties of the execution that
+need to be stored.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ml_metadata.proto.metadata_store_pb2.Context">Context</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Context object from ML Metadata library associated with the new context for this stage.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1771,9 +1949,8 @@ Example:
 
         <p>Create execution.
 Every call creates a unique execution. Execution can only be created within a context, so
-<a class="autorefs autorefs-internal" title="create_context(pipeline_stage, custom_properties=None)" href="#cmflib.cmf.Cmf.create_context">create_context</a> must be called first.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="c1"># Import CMF</span>
+<a class="autorefs autorefs-internal" title="create_context(pipeline_stage, custom_properties=None)" href="#cmflib.cmf.Cmf.create_context">create_context</a> must be called first.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Import CMF</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cmflib.cmf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cmf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ml_metadata.proto</span><span class="w"> </span><span class="kn">import</span> <span class="n">metadata_store_pb2</span> <span class="k">as</span> <span class="n">mlpb</span>
 <span class="c1"># Create CMF logger</span>
@@ -1789,20 +1966,91 @@ Example:
     <span class="n">custom_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;split&quot;</span><span class="p">:</span> <span class="n">split</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-Args:
-    execution_type: Type of the execution.(when create_new_execution is False, this is the name of execution)
-    custom_properties: Developers can provide key value pairs with additional properties of the execution that
-        need to be stored.</p>
-<pre><code>cmd: command used to run this execution.
 
-create_new_execution:bool = True, This can be used by advanced users to re-use executions
-    This is applicable, when working with framework code like mmdet, pytorch lightning etc, where the
-    custom call-backs are used to log metrics.
-    if create_new_execution is True(Default), execution_type parameter will be used as the name of the execution type.
-    if create_new_execution is False, if existing execution exist with the same name as execution_type.
-    it will be reused.
-    Only executions created with  create_new_execution as False will have "name" as a property.
-</code></pre>
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_type</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Type of the execution.(when create_new_execution is False, this is the name of execution)</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Developers can provide key value pairs with additional properties of the execution that need to be stored.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cmd</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>command used to run this execution.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>create_new_execution</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>bool = True, This can be used by advanced users to re-use executions
+This is applicable, when working with framework code like mmdet, pytorch lightning etc, where the
+custom call-backs are used to log metrics.
+if create_new_execution is True(Default), execution_type parameter will be used as the name of the execution type.
+if create_new_execution is False, if existing execution exist with the same name as execution_type.
+it will be reused.
+Only executions created with  create_new_execution as False will have "name" as a property.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -1845,9 +2093,8 @@ create_new_execution:bool = True, This can be used by advanced users to re-use e
 
         <p>Updates an existing execution.
 The custom properties can be updated after creation of the execution.
-The new custom properties is merged with earlier custom properties.
-Example
-    <div class="highlight"><pre><span></span><code><span class="c1"># Import CMF</span>
+The new custom properties is merged with earlier custom properties.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Import CMF</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cmflib.cmf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cmf</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ml_metadata.proto</span><span class="w"> </span><span class="kn">import</span> <span class="n">metadata_store_pb2</span> <span class="k">as</span> <span class="n">mlpb</span>
 <span class="c1"># Create CMF logger</span>
@@ -1858,12 +2105,76 @@ Example
     <span class="n">custom_properties</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;split&quot;</span><span class="p">:</span> <span class="n">split</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-    Args:
-        execution_id: id of the execution.
-        custom_properties: Developers can provide key value pairs with additional properties of the execution that
-        need to be updated.
-    Returns:
-        Execution object from ML Metadata library associated with the updated execution for this stage.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_id</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>id of the execution.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Developers can provide key value pairs with additional properties of the execution that
+need to be updated.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Execution object from ML Metadata library associated with the updated execution for this stage.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1883,9 +2194,8 @@ Example
 
         <p>Logs a dataset as artifact.
 This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
-version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span>
+version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.</p>
+<div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span>
     <span class="n">url</span><span class="o">=</span><span class="s2">&quot;/repo/data.xml&quot;</span><span class="p">,</span>
     <span class="n">event</span><span class="o">=</span><span class="s2">&quot;input&quot;</span><span class="p">,</span>
     <span class="n">custom_properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="s2">&quot;kaggle&quot;</span><span class="p">},</span>
@@ -1893,14 +2203,124 @@ Example:
     <span class="n">label_properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;user&quot;</span><span class="p">:</span><span class="s2">&quot;Ron&quot;</span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-Args:
-     url: The path to the dataset.
-     event: Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.
-     custom_properties: Dataset properties (key/value pairs).
-     labels: Labels are usually .csv files containing information regarding the dataset.
-     label_properties: Custom properties for a label.
-Returns:
-    Artifact object from ML Metadata library associated with the new dataset artifact.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>event</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dataset properties (key/value pairs).</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>label</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Labels are usually .csv files containing information regarding the dataset.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>label_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Custom properties for a label.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Artifact object from ML Metadata library associated with the new dataset artifact.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1919,9 +2339,8 @@ Returns:
     <div class="doc doc-contents ">
 
         <p>Logs a model.
-The model is added to dvc and the metadata file (.dvc) gets committed to git.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Artifact</span><span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_model</span><span class="p">(</span>
+The model is added to dvc and the metadata file (.dvc) gets committed to git.</p>
+<div class="highlight"><pre><span></span><code><span class="n">artifact</span><span class="p">:</span> <span class="n">mlmd</span><span class="o">.</span><span class="n">proto</span><span class="o">.</span><span class="n">Artifact</span><span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_model</span><span class="p">(</span>
     <span class="n">path</span><span class="o">=</span><span class="s2">&quot;path/to/model.pkl&quot;</span><span class="p">,</span>
     <span class="n">event</span><span class="o">=</span><span class="s2">&quot;output&quot;</span><span class="p">,</span>
     <span class="n">model_framework</span><span class="o">=</span><span class="s2">&quot;SKlearn&quot;</span><span class="p">,</span>
@@ -1929,15 +2348,140 @@ Example:
     <span class="n">model_name</span><span class="o">=</span><span class="s2">&quot;RandomForestClassifier:default&quot;</span>
 <span class="p">)</span>
 </code></pre></div>
-Args:
-    path: Path to the model file.
-    event: Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.
-    model_framework: Framework used to create the model.
-    model_type: Type of model algorithm used.
-    model_name: Name of the algorithm used.
-    custom_properties: The model properties.
-Returns:
-    Artifact object from ML Metadata library associated with the new model artifact.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to the model file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>event</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Takes arguments <code>INPUT</code> OR <code>OUTPUT</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>model_framework</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Framework used to create the model.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;Default&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>model_type</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Type of model algorithm used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;Default&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>model_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the algorithm used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;Default&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The model properties.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Artifact object from ML Metadata library associated with the new model artifact.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1957,18 +2501,82 @@ Returns:
 
         <p>Log the metadata associated with the execution (coarse-grained tracking).
 It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
-have.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="n">exec_metrics</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_execution_metrics</span><span class="p">(</span>
+have.</p>
+<div class="highlight"><pre><span></span><code><span class="n">exec_metrics</span><span class="p">:</span> <span class="n">mlpb</span><span class="o">.</span><span class="n">Artifact</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">log_execution_metrics</span><span class="p">(</span>
     <span class="n">metrics_name</span><span class="o">=</span><span class="s2">&quot;Training_Metrics&quot;</span><span class="p">,</span>
     <span class="p">{</span><span class="s2">&quot;auc&quot;</span><span class="p">:</span> <span class="n">auc</span><span class="p">,</span> <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">}</span>
 <span class="p">)</span>
 </code></pre></div>
-Args:
-    metrics_name: Name to identify the metrics.
-    custom_properties: Dictionary with metric values.
-Returns:
-      Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>metrics_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name to identify the metrics.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dictionary with metric values.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1988,18 +2596,61 @@ Returns:
 
         <p>Stores the fine-grained (per step or per epoch) metrics to memory.
 The metrics provided are stored in a parquet file. The <code>commit_metrics</code> call add the parquet file in the version
-control framework. The metrics written in the parquet file can be retrieved using the <code>read_metrics</code> call.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="c1"># Can be called at every epoch or every step in the training. This is logged to a parquet file and committed</span>
+control framework. The metrics written in the parquet file can be retrieved using the <code>read_metrics</code> call.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Can be called at every epoch or every step in the training. This is logged to a parquet file and committed</span>
 <span class="c1"># at the commit stage.</span>
 <span class="c1"># Inside training loop</span>
 <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-     <span class="n">cmf</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="s2">&quot;training_metrics&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;train_loss&quot;</span><span class="p">:</span> <span class="n">train_loss</span><span class="p">})</span>
+        <span class="n">cmf</span><span class="o">.</span><span class="n">log_metric</span><span class="p">(</span><span class="s2">&quot;training_metrics&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;train_loss&quot;</span><span class="p">:</span> <span class="n">train_loss</span><span class="p">})</span>
 <span class="n">cmf</span><span class="o">.</span><span class="n">commit_metrics</span><span class="p">(</span><span class="s2">&quot;training_metrics&quot;</span><span class="p">)</span>
 </code></pre></div>
-Args:
-    metrics_name: Name to identify the metrics.
-    custom_properties: Dictionary with metrics.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>metrics_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name to identify the metrics.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dictionary with metrics.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2020,12 +2671,40 @@ Args:
         <p>Creates a dataslice object.
 Once created, users can add data instances to this data slice with <a class="autorefs autorefs-internal" title="add_data(path, custom_properties=None)" href="../dataslice/#cmflib.cmf.Cmf.DataSlice.add_data">add_data</a>
 method. Users are also responsible for committing data slices by calling the
-<a class="autorefs autorefs-internal" title="commit(custom_properties=None)" href="../dataslice/#cmflib.cmf.Cmf.DataSlice.commit">commit</a> method.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="n">dataslice</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_dataslice</span><span class="p">(</span><span class="s2">&quot;slice-a&quot;</span><span class="p">)</span>
+<a class="autorefs autorefs-internal" title="commit(custom_properties=None)" href="../dataslice/#cmflib.cmf.Cmf.DataSlice.commit">commit</a> method.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dataslice</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_dataslice</span><span class="p">(</span><span class="s2">&quot;slice-a&quot;</span><span class="p">)</span>
 </code></pre></div>
-Args:
-    name: Name to identify the dataslice.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name to identify the dataslice.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -2066,15 +2745,73 @@ Args:
 
     <div class="doc doc-contents ">
 
-        <p>Updates a dataslice record in a Parquet file with the provided custom properties.
-Example:
+        <p>Updates a dataslice record in a Parquet file with the provided custom properties.</p>
 <div class="highlight"><pre><span></span><code>   <span class="n">dataslice</span><span class="o">=</span><span class="n">cmf</span><span class="o">.</span><span class="n">update_dataslice</span><span class="p">(</span><span class="s2">&quot;dataslice_file.parquet&quot;</span><span class="p">,</span> <span class="s2">&quot;record_id&quot;</span><span class="p">,</span> 
    <span class="p">{</span><span class="s2">&quot;key1&quot;</span><span class="p">:</span> <span class="s2">&quot;updated_value&quot;</span><span class="p">})</span>
 </code></pre></div>
-Args:
-   name: Name of the Parquet file.
-   record: Identifier of the dataslice record to be updated.
-   custom_properties: Dictionary containing custom properties to update.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the Parquet file.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>record</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Identifier of the dataslice record to be updated.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dictionary containing custom properties to update.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -2154,12 +2891,31 @@ Args:
 
     <div class="doc doc-contents ">
 
-        <p>Initializes and shows details of the CMF command. 
-Example: 
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">cmf_init_show</span><span class="p">()</span> 
+        <p>Initializes and shows details of the CMF command. </p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">cmf_init_show</span><span class="p">()</span> 
 </code></pre></div>
-Returns: 
-   Output from the _cmf_cmd_init function.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _cmf_cmd_init function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2177,40 +2933,373 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Initializes the CMF configuration based on the provided parameters. 
-Example:
-<div class="highlight"><pre><span></span><code>   <span class="n">cmf_init</span><span class="p">(</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> 
-             <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/re&quot;</span><span class="p">,</span>
-             <span class="n">git_remote_url</span><span class="o">=</span><span class="s2">&quot;git@github.com:user/repo.git&quot;</span><span class="p">,</span>
-             <span class="n">cmf_server_url</span><span class="o">=</span><span class="s2">&quot;http://cmf-server&quot;</span>
-             <span class="n">neo4j_user</span><span class="s2">&quot;, </span>
-             <span class="n">neo4j_password</span><span class="o">=</span><span class="s2">&quot;password&quot;</span><span class="p">,</span>
-             <span class="n">neo4j_uri</span><span class="o">=</span><span class="s2">&quot;bolt://localhost:76&quot;</span>
-           <span class="p">)</span>
+        <p>Initializes the CMF configuration based on the provided parameters. </p>
+<div class="highlight"><pre><span></span><code><span class="n">cmf_init</span><span class="p">(</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> 
+            <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/re&quot;</span><span class="p">,</span>
+            <span class="n">git_remote_url</span><span class="o">=</span><span class="s2">&quot;git@github.com:user/repo.git&quot;</span><span class="p">,</span>
+            <span class="n">cmf_server_url</span><span class="o">=</span><span class="s2">&quot;http://cmf-server&quot;</span>
+            <span class="n">neo4j_user</span><span class="s2">&quot;, </span>
+            <span class="n">neo4j_password</span><span class="o">=</span><span class="s2">&quot;password&quot;</span><span class="p">,</span>
+            <span class="n">neo4j_uri</span><span class="o">=</span><span class="s2">&quot;bolt://localhost:76&quot;</span>
+        <span class="p">)</span>
 </code></pre></div>
-Args: 
-   type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
-   path: Path for the local repository. 
-   git_remote_url: Git remote URL for version control.
-   cmf_server_url: CMF server URL.
-   neo4j_user: Neo4j database username.
-   neo4j_password: Neo4j database password.
-   neo4j_uri: Neo4j database URI.
-   url: URL for MinioS3 or AmazonS3.
-   endpoint_url: Endpoint URL for MinioS3.
-   access_key_id: Access key ID for MinioS3 or AmazonS3.
-   secret_key: Secret key for MinioS3 or AmazonS3. 
-   session_token: Session token for AmazonS3.
-   user: SSH remote username.
-   password: SSH remote password. 
-   port: SSH remote port.
-   osdf_path: OSDF Origin Path.
-   osdf_cache: OSDF Cache Path (Optional).
-   key_id: OSDF Key ID.
-   key_path: OSDF Private Key Path.
-   key_issuer: OSDF Key Issuer URL.
-Returns:
-   Output based on the initialized repository type.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>type</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path for the local repository. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>git_remote_url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Git remote URL for version control.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>cmf_server_url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>CMF server URL.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>neo4j_user</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Neo4j database username.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>neo4j_password</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Neo4j database password.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>neo4j_uri</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Neo4j database URI.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>URL for MinioS3 or AmazonS3.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>endpoint_url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Endpoint URL for MinioS3.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>access_key_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Access key ID for MinioS3 or AmazonS3.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>secret_key</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Secret key for MinioS3 or AmazonS3. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>session_token</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Session token for AmazonS3.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>user</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>SSH remote username.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>password</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>SSH remote password. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>port</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>SSH remote port.</p>
+              </div>
+            </td>
+            <td>
+                  <code>0</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>osdf_path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>OSDF Origin Path.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>osdf_cache</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>OSDF Cache Path (Optional).</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>key_id</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>OSDF Key ID.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>key_path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>OSDF Private Key Path.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>key_issuer</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>OSDF Key Issuer URL.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output based on the initialized repository type.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2228,15 +3317,87 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Pushes metadata file to CMF-server.
-Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;mlmd_file&quot;</span><span class="p">,</span> <span class="s2">&quot;eg_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;tensorboard_log&quot;</span><span class="p">)</span>
+        <p>Pushes metadata file to CMF-server.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">metadata_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;mlmd_file&quot;</span><span class="p">,</span> <span class="s2">&quot;eg_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;tensorboard_log&quot;</span><span class="p">)</span>
 </code></pre></div>
-Args:
-    pipeline_name: Name of the pipeline.
-    file_name: Specify input metadata file name.
-    execution_uuid: Optional execution UUID.
-    tensorboard_path: Path to tensorboard logs.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_uuid</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional execution UUID.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tensorboard_path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to tensorboard logs.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     <p><span class="doc-section-title">Returns:</span></p>
@@ -2276,16 +3437,93 @@ Args:
 
     <div class="doc doc-contents ">
 
-        <p>Pulls metadata file from CMF-server. 
-Example: 
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;eg_execution_uuid&quot;</span><span class="p">)</span> 
+        <p>Pulls metadata file from CMF-server. </p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;eg_execution_uuid&quot;</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   file_name: Specify output metadata file name.
-   execution_uuid: Optional execution UUID. 
-Returns: 
-   Message from the _metadata_pull function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify output metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_uuid</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional execution UUID. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Message from the _metadata_pull function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2303,16 +3541,93 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Export local mlmd's metadata in json format to a json file. 
-Example: 
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">metadata_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./jsonfile&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span> 
+        <p>Export local mlmd's metadata in json format to a json file. </p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">metadata_export</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./jsonfile&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   json_file_name: File path of json file. 
-   file_name: Specify input metadata file name. 
-Returns: 
-   Message from the _metadata_export function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>json_file_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>File path of json file. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Message from the _metadata_export function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2330,15 +3645,77 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Pulls artifacts from the initialized repository.
-Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+        <p>Pulls artifacts from the initialized repository.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
 </code></pre></div>
-Args:
-    pipeline_name: Name of the pipeline.
-    file_name: Specify input metadata file name.
-Returns:
-    Output from the _artifact_pull function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _artifact_pull function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2356,16 +3733,94 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Pulls a single artifact from the initialized repository. 
-Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull_single</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact&quot;</span><span class="p">)</span> 
+        <p>Pulls a single artifact from the initialized repository. </p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull_single</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact&quot;</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   file_name: Specify input metadata file name.
-   artifact_name: Name of the artifact. 
-Returns:
-   Output from the _artifact_pull_single function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>artifact_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the artifact. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _artifact_pull_single function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2383,16 +3838,93 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Pushes artifacts to the initialized repository.
-Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+        <p>Pushes artifacts to the initialized repository.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   filepath: Path to store the artifact. 
-   jobs: Number of jobs to use for pushing artifacts.
-Returns:
-    Output from the _artifact_push function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>filepath</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to store the artifact. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>jobs</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of jobs to use for pushing artifacts.</p>
+              </div>
+            </td>
+            <td>
+                  <code>32</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _artifact_push function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2410,16 +3942,93 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
-Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_artifact_list</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact_name&quot;</span><span class="p">)</span> 
+        <p>Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">_artifact_list</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact_name&quot;</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   file_name: Specify input metadata file name. 
-   artifact_name: Artifacts for particular artifact name.
-Returns:
-   Output from the _artifact_list function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name. </p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>artifact_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Artifacts for particular artifact name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _artifact_list function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2438,13 +4047,60 @@ Returns:
     <div class="doc doc-contents ">
 
         <p>Display a list of pipeline name(s) from the available input metadata file.</p>
-<p>Example:
-<div class="highlight"><pre><span></span><code>     <span class="n">result</span> <span class="o">=</span> <span class="n">_pipeline_list</span><span class="p">(</span><span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">_pipeline_list</span><span class="p">(</span><span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
 </code></pre></div>
-Args:
-    file_name: Specify input metadata file name.
-Returns:
-    Output from the _pipeline_list function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _pipeline_list function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2462,16 +4118,93 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
-Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_execution_list</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">)</span> 
+        <p>Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">_execution_list</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   file_name: Specify input metadata file name.
-   execution_uuid: Specify the execution uuid to retrieve execution.
-Returns:
-   Output from the _execution_list function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_uuid</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify the execution uuid to retrieve execution.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _execution_list function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2489,18 +4222,125 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
-Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;./tensorboard_path&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> 
+        <p>Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">_repo_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">,</span> <span class="s2">&quot;./tensorboard_path&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   file_name: Specify input metadata file name.
-   execution_uuid: Specify execution uuid.
-   tensorboard_path: Path to tensorboard logs.
-   jobs: Number of jobs to use for pushing artifacts.
-Returns:
-   Output from the _repo_push function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_uuid</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify execution uuid.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>tensorboard_path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Path to tensorboard logs.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>jobs</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of jobs to use for pushing artifacts.</p>
+              </div>
+            </td>
+            <td>
+                  <code>32</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _repo_push function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -2518,16 +4358,167 @@ Returns:
 
     <div class="doc doc-contents ">
 
-        <p>Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
-Example: 
-<div class="highlight"><pre><span></span><code>    <span class="n">result</span> <span class="o">=</span> <span class="n">_repo_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">)</span> 
+        <p>Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">_repo_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_execution_uuid&quot;</span><span class="p">)</span> 
 </code></pre></div>
-Args: 
-   pipeline_name: Name of the pipeline. 
-   file_name: Specify output metadata file name.
-   execution_uuid: Specify execution uuid.
-Returns:
-   Output from the _repo_pull function.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pipeline_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the pipeline. </p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify output metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>execution_uuid</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify execution uuid.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _repo_pull function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="cmflib.cmf.dvc_ingest" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">dvc_ingest</span><span class="p">(</span><span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.dvc_ingest" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Ingests metadata from the dvc.lock file into the CMF. 
+    If an existing MLMD file is provided, it merges and updates execution metadata 
+    based on matching commands, or creates new executions if none exist.</p>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">_dvc_ingest</span><span class="p">(</span><span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span> 
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>file_name</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Specify input metadata file name.</p>
+              </div>
+            </td>
+            <td>
+                  <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Output from the _dvc_ingest function.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>

@@ -1078,6 +1078,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../cmf_client/neo4j_docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Start Neo4j with Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1087,10 +1110,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_5" >
         
           
-          <label class="md-nav__link" for="__nav_1_9_4" id="__nav_1_9_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_9_5" id="__nav_1_9_5_label" tabindex="0">
             
   
   
@@ -1103,8 +1126,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_9_4">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_9_5">
             <span class="md-nav__icon md-icon"></span>
             Storage Backends
           </label>
@@ -1364,11 +1387,13 @@
   <div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>python3.9<span class="w"> </span>python3.9-dev<span class="w"> </span>python3.9-distutils
 </code></pre></div></li>
 </ol>
-<p>This ensures Python 3.9 and its essential modules are fully installed.
-- <strong>Git</strong>: Latest version for code versioning
-- <strong>Docker</strong>: For containerized deployment
-- <strong>Storage Backend</strong>: S3, MinIO, or local storage for artifacts</p>
+<p>This ensures Python 3.9 and its essential modules are fully installed.</p>
 </blockquote>
+<ul>
+<li><strong>Git</strong>: Latest version for code versioning</li>
+<li><strong>Docker</strong>: For containerized deployment</li>
+<li><strong>Storage Backend</strong>: S3, MinIO, or local storage for artifacts</li>
+</ul>
 <hr />
 <h2 id="components"><strong>Components</strong><a class="headerlink" href="#components" title="Permanent link">&para;</a></h2>
 <h3 id="install-cmf-library-ie-cmflib"><strong>Install cmf library i.e. cmflib</strong><a class="headerlink" href="#install-cmf-library-ie-cmflib" title="Permanent link">&para;</a></h3>
@@ -1439,7 +1464,9 @@ server:
    <div class="highlight"><pre><span></span><code>POSTGRES_USER: myuser
 POSTGRES_PASSWORD: mypassword
 POSTGRES_PORT: 5470
-</code></pre></div><blockquote></blockquote>
+</code></pre></div><blockquote>
+<p>⚠️<strong>Warning:</strong> Avoid using <code>@</code> character in <code>POSTGRES_PASSWORD</code> to prevent connection issues.</p>
+</blockquote>
 </li>
 <li>
 <p>Execute one of the following commands to start both containers. <code>IP</code> variable is the IP address and <code>hostname</code> is the host name of the machine on which you are executing the following command.

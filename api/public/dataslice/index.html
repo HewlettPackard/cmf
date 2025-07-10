@@ -1049,6 +1049,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../../cmf_client/neo4j_docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Start Neo4j with Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1058,10 +1081,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_5" >
         
           
-          <label class="md-nav__link" for="__nav_1_9_4" id="__nav_1_9_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_9_5" id="__nav_1_9_5_label" tabindex="0">
             
   
   
@@ -1074,8 +1097,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_9_4">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_9_5">
             <span class="md-nav__icon md-icon"></span>
             Storage Backends
           </label>
@@ -1327,13 +1350,56 @@ splits. This can be useful from different perspectives, for instance, to mitigat
 
         <p>Add data to create the dataslice.
 Currently supported only for file abstractions. Pre-condition - the parent folder, containing the file
-    should already be versioned.
-Example:
-    <div class="highlight"><pre><span></span><code><span class="c1">#dataslice.add_data(f&quot;data/raw_data/{j}.xml)</span>
+should already be versioned.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dataslice</span><span class="o">.</span><span class="n">add_data</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/raw_data/</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">.xml)</span>
 </code></pre></div>
-Args:
-    path: Name to identify the file to be added to the dataslice.
-    custom_properties: Properties associated with this datum.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name to identify the file to be added to the dataslice.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Properties associated with this datum.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -1352,14 +1418,55 @@ Args:
     <div class="doc doc-contents ">
 
         <p>Commit the dataslice.
-The created dataslice is versioned and added to underneath data versioning software.
-Example:</p>
-<pre><code>dataslice.commit()
-```
-</code></pre>
-<p>Args:
-    custom_properties: Dictionary to store key value pairs associated with Dataslice
-    Example{"mean":2.5, "median":2.6}</p>
+The created dataslice is versioned and added to underneath data versioning software.</p>
+<div class="highlight"><pre><span></span><code><span class="n">dataslice</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+</code></pre></div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Dictionary to store key value pairs associated with Dataslice</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>Example{&#34;mean&#34;</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>2.5, "median":2.6}</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>

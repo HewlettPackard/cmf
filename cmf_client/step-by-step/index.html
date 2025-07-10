@@ -1081,6 +1081,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../neo4j_docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Start Neo4j with Docker
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1090,10 +1113,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_5" >
         
           
-          <label class="md-nav__link" for="__nav_1_9_4" id="__nav_1_9_4_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_9_5" id="__nav_1_9_5_label" tabindex="0">
             
   
   
@@ -1106,8 +1129,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_9_4">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_9_5">
             <span class="md-nav__icon md-icon"></span>
             Storage Backends
           </label>
@@ -1348,17 +1371,17 @@
 <li><strong>Central Artifact Repositories</strong>: host the code and data.</li>
 </ul>
 <h2 id="install-cmf-library-ie-cmflib">Install cmf library i.e. cmflib<a class="headerlink" href="#install-cmf-library-ie-cmflib" title="Permanent link">&para;</a></h2>
-<p>Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/">Installation &amp; Setup</a> page.</p>
+<p>Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/#install-cmf-library-ie-cmflib">Installation &amp; Setup</a> page.</p>
 <h2 id="install-cmf-server">Install cmf-server<a class="headerlink" href="#install-cmf-server" title="Permanent link">&para;</a></h2>
 <p>cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
-<p>Follow the instructions on the <a href="../../setup/">Installation &amp; Setup</a> page for details on how to setup a cmf-server.</p>
+<p>Follow the instructions on the <a href="../../setup/#install-cmf-server">Installation &amp; Setup</a> page for details on how to setup a cmf-server.</p>
 <h2 id="setup-a-cmf-client">Setup a cmf-client<a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">&para;</a></h2>
 <p>cmf-client is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.</p>
 <p>Follow the below-mentioned steps for the end-to-end setup of cmf-client:-</p>
 <p><strong>Configuration</strong></p>
 <ol>
 <li>Create working directory <code>mkdir &lt;workdir&gt;</code></li>
-<li>Execute <code>cmf init</code> to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</li>
+<li>Execute <code>cmf init</code> to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the <a href="../cmf_client/#cmf-init">Getting started with cmf-client commands</a> page for more details.</li>
 </ol>
 <h2 id="how-to-effectively-use-cmf-client">How to effectively use cmf-client?<a class="headerlink" href="#how-to-effectively-use-cmf-client" title="Permanent link">&para;</a></h2>
 <p>Let's assume we are tracking the metadata for a pipeline named <code>Test-env</code> with a MinIO S3 bucket as the artifact repository and a cmf-server.</p>
@@ -1372,11 +1395,11 @@
 <blockquote>
 <p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
 </blockquote>
-<p>Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</p>
+<p>Check <a href="../cmf_client/#cmf-init-minios3">Getting started with cmf-client commands</a> page for more details.</p>
 <p><strong>Check status of CMF initialization (Optional)</strong>
 <div class="highlight"><pre><span></span><code>cmf init show
 </code></pre></div>
-Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="../cmf_client/#cmf-init-show">Getting started with cmf-client commands</a> page for more details.</p>
 <p><strong>Track metadata using cmflib</strong></p>
 <p>Use <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md">Sample projects</a> as a reference to create a new project to track metadata for ML pipelines.</p>
 <p>More information is available inside <a href="../../examples/getting_started/">Getting Started</a>.</p>
@@ -1387,23 +1410,23 @@ Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page
 <p>Push artifacts in the artifact repo initialized in the <a href="#initialize-cmf">Initialize cmf</a> step.
 <div class="highlight"><pre><span></span><code>cmf artifact push -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="../cmf_client/#cmf-artifact-push">Getting started with cmf-client commands</a> page for more details.</p>
 <p><strong>Push metadata to cmf-server</strong>
 <div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="../cmf_client/#cmf-metadata-push">Getting started with cmf-client commands</a> page for more details.</p>
 <h3 id="cmf-client-with-collaborative-development">cmf-client with collaborative development<a class="headerlink" href="#cmf-client-with-collaborative-development" title="Permanent link">&para;</a></h3>
 <p>In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.</p>
 <p><strong>Pull metadata from the server</strong></p>
 <p>Execute <code>cmf metadata</code> command in the <code>example_folder</code>.
 <div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="../cmf_client/#cmf-metadata-pull">Getting started with cmf-client commands</a> page for more details.</p>
 <p><strong>Pull artifacts from the central artifact repo</strong></p>
 <p>Execute <code>cmf artifact</code> command in the <code>example_folder</code>.
 <div class="highlight"><pre><span></span><code>cmf artifact pull -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="../cmf_client/#cmf-artifact-pull">Getting started with cmf-client commands</a> page for more details.</p>
 <h2 id="flow-chart-for-cmf">Flow Chart for cmf<a class="headerlink" href="#flow-chart-for-cmf" title="Permanent link">&para;</a></h2>
 <p><img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" /></p>
 
