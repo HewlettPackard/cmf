@@ -61,7 +61,7 @@ services:
       - $HOME/dvc_remote:/home/jovyan/dvc_remote
       - $HOME/.ssh:/home/jovyan/.ssh
     ports:
-      - "8888:8888"
+      - "8887:8888"
     user: root
     #working_dir: /home/$USER
     environment:

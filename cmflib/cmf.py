@@ -176,7 +176,9 @@ class Cmf:
 
     def create_context(self, pipeline_stage: str, custom_properties: {} = None) -> mlpb.Context:
         custom_props = {} if custom_properties is None else custom_properties
-        pipeline_stage = self.parent_context.name+'/'+pipeline_stage
+        #pipeline_stage = self.parent_context.name+'/'+pipeline_stage
+        #Expecting that users will not use "," in their pipeline_stage name
+        pipeline_stage = pipeline_stage
         ctx = get_or_create_run_context(self.store, pipeline_stage, custom_props)
         self.child_context = ctx
         associate_child_to_parent_context(store=self.store, parent_context=self.parent_context,
@@ -419,7 +421,10 @@ class Cmf:
                     "Commit": mlpb.STRING,
                     "url": mlpb.STRING},
                 custom_properties=custom_props,
-                milliseconds_since_epoch=int(
+                #milliseconds_since_epoch=int(
+                #    time.time() * 1000),
+                #Changing datatype for insertion to mySQL
+                milliseconds_since_epoch=float(
                     time.time() * 1000),
             )
         custom_props["git_repo"] = git_repo
@@ -540,7 +545,10 @@ class Cmf:
                     "Commit": mlpb.STRING,
                     "url": mlpb.STRING},
                 custom_properties=custom_props,
-                milliseconds_since_epoch=int(
+                # milliseconds_since_epoch=int(
+                #     time.time() * 1000),
+                #Changing datatype for insertion to mySQL
+                milliseconds_since_epoch=float(
                     time.time() * 1000),
             )
         custom_props["git_repo"] = git_repo
@@ -675,7 +683,10 @@ class Cmf:
                     "url": mlpb.STRING,
                 },
                 custom_properties=custom_props,
-                milliseconds_since_epoch=int(
+                # milliseconds_since_epoch=int(
+                #     time.time() * 1000),
+                #Changing datatype for insertion to mySQL
+                milliseconds_since_epoch=float(
                     time.time() * 1000),
             )
         # custom_properties["Commit"] = model_commit
@@ -774,7 +785,9 @@ class Cmf:
                                           "url": mlpb.STRING,
                                           },
                 custom_properties=custom_props,
-                milliseconds_since_epoch=int(time.time() * 1000),
+                # milliseconds_since_epoch=int(time.time() * 1000),
+                #Changing datatype for insertion to mySQL
+                milliseconds_since_epoch=float(time.time() * 1000),
             )
         # custom_properties["Commit"] = model_commit
         # custom_props["url"] = url
@@ -832,8 +845,11 @@ class Cmf:
             artifact_type_properties={
                 "metrics_name": mlpb.STRING},
             custom_properties=custom_props,
-            milliseconds_since_epoch=int(
-                time.time() * 1000),
+            # milliseconds_since_epoch=int(
+            #     time.time() * 1000),
+            #Changing datatype for insertion to mySQL
+            milliseconds_since_epoch=float(
+                 time.time() * 1000),
         )
         if self.graph:
             # To do create execution_links
@@ -905,7 +921,9 @@ class Cmf:
             type_name="Step_Metrics",
             event_type=mlpb.Event.Type.OUTPUT,
             custom_properties=custom_props,
-            milliseconds_since_epoch=int(time.time() * 1000),
+            # milliseconds_since_epoch=int(time.time() * 1000),
+            #Changing datatype for insertion to mySQL
+            milliseconds_since_epoch=float(time.time() * 1000),
         )
         if self.graph:
             self.driver.create_metrics_node(
@@ -941,7 +959,9 @@ class Cmf:
 
             artifact_type_properties={"version": mlpb.STRING},
             custom_properties=custom_properties,
-            milliseconds_since_epoch=int(time.time() * 1000),
+            # milliseconds_since_epoch=int(time.time() * 1000),
+            #Changing datatype for insertion to mySQL
+            milliseconds_since_epoch=float(time.time() * 1000),
         )
 
     def update_existing_artifact(self, artifact: mlpb.Artifact, custom_properties: t.Dict):
@@ -1080,7 +1100,9 @@ class Cmf:
                     type_name="Dataslice",
                     event_type=mlpb.Event.Type.OUTPUT,
                     custom_properties=custom_properties,
-                    milliseconds_since_epoch=int(time.time() * 1000),
+                    # milliseconds_since_epoch=int(time.time() * 1000),
+                    #Changing datatype for insertion to mySQL
+                    milliseconds_since_epoch=float(time.time() * 1000),
                 )
 
 

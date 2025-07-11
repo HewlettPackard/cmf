@@ -29,7 +29,8 @@ def value_to_mlmd_value(value) -> metadata_store_pb2.Value:
     if value is None:
         return metadata_store_pb2.Value()
     if isinstance(value, int):
-        return metadata_store_pb2.Value(int_value=value)
+        #return metadata_store_pb2.Value(int_value=value)
+        return metadata_store_pb2.Value(double_value=value)
     if isinstance(value, float):
         return metadata_store_pb2.Value(double_value=value)
     return metadata_store_pb2.Value(string_value=str(value))
@@ -81,6 +82,8 @@ def put_artifact(store, artifact: metadata_store_pb2.Artifact):
         store.put_artifacts([artifact])
     except Exception as e:
         print('Failed to put artifact . Exception: "{}"'.format(str(e)), file=sys.stderr)
+        print("DEBUG: With put_artifact() Exception:")
+        print(artifact)
 
 
 def get_or_create_artifact_type(store, type_name, properties: dict = None) -> metadata_store_pb2.ArtifactType:
@@ -111,8 +114,11 @@ def get_or_create_execution_type(store, type_name, properties: dict = None) -> m
 
 
 def get_or_create_context_type(store, type_name, properties: dict = None) -> metadata_store_pb2.ContextType:
+    print("DEBUG: Entered get_or_create_context_type()")
     try:
         context_type = store.get_context_type(type_name=type_name)
+        print("DEBUG: Inside get_or_create_context_type(), after context_type is returned ")
+        print("DEBUG: Inside get_or_create_context_type(), context_type.id=" + str(context_type.id))
         return context_type
     except BaseException:
         context_type = metadata_store_pb2.ContextType(
@@ -120,6 +126,8 @@ def get_or_create_context_type(store, type_name, properties: dict = None) -> met
             properties=properties,
         )
         context_type.id = store.put_context_type(context_type)  # Returns ID
+        print("DEBUG: Inside get_or_create_context_type(), in Base Exception ")
+        print ("DEBUG: Inside get_or_create_context_type()"+str(context_type.id))
         return context_type
 
 
@@ -141,9 +149,12 @@ def create_artifact_with_type(
         uri=uri,
         name=name,
         type_id=artifact_type.id,
-        properties=properties,
-        custom_properties=custom_properties,
+        #properties=properties,
+        properties={},
+        #custom_properties=custom_properties,
+        custom_properties={},
     )
+
     artifact.id = store.put_artifacts([artifact])[0]
     return artifact
 
@@ -178,11 +189,17 @@ def create_context_with_type(
         custom_properties: dict = None,
 ) -> metadata_store_pb2.Context:
     # ! Context_name must be unique
+    print("DEBUG:Entered create_context_with_type()")
     context_type = get_or_create_context_type(
         store=store,
         type_name=type_name,
         properties=type_properties,
     )
+    # print("Inside: create_context_with_type(), context_name: " + context_name)
+    # print("Inside: create_context_with_type(), context_type.id: " + str(context_type.id))
+    # print("Inside: create_context_with_type(), properties: " + str(properties))
+    # print("Inside: create_context_with_type(), custom_properties: " + str(custom_properties))
+
     context = metadata_store_pb2.Context(
         name=context_name,
         type_id=context_type.id,
@@ -215,6 +232,7 @@ def get_or_create_context_with_type(
         type_properties: dict = None,
         custom_properties: dict = None,
 ) -> metadata_store_pb2.Context:
+    print("DEBUG:get_or_create_context_with_type")
     try:
         context = get_context_by_name(store, context_name)
     except BaseException:
@@ -226,6 +244,7 @@ def get_or_create_context_with_type(
             type_properties=type_properties,
             custom_properties=custom_properties,
         )
+        print("DEBUG:context.id="+str(context.id))
         return context
 
     # Verifying that the context has the expected type name
@@ -295,8 +314,12 @@ def get_or_create_parent_context(
         pipeline: str,
         custom_properties: t.Optional[t.Dict] = None
 ) -> metadata_store_pb2.Context:
+    print("DEBUG:Entered get_or_create_parent_context()")
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
+        #mlmd_custom_properties[property_name] = value_to_mlmd_value(
+        #    property_value)
+        #DEBUG: Instead of 
         mlmd_custom_properties[property_name] = value_to_mlmd_value(
             property_value)
 
@@ -319,6 +342,7 @@ def get_or_create_run_context(
         pipeline_stage: str,
         custom_properties: t.Optional[t.Dict] = None,
 ) -> metadata_store_pb2.Context:
+    print("DEBUG:Entered get_or_create_run_context()")
     mlmd_custom_properties = {}
     for property_name, property_value in (custom_properties or {}).items():
         mlmd_custom_properties[property_name] = value_to_mlmd_value(
@@ -335,6 +359,7 @@ def get_or_create_run_context(
             PIPELINE_STAGE: metadata_store_pb2.Value(
                 string_value=pipeline_stage)},
         custom_properties=mlmd_custom_properties)
+    print("DEBUG: From get_or_create_run_context: "+str(context.id))
     return context
 
 
@@ -410,7 +435,7 @@ def create_new_artifact_event_and_attribution(
         artifact_type_properties: dict = None,
         custom_properties: dict = None,
         artifact_name_path: metadata_store_pb2.Event.Path = None,
-        milliseconds_since_epoch: int = None,
+        milliseconds_since_epoch: float = None,
 ) -> metadata_store_pb2.Artifact:
     mlmd_properties = {}
     for property_name, property_value in (properties or {}).items():
@@ -420,22 +445,39 @@ def create_new_artifact_event_and_attribution(
     for property_name, property_value in (custom_properties or {}).items():
         mlmd_custom_properties[property_name] = value_to_mlmd_value(
             property_value)
+    
+    mlmd_artifact_type_properties = {}
+    for property_name, property_value in (artifact_type_properties or {}).items():
+        mlmd_artifact_type_properties[property_name] = value_to_mlmd_value(
+            property_value)
+
+    # print("DEBUG: Inside Inside create_new_artifact_event_and_attribution():"+ uri )
+    # print("DEBUG: Inside create_new_artifact_event_and_attribution():" + name )
+    # print("DEBUG: Inside create_new_artifact_event_and_attribution():"+ type_name )
+    # print("DEBUG: Inside create_new_artifact_event_and_attribution():" + str(mlmd_artifact_type_properties))
+    # print("DEBUG: Inside create_new_artifact_event_and_attribution():" + str(mlmd_properties))
+    # print("DEBUG: Inside create_new_artifact_event_and_attribution():" + str(mlmd_custom_properties))
 
     artifact = create_artifact_with_type(
         store=store,
         uri=uri,
         name=name,
         type_name=type_name,
-        type_properties=artifact_type_properties,
-        properties=mlmd_properties,
-        custom_properties=mlmd_custom_properties,
+        #type_properties=artifact_type_properties,
+        #type_properties=mlmd_artifact_type_properties,
+        type_properties={},
+        #properties=mlmd_properties,
+        properties={},
+        #custom_properties=mlmd_custom_properties,
+        custom_properties={},
     )
     event = metadata_store_pb2.Event(
         execution_id=execution_id,
-        artifact_id=artifact.id,
+        artifact_id=int(artifact.id),
         type=event_type,
         path=artifact_name_path,
-        milliseconds_since_epoch=milliseconds_since_epoch,
+        #milliseconds_since_epoch=int(milliseconds_since_epoch % 2147483647),
+        milliseconds_since_epoch=0
     )
     store.put_events([event])
     attribution = metadata_store_pb2.Attribution(
@@ -443,6 +485,7 @@ def create_new_artifact_event_and_attribution(
         artifact_id=artifact.id,
     )
     store.put_attributions_and_associations([attribution], [])
+    print("DEBUG: Inside create_new_artifact_event_and_attribution(), store.put_attributions_and_associations() completed")
 
     return artifact
 
