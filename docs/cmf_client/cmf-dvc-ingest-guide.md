@@ -42,7 +42,7 @@ Use the following command to initialize CMF. You can choose from various storage
 
 Start the Neo4j server using Docker. Follow the guide provided below:
 
-📄 [Start Neo4j with Docker ](https://github.com/HewlettPackard/cmf/blob/master/utils/neo4j_docker.md)
+📄 [Start Neo4j with Docker ](./neo4j_docker.md)
 
 
 
