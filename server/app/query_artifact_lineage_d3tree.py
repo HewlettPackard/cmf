@@ -7,9 +7,14 @@ def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_a
     env_list = []
     id_name = {}
     child_parent_artifact_id: Dict[int, List[int]] = {}
+    # Get all artifact IDs that belong to the current pipeline
+    current_pipeline_artifact_ids = set()
     for type_, df in dict_of_art_ids[pipeline_name].items():
         if type_ == "Environment":
             env_list = list(df["id"])
+        current_pipeline_artifact_ids.update(df["id"].tolist())
+
+    for type_, df in dict_of_art_ids[pipeline_name].items():
         for index, row in df.iterrows():
             #creating a dictionary of id and artifact name {id:artifact name}
             artifact_id = row['id']  # This will be an integer
@@ -20,8 +25,9 @@ def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_a
             child_parent_artifact_id[artifact_id] = []      # assign empty dict for artifact with no parent artifact
             if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts    
                 parents_list =  list(one_hop_parent_artifacts["id"])
-                final_parents_list = list(set(parents_list) - set(env_list))
-                #child_parent_artifact_id[artifact_id] = list(one_hop_parent_artifacts["id"])
+                # Filter parent artifacts to only include those from the current pipeline
+                pipeline_filtered_parents = [pid for pid in parents_list if pid in current_pipeline_artifact_ids]
+                final_parents_list = list(set(pipeline_filtered_parents) - set(env_list))
                 child_parent_artifact_id[artifact_id] = final_parents_list
     data_organized: List[List[Dict[str, Any]]] = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
