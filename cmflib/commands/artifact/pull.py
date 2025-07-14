@@ -569,11 +569,13 @@ class CmdArtifactPull(CmdBase):
                     status = MsgFailure(msg_str = message)
                 return status
             else:
+                total_files_count = 0
+                files_downloaded = 0
                 for name, url in name_url_dict.items():
-                    total_files_count += 1
                     #print(name, url)
                     if not isinstance(url, str):
                         continue
+                    total_files_count += 1
                     artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
                     #print(f"Hash for the artifact {name} is {artifact_hash}")
                     args = self.extract_repo_args("osdf", name, url, current_directory)
@@ -589,14 +591,14 @@ class CmdArtifactPull(CmdBase):
                     )
                     if download_flag:
                         print(message)   #### success message
-                        file_downloaded +=1
+                        files_downloaded += 1
                     else:
                         print(message)    ### failure message
-                Files_failed_to_download = total_files_count - files_downloaded
-                if Files_failed_to_download == 0:
+                files_failed_to_download = total_files_count - files_downloaded
+                if files_failed_to_download == 0:
                     status = BatchDownloadSuccess(files_downloaded=files_downloaded)
                 else:
-                    status = BatchDownloadFailure(files_downloaded=files_downloaded, Files_failed_to_download= Files_failed_to_download)
+                    status = BatchDownloadFailure(files_downloaded, files_failed_to_download)
                 return status
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
