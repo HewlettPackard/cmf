@@ -80,6 +80,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
 
   const handleClosePopup = () => {
     setShowPopup(false);
+    setPopupData("");
   };
 
   const renderArrow = () => {

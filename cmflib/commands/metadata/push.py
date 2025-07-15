@@ -20,10 +20,10 @@ import json
 import argparse
 
 from cmflib import cmfquery
-from cmflib.cli.utils import find_root
 from cmflib.cli.command import CmdBase
-from cmflib.utils.cmf_config import CmfConfig
 from cmflib.server_interface import server_interface
+from cmflib.utils.cmf_config import CmfConfig
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 from cmflib.cmf_exception_handling import (
     TensorboardPushSuccess, 
     TensorboardPushFailure, 
@@ -35,7 +35,6 @@ from cmflib.cmf_exception_handling import (
     UpdateCmfVersion,
     CmfServerNotAvailable,
     InternalServerError,
-    CmfNotConfigured,
     InvalidTensorboardFilePath,
     MissingArgument,
     DuplicateArgumentNotAllowed
@@ -59,19 +58,11 @@ class CmdMetadataPush(CmdBase):
     def run(self, live):
         current_directory = mlmd_directory = os.getcwd()
         mlmd_file_name = "./mlmd"
-        # Get url from config
-        cmfconfig = os.environ.get("CONFIG_FILE",".cmfconfig")
-
-        # find root_dir of .cmfconfig
-        output = find_root(cmfconfig)
-
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is not configured.") != -1:
-            raise CmfNotConfigured(output)
-
-        config_file_path = os.path.join(output, cmfconfig)
-        attr_dict = CmfConfig.read_config(config_file_path)
-        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:8080")
+        
+        output, cmf_config_path = fetch_cmf_config_path()
+        attr_dict = CmfConfig.read_config(cmf_config_path)
+        url = attr_dict.get("cmf-server-url", "http://127.0.0.1:80")
+        #print(attr_dict)
 
         cmd_args = {
             "file_name": self.args.file_name,
@@ -170,6 +161,23 @@ class CmdMetadataPush(CmdBase):
                                 env_response = server_interface.call_python_env(url, name, path)
                                 # keeping record of status but this won't affect the mlmd success.
                                 print(env_response.json())
+
+                
+                # get labels for every artifact
+                artifacts = query.get_all_artifacts_by_context(pipeline_name)
+                if not artifacts.empty:
+                    if "custom_properties_labels_uri" in artifacts.columns:
+                        labels_with_uri = artifacts["custom_properties_labels_uri"].dropna().drop_duplicates().tolist()
+                        # every artifacts can contain multiple labels. 
+                        # when 'labels' column has more than one label, it looks as follows 
+                        # labels = "labels.csv, labels1.csv, labels2.csv"
+                        for l in labels_with_uri:
+                            labels = l.split(",")
+                            for label in labels:
+                                label_name = label.split(":")[1]
+                                path = os.getcwd() +"/"+ label.split(":")[0]
+                                label_response = server_interface.call_label(url, label_name, path)
+                                print(label_response.json())
 
                 output = ""
                 display_output = ""

@@ -58,7 +58,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config
+from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config, calculate_md5
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -68,6 +68,7 @@ from cmflib.cmf_server import (
     log_execution_metrics_from_client, 
     log_step_metrics_from_client,
     log_dataslice_from_client,
+    log_label_with_version,
 )
 
 from cmflib.cmf_commands_wrapper import (
@@ -88,6 +89,7 @@ from cmflib.cmf_commands_wrapper import (
     _execution_list,
     _repo_push,
     _repo_pull,
+    _dvc_ingest,
 )
 
 class Cmf:
@@ -95,6 +97,7 @@ class Cmf:
     The class instance creates an ML metadata store to store the metadata.
     It creates a driver to store nodes and its relationships to neo4j.
     The user has to provide the name of the pipeline, that needs to be recorded with CMF.
+    
     ```python
     cmflib.cmf.Cmf(
         filepath="mlmd",
@@ -103,20 +106,22 @@ class Cmf:
         graph=False
     )
     ```
+    
     Args:
         filepath: Path  to the sqlite file to store the metadata
         pipeline_name: Name to uniquely identify the pipeline.
-        Note that name is the unique identifier for a pipeline.
-        If a pipeline already exist with the same name, the existing pipeline object is reused.
+            Note that name is the unique identifier for a pipeline.
+            If a pipeline already exist with the same name, the existing pipeline object is reused.
         custom_properties: Additional properties of the pipeline that needs to be stored.
         graph: If set to true, the libray also stores the relationships in the provided graph database.
-        The following
-        variables should be set: `neo4j_uri` (graph server URI), `neo4j_user` (user name) and
-        `neo4j_password` (user password), e.g.:
-        ```
-        cmf init local --path /home/user/local-storage --git-remote-url https://github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j
-                              --neo4j-uri bolt://localhost:7687
-        ```
+    
+    The following
+    variables should be set: `neo4j_uri` (graph server URI), `neo4j_user` (user name) and
+    `neo4j_password` (user password), e.g.:
+    ```
+    cmf init local --path /home/user/local-storage --git-remote-url https://github.com/XXX/exprepo.git --neo4j-user neo4j --neo4j-password neo4j
+                            --neo4j-uri bolt://localhost:7687
+    ```
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -201,6 +206,7 @@ class Cmf:
     log_model_with_version: t.Callable[..., t.Any]
     log_execution_metrics_from_client: t.Callable[..., t.Any]
     log_step_metrics_from_client: t.Callable[..., t.Any]
+    log_label_with_version: t.Callable[..., t.Any]
 
     # function used to load neo4j params for cmf client
     @staticmethod
@@ -273,27 +279,28 @@ class Cmf:
         """Create's a  context(stage).
         Every call creates a unique pipeline stage.
         Updates Pipeline_stage name.
-        Example:
-            ```python
-            #Create context
-            # Import CMF
-            from cmflib.cmf import Cmf
-            from ml_metadata.proto import metadata_store_pb2 as mlpb
-            # Create CMF logger
-            cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
-            # Create context
-            context: mlmd.proto.Context = cmf.create_context(
-                pipeline_stage="prepare",
-                custom_properties ={"user-metadata1": "metadata_value"}
-            )
+        
+        ```python
+        #Create context
+        # Import CMF
+        from cmflib.cmf import Cmf
+        from ml_metadata.proto import metadata_store_pb2 as mlpb
+        # Create CMF logger
+        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        # Create context
+        context: mlmd.proto.Context = cmf.create_context(
+            pipeline_stage="prepare",
+            custom_properties ={"user-metadata1": "metadata_value"}
+        )
+        ```
 
-            ```
-            Args:
-                Pipeline_stage: Name of the Stage.
-                custom_properties: Developers can provide key value pairs with additional properties of the execution that
-                    need to be stored.
-            Returns:
-                Context object from ML Metadata library associated with the new context for this stage.
+        Args:
+            Pipeline_stage: Name of the Stage.
+            custom_properties: Developers can provide key value pairs with additional properties of the execution that
+                need to be stored.
+
+        Returns:
+            Context object from ML Metadata library associated with the new context for this stage.
         """
         custom_props = {} if custom_properties is None else custom_properties
         pipeline_stage = self.parent_context.name + "/" + pipeline_stage
@@ -355,31 +362,29 @@ class Cmf:
         """Create execution.
         Every call creates a unique execution. Execution can only be created within a context, so
         [create_context][cmflib.cmf.Cmf.create_context] must be called first.
-        Example:
-            ```python
-            # Import CMF
-            from cmflib.cmf import Cmf
-            from ml_metadata.proto import metadata_store_pb2 as mlpb
-            # Create CMF logger
-            cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
-            # Create or reuse context for this stage
-            context: mlmd.proto.Context = cmf.create_context(
-                pipeline_stage="prepare",
-                custom_properties ={"user-metadata1": "metadata_value"}
-            )
-            # Create a new execution for this stage run
-            execution: mlmd.proto.Execution = cmf.create_execution(
-                execution_type="Prepare",
-                custom_properties = {"split": split, "seed": seed}
-            )
-            ```
+
+        ```python
+        # Import CMF
+        from cmflib.cmf import Cmf
+        from ml_metadata.proto import metadata_store_pb2 as mlpb
+        # Create CMF logger
+        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        # Create or reuse context for this stage
+        context: mlmd.proto.Context = cmf.create_context(
+            pipeline_stage="prepare",
+            custom_properties ={"user-metadata1": "metadata_value"}
+        )
+        # Create a new execution for this stage run
+        execution: mlmd.proto.Execution = cmf.create_execution(
+            execution_type="Prepare",
+            custom_properties = {"split": split, "seed": seed}
+        )
+        ```
+
         Args:
             execution_type: Type of the execution.(when create_new_execution is False, this is the name of execution)
-            custom_properties: Developers can provide key value pairs with additional properties of the execution that
-                need to be stored.
-
+            custom_properties: Developers can provide key value pairs with additional properties of the execution that need to be stored.
             cmd: command used to run this execution.
-
             create_new_execution:bool = True, This can be used by advanced users to re-use executions
                 This is applicable, when working with framework code like mmdet, pytorch lightning etc, where the
                 custom call-backs are used to log metrics.
@@ -387,7 +392,6 @@ class Cmf:
                 if create_new_execution is False, if existing execution exist with the same name as execution_type.
                 it will be reused.
                 Only executions created with  create_new_execution as False will have "name" as a property.
-
 
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
@@ -498,25 +502,27 @@ class Cmf:
         """Updates an existing execution.
         The custom properties can be updated after creation of the execution.
         The new custom properties is merged with earlier custom properties.
-        Example
-            ```python
-            # Import CMF
-            from cmflib.cmf import Cmf
-            from ml_metadata.proto import metadata_store_pb2 as mlpb
-            # Create CMF logger
-            cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
-            # Update a execution
-            execution: mlmd.proto.Execution = cmf.update_execution(
-                execution_id=8,
-                custom_properties = {"split": split, "seed": seed}
-            )
-            ```
-            Args:
-                execution_id: id of the execution.
-                custom_properties: Developers can provide key value pairs with additional properties of the execution that
+        
+        ```python
+        # Import CMF
+        from cmflib.cmf import Cmf
+        from ml_metadata.proto import metadata_store_pb2 as mlpb
+        # Create CMF logger
+        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        # Update a execution
+        execution: mlmd.proto.Execution = cmf.update_execution(
+            execution_id=8,
+            custom_properties = {"split": split, "seed": seed}
+        )
+        ```
+
+        Args:
+            execution_id: id of the execution.
+            custom_properties: Developers can provide key value pairs with additional properties of the execution that
                 need to be updated.
-            Returns:
-                Execution object from ML Metadata library associated with the updated execution for this stage.
+        
+        Returns:
+            Execution object from ML Metadata library associated with the updated execution for this stage.
         """
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
@@ -682,23 +688,31 @@ class Cmf:
         url: str,
         event: str,
         custom_properties: t.Optional[t.Dict] = None,
+        label: t.Optional[str] = None,
+        label_properties: t.Optional[t.Dict] = None,
         external: bool = False,
     ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Logs a dataset as artifact.
         This call adds the dataset to dvc. The dvc metadata file created (.dvc) will be added to git and committed. The
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
-        Example:
-            ```python
-            artifact: mlmd.proto.Artifact = cmf.log_dataset(
-                url="/repo/data.xml",
-                event="input",
-                custom_properties={"source":"kaggle"}
-            )
-            ```
+        
+        ```python
+        artifact: mlmd.proto.Artifact = cmf.log_dataset(
+            url="/repo/data.xml",
+            event="input",
+            custom_properties={"source":"kaggle"},
+            label=artifacts/labels.csv,
+            label_properties={"user":"Ron"}
+        )
+        ```
+        
         Args:
              url: The path to the dataset.
              event: Takes arguments `INPUT` OR `OUTPUT`.
              custom_properties: Dataset properties (key/value pairs).
+             label: Labels are usually .csv files containing information regarding the dataset.
+             label_properties: Custom properties for a label.
+        
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
@@ -717,11 +731,12 @@ class Cmf:
             self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-                ### To Do : Technical Debt. 
+        ### To Do : Technical Debt. 
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
         custom_props = {} if custom_properties is None else custom_properties
+
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
         event_type = mlpb.Event.Type.OUTPUT
@@ -743,14 +758,29 @@ class Cmf:
         if c_hash and c_hash.strip:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
+        uri = c_hash
+        label_hash = 0
+        if label:
+            if not os.path.isfile(label):
+                print(f"Error: File '{label}' not found.")
+            else:
+                label_hash = calculate_md5(label)
+                label_custom_props = {} if label_properties is None else label_properties
+                self.log_label(label, label_hash, uri, label_custom_props)
+                # update custom_props
+                label_with_hash = label + ":" + label_hash
+                custom_props["labels"] = label
+                custom_props["labels_uri"] = label_with_hash
+
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
 
             # Quick fix- Updating only the name
-            if custom_properties is not None:
+            if custom_props is not None:
                 self.update_existing_artifact(
-                    existing_artifact, custom_properties)
+                    existing_artifact, custom_props)
+
             uri = c_hash
             # update url for existing artifact
             self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
@@ -785,6 +815,7 @@ class Cmf:
                     "url": mlpb.STRING,
                 },
                 custom_properties=custom_props,
+
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
         custom_props["git_repo"] = git_repo
@@ -854,9 +885,18 @@ class Cmf:
         for key, value in artifact.properties.items():
             if key == "url":
                 old_url = value.string_value
-                if updated_url not in old_url:
+                # If the old URL is empty or only contains spaces, assign the new URL directly.
+                if not old_url.strip():
+                    new_url = updated_url
+
+                # If the updated URL is not already present, append it with a comma separator.
+                elif updated_url not in old_url:
                     new_url = f"{old_url},{updated_url}"
-                    artifact.properties[key].string_value = new_url
+
+                # If the updated URL is already present, keep the old URL unchanged.
+                else:
+                    new_url = old_url
+                artifact.properties[key].string_value = new_url
         put_artifact(self.store, artifact)
 
     def update_model_url(self, dup_artifact: list, updated_url: str):
@@ -878,9 +918,18 @@ class Cmf:
             for key, value in dup_art.properties.items():
                 if key == "url":
                     old_url = value.string_value
-                    if updated_url not in old_url:
+                    # If the old URL is empty or only contains spaces, assign the new URL directly.
+                    if not old_url.strip():
+                        new_url = updated_url
+
+                    # If the updated URL is not already present, append it with a comma separator.
+                    elif updated_url not in old_url:
                         new_url = f"{old_url},{updated_url}"
-                        dup_art.properties[key].string_value = new_url
+
+                    # If the updated URL is already present, keep the old URL unchanged.
+                    else:
+                        new_url = old_url
+                    dup_art.properties[key].string_value = new_url
             put_artifact(self.store, dup_art)
         return dup_artifact
 
@@ -897,16 +946,17 @@ class Cmf:
     ) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Logs a model.
         The model is added to dvc and the metadata file (.dvc) gets committed to git.
-        Example:
-            ```python
-            artifact: mlmd.proto.Artifact= cmf.log_model(
-                path="path/to/model.pkl",
-                event="output",
-                model_framework="SKlearn",
-                model_type="RandomForestClassifier",
-                model_name="RandomForestClassifier:default"
-            )
-            ```
+        
+        ```python
+        artifact: mlmd.proto.Artifact= cmf.log_model(
+            path="path/to/model.pkl",
+            event="output",
+            model_framework="SKlearn",
+            model_type="RandomForestClassifier",
+            model_name="RandomForestClassifier:default"
+        )
+        ```
+        
         Args:
             path: Path to the model file.
             event: Takes arguments `INPUT` OR `OUTPUT`.
@@ -914,6 +964,7 @@ class Cmf:
             model_type: Type of model algorithm used.
             model_name: Name of the algorithm used.
             custom_properties: The model properties.
+        
         Returns:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
@@ -969,10 +1020,7 @@ class Cmf:
         else:
             raise RuntimeError("Model commit failed, Model uri empty")
 
-        if (
-            existing_artifact
-            and len(existing_artifact) != 0
-        ):
+        if (existing_artifact and len(existing_artifact) != 0):
             # update url for existing artifact
             existing_artifact = self.update_model_url(
                 existing_artifact, url_with_pipeline
@@ -1014,7 +1062,7 @@ class Cmf:
                 custom_properties=custom_props,
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        custom_properties["Commit"] = model_commit
+        custom_props["Commit"] = model_commit
         self.execution_label_props["Commit"] = model_commit
         #To DO model nodes should be similar to dataset nodes when we create neo4j
         if self.graph:
@@ -1065,16 +1113,18 @@ class Cmf:
         """Log the metadata associated with the execution (coarse-grained tracking).
         It is stored as a metrics artifact. This does not have a backing physical file, unlike other artifacts that we
         have.
-        Example:
-            ```python
-            exec_metrics: mlpb.Artifact = cmf.log_execution_metrics(
-                metrics_name="Training_Metrics",
-                {"auc": auc, "loss": loss}
-            )
-            ```
+        
+        ```python
+        exec_metrics: mlpb.Artifact = cmf.log_execution_metrics(
+            metrics_name="Training_Metrics",
+            {"auc": auc, "loss": loss}
+        )
+        ```
+        
         Args:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metric values.
+        
         Returns:
               Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
@@ -1141,15 +1191,16 @@ class Cmf:
         """Stores the fine-grained (per step or per epoch) metrics to memory.
         The metrics provided are stored in a parquet file. The `commit_metrics` call add the parquet file in the version
         control framework. The metrics written in the parquet file can be retrieved using the `read_metrics` call.
-        Example:
-            ```python
-            # Can be called at every epoch or every step in the training. This is logged to a parquet file and committed
-            # at the commit stage.
-            # Inside training loop
-            while True:
-                 cmf.log_metric("training_metrics", {"train_loss": train_loss})
-            cmf.commit_metrics("training_metrics")
-            ```
+
+        ```python
+        # Can be called at every epoch or every step in the training. This is logged to a parquet file and committed
+        # at the commit stage.
+        # Inside training loop
+        while True:
+                cmf.log_metric("training_metrics", {"train_loss": train_loss})
+        cmf.commit_metrics("training_metrics")
+        ```
+
         Args:
             metrics_name: Name to identify the metrics.
             custom_properties: Dictionary with metrics.
@@ -1313,9 +1364,20 @@ class Cmf:
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                artifact.custom_properties[key].string_value = str(value)
+                 if key == "labels" or key == "labels_uri":
+                     existing_value = artifact.custom_properties[key].string_value
+                     if existing_value:
+                         temp = existing_value + "," + str(value)
+                         new_temp = set(temp.split(","))
+                         # join the temp 
+                         new_new_temp = ",".join(list(new_temp))
+                         artifact.custom_properties[key].string_value = str(new_new_temp)
+                     else: 
+                        artifact.custom_properties[key].string_value = str(value)
+                 else:
+                     artifact.custom_properties[key].string_value = str(value)
         put_artifact(self.store, artifact)
-        
+
 
     def get_artifact(self, artifact_id: int) -> mlpb.Artifact:  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Gets the artifact object from mlmd"""
@@ -1339,10 +1401,11 @@ class Cmf:
         Once created, users can add data instances to this data slice with [add_data][cmflib.cmf.Cmf.DataSlice.add_data]
         method. Users are also responsible for committing data slices by calling the
         [commit][cmflib.cmf.Cmf.DataSlice.commit] method.
-        Example:
-            ```python
-            dataslice = cmf.create_dataslice("slice-a")
-            ```
+        
+        ```python
+        dataslice = cmf.create_dataslice("slice-a")
+        ```
+        
         Args:
             name: Name to identify the dataslice.
 
@@ -1365,11 +1428,12 @@ class Cmf:
     # the mlmd
     def update_dataslice(self, name: str, record: str, custom_properties: t.Dict):
         """Updates a dataslice record in a Parquet file with the provided custom properties.
-        Example:
+        
         ```python
            dataslice=cmf.update_dataslice("dataslice_file.parquet", "record_id", 
            {"key1": "updated_value"})
         ```
+        
         Args:
            name: Name of the Parquet file.
            record: Identifier of the dataslice record to be updated.
@@ -1388,6 +1452,86 @@ class Cmf:
         dataslice_df = pd.DataFrame.from_dict(temp_dict, orient="index")
         dataslice_df.index.names = ["Path"]
         dataslice_df.to_parquet(name)
+
+    def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+        """
+        Logs a label artifact associated with a dataset.
+
+        This function checks whether a label artifact (identified by `label_hash`) already exists in the metadata store.
+        - If the artifact exists, it links it to the current execution and optionally updates its properties and URL.
+        - If the artifact does not exist, it creates a new artifact with the provided properties and links it to the execution context.
+
+        Args:
+            url (str): The base URL representing the label (e.g., path or storage location).
+            label_hash (str): A unique mdh5 hash calculated on the label content.
+            dataset_uri (str): The URI of the associated dataset.
+            custom_properties (Optional[Dict], optional): Additional metadata to associate with the artifact. Defaults to None.
+
+        Returns:
+            mlpb.Artifact: The logged or linked label artifact.
+        """
+        
+        ### To Do : Technical Debt. 
+        # If the dataset already exist , then we just link the existing dataset to the execution
+        # We do not update the dataset properties . 
+        # We need to append the new properties to the existing dataset properties
+        custom_props = {} if custom_properties is None else custom_properties
+        git_repo = git_get_repo()
+
+        existing_artifact = []
+        if label_hash and label_hash.strip:
+            existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
+        
+        url = url + ":" + label_hash
+
+        # To Do - What happens when uri is the same but names are different
+        if existing_artifact and len(existing_artifact) != 0:
+            existing_artifact = existing_artifact[0]
+
+            # Quick fix- Updating only the name
+            if custom_props is not None:
+                self.update_existing_artifact(
+                    existing_artifact, custom_props)
+            uri = label_hash
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, url)
+            artifact = link_execution_to_artifact(
+                store=self.store,
+                execution_id=self.execution.id,
+                uri=uri,
+                input_name=url,
+                event_type=mlpb.Event.Type.INPUT,
+            )
+        else:
+            uri = label_hash if label_hash and label_hash.strip() else str(uuid.uuid1())
+            artifact = create_new_artifact_event_and_attribution(
+                store=self.store,
+                execution_id=self.execution.id,
+                context_id=self.child_context.id,
+                uri=uri,
+                name=url,
+                type_name="Label",
+                event_type=mlpb.Event.Type.INPUT,
+                properties={
+                    "git_repo": str(git_repo),
+                    # passing hash_value value to commit
+                    "Commit": str(label_hash),
+                    "url": str(url),
+                    "dataset_uri": str(dataset_uri),
+                },
+                artifact_type_properties={
+                    "git_repo": mlpb.STRING,
+                    "Commit": mlpb.STRING,
+                    "url": mlpb.STRING,
+                    "dataset_uri": mlpb.STRING,
+                },
+                custom_properties=custom_props,
+                milliseconds_since_epoch=int(time.time() * 1000),
+            )
+        custom_props["git_repo"] = git_repo
+        custom_props["Commit"] = label_hash
+        custom_props["dataset_uri"] = dataset_uri
+        return artifact
 
     class DataSlice:
         """A data slice represents a named subset of data.
@@ -1413,11 +1557,12 @@ class Cmf:
         ) -> None:
             """Add data to create the dataslice.
             Currently supported only for file abstractions. Pre-condition - the parent folder, containing the file
-                should already be versioned.
-            Example:
-                ```python
-                #dataslice.add_data(f"data/raw_data/{j}.xml)
-                ```
+            should already be versioned.
+            
+            ```python
+            dataslice.add_data(f"data/raw_data/{j}.xml)
+            ```
+
             Args:
                 path: Name to identify the file to be added to the dataslice.
                 custom_properties: Properties associated with this datum.
@@ -1442,10 +1587,11 @@ class Cmf:
         def commit(self, custom_properties: t.Optional[t.Dict] = None) -> None:
             """Commit the dataslice.
             The created dataslice is versioned and added to underneath data versioning software.
-            Example:
-
-                dataslice.commit()
-                ```
+            
+            ```python
+            dataslice.commit()
+            ```
+            
             Args:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
                 Example{"mean":2.5, "median":2.6}
@@ -1555,13 +1701,15 @@ Cmf.log_model_with_version = log_model_with_version
 Cmf.log_execution_metrics_from_client =  log_execution_metrics_from_client
 Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
+Cmf.log_label_with_version = log_label_with_version
 
 def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
     """ Pushes metadata file to CMF-server.
-    Example:
+    
     ```python
-         result = metadata_push("example_pipeline", "mlmd_file", "eg_execution_uuid", "tensorboard_log")
+    result = metadata_push("example_pipeline", "mlmd_file", "eg_execution_uuid", "tensorboard_log")
     ```
+    
     Args:
         pipeline_name: Name of the pipeline.
         file_name: Specify input metadata file name.
@@ -1579,15 +1727,17 @@ def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: st
 
 def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
     """ Pulls metadata file from CMF-server. 
-     Example: 
-     ```python 
-          result = metadata_pull("example_pipeline", "./mlmd_directory", "eg_execution_uuid") 
-     ``` 
-     Args: 
+    
+    ```python 
+    result = metadata_pull("example_pipeline", "./mlmd_directory", "eg_execution_uuid") 
+    ``` 
+    
+    Args: 
         pipeline_name: Name of the pipeline. 
         file_name: Specify output metadata file name.
         execution_uuid: Optional execution UUID. 
-     Returns: 
+    
+    Returns: 
         Message from the _metadata_pull function. 
      """
     # Required arguments: pipeline_name 
@@ -1598,15 +1748,17 @@ def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str 
 
 def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = "./mlmd"):
     """ Export local mlmd's metadata in json format to a json file. 
-     Example: 
-     ```python 
-          result = metadata_pull("example_pipeline", "./jsonfile", "./mlmd_directory") 
-     ``` 
-     Args: 
+    
+    ```python 
+    result = metadata_export("example_pipeline", "./jsonfile", "./mlmd_directory") 
+    ``` 
+    
+    Args: 
         pipeline_name: Name of the pipeline. 
         json_file_name: File path of json file. 
         file_name: Specify input metadata file name. 
-     Returns: 
+    
+    Returns: 
         Message from the _metadata_export function. 
      """
     # Required arguments: pipeline_name 
@@ -1617,13 +1769,15 @@ def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = ".
 
 def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
     """ Pulls artifacts from the initialized repository.
-    Example:
+    
     ```python
-         result = artifact_pull("example_pipeline", "./mlmd_directory")
+    result = artifact_pull("example_pipeline", "./mlmd_directory")
     ```
+    
     Args:
         pipeline_name: Name of the pipeline.
         file_name: Specify input metadata file name.
+    
     Returns:
         Output from the _artifact_pull function.
     """
@@ -1635,14 +1789,16 @@ def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
 
 def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str):
     """ Pulls a single artifact from the initialized repository. 
-    Example: 
+    
     ```python 
-        result = artifact_pull_single("example_pipeline", "./mlmd_directory", "example_artifact") 
+    result = artifact_pull_single("example_pipeline", "./mlmd_directory", "example_artifact") 
     ```
+    
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify input metadata file name.
        artifact_name: Name of the artifact. 
+    
     Returns:
        Output from the _artifact_pull_single function. 
     """
@@ -1651,31 +1807,33 @@ def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str)
     output = _artifact_pull_single(pipeline_name, file_name, artifact_name)
     return output
 
-
-def artifact_push(pipeline_name: str, file_name = "./mlmd"):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     """ Pushes artifacts to the initialized repository.
-    Example:
+    
     ```python
-         result = artifact_push("example_pipeline", "./mlmd_directory")
+    result = artifact_push("example_pipeline", "./mlmd_directory", 32)
     ```
+    
     Args: 
        pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
+       filepath: Path to store the artifact. 
+       jobs: Number of jobs to use for pushing artifacts.
+    
     Returns:
         Output from the _artifact_push function.
     """
-    # Required arguments: pipeline_name
-    # Optional arguments: file_name
-    output = _artifact_push(pipeline_name, file_name)
+    output = _artifact_push(pipeline_name, filepath, jobs)
     return output
 
 
 def cmf_init_show():
     """ Initializes and shows details of the CMF command. 
-    Example: 
+    
     ```python 
-         result = cmf_init_show() 
+    result = cmf_init_show() 
     ``` 
+    
     Returns: 
        Output from the _cmf_cmd_init function. 
     """
@@ -1706,17 +1864,18 @@ def cmf_init(type: str = "",
          ):
 
     """ Initializes the CMF configuration based on the provided parameters. 
-    Example:
+    
     ```python
-       cmf_init( type="local", 
-                 path="/path/to/re",
-                 git_remote_url="git@github.com:user/repo.git",
-                 cmf_server_url="http://cmf-server"
-                 neo4j_user", 
-                 neo4j_password="password",
-                 neo4j_uri="bolt://localhost:76"
-               )
+    cmf_init( type="local", 
+                path="/path/to/re",
+                git_remote_url="git@github.com:user/repo.git",
+                cmf_server_url="http://cmf-server"
+                neo4j_user", 
+                neo4j_password="password",
+                neo4j_uri="bolt://localhost:76"
+            )
     ```
+    
     Args: 
        type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
        path: Path for the local repository. 
@@ -1738,6 +1897,7 @@ def cmf_init(type: str = "",
        key_id: OSDF Key ID.
        key_path: OSDF Private Key Path.
        key_issuer: OSDF Key Issuer URL.
+    
     Returns:
        Output based on the initialized repository type.
     """
@@ -1882,12 +2042,13 @@ def non_related_args(type : str, args : dict):
 def pipeline_list(file_name = "./mlmd"):
     """ Display a list of pipeline name(s) from the available input metadata file.
 
-    Example:
     ```python
-         result = _pipeline_list("./mlmd_directory")
+    result = _pipeline_list("./mlmd_directory")
     ```
+
     Args:
         file_name: Specify input metadata file name.
+
     Returns:
         Output from the _pipeline_list function.
     """
@@ -1898,14 +2059,16 @@ def pipeline_list(file_name = "./mlmd"):
 
 def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
-    Example: 
+
     ```python 
-        result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
+    result = _execution_list("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
     ```
+    
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify input metadata file name.
        execution_uuid: Specify the execution uuid to retrieve execution.
+    
     Returns:
        Output from the _execution_list function. 
     """
@@ -1917,14 +2080,16 @@ def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str
 
 def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str = ""):
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
-    Example: 
+    
     ```python 
-        result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
+    result = _artifact_list("example_pipeline", "./mlmd_directory", "example_artifact_name") 
     ```
+    
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify input metadata file name. 
        artifact_name: Artifacts for particular artifact name.
+    
     Returns:
        Output from the _artifact_list function. 
     """
@@ -1933,41 +2098,66 @@ def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str =
     output = _artifact_list(pipeline_name, file_name, artifact_name)
     return output
 
-
-def repo_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+# Prevent multiplying int with NoneType; added default value to jobs.
+def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
-    Example: 
+    
     ```python 
-        result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path") 
+    result = _repo_push("example_pipeline", "./mlmd_directory", "example_execution_uuid", "./tensorboard_path", 32) 
     ```
+    
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify input metadata file name.
        execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
+       jobs: Number of jobs to use for pushing artifacts.
+    
     Returns:
        Output from the _repo_push function. 
     """
     # Required arguments: pipeline_name
-    # Optional arguments: file_name, execution_uuid, tensorboard_path
-    output = _repo_push(pipeline_name, file_name, execution_uuid, tensorboard_path)
+    # Optional arguments: filepath, execution_uuid, tensorboard_path, jobs
+    output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, jobs)
     return output
 
 
 def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
-    Example: 
+    
     ```python 
-        result = _repo_pull("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
+    result = _repo_pull("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
     ```
+    
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify output metadata file name.
        execution_uuid: Specify execution uuid.
+    
     Returns:
        Output from the _repo_pull function. 
     """
     # Required arguments: pipeline_name
     # Optional arguments: file_name, execution_uuid
     output = _repo_pull(pipeline_name, file_name, execution_uuid)
+    return output
+
+
+def dvc_ingest(file_name = "./mlmd"):
+    """ Ingests metadata from the dvc.lock file into the CMF. 
+        If an existing MLMD file is provided, it merges and updates execution metadata 
+        based on matching commands, or creates new executions if none exist.
+    
+    ```python 
+    result = _dvc_ingest("./mlmd_directory") 
+    ```
+    
+    Args: 
+       file_name: Specify input metadata file name.
+    
+    Returns:
+       Output from the _dvc_ingest function. 
+    """
+    # Optional argument: file_name
+    output = _dvc_ingest(file_name)
     return output

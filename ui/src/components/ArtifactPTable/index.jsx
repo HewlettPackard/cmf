@@ -21,6 +21,7 @@ import Highlight from "../Highlight";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import "./index.css";
+import LabelCardPopup from "../LabelCardPopup";
 
 const client = new FastAPIClient(config);
 
@@ -31,6 +32,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
+  const [labelData, setLabelData] = useState("");
 
   useEffect(() => {
     // if data then set artifacts with that data else set it null.
@@ -106,6 +108,15 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
     setShowPopup(false);
   };
 
+  const getLabelData = (label_name) => {
+    console.log(label_name)
+    client.getLabelData(label_name).then((data) => {
+      console.log(data);
+      setLabelData(data);
+    });
+  }
+
+
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
       <div className="overflow-x-auto w-full">
@@ -131,6 +142,9 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   DATE {renderArrowDate()}
                 </span>
                 </th>
+                {artifactType === "Dataset" && (
+                  <th scope="col" className="label px-6 py-3">LABEL</th>
+                )}
                 <th className="px-6 py-3" scope="col">URI</th>
                 <th className="px-6 py-3" scope="col">URL</th>
                 <th className="px-6 py-3" scope="col">GIT REPO</th>
@@ -174,6 +188,35 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                     </td>
                   )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.create_time_since_epoch)} highlight={filterValue}/></td>
+                  {artifactType === "Dataset" && (
+                    <td className="px-6 py-4">
+                      {(getPropertyValue(artifact.artifact_properties, "labels_uri") || "")
+                        .split(",")
+                        .map((label_name) => label_name.trim())
+                        .filter((label_name) => label_name.length > 0) // Optional: skip empty strings
+                        .map((label_name) => (
+                          <div key={label_name} className="label">
+                            <a
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                getLabelData(label_name.split(":")[1] || label_name);
+                                setShowPopup(true);
+                              }}
+                            >
+                              {label_name}
+                            </a>
+                            {showPopup && (
+                              <LabelCardPopup
+                                show={showPopup}
+                                label_data={labelData}
+                                onClose={handleClosePopup}
+                              />
+                            )}
+                          </div>
+                        ))}
+                    </td>
+                  )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.uri)} highlight={filterValue}/></td>
                   <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "url")} highlight={filterValue}/></td>
                   <td className="px-6 py-4"><Highlight text={getPropertyValue(artifact.artifact_properties, "git_repo")} highlight={filterValue}/></td>

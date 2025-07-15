@@ -22,12 +22,14 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: mlmd
-    expose:
-      - 5432
+      POSTGRES_PORT: ${POSTGRES_PORT}
     volumes:
       - /home/xxxx/cmf-server/data/postgres_data:/var/lib/postgresql/data
+      - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql # Mount SQL script
+      - ./custom-entrypoint.sh:/custom-entrypoint.sh # Mount custom entrypoint script
+    entrypoint: ["/bin/bash", "/custom-entrypoint.sh"] # Use the custom entrypoint script
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -p $${POSTGRES_PORT} -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -37,13 +39,12 @@ services:
     image: tensorflow/tensorflow
     command: tensorboard --logdir /logs --host 0.0.0.0
     volumes:
-    # directory path should be updated as per user's environment
+      # directory path should be updated as per user's environment
       - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
     expose:
       - 6006
     container_name: tensorboard
     network_mode: host
-
 
   server:
     image: server:latest
@@ -52,9 +53,10 @@ services:
       - /home/xxxx/cmf-server/data:/cmf-server/data
       - /home/xxxx/cmf-server/data/env:/cmf-server/data/env
       - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
+      - /home/xxxx/cmf-server/data/labels:/cmf-server/data/labels
       - /home/xxxx/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
     container_name: cmf-server
-    build:     
+    build:
       context: ./
       dockerfile: ./server/Dockerfile
     restart: always
@@ -63,6 +65,7 @@ services:
       HOSTNAME: ${hostname:-localhost}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_DB: mlmd
     expose:
       - 8000
@@ -74,7 +77,7 @@ services:
       postgres:
         condition: service_healthy
     network_mode: host
-    
+
   ui:
     image: ui:latest
     container_name: ui-server
@@ -91,4 +94,3 @@ services:
       server:
         condition: service_healthy
     network_mode: host
-

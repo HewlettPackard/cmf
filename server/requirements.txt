@@ -8,3 +8,5 @@ sqlalchemy
 asyncpg
 python-dotenv
 psycopg[binary]
+httpx
+jsonpath_ng

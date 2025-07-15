@@ -46,6 +46,7 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
     print(msg)
     return msg
 
+
 def _metadata_pull(pipeline_name, file_name, execution_uuid):
     """ Pulls metadata file from CMF-server. 
      Args: 
@@ -70,6 +71,7 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
+
 
 def _metadata_export(pipeline_name, json_file_name, file_name):
     """ Export local metadata's metadata in json format to a json file. 
@@ -97,11 +99,12 @@ def _metadata_export(pipeline_name, json_file_name, file_name):
     print(msg)
     return msg
 
-def _artifact_push(pipeline_name, file_name):
+def _artifact_push(pipeline_name, file_name, jobs):
     """ Pushes artifacts to the initialized repository.
     Args: 
        pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
+       filepath: Path to store the artifact. 
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
         Output from the artifact push command.
     """
@@ -113,6 +116,8 @@ def _artifact_push(pipeline_name, file_name):
                pipeline_name,
                "-f",
                file_name,
+               "-j",
+               jobs
             ]
            )
     cmd = cli_args.func(cli_args)
@@ -143,6 +148,7 @@ def _artifact_pull(pipeline_name, file_name):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _artifact_pull_single(pipeline_name, file_name, artifact_name):
     """ Pulls a single artifact from the initialized repository. 
@@ -186,6 +192,7 @@ def _cmf_cmd_init():
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _init_local(path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize local repository"""
@@ -244,6 +251,7 @@ def _init_minioS3(url, endpoint_url, access_key_id, secret_key, git_remote_url, 
     print(msg)
     return msg
     
+
 def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize amazonS3 repository"""
     cli_args = cli.parse_args(
@@ -275,6 +283,7 @@ def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url
     print(msg)
     return msg
 
+
 def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize sshremote repository"""
     cli_args = cli.parse_args(
@@ -305,6 +314,7 @@ def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, n
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
     """Initialize osdfremote repository"""
@@ -338,6 +348,7 @@ def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, 
     msg = cmd.do_run()
     print(msg)
     return msg
+  
     
 def _artifact_list(pipeline_name, file_name, artifact_name):
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
@@ -365,6 +376,7 @@ def _artifact_list(pipeline_name, file_name, artifact_name):
     print(msg)
     return msg
 
+
 def _pipeline_list(file_name):
     """ Display a list of pipeline name(s) from the available input metadata file.
     Args:
@@ -384,6 +396,7 @@ def _pipeline_list(file_name):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _execution_list(pipeline_name, file_name, execution_uuid):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
@@ -411,13 +424,14 @@ def _execution_list(pipeline_name, file_name, execution_uuid):
     print(msg)
     return msg
 
-def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
+def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid, jobs):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     Args: 
        pipeline_name: Name of the pipeline. 
        file_name: Specify input metadata file name.
        execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
+       jobs: Number of jobs to use for pushing artifacts.
     Returns:
        Output from the repo push command. 
     """
@@ -432,13 +446,16 @@ def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid):
                "-e",
                execution_uuid,
                "-t",
-               tensorboard_path
+               tensorboard_path,
+               "-j",
+               jobs
             ]
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _repo_pull(pipeline_name, file_name, execution_uuid):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
@@ -466,3 +483,25 @@ def _repo_pull(pipeline_name, file_name, execution_uuid):
     print(msg)
     return msg
 
+
+def _dvc_ingest(file_name):
+   """ Ingests metadata from the dvc.lock file into the CMF. 
+       If an existing MLMD file is provided, it merges and updates execution metadata 
+       based on matching commands, or creates new executions if none exist.
+    Args: 
+       file_name: Specify input metadata file name.
+    Returns:
+       Output from the dvc ingest command. 
+   """
+   cli_args = cli.parse_args(
+            [
+               "dvc",
+               "ingest",
+               "-f",
+               file_name,
+            ]
+           )
+   cmd = cli_args.func(cli_args)
+   msg = cmd.do_run()
+   print(msg)
+   return msg

@@ -20,7 +20,7 @@ import "./index.css";
 const ArtifactTypeSidebar = ({
   artifactTypes,
   handleArtifactTypeClick,
-  onFilter,
+  onFilter
 }) => {
   const [clickedArtifactType, setClickedArtifactType] = useState(
     artifactTypes[0],
@@ -44,9 +44,9 @@ const ArtifactTypeSidebar = ({
   };
 
   const handleFilterChange = (event) => {
-    const value = event.target.value;
-    setFilterValue(value);
-    onFilter("name", value); // Notify parent component about filter change
+    const filterValue = event.target.value;
+    setFilterValue(filterValue); // update the filter string
+    onFilter(filterValue); // Notify parent component about filter change
   };
 
   return (
@@ -75,8 +75,12 @@ const ArtifactTypeSidebar = ({
               type="text"
               value={filterValue}
               onChange={handleFilterChange}
-              placeholder="Filter by Name"
-              className="mr-2 p-2 border border-solid border-gray-300"
+              placeholder="Filter by Name/Properties"
+              style={{
+                marginRight: "1rem",
+                padding: "0.5rem",
+                border: "1px solid #ccc",
+              }}
             />
           </div>
         </div>

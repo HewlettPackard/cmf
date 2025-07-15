@@ -3,7 +3,7 @@
 # cmf
 
 ```
-Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo}
+Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo, dvc}
 ```
 
 The `cmf` command is a comprehensive tool designed to initialize an artifact repository and perform various operations on artifacts, execution, pipeline and metadata.
@@ -246,7 +246,7 @@ Usage: cmf init osdfremote [-h] --path [path]
 `cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
 
 ```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector]/nrp/fdp --key-id c2a5 --key-path ~/.ssh/fdp.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 Required Arguments
@@ -307,13 +307,13 @@ Optional Arguments
 ### cmf artifact push
 
 ```
-Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name]
+Usage: cmf artifact push [-h] -p [pipeline_name] -f [file_name] -j [jobs]
 ```
 
 `cmf artifact push` command push artifacts from the user's local machine to the user configured artifact repository.
 
 ```
-cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name'
+cmf artifact push -p 'pipeline_name' -f '/path/to/mlmd-file-name' -j 'jobs'
 ```
 
 Required Arguments
@@ -325,8 +325,10 @@ Required Arguments
 Optional Arguments
 
 ```
-  -h, --help                                             show this help message and exit.
-  -f [file_name], --file_name [file_name]                Specify input metadata file name.
+  -h, --help                                            show this help message and exit.
+  -f [file_name], --file-name [file_name]               Specify mlmd file name.
+  -j [jobs], --jobs [jobs]                              Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count().
+                                                        Increasing jobs may speed up uploads but will use more resources.
 ```
 
 ### cmf artifact list
@@ -514,13 +516,13 @@ Usage: cmf repo [-h] {push, pull}
 ### cmf repo push
 
 ```
-Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard_path]
+Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard] -j [jobs]
 ```
 
 `cmf repo push` command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
 
 ```
-cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t 'tensorboard_log_path'
+cmf repo push -p 'pipeline-name' -f '/path/to/mlmd-file-name' -e 'execution_uuid' -t 'tensorboard_log_path' -j 'jobs'
 ```
 
 Required Arguments
@@ -532,10 +534,12 @@ Required Arguments
 Optional Arguments
 
 ```
-  -h, --help                                                                    show this help message and exit.
-  -f [file_name], --file_name [file_name]                                       Specify input metadata file name.
-  -e [exec_uuid], --execution_uuid [exec_uuid]                                  Specify execution uuid.
-  -t [tensorboard_path], --tensorboard_path [tensorboard_path]                  Specify path to tensorboard logs for the pipeline.
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify mlmd file name.
+  -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+  -t [tensorboard], --tensorboard [tensorboard]                  Specify path to tensorboard logs for the pipeline.
+  -j [jobs], --jobs [jobs]                                       Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count().
+                                                                 Increasing jobs may speed up uploads but will use more resources.
 ```
 
 ### cmf repo pull
@@ -562,4 +566,31 @@ Optional Arguments
   -h, --help                                                     show this help message and exit.
   -f [file_name], --file_name [file_name]                        Specify output metadata file name.
   -e [exec_uuid], --execution_uuid [exec_uuid]                   Specify execution uuid.
+```
+
+## cmf dvc
+
+```
+Usage: cmf dvc [-h] {ingest}
+```
+
+`cmf dvc` command ingests metadata from the dvc.lock file into CMF.
+
+### cmf dvc ingest
+
+```
+Usage: cmf dvc ingest [-h] -f [file_name]
+```
+
+`cmf dvc ingest` command ingests metadata from the dvc.lock file into the CMF. If an existing MLMD file is provided, it merges and updates execution metadata based on matching commands, or creates new executions if none exist.
+
+```
+cmf dvc ingest -f '/path/to/mlmd-file-name'
+```
+
+Optional Arguments
+
+```
+  -h, --help                                                     show this help message and exit.
+  -f [file_name], --file-name [file_name]                        Specify input mlmd file name. (default: mlmd)
 ```

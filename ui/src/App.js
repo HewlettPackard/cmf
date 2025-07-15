@@ -18,6 +18,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
+import Metahub from "./pages/metahub";
 import ArtifactsPostgres from "./pages/artifacts_postgres";
 import ExecutionsPostgres from "./pages/executions_postgres";
 
@@ -31,6 +32,7 @@ function App() {
           <Route exact path="/executions" element={<ExecutionsPostgres />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
           <Route exact path="/tensorboard" element={<TensorBoard />} />
+          <Route exact path="/metahub" element={<Metahub />} />
         </Routes>
       </BrowserRouter>
     </div>

@@ -25,7 +25,7 @@ There are two ways to start a cmf server -
 > This is the recommended way as docker compose starts cmf-server, postgres db and ui-server in one go. It is neccessary to start postgres db before cmf-server.
 
 1. Go to root `cmf` directory. 
-2. Replace `xxxx` with user-name in docker-compose-server.yml available in the root cmf directory.
+2. Replace `xxxx` with your user-name in docker-compose-server.yml available in the root cmf directory.
     ```
     ......
     services:
@@ -37,16 +37,15 @@ There are two ways to start a cmf server -
       container_name: cmf-server
       build:
     ....
-    ```
- 
+    ``` 
 3. Create a `.env` file in the same directory as `docker-compose-server.yml` and add the necessary environment variables.
    ```
-   POSTGRES_USER=myuser
-   POSTGRES_PASSWORD=mypassword
+   POSTGRES_USER: myuser
+   POSTGRES_PASSWORD: mypassword
+   POSTGRES_PORT: 5470
    ``` 
-   > 
-4. Execute following command to start both the containers. `IP` variable is the IP address and `hostname` is host name of the machine on which you are executing the following command.
-   You can use either way.
+   > ⚠️**Warning:** Avoid using `@` character in `POSTGRES_PASSWORD` to prevent connection issues.
+4. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
    ```
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
               OR
@@ -73,7 +72,7 @@ There are two ways to start a cmf server -
 
 ## Using `docker run` command
 
-1.  Install [cmflib](../index.md#installation) on your system.
+1.  Install [cmflib](../setup/index.md) on your system.
 
 2. Go to `cmf/server` directory.
    ```
