@@ -190,31 +190,41 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   <td className="px-6 py-4"><Highlight text={String(artifact.create_time_since_epoch)} highlight={filterValue}/></td>
                   {artifactType === "Dataset" && (
                     <td className="px-6 py-4">
-                      {(getPropertyValue(artifact.artifact_properties, "labels_uri") || "")
-                        .split(",")
-                        .map((label_name) => label_name.trim())
-                        .filter((label_name) => label_name.length > 0) // Optional: skip empty strings
-                        .map((label_name) => (
-                          <div key={label_name} className="label">
-                            <a
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                getLabelData(label_name.split(":")[1] || label_name);
-                                setShowPopup(true);
-                              }}
-                            >
-                              {label_name}
-                            </a>
-                            {showPopup && (
-                              <LabelCardPopup
-                                show={showPopup}
-                                label_data={labelData}
-                                onClose={handleClosePopup}
-                              />
-                            )}
-                          </div>
-                        ))}
+                      {(() => {
+                        const labelsUri = getPropertyValue(artifact.artifact_properties, "labels_uri");
+
+                        // If no labels_uri or it's "N/A", show non-clickable text
+                        if (!labelsUri || labelsUri === "N/A") {
+                          return <span className="text-gray-500">No labels</span>;
+                        }
+
+                        // Process valid labels_uri
+                        return labelsUri
+                          .split(",")
+                          .map((label_name) => label_name.trim())
+                          .filter((label_name) => label_name.length > 0 && label_name !== "N/A")
+                          .map((label_name) => (
+                            <div key={label_name} className="label">
+                              <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  getLabelData(label_name.split(":")[1] || label_name);
+                                  setShowPopup(true);
+                                }}
+                              >
+                                {label_name}
+                              </a>
+                              {showPopup && (
+                                <LabelCardPopup
+                                  show={showPopup}
+                                  label_data={labelData}
+                                  onClose={handleClosePopup}
+                                />
+                              )}
+                            </div>
+                          ));
+                      })()}
                     </td>
                   )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.uri)} highlight={filterValue}/></td>
