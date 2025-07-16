@@ -193,9 +193,9 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                       {(() => {
                         const labelsUri = getPropertyValue(artifact.artifact_properties, "labels_uri");
 
-                        // If no labels_uri or it's "N/A", show non-clickable text
-                        if (!labelsUri || labelsUri === "N/A") {
-                          return <span className="text-gray-500">No labels</span>;
+                        // If no labels_uri or it's "N/A" or empty, show non-clickable text
+                        if (!labelsUri || labelsUri === "N/A" || labelsUri.trim() === "") {
+                          return <span className="text-gray-500">N/A</span>;
                         }
 
                         // Process valid labels_uri
