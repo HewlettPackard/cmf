@@ -72,7 +72,6 @@ pip install cmflib
 
 - [Getting Started](https://hewlettpackard.github.io/cmf/)
 - [API Reference](https://hewlettpackard.github.io/cmf/api/public/cmf)
-- [Full Docs](./docs/README.md)
 - [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/cmf_client)
 - [Related Docs](https://deepwiki.com/HewlettPackard/cmf)
 
