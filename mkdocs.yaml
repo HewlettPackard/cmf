@@ -105,6 +105,7 @@ plugins:
             show_source: false
             members_order: source
             merge_init_into_class: true
+            style: table
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
@@ -146,6 +147,7 @@ nav:
       - Overview: cmf_client/cmf_client.md
       - Getting Started with CMF: cmf_client/Getting Started with cmf.md
       - Guide for the cmf dvc ingest command: cmf_client/cmf-dvc-ingest-guide.md
+      - Start Neo4j with Docker: cmf_client/neo4j_docker.md
       - Storage Backends:
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md

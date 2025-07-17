@@ -36,3 +36,4 @@
         - execution_list
         - repo_push
         - repo_pull
+        - dvc_ingest
