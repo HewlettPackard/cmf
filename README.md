@@ -1,166 +1,178 @@
-# CMF
-CMF (Common Metadata Framework) collects and stores information associated with Machine Learning (ML) pipelines. It also implements APIs to query this metadata. The CMF adopts a data-first approach: all artifacts (such as datasets, ML models and performance metrics) recorded by the framework are versioned and identified by their content hash.
+# Common Metadata Framework (CMF)
 
-## Installation
+[![Deploy Docs](https://github.com/HewlettPackard/cmf/actions/workflows/deploy_docs_to_gh_pages.yaml/badge.svg)](https://github.com/HewlettPackard/cmf/actions)
+[![PyPI version](https://badge.fury.io/py/cmflib.svg)](https://pypi.org/project/cmflib/)
+[![Docs](https://img.shields.io/badge/docs-online-blue.svg)](https://hewlettpackard.github.io/cmf/)
+[![License](https://img.shields.io/github/license/HewlettPackard/cmf)](./LICENSE)
 
-#### 1. Pre-Requisites:
-<b>
-    <ul>
-        <li>Supported Operating Systems: Linux/Ubuntu/Debian</li>
-        <li>3.9 >= Python < 3.11</li>
-        <li>Git latest version</li>
-    </ul>
-</b>
+**Common Metadata Framework (CMF)** is a metadata tracking and versioning system for ML pipelines. It tracks code, data, and pipeline metrics—offering Git-like metadata management across distributed environments.
 
-#### 2. Set up Python Virtual Environment:
-<details>
-    <summary>Using Conda:</summary>
-    
-    conda create -n cmf python=3.10
-    conda activate cmf
-    
+---
+
+## 🚀 Features
+
+- ✅ Track artifacts (datasets, models, metrics) using content-based hashes  
+- ✅ Automatically logs code versions (Git) and data versions (DVC)  
+- ✅ Push/pull metadata via CLI across distributed sites  
+- ✅ REST API for direct server interaction  
+- ✅ Implicit & explicit tracking of pipeline execution  
+- ✅ Fine-grained or coarse-grained metric logging  
+
+---
+
+## 📦 Installation
+
+### Requirements
+
+- Linux/Ubuntu/Debian
+- Python >=3.9, <3.11
+- Git (latest)
+
+### Virtual Environment
+
+<details><summary>Conda</summary>
+
+```bash
+conda create -n cmf python=3.10
+conda activate cmf
+```
 </details>
 
-<details>
-    <summary>Using VirtualEnv:</summary>
+<details><summary>Virtualenv</summary>
 
-    virtualenv --python=3.10 .cmf
-    source .cmf/bin/activate
-    
+```bash
+virtualenv --python=3.10 .cmf
+source .cmf/bin/activate
+```
 </details>
 
+### Install CMF
 
-#### 3. Install CMF client:
-<details>
-    <summary>Latest version form GitHub:</summary>
-    
-    pip install git+https://github.com/HewlettPackard/cmf
-    
+<details><summary>Latest from GitHub</summary>
+
+```bash
+pip install git+https://github.com/HewlettPackard/cmf
+```
 </details>
 
-<details>
-    <summary>Stable version form PyPI:</summary>
+<details><summary>Stable from PyPI</summary>
 
-    pip install cmflib
-    
+```bash
+pip install cmflib
+```
 </details>
-   
-#### 4. Install CMF server:
 
-Follow the instructions on the [Getting started with cmf-server](./docs/cmf_server/cmf-server.md) page for details on how to setup a cmf-server.
+### Server Setup
 
-## Common Metadata Framework
-[Getting Started](https://hewlettpackard.github.io/cmf/)<br><br>
-[Detailed documentation of the API's](https://hewlettpackard.github.io/cmf/api/public/cmf) <br> 
+📖 Follow the guide in <a href="docs/cmf_server/cmf-server.md" target="_blank">docs/cmf_server/cmf-server.md</a>
 
-Interactions in data pipelines can be complex. The Different stages in the pipeline, (which may not be next to each other) may have to interact to produce or transform artifacts. As the artifacts navigates and undergo transformations through this pipeline, it can take a complicated path, which might also involve bidirectional movement across these stages.  Also there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the metrics at a subsequent stage.  It is important to track the metadata across a pipeline to provide features like, lineage tracking, provenance and reproducibility.  
+---
 
-The tracking of metadata through these complex pipelines have multiple challenges, some of them being,  
+## 📘 Documentation
 
-- Each stage in the pipeline could be executed in a different datacenter or an edge site having intermittent connection to the core datacenter.   
+- [Getting Started](https://hewlettpackard.github.io/cmf/)
+- [API Reference](https://hewlettpackard.github.io/cmf/api/public/cmf)
+- [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/cmf_client)
+- [Related Docs](https://deepwiki.com/HewlettPackard/cmf)
 
-- Each stage in the pipeline could be possibly managed by different teams.  
+---
 
-- The artifacts (input or output) needs to be uniquely identified across different sites and across multiple pipelines. 
+## 🧠 How It Works
 
+CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decentralized execution across datacenters, edge, and cloud.
 
-Common metadata framework (CMF) addresses the problems associated with tracking of pipeline metadata from distributed sites and tracks code, data and metadata together for end-to-end traceability.   
+- Artifacts are versioned using DVC (`.dvc` files).
+- Code is tracked with Git.
+- Metadata is logged to relational DB (e.g., SQLite, PostgreSQL)
+- Sync metadata with `cmf metadata push` and `cmf metadata pull`.
 
-The framework automatically tracks the code version as one of the metadata for an execution. Additionally the data artifacts are also versioned automatically using a data versioning framework (like DVC) and the metadata regarding the data version is stored along with the code. The framework stores the Git commit id of the metadata file associated with the artifact and content hash of the artifact as metadata. The framework provides API’s to track the hyper parameters and other metadata of pipelines.  Therefore from the metadata stored, users can zero in on the hyper parameters, code version and the artifact version used for the experiment. 
+---
 
-Identifying the artifacts by content hash allows the framework, to uniquely identify an artifact anywhere in the distributed sites. This enables the metadata from the distributed sites to be precisely merged to a central repository, thereby providing a single global metadata from the distributed sites.   
+## 🏛 Architecture
 
-On this backbone, we build the Git like experience for metadata, enabling users to push their local metadata to the remote repository, where it is merged to create the global metadata and pull metadata from the global metadata to the local, to create a local view, which would contain only the metadata of interest. 
+CMF is composed of:
 
-The framework can be used to track various types of pipelines such as data pipelines or AI pipelines. 
+- **cmflib** - metadata library provides API to log/query metadata
+- **cmf-client** – CLI to sync metadata with server, push/pull artifacts to the user-specified repo, push/pull code from git.
+- **cmf-server** – REST API for metadata merge
+- **Central Repositories** – Git (code), DVC (artifacts), CMF (metadata)
+
 <p align="center">
- <img src="docs/assets/framework.png" height="400" align="center" />
+  <img src="docs/assets/framework.png" height="350" />
 </p>
- 
 
- 
-
-### Common metadata framework (CMF), has the following components, 
-
-CMF - Metadata library - Exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
-
-CMF local client – The client interacts with the server to pull or push metadata from or to the remote store. 
-
-CMF central server - Interacts with all the remote clients and is responsible to merge the metadata transferred by the remote client and manage the consolidated metadata.  
-
- CMF central repositories - Host the code, data and metadata. 
 <p align="center">
-  <img src="docs/assets/distributed_architecture.png" height="350" align="center" />
+  <img src="docs/assets/distributed_architecture.png" height="300" />
 </p>
 
-### Metadata library
+---
 
-The API’s and the abstractions provided by the library enables tracking of pipeline metadata. It tracks the stages in the pipeline, the input and output artifacts at each stage and metrics. The framework allows metrics to be tracked both at coarse and fine grained intervals. It could be a stage metrics, which could be captured at the end of a stage or fine grained metrics which is tracked per step (epoch) or at regular intervals during the execution of the stage. 
+## 🔧 Sample Usage
 
-The metadata logged through the API’s are written to a backend relational database. The library also provides API’s to query the metadata stored in the relational database for the users to inspect pipelines.   
+```python
 
-In addition to explicit tracking through the API’s library also provides, implicit tracking. The implicit tracking automatically tracks the software version used in the pipelines. The function arguments and function return values can be automatically tracked by adding metadata tracker class decorators on the functions. 
+from cmflib.cmf import Cmf
+from ml_metadata.proto import metadata_store_pb2 as mlpb
+cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+context: mlpb.proto.Context = cmf.create_context(
+    pipeline_stage="prepare",
+    custom_properties ={"user-metadata1": "metadata_value"}
+)
+execution: mlpb.proto.Execution = cmf.create_execution(
+    execution_type="Prepare",
+    custom_properties = {"split": split, "seed": seed}
+)
+artifact: mlpb.proto.Artifact = metawriter.log_dataset(
+	"artifacts/data.xml.gz", "input",
+	custom_properties={"user-metadata1": "metadata_value"}
+)
+```
 
-Before writing the metadata to relational database, the metadata operations are journaled in the metadata journal log. This enables the framework to transfer the local metadata to the central server. 
+```bash
+cmf                          # CLI to manage metadata and artifacts
+cmf init                     # Initialize artifact repository
+cmf init show                # Show current CMF config
+cmf metadata push            # Push metadata to server
+cmf metadata pull            # Pull metadata from server
+```
+	
+➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_client/cmf_client">Command Reference</a>
 
-All artifacts are versioned with a data versioning framework (for e.g., DVC). The content hash of the artifacts are generated and stored along with the user provided metadata. A special artifact metadata file called a “.dvc” file is created for every artifact (file / folder) which is added to data version management system. The .dvc file contains the content hash of the artifact.  
 
-For every new execution, the metadata tracker creates a new branch to track the code. The special metadata file created for artifacts, the “.dvc” file is also committed to GIT and its commit id is tracked as a metadata information.  The artifacts are versioned through the versioning of its metadata file. Whenever there is a change in the artifact, the metadata file is modified to reflect its current content hash, and the file is tracked as a new version of the metadata file.  
+---
 
-The metadata tracker automatically tracks the start commit when the library was initialized and creates separate commit for each change in the artifact along the experiment. This helps to track the transformations on the artifacts along the different stages in the pipeline. 
+## ✅ Benefits
 
-To understand more details, see documentation [here](docs/README.md)
+- Full ML pipeline observability
+- Unified metadata, artifact, and code tracking
+- Scalable metadata syncing
+- Team collaboration on metadata
 
-### Metadata client 
+---
 
-The metadata client interacts with the metadata server. It communicates with the server, for synchronization of metadata.  
+## 🎤 Talks & Publications
 
-After the experiment is completed, the user invokes the “Cmf push” command to push the collected metadata to the remote. This transfers the existing metadata journal to the server.  
+- 🎙 [Monterey Data Conference 2022](https://drive.google.com/file/d/1Oqs0AN0RsAjt_y9ZjzYOmBxI8H0yqSpB/view)
 
-The metadata from the central repository can be pulled to the local repository, either using the artifacts or using the project as the identifier or both. 
+---
 
-When artifact is used as the identifier, all metadata associated with the artifacts currently present in the branch of the cloned Git repository is pulled from the central repository to the local repository. The pulled metadata consist of not only the immediate metadata associated with the artifacts, it contains the metadata of all the artifacts in its chain of lineage. 
+## 🌐 Related Projects
 
-When project is used as the identifier, all the metadata associated with the current branch of the pipeline code that is checked out is pulled to the local repository. 
+- [📚 Common Metadata Ontology](https://hewlettpackard.github.io/cmf/common-metadata-ontology/readme/)
+- [🧠 AI Metadata Knowledge Graph (AIMKG)](https://github.com/HewlettPackard/ai-metadata-knowledge-graph)
+---
 
-### Central server 
+## 🤝 Community
 
-The central server, exposes REST API’s that can be called from the remote clients. This can help in situations where the connectivity between the core datacenter and the remote client is robust. The remote client calls the API’s exposed by the central server to log the metadata directly to the central metadata repository.  
+- 💬 [Join CMF on Slack](https://commonmetadata.slack.com/)
+- 📧 Contact: **annmary.roy@hpe.com**
 
-Where the connectivity with the central server is intermittent, the remote clients log the metadata to the local repository. The journaled metadata is pushed by the remote client to the central server. The central server, will replay the journal and merge the incoming metadata with the metadata already existing in the central repository. The ability to accurately identify the artifacts anywhere using their content hash, makes this merge robust. 
+---
 
-### Central Repositories 
+## 📄 License
 
-The common metadata framework consist of three central repositories for the code, data and metadata. 
+Licensed under the [Apache 2.0 License](./LICENSE)
 
-#### Central Metadata repository 
+---
 
-Central metadata repository holds the metadata pushed from the distributed sites. It holds metadata about all the different pipelines that was tracked using the common metadata tracker.  The consolidated view of the metadata stored in the central repository, helps the users to learn across various stages in the pipeline executed at different locations. Using the query layer that is pointed to the central repository, the users gets the global view of the metadata which provides them with a deeper understanding of the pipelines and its metadata.  The metadata helps to understand nonobvious results like performance of a dataset with respect to other datasets, Performance of a particular pipeline with respect to other pipelines etc. 
-
-#### Central Artifact storage repository 
-
-Central Artifact storage repository stores all the artifacts related to experiment. The data versioning framework (DVC) stores the artifacts in a content addressable layout. The artifacts are stored inside the folder with name as the first two characters of the content hash and the name of the artifact as the remaining part of the content hash. This helps in efficient retrieval of the artifacts.   
-
-#### Git Repository 
-
-Git repository is used to track the code. Along with the code, the metadata file of the artifacts which contain the content hash of the artifacts are also stored in GIT. The Data versioning framework (dvc) would use these files to retrieve the artifacts from the artifact storage repository. 
-
-### Advantages  
-
-1. Tracking of metadata for distributed pipeline, thereby enabling efficient pipeline 
-
-2. Enables tracking of code, data and metadata in a single framework. 
-
-3. Provides a git like ease of management for metadata. 
-
-4. Provides collaboration across teams
-
-### Talks and Papers
-1. <a href="https://drive.google.com/file/d/1Oqs0AN0RsAjt_y9ZjzYOmBxI8H0yqSpB/view" target="_blank">Monterey data conference 2022</a>
-
-### Community
-
-<a href="https://commonmetadata.slack.com/" target="_blank"> Slack: Common Metadata Framework</a>
-
-### Contact 
-contact annmary.roy@hpe.com for more information 
+> © Hewlett Packard Enterprise. Built for reproducibility in ML.

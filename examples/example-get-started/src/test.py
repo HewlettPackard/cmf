@@ -58,6 +58,7 @@ def test(model_dir: str, dataset_dir: str, output_dir: str) -> None:
         model_name="RandomForest_default"
     )
     _ = metawriter.log_dataset(artifacts.dataset, "input")
+    metawriter.finalize()
 
     with open(artifacts.model, "rb") as fd:
         model = pickle.load(fd)

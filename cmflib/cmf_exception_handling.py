@@ -17,7 +17,6 @@
 #!/usr/bin/env python3
 from typing import Optional, List
 
-
 class CmfResponse(Exception):
     """
     Response and Exceptions raised by the CMF.
@@ -116,13 +115,12 @@ class CmfInitComplete(CmfSuccess):
 
 
 class CmfInitShow(CmfSuccess):
-    def __init__(self, result, attr_str, return_code=208):
-        self.result = result
+    def __init__(self, attr_str, return_code=208):
         self.attr_str = attr_str
         super().__init__(return_code)
 
     def handle(self):
-        return f"{self.result}\n{self.attr_str}"
+        return f"{self.attr_str}"
 
 
 class ArtifactPushSuccess(CmfSuccess):
@@ -201,13 +199,13 @@ class ExecutionsNotFound(CmfFailure):
         return f"ERROR: Executions not found."
 
 
-class ExecutionIDNotFound(CmfFailure):
-    def __init__(self, exec_id, return_code=105):
-        self.exec_id = exec_id
+class ExecutionUUIDNotFound(CmfFailure):
+    def __init__(self, exec_uuid, return_code=105):
+        self.exec_uuid = exec_uuid
         super().__init__(return_code)
 
     def handle(self):
-        return f"ERROR: Execution id {self.exec_id} is not present in mlmd."
+        return f"ERROR: Execution uuid {self.exec_uuid} is not present in mlmd."
 
 
 class ArtifactNotFound(CmfFailure):

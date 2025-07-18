@@ -64,7 +64,8 @@ def parse(input_file: str, output_dir: str) -> None:
     metawriter = cmf.Cmf(filepath="mlmd", pipeline_name="Test-env", graph=graph)
     _ = metawriter.create_context(pipeline_stage="Prepare", custom_properties={"user-metadata1": "metadata_value"})
     _ = metawriter.create_execution(execution_type="Prepare", custom_properties=params)
-    _ = metawriter.log_dataset(input_file, "input", custom_properties={"user-metadata1": "metadata_value"})
+    _ = metawriter.log_dataset(input_file, "input", custom_properties={"user-metadata1": "metadata_value"}, \
+				label="artifacts/labels.csv", label_properties={"user1": "xyz"})
 
     os.makedirs(output_dir, exist_ok=True)
     Dataset = collections.namedtuple('Dataset', ['train', 'test'])
@@ -77,6 +78,8 @@ def parse(input_file: str, output_dir: str) -> None:
 
     _ = metawriter.log_dataset(output_ds.train, "output")
     _ = metawriter.log_dataset(output_ds.test, "output")
+    # Automatically commits code, ensuring no need to manually commit before using the 'git repo push' command.
+    metawriter.finalize()
 
 
 @click.command()

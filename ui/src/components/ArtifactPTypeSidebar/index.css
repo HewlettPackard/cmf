@@ -1,0 +1,54 @@
+.artifacttype-tabs {
+    font-family: Arial, sans-serif;
+    color: black;
+  }
+  
+  .art-tabs {
+    padding: 15px;
+    text-align: center;
+    background: #f4f4f4f4;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.274);
+    box-sizing: content-box;
+    position: relative;
+    outline: none;
+  }
+  .art-tabs:not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.274);
+  }
+  
+  .art-active-tabs {
+    background: white;
+    border-bottom: 1px solid transparent;
+  }
+  
+  .art-tabs:hover::before {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% + 2px);
+    height: 5px;
+    background: #01a982;
+  }
+  
+  .art-active-tabs::before {
+    content: "";
+    display: block;
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% + 2px);
+    height: 5px;
+    background: #01a982;
+  }
+  
+  button {
+    border: none;
+    padding: 10px 24px;
+    text-wrap: wrap;
+    word-wrap: break-word;
+  }

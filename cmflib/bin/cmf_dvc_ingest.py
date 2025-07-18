@@ -19,10 +19,9 @@ import yaml
 import pandas as pd
 import typing as t
 import uuid
-from ml_metadata.metadata_store import metadata_store
-from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib import cmfquery
 from cmflib import cmf
+from cmflib.utils.helper_functions import fetch_cmf_config_path
 
 
 """
@@ -74,15 +73,26 @@ def ingest_metadata(execution_lineage:str, metadata:dict, metawriter:cmf.Cmf, co
         create_new_execution=False
         )
         
+    output, config_file_path = fetch_cmf_config_path()
+
     for k, v in metadata.items():
+        props={}
         if k == "deps":
+            print("deps")
             for dep in v:
                 metawriter.log_dataset_with_version(dep["path"], dep["md5"], "input")
                 if dep["path"] not in tracked:
                     metawriter.log_dataset(dep["path"], 'input')
         if k == "outs":
+            print("outs")
             for out in v:
-                metawriter.log_dataset_with_version(out["path"], out["md5"], "output")
+                md5_value = out["md5"] 
+                url = pipeline_name+":"+output["remote.local-storage.url"]+"/files/md5/"+md5_value[:2]+"/"+md5_value
+                # print(md5_value)
+                print("url", url)
+                props["url"] =  url
+                print("props", props)
+                metawriter.log_dataset_with_version(out["path"], md5_value, "output", props)
                 tracked[out["path"]] = True
 
 def find_location(string, elements):
@@ -92,7 +102,7 @@ def find_location(string, elements):
     return None
 
 #Query mlmd to get all the executions and its commands
-cmd_exe = {}
+cmd_exe: t.Dict[str, str] = {}
 cmf_query = cmfquery.CmfQuery(args.cmf_filename)
 pipelines: t.List[str] = cmf_query.get_pipeline_names()
 for pipeline in pipelines:
@@ -110,16 +120,27 @@ for pipeline in pipelines:
             if already same execution command has been captured previously use the latest
             execution id to associate the new metadata
             '''
-            if None is cmd_exe.get(exe_step, None):
-                cmd_exe[exe_step] = str(row['id']) + "," + stage + "," + pipeline
+            existing = cmd_exe.get(exe_step)
+            if existing is None:
+                cmd_exe[exe_step] = f"{row['id']},{stage},{pipeline}"
             else:
-                if row['id'] > int(cmd_exe.get(exe_step, None).split(',')[0]):
-                    cmd_exe[exe_step] = str(row['id']) + "," + stage + "," + pipeline
+                if row['id'] > int(existing.split(',')[0]):
+                    cmd_exe[exe_step] = f"{row['id']},{stage},{pipeline}"
 
 """
 Parse the dvc.lock file.
 """
-pipeline_dict = {}
+# pipeline_dict stores pipeline stages with the following hierarchy:
+# {
+#     "<stage_name>": {
+#         "<index>": {
+#             "cmd": List[str],        # List of command parts as strings
+#             "deps": List[Dict[str, Any]],  # List of dependency dictionaries
+#             "outs": List[Dict[str, Any]]   # List of output dictionaries
+#         }
+#     }
+# }
+pipeline_dict: t.Dict[str, t.Dict[str, t.Dict[str, t.Union[t.List[str], t.List[t.Dict[str, t.Any]]]]]] = {}
 with open("dvc.lock", 'r') as f:
     valuesYaml = yaml.load(f, Loader=yaml.FullLoader)
 
@@ -182,10 +203,12 @@ for k, v in pipeline_dict.items():
                 context_name = k
                 lineage = execution_name+","+context_name+","+ pipeline_name
 
-                cmd = cmd_exe.get(str(' '.join(vvv)), None)
+                # Cast vvv to a list of strings to ensure join works correctly.
+                cmd_str = ' '.join(t.cast(t.List[str], vvv))
+                cmd = cmd_exe.get(cmd_str, None)
                 _ = metawriter.create_context(pipeline_stage=context_name)
 
-                ingest_metadata(lineage, vv, metawriter, str(' '.join(vvv)))
+                ingest_metadata(lineage, vv, metawriter, cmd_str)
 
 
 metawriter.log_dvc_lock("dvc.lock")

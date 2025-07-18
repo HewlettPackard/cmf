@@ -15,7 +15,6 @@
 ###
 
 import configparser
-import os
 import base64
 
 class CmfConfig:
@@ -47,8 +46,14 @@ class CmfConfig:
             for key in sec_data:
                 value = sec_data.get(key)
                 if sec == 'neo4j' and key == 'password':
-                    encoded_pass = bytes(value,"utf-8")
-                    value = base64.b64decode(encoded_pass).decode("utf-8")
+                    # Ensure that the password is not None before processing
+                    if value is not None:
+                        # If the password exists, decode it from base64
+                        encoded_pass = bytes(value, "utf-8")
+                        value = base64.b64decode(encoded_pass).decode("utf-8")
+                    else:
+                        # If the password is missing (None), handle the case
+                        value = ""  # Default value (empty string)
                 key = f"{sec}-{key}"
                 output_dict[key] = value
         return output_dict

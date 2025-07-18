@@ -14,15 +14,20 @@
 # limitations under the License.
 ###
 import abc
+import time
 import json
 import logging
 import typing as t
+import pandas as pd
 from enum import Enum
 from google.protobuf.json_format import MessageToDict
-import pandas as pd
-from ml_metadata.metadata_store import metadata_store
+from itertools import chain
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.mlmd_objects import CONTEXT_LIST
+from cmflib.cmf_merger import parse_json_to_mlmd
+from cmflib.store.postgres import PostgresStore
+from cmflib.store.sqllite_store import SqlliteStore
+from cmflib.utils.helper_functions import get_postgres_config
 
 __all__ = ["CmfQuery"]
 
@@ -53,7 +58,7 @@ class _KeyMapper(abc.ABC):
         Args:
             d: Dictionary to update with the mapped key.
             key: Source key name.
-         Returns:
+        Returns:
             A mapped (target) key to be used with the `d` dictionary.
         """
         new_key = self._get(key)
@@ -113,10 +118,15 @@ class CmfQuery(object):
         filepath: Path to the MLMD database file.
     """
 
-    def __init__(self, filepath: str = "mlmd") -> None:
-        config = mlpb.ConnectionConfig()
-        config.sqlite.filename_uri = filepath
-        self.store = metadata_store.MetadataStore(config)
+    def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
+        self.filepath = filepath
+        temp_store: t.Union[PostgresStore, SqlliteStore]
+        if is_server:
+            config_dict = get_postgres_config()
+            temp_store = PostgresStore(config_dict)
+        else:
+            temp_store = SqlliteStore({"filename": filepath})
+        self.store = temp_store.connect()
 
     @staticmethod
     def _copy(
@@ -155,7 +165,7 @@ class CmfQuery(object):
 
     @staticmethod
     def _transform_to_dataframe(
-        node: t.Union[mlpb.Execution, mlpb.Artifact], d: t.Optional[t.Dict] = None
+        node: t.Union[mlpb.Execution, mlpb.Artifact], d: t.Optional[t.Dict] = None  # type: ignore  # Execution, Artifact type not recognized by mypy, using ignore to bypass
     ) -> pd.DataFrame:
         """Transform MLMD entity `node` to pandas data frame.
 
@@ -202,8 +212,7 @@ class CmfQuery(object):
             df = pd.concat([df, transform_fn(element)], sort=True, ignore_index=True)
         return df
 
-    def _get_pipelines(self, name: t.Optional[str] = None) -> t.List[mlpb.Context]:
-        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context")
+    def _get_pipelines(self, name: t.Optional[str] = None) -> t.List[mlpb.Context]: # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Return list of pipelines with the given name.
 
         Args:
@@ -211,12 +220,14 @@ class CmfQuery(object):
         Returns:
             List of objects associated with pipelines.
         """
+        pipelines: t.List[mlpb.Context] = self.store.get_contexts_by_type("Parent_Context") # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         if name is not None:
             pipelines = [pipeline for pipeline in pipelines if pipeline.name == name]
         return pipelines
 
-    def _get_pipeline(self, name: str) -> t.Optional[mlpb.Context]:
+    def _get_pipeline(self, name: str) -> t.Optional[mlpb.Context]: # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Return a pipeline with the given name or None if one does not exist.
+
         Args:
             name: Pipeline name.
         Returns:
@@ -229,7 +240,7 @@ class CmfQuery(object):
             return pipelines[0]
         return None
 
-    def _get_stages(self, pipeline_id: int) -> t.List[mlpb.Context]:
+    def _get_stages(self, pipeline_id: int) -> t.List[mlpb.Context]:    # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Return stages for the given pipeline.
 
         Args:
@@ -239,21 +250,21 @@ class CmfQuery(object):
         """
         return self.store.get_children_contexts_by_context(pipeline_id)
 
-    def _get_executions(self, stage_id: int, execution_id: t.Optional[int] = None) -> t.List[mlpb.Execution]:
+    def _get_executions(self, stage_id: int, execution_id: t.Optional[int] = None) -> t.List[mlpb.Execution]:   # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """Return executions of the given stage.
 
         Args:
             stage_id: Stage identifier.
-            execution_id: If not None, return only execution with this ID.
+            execution_id: If not None, return execution with this ID.
         Returns:
             List of executions matching input parameters.
         """
-        executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id)
+        executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id) # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         if execution_id is not None:
             executions = [execution for execution in executions if execution.id == execution_id]
         return executions
 
-    def _get_executions_by_input_artifact_id(self, artifact_id: int,pipeline_id: str = None) -> t.List[int]:
+    def _get_executions_by_input_artifact_id(self, artifact_id: int, pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Return stage executions that consumed given input artifact.
 
         Args:
@@ -264,7 +275,7 @@ class CmfQuery(object):
         execution_ids = list(set(
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact_id])
-            if event.type == mlpb.Event.INPUT
+            if event.type == mlpb.Event.INPUT   # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         ))
         
         if pipeline_id != None:
@@ -275,7 +286,7 @@ class CmfQuery(object):
                     execution_ids.append(exe.id)
         return execution_ids
 
-    def _get_executions_by_output_artifact_id(self, artifact_id: int, pipeline_id: str = None) -> t.List[int]:
+    def _get_executions_by_output_artifact_id(self, artifact_id: int, pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Return stage execution that produced given output artifact.
 
         Args:
@@ -286,7 +297,7 @@ class CmfQuery(object):
         execution_ids: t.List[int] = [
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact_id])
-            if event.type == mlpb.Event.OUTPUT
+            if event.type == mlpb.Event.OUTPUT  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         ]
         # According to CMF, it's OK to have multiple executions that produce the same exact artifact.
         # if len(execution_ids) >= 2:
@@ -299,8 +310,9 @@ class CmfQuery(object):
                     execution_ids.append(exe.id)
         return execution_ids
 
-    def _get_artifact(self, name: str) -> t.Optional[mlpb.Artifact]:
+    def _get_artifact(self, name: str) -> t.Optional[mlpb.Artifact]:    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Return artifact with the given name or None.
+
         Args:
             name: Fully-qualified name (e.g., artifact hash is added to the name), so name collisions across different
                   artifact types are not issues here.
@@ -328,7 +340,7 @@ class CmfQuery(object):
         artifact_ids: t.List[int] = [
             event.artifact_id
             for event in self.store.get_events_by_execution_ids(set(execution_ids))
-            if event.type == mlpb.Event.OUTPUT
+            if event.type == mlpb.Event.OUTPUT  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         ]
         unique_artifact_ids = set(artifact_ids)
         if len(unique_artifact_ids) != len(artifact_ids):
@@ -349,7 +361,7 @@ class CmfQuery(object):
         artifact_ids = set(
             event.artifact_id
             for event in self.store.get_events_by_execution_ids(set(execution_ids))
-            if event.type == mlpb.Event.INPUT
+            if event.type == mlpb.Event.INPUT   # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         )
         return list(artifact_ids)
 
@@ -363,12 +375,14 @@ class CmfQuery(object):
 
     def get_pipeline_id(self, pipeline_name: str) -> int:
         """Return pipeline identifier for the pipeline names `pipeline_name`.
+
         Args:
             pipeline_name: Name of the pipeline.
+
         Returns:
             Pipeline identifier or -1 if one does not exist.
         """
-        pipeline: t.Optional[mlpb.Context] = self._get_pipeline(pipeline_name)
+        pipeline: t.Optional[mlpb.Context] = self._get_pipeline(pipeline_name)  # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         return -1 if not pipeline else pipeline.id
 
     def get_pipeline_stages(self, pipeline_name: str) -> t.List[str]:
@@ -377,20 +391,22 @@ class CmfQuery(object):
         Args:
             pipeline_name: Name of the pipeline for which stages need to be returned. In CMF, there are no different
                 pipelines with the same name.
+
         Returns:
             List of stage names associated with the given pipeline.
         """
-        stages = []
+        stages:t.List[str] = []
         for pipeline in self._get_pipelines(pipeline_name):
             stages.extend(stage.name for stage in self._get_stages(pipeline.id))
         return stages
 
-    def get_all_exe_in_stage(self, stage_name: str) -> t.List[mlpb.Execution]:
+    def get_all_exe_in_stage(self, stage_name: str) -> t.List[mlpb.Execution]:  # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """Return list of all executions for the stage with the given name.
 
         Args:
             stage_name: Name of the stage. Before stages are recorded in MLMD, they are modified (e.g., pipeline name
                         will become part of the stage name). So stage names from different pipelines will not collide.
+        
         Returns:
             List of executions for the given stage.
         """
@@ -457,8 +473,10 @@ class CmfQuery(object):
 
     def get_all_executions_in_stage(self, stage_name: str) -> pd.DataFrame:
         """Return executions of the given stage as pandas data frame.
+        
         Args:
             stage_name: Stage name. See doc strings for the prev method.
+        
         Returns:
             Data frame with all executions associated with the given stage.
         """
@@ -473,12 +491,13 @@ class CmfQuery(object):
                         df = pd.concat([df, ex_as_df], sort=True, ignore_index=True)
         return df
 
-    def get_artifact_df(self, artifact: mlpb.Artifact, d: t.Optional[t.Dict] = None) -> pd.DataFrame:
+    def get_artifact_df(self, artifact: mlpb.Artifact, d: t.Optional[t.Dict] = None) -> pd.DataFrame:   # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         """Return artifact's data frame representation.
 
         Args:
             artifact: MLMD entity representing artifact.
             d: Optional initial content for data frame.
+        
         Returns:
             A data frame with the single row containing attributes of this artifact.
         """
@@ -511,10 +530,11 @@ class CmfQuery(object):
 
         Args:
             name: Artifact name.
+
         Returns:
             Pandas data frame with one row containing attributes of this artifact.
         """
-        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(name)
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(name)  # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if artifact:
             return self.get_artifact_df(artifact)
         return None
@@ -524,12 +544,13 @@ class CmfQuery(object):
 
         Args:
             execution_id: Execution identifier.
-        Return:
+
+        Returns:
             Data frame containing input and output artifacts for the given execution, one artifact per row.
         """
         df = pd.DataFrame()
         for event in self.store.get_events_by_execution_ids([execution_id]):
-            event_type = "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT"
+            event_type = "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT"   # type: ignore  # Event type not recognized by mypy, using ignore to bypass
             for artifact in self.store.get_artifacts_by_id([event.artifact_id]):
                 df = pd.concat(
                     [df, self.get_artifact_df(artifact, {"event": event_type})], sort=True, ignore_index=True
@@ -551,19 +572,20 @@ class CmfQuery(object):
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Pandas data frame containing stage executions, one execution per row.
         """
         df = pd.DataFrame()
 
-        artifact: t.Optional = self._get_artifact(artifact_name)
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name) # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if not artifact:
             return df
 
         for event in self.store.get_events_by_artifact_ids([artifact.id]):
             stage_ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
             linked_execution = {
-                "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
+                "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",   # type: ignore  # Event type not recognized by mypy, using ignore to bypass
                 "execution_id": event.execution_id,
                 "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
                 "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'],
@@ -579,34 +601,35 @@ class CmfQuery(object):
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         return df
 
-    def get_one_hop_child_artifacts(self, artifact_name: str, pipeline_id: str = None) -> pd.DataFrame:
+    def get_one_hop_child_artifacts(self, artifact_name: str, pipeline_id: t.Optional[int] = None) -> pd.DataFrame:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
             artifact name: Name of an artifact.
-        Return:
+
+        Returns:
             Output artifacts of all executions that consumed given artifact.
         """
-        artifact: t.Optional = self._get_artifact(artifact_name)
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name)    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if not artifact:
             return pd.DataFrame()
 
         # Get output artifacts of executions consumed the above artifact.
-        artifacts_ids = self._get_output_artifacts(self._get_executions_by_input_artifact_id(artifact.id,pipeline_id))
+        artifacts_ids = self._get_output_artifacts(self._get_executions_by_input_artifact_id(artifact.id, pipeline_id))
         return self._as_pandas_df(
             self.store.get_artifacts_by_id(artifacts_ids), lambda _artifact: self.get_artifact_df(_artifact)
         )
 
-    def get_one_hop_parent_executions(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
+    def get_one_hop_parent_executions(self, execution_id: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
             artifact name: Name of an artifact.
+
         Return:
             Output artifacts of all executions that consumed given artifact.
         """
-        artifacts_input=self._get_input_artifacts(execution_id)
-        arti = self.store.get_artifacts_by_id(artifacts_input)
+        artifacts_input = self._get_input_artifacts(execution_id)
         list_exec = []
         exec_ids_added = []
         for i in artifacts_input:
@@ -614,10 +637,12 @@ class CmfQuery(object):
             if exec not in exec_ids_added:
                 exec_ids_added.append(exec)
                 list_exec.append(self.store.get_executions_by_id(exec))
-        return list_exec
+        # Flatten list_exec and return as a list of integers
+        return list(chain.from_iterable(list_exec))
 
-    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: str = None) -> t.List[int]:
+    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Get parent execution ids for given execution id
+
         Args: 
            execution_id : Execution id for which parent execution are required
                           It is passed in list, for example execution_id: [1]  
@@ -625,9 +650,9 @@ class CmfQuery(object):
         Return:
            Returns parent executions for given id
         """
-        artifact_ids: t.Optional = self._get_input_artifacts(execution_ids)
+        artifact_ids: t.List[int] = self._get_input_artifacts(execution_ids)
         if not artifact_ids:
-            return None
+            return []
 
         exe_ids = []
 
@@ -637,11 +662,12 @@ class CmfQuery(object):
         return exe_ids
 
     def get_executions_with_execution_ids(self, exe_ids: t.List[int]) -> pd.DataFrame:
-        """For list of execution ids it returns df with "id,Execution_type_name, Execution_uuid"
+        """For list of execution ids it returns df with "id, Execution_type_name, Execution_uuid"
+
         Args:
             execution ids: List of execution ids.
         Return:
-            df["id","Execution_type_name","Execution_uuid"]
+            df["id", "Execution_type_name", "Execution_uuid"]
         """
         df = pd.DataFrame()
         executions = self.store.get_executions_by_id(exe_ids)
@@ -649,7 +675,7 @@ class CmfQuery(object):
         for exe in executions:
             temp_dict = {}
             # To get execution_id, exe list[mlmd.proto.execution] is converted to dict using MessageToDict
-            execution_id = MessageToDict(exe, including_default_value_fields=False, preserving_proto_field_name=True)
+            execution_id = MessageToDict(exe, preserving_proto_field_name=True) # By default including_default_value_fields=False
             temp_dict['id'] = int(execution_id['id'])
             d1 = self._transform_to_dataframe(exe, temp_dict)       # df {id:,executions}
             df = pd.concat([df, d1], sort=True, ignore_index=True)
@@ -657,36 +683,20 @@ class CmfQuery(object):
         df = df[["id", "Execution_type_name","Execution_uuid"]]
         return df
 
-    def get_one_hop_child_executions(self, execution_id: t.List[int]) -> t.List[int]:
-        """Get artifacts produced by executions that consume given artifact.
-
-        Args:
-            artifact name: Name of an artifact.
-        Return:
-            Output artifacts of all executions that consumed given artifact.
-        """
-        artifacts_output=self._get_output_artifacts(execution_id)
-        arti=self.store.get_artifacts_by_id(artifacts_output)
-        for i in artifacts_output:
-            exec=self._get_executions_by_input_artifact_id(i)
-            list_exec=self.store.get_executions_by_id(exec)
-            for id in list_exec:
-                self._transform_to_dataframe(id).Execution_type_name
-
     def get_all_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return all downstream artifacts starting from the given artifact.
 
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing all child artifacts.
         """
         df = pd.DataFrame()
         d1 = self.get_one_hop_child_artifacts(artifact_name)
-        # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
-            d1 = self.get_all_child_artifacts(row.name)
+            d1 = self.get_all_child_artifacts(str(row.name))    # Convert row.name to string to ensure compatibility with get_all_child_artifacts method
             # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)
@@ -694,12 +704,14 @@ class CmfQuery(object):
 
     def get_one_hop_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return input artifacts for the execution that produced the given artifact.
+
         Args:
             artifact_name: Artifact name.
+
         Returns:
-            Data frame containing immediate parent artifactog of given artifact.
+            Data frame containing immediate parent artifact of given artifact.
         """
-        artifact: t.Optional = self._get_artifact(artifact_name)
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name) # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if not artifact:
             return pd.DataFrame()
 
@@ -711,36 +723,53 @@ class CmfQuery(object):
 
     def get_all_parent_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return all upstream artifacts.
+
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing all parent artifacts.
         """
         df = pd.DataFrame()
         d1 = self.get_one_hop_parent_artifacts(artifact_name)
-        # df = df.append(d1, sort=True, ignore_index=True)
         df = pd.concat([df, d1], sort=True, ignore_index=True)
         for row in d1.itertuples():
-            d1 = self.get_all_parent_artifacts(row.name)
+            d1 = self.get_all_parent_artifacts(str(row.name))   # Convert row.name to string to ensure compatibility with get_all_parent_artifacts method
             # df = df.append(d1, sort=True, ignore_index=True)
             df = pd.concat([df, d1], sort=True, ignore_index=True)
         df = df.drop_duplicates(subset=None, keep="first", inplace=False)
         return df
 
-    def get_all_parent_executions_by_id(self, execution_id: t.List[int], pipeline_id: str = None) -> t.List[int]:
-        parent_executions = [[],[]]
-        current_execution_id = execution_id
-        list_of_parent_execution_id = []
-        link_src_trgt_list = []
+    def get_all_parent_executions_by_id(self, execution_id: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[t.List[t.Any]]:
+        """
+        Retrieve all parent executions for a given execution ID.
+
+        This method recursively finds all parent executions for the provided execution ID(s) within an optional pipeline context.
+        It returns a list containing two lists: one with parent execution details and another with source-target links.
+
+        Args:
+            execution_id: A list of execution IDs for which to find parent executions.
+            pipeline_id: An optional pipeline ID to filter the parent executions. Defaults to None.
+
+        Returns:
+            List[int]: A list containing two lists:
+            - The first list contains details of parent executions, where each entry is a list with the execution ID, execution type name, and execution UUID.
+            - The second list contains dictionaries representing source-target links between executions.
+        """
+        parent_executions: t.List[t.List[t.Any]] = [[],[]]
+        current_execution_id: t.List[int] = execution_id
+        list_of_parent_execution_id: t.List[t.List[t.Any]] = []
+        link_src_trgt_list: t.List[t.Dict[str, int]] = []
         while current_execution_id:
             parent_execution_ids = self.get_one_hop_parent_executions(current_execution_id, pipeline_id)
-            list_of_parent_execution_id = []
-            for data in parent_execution_ids:
-                for j in data:
-                    temp=[j.id, j.properties["Execution_type_name"].string_value, j.properties["Execution_uuid"].string_value]
-                    if temp not in parent_executions[0]:
-                        link_src_trgt_list.append({"source":j.id, "target":current_execution_id[0]})
-                        list_of_parent_execution_id.append(temp)
+            if isinstance(parent_execution_ids, list):  # Ensure 'parent_execution_ids' is a iterable
+                for data in parent_execution_ids:
+                    if isinstance(data, list):  # Ensure 'data' is iterable
+                        for j in data:
+                            temp=[j.id, j.properties["Execution_type_name"].string_value, j.properties["Execution_uuid"].string_value]
+                            if temp not in parent_executions[0]:
+                                link_src_trgt_list.append({"source":j.id, "target":current_execution_id[0]})
+                                list_of_parent_execution_id.append(temp)
             if list_of_parent_execution_id:
                 parent_executions[0].extend(list_of_parent_execution_id)
                 parent_executions[1].extend(link_src_trgt_list)
@@ -755,8 +784,10 @@ class CmfQuery(object):
 
     def get_all_parent_executions(self, artifact_name: str) -> pd.DataFrame:
         """Return all executions that produced upstream artifacts for the given artifact.
+
         Args:
             artifact_name: Artifact name.
+
         Returns:
             Data frame containing all parent executions.
         """
@@ -767,8 +798,8 @@ class CmfQuery(object):
 
         execution_ids = set(
             event.execution_id
-            for event in self.store.get_events_by_artifact_ids(parent_artifacts.id.values.tolist())
-            if event.type == mlpb.Event.OUTPUT
+            for event in self.store.get_events_by_artifact_ids([int(id) for id in parent_artifacts.id.values.tolist()])
+            if event.type == mlpb.Event.OUTPUT  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         )
 
         return self._as_pandas_df(
@@ -776,13 +807,13 @@ class CmfQuery(object):
             lambda _exec: self._transform_to_dataframe(_exec, {"id": _exec.id, "name": _exec.name}),
         )
 
-    def find_producer_execution(self, artifact_name: str) -> t.Optional[mlpb.Execution]:
+    def find_producer_execution(self, artifact_name: str) -> t.Optional[mlpb.Execution]:    # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """Return execution that produced the given artifact.
 
         One artifact can have multiple producer executions (names of artifacts are fully-qualified with hashes). So,
         if two executions produced the same exact artifact, this one artifact will have multiple parent executions.
         """
-        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name)
+        artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name) # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if not artifact:
             logger.debug("Artifact does not exist (name=%s).", artifact_name)
             return None
@@ -791,13 +822,13 @@ class CmfQuery(object):
             event.execution_id
             for event in self.store.get_events_by_artifact_ids([artifact.id])
 
-            if event.type == mlpb.Event.OUTPUT
+            if event.type == mlpb.Event.OUTPUT  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         )
         if not executions_ids:
             logger.debug("No producer execution exists for artifact (name=%s, id=%s).", artifact.name, artifact.id)
             return None
 
-        executions: t.List[mlpb.Execution] = self.store.get_executions_by_id(executions_ids)
+        executions: t.List[mlpb.Execution] = self.store.get_executions_by_id(executions_ids)    # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         if not executions:
             logger.debug("No executions exist for given IDs (ids=%s)", str(executions_ids))
             return None
@@ -815,8 +846,10 @@ class CmfQuery(object):
 
     def get_metrics(self, metrics_name: str) -> t.Optional[pd.DataFrame]:
         """Return metric data frame.
+
         Args:
             metrics_name: Metrics name.
+        
         Returns:
             Data frame containing all metrics.
         """
@@ -889,65 +922,141 @@ class CmfQuery(object):
                 )
         return df
 
-    def dumptojson(self, pipeline_name: str, exec_id: t.Optional[int] = None) -> t.Optional[str]:
+    def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict: # type: ignore  # Execution, Context, Event type not recognized by mypy, using ignore to bypass
+        """
+        Extract attributes from a node and return them as a dictionary.
+
+        Args:
+            _node (Union[mlpb.Context, mlpb.Execution, mlpb.Event]): The MLMD node (Context, Execution, or Event) to extract attributes from.
+            _attrs (Dict): A dictionary to populate with extracted attributes.
+
+        Returns:
+            Dict: A dictionary containing the extracted attributes from the node.
+        """
+        for attr in CONTEXT_LIST:
+            if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
+                _attrs[attr] = getattr(_node, attr)
+
+        if "properties" in _attrs:
+            _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
+        if "custom_properties" in _attrs:
+            _attrs["custom_properties"] = CmfQuery._copy(
+                _attrs["custom_properties"], key_mapper={"type": "user_type"}
+            )
+        return _attrs
+
+    def _get_event_attributes(self, execution_id: int) -> t.List[t.Dict]:
+        """
+        Extract event attributes for a given execution ID.
+
+        Args:
+            execution_id (int): The ID of the execution for which event attributes are to be extracted.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of an event associated with the execution.
+        """
+        events = []
+        for event in self.store.get_events_by_execution_ids([execution_id]):
+            event_attrs = self._get_node_attributes(event, {})
+            artifacts = self.store.get_artifacts_by_id([event.artifact_id])
+            artifact_attrs = self._get_node_attributes(
+                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
+            )
+            event_attrs["artifact"] = artifact_attrs
+            events.append(event_attrs)
+        return events
+
+    def _get_execution_attributes(self, stage_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
+        """
+        Extract execution attributes for a given stage ID.
+
+        Args:
+            stage_id (int): The ID of the stage for which execution attributes are to be extracted.
+            exec_uuid (Optional[str]): An optional execution UUID to filter executions. If None, all executions are included.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of an execution associated with the stage.
+        """
+        executions = []
+        for execution in self.get_all_executions_by_stage(stage_id, execution_uuid=exec_uuid):
+            exec_attrs = self._get_node_attributes(
+                execution,
+                {
+                    "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
+                    "name": execution.name if execution.name != "" else "",
+                    "events": self._get_event_attributes(execution.id),
+                },
+            )
+
+            # what is usual situtaion - 
+            #it does not matter if last sync time is given or not we have to add exec_attrs 
+            #however if last sync timr is given then we have to check if last_update_time_since_epoch > last_sync_time
+            # last_update_time_since epoch
+
+            if last_sync_time:
+                if exec_attrs["last_update_time_since_epoch"] > last_sync_time:
+                    executions.append(exec_attrs)
+            else:
+                executions.append(exec_attrs)
+
+        return executions
+
+    def _get_stage_attributes(self, pipeline_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
+        """
+        Extract stage attributes for a given pipeline ID.
+
+        Args:
+            pipeline_id (int): The ID of the pipeline for which stage attributes are to be extracted.
+            exec_uuid (Optional[str]): An optional execution UUID to filter stages. If None, all stages are included.
+
+        Returns:
+            List[Dict]: A list of dictionaries, each containing attributes of a stage associated with the pipeline.
+        """
+        stages = []
+        for stage in self._get_stages(pipeline_id):
+            stage_attrs = self._get_node_attributes(stage, {"executions": self._get_execution_attributes(stage.id, exec_uuid, last_sync_time)})
+            if last_sync_time:
+                if len(stage_attrs['executions']) != 0:
+                    stages.append(stage_attrs)
+                else:
+                    if stage_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        stages.append(stage_attrs)
+            else:
+                stages.append(stage_attrs)
+
+        return stages
+
+    def dumptojson(self, pipeline_name: str, exec_uuid: t.Optional[str] = None) -> t.Optional[str]:
         """Return JSON-parsable string containing details about the given pipeline.
+        
         Args:
             pipeline_name: Name of an AI pipelines.
-            exec_id: Optional stage execution ID - filter stages by this execution ID.
+            exec_uuid: Optional stage execution_uuid - filter stages by this execution_uuid.
+        
         Returns:
             Pipeline in JSON format.
         """
-        if exec_id is not None:
-            exec_id = int(exec_id)
-
-        def _get_node_attributes(_node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict:
-            for attr in CONTEXT_LIST:
-                #Artifacts getattr call on Type was giving empty string, which was overwriting 
-                # the defined types such as Dataset, Metrics, Models
-                if getattr(_node, attr, None) is not None and not getattr(_node, attr, None) == "":
-                    _attrs[attr] = getattr(_node, attr)
-
-            if "properties" in _attrs:
-                _attrs["properties"] = CmfQuery._copy(_attrs["properties"])
-            if "custom_properties" in _attrs:
-                # TODO: (sergey) why do we need to rename "type" to "user_type" if we just copy into a new dictionary?
-                _attrs["custom_properties"] = CmfQuery._copy(
-                    _attrs["custom_properties"], key_mapper={"type": "user_type"}
-                )
-            return _attrs
-
         pipelines: t.List[t.Dict] = []
         for pipeline in self._get_pipelines(pipeline_name):
-            pipeline_attrs = _get_node_attributes(pipeline, {"stages": []})
-            for stage in self._get_stages(pipeline.id):
-                stage_attrs = _get_node_attributes(stage, {"executions": []})
-                for execution in self._get_executions(stage.id, execution_id=exec_id):
-                    # name will be an empty string for executions that are created with
-                    # create new execution as true(default)
-                    # In other words name property will there only for execution
-                    # that are created with create new execution flag set to false(special case)
-                    exec_attrs = _get_node_attributes(
-                        execution,
-                        {
-                            "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
-                            "name": execution.name if execution.name != "" else "",
-                            "events": [],
-                        },
-                    )
-                    for event in self.store.get_events_by_execution_ids([execution.id]):
-                        event_attrs = _get_node_attributes(event, {})
-                        # An event has only a single Artifact associated with it. 
-                        # For every artifact we create an event to link it to the execution.
-
-                        artifacts =  self.store.get_artifacts_by_id([event.artifact_id])
-                        artifact_attrs = _get_node_attributes(
-                                artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
-                            )
-                        event_attrs["artifact"] = artifact_attrs
-                        exec_attrs["events"].append(event_attrs)
-                    stage_attrs["executions"].append(exec_attrs)
-                pipeline_attrs["stages"].append(stage_attrs)
+            pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, exec_uuid)})
             pipelines.append(pipeline_attrs)
+
+        return json.dumps({"Pipeline": pipelines})
+
+    def extract_to_json(self, last_sync_time: int):
+        pipelines = []
+        if last_sync_time:
+            for pipeline in self._get_pipelines():
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id, None, last_sync_time)})
+                if len(pipeline_attrs['stages']) !=0:
+                    pipelines.append(pipeline_attrs)
+                else:
+                    if pipeline_attrs["last_update_time_since_epoch"] > last_sync_time:
+                        pipelines.append(pipeline_attrs)
+        else:
+            for pipeline in self._get_pipelines():
+                pipeline_attrs = self._get_node_attributes(pipeline, {"stages": self._get_stage_attributes(pipeline.id)})
+                pipelines.append(pipeline_attrs)
 
         return json.dumps({"Pipeline": pipelines})
     
@@ -965,7 +1074,7 @@ class CmfQuery(object):
             for event in self.store.get_events_by_artifact_ids([artifact_id]):
                 stage_ctx = self.store.get_contexts_by_execution(event.execution_id)[0]
                 linked_execution = {
-                    "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",
+                    "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",   # type: ignore  # Event type not recognized by mypy, using ignore to bypass
                     "execution_id": event.execution_id,
                     "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
                     "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'],
@@ -982,25 +1091,29 @@ class CmfQuery(object):
         except:
             return df
         return df
+    
+    def get_all_executions_by_stage(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]: # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
+        """
+        Return executions of the given stage.
 
-    """def materialize(self, artifact_name:str):
-       artifacts = self.store.get_artifacts()
-       for art in artifacts:
-           if art.name == artifact_name:
-               selected_artifact = art
-               break
-       for k, v in selected_artifact.custom_properties.items():
-           if (k == "Path"):
-               path = v
-           elif (k == "git_repo"):
-               git_repo = v
-           elif (k == "Revision"):
-               rev = v
-           elif (remote == "Remote"):
-               remote = v
-       
-       Cmf.materialize(path, git_repo, rev, remote)"""
-
+        This function retrieves all executions associated with a specific stage.
+        If an execution UUID is provided, it filters the executions to include only those
+        that match the given UUID.
+        Args:
+            stage_id (int): Stage identifier.
+            execution_uuid (Optional[str]): If not None, return execution with this UUID.
+        Returns:
+            List[mlpb.Execution]: List of executions matching input parameters.
+        """
+        executions: t.List[mlpb.Execution] = self.store.get_executions_by_context(stage_id) # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
+        if execution_uuid is None:
+            return executions
+        executions_with_uuid: t.List[mlpb.Execution] = []   # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
+        for execution in executions:
+            exec_uuid_list = execution.properties['Execution_uuid'].string_value.split(",")
+            if execution_uuid in exec_uuid_list:
+                executions_with_uuid.append(execution)
+        return executions_with_uuid
 
 def test_on_collision() -> None:
     from unittest import TestCase

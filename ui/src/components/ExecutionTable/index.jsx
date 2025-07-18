@@ -17,6 +17,11 @@
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.module.css";
+import FastAPIClient from "../../client";
+import config from "../../config";
+import PythonEnvPopup from "../../components/PythonEnvPopup";
+
+const client = new FastAPIClient(config);
 
 const ExecutionTable = ({ executions, onSort, onFilter }) => {
   // Default sorting order
@@ -25,6 +30,9 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
   const [expandedRow, setExpandedRow] = useState(null);
+
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupData, setPopupData] = useState("");
 
   const consistentColumns = [];
 
@@ -59,6 +67,21 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     } else {
       setExpandedRow(rowId);
     }
+  };
+
+  
+  const handleLinkClick = (file_name) => {
+    setShowPopup(true);
+    client.getPythonEnv(file_name).then((data) => {
+      console.log(data);
+      setPopupData(data);
+      setShowPopup(true);
+    });
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
+    setPopupData("");
   };
 
   const renderArrow = () => {
@@ -156,6 +179,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
             <thead>
               <tr className="text-xs font-bold text-left text-black uppercase">
                 <th scope="col" className="px-6 py-3"></th>
+                <th scope="col" className="px-6 py-3">Execution uuid</th>
                 <th
                   scope="col"
                   onClick={handleSort}
@@ -167,6 +191,11 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                 </th>
                 <th scope="col" className="px-6 py-3 Execution">
                   Execution
+                </th>
+                <th scope="col" className="px-6 py-3 Env">
+                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                    Python Env
+                  </span>
                 </th>
                 <th scope="col" className="px-6 py-3 Git_Repo">
                   Git Repo
@@ -184,14 +213,33 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                 <React.Fragment key={index}>
                   <tr
                     key={index}
-                    onClick={() => toggleRow(index)}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4 cursor-pointer">
+                    <td className="px-6 py-4 cursor-pointer"
+                      onClick={() => {toggleRow(index)}}
+                    >
                       {expandedRow === index ? "-" : "+"}
                     </td>
+                    <td className="px-6 py-4 break-words whitespace-normal max-w-xs">{data.Execution_uuid}</td>
                     <td className="px-6 py-4">{data.Context_Type}</td>
                     <td className="px-6 py-4">{data.Execution}</td>
+                    <td className="px-6 py-4">
+                          <a
+                            href="#"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleLinkClick(data.custom_properties_Python_Env);
+                    
+                            }}
+                          >
+                            View Env Details
+                          </a>
+                          <PythonEnvPopup
+                            show={showPopup}
+                            python_env={popupData}
+                            onClose={handleClosePopup}
+                          />
+                    </td>
                     <td className="px-6 py-4">{data.Git_Repo}</td>
                     <td className="px-6 py-4">{data.Git_Start_Commit}</td>
                     <td className="px-6 py-4">{data.Pipeline_Type}</td>
@@ -210,7 +258,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                                   <React.Fragment key={key}>
                                     <tr>
                                       <td key={key}>{key}</td>
-                                      <td key={value}>
+                                      <td key={value} className="break-words whitespace-normal max-w-md">
                                         {value ? value : "Null"}
                                       </td>
                                     </tr>

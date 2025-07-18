@@ -19,7 +19,7 @@ def data_pull(pipeline_name,file_path=""):
     config_file_path = os.path.join(output, cmfconfig)
 
     attr_dict = CmfConfig.read_config(config_file_path)
-    url = attr_dict.get("cmf-server-ip", "http://127.0.0.1:80")
+    url = attr_dict.get("cmf-server-url", "http://127.0.0.1:8080")
     try:
         server = requests.get(url)
         if server.status_code!=200:

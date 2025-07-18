@@ -72,6 +72,7 @@ def train(input_dir: str, output_dir: str) -> None:
         path=model_file, event="output", model_framework="SKlearn", model_type="RandomForestClassifier",
         model_name="RandomForestClassifier:default"
     )
+    metawriter.finalize()
 
 
 @click.command()

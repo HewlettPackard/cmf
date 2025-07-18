@@ -17,9 +17,10 @@
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
 import "./index.css";
-import Popup from "../../components/Popup";
+import ModelCardPopup from "../../components/ModelCardPopup";
 import FastAPIClient from "../../client";
 import config from "../../config";
+import LabelCardPopup from "../LabelCardPopup";
 
 const client = new FastAPIClient(config);
 
@@ -31,6 +32,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
   const [expandedRow, setExpandedRow] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
+  const [labelData, setLabelData] = useState("");
 
   const consistentColumns = [];
 
@@ -111,6 +113,15 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
     return date_time.toUTCString();
   }
 
+  const label_list = ["lable1", "label2", "label3"];
+
+  const getLabelData = (label_name) => {
+    client.getLabelData(label_name).then((data) => {
+      console.log(data);
+      setLabelData(data);
+    });
+  }
+
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
       <div className="overflow-x-auto w-full">
@@ -152,6 +163,11 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                 <th scope="col" className="date_and_time px-6 py-3">
                   Date & Time
                 </th>
+                {ArtifactType === "Dataset" && (
+                  <th scope="col" className="label px-6 py-3">
+                    Label
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody className="body divide-y divide-gray-200">
@@ -181,7 +197,7 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                           >
                             Open Model Card
                           </a>
-                          <Popup
+                          <ModelCardPopup
                             show={showPopup}
                             model_data={popupData}
                             onClose={handleClosePopup}
@@ -196,6 +212,31 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                       <td className="px-6 py-4">{data.git_repo}</td>
                       <td className="px-6 py-4">{data.Commit}</td>
                       <td className="px-6 py-4">{createDateTime(data.create_time_since_epoch)}</td>
+                      {ArtifactType === "Dataset" && (
+                        <td className="px-6 py-4">
+                          {label_list.map((label_name, index) => (
+                              <div key={index} className="label">
+                                <a
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  getLabelData({label_name});
+                                  setShowPopup(true);
+                                }}
+                                >
+                                  {label_name}
+                                </a>
+                                {showPopup && (
+                                  <LabelCardPopup
+                                    show={showPopup}
+                                    label_data={labelData}
+                                    onClose={handleClosePopup}
+                                  />
+                                )}
+                              </div>
+                          ))}
+                        </td>
+                      )}
                     </tr>
                     {expandedRow === index && (
                       <tr>

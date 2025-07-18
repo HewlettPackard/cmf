@@ -14,32 +14,61 @@
 # limitations under the License.
 ###
 
-
 site_name: CMF
 site_description: CMF - Common Metadata Framework
 site_author: AI Research & Development Lab (Hewlett-Packard Labs)
-
 
 repo_name: HewlettPackard/cmf
 repo_url: https://github.com/HewlettPackard/cmf
 edit_uri: ""
 docs_dir: docs/
+strict: false
 
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
 
 theme:
   name: material
   language: en
   features:
     - navigation.sections  # Sections are included in the navigation on the left.
-    - toc.integrate        # Table of contents is integrated on the left; does not appear separately on the right.
-    - header.autohide      # header disappears as you scroll
+    - navigation.indexes   # Section index pages
+    - toc.follow          # Table of contents follows scroll position
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.tracking
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - content.action.edit
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - search.highlight
+    - search.suggest
   palette:
-    primary: 'blue'
-    accent: 'blue'
-  font:
-    text: 'Circular'
-    code: 'Inconsolata'
-
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode  
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to system preference
 
 markdown_extensions:
   - admonition
@@ -47,7 +76,11 @@ markdown_extensions:
       generic: true
   - pymdownx.tasklist
   - pymdownx.details       # Allowing hidden expandable regions denoted by ???
-  - pymdownx.superfences   # Seems to enable syntax highlighting when used with the Material theme.
+  - pymdownx.superfences:  # Enables syntax highlighting and Mermaid diagrams
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - toc:
@@ -58,7 +91,6 @@ markdown_extensions:
 extra_css:
   - extra.css         # This defines custom properties, in particular, enforces custom HTML tables to be 100% width.
 
-
 plugins:
   - autorefs          # Need to reference mkdocstrings-generated content from documentation files ([][] thing).
   - search
@@ -67,6 +99,17 @@ plugins:
       handlers:
         python:
           paths: [src]
+          options:
+            docstring_style: google
+            show_root_heading: true
+            show_source: false
+            members_order: source
+            merge_init_into_class: true
+            style: table
+
+extra_javascript:
+  - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
+
 extra:
   social:
     # Buttons at the bottom of every page.
@@ -78,26 +121,35 @@ extra:
 
 # This defines the structure of the CMF documentation portal (all must be in `docs/` directory).
 nav:
-  - index.md
-  - Quick start with cmf-client: cmf_client/step-by-step.md
-  - Examples:
-      - Getting Started: examples/getting_started.md
-  - Architecture:
+  - Home:
+    - 🔗 Welcome to CMF: index.md
+    - 🏗️ Architecture:
       - Overview: architecture/overview.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
-  - Client:
+    - 📚 Installation & Setup: setup/index.md
+    - 🗄️ cmf-server: 
+      - Introduction: cmf_server/cmf-server.md
+      - Metahub: cmf_server/metahub-tab-usage.md
+    - 🏃🏼‍♂️ cmf-client: cmf_client/step-by-step.md
+    - 🖥️ cmf-gui: ui/index.md
+    - 🎯 Examples:
+      - Getting Started Tutorial: examples/getting_started.md
+    - 🐍 API Reference:
+      - Overview: api/public/cmf.md
+      - cmflib: cmflib/index.md
+      - Data Types:
+        - DataSlice: api/public/dataslice.md
+        - CmfQuery: api/public/cmfquery.md
+      - Ray Logger: api/public/cmf_ray_logger.md
+      - Complete API Documentation: api/public/API.md
+    - 💻 CLI Reference:
       - Overview: cmf_client/cmf_client.md
-      - Quick start with cmf-client: cmf_client/step-by-step.md
-      - dvc minio backend: cmf_client/minio-server.md
-  - Server:
-      - Getting started with cmf-server: cmf_server/cmf-server.md
-  - TensorBoard:
-      - Getting started with tensorboard: cmf_client/tensorflow_guide.md
-  - Public API:
-      - CMF: api/public/cmf.md
-      - DataSlice: api/public/dataslice.md
-      - CmfQuery: api/public/cmfquery.md
-  - Ontology:
-      - Ontology: common-metadata-ontology/readme.md
-
+      - Getting Started with CMF: cmf_client/Getting Started with cmf.md
+      - Guide for the cmf dvc ingest command: cmf_client/cmf-dvc-ingest-guide.md
+      - Start Neo4j with Docker: cmf_client/neo4j_docker.md
+      - Storage Backends:
+        - DVC MinIO Backend: cmf_client/minio-server.md
+        - SSH Setup: cmf_client/ssh-setup.md
+    - 📊 TensorBoard: cmf_client/tensorflow_guide.md
+    - 🔗 Ontology: common-metadata-ontology/readme.md

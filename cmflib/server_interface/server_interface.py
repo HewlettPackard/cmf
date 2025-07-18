@@ -15,21 +15,20 @@
 ###
 
 import requests
-import json
 
 # This function posts mlmd data to mlmd_push api on cmf-server
-def call_mlmd_push(json_payload, url, exec_id, pipeline_name):
+def call_mlmd_push(json_payload, url, exec_uuid, pipeline_name):
     url_to_pass = f"{url}/mlmd_push"
-    json_data = {"id": exec_id, "json_payload": json_payload, "pipeline_name": pipeline_name}
+    json_data = {"exec_uuid": exec_uuid, "json_payload": json_payload, "pipeline_name": pipeline_name}
     response = requests.post(url_to_pass, json=json_data)  # Post request
     # print("Status code -", response.status_code)
     return response
 
 
 # This function gets mlmd data from mlmd_pull api from cmf-server
-def call_mlmd_pull(url, pipeline_name, exec_id):
-    url_to_pass = f"{url}/mlmd_pull/{pipeline_name}"
-    response = requests.get(url_to_pass, json={"exec_id": exec_id})  # Get request
+def call_mlmd_pull(url, pipeline_name, exec_uuid):
+    url_to_pass = f"{url}/mlmd_pull"
+    response = requests.post(url_to_pass, json={"pipeline_name":pipeline_name, "exec_uuid": exec_uuid})  
     return response
 
 
@@ -39,4 +38,18 @@ def call_tensorboard(url, pipeline_name, file_name, file_path):
     files = {'file': (file_name, open(file_path, 'rb'))}
     params = {'pipeline_name': pipeline_name}
     response = requests.post(url_to_pass, files=files, params=params)
+    return response
+
+
+# This function posts env file to cmf-server
+def call_python_env(url, file_name, file_path):
+    url_to_pass = f"{url}/python-env"
+    files = {'file': (file_name, open(file_path, 'rb'))}
+    response = requests.post(url_to_pass, files=files)
+    return response
+
+def call_label(url, file_name, path):
+    url_to_pass = f"{url}/label"
+    files = {'file': (file_name, open(path, 'rb'))}
+    response = requests.post(url_to_pass, files=files)
     return response

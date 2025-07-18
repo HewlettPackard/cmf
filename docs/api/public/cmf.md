@@ -27,6 +27,13 @@
         - cmf_init
         - metadata_push
         - metadata_pull
+        - metadata_export
         - artifact_pull
         - artifact_pull_single
         - artifact_push
+        - artifact_list
+        - pipeline_list
+        - execution_list
+        - repo_push
+        - repo_pull
+        - dvc_ingest

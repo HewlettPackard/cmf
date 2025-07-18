@@ -17,10 +17,6 @@
 import os
 import paramiko
 
-# this is temporary - need to remove after TripleDES warning goes away from paramiko
-# import warnings
-# warnings.filterwarnings(action='ignore', module='.*paramiko.*')
-
 class SSHremoteArtifacts:
 
     def __init__(self, dvc_config_op):
@@ -52,17 +48,19 @@ class SSHremoteArtifacts:
             # creates subfolders needed as per artifacts' folder structure
             os.makedirs(dir_path, mode=0o777, exist_ok=True) 
 
-        response = ""
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
         try:
-            response = sftp.put(object_name, abs_download_loc)
+            local_file_size = os.stat(object_name).st_size  # Get the size of the local file being uploaded
+            # The put() method returns an SFTPAttributes object, which contains metadata about the uploaded file.
+            # Therefore, response should be typed as SFTPAttributes.
+            response: paramiko.SFTPAttributes = sftp.put(object_name, abs_download_loc)
             # we can close sftp connection as we have already downloaded the file
             sftp.close()
             ssh.close()
-            if response:
+            # After upload, check if the uploaded file size matches the local file size
+            if response.st_size == local_file_size:
                 return object_name, abs_download_loc, True
-            else:
-                return  object_name, abs_download_loc, False
+            return  object_name, abs_download_loc, False
         except Exception as e:
             # this exception is for function sftp.put()
             sftp.close()
@@ -94,7 +92,6 @@ class SSHremoteArtifacts:
             # creates subfolders needed as per artifacts' folder structure
             os.makedirs(dir_path, mode=0o777, exist_ok=True) 
 
-        response = ""
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
                                                
         """"
@@ -108,7 +105,9 @@ class SSHremoteArtifacts:
         # download .dir object
         temp_dir = f"{abs_download_loc}/temp_dir"
         try:
-            response = sftp.put(object_name, temp_dir)
+            # The put() method returns an SFTPAttributes object, which contains metadata about the uploaded file.
+            # Therefore, response should be typed as SFTPAttributes.
+            response: paramiko.SFTPAttributes = sftp.put(object_name, temp_dir)
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
 
@@ -153,8 +152,7 @@ class SSHremoteArtifacts:
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False  
+            return total_files_in_directory, files_downloaded, False  
         except Exception as e:
             sftp.close()
             ssh.close()
