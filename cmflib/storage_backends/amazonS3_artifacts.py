@@ -66,6 +66,7 @@ class AmazonS3Artifacts:
             # Create necessary directories for the download location.
             dir_path = ""
             if "/" in download_loc:
+                # extracts the directory path from a full download_loc
                 dir_path, _ = download_loc.rsplit("/", 1)
             if dir_path != "":
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
@@ -117,6 +118,7 @@ class AmazonS3Artifacts:
         # in case of .dir, download_loc is a absolute path for a folder
         dir_path = ""
         if "/" in download_loc:
+            # extracts the directory path from download_loc 
             dir_path, _ = download_loc.rsplit("/", 1)
         if dir_path != "":
             os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed

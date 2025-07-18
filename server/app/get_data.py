@@ -1,10 +1,7 @@
 from cmflib.cmfquery import CmfQuery
 import pandas as pd
-import json
 import typing as t
 from fastapi.concurrency import run_in_threadpool
-from server.app.query_artifact_lineage_d3force import query_artifact_lineage_d3force
-from server.app.query_list_of_executions import query_list_of_executions
 
 
 #Converts sync functions to async
@@ -81,21 +78,6 @@ async def get_model_data(query: CmfQuery, modelId: int):
     return model_data_df, model_exe_df, model_input_df, model_output_df
 
 
-def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:
-    '''
-    Args:
-     pipeline_name: name of the pipeline.
-     exe_ids: list of execution ids.
-
-    Returns:
-     returns dataframe of executions using execution_ids.
-    '''
-    df = pd.DataFrame()
-    executions = query.get_all_executions_by_ids_list(exe_ids)
-    df = pd.concat([df, executions], sort=True, ignore_index=True)
-    return df
-
-
 def get_all_exe_ids(query: CmfQuery, pipeline_name: t.Optional[str] = None) -> t.Dict[str, pd.DataFrame]:
     '''
     Returns:
@@ -168,37 +150,6 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Option
                 artifact_ids[name] = {}
     return artifact_ids
 
-
-def get_artifacts(query: CmfQuery, pipeline_name, art_type, artifact_ids):
-    df = pd.DataFrame()
-    if (query.get_pipeline_id(pipeline_name) != -1):
-        df = query.get_all_artifacts_by_ids_list(artifact_ids)
-        if len(df) == 0:
-            return
-        df = df.drop_duplicates()
-        art_names = df['name'].tolist()
-        name_dict = {}
-        name_list = []
-        exec_type_name_list = []
-        exe_type_name = pd.DataFrame()
-        for name in art_names:
-            executions = query.get_all_executions_for_artifact(name)
-            exe_type_name = pd.concat([exe_type_name, executions], ignore_index=True)
-            execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
-            execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
-            execution_type_name_str = ',\n '.join(map(str, execution_type_name))
-            name_list.append(name)
-            exec_type_name_list.append(execution_type_name_str)
-        name_dict['name'] = name_list
-        name_dict['execution_type_name'] = exec_type_name_list
-        name_df = pd.DataFrame(name_dict)
-        merged_df = df.merge(name_df, on='name', how='left')
-        merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
-        merged_df = merged_df.loc[merged_df["type"] == art_type]
-        result = merged_df.to_json(orient="records")
-        tempout = json.loads(result)
-        return tempout
-
 def get_artifact_types(query: CmfQuery) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
     return artifact_types
@@ -232,6 +183,7 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
             if exec_uuid != None:
                 dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
                 for index, row in dict_of_exe_ids.items():
+                    # When user reuses execution, execution_uuid get appeneded separated by ","
                     exec_uuid_list = row['Execution_uuid'].split(",")
                     if exec_uuid in exec_uuid_list:
                         flag=True
@@ -243,35 +195,86 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
     return json_payload
 
 
-def get_lineage_data(
-        query: CmfQuery, 
-        pipeline_name, type,
-        dict_of_art_ids,
-        dict_of_exe_ids):
-    """
-    Retrieves lineage data based on the specified type.
 
-    Parameters:
-    query (CmfQuery): The CmfQuery object
-    pipeline_name (str): The name of the pipeline.
-    type (str): The type of lineage data to retrieve. Can be "Artifacts" or "Execution".
-    dict_of_art_ids (dict): A dictionary of artifact IDs.
-    dict_of_exe_ids (dict): A dictionary of execution IDs.
 
-    Returns:
-    dict or list: 
-        - If type is "Artifacts", returns a dictionary with nodes and links for artifact lineage.
-                lineage_data= {
-                    nodes:[],
-                    links:[]
-                }
-        - If type is "Execution", returns a list of execution types for the specified pipeline.
-        - Otherwise, returns visualization data for artifact execution.
-    """
-    if type=="Artifacts":
-        lineage_data = query_artifact_lineage_d3force(query, pipeline_name, dict_of_art_ids)
-    elif type=="Execution":
-        lineage_data = query_list_of_executions(pipeline_name, dict_of_exe_ids)
-    else:
-        pass
-    return lineage_data
+""" Old implemenation of fetching executions """
+# def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:
+#     '''
+#     Args:
+#      pipeline_name: name of the pipeline.
+#      exe_ids: list of execution ids.
+
+#     Returns:
+#      returns dataframe of executions using execution_ids.
+#     '''
+#     df = pd.DataFrame()
+#     executions = query.get_all_executions_by_ids_list(exe_ids)
+#     df = pd.concat([df, executions], sort=True, ignore_index=True)
+#     return df
+
+
+
+""" Old implementation for lineage """
+# def get_lineage_data(
+#         query: CmfQuery, 
+#         pipeline_name, type,
+#         dict_of_art_ids,
+#         dict_of_exe_ids):
+#     """
+#     Retrieves lineage data based on the specified type.
+
+#     Parameters:
+#     query (CmfQuery): The CmfQuery object
+#     pipeline_name (str): The name of the pipeline.
+#     type (str): The type of lineage data to retrieve. Can be "Artifacts" or "Execution".
+#     dict_of_art_ids (dict): A dictionary of artifact IDs.
+#     dict_of_exe_ids (dict): A dictionary of execution IDs.
+
+#     Returns:
+#     dict or list: 
+#         - If type is "Artifacts", returns a dictionary with nodes and links for artifact lineage.
+#                 lineage_data= {
+#                     nodes:[],
+#                     links:[]
+#                 }
+#         - If type is "Execution", returns a list of execution types for the specified pipeline.
+#         - Otherwise, returns visualization data for artifact execution.
+#     """
+#     if type=="Artifacts":
+#         lineage_data = query_artifact_lineage_d3force(query, pipeline_name, dict_of_art_ids)
+#     elif type=="Execution":
+#         lineage_data = query_list_of_executions(pipeline_name, dict_of_exe_ids)
+#     else:
+#         pass
+#     return lineage_data
+
+""" This is an old implementation of get_artifacts - not used anymore """
+# def get_artifacts(query: CmfQuery, pipeline_name, art_type, artifact_ids):
+#     df = pd.DataFrame()
+#     if (query.get_pipeline_id(pipeline_name) != -1):
+#         df = query.get_all_artifacts_by_ids_list(artifact_ids)
+#         if len(df) == 0:
+#             return
+#         df = df.drop_duplicates()
+#         art_names = df['name'].tolist()
+#         name_dict = {}
+#         name_list = []
+#         exec_type_name_list = []
+#         exe_type_name = pd.DataFrame()
+#         for name in art_names:
+#             executions = query.get_all_executions_for_artifact(name)
+#             exe_type_name = pd.concat([exe_type_name, executions], ignore_index=True)
+#             execution_type_name = exe_type_name["execution_type_name"].drop_duplicates().tolist()
+#             execution_type_name = [str(element).split('"')[1] for element in execution_type_name]
+#             execution_type_name_str = ',\n '.join(map(str, execution_type_name))
+#             name_list.append(name)
+#             exec_type_name_list.append(execution_type_name_str)
+#         name_dict['name'] = name_list
+#         name_dict['execution_type_name'] = exec_type_name_list
+#         name_df = pd.DataFrame(name_dict)
+#         merged_df = df.merge(name_df, on='name', how='left')
+#         merged_df['name'] = merged_df['name'].apply(lambda x: x.split(':')[0] if ':' in x else x)
+#         merged_df = merged_df.loc[merged_df["type"] == art_type]
+#         result = merged_df.to_json(orient="records")
+#         tempout = json.loads(result)
+#         return tempout
