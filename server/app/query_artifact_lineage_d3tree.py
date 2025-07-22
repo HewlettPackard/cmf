@@ -4,22 +4,26 @@ from typing import List, Dict, Any
 from server.app.utils import modify_arti_name
 
 def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
-    env_list = []
     id_name = {}
     child_parent_artifact_id: Dict[int, List[int]] = {}
+    skip_ids = set() # Skip environment and label artifacts
+
     # Get all artifact IDs that belong to the current pipeline
-    current_pipeline_artifact_ids = set()
-    for type_, df in dict_of_art_ids[pipeline_name].items():
-        if type_ == "Environment":
-            env_list = list(df["id"])
-        current_pipeline_artifact_ids.update(df["id"].tolist())
+    current_pipeline_artifact_ids = {
+        artifact_id
+        for df in dict_of_art_ids[pipeline_name].values()
+        for artifact_id in df["id"]
+    }
 
     for type_, df in dict_of_art_ids[pipeline_name].items():
+        # Collect environment and label artifact IDs for skipping
+        if type_ == "Environment" or type_ == "Label":
+            skip_ids.update(df["id"])
+            continue  # No need to process them further
+
         for index, row in df.iterrows():
             #creating a dictionary of id and artifact name {id:artifact name}
             artifact_id = row['id']  # This will be an integer
-            if artifact_id in env_list:
-                continue
             id_name[artifact_id] = modify_arti_name(row["name"], type_)
             one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id(artifact_id)  # get immediate artifacts     
             child_parent_artifact_id[artifact_id] = []      # assign empty dict for artifact with no parent artifact
@@ -27,8 +31,9 @@ def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_a
                 parents_list =  list(one_hop_parent_artifacts["id"])
                 # Filter parent artifacts to only include those from the current pipeline
                 pipeline_filtered_parents = [pid for pid in parents_list if pid in current_pipeline_artifact_ids]
-                final_parents_list = list(set(pipeline_filtered_parents) - set(env_list))
+                final_parents_list = list(set(pipeline_filtered_parents) - skip_ids)
                 child_parent_artifact_id[artifact_id] = final_parents_list
+
     data_organized: List[List[Dict[str, Any]]] = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
