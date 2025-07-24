@@ -120,24 +120,29 @@ class CmdArtifactPush(CmdBase):
                 artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
                 names.extend(artifacts['name'].tolist())
         final_list = set()
-        # Check if dvc.lock file exists.
-        if os.path.exists("dvc.lock"):
-            # No need to manually pass files and directories; DVC will push everything tracked automatically
-            result = dvc_push(num_jobs, None)
-            return ArtifactPushSuccess(result)
-        else:
-            for file in set(names):
-                # checking if the .dvc exists
+        for file in set(names):
+            # checking if the .dvc exists
+            if os.path.exists(file):
+                final_list.add(file)
+            # checking if the .dvc exists in user's project working directory
+            elif os.path.isabs(file):
+                file = re.split("/",file)[-1]
+                file = os.path.join(os.getcwd(), file)
                 if os.path.exists(file):
                     final_list.add(file)
-                # checking if the .dvc exists in user's project working directory
-                elif os.path.isabs(file):
-                    file = re.split("/",file)[-1]
-                    file = os.path.join(os.getcwd(), file)
-                    if os.path.exists(file):
-                        final_list.add(file)
-                else:
-                    pass
+            else:
+                # in case of dvc_ingest_command
+                # fetching remaining artifacts from dvc.lock file
+                if os.path.exists("dvc.lock"):
+                    with open("dvc.lock", "r") as f:
+                        str_data = f.read()
+                    data = yaml.safe_load(str_data)
+                    # Traverse all stages and collect all 'path' keys from both 'deps' and 'outs'
+                    for stage in data.get('stages', {}).values():
+                        for section in ['deps', 'outs']:
+                            for item in stage.get(section, []):
+                                if isinstance(item, dict) and 'path' in item:
+                                    final_list.add(item['path'])
         result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
     

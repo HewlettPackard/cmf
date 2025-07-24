@@ -23,6 +23,7 @@ import pandas as pd
 
 from cmflib import cmfquery, cmf
 from cmflib.cli.command import CmdBase
+from cmflib.dvc_wrapper import git_get_repo
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.utils.helper_functions import fetch_cmf_config_path
@@ -84,12 +85,14 @@ class CmdDVCIngest(CmdBase):
                         md5_value = dep["md5"] 
                         url = pipeline_name + ":" + artifact_repo + "/files/md5/" + md5_value[:2] + "/" + md5_value[2:]
                         props["url"] =  url
+                        props["git_repo"] = git_get_repo()
                         metawriter.log_dataset_with_version(dep["path"], md5_value, "input", props)
             if k == "outs":
                 for out in v:
                     md5_value = out["md5"] 
                     url = pipeline_name + ":" + artifact_repo + "/files/md5/" + md5_value[:2] + "/" + md5_value[2:]
                     props["url"] =  url
+                    props["git_repo"] = git_get_repo()
                     metawriter.log_dataset_with_version(out["path"], md5_value, "output", props)
                     tracked[out["path"]] = True
         return tracked
