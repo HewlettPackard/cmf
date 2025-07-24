@@ -95,6 +95,11 @@ stages:
 </details>
 
 
+> ⚠️ **Be Consistent with deps and outs:**
+> When defining deps and outs in your dvc.yaml, ensure consistency in the format used. Either define both as directories (e.g., artifacts/parsed/) or both as individual files (e.g., artifacts/parsed/train.tsv, artifacts/parsed/test.tsv).
+Mixing both formats (directory and individual files) in the same stage can lead to unexpected behavior and is not recommended.
+
+
 
 ## 5. Remove CMF code from Your `src` Directory
 
