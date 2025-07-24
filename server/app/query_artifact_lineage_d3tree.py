@@ -2,6 +2,7 @@ from cmflib.cmfquery import CmfQuery
 from collections import deque, defaultdict
 from typing import List, Dict, Any
 from server.app.utils import modify_arti_name
+import pandas as pd
 
 def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
     id_name = {}
@@ -9,11 +10,7 @@ def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_a
     skip_ids = set() # Skip environment and label artifacts
 
     # Get all artifact IDs that belong to the current pipeline
-    current_pipeline_artifact_ids = {
-        artifact_id
-        for df in dict_of_art_ids[pipeline_name].values()
-        for artifact_id in df["id"]
-    }
+    current_pipeline_artifact_ids = set(pd.concat(dict_of_art_ids[pipeline_name].values())["id"])
 
     for type_, df in dict_of_art_ids[pipeline_name].items():
         # Collect environment and label artifact IDs for skipping
