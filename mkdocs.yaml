@@ -130,7 +130,7 @@ nav:
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: setup/index.md
     - 🗄️ cmf-server: 
-      - Introduction: cmf_server/cmf-server.md
+      - Overview: cmf_server/cmf-server.md
       - Metahub: cmf_server/metahub-tab-usage.md
     - 🏃🏼‍♂️ cmf-client: cmf_client/step-by-step.md
     - 🖥️ cmf-gui: ui/index.md
