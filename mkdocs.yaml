@@ -112,7 +112,7 @@ extra_javascript:
   - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
 
 markdown-include:
-  base_path: docs/include
+  base_path: include
 
 extra:
   social:
