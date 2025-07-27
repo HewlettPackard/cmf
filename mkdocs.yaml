@@ -140,11 +140,10 @@ nav:
     - 🎯 Examples:
       - Getting Started Tutorial: examples/getting_started.md
     - 🐍 API Reference:
-      - Overview: api/public/cmf.md
-      - cmflib: cmflib/index.md
-      - Data Types:
-        - DataSlice: api/public/dataslice.md
-        - CmfQuery: api/public/cmfquery.md
+      - Overview: cmflib/index.md
+      - Cmf: api/public/cmf.md
+      - DataSlice: api/public/dataslice.md
+      - CmfQuery: api/public/cmfquery.md
       - Ray Logger: api/public/cmf_ray_logger.md
       - Complete API Documentation: api/public/API.md
     - 💻 CLI Reference:
