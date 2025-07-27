@@ -94,7 +94,7 @@ extra_css:
 plugins:
   - autorefs          # Need to reference mkdocstrings-generated content from documentation files ([][] thing).
   - search
-  - markdown-include
+  - include-markdown
   - mkdocstrings:     # Automatically generate API documentation.
       default_handler: python
       handlers:
@@ -110,9 +110,6 @@ plugins:
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
-
-markdown-include:
-  base_path: include
 
 extra:
   social:
