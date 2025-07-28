@@ -142,7 +142,9 @@ nav:
       - CmfQuery: api/public/cmfquery.md
       - Ray Logger: api/public/cmf_ray_logger.md
       - Complete API Documentation: api/public/API.md
-    - 💻 CLI Reference: cmf_client/cmf_client.md
+    - 💻 CLI Reference: 
+      - cmf_client/index.md
+      - Overview: cmf_client/cmf_client.md
       - Guide for the cmf dvc ingest command: cmf_client/cmf-dvc-ingest-guide.md
       - Start Neo4j with Docker: cmf_client/neo4j_docker.md
       - Storage Backends:
