@@ -107,7 +107,7 @@
 
 5. The above script will automatically create a `logs` directory inside your current directory.
 
-6. Start the CMF server and configure the [cmf-client](step-by-step.md).
+6. Start the [cmf-server](./../cmf_server/index.md) and configure the [cmf-client](index.md).
 
 7. Use the following command to run the test script, which will generate the MLMD file:
 	```bash
