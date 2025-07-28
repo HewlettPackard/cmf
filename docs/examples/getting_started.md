@@ -30,9 +30,9 @@ pipeline consisting of five steps:
   run, but also the metadata associated with previous runs.
 
 
-## Pre-requisites 
+## Prerequisites 
 
-Before proceeding, ensure that the CMF library (`cmflib`) is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md) page.
+Before proceeding, ensure that the `cmflib` is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md#install-cmf-library-ie-cmflib) page.
 
 The initial setup requires creating a workspace directory that will contain all files for this example, cloning the CMF repository that contains source code and data for this example.
 
@@ -84,7 +84,7 @@ Optional Arguments
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
-Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details.
+Follow [here](./../cmf_client/cmf_client_commands.md#cmf-init) for more details.
 
 ## Project execution
 To execute the example pipeline, run the
@@ -97,13 +97,13 @@ execution of these steps (and parent pipeline) will be recorded by the CMF.
 sh ./test_script.sh
 ```
 
-### Setup a cmf-server 
+### Setup a `cmf-server` 
 
 > Note: This setup step is not required if the cmf-server is already configured.
 
 __cmf-server__ is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.
 
-Follow [here](./../cmf_server/cmf-server.md) to set up a common cmf-server.
+Follow [here](./../cmf_server/index.md) to set up a common cmf-server.
 
 ### Syncing metadata on the cmf-server
 Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
@@ -111,9 +111,9 @@ repository correspond to the creation of pipeline artifacts and can be viewed wi
 
 In production settings, the next steps would be to:
 1. Execute the `cmf artifact push` command to push the artifacts to the central artifact repository.
-2. Execute the `cmf metadata push` command to track the metadata of the generated artifacts on a common [cmf server](./../cmf_server/cmf-server.md).
+2. Execute the `cmf metadata push` command to track the metadata of the generated artifacts on a common [cmf-server](./../cmf_server/index.md).
 
-Follow [here](./../cmf_client/cmf_client.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
+Follow [here](./../cmf_client/cmf_client_commands.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
 
 ## Query
 The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
