@@ -50,7 +50,7 @@ Check [cmf init minioS3](./cmf_client_commands.md/#cmf-init-minios3) for more de
 ```
 cmf init show
 ```
-Check [cmf init show](./cmf_client.md/#cmf-init-show) for more details.
+Check [cmf init show](./cmf_client_commands.md/#cmf-init-show) for more details.
 
 **Track metadata using cmflib**
 
