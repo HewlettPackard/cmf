@@ -294,7 +294,7 @@ class Cmf:
         ```
 
         Args:
-            Pipeline_stage: Name of the Stage.
+            pipeline_stage: Name of the Stage.
             custom_properties: Developers can provide key value pairs with additional properties of the execution that
                 need to be stored.
 
@@ -497,7 +497,7 @@ class Cmf:
 
     def update_execution(
         self, execution_id: int, custom_properties: t.Optional[t.Dict] = None
-    ):
+    ) -> mlpb.Execution:    # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """Updates an existing execution.
         The custom properties can be updated after creation of the execution.
         The new custom properties is merged with earlier custom properties.
@@ -1427,7 +1427,7 @@ class Cmf:
 
     # To do - Once update the hash and the new version should be updated in
     # the mlmd
-    def update_dataslice(self, name: str, record: str, custom_properties: t.Dict):
+    def update_dataslice(self, name: str, record: str, custom_properties: t.Dict) -> None:
         """Updates a dataslice record in a Parquet file with the provided custom properties.
         
         ```python
@@ -1660,7 +1660,8 @@ class Cmf:
             
             Args:
                 custom_properties: Dictionary to store key value pairs associated with Dataslice
-                Example{"mean":2.5, "median":2.6}
+                
+            Example {"mean":2.5, "median":2.6}
             """
 
             logging_dir = change_dir(self.writer.cmf_init_path)
@@ -2177,7 +2178,7 @@ def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: t.
     
     Args: 
        pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
+       filepath: Specify input metadata file path.
        execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
        jobs: Number of jobs to use for pushing artifacts.
