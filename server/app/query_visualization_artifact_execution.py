@@ -131,8 +131,8 @@ def modify_artifact_name(artifact_name: str, type: str) -> str:
                 # Handle cases where user provides an artifact path like "artifacts/features/" in dvc.yaml.
                 # If the path ends with a slash ("/"), get the second last part as the artifact name.
                 # Combine the artifact name with a shortened lineage ID (e.g., ":2323") to form the final name.
-                artifact_name = artifact_name.rsplit(':')[0].split("/")[-1] if artifact_name.rsplit(':')[0].split("/")[-1] != "" else artifact_name.rsplit(':')[0].split("/")[-1]
-                name = artifact_name + ":" +  artifact_name.split(':')[-1][:4]
+                short_name = artifact_name.rsplit(':')[0].split("/")[-1] if artifact_name.rsplit(':')[0].split("/")[-1] != "" else artifact_name.rsplit(':')[0].split("/")[-2]
+                name = short_name + ":" +  artifact_name.split(':')[-1][:4]
         elif type == "Dataslice":
             # cmf_artifacts/dataslices/ecd6dcde-4f3b-11ef-b8cd-f71a4cc9ba38/slice-1:e77e3466872898fcf2fa22a3752bc1ca
             dataslice_part1 = artifact_name.split("/",1)[1] #remove cmf_artifacts/

@@ -185,8 +185,8 @@ class CmdDVCIngest(CmdBase):
             pipeline_dict[stage][str(i)] = k_dict
 
         # Create a unique Pipeline name if there is no mlmd file
-        pipeline_name = "Pipeline"+"-"+str(uuid_) if not pipeline_name else pipeline_name
-        metawriter = cmf.Cmf(filepath = "mlmd", pipeline_name=pipeline_name, graph=True)
+        pipeline_name = "Pipeline" + "-" + str(uuid_) if not pipeline_name else pipeline_name
+        metawriter = cmf.Cmf(filepath = self.args.file_name, pipeline_name = pipeline_name, graph = True)
 
         # Parse the dvc.lock dictionary and get the command section
         tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
