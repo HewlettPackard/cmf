@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2025) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -31,46 +31,53 @@ from cmflib.cmf_exception_handling import MsgSuccess, FileNotFound
 
 class CmdDVCIngest(CmdBase):
     
-    def find_location(self, string, elements):
-        for index, element in enumerate(elements):
-            if string == element:
+    def find_location(self, search_element: str, list_of_elements: t.List[str]) -> t.Optional[int]:
+        for index, element in enumerate(list_of_elements):
+            if search_element == element:
                 return index
         return None
-    
-    def get_cmf_hierarchy(self, execution_lineage: str):
-        """
-            Parses the string and returns, pipeline name, context name and execution name
-        """
-        cmf_levels = execution_lineage.split(',')
-        return cmf_levels[-1], cmf_levels[1], cmf_levels[0]
 
-    def ingest_metadata(self, execution_lineage: str, metadata: dict, metawriter: cmf.Cmf, tracked: dict, command: str = "" ) :
+    def ingest_metadata(self, *args) -> t.Dict[str, bool]:
         """
         Ingest the metadata into cmf
-        args
-            execution_lineage: format- execution id(if present)/execution file name/context/pipeline
-            eg - demo_train.py,active_learning_training@2,active_learning -- without existing execution
-                - 3,eval,active_learning -- with existing execution in cmf metadata file
-            metadata: The parsed dictionary from dvc.lock file
-            execution_exist : True if it exeist, False otherwise
-            metawrite: cmf object 
+        
+        args:
+            A tuple of arguments in the following order:
+            
+            1. execution (str): The execution identifier or filename. 
+            - Example: "3" (if already exists in CMF) or "demo_train.py" (if creating new execution).
+            2. context_name (str): Context in which this execution is run. 
+            - Example: "eval", "active_learning"
+            3. pipeline_name (str): Name of the pipeline associated with the execution.
+            - Example: "active_learning"
+            4. metadata (dict): Parsed metadata dictionary from `dvc.lock` file.
+            - Contains "deps" and "outs" describing inputs and outputs with MD5s.
+            5. metawriter (object): CMF metadata writer object used to log executions, datasets, etc.
+            6. tracked (dict): Dictionary tracking existing datasets that are already logged.
+            - Key: dataset path
+            - Value: True
+            7. command (str): The command that was run for this execution.
+
+        Returns:
+            tracked (dict): Updated tracked dictionary after logging input/output datasets.
         """
-        pipeline_name, context_name, execution = self.get_cmf_hierarchy(execution_lineage)
+        execution, context_name, pipeline_name, metadata, metawriter, tracked, command = args
 
         _ = metawriter.create_execution(
             str(context_name) + '_' + str(execution), 
             {}, 
             cmd = str(command),
-            create_new_execution=False
+            create_new_execution = False
             )
             
         output, config_file_path = fetch_cmf_config_path()
         artifact_repo = list(output.values())[0]
 
-        for k, v in metadata.items():
-            props={}
-            if k == "deps":
-                for dep in v:
+        for options, data in metadata.items():
+            props = {}
+            props["git_repo"] = git_get_repo()            
+            if options == "deps":
+                for dep in data:
                     # A dependency path (dep["path"]) can be a full file path like "artifacts/parsed/train.tsv"
                     # or just a directory like "artifacts/parsed".
                     # Similarly, the tracked dictionary may contain either file or directory paths.
@@ -84,15 +91,13 @@ class CmdDVCIngest(CmdBase):
                     else:
                         md5_value = dep["md5"] 
                         url = pipeline_name + ":" + artifact_repo + "/files/md5/" + md5_value[:2] + "/" + md5_value[2:]
-                        props["url"] =  url
-                        props["git_repo"] = git_get_repo()
+                        props["url"] = url
                         metawriter.log_dataset_with_version(dep["path"], md5_value, "input", props)
-            if k == "outs":
-                for out in v:
+            if options == "outs":
+                for out in data:
                     md5_value = out["md5"] 
                     url = pipeline_name + ":" + artifact_repo + "/files/md5/" + md5_value[:2] + "/" + md5_value[2:]
-                    props["url"] =  url
-                    props["git_repo"] = git_get_repo()
+                    props["url"] = url
                     metawriter.log_dataset_with_version(out["path"], md5_value, "output", props)
                     tracked[out["path"]] = True
         return tracked
@@ -156,28 +161,28 @@ class CmdDVCIngest(CmdBase):
         with open("dvc.lock", 'r') as f:
             valuesYaml = yaml.load(f, Loader=yaml.FullLoader)
 
-        for k in valuesYaml['stages']:
-            pipeline_dict[k] = {}
+        for stage in valuesYaml['stages']:
+            pipeline_dict[stage] = {}
             commands=[]
             deps = []
             outs = []
             k_dict = {}
             i = 0
             
-            for kk in valuesYaml['stages'][k]:
-                if kk == 'cmd':
-                    cmd_list = valuesYaml['stages'][k][kk].split()
+            for options in valuesYaml['stages'][stage]:
+                if options == 'cmd':
+                    cmd_list = valuesYaml['stages'][stage][options].split()
                     commands.append(cmd_list)
                     k_dict['cmd'] = cmd_list
                     i = i + 1
-                if kk == 'deps':
-                    deps = valuesYaml['stages'][k][kk]
+                if options == 'deps':
+                    deps = valuesYaml['stages'][stage][options]
                     k_dict['deps'] = deps
-                if kk == 'outs':
-                    outs = valuesYaml['stages'][k][kk]
+                if options == 'outs':
+                    outs = valuesYaml['stages'][stage][options]
                     k_dict['outs'] = outs
 
-            pipeline_dict[k][str(i)] = k_dict
+            pipeline_dict[stage][str(i)] = k_dict
 
         # Create a unique Pipeline name if there is no mlmd file
         pipeline_name = "Pipeline"+"-"+str(uuid_) if not pipeline_name else pipeline_name
@@ -185,10 +190,10 @@ class CmdDVCIngest(CmdBase):
 
         # Parse the dvc.lock dictionary and get the command section
         tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
-        for k, v in pipeline_dict.items():
-            for kk, vv in v.items():
-                for kkk, vvv in vv.items():
-                    if kkk == 'cmd':
+        for stage, stage_data in pipeline_dict.items():
+            for index, dict_data in stage_data.items():
+                for options, option_details in dict_data.items():
+                    if options == 'cmd':
                         """
                         Key eg - cmd
                         Value eg - ['python3', 'demo.py', '--enable_df', 'True']
@@ -200,21 +205,20 @@ class CmdDVCIngest(CmdBase):
                         if the pipeline_dict command is already there in the cmd_exe dict got from parsing the mlmd pop that cmd out 
                         and use the stored lineage from the mlmd
                         """
-                        vvv.pop(0)
-                        pos = self.find_location('--execution_name', vvv)
+                        option_details.pop(0)
+                        pos = self.find_location('--execution_name', option_details)
                         if pos:
-                            execution_name = vvv[pos+1]
+                            execution_name = option_details[pos+1]
                         else:
                             execution_name = uuid_
                             
-                        context_name = k
-                        lineage = execution_name+","+context_name+","+ pipeline_name
-                        # Cast vvv to a list of strings to ensure join works correctly.
+                        context_name = stage
+                        # Cast option_details to a list of strings to ensure join works correctly.
                         # join the list to single string
-                        cmd_str = ' '.join(t.cast(t.List[str], vvv))
+                        cmd_str = ' '.join(t.cast(t.List[str], option_details))
                         cmd = cmd_exe.get(cmd_str, None)
                         _ = metawriter.create_context(pipeline_stage=context_name)
-                        tracked = self.ingest_metadata(lineage, vv, metawriter, tracked, cmd_str)
+                        tracked = self.ingest_metadata(execution_name, context_name, pipeline_name, dict_data, metawriter, tracked, cmd_str)
         metawriter.log_dvc_lock("dvc.lock")
         return MsgSuccess(msg_str="Command has completed running..")
 
