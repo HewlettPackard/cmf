@@ -11,8 +11,8 @@ This tutorial walks you through the process of setting up the `cmf-client`.
 ## Prerequisites 
 Before proceeding with the setup, ensure the following components are up and running:
 
-- cmflib
-- cmf-server
+- [cmflib](../setup/index.md/#install-cmf-library-ie-cmflib)
+- [cmf-server](../setup/index.md/#install-cmf-server)
 
 Make sure there are no errors during their startup, as cmf-client depends on both of these components.
 
@@ -24,8 +24,7 @@ Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
 **Configuration**
 
 1. Create working directory `mkdir <workdir>`
-2. Execute `cmf init` to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the [`cmf init` command reference](./cmf_client_commands.md/#cmf-init) for more details.
-
+2. Execute `cmf init` to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the [`cmf init`](./cmf_client_commands.md/#cmf-init) for more details.
 
 
 ## How to effectively use cmf-client?
