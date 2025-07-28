@@ -2,6 +2,7 @@
 import io
 import time
 import zipfile
+import csv
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
@@ -34,7 +35,9 @@ from server.app.db.dbqueries import (
     register_server_details,
     get_registered_server_details,
     get_sync_status,
-    update_sync_status
+    update_sync_status,
+    fetch_artifacts_with_label_search,
+    search_labels_in_artifacts
 )
 from pathlib import Path
 import os
@@ -49,11 +52,51 @@ from server.app.schemas.dataframe import (
     ExecutionRequest,
 )
 import httpx
+import logging
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
+from server.app.db.dbconfig import DATABASE_URL, async_session
+from server.app.utils import (
+    auto_reindex_if_needed,
+    search_labels,
+    get_label_stats,
+    index_csv_labels,
+    index_csv_labels_with_hash
+)
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
+
+async def initialize_label_search():
+    """Initialize label search functionality on startup"""
+    try:
+        logger = logging.getLogger(__name__)
+        logger.info("Initializing label search functionality...")
+
+        # Check if labels directory exists and has CSV files
+        labels_dir = Path("/cmf-server/data/labels")
+        if labels_dir.exists():
+            csv_files = list(labels_dir.glob("*.csv"))
+            if csv_files:
+                logger.info(f"Found {len(csv_files)} CSV label files")
+
+                # Check if we need to index (if no records exist)
+                stats = await get_label_stats(DATABASE_URL)
+                if stats['total_records'] == 0:
+                    logger.info("Indexing label files...")
+                    result = await index_csv_labels(DATABASE_URL)
+                    logger.info(f"Indexed {result.get('total_records', 0)} records from {result.get('total_files', 0)} files")
+                else:
+                    logger.info(f"Label search ready: {stats['total_records']} records indexed")
+            else:
+                logger.info("No CSV label files found in /cmf-server/data/labels")
+        else:
+            logger.info("Labels directory not found, label search will be available when files are added")
+
+    except Exception as e:
+        logger = logging.getLogger(__name__)
+        logger.warning(f"Label search initialization failed: {e}")
+        logger.info("Label search will be available once configured properly")
 
 #global variables
 dict_of_art_ids = {}
@@ -71,6 +114,10 @@ async def lifespan(app: FastAPI):
         dict_of_exe_ids = await async_api(get_all_exe_ids, query)
         # loaded artifact ids into memory
         dict_of_art_ids = await async_api(get_all_artifact_ids, query, dict_of_exe_ids)
+
+        # Initialize label search functionality
+        await initialize_label_search()
+
     yield
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
@@ -133,6 +180,16 @@ async def mlmd_push(info: MLMDPushRequest):
             # async function
                 await update_global_exe_dict(pipeline_name)
                 await update_global_art_dict(pipeline_name)
+
+                # Auto-reindex labels after artifact push
+                try:
+                    logger = logging.getLogger(__name__)
+                    reindex_result = await auto_reindex_if_needed(DATABASE_URL)
+                    if reindex_result['status'] == 'reindexed':
+                        logger.info(f"Auto-reindexed after artifact push: {reindex_result['message']}")
+                except Exception as e:
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Auto-reindex after push failed: {e}")
         finally:
             lock_counts[pipeline_name] -= 1  # Decrement the reference count after lock released
             if lock_counts[pipeline_name] == 0:   #if lock_counts of pipeline is zero means lock is release from it
@@ -171,6 +228,7 @@ async def get_artifacts(
     query_params: ArtifactRequest = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
+    start_time = time.time()
 
     filter_value = query_params.filter_value
     active_page = query_params.active_page
@@ -178,8 +236,38 @@ async def get_artifacts(
     sort_order = query_params.sort_order
     record_per_page = query_params.record_per_page
 
-    """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
-    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
+    """Retrieve paginated artifacts with filtering, sorting, and full-text search including label content."""
+
+    # Auto-reindex labels if needed (only on first page to avoid performance issues)
+    reindex_time = 0
+    if active_page == 1:
+        try:
+            logger = logging.getLogger(__name__)
+            reindex_start = time.time()
+            reindex_result = await auto_reindex_if_needed(DATABASE_URL)
+            reindex_time = time.time() - reindex_start
+            if reindex_result['status'] == 'reindexed':
+                logger.info(f"{reindex_result['message']}")
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Auto-reindex failed: {e}")
+
+    query_start = time.time()
+    result = await fetch_artifacts_with_label_search(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
+    query_time = time.time() - query_start
+
+    total_time = time.time() - start_time
+
+    # Add timing information to the response
+    result["timing"] = {
+        "total_time_ms": round(total_time * 1000, 2),
+        "query_time_ms": round(query_time * 1000, 2),
+        "reindex_time_ms": round(reindex_time * 1000, 2) if reindex_time > 0 else 0,
+        "filter_value": filter_value,
+        "has_label_search": bool(filter_value and filter_value.strip())
+    }
+
+    return result
 
 
 # api to display executions available in mlmd file[from postgres]
@@ -796,3 +884,172 @@ async def artifact_lineage(request: Request, pipeline_name: str):
     else:
         return None
 """
+
+# Label Search Management Endpoints
+@app.post("/api/labels/reindex")
+async def reindex_labels():
+    """Reindex all label files - useful when CSV files are updated"""
+    try:
+        result = await index_csv_labels_with_hash(DATABASE_URL)
+
+        return {
+            "status": "success",
+            "message": f"Reindexed {result['total_files']} files with {result.get('total_records', 0)} records",
+            "details": result
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reindexing failed: {str(e)}")
+
+@app.get("/api/labels/status")
+async def get_label_search_status():
+    """Get the current status of label search functionality"""
+    try:
+        # Check labels directory
+        labels_dir = Path("/cmf-server/data/labels")
+        csv_files = list(labels_dir.glob("*.csv")) if labels_dir.exists() else []
+
+        # Check database
+        stats = await get_label_stats(DATABASE_URL)
+
+        return {
+            "status": "active" if stats['total_records'] > 0 else "inactive",
+            "labels_directory": str(labels_dir),
+            "csv_files_found": len(csv_files),
+            "indexed_files": stats['total_files'],
+            "indexed_records": stats['total_records'],
+            "files": [f.name for f in csv_files]
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "error": str(e)
+        }
+
+@app.post("/api/labels/test")
+async def test_label_search():
+    """Test label search functionality with sample data"""
+    try:
+        # Create sample test data
+        sample_data = [
+            {"id": 1, "category": "training", "type": "dataset", "accuracy": 0.95},
+            {"id": 2, "category": "validation", "type": "dataset", "accuracy": 0.87},
+            {"id": 3, "category": "test", "type": "model", "performance": "high"},
+        ]
+
+        # Create temporary CSV file
+        labels_dir = Path("/cmf-server/data/labels")
+        labels_dir.mkdir(parents=True, exist_ok=True)
+
+        test_file = labels_dir / "test_labels.csv"
+        with open(test_file, 'w', newline='') as csvfile:
+            fieldnames = sample_data[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(sample_data)
+
+        # Index the test file
+        result = await index_csv_labels(DATABASE_URL)
+
+        # Test search
+        search_results = await search_labels(DATABASE_URL, "training", 5)
+
+        return {
+            "status": "success",
+            "message": "Label search test completed successfully",
+            "indexing_result": result,
+            "search_results": search_results,
+            "test_file": str(test_file)
+        }
+
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": f"Label search test failed: {str(e)}"
+        }
+
+@app.get("/api/labels/search")
+async def search_label_content(query: str = Query(..., description="Search query"), limit: int = Query(10, description="Maximum results")):
+    """Search label content using PostgreSQL full-text search"""
+    start_time = time.time()
+
+    try:
+
+        search_start = time.time()
+        results = await search_labels(DATABASE_URL, query, limit)
+        search_time = time.time() - search_start
+
+        total_time = time.time() - start_time
+
+        return {
+            "status": "success",
+            "query": query,
+            "results": results,
+            "total_results": len(results),
+            "timing": {
+                "total_time_ms": round(total_time * 1000, 2),
+                "search_time_ms": round(search_time * 1000, 2),
+                "query": query,
+                "limit": limit
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
+
+@app.get("/api/labels/search-direct")
+async def search_labels_direct(query: str = Query(..., description="Search query"), limit: int = Query(10, description="Maximum results")):
+    """Direct label search that returns label matches as pseudo-artifacts"""
+    start_time = time.time()
+
+    try:
+
+        db_start = time.time()
+        async with async_session() as db:
+            search_start = time.time()
+            results = await search_labels_in_artifacts(db, query, None, limit)
+            search_time = time.time() - search_start
+        db_time = time.time() - db_start
+
+        total_time = time.time() - start_time
+
+        return {
+            "status": "success",
+            "query": query,
+            "results": results,
+            "total_results": len(results),
+            "timing": {
+                "total_time_ms": round(total_time * 1000, 2),
+                "db_time_ms": round(db_time * 1000, 2),
+                "search_time_ms": round(search_time * 1000, 2),
+                "query": query,
+                "limit": limit,
+                "uses_sqlalchemy_core": True
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Direct label search failed: {str(e)}")
+
+@app.get("/api/labels/health")
+async def label_search_health():
+    """Health check for label search functionality"""
+    try:
+        stats = await get_label_stats(DATABASE_URL)
+
+        return {
+            "status": "healthy" if stats['status'] == 'success' else "unhealthy",
+            "service": "label-search-postgres",
+            "version": "1.0.0",
+            "database": "postgresql",
+            "indexed_files": stats['total_files'],
+            "indexed_records": stats['total_records']
+        }
+
+    except Exception as e:
+        return {
+            "status": "unhealthy",
+            "service": "label-search-postgres",
+            "error": str(e)
+        }

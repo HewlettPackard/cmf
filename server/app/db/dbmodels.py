@@ -11,8 +11,10 @@ from sqlalchemy import(
     Index,
     UniqueConstraint,
     MetaData,
-    SmallInteger
+    SmallInteger,
+    JSON
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 
 metadata = MetaData()
 
@@ -185,4 +187,27 @@ event = Table(
 
     # Unique Constraint
     UniqueConstraint("artifact_id", "execution_id", "type", name="uniqueevent") 
+)
+
+
+# Label indexing table for PostgreSQL full-text search
+label_index = Table(
+    "label_index", metadata,
+    Column("id", Integer, primary_key=True, nullable=False),
+    Column("file_name", String(255), nullable=False),
+    Column("file_path", Text, nullable=False),
+    Column("row_index", Integer, nullable=False),
+    Column("content", Text, nullable=False),
+    Column("metadata", JSON),
+    Column("search_vector", TSVECTOR),
+    Column("created_at", BigInteger, nullable=False),
+    Column("updated_at", BigInteger, nullable=False),
+
+    # Indexes for performance
+    Index("idx_label_index_file_name", "file_name"),
+    Index("idx_label_index_search_vector", "search_vector", postgresql_using="gin"),
+    Index("idx_label_index_created_at", "created_at"),
+
+    # Unique constraint to prevent duplicate entries
+    UniqueConstraint("file_name", "row_index", name="unique_label_file_row")
 )

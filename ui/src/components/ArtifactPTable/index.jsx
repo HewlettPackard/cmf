@@ -145,6 +145,9 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                 {artifactType === "Dataset" && (
                   <th scope="col" className="label px-6 py-3">LABEL</th>
                 )}
+                {artifactType === "Label" && (
+                  <th scope="col" className="label px-6 py-3">LABEL</th>
+                )}
                 <th className="px-6 py-3" scope="col">URI</th>
                 <th className="px-6 py-3" scope="col">URL</th>
                 <th className="px-6 py-3" scope="col">GIT REPO</th>
@@ -193,7 +196,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                       {(getPropertyValue(artifact.artifact_properties, "labels_uri") || "")
                         .split(",")
                         .map((label_name) => label_name.trim())
-                        .filter((label_name) => label_name.length > 0) // Optional: skip empty strings
+                        .filter((label_name) => label_name.length > 0)
                         .map((label_name) => (
                           <div key={label_name} className="label">
                             <a
@@ -215,6 +218,29 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                             )}
                           </div>
                         ))}
+                    </td>
+                  )}
+                  {artifactType === "Label" && (
+                    <td className="px-6 py-4">
+                      <div className="label">
+                        <a
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            getLabelData(artifact.name.split(":")[1] || artifact.name);
+                            setShowPopup(true);
+                          }}
+                        >
+                          {artifact.name}
+                        </a>
+                        {showPopup && (
+                          <LabelCardPopup
+                            show={showPopup}
+                            label_data={labelData}
+                            onClose={handleClosePopup}
+                          />
+                        )}
+                      </div>
                     </td>
                   )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.uri)} highlight={filterValue}/></td>

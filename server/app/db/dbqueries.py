@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from server.app.db.dbconfig import get_db
-from sqlalchemy import select, func, text, String, bindparam, case, distinct
+from sqlalchemy import select, func, String, distinct, text
 from server.app.db.dbmodels import (
     artifact, 
     artifactproperty, 
@@ -13,6 +13,7 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
+    label_index,
 )
 
 async def register_server_details(db: AsyncSession, server_name: str, host_info: str):
@@ -312,3 +313,117 @@ async def fetch_executions(
         "total_items": total_record,
         "items": [dict(row) for row in rows]
     }
+
+
+async def search_labels_in_artifacts(db: AsyncSession, filter_value: str, pipeline_name: str = None, limit: int = 50):
+    """
+    Search for artifacts that have labels matching the filter value.
+    This function searches within label CSV content using PostgreSQL full-text search.
+    Works with or without explicit labels_uri properties.
+    """
+    try:
+        # First, try to search labels directly and return any matching content
+        # This approach works even if artifacts don't have labels_uri properties
+        base_query = """
+            SELECT DISTINCT
+                li.file_name as label_file,
+                li.content as matching_content,
+                li.metadata as label_metadata,
+                li.row_index,
+                ts_rank(li.search_vector, plainto_tsquery('english', :filter_value)) as relevance_score
+            FROM label_index li
+            WHERE li.search_vector @@ plainto_tsquery('english', :filter_value)
+            ORDER BY relevance_score DESC
+            LIMIT :limit
+        """
+
+        params = {"filter_value": filter_value, "limit": limit}
+
+        result = await db.execute(text(base_query), params)
+        label_results = result.mappings().all()
+
+        # Convert label results to a format compatible with artifact results
+        converted_results = []
+        for label_result in label_results:
+            converted_results.append({
+                'artifact_id': None,  # No specific artifact ID
+                'name': f"Label Match: {label_result['label_file']}",
+                'uri': f"label://{label_result['label_file']}#{label_result['row_index']}",
+                'type_id': None,
+                'create_time_since_epoch': None,
+                'last_update_time_since_epoch': None,
+                'label_file': label_result['label_file'],
+                'matching_content': label_result['matching_content'],
+                'label_metadata': label_result['label_metadata'],
+                'relevance_score': float(label_result['relevance_score'])
+            })
+
+        return converted_results
+
+    except Exception as e:
+        print(f"Label search error: {e}")
+        return []
+
+
+async def fetch_artifacts_with_label_search(
+    db: AsyncSession,
+    pipeline_name: str,
+    artifact_type: str,
+    filter_value: str,
+    active_page: int = 1,
+    page_size: int = 5,
+    sort_column: str = "name",
+    sort_order: str = "ASC"
+):
+    """
+    Enhanced artifact search that includes label content search.
+    This combines regular artifact search with label content search.
+    """
+    # First, get regular artifact search results
+    artifact_results = await fetch_artifacts(
+        db, pipeline_name, artifact_type, filter_value,
+        active_page, page_size, sort_column, sort_order
+    )
+
+    # If filter_value is provided, also search in labels
+    if filter_value and filter_value.strip():
+        try:
+            label_results = await search_labels_in_artifacts(db, filter_value, pipeline_name, 50)
+
+            # Add label search results as separate items (since they don't correspond to existing artifacts)
+            if active_page == 1 and label_results:  # Only add on first page
+                added_count = 0
+                max_additional = max(0, page_size - len(artifact_results['items']))
+
+                for label_result in label_results:
+                    if added_count < max_additional:
+                        # Create a pseudo-artifact item from label search result
+                        # Make sure all fields have non-null values that frontend expects
+                        enhanced_item = {
+                            'artifact_id': f"label_{label_result['label_file']}_{label_result.get('row_index', 0)}",
+                            'name': f"{label_result['label_file']} (Row {label_result.get('row_index', 0) + 1})",
+                            'uri': label_result.get('uri', f"label://{label_result['label_file']}"),
+                            'type_id': 'Label',
+                            'create_time_since_epoch': 0,  # Use 0 instead of None
+                            'last_update_time_since_epoch': 0,  # Use 0 instead of None
+                            'artifact_properties': [],  # Empty array instead of None
+                            'execution': '',  # Empty string instead of None
+                            'label_match': True,
+                            'matching_label_content': label_result['matching_content'],
+                            'label_file': label_result['label_file'],
+                            'label_metadata': label_result.get('label_metadata', '{}'),
+                            'relevance_score': float(label_result['relevance_score'])
+                        }
+                        artifact_results['items'].append(enhanced_item)
+                        added_count += 1
+
+                # Update total count if we added items
+                if added_count > 0:
+                    artifact_results['total_items'] += added_count
+                    print(f"Added {added_count} label search results to artifacts")
+
+        except Exception as e:
+            print(f"Error in label search integration: {e}")
+            # Continue with regular results if label search fails
+
+    return artifact_results
