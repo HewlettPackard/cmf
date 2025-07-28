@@ -101,7 +101,7 @@ sh ./test_script.sh
 
 __cmf-server__ is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.
 
-Follow [here](./../cmf_server/index.md) to set up a common cmf-server.
+Follow [here](../setup/index.md#install-cmf-server) to set up a common cmf-server.
 
 ### Syncing metadata on the `cmf-server`
 Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
@@ -111,7 +111,7 @@ In production settings, the next steps would be to:
 1. Execute the `cmf artifact push` command to push the artifacts to the central artifact repository.
 2. Execute the `cmf metadata push` command to track the metadata of the generated artifacts on a common [cmf-server](./../cmf_server/index.md).
 
-Follow [here](./../cmf_client/cmf_client_commands.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
+Follow [cmf artifact](./../cmf_client/cmf_client_commands.md#cmf-artifact) and [cmf metadata](./../cmf_client/cmf_client_commands.md#cmf-metadata) for more details.
 
 ## Query
 The stored metadata can be explored using the query layer of `cmf`. The Jupyter notebook
