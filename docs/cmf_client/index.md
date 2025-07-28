@@ -14,12 +14,12 @@ Before proceeding with the setup, ensure the following components are up and run
 - [cmflib](../setup/index.md/#install-cmf-library-ie-cmflib)
 - [cmf-server](../setup/index.md/#install-cmf-server)
 
-Make sure there are no errors during their startup, as cmf-client depends on both of these components.
+Make sure there are no errors during their startup, as `cmf-client` depends on both of these components.
 
-## Setup a cmf-client
-cmf-client is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.
+## Setup a `cmf-client`
+`cmf-client` is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the `cmf-server`.
 
-Follow the below-mentioned steps for the end-to-end setup of cmf-client:-
+Follow the below-mentioned steps for the end-to-end setup of `cmf-client`:-
 
 **Configuration**
 
