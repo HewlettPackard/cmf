@@ -19,7 +19,7 @@ cd /path/to/your/project
 
 ## 2. Initialize CMF with Neo4j Credentials
 
-Use the following command to initialize CMF. You can choose from various storage options like `local`, `ssh`, `amazons3`, `osdfremote`, or `minios3`.
+Use the following command to initialize `cmf`. You can choose from various storage options like `local`, `ssh`, `amazons3`, `osdfremote`, or `minios3`.
 
 ```bash
    cmf init local \
@@ -93,9 +93,9 @@ stages:
 > When defining deps and outs in your dvc.yaml, ensure consistency in the format used. Either define both as directories (e.g., artifacts/parsed/) or both as individual files (e.g., artifacts/parsed/train.tsv, artifacts/parsed/test.tsv).
 
 
-## 5. Remove CMF code from Your `src` Directory
+## 5. Remove `cmf` code from Your `src` Directory
 
-Ensure that your source files inside the `example-get-started/src` directory do **not contain any CMF-related code**. Keep them clean and focused on their tasks.
+Ensure that your source files inside the `example-get-started/src` directory do **not contain any `cmf`-related code**. Keep them clean and focused on their tasks.
 
 
 
@@ -124,7 +124,7 @@ cmf dvc ingest
 
 ## 8. Push/Pull Metadata and Artifacts
 
-Use [CMF client commands](./cmf_client.md) to push or pull your metadata and artifacts as required:
+Use [cmf-client commands](./cmf_client_commands.md) to push or pull your metadata and artifacts as required:
 
 - `cmf metadata push`
 - `cmf metadata pull`
