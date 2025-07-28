@@ -1,23 +1,23 @@
-# Step-by-Step Guide to Use the `cmf dvc ingest` Command
+# Guide to `cmf dvc ingest` Command
 
-The `cmf dvc ingest` command is used to ingest metadata from the `dvc.lock` file into the CMF server. If an existing MLMD (Metadata) file is provided, the command will merge and update execution metadata based on matching commands or create new executions if none exist.
+The `cmf dvc ingest` command is used to ingest metadata from the `dvc.lock` file into the `cmf-server`. If an existing MLMD (Metadata) file is provided, the command will merge and update execution metadata based on matching commands or create new executions if none exist.
 
 
 ## 📌 Steps to Get Started
 
-Follow the steps below to set up CMF client and use the `dvc ingest` command.
+Follow the steps below to set up `cmf` client and use the `dvc ingest` command.
 
 
-## 1. Navigate to Your Project Directory
+### 1. Navigate to Your Project Directory
 
-Open your terminal and go to the directory (for e.g., `example-get-started`) where you want to use CMF commands.
+Open your terminal and go to the directory (for e.g., `example-get-started`) where you want to use `cmf` commands.
 
 ```bash
 cd /path/to/your/project
 ```
 
 
-## 2. Initialize CMF with Neo4j Credentials
+### 2. Initialize `cmf` with Neo4j Credentials
 
 Use the following command to initialize `cmf`. You can choose from various storage options like `local`, `ssh`, `amazons3`, `osdfremote`, or `minios3`.
 
@@ -38,7 +38,7 @@ Use the following command to initialize `cmf`. You can choose from various stora
 
 
 
-## 3. Start the Neo4j Server
+### 3. Start the Neo4j Server
 
 Start the Neo4j server using Docker. Follow the guide provided below:
 
@@ -46,7 +46,7 @@ Start the Neo4j server using Docker. Follow the guide provided below:
 
 
 
-## 4. Create a `dvc.yaml` File
+### 4. Create a `dvc.yaml` File
 
 Inside your project directory (for e.g., `example-get-started`), create a `dvc.yaml` file.
 
@@ -93,13 +93,13 @@ stages:
 > When defining deps and outs in your dvc.yaml, ensure consistency in the format used. Either define both as directories (e.g., artifacts/parsed/) or both as individual files (e.g., artifacts/parsed/train.tsv, artifacts/parsed/test.tsv).
 
 
-## 5. Remove `cmf` code from Your `src` Directory
+### 5. Remove `cmf` code from `src` Directory
 
 Ensure that your source files inside the `example-get-started/src` directory do **not contain any `cmf`-related code**. Keep them clean and focused on their tasks.
 
 
 
-## 6. Run the DVC Pipeline
+### 6. Run the DVC Pipeline
 
 Execute your pipeline using the following command. This will also generate a `dvc.lock` file.
 
@@ -108,7 +108,7 @@ dvc repro
 ```
 
 
-## 7. Ingest Metadata with CMF
+### 7. Ingest Metadata with `cmf`
 
 Run the following command to create metadata file based on your `dvc.lock` file:
 
@@ -122,7 +122,7 @@ cmf dvc ingest
 ![neo4j-error](../assets/neo4j.PNG)
 
 
-## 8. Push/Pull Metadata and Artifacts
+### 8. Push/Pull Metadata and Artifacts
 
 Use [cmf-client commands](./cmf_client_commands.md) to push or pull your metadata and artifacts as required:
 
