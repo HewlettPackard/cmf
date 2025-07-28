@@ -1,6 +1,6 @@
-# Using CMF to track metadata for a ML Pipeline 
+# Using `cmf` to track metadata for a ML Pipeline 
 
-This example demonstrates how CMF tracks metadata associated with executions of various machine learning (ML)
+This example demonstrates how `cmf` tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
 ML steps, such as training and testing ML models. 
 
@@ -25,7 +25,7 @@ pipeline consisting of five steps:
   evaluates the performance and execution of the ML model trained in the `train` step. This step registers two input
   artifacts (ML model and test dataset) and one output artifact (performance metrics).
 - The last [query](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py) step
-  displays each step of the pipeline's metadata as retrieved from the CMF server, aggregated over all executions.
+  displays each step of the pipeline's metadata as retrieved from the `cmf-server`, aggregated over all executions.
   For example, if you rerun the pipeline again, the output will include not only metadata associated with the latest
   run, but also the metadata associated with previous runs.
 
@@ -34,7 +34,7 @@ pipeline consisting of five steps:
 
 Before proceeding, ensure that the `cmflib` is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md#install-cmf-library-ie-cmflib) page.
 
-The initial setup requires creating a workspace directory that will contain all files for this example, cloning the CMF repository that contains source code and data for this example.
+The initial setup requires creating a workspace directory that will contain all files for this example, cloning the `cmf` repository that contains source code and data for this example.
 
 ```shell
 # Create workspace directory
@@ -46,9 +46,7 @@ git clone https://github.com/HewlettPackard/cmf
 ```
 
 ## Project initialization
-First, copy the code and data for this example into its own directory (that must be outside the CMF source tree). Execute the `cmf init` command
-specifying the Data Version Control (dvc) directory, the URL of the git remote, address of the cmf server, and neo4j credentials along with the
-appropriate dvc backend for this project.
+First, copy the code and data for this example into its own directory (that must be outside the `cmf` source tree). Execute the `cmf init` command specifying the Data Version Control (dvc) directory, the URL of the git remote, address of the `cmf-server`, and neo4j credentials along with the appropriate dvc backend for this project.
 
 ```shell
 # Create a separate copy of the example project
@@ -91,7 +89,7 @@ To execute the example pipeline, run the
 [test_script.sh](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started)
 file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
 splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
-execution of these steps (and parent pipeline) will be recorded by the CMF.
+execution of these steps (and parent pipeline) will be recorded by the `cmf`.
 ```shell
 # Run the example pipeline
 sh ./test_script.sh
@@ -105,7 +103,7 @@ __cmf-server__ is a key interface for the user to explore and track their ML tra
 
 Follow [here](./../cmf_server/index.md) to set up a common cmf-server.
 
-### Syncing metadata on the cmf-server
+### Syncing metadata on the `cmf-server`
 Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
 repository correspond to the creation of pipeline artifacts and can be viewed with `git log`.
 
@@ -116,7 +114,7 @@ In production settings, the next steps would be to:
 Follow [here](./../cmf_client/cmf_client_commands.md#cmf-init) for more details on `cmf artifact` and `cmf metadata` commands.
 
 ## Query
-The stored metadata can be explored using the query layer of cmf. The Jupyter notebook
+The stored metadata can be explored using the query layer of `cmf`. The Jupyter notebook
 [Query_Tester-base_mlmd.ipynb](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates this
 functionality and can be adapted for your own uses.
 
