@@ -144,7 +144,7 @@ nav:
       - Complete API Documentation: api/public/API.md
     - 💻 CLI Reference: 
       - cmf_client/index.md
-      - Overview: cmf_client/cmf_client.md
+      - Overview: cmf_client/cmf_client_commands.md
       - Guide for the cmf dvc ingest command: cmf_client/cmf-dvc-ingest-guide.md
       - Start Neo4j with Docker: cmf_client/neo4j_docker.md
       - Storage Backends:
