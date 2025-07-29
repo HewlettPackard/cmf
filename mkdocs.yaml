@@ -33,22 +33,22 @@ theme:
   name: material
   language: en
   features:
-    - navigation.sections  # Sections are included in the navigation on the left.
-    - navigation.indexes   # Section index pages
-    - toc.follow          # Table of contents follows scroll position
-    - navigation.instant
-    - navigation.instant.progress
-    - navigation.tracking
-    - navigation.path
-    - navigation.top
-    - navigation.footer
     - content.action.edit
-    - content.code.copy
     - content.code.annotate
+    - content.code.copy
     - content.tabs.link
     - content.tooltips
+    - navigation.footer
+    - navigation.indexes        # Section index pages
+    - navigation.instant
+    - navigation.instant.progress
+    - navigation.path
+    - navigation.sections        # Sections are included in the navigation on the left
+    - navigation.top
+    - navigation.tracking    
     - search.highlight
     - search.suggest
+    - toc.follow          # Table of contents follows scroll position
   palette:
     # Palette toggle for automatic mode
     - media: "(prefers-color-scheme)"
@@ -72,6 +72,8 @@ theme:
 
 markdown_extensions:
   - admonition
+  - attr_list
+  - md_in_html             # Parse markdown inside HTML tags (default is not to parse).
   - pymdownx.arithmatex:   # Render LaTeX via MathJax
       generic: true
   - pymdownx.tasklist
@@ -84,9 +86,7 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
   - toc:
-      permalink: True
-  - attr_list
-  - md_in_html             # Parse markdown inside HTML tags (default is not to parse).
+      permalink: "¤"
 
 extra_css:
   - extra.css         # This defines custom properties, in particular, enforces custom HTML tables to be 100% width.
@@ -94,9 +94,8 @@ extra_css:
 plugins:
   - autorefs          # Need to reference mkdocstrings-generated content from documentation files ([][] thing).
   - search
-  - include-markdown
+  - section-index
   - mkdocstrings:     # Automatically generate API documentation.
-      default_handler: python
       handlers:
         python:
           paths: [src]
