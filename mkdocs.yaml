@@ -146,6 +146,7 @@ nav:
       - Storage Backends:
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
+        - OSDF: cmf_client/cmf_osdf.md
     - 🖥️ GUI Reference: ui/index.md
     - 🏃🏼‍♂️ Metahub: cmf_server/metahub-tab-usage.md
     - 📊 TensorBoard: cmf_client/tensorflow_guide.md
