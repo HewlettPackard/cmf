@@ -1,7 +1,5 @@
 # `cmf` Installation & Setup Guide
 
-## **Overview**
-
 This guide provides step-by-step instructions for installing, configuring, and using CMF (Common Metadata Framework) for ML pipeline metadata tracking.
 
 The installation process consists of following components:
@@ -10,7 +8,7 @@ The installation process consists of following components:
 2. **cmf-server with GUI**: enables users to store, retrieve, and view ML training metadata through an intuitive UI.
 ---
 
-## **Prerequisites**
+## Prerequisites
 
 Before installing CMF, ensure you have the following prerequisites:
 
@@ -41,14 +39,25 @@ Before installing CMF, ensure you have the following prerequisites:
   >   
   >   This ensures Python 3.9 and its essential modules are fully installed.
 
-- **Git**: Latest version for code versioning
-- **Docker**: For containerized deployment
-- **Storage Backend**: S3, MinIO, or local storage for artifacts
+- **Git**: Latest version for code versioning.
+  > Make sure Git is properly configured using `git config`, as it's required for the product.
+  > At minimum, set your user identity:
+  > ```bash
+  >  git config --global user.name "Your Name"
+  >  git config --global user.email "you@example.com"
+  >  ```
+- ### Docker : For containerized deployment of `cmf-server` and `cmf-gui`.
+  > 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+  > 2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
+  > In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
+- **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
+- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts.
 ---
 
-## **Components**
+## Components
 
-### **Install cmf library i.e. cmflib**
+### Install cmf library i.e. cmflib
+---
 
 **1. Set up Python Virtual Environment**
 
@@ -64,7 +73,7 @@ Before installing CMF, ensure you have the following prerequisites:
     source .cmf/bin/activate
     ```
 
-#### 2. Install CMF:
+**2. Install CMF:**
 
 === "Latest version from GitHub"
     ```shell
@@ -76,69 +85,81 @@ Before installing CMF, ensure you have the following prerequisites:
     # pip install cmflib
     ```
 
-### **Install cmf-server**
+### Install cmf-server
+---
 
-**Docker Installation**
+- Ensure that Docker is installed on your machine, as mentioned in the [prerequisites](#prerequisites). If not, please install it before proceeding.
 
-  1. Clone the [GitHub repository](https://github.com/HewlettPackard/cmf).
+- Clone the [GitHub repository](https://github.com/HewlettPackard/cmf).
+     ```
+     git clone https://github.com/HewlettPackard/cmf
+     ```
+
+- Using `docker compose` File
+
+> This is the recommended approach, as `docker compose` starts the `cmf-server`, PostgreSQL database, and `cmf-gui` together.
+> **Note:** It's essential to start the PostgreSQL database before the `cmf-server`.
+1. **Navigate to the `cmf` directory:**
+
+   ```bash
+   cd cmf
    ```
-   git clone https://github.com/HewlettPackard/cmf
+
+2. **Update your username in `docker-compose-server.yml`:**
+
+   Replace `xxxx` with your actual username in the following paths inside the `docker-compose-server.yml` file (found in the root `cmf` directory):
+
+   ```yaml
+   services:
+     server:
+       image: server:latest
+       volumes:
+         - /home/xxxx/cmf-server/data:/cmf-server/data                 # e.g., /home/hpe-user/cmf-server/data:/cmf-server/data
+         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static   # e.g., /home/hpe-user/cmf-server/data/static:/cmf-server/data/static
+       container_name: cmf-server
+       build:
+         ...
    ```
 
-  2. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
-  3. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
-   > In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
-  4. **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
+3. **Create a `.env` file in the same directory as `docker-compose-server.yml` with environment variables:**
 
-**Using `docker compose` file**
-> This is the recommended way as docker compose starts cmf-server, postgres db and ui-server in one go. It is neccessary to start postgres db before cmf-server.
+   ```env
+   POSTGRES_USER=myuser
+   POSTGRES_PASSWORD=mypassword
+   POSTGRES_PORT=5470
+   ```
 
-1. Go to root `cmf` directory. 
-2. Replace `xxxx` with your user-name in docker-compose-server.yml available in the root cmf directory.
-    ```
-    ......
-    services:
-    server:
-      image: server:latest
-      volumes:
-         - /home/xxxx/cmf-server/data:/cmf-server/data                 # for example /home/hpe-user/cmf-server/data:/cmf-server/data
-         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static   # for example /home/hpe-user/cmf-server/data/static:/cmf-server/data/static
-      container_name: cmf-server
-      build:
-    ....
-    ``` 
-3. Create a `.env` file in the same directory as `docker-compose-server.yml` and add the necessary environment variables.
-   ```
-   POSTGRES_USER: myuser
-   POSTGRES_PASSWORD: mypassword
-   POSTGRES_PORT: 5470
-   ``` 
-   > ⚠️**Warning:** Avoid using `@` character in `POSTGRES_PASSWORD` to prevent connection issues.
-4. Execute one of the following commands to start both containers. `IP` variable is the IP address and `hostname` is the host name of the machine on which you are executing the following command.
-   ```
+   > ⚠️ **Warning:** Avoid using the `@` character in `POSTGRES_PASSWORD` to prevent connection issues.
+
+4. **Start the containers:**
+
+   Execute one of the following commands. Replace `IP` with the machine’s IP address or `hostname` with its hostname:
+
+   ```bash
    IP=200.200.200.200 docker compose -f docker-compose-server.yml up
-              OR
-   hostname=host_name docker compose -f docker-compose-server.yml up
+   # OR
+   hostname=your_hostname docker compose -f docker-compose-server.yml up
    ```
-   > Replace `docker compose` with `docker-compose` for older versions.
-   > Also, you can adjust `$IP` in `docker-compose-server.yml` to reflect the server IP and run the `docker compose` command without specifying
-    IP=200.200.200.200.
-     ```
-     .......
-     environment:
+
+   > 📝 **Note:**
+   >
+   > * Replace `docker compose` with `docker-compose` if you're using an older version of Docker.
+   > * You can also set the IP directly in `docker-compose-server.yml` and omit it in the command:
+
+   ```yaml
+   environment:
      REACT_APP_MY_IP: ${IP}
-     ......
-     ```
+   ```
 
-5. Stop the containers.
-    ```
-      docker compose -f docker-compose-server.yml stop
-    ```
+5. **Stop the containers:**
 
-> It is necessary to rebuild images for cmf-server and ui-server after `cmf version update` or after pulling the latest cmf code from git.
+   ```bash
+   docker compose -f docker-compose-server.yml stop
+   ```
 
 ---
 
---8<-- "./../cmf_server/index.md"
+> 💡 **Important:**
+> Rebuild the images for `cmf-server` and `cmf-ui` after a `cmf` version update or pulling the latest changes from Git to ensure compatibility.
 
-
+---
