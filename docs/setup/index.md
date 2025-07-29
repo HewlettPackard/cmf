@@ -28,11 +28,14 @@ Before installing CMF, ensure you have the following prerequisites:
   >  **Resolution**:
   > 
   >  1. Add the deadsnakes PPA (provides newer Python versions):
+  >     
   >    ```bash
   >    sudo add-apt-repository ppa:deadsnakes/ppa
   >    sudo apt-get update
   >   ```
+  >    
   > 2. Install Python 3.9 with required modules:
+  >    
   >   ```bash
   >   sudo apt install python3.9 python3.9-dev python3.9-distutils
   >   ```
@@ -46,6 +49,7 @@ Before installing CMF, ensure you have the following prerequisites:
   >  git config --global user.name "Your Name"
   >  git config --global user.email "you@example.com"
   >  ```
+
 - ### Docker : For containerized deployment of `cmf-server` and `cmf-gui`.
   > 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
   > 2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
