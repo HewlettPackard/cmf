@@ -177,7 +177,7 @@ def _artifact_pull_single(pipeline_name, file_name, artifact_name):
     return msg
 
 
-def _cmf_cmd_init():
+def _cmf_init_show():
     """ Initializes and shows details of the CMF command. 
     Returns: 
        Output from the init show command. 

@@ -78,7 +78,7 @@ from cmflib.cmf_commands_wrapper import (
     _artifact_pull,
     _artifact_push,
     _artifact_pull_single,
-    _cmf_cmd_init,
+    _cmf_init_show,
     _init_local,
     _init_minioS3,
     _init_amazonS3,
@@ -1835,9 +1835,9 @@ def cmf_init_show():
     ``` 
     
     Returns: 
-       Output from the _cmf_cmd_init function. 
+       Output from the _cmf_init_show function. 
     """
-    output=_cmf_cmd_init()
+    output=_cmf_init_show()
     return output
 
 
