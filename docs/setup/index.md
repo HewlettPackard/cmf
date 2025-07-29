@@ -139,6 +139,6 @@ Before installing CMF, ensure you have the following prerequisites:
 
 ---
 
---8 <-- "./../cmf_server/index.md"
+--8<-- "./../cmf_server/index.md"
 
 
