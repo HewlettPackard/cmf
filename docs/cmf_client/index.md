@@ -1,4 +1,4 @@
-# Quick start with cmf-client
+# Quick start with cmf-client [NEEDS TO BE UPDATED]
 Common metadata framework (`cmf`) has the following components:
 
 - **Metadata Library**: exposes APIs for tracking pipeline metadata and provides endpoints to query stored metadata.
@@ -97,3 +97,5 @@ Check [cmf artifact pull](./cmf_client_commands.md/#cmf-artifact-pull) page for 
 
 ## Flow Chart for cmf
 <img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
+`cmf-client` is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull/push metadata from or to the `cmf-server` with similar functionalities for artifact repositories and other commands. 
+** NEEDS TO BE UPDATED **
