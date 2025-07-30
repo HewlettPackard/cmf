@@ -89,7 +89,7 @@ Before installing CMF, ensure you have the following prerequisites:
     # pip install cmflib
     ```
 
-### Install cmf-server
+### Install cmf-server with GUI
 ---
 
 - Ensure that Docker is installed on your machine, as mentioned in the [prerequisites](#prerequisites). If not, please install it before proceeding.
