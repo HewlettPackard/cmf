@@ -50,8 +50,8 @@ Before installing CMF, ensure you have the following prerequisites:
   >  git config --global user.email "you@example.com"
   >  ```
 
-- ### Docker : For containerized deployment of `cmf-server` and `cmf-gui`.
-  > 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) privileges.
+- **Docker** : For containerized deployment of `cmf-server` and `cmf-gui`.
+  > 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/linux-postinstall/) privileges.
   > 2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
   > In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
 - **Docker Proxy Settings** are needed for some of the server packages. Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
