@@ -12,7 +12,7 @@ This tutorial walks you through the process of setting up the `cmf-client`.
 Before proceeding with the setup, ensure the following components are up and running:
 
 - [cmflib](../setup/index.md/#install-cmf-library-ie-cmflib)
-- [cmf-server](../setup/index.md/#install-cmf-server)
+- [cmf-server](../setup/index.md/#install-cmf-server-with-gui)
 
 Make sure there are no errors during their startup, as `cmf-client` depends on both of these components.
 
