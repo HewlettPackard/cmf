@@ -2,7 +2,7 @@
 
 The `cmflib` package is the foundational Python library that provides the core metadata tracking capabilities for the Common Metadata Framework (CMF). It offers a unified API for logging metadata across distributed AI/ML pipelines, integrating with multiple storage backends and versioning systems.
 
-This document covers the core library components, main API classes, and integration mechanisms. For CLI usage patterns, see [Quick Start with cmf-client](../cmf_client/index.md). For server-side components, see [cmf-server](../setup/index.md#install-cmf-server-with-gui).
+This document covers the core library components, main API classes, and integration mechanisms. For CLI usage patterns, see [Quick Start with cmf-client](../cmf_client/index.md). For server-side components, see [cmf-server](../setup/index.md#install-cmf-server-with-gui). - NEEDS TO BE UPDATED
 
 ## Core Architecture
 
