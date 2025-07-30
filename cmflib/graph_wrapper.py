@@ -198,7 +198,7 @@ class GraphDriver:
             parent_artifact_uri = k["URI"]
             parent_name = k["Name"]
             relation = re.sub(
-                '\W+', '', re.split(",", k["Execution_Name"])[-1])
+                r'\W+', '', re.split(",", k["Execution_Name"])[-1])
             pc_syntax = self._create_parent_child_artifacts_syntax(
                 parent_artifact_type,
                 child_artifact_type,
@@ -332,7 +332,7 @@ class GraphDriver:
         props["pipeline_name"] = name
         syntax_str = "MERGE (a:Pipeline {"  # + str(props) + ")"
         for k, v in props.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             syntax_str = syntax_str + k + ":" + "\"" + v + "\"" + ","
         syntax_str = syntax_str.rstrip(syntax_str[-1])
         syntax_str = syntax_str + "}) RETURN ELEMENTID(a) as node_id"
@@ -351,7 +351,7 @@ class GraphDriver:
         syntax_str = "MERGE (a:Dataset {uri:\"" + uri + "\"}) SET "
         # props_str = ""
         for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             props_str = "a." + k + \
                 " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str
@@ -369,7 +369,7 @@ class GraphDriver:
         syntax_str = "MERGE (a:Environment {uri:\"" + uri + "\"}) SET "
         # props_str = ""
         for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             props_str = "a." + k + \
                 " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str
@@ -385,7 +385,7 @@ class GraphDriver:
         syntax_str = "MERGE (a:Dataslice {uri:\"" + uri + "\"}) SET "
         # props_str = ""
         for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             props_str = "a." + k + \
                 " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str
@@ -400,7 +400,7 @@ class GraphDriver:
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Model {uri:\"" + uri + "\"}) SET "
         for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             props_str = "a." + k + \
                 " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             #syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
@@ -419,7 +419,7 @@ class GraphDriver:
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Metrics {"  # + str(props) + ")"
         for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
         syntax_str = syntax_str.rstrip(syntax_str[-1])
         syntax_str = syntax_str + "})"
@@ -436,7 +436,7 @@ class GraphDriver:
         custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Step_Metrics {"  # + str(props) + ")"
         for k, v in custom_properties.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
         syntax_str = syntax_str.rstrip(syntax_str[-1])
         syntax_str = syntax_str + "})"
@@ -451,7 +451,7 @@ class GraphDriver:
         props["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Stage {"  # + str(props) + ")"
         for k, v in props.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             syntax_str = syntax_str + k + ":" + "\"" + str(v) + "\"" + ","
 
         syntax_str = syntax_str.rstrip(syntax_str[-1])
@@ -538,7 +538,7 @@ class GraphDriver:
         props["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Execution {"  # + str(props) + ")"
         for k, v in props.items():
-            k = re.sub('\W+', '', k)
+            k = re.sub(r'\W+', '', k)
             v = str(v)
             syntax_str = syntax_str + k + ":" + "\"" + v + "\"" + ","
 
