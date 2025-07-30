@@ -1,4 +1,4 @@
-# Components of CMF
+# Components of CMF - NEEDS TO BE UPDATED
 
 - **cmflib** - cmflib provides the core metadata tracking capabilities for the Common Metadata Framework (CMF), exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
 - **cmf-client** – The client interacts with the server to pull or push metadata from or to the remote store. 
