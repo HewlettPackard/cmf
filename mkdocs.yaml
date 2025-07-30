@@ -124,7 +124,7 @@ nav:
   - Home:
     - 🔗 Welcome to CMF: index.md
     - 🏗️ Architecture:
-      - Overview: architecture/index.md
+      - architecture/index.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: setup/index.md
