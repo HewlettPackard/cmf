@@ -128,13 +128,13 @@ nav:
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: setup/index.md
-    - 🗄️ cmf-server: cmf_server/index.md
     - 🎯 Getting Started Tutorial: examples/getting_started.md
     - 🐍 API Reference:
       - cmflib/index.md
       - Cmf: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
       - CmfQuery: api/public/cmfquery.md
+      - cmf-server: api/public/cmfserver.md
       - Ray Logger: api/public/cmf_ray_logger.md
       - Complete API Documentation: api/public/API.md
     - 💻 CLI Reference: 
