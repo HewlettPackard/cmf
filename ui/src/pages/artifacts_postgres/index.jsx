@@ -14,7 +14,7 @@
  * limitations under the License.
  ***/
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
@@ -27,6 +27,9 @@ import Papa from "papaparse";
 import Highlight from "../../components/Highlight";
 
 const client = new FastAPIClient(config);
+
+// Memoized ArtifactPTable to prevent unnecessary re-renders
+const MemoizedArtifactPTable = React.memo(ArtifactPTable);
 
 const ArtifactsPostgres = () => {
   const [selectedPipeline, setSelectedPipeline] = useState(null);
@@ -63,6 +66,29 @@ const ArtifactsPostgres = () => {
   // Flag to prevent re-fetching artifacts when just loading label content
   const [isLoadingLabelContent, setIsLoadingLabelContent] = useState(false);
 
+  // Ref to immediately block fetchArtifacts calls during label loading
+  const isLoadingLabelContentRef = useRef(false);
+
+  // Lift accordion state to parent to preserve it across re-renders
+  const [expandedRow, setExpandedRow] = useState(null);
+
+  // Reset accordion state when artifact type changes
+  useEffect(() => {
+    setExpandedRow(null);
+  }, [selectedArtifactType]);
+
+  // Handle accordion auto-expansion for search filters at parent level
+  useEffect(() => {
+    if (selectedArtifactType === "Label") {
+      if (filter && filter.trim() !== "") {
+        setExpandedRow("all");
+      }
+    }
+  }, [filter, selectedArtifactType]);
+
+  // Simple memoization
+  const stableArtifacts = useMemo(() => artifacts, [artifacts]);
+
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
   },[]);
@@ -92,26 +118,35 @@ const ArtifactsPostgres = () => {
   };  
  
   useEffect(() => {
-    if ( selectedPipeline && selectedArtifactType && !isLoadingLabelContent ){
+    // Fetch artifacts when these dependencies change (but not when loading label content)
+    if ( selectedPipeline && selectedArtifactType ){
       fetchArtifacts(selectedPipeline, selectedArtifactType, sortOrder, activePage, filter, selectedCol);
     }
-  }, [selectedArtifactType, sortOrder, activePage, selectedCol, filter, isLoadingLabelContent]);
+  }, [selectedPipeline, selectedArtifactType, sortOrder, activePage, selectedCol, filter]);
 
   const fetchArtifacts = async (pipelineName, artifactType, sortOrder, activePage, filter="", selectedCol) => {
     try {
+      // Don't fetch if we're currently loading label content (prevents left panel reload)
+      if (isLoadingLabelContent || isLoadingLabelContentRef.current) {
+        return;
+      }
+
+      // Clear artifacts immediately to show loading state (consistent with other artifact types)
+      setArtifacts(null);
+
       // Handle Label search case
       if (artifactType === "Label" && filter && filter.trim() !== "") {
         try {
           const searchData = await client.searchLabelArtifacts(pipelineName, filter, sortOrder, activePage, 5);
 
-          // Add search context to artifacts
-          const processedItems = searchData.items.map(item => ({
-            ...item,
-            isSearchResult: true,
-            searchFilter: filter
-          }));
+          // Add search context to artifacts while preserving backend search_metadata
+          // Use a more efficient approach to avoid unnecessary object creation
+          searchData.items.forEach(item => {
+            item.isSearchResult = true;
+            item.searchFilter = filter;
+          });
 
-          setArtifacts(processedItems);
+          setArtifacts(searchData.items);
           setTotalItems(searchData.total_items);
           return; // Early return
         } catch (searchError) {
@@ -158,20 +193,20 @@ const ArtifactsPostgres = () => {
     clearLabelData();
   };
 
-  const handleFilter = (value) => {
+  const handleFilter = useCallback((value) => {
     setFilter(value); // Update the filter string
     setActivePage(1);
- };   
+  }, []);
 
-  const toggleSortOrder = (newSortOrder) => {
+  const toggleSortOrder = useCallback((newSortOrder) => {
     setSortOrder(newSortOrder);
     setSelectedCol("name");
-  };  
+  }, []);
 
-  const toggleSortTime = (newSortOrder) => {
+  const toggleSortTime = useCallback((newSortOrder) => {
     setSortOrder(newSortOrder);
     setSelectedCol("create_time_since_epoch");
-  };  
+  }, []);
 
   const handlePageClick = (page) => {
     setActivePage(page);
@@ -194,8 +229,8 @@ const ArtifactsPostgres = () => {
     }  
   };
 
-  // Simple label content display component
-  const LabelContentPanel = () => {
+  // Memoized label content display component
+  const LabelContentPanel = useMemo(() => {
     return (
       <div className="p-4">
         {selectedTableLabel ? (
@@ -309,12 +344,17 @@ const ArtifactsPostgres = () => {
       )}
     </div>
     );
-  };
+  }, [selectedTableLabel, labelContentLoading, labelData, parsedLabelData, labelColumns, currentPage, rowsPerPage]);
 
-  // Handle label click from table
-  const handleTableLabelClick = async (labelName, artifact) => {
-    // Prevent useEffect from triggering fetchArtifacts while loading label content
+  // Handle label click from table - memoized to prevent re-renders
+  const handleTableLabelClick = useCallback(async (labelName, artifact) => {
+    // Set ref IMMEDIATELY to block any fetchArtifacts calls
+    isLoadingLabelContentRef.current = true;
+
+    // Set loading flag to prevent fetchArtifacts from running
     setIsLoadingLabelContent(true);
+
+    // Batch state updates to minimize re-renders
     setSelectedTableLabel(artifact);
     setLabelContentLoading(true);
     setCurrentPage(0); // Reset pagination when new label is selected
@@ -355,11 +395,11 @@ const ArtifactsPostgres = () => {
 
       const parsed = Papa.parse(labelData, { header: true });
 
-      // Check if this is a search result - if so, filter to matching rows only
-      if (artifact.isSearchResult && artifact.searchFilter) {
+      // Check if this is a search result and if the search term was found in CSV content
+      if (artifact.isSearchResult && artifact.searchFilter && artifact.search_metadata?.content_match) {
         const searchFilter = artifact.searchFilter;
 
-        // Filter to show only rows that contain the search term
+        // Filter CSV rows to show only those containing the search term
         const matchingRows = parsed.data.filter((row) => {
           const rowValues = Object.values(row);
 
@@ -375,7 +415,7 @@ const ArtifactsPostgres = () => {
 
         setParsedLabelData(matchingRows);
       } else {
-        // Normal label - show all data
+        // Normal label OR search result with property-only match - show all data
         setParsedLabelData(parsed.data);
       }
 
@@ -403,8 +443,43 @@ const ArtifactsPostgres = () => {
     } finally {
       setLabelContentLoading(false);
       setIsLoadingLabelContent(false); // Reset flag to allow normal useEffect behavior
+      isLoadingLabelContentRef.current = false; // Reset ref to allow future fetchArtifacts calls
     }
-  };
+  }, []); // Empty dependency array for useCallback
+
+  // Memoized onLabelClick to prevent prop changes
+  const memoizedOnLabelClick = useMemo(() => {
+    return selectedArtifactType === "Label" ? handleTableLabelClick : undefined;
+  }, [selectedArtifactType, handleTableLabelClick]);
+
+  // Memoized setExpandedRow to prevent prop changes
+  const memoizedSetExpandedRow = useCallback((value) => {
+    setExpandedRow(value);
+  }, [selectedArtifactType, filter]);
+
+  // Memoized Left Panel Component to prevent unnecessary re-renders
+  const MemoizedLeftPanel = useMemo(() => {
+    return (
+      <div className="p-4">
+        {stableArtifacts !== null && stableArtifacts?.length > 0 ? (
+          <MemoizedArtifactPTable
+            artifacts={stableArtifacts}
+            artifactType={selectedArtifactType}
+            onsortOrder={toggleSortOrder}
+            onsortTimeOrder={toggleSortTime}
+            filterValue={filter}
+            onLabelClick={memoizedOnLabelClick}
+            expandedRow={expandedRow}
+            setExpandedRow={memoizedSetExpandedRow}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-600">No label artifacts available</p>
+          </div>
+        )}
+      </div>
+    );
+  }, [stableArtifacts, selectedArtifactType, filter, toggleSortOrder, toggleSortTime, memoizedOnLabelClick, expandedRow, memoizedSetExpandedRow]); // Include accordion state
 
   // Resizable Split Pane Component
   const ResizableSplitPane = ({ leftContent, rightContent, initialSplitPercentage = 50 }) => {
@@ -501,37 +576,22 @@ const ArtifactsPostgres = () => {
             {selectedArtifactType === "Label" ? (
               <div className="flex-grow" style={{ height: 'calc(100vh - 200px)' }}>
                 <ResizableSplitPane
-                  leftContent={
-                    <div className="p-4">
-                      {artifacts !== null && artifacts.length > 0 ? (
-                        <ArtifactPTable
-                          artifacts={artifacts}
-                          artifactType={selectedArtifactType}
-                          onsortOrder={toggleSortOrder}
-                          onsortTimeOrder={toggleSortTime}
-                          filterValue={filter}
-                          onLabelClick={selectedArtifactType === "Label" ? handleTableLabelClick : undefined}
-                        />
-                      ) : (
-                        <div className="text-center py-12">
-                          <p className="text-gray-600">No label artifacts available</p>
-                        </div>
-                      )}
-                    </div>
-                  }
-                  rightContent={<LabelContentPanel />}
+                  leftContent={MemoizedLeftPanel}
+                  rightContent={LabelContentPanel}
                   initialSplitPercentage={50}
                 />
               </div>
             ) : (
               <div>
                 {artifacts !== null && artifacts.length > 0 ? (
-                  <ArtifactPTable
+                  <MemoizedArtifactPTable
                     artifacts={artifacts}
                     artifactType={selectedArtifactType}
                     onsortOrder={toggleSortOrder}
                     onsortTimeOrder={toggleSortTime}
                     filterValue={filter}
+                    expandedRow={expandedRow}
+                    setExpandedRow={memoizedSetExpandedRow}
                     />
 
                 ) : (

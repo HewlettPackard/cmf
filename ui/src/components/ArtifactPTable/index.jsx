@@ -15,7 +15,7 @@
  ***/
 
 // ArtifactTable.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ModelCardPopup from "../ModelCardPopup";
 import Highlight from "../Highlight";
 import FastAPIClient from "../../client";
@@ -25,27 +25,37 @@ import LabelCardPopup from "../LabelCardPopup";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue, onLabelClick}) => {
-  const [data, setData] = useState([]);
+const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue, onLabelClick, expandedRow: externalExpandedRow, setExpandedRow: externalSetExpandedRow}) => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
-  const [expandedRow, setExpandedRow] = useState(null);
+
+  // Use internal state as fallback if external state is not provided
+  const [internalExpandedRow, setInternalExpandedRow] = useState(null);
+
+  // Use external state if provided, otherwise use internal state
+  const expandedRow = externalExpandedRow !== undefined ? externalExpandedRow : internalExpandedRow;
+  const setExpandedRow = externalSetExpandedRow || setInternalExpandedRow;
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
   const [labelData, setLabelData] = useState("");
 
+  // Handle expanded row based on filter value - only when filter actually changes
+  const prevFilterValue = useRef(filterValue);
   useEffect(() => {
-    // if data then set artifacts with that data else set it null.
-    setData(artifacts);
-    // handle expanded row based on filter value
-    if (filterValue.trim() !== ""){
-      // expand all rows when filter value is set
-      setExpandedRow("all");
-    }else{
-      // collapse all rows when filter value is empty
-      setExpandedRow(null);
+    // Only auto-expand/collapse when filter value actually changes, not on every render
+    if (prevFilterValue.current !== filterValue) {
+      if (filterValue.trim() !== ""){
+        // expand all rows when filter value is set
+        setExpandedRow("all");
+      } else {
+        // collapse all rows when filter value is cleared (but not on initial load)
+        if (prevFilterValue.current.trim() !== "") {
+          setExpandedRow(null);
+        }
+      }
+      prevFilterValue.current = filterValue;
     }
-  }, [artifacts]);
+  }, [filterValue, setExpandedRow, artifactType, expandedRow]);
 
 
   const renderArrow = () => (

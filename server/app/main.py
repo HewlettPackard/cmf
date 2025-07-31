@@ -3,6 +3,7 @@ import io
 import time
 import zipfile
 import csv
+import re
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
@@ -36,7 +37,6 @@ from server.app.db.dbqueries import (
     get_registered_server_details,
     get_sync_status,
     update_sync_status,
-    fetch_artifacts_with_label_search,
     search_labels_in_artifacts
 )
 from pathlib import Path
@@ -248,7 +248,7 @@ async def get_artifacts(
             logger = logging.getLogger(__name__)
             logger.warning(f"Auto-reindex failed: {e}")
 
-    result = await fetch_artifacts_with_label_search(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
+    result = await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
 
     return result
 
@@ -263,92 +263,105 @@ async def search_label_artifacts(
     db: AsyncSession = Depends(get_db)
 ):
     """
-    Search for label artifacts that contain the specified content in their CSV files.
-    Returns clean label artifacts with proper structure, not content search results.
+    Search for label artifacts - returns same structure as regular artifacts API
     """
-
     try:
-        # Step 1: Search for labels containing the content
-        label_search_results = await search_labels_in_artifacts(db, content_filter, pipeline_name, 100)
+        # Combined search: both label content and regular artifact properties
+        # 1. Search in label CSV content
+        label_content_results = await search_labels_in_artifacts(db, content_filter, pipeline_name, 100)
 
-        if not label_search_results:
+        # 2. Search in regular artifact properties (like other artifact types)
+        property_search_results = await fetch_artifacts(
+            db, pipeline_name, "Label", content_filter, 1, 1000, "name", sort_order
+        )
+
+        # If no results from either search, return empty
+        if not label_content_results and property_search_results['total_items'] == 0:
             return {
                 "total_items": 0,
-                "items": [],
-                "search_metadata": {
-                    "search_term": content_filter,
-                    "search_type": "content_filter"
-                }
+                "items": []
             }
 
-        # Step 2: Extract unique label names
-        unique_labels = set()
-        label_metadata = {}
+        # Extract label files that match content search
+        matching_label_files = set()
+        for result in label_content_results:
+            label_file = result.get('label_file', '')
+            if label_file:
+                # Remove file extension if present
+                clean_label_file = label_file.replace('.csv', '') if label_file.endswith('.csv') else label_file
+                matching_label_files.add(clean_label_file)
+                # Also add the original name in case it's used as-is
+                matching_label_files.add(label_file)
 
-        for result in label_search_results:
-            label_name = result['label_file']
-            unique_labels.add(label_name)
-
-            # Store metadata for each label
-            if label_name not in label_metadata:
-                label_metadata[label_name] = {
-                    'matching_rows': 0,
-                    'total_rows': result.get('total_rows', 0),
-                    'relevance_score': result.get('relevance_score', 0.0)
-                }
-            label_metadata[label_name]['matching_rows'] += 1
-
-        # Step 3: Fetch actual label artifacts
+        # Get all label artifacts (for content matching)
         all_artifacts_result = await fetch_artifacts(
             db, pipeline_name, "Label", "", 1, 1000, "name", sort_order
         )
 
-        # Step 4: Filter to only labels that contain the search term
+        # Combine results: artifacts that match either content search OR property search
         filtered_artifacts = []
+
+        # Create a set of artifact IDs that match property search
+        property_match_ids = set()
+        for artifact in property_search_results['items']:
+            property_match_ids.add(artifact['artifact_id'])
+
         for artifact in all_artifacts_result['items']:
-            # Extract clean label name from artifact name
-            clean_name = artifact['name']
-            if ':' in clean_name:
-                clean_name = clean_name.split(':', 1)[1]
+            artifact_name = artifact['name']
+            artifact_uri = artifact.get('uri', '')
+            artifact_id = artifact['artifact_id']
 
-            # Remove any (Row X) suffix if present
-            import re
-            clean_name = re.sub(r'\s*\(Row\s+\d+\)$', '', clean_name).strip()
+            # Check if this artifact matches property search
+            property_matches = artifact_id in property_match_ids
 
-            if clean_name in unique_labels:
-                # Create enhanced artifact with search context
-                enhanced_artifact = {
-                    'artifact_id': artifact['artifact_id'],
-                    'name': clean_name,  # Clean name without prefixes/suffixes
-                    'uri': f"artifacts/labels.csv:{clean_name}",
-                    'type_id': 'Label',
-                    'execution': artifact.get('execution', 'N/A'),
-                    'create_time_since_epoch': artifact.get('create_time_since_epoch', 'N/A'),
-                    'last_update_time_since_epoch': artifact.get('last_update_time_since_epoch', 'N/A'),
-                    'artifact_properties': artifact.get('artifact_properties', []),
-                    'search_context': {
-                        'search_term': content_filter,
-                        'matching_rows': label_metadata[clean_name]['matching_rows'],
-                        'total_rows': label_metadata[clean_name]['total_rows'],
-                        'relevance_score': label_metadata[clean_name]['relevance_score']
-                    }
+            # Check if this artifact matches content search
+            content_matches = False
+            if matching_label_files:
+                # Clean the artifact name - remove prefixes and suffixes
+                clean_name = artifact_name
+                if ':' in clean_name:
+                    clean_name = clean_name.split(':', 1)[1]
+
+                # Remove row indicators like "(Row 1)" from the name
+                clean_name = re.sub(r'\s*\(Row\s+\d+\)$', '', clean_name).strip()
+
+                # Check multiple matching strategies for content
+                name_matches = clean_name in matching_label_files
+
+                # Also check if URI contains any of the matching label files
+                uri_matches = False
+                if artifact_uri:
+                    for label_file in matching_label_files:
+                        if label_file in artifact_uri:
+                            uri_matches = True
+                            break
+
+                # Check if original artifact name matches (without cleaning)
+                original_name_matches = artifact_name in matching_label_files
+
+                content_matches = name_matches or uri_matches or original_name_matches
+
+            # Include artifact if it matches either property search OR content search
+            if property_matches or content_matches:
+                # Add search metadata but keep same structure as regular artifacts
+                artifact['search_metadata'] = {
+                    'search_term': content_filter,
+                    'is_search_result': True,
+                    'property_match': property_matches,
+                    'content_match': content_matches
                 }
-                filtered_artifacts.append(enhanced_artifact)
+                filtered_artifacts.append(artifact)
 
-        # Step 5: Apply pagination
+        # Apply pagination
         total_items = len(filtered_artifacts)
         start_idx = (active_page - 1) * record_per_page
         end_idx = start_idx + record_per_page
         paginated_items = filtered_artifacts[start_idx:end_idx]
 
+        # Return same structure as regular artifacts API
         return {
             "total_items": total_items,
-            "items": paginated_items,
-            "search_metadata": {
-                "search_term": content_filter,
-                "search_type": "content_filter",
-                "unique_labels_found": len(unique_labels)
-            }
+            "items": paginated_items
         }
 
     except Exception as e:
