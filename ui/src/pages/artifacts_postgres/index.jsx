@@ -14,7 +14,7 @@
  * limitations under the License.
  ***/
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
@@ -23,6 +23,8 @@ import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
 import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
+import Papa from "papaparse";
+import Highlight from "../../components/Highlight";
 
 const client = new FastAPIClient(config);
 
@@ -38,9 +40,29 @@ const ArtifactsPostgres = () => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [totalItems, setTotalItems] = useState(0);
   const [activePage, setActivePage] = useState(1);
-  const [clickedButton, setClickedButton] = useState("page"); 
+  const [clickedButton, setClickedButton] = useState("page");
   const [selectedCol, setSelectedCol] = useState("name");
-  
+
+  // Label-specific state
+  const [selectedTableLabel, setSelectedTableLabel] = useState(null);
+  const [labelData, setLabelData] = useState("");
+  const [parsedLabelData, setParsedLabelData] = useState([]);
+  const [labelColumns, setLabelColumns] = useState([]);
+  const [labelContentLoading, setLabelContentLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const clearLabelData = () => {
+    setLabelData("");
+    setParsedLabelData([]);
+    setLabelColumns([]);
+    setLabelContentLoading(false);
+    setCurrentPage(0);
+  };
+
+  // Flag to prevent re-fetching artifacts when just loading label content
+  const [isLoadingLabelContent, setIsLoadingLabelContent] = useState(false);
+
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
   },[]);
@@ -70,36 +92,71 @@ const ArtifactsPostgres = () => {
   };  
  
   useEffect(() => {
-    if ( selectedPipeline && selectedArtifactType ){
+    if ( selectedPipeline && selectedArtifactType && !isLoadingLabelContent ){
       fetchArtifacts(selectedPipeline, selectedArtifactType, sortOrder, activePage, filter, selectedCol);
     }
-  }, [selectedArtifactType, sortOrder, activePage, selectedCol, filter]);
+  }, [selectedArtifactType, sortOrder, activePage, selectedCol, filter, isLoadingLabelContent]);
 
-  const fetchArtifacts = (pipelineName, artifactType, sortOrder, activePage, filter="", selectedCol) => {
-    client.getArtifacts(pipelineName, artifactType, sortOrder, activePage, filter, selectedCol)
-      .then((data) => {
-        setArtifacts(data.items);
-        setTotalItems(data.total_items);
-      });  
-  };    
+  const fetchArtifacts = async (pipelineName, artifactType, sortOrder, activePage, filter="", selectedCol) => {
+    try {
+      // Handle Label search case
+      if (artifactType === "Label" && filter && filter.trim() !== "") {
+        try {
+          const searchData = await client.searchLabelArtifacts(pipelineName, filter, sortOrder, activePage, 5);
+
+          // Add search context to artifacts
+          const processedItems = searchData.items.map(item => ({
+            ...item,
+            isSearchResult: true,
+            searchFilter: filter
+          }));
+
+          setArtifacts(processedItems);
+          setTotalItems(searchData.total_items);
+          return; // Early return
+        } catch (searchError) {
+          console.warn('Label search failed, falling back to regular fetch:', searchError);
+          // Fall through to regular fetch
+        }
+      }
+
+      // Regular artifact fetching
+      const regularData = await client.getArtifacts(pipelineName, artifactType, sortOrder, activePage, filter, selectedCol);
+      setArtifacts(regularData.items);
+      setTotalItems(regularData.total_items);
+
+    } catch (error) {
+      console.error('Failed to fetch artifacts:', error);
+      setArtifacts([]);
+      setTotalItems(0);
+    }
+  };
   
   const handleArtifactTypeClick = (artifactType) => {
     if (selectedArtifactType !== artifactType) {
       // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
       setArtifacts(null);
-    }  
+    }
     setSelectedArtifactType(artifactType);
     setActivePage(1);
-  };  
+
+    // Clear label-related state when switching artifact types
+    setSelectedTableLabel(null);
+    clearLabelData();
+  };
 
   const handlePipelineClick = (pipeline) => {
     if (selectedPipeline !== pipeline) {
       // this condition sets page as null.
       setArtifacts(null);
-    }  
+    }
     setSelectedPipeline(pipeline);
     setActivePage(1);
-  };  
+
+    // Clear label-related state when switching pipelines
+    setSelectedTableLabel(null);
+    clearLabelData();
+  };
 
   const handleFilter = (value) => {
     setFilter(value); // Update the filter string
@@ -135,7 +192,285 @@ const ArtifactsPostgres = () => {
       setClickedButton("next");
       handlePageClick(activePage + 1);
     }  
-  };  
+  };
+
+  // Simple label content display component
+  const LabelContentPanel = () => {
+    return (
+      <div className="p-4">
+        {selectedTableLabel ? (
+        <div>
+          {labelContentLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <p className="ml-3 text-gray-600">Loading content...</p>
+            </div>
+          ) : labelData ? (
+            <div className="h-full flex flex-col">
+              {/* Header aligned with left table */}
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">
+                  {selectedTableLabel.name.split(":")[1] || selectedTableLabel.name}
+                </h3>
+              </div>
+
+              {/* Fixed size table container */}
+              <div className="flex flex-col" style={{ height: '400px' }}>
+                <div className="overflow-auto bg-white border border-gray-300 rounded" style={{ height: '320px' }}>
+                  <table className="divide-y divide-gray-200 border-4 w-full">
+                    <thead className="sticky top-0">
+                      <tr className="text-xs font-bold font-sans text-left text-black uppercase">
+                        {labelColumns.map((column, index) => (
+                          <th
+                            key={index}
+                            scope="col"
+                            className="px-6 py-3"
+                          >
+                            {column.name}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {parsedLabelData.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage).map((row, rowIndex) => (
+                        <tr key={rowIndex} className="text-sm font-medium text-gray-800">
+                          {labelColumns.map((column, colIndex) => (
+                            <td key={colIndex} className="px-6 py-4">
+                              <Highlight
+                                text={String(row[column.name] || '')}
+                                highlight={selectedTableLabel?.isSearchResult ? selectedTableLabel.searchFilter : ''}
+                              />
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination controls */}
+                <div className="flex items-center justify-between px-4 py-3 bg-gray-50 border-t border-gray-200">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-700">Rows per page:</span>
+                    <select
+                      value={rowsPerPage}
+                      onChange={(e) => {
+                        setRowsPerPage(Number(e.target.value));
+                        setCurrentPage(0);
+                      }}
+                      className="border border-gray-300 rounded px-2 py-1 text-sm"
+                    >
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                      <option value={100}>100</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-gray-700">
+                      {currentPage * rowsPerPage + 1}-{Math.min((currentPage + 1) * rowsPerPage, parsedLabelData.length)} of {parsedLabelData.length}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                      disabled={currentPage === 0}
+                      className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => setCurrentPage(Math.min(Math.ceil(parsedLabelData.length / rowsPerPage) - 1, currentPage + 1))}
+                      disabled={currentPage >= Math.ceil(parsedLabelData.length / rowsPerPage) - 1}
+                      className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No content available</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <h3 className="text-xl font-medium text-gray-800 mb-2">
+              Select a Label
+            </h3>
+            <p className="text-gray-600">
+              Click on a label name in the table to view its content
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+    );
+  };
+
+  // Handle label click from table
+  const handleTableLabelClick = async (labelName, artifact) => {
+    // Prevent useEffect from triggering fetchArtifacts while loading label content
+    setIsLoadingLabelContent(true);
+    setSelectedTableLabel(artifact);
+    setLabelContentLoading(true);
+    setCurrentPage(0); // Reset pagination when new label is selected
+
+    // Use the URI from the artifact for getLabelData, not just the label name
+    const fileNameForAPI = artifact.uri || `artifacts/labels.csv:${labelName}`;
+
+    try {
+      // Clear old data first
+      setParsedLabelData([]);
+      setLabelColumns([]);
+
+      // Helper function to try different URI formats
+      const tryGetLabelData = async (labelName, fileNameForAPI) => {
+        const uriFormatsToTry = [
+          fileNameForAPI,                           // Original: artifacts/labels.csv:93951bf...
+          labelName,                                // Just the label name: 93951bf...
+          `artifacts/labels.csv/${labelName}`,      // Alternative format: artifacts/labels.csv/93951bf...
+          `labels.csv:${labelName}`,                // Without artifacts prefix: labels.csv:93951bf...
+          `${labelName}.csv`                        // As CSV file: 93951bf....csv
+        ];
+
+        for (const uriToTry of uriFormatsToTry) {
+          try {
+            const data = await client.getLabelData(uriToTry);
+            return data; // Success - return immediately
+          } catch (uriError) {
+            continue; // Try next URI format
+          }
+        }
+
+        throw new Error(`All URI formats failed. Tried: ${uriFormatsToTry.join(', ')}`);
+      };
+
+      const labelData = await tryGetLabelData(labelName, fileNameForAPI);
+
+      setLabelData(labelData);
+
+      const parsed = Papa.parse(labelData, { header: true });
+
+      // Check if this is a search result - if so, filter to matching rows only
+      if (artifact.isSearchResult && artifact.searchFilter) {
+        const searchFilter = artifact.searchFilter;
+
+        // Filter to show only rows that contain the search term
+        const matchingRows = parsed.data.filter((row) => {
+          const rowValues = Object.values(row);
+
+          const hasMatch = rowValues.some(value => {
+            if (value && value.toString().toLowerCase().includes(searchFilter.toLowerCase())) {
+              return true;
+            }
+            return false;
+          });
+
+          return hasMatch;
+        });
+
+        setParsedLabelData(matchingRows);
+      } else {
+        // Normal label - show all data
+        setParsedLabelData(parsed.data);
+      }
+
+      if (parsed.meta.fields) {
+        setLabelColumns(
+          parsed.meta.fields.map(field => ({
+            name: field,
+            selector: row => row[field],
+            sortable: true,
+          }))
+        );
+      }
+    } catch (error) {
+      // Clear data on error to prevent showing old content
+      setParsedLabelData([]);
+      setLabelColumns([]);
+
+      // Show error message to user
+      setParsedLabelData([{
+        error: "Failed to load label content",
+        message: error.message,
+        uri: fileNameForAPI
+      }]);
+
+    } finally {
+      setLabelContentLoading(false);
+      setIsLoadingLabelContent(false); // Reset flag to allow normal useEffect behavior
+    }
+  };
+
+  // Resizable Split Pane Component
+  const ResizableSplitPane = ({ leftContent, rightContent, initialSplitPercentage = 50 }) => {
+    const [splitPercentage, setSplitPercentage] = useState(initialSplitPercentage);
+    const [isDragging, setIsDragging] = useState(false);
+    const containerRef = useRef(null);
+
+    const handleMouseDown = (e) => {
+      setIsDragging(true);
+      e.preventDefault();
+    };
+
+    const handleMouseMove = useCallback((e) => {
+      if (!isDragging || !containerRef.current) return;
+
+      const containerRect = containerRef.current.getBoundingClientRect();
+      const newPercentage = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+
+      // Limit between 20% and 80%
+      const clampedPercentage = Math.max(20, Math.min(80, newPercentage));
+      setSplitPercentage(clampedPercentage);
+    }, [isDragging]);
+
+    const handleMouseUp = useCallback(() => {
+      setIsDragging(false);
+    }, []);
+
+    useEffect(() => {
+      if (isDragging) {
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        return () => {
+          document.removeEventListener('mousemove', handleMouseMove);
+          document.removeEventListener('mouseup', handleMouseUp);
+        };
+      }
+    }, [isDragging, handleMouseMove, handleMouseUp]);
+
+    return (
+      <div ref={containerRef} className="flex h-full w-full">
+        {/* Left Pane */}
+        <div style={{ width: `${splitPercentage}%` }} className="overflow-auto">
+          {leftContent}
+        </div>
+
+        {/* Resizer */}
+        <div
+          className={`w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize flex-shrink-0 ${
+            isDragging ? 'bg-gray-400' : ''
+          }`}
+          onMouseDown={handleMouseDown}
+        >
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-0.5 h-8 bg-gray-500"></div>
+          </div>
+        </div>
+
+        {/* Right Pane */}
+        <div style={{ width: `${100 - splitPercentage}%` }} className="overflow-auto">
+          {rightContent}
+        </div>
+      </div>
+    );
+  };
+
+
 
   return (
     <>
@@ -152,7 +487,8 @@ const ArtifactsPostgres = () => {
               className="flex-grow"
             />
           </div>
-          <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
+
+          <div className="justify-center items-center mx-auto px-4 flex-grow w-5/6">
             <div className="flex flex-col w-full">
                 {selectedPipeline !== null && (
                   <ArtifactTypeSidebar
@@ -162,16 +498,42 @@ const ArtifactsPostgres = () => {
                   />
                 )}
             </div>
-            <div>
+            {selectedArtifactType === "Label" ? (
+              <div className="flex-grow" style={{ height: 'calc(100vh - 200px)' }}>
+                <ResizableSplitPane
+                  leftContent={
+                    <div className="p-4">
+                      {artifacts !== null && artifacts.length > 0 ? (
+                        <ArtifactPTable
+                          artifacts={artifacts}
+                          artifactType={selectedArtifactType}
+                          onsortOrder={toggleSortOrder}
+                          onsortTimeOrder={toggleSortTime}
+                          filterValue={filter}
+                          onLabelClick={selectedArtifactType === "Label" ? handleTableLabelClick : undefined}
+                        />
+                      ) : (
+                        <div className="text-center py-12">
+                          <p className="text-gray-600">No label artifacts available</p>
+                        </div>
+                      )}
+                    </div>
+                  }
+                  rightContent={<LabelContentPanel />}
+                  initialSplitPercentage={50}
+                />
+              </div>
+            ) : (
+              <div>
                 {artifacts !== null && artifacts.length > 0 ? (
-                  <ArtifactPTable 
+                  <ArtifactPTable
                     artifacts={artifacts}
                     artifactType={selectedArtifactType}
                     onsortOrder={toggleSortOrder}
                     onsortTimeOrder={toggleSortTime}
                     filterValue={filter}
                     />
-                    
+
                 ) : (
                   <div>No data available</div> // Display message when there are no artifacts
                 )}
@@ -251,7 +613,8 @@ const ArtifactsPostgres = () => {
                     </button>
                   </>
                 )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
         <Footer />

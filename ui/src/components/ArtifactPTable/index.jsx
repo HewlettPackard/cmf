@@ -25,7 +25,7 @@ import LabelCardPopup from "../LabelCardPopup";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue}) => {
+const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue, onLabelClick}) => {
   const [data, setData] = useState([]);
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
@@ -73,7 +73,6 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
 
     // Ensure properties is now an array
     if (!Array.isArray(properties)) {
-        console.warn("Expected an array for properties, got:", properties);
         return "N/A";
     }
 
@@ -109,9 +108,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
   };
 
   const getLabelData = (label_name) => {
-    console.log(label_name)
     client.getLabelData(label_name).then((data) => {
-      console.log(data);
       setLabelData(data);
     });
   }
@@ -166,7 +163,22 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   </td>
                   { /* Convert artifact ID to string and render it with highlighted search term if it matches the filter value */}
                   <td className="px-6 py-4"><Highlight text={String(artifact.artifact_id)} highlight={filterValue}/></td>
-                  <td className="px-6 py-4"><Highlight text={String(artifact.name)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4">
+                    {artifactType === "Label" && onLabelClick ? (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onLabelClick(artifact.name, artifact);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        <Highlight text={String(artifact.name)} highlight={filterValue}/>
+                      </button>
+                    ) : (
+                      <Highlight text={String(artifact.name)} highlight={filterValue}/>
+                    )}
+                  </td>
                   <td className="px-6 py-4"><Highlight text={String(artifact.execution)} highlight={filterValue}/></td>
                   {artifactType === "Model" && (
                     <td className="px-6 py-4">
@@ -196,7 +208,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                       {(getPropertyValue(artifact.artifact_properties, "labels_uri") || "")
                         .split(",")
                         .map((label_name) => label_name.trim())
-                        .filter((label_name) => label_name.length > 0)
+                        .filter((label_name) => label_name.length > 0) // Optional: skip empty strings
                         .map((label_name) => (
                           <div key={label_name} className="label">
                             <a
@@ -223,23 +235,9 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   {artifactType === "Label" && (
                     <td className="px-6 py-4">
                       <div className="label">
-                        <a
-                          href="#"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            getLabelData(artifact.name.split(":")[1] || artifact.name);
-                            setShowPopup(true);
-                          }}
-                        >
+                        <span>
                           {artifact.name}
-                        </a>
-                        {showPopup && (
-                          <LabelCardPopup
-                            show={showPopup}
-                            label_data={labelData}
-                            onClose={handleClosePopup}
-                          />
-                        )}
+                        </span>
                       </div>
                     </td>
                   )}

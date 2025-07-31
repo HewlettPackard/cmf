@@ -228,7 +228,6 @@ async def get_artifacts(
     query_params: ArtifactRequest = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    start_time = time.time()
 
     filter_value = query_params.filter_value
     active_page = query_params.active_page
@@ -239,35 +238,121 @@ async def get_artifacts(
     """Retrieve paginated artifacts with filtering, sorting, and full-text search including label content."""
 
     # Auto-reindex labels if needed (only on first page to avoid performance issues)
-    reindex_time = 0
     if active_page == 1:
         try:
             logger = logging.getLogger(__name__)
-            reindex_start = time.time()
             reindex_result = await auto_reindex_if_needed(DATABASE_URL)
-            reindex_time = time.time() - reindex_start
             if reindex_result['status'] == 'reindexed':
                 logger.info(f"{reindex_result['message']}")
         except Exception as e:
             logger = logging.getLogger(__name__)
             logger.warning(f"Auto-reindex failed: {e}")
 
-    query_start = time.time()
     result = await fetch_artifacts_with_label_search(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
-    query_time = time.time() - query_start
-
-    total_time = time.time() - start_time
-
-    # Add timing information to the response
-    result["timing"] = {
-        "total_time_ms": round(total_time * 1000, 2),
-        "query_time_ms": round(query_time * 1000, 2),
-        "reindex_time_ms": round(reindex_time * 1000, 2) if reindex_time > 0 else 0,
-        "filter_value": filter_value,
-        "has_label_search": bool(filter_value and filter_value.strip())
-    }
 
     return result
+
+
+@app.get("/artifacts/{pipeline_name}/Label/search")
+async def search_label_artifacts(
+    pipeline_name: str,
+    content_filter: str = Query(..., description="Search term to find in label content"),
+    sort_order: str = Query("asc", description="Sort order (asc or desc)"),
+    active_page: int = Query(1, gt=0, description="Page number"),
+    record_per_page: int = Query(5, gt=0, description="Number of records per page"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Search for label artifacts that contain the specified content in their CSV files.
+    Returns clean label artifacts with proper structure, not content search results.
+    """
+
+    try:
+        # Step 1: Search for labels containing the content
+        label_search_results = await search_labels_in_artifacts(db, content_filter, pipeline_name, 100)
+
+        if not label_search_results:
+            return {
+                "total_items": 0,
+                "items": [],
+                "search_metadata": {
+                    "search_term": content_filter,
+                    "search_type": "content_filter"
+                }
+            }
+
+        # Step 2: Extract unique label names
+        unique_labels = set()
+        label_metadata = {}
+
+        for result in label_search_results:
+            label_name = result['label_file']
+            unique_labels.add(label_name)
+
+            # Store metadata for each label
+            if label_name not in label_metadata:
+                label_metadata[label_name] = {
+                    'matching_rows': 0,
+                    'total_rows': result.get('total_rows', 0),
+                    'relevance_score': result.get('relevance_score', 0.0)
+                }
+            label_metadata[label_name]['matching_rows'] += 1
+
+        # Step 3: Fetch actual label artifacts
+        all_artifacts_result = await fetch_artifacts(
+            db, pipeline_name, "Label", "", 1, 1000, "name", sort_order
+        )
+
+        # Step 4: Filter to only labels that contain the search term
+        filtered_artifacts = []
+        for artifact in all_artifacts_result['items']:
+            # Extract clean label name from artifact name
+            clean_name = artifact['name']
+            if ':' in clean_name:
+                clean_name = clean_name.split(':', 1)[1]
+
+            # Remove any (Row X) suffix if present
+            import re
+            clean_name = re.sub(r'\s*\(Row\s+\d+\)$', '', clean_name).strip()
+
+            if clean_name in unique_labels:
+                # Create enhanced artifact with search context
+                enhanced_artifact = {
+                    'artifact_id': artifact['artifact_id'],
+                    'name': clean_name,  # Clean name without prefixes/suffixes
+                    'uri': f"artifacts/labels.csv:{clean_name}",
+                    'type_id': 'Label',
+                    'execution': artifact.get('execution', 'N/A'),
+                    'create_time_since_epoch': artifact.get('create_time_since_epoch', 'N/A'),
+                    'last_update_time_since_epoch': artifact.get('last_update_time_since_epoch', 'N/A'),
+                    'artifact_properties': artifact.get('artifact_properties', []),
+                    'search_context': {
+                        'search_term': content_filter,
+                        'matching_rows': label_metadata[clean_name]['matching_rows'],
+                        'total_rows': label_metadata[clean_name]['total_rows'],
+                        'relevance_score': label_metadata[clean_name]['relevance_score']
+                    }
+                }
+                filtered_artifacts.append(enhanced_artifact)
+
+        # Step 5: Apply pagination
+        total_items = len(filtered_artifacts)
+        start_idx = (active_page - 1) * record_per_page
+        end_idx = start_idx + record_per_page
+        paginated_items = filtered_artifacts[start_idx:end_idx]
+
+        return {
+            "total_items": total_items,
+            "items": paginated_items,
+            "search_metadata": {
+                "search_term": content_filter,
+                "search_type": "content_filter",
+                "unique_labels_found": len(unique_labels)
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching label artifacts: {str(e)}")
 
 
 # api to display executions available in mlmd file[from postgres]
@@ -972,27 +1057,15 @@ async def test_label_search():
 @app.get("/api/labels/search")
 async def search_label_content(query: str = Query(..., description="Search query"), limit: int = Query(10, description="Maximum results")):
     """Search label content using PostgreSQL full-text search"""
-    start_time = time.time()
 
     try:
-
-        search_start = time.time()
         results = await search_labels(DATABASE_URL, query, limit)
-        search_time = time.time() - search_start
-
-        total_time = time.time() - start_time
 
         return {
             "status": "success",
             "query": query,
             "results": results,
-            "total_results": len(results),
-            "timing": {
-                "total_time_ms": round(total_time * 1000, 2),
-                "search_time_ms": round(search_time * 1000, 2),
-                "query": query,
-                "limit": limit
-            }
+            "total_results": len(results)
         }
 
     except Exception as e:
@@ -1001,32 +1074,16 @@ async def search_label_content(query: str = Query(..., description="Search query
 @app.get("/api/labels/search-direct")
 async def search_labels_direct(query: str = Query(..., description="Search query"), limit: int = Query(10, description="Maximum results")):
     """Direct label search that returns label matches as pseudo-artifacts"""
-    start_time = time.time()
 
     try:
-
-        db_start = time.time()
         async with async_session() as db:
-            search_start = time.time()
             results = await search_labels_in_artifacts(db, query, None, limit)
-            search_time = time.time() - search_start
-        db_time = time.time() - db_start
-
-        total_time = time.time() - start_time
 
         return {
             "status": "success",
             "query": query,
             "results": results,
-            "total_results": len(results),
-            "timing": {
-                "total_time_ms": round(total_time * 1000, 2),
-                "db_time_ms": round(db_time * 1000, 2),
-                "search_time_ms": round(search_time * 1000, 2),
-                "query": query,
-                "limit": limit,
-                "uses_sqlalchemy_core": True
-            }
+            "total_results": len(results)
         }
 
     except Exception as e:
