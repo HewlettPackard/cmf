@@ -19,20 +19,13 @@ import runtimeEnv from "@mars/heroku-js-runtime-env";
 let url = "";
 let url_without_port = "";
 const env = runtimeEnv();
-if (
-  process.env.REACT_APP_MY_IP !== "127.0.0.1" &&
-  process.env.REACT_APP_MY_IP !== ""
-) {
-  url = "http://" + process.env.REACT_APP_MY_IP + ":8080";
-  url_without_port = "http://" + process.env.REACT_APP_MY_IP;
-} else {
-  url = " http://" + process.env.REACT_APP_MY_HOSTNAME + ":8080";
-  url_without_port = "http://" + process.env.REACT_APP_MY_HOSTNAME;
-}
+
+
 const config = {
-  apiBasePath: env.REACT_APP_API_BASE_PATH || url,
-  reactAppMode: process.env.REACT_APP_MODE || "dev",
+  apiBasePath: env.CMF_SERVER_HOSTNAME ,
+  reactAppMode: env.REACT_APP_MODE || "dev",
   apiBasePathWOPort: url_without_port,
 };
+console.log("Config:", config);
 
 export default config;
