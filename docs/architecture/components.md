@@ -20,11 +20,11 @@ The metadata tracker automatically tracks the start commit when the cmflib was i
 
 ## cmf-client 
 
-The `cmf-client` interacts with the metadata serve aka `cmf-server`. It communicates with the `cmf-server` for the synchronization of metadata.  
+The `cmf-client` interacts with the metadata server aka `cmf-server`. It communicates with the `cmf-server` for the synchronization of metadata.  
 
 After the experiment is completed, the user invokes the `cmf push` command to push the collected metadata to the `cmf-server`. This transfers the existing metadata journal to the server.  
 
-The metadata from the central repository can be pulled to the local repository, either using the artifacts or using the project as the identifier or both. 
+The metadata from the central repository of metadata i.e. `cmf-server` can be pulled to the local **repository, either using the artifacts or using the project as the identifier or both.**
 
 When artifact is used as the identifier, all metadata associated with the artifacts currently present in the branch of the cloned Git repository is pulled from the central repository to the local repository. The pulled metadata consist of not only the immediate metadata associated with the artifacts, it contains the metadata of all the artifacts in its chain of lineage. 
 
@@ -32,15 +32,15 @@ When project is used as the identifier, all the metadata associated with the cur
 
 ## cmf-server 
 
-The central server, exposes REST API’s that can be called from the remote clients. This can help in situations where the connectivity between the core datacenter and the remote client is robust. The remote client calls the API’s exposed by the central server to log the metadata directly to the central metadata repository.  
+The central server aka `cmf-server`, exposes REST APIs that can be called from the remote clients called `cmf-client`. This can help in situations where the connectivity between the core datacenter and the remote client is robust. **The remote client calls the APIs exposed by the central server to log the metadata directly to the central metadata repository.  (We don't do this)**
 
-Where the connectivity with the central server is intermittent, the remote clients log the metadata to the local repository. The journaled metadata is pushed by the remote client to the central server. The central server, will replay the journal and merge the incoming metadata with the metadata already existing in the central repository. The ability to accurately identify the artifacts anywhere using their content hash, makes this merge robust. 
+**Where the connectivity with the central server is intermittent, the remote clients log the metadata to the local repository. The journaled metadata is pushed by the remote client to the `cmf-server`. The central server, will replay the journal and merge the incoming metadata with the metadata already existing in the central repository. The ability to accurately identify the artifacts anywhere using their content hash, makes this merge robust.** (this is not making sense)
 
 ## Central Repositories 
 
-The common metadata framework consist of three central repositories for the code, data and metadata. 
+The **Common Metadata Framework(CMF)** consist of three central repositories for the code, data and metadata. 
 
-### Central Metadata repository 
+### Central Metadata repository (Does it make sense to call cmf-server 'a central metadata repository')
 
 Central metadata repository holds the metadata pushed from the distributed sites. It holds metadata about all the different pipelines that was tracked using the common metadata tracker.  The consolidated view of the metadata stored in the central repository, helps the users to learn across various stages in the pipeline executed at different locations. Using the query layer that is pointed to the central repository, the users gets the global view of the metadata which provides them with a deeper understanding of the pipelines and its metadata.  The metadata helps to understand nonobvious results like performance of a dataset with respect to other datasets, Performance of a particular pipeline with respect to other pipelines etc. 
 
