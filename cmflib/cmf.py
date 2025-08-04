@@ -1704,7 +1704,7 @@ Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 Cmf.log_label_with_version = log_label_with_version
 
-def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "")->str:
     """ Pushes metadata file to CMF-server.
     
     ```python
@@ -1726,7 +1726,7 @@ def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_pat
     return output
 
 
-def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: str = ""):
+def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: str = "") -> str:
     """ Pulls metadata file from CMF-server. 
     
     ```python 
@@ -1747,7 +1747,7 @@ def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid:
     return output
 
 
-def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = "./mlmd"):
+def metadata_export(pipeline_name: str, json_file_name: str = "", file_name: str = "./mlmd") -> str:
     """ Export local mlmd's metadata in json format to a json file. 
     
     ```python 
@@ -1768,7 +1768,7 @@ def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = ".
     return output
 
 
-def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
+def artifact_pull(pipeline_name: str, file_name: str = "./mlmd") -> str:
     """ Pulls artifacts from the initialized repository.
     
     ```python
@@ -1788,7 +1788,7 @@ def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
     return output
 
 
-def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str):
+def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str) -> str:
     """ Pulls a single artifact from the initialized repository. 
     
     ```python 
@@ -1809,7 +1809,7 @@ def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str)
     return output
 
 # Prevent multiplying int with NoneType; added default value to jobs.
-def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
+def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: int = 32) -> str:
     """ Pushes artifacts to the initialized repository.
     
     ```python
@@ -1828,7 +1828,7 @@ def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     return output
 
 
-def cmf_init_show():
+def cmf_init_show()->str:
     """ Initializes and shows details of the CMF command. 
     
     ```python 
@@ -1862,7 +1862,7 @@ def cmf_init(type: str = "",
         key_id: str = "",
         key_path: str = "",
         key_issuer: str = "",
-         ):
+         )-> str:
 
     """ Initializes the CMF configuration based on the provided parameters. 
     
@@ -2040,7 +2040,7 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list(file_name = "./mlmd"):
+def pipeline_list(file_name: str = "./mlmd") -> str:
     """ Display a list of pipeline name(s) from the available input metadata file.
 
     ```python
@@ -2058,7 +2058,7 @@ def pipeline_list(file_name = "./mlmd"):
     return output
 
 
-def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def execution_list(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: str = "") -> str:
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
 
     ```python 
@@ -2079,7 +2079,7 @@ def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str
     return output
 
 
-def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str = ""):
+def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: str = "") -> str:
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     
     ```python 
@@ -2100,7 +2100,7 @@ def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str =
     return output
 
 # Prevent multiplying int with NoneType; added default value to jobs.
-def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32):
+def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32) -> str:
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     
     ```python 
@@ -2123,7 +2123,7 @@ def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: st
     return output
 
 
-def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def repo_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: str = "") -> str:
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     
     ```python 
@@ -2144,7 +2144,7 @@ def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""
     return output
 
 
-def dvc_ingest(file_name = "./mlmd"):
+def dvc_ingest(file_name: str = "./mlmd") -> str:
     """ Ingests metadata from the dvc.lock file into the CMF. 
         If an existing MLMD file is provided, it merges and updates execution metadata 
         based on matching commands, or creates new executions if none exist.
