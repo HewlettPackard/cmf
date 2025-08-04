@@ -1,20 +1,14 @@
-# Components of CMF - NEEDS TO BE UPDATED
-
-- **cmflib** - cmflib provides the core metadata tracking capabilities for the Common Metadata Framework (CMF), exposes API’s to track the pipeline metadata. It also provides API’s to query the stored metadata. 
-- **cmf-client** – The client interacts with the server to pull or push metadata from or to the remote store. 
-- **cmf-server** - Interacts with all the remote clients and is responsible to merge the metadata transferred by the remote client and manage the consolidated metadata.  
-- **Central repositories** - Host the code, data and metadata. 
-<p align="center">
-  <img src="../../assets/distributed_architecture.png" alt="CMF Framework" style="display: block; margin: 0 auto" />
-</p>
-
 ## cmflib
 
-The API’s and the abstractions provided by the library enables tracking of pipeline metadata. It tracks the stages in the pipeline, the input and output artifacts at each stage and metrics. The framework allows metrics to be tracked both at coarse and fine grained intervals. It could be a stage metrics, which could be captured at the end of a stage or fine grained metrics which is tracked per step (epoch) or at regular intervals during the execution of the stage. 
+The APIs and the abstractions provided by the `cmflib` enables tracking of pipeline metadata. 
 
-The metadata logged through the API’s are written to a backend relational database. The library also provides API’s to query the metadata stored in the relational database for the users to inspect pipelines.   
+It tracks the stages in the pipeline, the input and output artifacts at each stage and metrics. 
 
-In addition to explicit tracking through the API’s library also provides, implicit tracking. The implicit tracking automatically tracks the software version used in the pipelines. The function arguments and function return values can be automatically tracked by adding metadata tracker class decorators on the functions. 
+The framework allows metrics to be tracked both at coarse and fine grained intervals. It could be a stage metrics, which could be captured at the end of a stage or fine grained metrics which is tracked per step (epoch) or at regular intervals during the execution of the stage. 
+
+The metadata logged through the APIs are written to a backend relational database. The `cmflib` also provides APIs to query the metadata stored in the relational database for the users to inspect pipelines.   
+
+In addition to explicit tracking through the APIs, `cmflib` also provides, implicit tracking. The implicit tracking automatically tracks the software version used in the pipelines. The function arguments and function return values can be automatically tracked by adding metadata tracker class decorators on the functions. 
 
 Before writing the metadata to relational database, the metadata operations are journaled in the metadata journal log. This enables the framework to transfer the local metadata to the central server. 
 
@@ -22,13 +16,13 @@ All artifacts are versioned with a data versioning framework (for e.g., DVC). Th
 
 For every new execution, the metadata tracker creates a new branch to track the code. The special metadata file created for artifacts, the “.dvc” file is also committed to GIT and its commit id is tracked as a metadata information.  The artifacts are versioned through the versioning of its metadata file. Whenever there is a change in the artifact, the metadata file is modified to reflect its current content hash, and the file is tracked as a new version of the metadata file.  
 
-The metadata tracker automatically tracks the start commit when the library was initialized and creates separate commit for each change in the artifact along the experiment. This helps to track the transformations on the artifacts along the different stages in the pipeline. 
+The metadata tracker automatically tracks the start commit when the cmflib was initialized and creates separate commit for each change in the artifact along the experiment. This helps to track the transformations on the artifacts along the different stages in the pipeline. 
 
 ## cmf-client 
 
-The cmf-client interacts with the metadata server. It communicates with the server, for synchronization of metadata.  
+The `cmf-client` interacts with the metadata serve aka `cmf-server`. It communicates with the `cmf-server` for the synchronization of metadata.  
 
-After the experiment is completed, the user invokes the “Cmf push” command to push the collected metadata to the remote. This transfers the existing metadata journal to the server.  
+After the experiment is completed, the user invokes the `cmf push` command to push the collected metadata to the `cmf-server`. This transfers the existing metadata journal to the server.  
 
 The metadata from the central repository can be pulled to the local repository, either using the artifacts or using the project as the identifier or both. 
 
