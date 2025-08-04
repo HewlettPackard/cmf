@@ -2,7 +2,7 @@
 import io
 import time
 import zipfile
-import csv
+
 import re
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -55,10 +55,9 @@ import httpx
 import logging
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
-from server.app.db.dbconfig import DATABASE_URL, async_session
-from server.app.utils import (
+from server.app.db.dbconfig import DATABASE_URL
+from server.app.label_utils import (
     auto_reindex_if_needed,
-    search_labels,
     get_label_stats,
     index_csv_labels,
     index_csv_labels_with_hash
@@ -1022,104 +1021,5 @@ async def get_label_search_status():
     except Exception as e:
         return {
             "status": "error",
-            "error": str(e)
-        }
-
-@app.post("/api/labels/test")
-async def test_label_search():
-    """Test label search functionality with sample data"""
-    try:
-        # Create sample test data
-        sample_data = [
-            {"id": 1, "category": "training", "type": "dataset", "accuracy": 0.95},
-            {"id": 2, "category": "validation", "type": "dataset", "accuracy": 0.87},
-            {"id": 3, "category": "test", "type": "model", "performance": "high"},
-        ]
-
-        # Create temporary CSV file
-        labels_dir = Path("/cmf-server/data/labels")
-        labels_dir.mkdir(parents=True, exist_ok=True)
-
-        test_file = labels_dir / "test_labels.csv"
-        with open(test_file, 'w', newline='') as csvfile:
-            fieldnames = sample_data[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(sample_data)
-
-        # Index the test file
-        result = await index_csv_labels(DATABASE_URL)
-
-        # Test search
-        search_results = await search_labels(DATABASE_URL, "training", 5)
-
-        return {
-            "status": "success",
-            "message": "Label search test completed successfully",
-            "indexing_result": result,
-            "search_results": search_results,
-            "test_file": str(test_file)
-        }
-
-    except Exception as e:
-        return {
-            "status": "error",
-            "message": f"Label search test failed: {str(e)}"
-        }
-
-@app.get("/api/labels/search")
-async def search_label_content(query: str = Query(..., description="Search query"), limit: int = Query(10, description="Maximum results")):
-    """Search label content using PostgreSQL full-text search"""
-
-    try:
-        results = await search_labels(DATABASE_URL, query, limit)
-
-        return {
-            "status": "success",
-            "query": query,
-            "results": results,
-            "total_results": len(results)
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
-
-@app.get("/api/labels/search-direct")
-async def search_labels_direct(query: str = Query(..., description="Search query"), limit: int = Query(10, description="Maximum results")):
-    """Direct label search that returns label matches as pseudo-artifacts"""
-
-    try:
-        async with async_session() as db:
-            results = await search_labels_in_artifacts(db, query, None, limit)
-
-        return {
-            "status": "success",
-            "query": query,
-            "results": results,
-            "total_results": len(results)
-        }
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Direct label search failed: {str(e)}")
-
-@app.get("/api/labels/health")
-async def label_search_health():
-    """Health check for label search functionality"""
-    try:
-        stats = await get_label_stats(DATABASE_URL)
-
-        return {
-            "status": "healthy" if stats['status'] == 'success' else "unhealthy",
-            "service": "label-search-postgres",
-            "version": "1.0.0",
-            "database": "postgresql",
-            "indexed_files": stats['total_files'],
-            "indexed_records": stats['total_records']
-        }
-
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "service": "label-search-postgres",
             "error": str(e)
         }
