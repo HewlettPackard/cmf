@@ -84,25 +84,48 @@ const ArtifactsPostgres = () => {
   const fetchPipelines = () => {
     client.getPipelines("").then((data) => {
       setPipelines(data);
-      const defaultPipeline = data[0];
+      const defaultPipeline = data && data.length > 0 ? data[0] : null;
       setSelectedPipeline(defaultPipeline); // Set the first pipeline as default
+      // If no pipelines are available, set loading to false
+      if (!data || data.length === 0) {
+        setLoading(false);
+      }
+    }).catch((error) => {
+      console.error('Failed to fetch pipelines:', error);
+      setPipelines([]);
+      setSelectedPipeline(null);
+      setLoading(false);
     });
-  };  
+  };
   
   useEffect(() => {
     if (selectedPipeline){
       fetchArtifactTypes(selectedPipeline);
+    } else if (selectedPipeline === null && pipelines.length === 0) {
+      // If selectedPipeline is explicitly null and no pipelines exist, ensure loading is false
+      setLoading(false);
     }
-  },[selectedPipeline]);
+  },[selectedPipeline, pipelines.length]);
   
   const fetchArtifactTypes = () => {
     client.getArtifactTypes().then((types) => {
       setArtifactTypes(types);
-      const defaultArtifactType = types[0];
+      const defaultArtifactType = types && types.length > 0 ? types[0] : null;
       setSelectedArtifactType(defaultArtifactType); // Set the first artifact type as default
-      fetchArtifacts(selectedPipeline, defaultArtifactType, sortOrder, activePage, filter, selectedCol); // Fetch artifacts for the first artifact type and default pipeline
-    });  
-  };  
+
+      if (defaultArtifactType && selectedPipeline) {
+        fetchArtifacts(selectedPipeline, defaultArtifactType, sortOrder, activePage, filter, selectedCol); // Fetch artifacts for the first artifact type and default pipeline
+      } else {
+        // If no artifact types are available, set loading to false
+        setLoading(false);
+      }
+    }).catch((error) => {
+      console.error('Failed to fetch artifact types:', error);
+      setArtifactTypes([]);
+      setSelectedArtifactType(null);
+      setLoading(false);
+    });
+  };
  
   useEffect(() => {
     // Fetch artifacts when these dependencies change (but not when loading label content)
