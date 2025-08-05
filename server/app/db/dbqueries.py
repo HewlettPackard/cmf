@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from server.app.db.dbconfig import get_db
-from sqlalchemy import select, func, text, String, bindparam, case, distinct
+from sqlalchemy import select, func, text, String, bindparam, case, distinct, insert, update
 from server.app.db.dbmodels import (
     artifact, 
     artifactproperty, 
@@ -13,6 +13,7 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
+    registered_servers
 )
 
 async def register_server_details(db: AsyncSession, server_name: str, host_info: str):
@@ -20,10 +21,10 @@ async def register_server_details(db: AsyncSession, server_name: str, host_info:
     Register server details in the database.
     """
     # Step 1: Check if the server is already registered
-    query_check = text("""
-        SELECT 1 FROM registered_servers WHERE host_info = :host_info
-    """)
-    result = await db.execute(query_check, {"host_info": host_info})
+    query_check = select(registered_servers.c.id).where(
+        registered_servers.c.host_info == host_info
+    )
+    result = await db.execute(query_check)
     # If a matching row exists, scalar() returns 1 (from SELECT 1). If not, it returns None
     exists = result.scalar()
 
@@ -31,11 +32,11 @@ async def register_server_details(db: AsyncSession, server_name: str, host_info:
         return {"message": "Server is already registered"}
 
     # Step 2: Insert new server
-    query_insert = text("""
-        INSERT INTO registered_servers (server_name, host_info)
-        VALUES (:server_name, :host_info)
-    """)
-    await db.execute(query_insert, {"server_name": server_name, "host_info": host_info})
+    query_insert = insert(registered_servers).values(
+        server_name=server_name, 
+        host_info=host_info
+    )
+    await db.execute(query_insert)
     await db.commit()
 
     return {"message": "Server registered successfully"}
@@ -45,7 +46,7 @@ async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     """
     Get all registered server details from the database.
     """
-    query = text("""SELECT * FROM registered_servers""")
+    query = select(registered_servers)
     result = await db.execute(query)
     return result.mappings().all()
 
@@ -54,8 +55,11 @@ async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
     """
     Get the sync status from the database.
     """
-    query = text("""SELECT last_sync_time FROM registered_servers WHERE server_name = :server_name AND host_info = :host_info""")
-    result = await db.execute(query, {"server_name": server_name, "host_info": host_info})
+    query = select(registered_servers.c.last_sync_time).where(
+        (registered_servers.c.server_name == server_name) & 
+        (registered_servers.c.host_info == host_info)
+    )
+    result = await db.execute(query)
     return result.mappings().all()
 
 
@@ -63,12 +67,11 @@ async def update_sync_status(db: AsyncSession, current_utc_time: int, server_nam
     """
     Update the sync status in the database.
     """
-    query = text("""
-        UPDATE registered_servers
-        SET last_sync_time = :current_utc_time
-        WHERE server_name = :server_name AND host_info = :host_info
-    """)
-    await db.execute(query, {"current_utc_time": current_utc_time, "server_name": server_name, "host_info": host_info})
+    query = update(registered_servers).where(
+        (registered_servers.c.server_name == server_name) & 
+        (registered_servers.c.host_info == host_info)
+    ).values(last_sync_time=current_utc_time)
+    await db.execute(query)
     await db.commit()  # Commit the transaction
 
 
