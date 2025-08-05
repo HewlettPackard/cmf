@@ -206,6 +206,7 @@ class CmdDVCIngest(CmdBase):
                         and use the stored lineage from the mlmd
                         """
                         option_details.pop(0)
+                        # This check is specific to the active learning scenario where '--execution_name' is expected.
                         pos = self.find_location('--execution_name', option_details)
                         if pos:
                             execution_name = option_details[pos+1]
