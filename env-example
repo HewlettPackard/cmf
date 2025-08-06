@@ -12,3 +12,7 @@ NEO4J=TRUE
 NEO4J_PASSWD=XXXXX
 HTTP_PROXY=http://proxy.houston.hpecorp.net:8080
 HTTPS_PROXY=http://proxy.houston.hpecorp.net:8080
+
+# React App Configuration
+REACT_APP_CMF_API_URL=http://localhost/api
+REACT_APP_MODE=production

@@ -3,9 +3,9 @@ import io
 import time
 import zipfile
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any, Optional
@@ -77,31 +77,19 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="cmf-server", lifespan=lifespan)
 
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 
-my_ip = os.environ.get("MYIP", "127.0.0.1")
 hostname = os.environ.get('HOSTNAME', "localhost")
-
-#checking if IP or Hostname is provided,initializing url accordingly.
-if my_ip != "127.0.0.1":
-    url="http://"+my_ip+":3000"
-else:
-    url="http://"+hostname+":3000"
-
-origins = [
-    "http://localhost:3000",
-    "localhost:3000",
-    url
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/")
 async def read_root(request: Request):
