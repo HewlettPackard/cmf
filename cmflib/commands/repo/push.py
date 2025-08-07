@@ -94,7 +94,7 @@ class CmdRepoPush(CmdBase):
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
-            "tensorboad": self.args.tensorboard,
+            "tensorboad": self.args.tensorboard_path,
             "jobs": self.args.jobs
         }
         # Validates the command arguments.
