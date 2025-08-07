@@ -27,7 +27,12 @@ from cmflib.dvc_wrapper import git_get_repo
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from cmflib.utils.helper_functions import fetch_cmf_config_path
-from cmflib.cmf_exception_handling import MsgSuccess, FileNotFound
+from cmflib.cmf_exception_handling import (
+    MsgSuccess, 
+    FileNotFound, 
+    DuplicateArgumentNotAllowed, 
+    MissingArgument
+)
 
 class CmdDVCIngest(CmdBase):
     
@@ -80,13 +85,7 @@ class CmdDVCIngest(CmdBase):
                 for dep in data:
                     # A dependency path (dep["path"]) can be a full file path like "artifacts/parsed/train.tsv"
                     # or just a directory like "artifacts/parsed".
-                    # Similarly, the tracked dictionary may contain either file or directory paths.
-                    # So we check if any existing tracked key is a parent or child of the current dep path
-                    # by using startswith in both directions.
-                    # If no such match is found, we log the dataset as a new input.
-                    # Otherwise, we log it with versioning info using the existing MD5.
-                    matched = any(dep["path"].startswith(key) or key.startswith(dep["path"]) for key in tracked)
-                    if not matched:
+                    if dep["path"] not in tracked:
                         metawriter.log_dataset(dep["path"], 'input')
                     else:
                         md5_value = dep["md5"] 
@@ -112,10 +111,33 @@ class CmdDVCIngest(CmdBase):
             in the dvc.lock file, that execution is updated with additional metadata.
             If there is no prior execution captured, a new execution is created
         """
+        cmd_args = {
+            "file_name": self.args.file_name,
+        }
+        for arg_name, arg_value in cmd_args.items():
+            if arg_value:
+                if arg_value[0] == "":
+                    raise MissingArgument(arg_name)
+                elif len(arg_value) > 1:
+                    raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
+                
+        current_directory = os.getcwd()
+        if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
+            mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
+        else:
+            mlmd_file_name = self.args.file_name[0].strip()
+            if mlmd_file_name == "mlmd":
+                mlmd_file_name = "./mlmd"
+         
+        current_directory = os.path.dirname(mlmd_file_name)
+        # In our case, "mlmd" is the default file name. Whether the file exists or not, we need to continue with the same name.
+        if not os.path.exists(mlmd_file_name) and mlmd_file_name != "./mlmd":  
+            raise FileNotFound(mlmd_file_name, current_directory)
+
         uuid_ = str(uuid.uuid4())
         pipeline_name = ""
         cmd_exe: t.Dict[str, str] = {}
-        query = cmfquery.CmfQuery(self.args.file_name)
+        query = cmfquery.CmfQuery(mlmd_file_name)
         pipelines: t.List[str] = query.get_pipeline_names()
 
         # Query mlmd to get all the executions and its commands
@@ -186,7 +208,7 @@ class CmdDVCIngest(CmdBase):
 
         # Create a unique Pipeline name if there is no mlmd file
         pipeline_name = "Pipeline" + "-" + str(uuid_) if not pipeline_name else pipeline_name
-        metawriter = cmf.Cmf(filepath = self.args.file_name, pipeline_name = pipeline_name, graph = True)
+        metawriter = cmf.Cmf(filepath = mlmd_file_name, pipeline_name = pipeline_name, graph = True)
 
         # Parse the dvc.lock dictionary and get the command section
         tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
@@ -221,7 +243,7 @@ class CmdDVCIngest(CmdBase):
                         _ = metawriter.create_context(pipeline_stage=context_name)
                         tracked = self.ingest_metadata(execution_name, context_name, pipeline_name, dict_data, metawriter, tracked, cmd_str)
         metawriter.log_dvc_lock("dvc.lock")
-        return MsgSuccess(msg_str="Command has completed running..")
+        return MsgSuccess(msg_str="Done.")
 
 
 def add_parser(subparsers, parent_parser):
@@ -230,7 +252,7 @@ def add_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
         "ingest",
         parents=[parent_parser],
-        description="Ingests metadata from the dvc.lock file into the CMF. If an existing MLMD file is provided, it merges and updates execution metadata based on matching commands, or creates new executions if none exist.",
+        description="Ingests metadata from the dvc.lock file into the CMF. If an existing metadata file is provided, it merges and updates execution metadata based on matching commands; otherwise, it creates new executions if none exist.",
         help=HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -238,8 +260,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "-f", 
         "--file_name", 
-        type=str,
-        default="mlmd",
+        action="append",
         help="Specify input mlmd file name. (default: mlmd)",
         metavar="<file_name>"
     )
