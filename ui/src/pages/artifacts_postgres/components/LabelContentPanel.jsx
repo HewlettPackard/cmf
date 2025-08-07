@@ -16,6 +16,7 @@
 
 import React from "react";
 import Highlight from "../../../components/Highlight";
+import AdvancedHighlight from "../../../components/AdvancedHighlight";
 import Loader from "../../../components/Loader";
 
 const LabelContentPanel = ({
@@ -98,9 +99,11 @@ const LabelContentPanel = ({
                   <tr key={rowIndex} className="text-sm font-medium text-gray-800">
                     {labelColumns.map((column, colIndex) => (
                       <td key={colIndex} className="px-6 py-4">
-                        <Highlight
+                        <AdvancedHighlight
                           text={String(row[column.name] || '')}
                           highlight={selectedTableLabel?.isSearchResult ? selectedTableLabel.searchFilter : ''}
+                          columnName={column.name}
+                          searchMetadata={selectedTableLabel?.search_metadata}
                         />
                       </td>
                     ))}

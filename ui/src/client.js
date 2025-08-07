@@ -170,12 +170,24 @@ class FastAPIClient {
       });
   }
 
-  async getLabelData(file_name) {
+  async getLabelData(file_name, search_filter = null, pipeline_name = null, fallback_to_full = true) {
+    const params = {
+      file_name: file_name
+    };
+
+    // Add optional parameters if provided
+    if (search_filter) {
+      params.search_filter = search_filter;
+    }
+    if (pipeline_name) {
+      params.pipeline_name = pipeline_name;
+    }
+    // Always include fallback_to_full parameter
+    params.fallback_to_full = fallback_to_full;
+
     return this.apiClient
-    .get(`/label-data`,{
-      params: {
-        file_name: file_name
-      },
+    .get(`/label-data`, {
+      params: params,
       responseType: "text",
     })
     .then(( response ) => {

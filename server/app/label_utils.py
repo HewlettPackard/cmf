@@ -10,6 +10,7 @@ This module contains all label-related functionality including:
 
 # Standard library imports
 import csv
+import io
 import json
 import time
 import os
@@ -25,6 +26,9 @@ from sqlalchemy import text
 
 # Set up logger
 logger = logging.getLogger(__name__)
+
+# Labels directory constant
+LABELS_DIR = "/cmf-server/data/labels"
 
 
 async def index_csv_labels(database_url: str, labels_directory: str = "/cmf-server/data/labels") -> Dict[str, Any]:
@@ -462,3 +466,244 @@ async def index_csv_labels_with_hash(database_url: str, labels_directory: str = 
     except Exception as e:
         logger.error(f"Label indexing failed: {e}")
         return {"status": "error", "message": str(e)}
+
+
+# Label File Loading Functions
+async def initialize_label_search():
+    """Initialize label search functionality on startup"""
+    try:
+        logger.info("Initializing label search functionality...")
+
+        # Check primary directory for CSV files
+        primary_dir = Path(LABELS_DIR)
+        csv_files = []
+
+        if primary_dir.exists():
+            csv_files = list(primary_dir.glob("*.csv"))
+
+        if csv_files:
+            logger.info(f"Found {len(csv_files)} CSV label files in primary directory: {primary_dir}")
+
+            # Check if we need to index (if no records exist)
+            from server.app.db.dbconfig import DATABASE_URL
+            stats = await get_label_stats(DATABASE_URL)
+            if stats['total_records'] == 0:
+                logger.info("Indexing label files...")
+                result = await index_csv_labels(DATABASE_URL)
+                logger.info(f"Indexed {result.get('total_records', 0)} records from {result.get('total_files', 0)} files")
+            else:
+                logger.info(f"Label search ready: {stats['total_records']} records indexed")
+        else:
+            logger.info(f"No CSV label files found in primary directory: {primary_dir}")
+
+        # Log the labels directory being used
+        logger.info(f"Labels directory: {LABELS_DIR}")
+
+    except Exception as e:
+        logger.warning(f"Label search initialization failed: {e}")
+        logger.info("Label search will be available once configured properly")
+
+
+async def filter_labels_by_csv_content(label_artifacts: list, conditions: list) -> list:
+    """
+    Filter label artifacts by checking if their CSV content matches the advanced search conditions.
+
+    Args:
+        label_artifacts: List of label artifact dictionaries
+        conditions: List of SearchCondition objects
+
+    Returns:
+        List of artifacts that contain CSV rows matching the conditions
+    """
+    matching_artifacts = []
+
+    for artifact in label_artifacts:
+        try:
+            # Try to load the CSV content for this label
+            csv_content = await load_label_csv_content(artifact)
+            if not csv_content:
+                continue
+
+            # Parse CSV content
+            csv_reader = csv.DictReader(io.StringIO(csv_content))
+            csv_rows = list(csv_reader)
+
+            if not csv_rows:
+                continue
+
+            # Apply advanced search conditions to CSV rows
+            from server.app.search_utils import LabelSearchFilter
+            matching_rows = LabelSearchFilter.apply_conditions(csv_rows, conditions)
+
+            # If any rows match, include this artifact
+            if matching_rows:
+                matching_artifacts.append(artifact)
+
+        except Exception:
+            continue
+
+    return matching_artifacts
+
+
+async def load_label_csv_content(artifact: dict) -> str:
+    """
+    Load CSV content for a label artifact.
+
+    Args:
+        artifact: Label artifact dictionary
+
+    Returns:
+        CSV content as string, or None if not found
+    """
+    try:
+        # Try different ways to get the file path
+        file_paths_to_try = []
+
+        # Method 1: Use URI if available
+        if artifact.get('uri'):
+            uri = artifact['uri']
+            if ':' in uri:
+                file_name = uri.split(':', 1)[1]
+                file_paths_to_try.append(file_name)
+            file_paths_to_try.append(uri)
+
+        # Method 2: Use artifact name
+        if artifact.get('name'):
+            name = artifact['name']
+            # Extract the base filename from the artifact name
+            # e.g., "artifacts/labels_m.csv:93951bf..." -> "labels_m.csv"
+            if 'artifacts/' in name and ':' in name:
+                # Extract the part between "artifacts/" and ":"
+                parts = name.split('artifacts/', 1)
+                if len(parts) > 1:
+                    file_part = parts[1].split(':', 1)[0]
+                    file_paths_to_try.append(file_part)
+
+            # Clean the name - remove prefixes
+            if ':' in name:
+                clean_name = name.split(':', 1)[1]
+                file_paths_to_try.append(clean_name)
+            file_paths_to_try.append(name)
+            file_paths_to_try.append(f"{name}.csv")
+
+        # Try to load the file from the labels directory
+        labels_dir = LABELS_DIR
+        if os.path.exists(labels_dir):
+            # First try exact matches
+            for file_path in file_paths_to_try:
+                try:
+                    full_path = os.path.join(labels_dir, os.path.basename(file_path))
+                    if os.path.exists(full_path):
+                        with open(full_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                            return content
+                except Exception:
+                    continue
+
+            # Then try partial matches for CSV files
+            try:
+                csv_files = list(Path(labels_dir).glob("*.csv"))
+                for file_path_to_try in file_paths_to_try:
+                    base_name = os.path.basename(file_path_to_try).lower()
+                    # Remove common extensions and hash suffixes for matching
+                    clean_name = base_name.split('.')[0].split(':')[0]
+
+                    for csv_file in csv_files:
+                        csv_name = csv_file.name.lower()
+                        # Check if the clean name is contained in the CSV filename
+                        if clean_name in csv_name or csv_name.split('.')[0] in clean_name:
+                            try:
+                                with open(csv_file, 'r', encoding='utf-8') as f:
+                                    content = f.read()
+                                    return content
+                            except Exception:
+                                continue
+            except Exception:
+                pass
+
+            # Also try all CSV files in the directory as fallback
+            # Return the most recently modified CSV file if multiple exist
+            try:
+                csv_files = list(Path(labels_dir).glob("*.csv"))
+                if csv_files:
+                    # Sort by modification time, most recent first
+                    csv_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                    for file_path in csv_files:
+                        if file_path.is_file():
+                            try:
+                                with open(file_path, 'r', encoding='utf-8') as f:
+                                    content = f.read()
+                                    return content
+                            except Exception:
+                                continue
+            except Exception:
+                pass
+
+        return None
+
+    except Exception:
+        return None
+
+
+async def load_label_csv_by_filename(file_name: str, pipeline_name: str = None) -> str:
+    """
+    Load CSV content by filename, handling both hash names and actual filenames.
+
+    Args:
+        file_name: The filename (could be hash or actual filename)
+        pipeline_name: Optional pipeline name to help locate artifacts
+
+    Returns:
+        CSV content as string, or None if not found
+    """
+    try:
+        # Try to load using the same logic as load_label_csv_content
+        # Create a mock artifact to use the existing loading logic
+        mock_artifact = {
+            'name': file_name,
+            'uri': file_name
+        }
+
+        # Try the existing loading logic first
+        content = await load_label_csv_content(mock_artifact)
+        if content:
+            return content
+
+        # If that fails, try additional strategies for hash-based filenames
+        # Try to find CSV files that might correspond to this hash
+        labels_dir = LABELS_DIR
+        if os.path.exists(labels_dir):
+            # Try direct filename match first
+            direct_path = os.path.join(labels_dir, file_name)
+            if os.path.exists(direct_path):
+                with open(direct_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+
+            # Try with .csv extension
+            csv_path = os.path.join(labels_dir, f"{file_name}.csv")
+            if os.path.exists(csv_path):
+                with open(csv_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+
+            # If filename looks like a hash, try all CSV files in the directory
+            # Return the most recently modified CSV file
+            if len(file_name) > 20 and all(c in '0123456789abcdef' for c in file_name.lower()):
+                try:
+                    csv_files = list(Path(labels_dir).glob("*.csv"))
+                    if csv_files:
+                        # Sort by modification time, most recent first
+                        csv_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+                        for file_path in csv_files:
+                            if file_path.is_file():
+                                try:
+                                    with open(file_path, 'r', encoding='utf-8') as f:
+                                        return f.read()
+                                except Exception:
+                                    continue
+                except Exception:
+                    pass
+
+        return None
+
+    except Exception:
+        return None

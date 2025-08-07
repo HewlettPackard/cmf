@@ -145,6 +145,9 @@ const useArtifactsHandlers = (client, state) => {
       setParsedLabelData,
       setLabelColumns,
       setLabelData
+    }, {
+      searchFilter: filter,
+      pipelineName: selectedPipeline
     });
   };
 
