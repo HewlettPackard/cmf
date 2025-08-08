@@ -16,6 +16,8 @@ CREATE TABLE IF NOT EXISTS label_index (
     -- - Allows compression AND out-of-line storage
     -- - Compresses first, then moves to TOAST if still large
     metadata JSONB,
+    -- Parsed CSV row data with proper types for advanced search
+    parsed_data JSONB,
     search_vector TSVECTOR,
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,
@@ -30,6 +32,9 @@ CREATE INDEX IF NOT EXISTS idx_label_index_created_at ON label_index(created_at)
 
 -- Create GIN index for full-text search (most important for performance)
 CREATE INDEX IF NOT EXISTS idx_label_index_search_vector ON label_index USING gin(search_vector);
+
+-- Create GIN index for JSONB advanced search queries
+CREATE INDEX IF NOT EXISTS idx_label_index_parsed_data ON label_index USING gin(parsed_data);
 
 -- Create a trigger to automatically update the search_vector column
 CREATE OR REPLACE FUNCTION update_label_search_vector() RETURNS trigger AS $$

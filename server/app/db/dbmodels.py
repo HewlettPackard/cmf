@@ -199,6 +199,7 @@ label_index = Table(
     Column("row_index", Integer, nullable=False),
     Column("content", Text, nullable=False),
     Column("metadata", JSON),
+    Column("parsed_data", JSON),  # JSONB column for structured CSV data
     Column("search_vector", TSVECTOR),
     Column("created_at", BigInteger, nullable=False),
     Column("updated_at", BigInteger, nullable=False),
@@ -206,6 +207,7 @@ label_index = Table(
     # Indexes for performance
     Index("idx_label_index_file_name", "file_name"),
     Index("idx_label_index_search_vector", "search_vector", postgresql_using="gin"),
+    Index("idx_label_index_parsed_data", "parsed_data", postgresql_using="gin"),
     Index("idx_label_index_created_at", "created_at"),
 
     # Unique constraint to prevent duplicate entries

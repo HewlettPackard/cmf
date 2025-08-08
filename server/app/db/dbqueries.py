@@ -365,65 +365,112 @@ async def search_labels_in_artifacts(db: AsyncSession, filter_value: str, pipeli
         return []
 
 
-async def fetch_artifacts_with_label_search(
-    db: AsyncSession,
-    pipeline_name: str,
-    artifact_type: str,
-    filter_value: str,
-    active_page: int = 1,
-    page_size: int = 5,
-    sort_column: str = "name",
-    sort_order: str = "ASC"
-):
+async def search_labels_with_advanced_conditions(db: AsyncSession, conditions: list, pipeline_name: str = None, limit: int = 50):
     """
-    Enhanced artifact search that includes label content search.
-    This combines regular artifact search with label content search.
+    Search for label artifacts using advanced JSONB queries for structured conditions.
+    This function uses PostgreSQL JSONB operators for efficient advanced search.
+
+    Args:
+        db: Database session
+        conditions: List of SearchCondition objects
+        pipeline_name: Optional pipeline name filter
+        limit: Maximum number of results
+
+    Returns:
+        List of matching label files with metadata
     """
-    # First, get regular artifact search results
-    artifact_results = await fetch_artifacts(
-        db, pipeline_name, artifact_type, filter_value,
-        active_page, page_size, sort_column, sort_order
-    )
+    try:
+        from server.app.label_management import JsonbQueryBuilder
 
-    # If filter_value is provided, also search in labels
-    if filter_value and filter_value.strip():
-        try:
-            label_results = await search_labels_in_artifacts(db, filter_value, pipeline_name, 50)
+        # Build JSONB WHERE clause from conditions
+        where_clause, params = JsonbQueryBuilder.build_where_clause(conditions)
 
-            # Add label search results as separate items (since they don't correspond to existing artifacts)
-            if active_page == 1 and label_results:  # Only add on first page
-                added_count = 0
-                max_additional = max(0, page_size - len(artifact_results['items']))
+        if not where_clause:
+            return []
 
-                for label_result in label_results:
-                    if added_count < max_additional:
-                        # Create a pseudo-artifact item from label search result
-                        # Make sure all fields have non-null values that frontend expects
-                        enhanced_item = {
-                            'artifact_id': f"label_{label_result['label_file']}_{label_result.get('row_index', 0)}",
-                            'name': f"{label_result['label_file']} (Row {label_result.get('row_index', 0) + 1})",
-                            'uri': label_result.get('uri', f"label://{label_result['label_file']}"),
-                            'type_id': 'Label',
-                            'create_time_since_epoch': 0,  # Use 0 instead of None
-                            'last_update_time_since_epoch': 0,  # Use 0 instead of None
-                            'artifact_properties': [],  # Empty array instead of None
-                            'execution': '',  # Empty string instead of None
-                            'label_match': True,
-                            'matching_label_content': label_result['matching_content'],
-                            'label_file': label_result['label_file'],
-                            'label_metadata': label_result.get('label_metadata', '{}'),
-                            'relevance_score': float(label_result['relevance_score'])
-                        }
-                        artifact_results['items'].append(enhanced_item)
-                        added_count += 1
+        # Base query using JSONB conditions
+        base_query = f"""
+            SELECT DISTINCT
+                li.file_name as label_file,
+                li.content as matching_content,
+                li.metadata as label_metadata,
+                li.parsed_data,
+                li.row_index,
+                1.0 as relevance_score  -- Static score for advanced search
+            FROM label_index li
+            WHERE {where_clause}
+            ORDER BY li.file_name, li.row_index
+            LIMIT :limit
+        """
 
-                # Update total count if we added items
-                if added_count > 0:
-                    artifact_results['total_items'] += added_count
-                    print(f"Added {added_count} label search results to artifacts")
+        # Add limit to params
+        params["limit"] = limit
 
-        except Exception as e:
-            print(f"Error in label search integration: {e}")
-            # Continue with regular results if label search fails
+        result = await db.execute(text(base_query), params)
+        label_results = result.mappings().all()
 
-    return artifact_results
+        # Convert to the expected format
+        converted_results = []
+        for row in label_results:
+            converted_results.append({
+                'label_file': row['label_file'],
+                'matching_content': row['matching_content'],
+                'label_metadata': row['label_metadata'],
+                'parsed_data': row['parsed_data'],
+                'row_index': row['row_index'],
+                'relevance_score': row['relevance_score']
+            })
+
+        return converted_results
+
+    except Exception as e:
+        print(f"Advanced label search error: {e}")
+        return []
+
+
+async def search_labels_combined(db: AsyncSession, plain_terms: list = None, conditions: list = None, pipeline_name: str = None, limit: int = 50):
+    """
+    Combined search function that handles both full-text search and advanced JSONB conditions.
+
+    Args:
+        db: Database session
+        plain_terms: List of plain text terms for full-text search
+        conditions: List of SearchCondition objects for advanced search
+        pipeline_name: Optional pipeline name filter
+        limit: Maximum number of results
+
+    Returns:
+        List of matching label files with metadata
+    """
+    try:
+        results = []
+
+        # If we have plain text terms, do full-text search
+        if plain_terms:
+            plain_search_term = " ".join(plain_terms)
+            if plain_search_term.strip():
+                text_results = await search_labels_in_artifacts(db, plain_search_term, pipeline_name, limit)
+                results.extend(text_results)
+
+        # If we have advanced conditions, do JSONB search
+        if conditions:
+            advanced_results = await search_labels_with_advanced_conditions(db, conditions, pipeline_name, limit)
+            results.extend(advanced_results)
+
+        # Remove duplicates based on file_name and row_index
+        seen = set()
+        unique_results = []
+        for result in results:
+            key = (result['label_file'], result.get('row_index', 0))
+            if key not in seen:
+                seen.add(key)
+                unique_results.append(result)
+
+        # Sort by relevance score (descending) and then by file name
+        unique_results.sort(key=lambda x: (-x.get('relevance_score', 0), x['label_file']))
+
+        return unique_results[:limit]
+
+    except Exception as e:
+        print(f"Combined label search error: {e}")
+        return []

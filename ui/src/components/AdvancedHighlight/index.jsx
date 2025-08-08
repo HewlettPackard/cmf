@@ -25,9 +25,9 @@ const AdvancedHighlight = ({ text, highlight, columnName, searchMetadata }) => {
     // Ensure text is a string
     const textStr = String(text || '');
 
-    // Check if this column matches any advanced search conditions
+    // Check if this column matches any advanced search conditions (case-insensitive)
     const matchingConditions = searchMetadata.advanced_conditions?.filter(
-        condition => condition.column === columnName
+        condition => condition.column.toLowerCase() === columnName.toLowerCase()
     ) || [];
 
     // Check if this column value matches any plain text terms

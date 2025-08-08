@@ -37,7 +37,7 @@ from server.app.db.dbqueries import (
     get_registered_server_details,
     get_sync_status,
     update_sync_status,
-    search_labels_in_artifacts
+    search_labels_combined
 )
 from pathlib import Path
 import os
@@ -56,17 +56,13 @@ import logging
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
 from server.app.db.dbconfig import DATABASE_URL
-from server.app.label_utils import (
+from server.app.label_management import (
     auto_reindex_if_needed,
     get_label_stats,
     index_csv_labels_with_hash,
     initialize_label_search,
-    filter_labels_by_csv_content,
-    load_label_csv_by_filename
-)
-from server.app.search_utils import (
-    AdvancedSearchParser,
-    LabelSearchFilter,
+    load_label_csv_by_filename,
+    AdvancedSearchParser
 )
 import csv
 import io
@@ -135,7 +131,7 @@ async def read_root(request: Request):
 
 # api to post mlmd file to cmf-server
 @app.post("/mlmd_push")
-async def mlmd_push(info: MLMDPushRequest):
+async def mlmd_push(info: MLMDPushRequest, db: AsyncSession = Depends(get_db)):
     print("mlmd push started")
     print("......................")
     status = "unknown_error"
@@ -162,7 +158,7 @@ async def mlmd_push(info: MLMDPushRequest):
                 # Auto-reindex labels after artifact push
                 try:
                     logger = logging.getLogger(__name__)
-                    reindex_result = await auto_reindex_if_needed(DATABASE_URL)
+                    reindex_result = await auto_reindex_if_needed(db)
                     if reindex_result['status'] == 'reindexed':
                         logger.info(f"Auto-reindexed after artifact push: {reindex_result['message']}")
                 except Exception as e:
@@ -219,7 +215,7 @@ async def get_artifacts(
     if active_page == 1:
         try:
             logger = logging.getLogger(__name__)
-            reindex_result = await auto_reindex_if_needed(DATABASE_URL)
+            reindex_result = await auto_reindex_if_needed(db)
             if reindex_result['status'] == 'reindexed':
                 logger.info(f"{reindex_result['message']}")
         except Exception as e:
@@ -253,16 +249,16 @@ async def search_label_artifacts(
             conditions = []
             plain_terms = [content_filter]
 
-        # Combined search: both label content and regular artifact properties
-        # 1. Search in label CSV content (basic text search for plain terms)
-        plain_search_term = " ".join(plain_terms) if plain_terms else ""
-        label_content_results = []
+        # Use combined search with JSONB queries for advanced conditions
+        label_content_results = await search_labels_combined(
+            db,
+            plain_terms=plain_terms if plain_terms else None,
+            conditions=conditions if conditions else None,
+            pipeline_name=pipeline_name,
+            limit=100
+        )
 
-        if plain_search_term.strip():
-            label_content_results = await search_labels_in_artifacts(db, plain_search_term, pipeline_name, 100)
-
-        # 2. Search in regular artifact properties (like other artifact types)
-        # For advanced search queries, don't search properties with the raw query
+        # Search in regular artifact properties (like other artifact types)
         if plain_terms:
             # Only search properties if there are plain text terms
             property_search_results = await fetch_artifacts(
@@ -272,20 +268,8 @@ async def search_label_artifacts(
             # For pure advanced search, don't do property search - we'll rely on CSV content filtering
             property_search_results = {'items': [], 'total_items': 0}
 
-        # For advanced search queries, we need to filter labels based on their CSV content
-        # This is different from plain text search - we need to load and filter each CSV file
-        advanced_search_results = []
-        if conditions and len(conditions) > 0:
-            # Get all label artifacts to check their CSV content
-            all_labels_result = await fetch_artifacts(
-                db, pipeline_name, "Label", "", 1, 1000, "name", sort_order
-            )
-
-            # Filter labels by checking their CSV content against advanced conditions
-            advanced_search_results = await filter_labels_by_csv_content(all_labels_result['items'], conditions)
-
         # If still no results from any search, return empty
-        if not label_content_results and property_search_results['total_items'] == 0 and not advanced_search_results:
+        if not label_content_results and property_search_results['total_items'] == 0:
             return {
                 "total_items": 0,
                 "items": []
@@ -315,11 +299,6 @@ async def search_label_artifacts(
         for artifact in property_search_results['items']:
             property_match_ids.add(artifact['artifact_id'])
 
-        # Create a set of artifact IDs that match advanced search
-        advanced_search_ids = set()
-        for artifact in advanced_search_results:
-            advanced_search_ids.add(artifact['artifact_id'])
-
         for artifact in all_artifacts_result['items']:
             artifact_name = artifact['name']
             artifact_uri = artifact.get('uri', '')
@@ -327,9 +306,6 @@ async def search_label_artifacts(
 
             # Check if this artifact matches property search
             property_matches = artifact_id in property_match_ids
-
-            # Check if this artifact matches advanced search
-            advanced_search_matches = artifact_id in advanced_search_ids
 
             # Check if this artifact matches content search
             content_matches = False
@@ -358,8 +334,8 @@ async def search_label_artifacts(
 
                 content_matches = name_matches or uri_matches or original_name_matches
 
-            # Include artifact if it matches property search, content search, OR advanced search
-            should_include = property_matches or content_matches or advanced_search_matches
+            # Include artifact if it matches property search OR content search (includes advanced search)
+            should_include = property_matches or content_matches
 
             if should_include:
                 # Convert SearchCondition objects to dictionaries for JSON serialization
@@ -376,7 +352,7 @@ async def search_label_artifacts(
                     'search_term': content_filter,
                     'is_search_result': True,
                     'property_match': property_matches,
-                    'content_match': content_matches or advanced_search_matches,  # Mark as content match for advanced conditions
+                    'content_match': content_matches,  # Content matches now include advanced search results
                     'advanced_conditions': advanced_conditions_dict,  # Store conditions as dicts for frontend filtering
                     'plain_terms': plain_terms
                 }
@@ -636,7 +612,8 @@ async def get_label_data(
     file_name: str,
     search_filter: str = None,
     pipeline_name: str = None,
-    fallback_to_full: bool = Query(True, description="If true, return full content when no rows match the filter")
+    fallback_to_full: bool = Query(True, description="If true, return full content when no rows match the filter"),
+    db: AsyncSession = Depends(get_db)
 ) -> str:
     """
     API endpoint to fetch the content of a label CSV file, optionally filtered by search conditions.
@@ -665,7 +642,7 @@ async def get_label_data(
         if not search_filter:
             return csv_content
 
-        # Apply search filtering if provided
+        # Use JSONB database queries
         try:
             # Parse the search filter
             conditions, plain_terms, parse_errors = AdvancedSearchParser.parse_search_query(search_filter)
@@ -673,38 +650,50 @@ async def get_label_data(
             if parse_errors:
                 return csv_content  # Return unfiltered if parse fails
 
-            # If there are advanced conditions, filter the CSV content
+            # If there are advanced conditions, use JSONB database queries
             if conditions and len(conditions) > 0:
-                # Parse CSV content
-                csv_reader = csv.DictReader(io.StringIO(csv_content))
-                all_rows = list(csv_reader)
+                from server.app.db.dbqueries import search_labels_with_advanced_conditions
 
-                # Apply filtering
-                matching_rows = LabelSearchFilter.apply_conditions(all_rows, conditions)
+                # Search using JSONB queries
+                results = await search_labels_with_advanced_conditions(db, conditions, pipeline_name, 1000)
 
-                # Convert filtered rows back to CSV format
-                if matching_rows and len(matching_rows) > 0:
+                # Filter results to only include rows from the requested file
+                matching_results = [r for r in results if r['label_file'] == file_name]
+
+                if matching_results:
+                    # Convert JSONB results back to CSV format
                     output = io.StringIO()
-                    fieldnames = matching_rows[0].keys()
-                    writer = csv.DictWriter(output, fieldnames=fieldnames)
-                    writer.writeheader()
-                    writer.writerows(matching_rows)
-                    return output.getvalue()
+
+                    # Get column names from the first result's parsed_data
+                    first_result = matching_results[0]
+                    if 'parsed_data' in first_result and first_result['parsed_data']:
+                        fieldnames = list(first_result['parsed_data'].keys())
+                        writer = csv.DictWriter(output, fieldnames=fieldnames)
+                        writer.writeheader()
+
+                        # Write all matching rows
+                        for result in matching_results:
+                            if 'parsed_data' in result and result['parsed_data']:
+                                writer.writerow(result['parsed_data'])
+
+                        return output.getvalue()
+
+                # No matching rows found
+                if fallback_to_full:
+                    # Return full content when no matches found (useful for label click scenarios)
+                    return csv_content
                 else:
-                    # No matching rows found
-                    if fallback_to_full:
-                        # Return full content when no matches found (useful for label click scenarios)
-                        return csv_content
-                    else:
-                        # Return empty CSV with headers (strict filtering mode)
-                        if all_rows:
-                            output = io.StringIO()
-                            fieldnames = all_rows[0].keys()
-                            writer = csv.DictWriter(output, fieldnames=fieldnames)
-                            writer.writeheader()
-                            return output.getvalue()
-                        else:
-                            return ""
+                    # Return empty CSV with headers (get headers from full content)
+                    csv_reader = csv.DictReader(io.StringIO(csv_content))
+                    try:
+                        first_row = next(csv_reader)
+                        output = io.StringIO()
+                        fieldnames = list(first_row.keys())
+                        writer = csv.DictWriter(output, fieldnames=fieldnames)
+                        writer.writeheader()
+                        return output.getvalue()
+                    except StopIteration:
+                        return ""
 
             return csv_content
 
@@ -1069,10 +1058,10 @@ async def artifact_lineage(request: Request, pipeline_name: str):
 
 # Label Search Management Endpoints
 @app.post("/api/labels/reindex")
-async def reindex_labels():
+async def reindex_labels(db: AsyncSession = Depends(get_db)):
     """Reindex all label files - useful when CSV files are updated"""
     try:
-        result = await index_csv_labels_with_hash(DATABASE_URL)
+        result = await index_csv_labels_with_hash(db)
 
         return {
             "status": "success",
@@ -1084,7 +1073,7 @@ async def reindex_labels():
         raise HTTPException(status_code=500, detail=f"Reindexing failed: {str(e)}")
 
 @app.get("/api/labels/status")
-async def get_label_search_status():
+async def get_label_search_status(db: AsyncSession = Depends(get_db)):
     """Get the current status of label search functionality"""
     try:
         # Check labels directory
@@ -1092,7 +1081,7 @@ async def get_label_search_status():
         csv_files = list(labels_path.glob("*.csv")) if labels_path.exists() else []
 
         # Check database
-        stats = await get_label_stats(DATABASE_URL)
+        stats = await get_label_stats(db)
 
         return {
             "status": "active" if stats['total_records'] > 0 else "inactive",
