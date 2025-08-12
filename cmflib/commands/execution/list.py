@@ -73,6 +73,7 @@ class CmdExecutionList(CmdBase):
             if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
                 pass
             else:
+                # When user reuses execution, execution_uuid get appeneded separated by ",
                 df = df[df['Execution_uuid'].apply(lambda x: self.args.execution_uuid[0] in x.split(","))] # Used dataframe based on execution uuid
                 if not df.empty:
                     # Rearranging columns: Start with fixed columns and appending the remaining columns.
