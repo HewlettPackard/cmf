@@ -91,6 +91,13 @@ async def fetch_artifacts(
         context.c.name == pipeline_name
     ).cte("relevant_contexts_cte")
 
+    # Early check: are there any relevant contexts for the given pipeline?
+    res = await db.execute(select(relevant_contexts_cte.c.context_id))
+    context_ids = res.scalars().all()
+    if not context_ids:
+        # No relevant contexts found, return empty result
+        return {"total_items": 0, "items": []}
+
     # Step 2: Fetch execution IDs based on pipeline name
     execution_ids_cte = (
         select(
@@ -100,17 +107,31 @@ async def fetch_artifacts(
             association, execution.c.id == association.c.execution_id
         )
         .where(
-            association.c.context_id.in_(select(relevant_contexts_cte.c.context_id))
+            association.c.context_id.in_(context_ids)
         )
         .cte("execution_ids_cte")
     )
 
+    # Fetch all execution IDs for the relevant pipeline contexts
+    res = await db.execute(select(execution_ids_cte.c.execution_id))
+    execution_ids = res.scalars().all()
+    if not execution_ids:
+        # No executions found for the pipeline, return empty result
+        return {"total_items": 0, "items": []}
+
     # Step 3: Based on execution ids list fetching equvalent artifact lists from event_path table
     artifact_ids_cte = (
         select(distinct(event.c.artifact_id).label("artifact_id"))
-        .where(event.c.execution_id.in_(select(execution_ids_cte.c.execution_id)))
+        .where(event.c.execution_id.in_(execution_ids))
         .cte("artifact_ids_cte")
     )
+
+    # Fetch all artifact IDs for the relevant executions
+    res = await db.execute(select(artifact_ids_cte.c.artifact_id))
+    artifact_ids = res.scalars().all()
+    if not artifact_ids:
+        # No artifacts found for the executions, return empty result
+        return {"total_items": 0, "items": []}
 
     # Step 4: Aggregate artifact properties into JSON
     artifact_properties_agg_cte = (
@@ -131,7 +152,7 @@ async def fetch_artifacts(
                 )
             ).label("artifact_properties")
         )
-        .where(artifactproperty.c.artifact_id.in_(select(artifact_ids_cte.c.artifact_id)))  # Filter by artifact IDs
+        .where(artifactproperty.c.artifact_id.in_(artifact_ids)) # Filter by artifact IDs
         .group_by(artifactproperty.c.artifact_id)
         .cte("artifact_properties_agg_cte")
     )
@@ -145,7 +166,7 @@ async def fetch_artifacts(
         .join(execution, event.c.execution_id == execution.c.id)
         .join(association, execution.c.id == association.c.execution_id)
         .join(context, association.c.context_id == context.c.id)
-        .where(event.c.artifact_id.in_(select(artifact_ids_cte.c.artifact_id)))
+        .where(event.c.artifact_id.in_(artifact_ids))
         .group_by(event.c.artifact_id)
         .cte("artifact_execution_types_agg_cte")
     )
@@ -166,7 +187,7 @@ async def fetch_artifacts(
         .join(attribution, artifact.c.id == attribution.c.artifact_id)
         .join(context, attribution.c.context_id == context.c.id)
         .where(
-            artifact.c.id.in_(select(artifact_ids_cte.c.artifact_id)),
+            artifact.c.id.in_(artifact_ids),
             type_table.c.name == artifact_type
         )
         .cte("artifact_metadata_cte")
