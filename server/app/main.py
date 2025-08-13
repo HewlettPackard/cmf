@@ -14,7 +14,6 @@ import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
 from server.app.get_data import (
-    get_lineage_data,
     get_mlmd_from_server,
     get_artifact_types,
     get_all_artifact_ids,
@@ -23,7 +22,6 @@ from server.app.get_data import (
     get_model_data
 
 )
-from server.app.query_execution_lineage_d3force import query_execution_lineage_d3force
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
@@ -200,20 +198,6 @@ async def execution(request: Request,
     return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
     
 
-@app.get("/list-of-executions/{pipeline_name}")
-async def list_of_executions(request: Request, pipeline_name: str):
-    '''
-      This api's returns list of execution types.
-
-    '''
-    # checks if mlmd file exists on server
-    await check_mlmd_file_exists()
-    # checks if pipeline exists
-    await check_pipeline_exists(pipeline_name)
-    response = await async_api(get_lineage_data, query, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
-    return response
-
-    
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
 async def execution_lineage(request: Request, uuid: str, pipeline_name: str):
     '''
@@ -742,7 +726,8 @@ async def check_pipeline_exists(pipeline_name):
 
 
 """
-This API is no longer in use within the project but is retained for reference or potential future use.
+following APIs are no longer in use within the project but is retained for reference or potential future use.
+
 @app.get("/execution-lineage/force-directed-graph/{pipeline_name}/{uuid}")
 async def execution_lineage(request: Request, pipeline_name: str, uuid: str):
     '''
@@ -783,4 +768,18 @@ async def artifact_lineage(request: Request, pipeline_name: str):
 
     else:
         return None
+
+@app.get("/list-of-executions/{pipeline_name}")
+async def list_of_executions(request: Request, pipeline_name: str):
+    '''
+      This api's returns list of execution types.
+
+    '''
+    # checks if mlmd file exists on server
+    await check_mlmd_file_exists()
+    # checks if pipeline exists
+    await check_pipeline_exists(pipeline_name)
+    response = await async_api(get_lineage_data, query, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
+    return response
+
 """
