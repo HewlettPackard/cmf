@@ -75,7 +75,7 @@ async def lifespan(app: FastAPI):
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
 
-app = FastAPI(title="cmf-server", lifespan=lifespan)
+app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
 
 # Add CORS middleware
 app.add_middleware(
