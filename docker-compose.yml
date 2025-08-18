@@ -45,15 +45,13 @@ services:
     container_name: tensorboard
     command: tensorboard --logdir /logs --host 0.0.0.0
     volumes:
-      # directory path should be updated as per user's environment
-      - /home/sharmav/cmf-server/data/tensorboard-logs:/logs
+      - /${HOME}/cmf-server/data/tensorboard-logs:/logs
     networks:
       - cmf-network
 
   server:
     image: server:latest
     container_name: cmf-server
-    # both the directory paths should be updated as per user's environment
     volumes:
       - /${HOME}/cmf-server/data:/cmf-server/data
       - /${HOME}/cmf-server/data/env:/cmf-server/data/env
@@ -124,4 +122,3 @@ networks:
   cmf-network:
     driver: bridge
 
-    
