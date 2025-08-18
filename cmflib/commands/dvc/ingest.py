@@ -252,7 +252,7 @@ def add_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
         "ingest",
         parents=[parent_parser],
-        description="Ingests metadata from the dvc.lock file into the CMF. If an existing metadata file is provided, it merges and updates execution metadata based on matching commands; otherwise, it creates new executions if none exist.",
+        description="Ingests metadata from the dvc.lock file into the CMF. If an existing metadata file is provided, it merges and updates execution metadata based on matching commands; otherwise, it creates new executions.",
         help=HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
