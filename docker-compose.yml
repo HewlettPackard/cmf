@@ -24,7 +24,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_PORT: ${POSTGRES_PORT}
     volumes:
-      - /home/xxxx/cmf-server/data/postgres_data:/var/lib/postgresql/data
+      - /${HOME}/cmf-server/data/postgres_data:/var/lib/postgresql/data
       - ./db_init.sql:/docker-entrypoint-initdb.d/db_init.sql # Mount SQL script
       - ./custom-entrypoint.sh:/custom-entrypoint.sh # Mount custom entrypoint script
     entrypoint: ["/bin/bash", "/custom-entrypoint.sh"] # Use the custom entrypoint script
@@ -46,7 +46,7 @@ services:
     command: tensorboard --logdir /logs --host 0.0.0.0
     volumes:
       # directory path should be updated as per user's environment
-      - /home/xxxx/cmf-server/data/tensorboard-logs:/logs
+      - /home/sharmav/cmf-server/data/tensorboard-logs:/logs
     networks:
       - cmf-network
 
@@ -55,11 +55,11 @@ services:
     container_name: cmf-server
     # both the directory paths should be updated as per user's environment
     volumes:
-      - /home/xxxx/cmf-server/data:/cmf-server/data
-      - /home/xxxx/cmf-server/data/env:/cmf-server/data/env
-      - /home/xxxx/cmf-server/data/static:/cmf-server/data/static
-      - /home/xxxx/cmf-server/data/labels:/cmf-server/data/labels
-      - /home/xxxx/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
+      - /${HOME}/cmf-server/data:/cmf-server/data
+      - /${HOME}/cmf-server/data/env:/cmf-server/data/env
+      - /${HOME}/cmf-server/data/static:/cmf-server/data/static
+      - /${HOME}/cmf-server/data/labels:/cmf-server/data/labels
+      - /${HOME}/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
     
     build:
       context: ./
