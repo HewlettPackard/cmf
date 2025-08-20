@@ -1,4 +1,4 @@
-## Logging API'S
+## Logging API'S  NEEDS TO BE UPDATED
 
 ### 1. Library init call - Cmf()
 
