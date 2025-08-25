@@ -43,7 +43,7 @@ services:
   tensorboard:
     image: tensorflow/tensorflow
     container_name: tensorboard
-    command: tensorboard --logdir /logs --host 0.0.0.0
+    command: tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
     volumes:
       - /${HOME}/cmf-server/data/tensorboard-logs:/logs
     networks:
@@ -75,7 +75,9 @@ services:
     healthcheck:
       test: curl -f http://localhost:8080 || exit 1
       interval: 15s
-      retries: 2
+      retries: 5
+
+    
     networks:
       cmf-network:
         aliases:

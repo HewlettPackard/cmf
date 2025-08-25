@@ -34,7 +34,7 @@ def call_mlmd_pull(url, pipeline_name, exec_uuid):
 
 # This function posts tensorboard files to cmf-server
 def call_tensorboard(url, pipeline_name, file_name, file_path):
-    url_to_pass = f"{url}/tensorboard"
+    url_to_pass = f"{url}/api/tensorboard"
     files = {'file': (file_name, open(file_path, 'rb'))}
     params = {'pipeline_name': pipeline_name}
     response = requests.post(url_to_pass, files=files, params=params)

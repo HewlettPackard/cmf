@@ -30,7 +30,6 @@ if (apiUrl && !apiUrl.endsWith('/api')) {
 const config = {
   apiBasePath: apiUrl,
   reactAppMode: "production",
-  apiBasePathWOPort: apiUrl,
 };
 console.log("Config:", config);
 
