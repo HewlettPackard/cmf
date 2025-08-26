@@ -29,7 +29,15 @@ from cmflib.store.postgres import PostgresStore
 from cmflib.store.sqllite_store import SqlliteStore
 from cmflib.utils.helper_functions import get_postgres_config
 
-__all__ = ["CmfQuery"]
+# Constants for filtering artifact and execution types in lineage visualizations
+EXCLUDED_ARTIFACT_TYPES = ["Environment", "Label"]
+EXCLUDED_EXECUTION_TYPES = ["Environment", "Label"]
+
+__all__ = [
+    "CmfQuery",
+    "EXCLUDED_ARTIFACT_TYPES",
+    "EXCLUDED_EXECUTION_TYPES"
+]
 
 logger = logging.getLogger(__name__)
 
@@ -922,6 +930,25 @@ class CmfQuery(object):
                 )
         return df
 
+    def get_one_hop_parent_artifacts_with_id_for_lineage(self, artifact_id: int) -> pd.DataFrame:
+        """Return input artifacts for the execution that produced the given artifact, excluding types defined in EXCLUDED_ARTIFACT_TYPES.
+
+        This is a convenience method for lineage visualizations that automatically excludes
+        Environment and Label artifacts as defined in EXCLUDED_ARTIFACT_TYPES.
+
+        Args:
+            artifact_id: Artifact id.
+        Returns:
+            Data frame containing immediate parent artifacts of given artifact, with excluded types filtered out.
+        """
+        df = self.get_one_hop_parent_artifacts_with_id(artifact_id)
+
+        # Filter out excluded types for lineage visualization
+        if not df.empty:
+            df = df[~df['type'].isin(EXCLUDED_ARTIFACT_TYPES)]
+
+        return df
+
     def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict: # type: ignore  # Execution, Context, Event type not recognized by mypy, using ignore to bypass
         """
         Extract attributes from a node and return them as a dictionary.
@@ -1091,7 +1118,30 @@ class CmfQuery(object):
         except:
             return df
         return df
-    
+
+    def get_all_executions_for_artifact_id_for_lineage(self, artifact_id: int) -> pd.DataFrame:
+        """Return executions that consumed and produced given artifact, excluding types defined in EXCLUDED_EXECUTION_TYPES.
+
+        This is a convenience method for lineage visualizations that automatically excludes
+        Environment and Label executions as defined in EXCLUDED_EXECUTION_TYPES.
+
+        Args:
+            artifact_id: Artifact id.
+        Returns:
+            Pandas data frame containing stage executions, with excluded execution types filtered out.
+        """
+        df = self.get_all_executions_for_artifact_id(artifact_id)
+
+        # Filter out excluded execution types for lineage visualization
+        if not df.empty and 'execution_type_name' in df.columns:
+            # Extract string values from the execution_type_name property objects
+            execution_types = df['execution_type_name'].apply(
+                lambda x: x.string_value if hasattr(x, 'string_value') else str(x)
+            )
+            df = df[~execution_types.isin(EXCLUDED_EXECUTION_TYPES)]
+
+        return df
+
     def get_all_executions_by_stage(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]: # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """
         Return executions of the given stage.
