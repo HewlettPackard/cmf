@@ -41,7 +41,7 @@ Usage: cmf init minioS3 [-h] --url [url]
 `cmf init minioS3` configures Minio S3 bucket as a cmf artifact repository. Refer [minio-server.md](./minio-server.md#steps-to-set-up-a-minio-server) to set up a minio server.
 
 ```
-cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 > Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.
@@ -60,7 +60,7 @@ Optional Arguments
 
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -80,7 +80,7 @@ Usage: cmf init local [-h] --path [path] -
 `cmf init local` initialises local directory as a cmf artifact repository.
 
 ```
-cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 > Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage
@@ -96,7 +96,7 @@ Optional Arguments
 
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -161,7 +161,7 @@ Usage: cmf init amazonS3 [-h] --url [url]
 `cmf init amazonS3` initialises Amazon S3 bucket as a CMF artifact repository.
 
 ```
-cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 > Here, use the --access-key-id, --secret-key and --session-token generated from the `aws sts` command which is mentioned above.
@@ -182,7 +182,7 @@ Optional Arguments
 
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -205,7 +205,7 @@ Usage: cmf init sshremote [-h] --path [path]
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 
 ```
-cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 Required Arguments
@@ -222,7 +222,7 @@ Optional Arguments
 
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -246,7 +246,7 @@ Usage: cmf init osdfremote [-h] --path [path]
 `cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
 
 ```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:8080 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 Required Arguments
@@ -263,7 +263,7 @@ Optional Arguments
 
 ```
   -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:8080)
+  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)

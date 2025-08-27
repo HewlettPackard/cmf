@@ -47,8 +47,10 @@ from server.app.schemas.dataframe import (
     ExecutionRequest,
 )
 import httpx
+import socket
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
+
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
@@ -87,7 +89,14 @@ app.add_middleware(
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 
+LOCAL_ADDRESSES = set()
+LOCAL_ADDRESSES.add("127.0.0.1")
 hostname = os.environ.get('HOSTNAME', "localhost")
+LOCAL_ADDRESSES.add(hostname)
+LOCAL_ADDRESSES.add(socket.gethostbyname(hostname))
+print("socket.gethostbyname(hostname) = ", socket.gethostbyname(hostname))
+
+print("Local addresses = ", LOCAL_ADDRESSES)
 
 @app.get("/")
 async def read_root(request: Request):
@@ -424,11 +433,18 @@ async def register_server(request: ServerRegistrationRequest, db: AsyncSession =
         server_name = request.server_name
         host_info = request.host_info
 
+        print("host_info = ", host_info)
+
+        # Check user is registring with own details
+        if host_info in LOCAL_ADDRESSES:
+            # Restrict the user from registering with own details
+            return {"message": "Registration failed: Cannot register the server with its own details."}
+
         # Step 1: Send a request to the target server
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"http://{host_info}:8080/acknowledge",
+                    f"http://{host_info}/api/acknowledge",
                     json={"server_name": server_name, "host_info": host_info}
                 )
                 if response.status_code != 200:
@@ -436,11 +452,6 @@ async def register_server(request: ServerRegistrationRequest, db: AsyncSession =
                 target_server_data = response.json()
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
-
-        # Check user is registring with own details
-        if host_info in [my_ip, hostname, "127.0.0.1", "localhost"]:
-            # Restrict the user from registering with own details
-            return {"message": "Registration failed: Cannot register the server with its own details."}
 
         return await register_server_details(db, server_name, host_info)
     
@@ -478,7 +489,7 @@ async def server_mlmd_pull(host_info, last_sync_time):
         # Step 1: Send a request to the target server to fetch mlmd data
         async with httpx.AsyncClient(timeout=300.0) as client:
             try:
-                response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={'last_sync_time': last_sync_time})
+                response = await client.post(f"http://{host_info}/api/mlmd_pull", json={'last_sync_time': last_sync_time})
 
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -500,9 +511,9 @@ async def server_mlmd_pull(host_info, last_sync_time):
 
                     list_of_files = list(environment_names)
                     # Added list_of_files to the request as a optional query parameter 
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
+                    python_env_zip = await client.get(f"http://{host_info}/api/download-python-env", params=list_of_files)
                 else:
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
+                    python_env_zip = await client.get(f"http://{host_info}/api/download-python-env", params=None)
 
                 if python_env_zip.status_code == 200:
                     try:

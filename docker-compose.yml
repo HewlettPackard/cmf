@@ -39,7 +39,7 @@ services:
       retries: 5
     networks:
       - cmf-network
-  
+
   tensorboard:
     image: tensorflow/tensorflow
     container_name: tensorboard
@@ -58,7 +58,7 @@ services:
       - /${HOME}/cmf-server/data/static:/cmf-server/data/static
       - /${HOME}/cmf-server/data/labels:/cmf-server/data/labels
       - /${HOME}/cmf-server/data/tensorboard-logs:/cmf-server/data/tensorboard-logs
-    
+
     build:
       context: ./
       dockerfile: ./server/Dockerfile
@@ -75,9 +75,9 @@ services:
     healthcheck:
       test: curl -f http://localhost:8080 || exit 1
       interval: 15s
+      timeout: 5s
       retries: 5
-
-    
+      start_period: 60s
     networks:
       cmf-network:
         aliases:

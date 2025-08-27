@@ -168,7 +168,7 @@ def add_parser(subparsers, parent_parser):
         help="Specify cmf-server URL.",
         metavar="<cmf_server_url>",
         action="append",
-        default=["http://127.0.0.1:8080"],
+        default=["http://127.0.0.1"],
     )
     parser.add_argument(
         "--neo4j-user",
