@@ -42,7 +42,7 @@ class CmdInitOSDFRemote(CmdBase):
 
         attr_dict = {}
         # cmf_server_url is default parameter for cmf init command 
-        # if user does not provide cmf-server-url, default value is http://127.0.0.1:80
+        # if user does not provide cmf-server-url, default value is http://127.0.0.1
         attr_dict["server-url"] = self.args.cmf_server_url
         CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
