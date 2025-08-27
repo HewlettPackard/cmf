@@ -73,6 +73,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
+      # this will create problem in starting cmf-server on any port
       test: curl -f http://localhost:8080 || exit 1
       interval: 15s
       timeout: 5s
