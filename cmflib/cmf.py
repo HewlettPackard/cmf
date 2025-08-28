@@ -1466,6 +1466,9 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
+        custom_props = {} if custom_properties is None else custom_properties
+        git_repo = git_get_repo()
+        name = re.split("/", url)[-1]
 
         # Ensure label file exists
         if not os.path.isfile(url):
@@ -1546,8 +1549,34 @@ class Cmf:
                 )
             custom_props["git_repo"] = git_repo
             custom_props["Commit"] = label_hash
-            return artifact
+            
+            if self.graph:
+                self.driver.create_label_node(
+                    name,
+                    url,
+                    uri,
+                    "input",
+                    self.execution.id,
+                    self.parent_context,
+                    custom_props,
+                )
+                # labels are always input
+                self.input_artifacts.append(
+                    {
+                        "Name": name,
+                        "Path": url,
+                        "URI": uri,
+                        "Event": "input",
+                        "Execution_Name": self.execution_name,
+                        "Type": "Label",
+                        "Execution_Command": self.execution_command,
+                        "Pipeline_Id": self.parent_context.id,
+                        "Pipeline_Name": self.parent_context.name,
+                    }
+                )
+                self.driver.create_execution_links(uri, name, "Label")
 
+            return artifact
 
     class DataSlice:
         """A data slice represents a named subset of data.

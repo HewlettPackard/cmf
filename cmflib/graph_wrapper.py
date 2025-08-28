@@ -251,6 +251,23 @@ class GraphDriver:
                     "Artifact_Name": parent_artifact_name, "uri": parent_artifact_uri})
             _ = session.write_transaction(self._run_transaction, pc_syntax)
 
+    def create_label_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
+                          pipeline_context: mlpb.Context, # type: ignore  # Context type not recognized by mypy, using ignore to bypass,
+                          custom_properties= None):
+        if custom_properties is None:
+            custom_properties = {}
+        pipeline_id = pipeline_context.id
+        pipeline_name = pipeline_context.name
+        label_syntax = self._create_label_syntax(
+            name, path, uri, pipeline_id, pipeline_name, custom_properties)
+        with self.driver.session() as session:
+            node = session.write_transaction(
+                self._run_transaction, label_syntax)
+            node_id = node[0]["node_id"]
+            pc_syntax = self._create_execution_artifacts_link_syntax(
+                "Execution", "Label", self.execution_id, node_id, event)
+            _ = session.write_transaction(self._run_transaction, pc_syntax)
+
     def _get_node(self, node_label: str, node_name: str)->int:
         #Match(n:Metrics) where n.Name contains 'metrics_1' return n
         search_syntax = "MATCH (n:{}) where '{}' in n.Name  \
@@ -503,4 +520,21 @@ class GraphDriver:
 
         syntax_str = syntax_str.rstrip(syntax_str[-1])
         syntax_str = syntax_str + "}) RETURN ELEMENTID(a) as node_id"
+        return syntax_str
+
+    @staticmethod
+    def _create_label_syntax(name: str, path: str, uri: str, pipeline_id: int, pipeline_name: str, custom_properties):
+        custom_properties["Name"] = name
+        custom_properties["Path"] = path
+        custom_properties["Pipeline_id"] = str(pipeline_id)
+        custom_properties["Pipeline_name"] = pipeline_name
+        syntax_str = "MERGE (a:Label {uri:\"" + uri + "\"}) SET "
+        for k, v in custom_properties.items():
+            # removes special characters from the key 
+            k = re.sub("\W+", "", k)
+            props_str = "a." + k + \
+            " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
+            syntax_str = syntax_str + props_str
+        syntax_str = syntax_str.rstrip(",")
+        syntax_str = syntax_str + " RETURN ELEMENTID(a) as node_id" 
         return syntax_str
