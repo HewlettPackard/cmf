@@ -52,9 +52,6 @@ Inside your project directory (for e.g., `example-get-started`), create a `dvc.y
 
 Here’s a sample `dvc.yaml`:
 
-<details>
-<summary>Click to expand</summary>
-
 ```yaml
 stages:
   prepare:
@@ -92,8 +89,8 @@ stages:
       - artifacts/test_results/scores.json
 ```
 
-</details>
-
+> ⚠️ **Be Consistent with deps and outs:**  
+> When defining deps and outs in your dvc.yaml, ensure consistency in the format used. Either define both as directories (e.g., artifacts/parsed/) or both as individual files (e.g., artifacts/parsed/train.tsv, artifacts/parsed/test.tsv).
 
 
 ## 5. Remove CMF code from Your `src` Directory
