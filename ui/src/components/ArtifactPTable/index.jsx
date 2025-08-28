@@ -123,6 +123,41 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
     });
   }
 
+  const renderLabels = ({ artifact, filterValue, client, setLabelData, setShowPopup, showPopup, labelData, handleClosePopup }) => {
+    const labelsUri = getPropertyValue(artifact.artifact_properties, "labels_uri");
+
+    if (!labelsUri || labelsUri === "N/A" || labelsUri.trim() === "") {
+      return <span className="text-gray-500">N/A</span>;
+    }
+
+    return labelsUri
+      .split(",")
+      .map((label_name) => label_name.trim())
+      .filter((label_name) => label_name.length > 0 && label_name !== "N/A")
+      .map((label_name) => (
+        <div key={label_name} className="label">
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              client.getLabelData(label_name.split(":")[1] || label_name).then((data) => {
+                setLabelData(data);
+                setShowPopup(true);
+              });
+            }}
+          >
+            {label_name}
+          </a>
+          {showPopup && (
+            <LabelCardPopup
+              show={showPopup}
+              label_data={labelData}
+              onClose={handleClosePopup}
+            />
+          )}
+        </div>
+      ));
+  };
 
   return (
     <div className="flex flex-col mx-auto p-2 mr-4 w-full">
@@ -215,31 +250,16 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   <td className="px-6 py-4"><Highlight text={String(artifact.create_time_since_epoch)} highlight={filterValue}/></td>
                   {artifactType === "Dataset" && (
                     <td className="px-6 py-4">
-                      {(getPropertyValue(artifact.artifact_properties, "labels_uri") || "")
-                        .split(",")
-                        .map((label_name) => label_name.trim())
-                        .filter((label_name) => label_name.length > 0) // Optional: skip empty strings
-                        .map((label_name) => (
-                          <div key={label_name} className="label">
-                            <a
-                              href="#"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                getLabelData(label_name.split(":")[1] || label_name);
-                                setShowPopup(true);
-                              }}
-                            >
-                              {label_name}
-                            </a>
-                            {showPopup && (
-                              <LabelCardPopup
-                                show={showPopup}
-                                label_data={labelData}
-                                onClose={handleClosePopup}
-                              />
-                            )}
-                          </div>
-                        ))}
+                      {renderLabels({
+                        artifact,
+                        filterValue,
+                        client,
+                        setLabelData,
+                        setShowPopup,
+                        showPopup,
+                        labelData,
+                        handleClosePopup
+                      })}
                     </td>
                   )}
                   {artifactType === "Label" && (
