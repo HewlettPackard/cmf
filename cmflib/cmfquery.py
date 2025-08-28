@@ -31,12 +31,10 @@ from cmflib.utils.helper_functions import get_postgres_config
 
 # Constants for filtering artifact and execution types in lineage visualizations
 EXCLUDED_ARTIFACT_TYPES = ["Environment", "Label"]
-EXCLUDED_EXECUTION_TYPES = ["Environment", "Label"]
 
 __all__ = [
     "CmfQuery",
-    "EXCLUDED_ARTIFACT_TYPES",
-    "EXCLUDED_EXECUTION_TYPES"
+    "EXCLUDED_ARTIFACT_TYPES"
 ]
 
 logger = logging.getLogger(__name__)
@@ -1120,10 +1118,10 @@ class CmfQuery(object):
         return df
 
     def get_all_executions_for_artifact_id_for_lineage(self, artifact_id: int) -> pd.DataFrame:
-        """Return executions that consumed and produced given artifact, excluding types defined in EXCLUDED_EXECUTION_TYPES.
+        """Return executions that consumed and produced given artifact, excluding types defined in EXCLUDED_ARTIFACT_TYPES.
 
         This is a convenience method for lineage visualizations that automatically excludes
-        Environment and Label executions as defined in EXCLUDED_EXECUTION_TYPES.
+        Environment and Label executions as defined in EXCLUDED_ARTIFACT_TYPES.
 
         Args:
             artifact_id: Artifact id.
@@ -1138,7 +1136,7 @@ class CmfQuery(object):
             execution_types = df['execution_type_name'].apply(
                 lambda x: x.string_value if hasattr(x, 'string_value') else str(x)
             )
-            df = df[~execution_types.isin(EXCLUDED_EXECUTION_TYPES)]
+            df = df[~execution_types.isin(EXCLUDED_ARTIFACT_TYPES)]
 
         return df
 
