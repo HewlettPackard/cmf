@@ -261,7 +261,7 @@ async def artifact_types():
 async def pipelines(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        pipeline_names = await async_api(lambda q: q.get_pipeline_names(), query)
+        pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
         print("No mlmd file submitted.")
@@ -646,13 +646,13 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
                 # pipeline on the server 1  - test this scenario
                 message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
                 for pipeline_name in pipeline_names:
-                    dict_of_exe_ids = await async_api(get_all_exe_ids, query)
-                    dict_of_art_ids = await async_api(get_all_artifact_ids, query, dict_of_exe_ids)
+                    dict_of_exe_ids = get_all_exe_ids(query)
+                    dict_of_art_ids = get_all_artifact_ids(query, dict_of_exe_ids)
             else:
                 message = f"Host server is being synced with the selected server '{server_name}' at address '{host_info}'."
                 for pipeline_name in pipeline_names:
-                    await update_global_exe_dict(pipeline_name)
-                    await update_global_art_dict(pipeline_name)
+                    update_global_exe_dict(pipeline_name)
+                    update_global_art_dict(pipeline_name)
 
         # Update the last_sync_time in the database only if sync status is successful
         if status == "success":
@@ -747,8 +747,7 @@ async def check_mlmd_file_exists():
 
 # Function to check if the pipeline exists
 async def check_pipeline_exists(pipeline_name):
-    pipeline_names = await async_api(lambda q: q.get_pipeline_names(), query)
-    if pipeline_name not in pipeline_names:
+    if pipeline_name not in query.get_pipeline_names():
         print(f"Pipeline {pipeline_name} not found.")
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
 
