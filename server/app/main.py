@@ -261,7 +261,7 @@ async def artifact_types():
 async def pipelines(request: Request):
     # checks if mlmd file exists on server
     if os.path.exists(server_store_path):
-        pipeline_names = await async_api(query.get_pipeline_names, query)
+        pipeline_names = await async_api(lambda q: q.get_pipeline_names(), query)
         return pipeline_names
     else:
         print("No mlmd file submitted.")
@@ -747,7 +747,7 @@ async def check_mlmd_file_exists():
 
 # Function to check if the pipeline exists
 async def check_pipeline_exists(pipeline_name):
-    pipeline_names = await async_api(query.get_pipeline_names, query)
+    pipeline_names = await async_api(lambda q: q.get_pipeline_names(), query)
     if pipeline_name not in pipeline_names:
         print(f"Pipeline {pipeline_name} not found.")
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")

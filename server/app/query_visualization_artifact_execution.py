@@ -4,7 +4,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 
-async def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
+def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
     arti_exe_dict = {} # Used to map artifact and execution ids with artifact and execution names
     dict_output: dict[str, list[str]] = {}   # Used to establish parent-child relationship between artifacts and executions
 
