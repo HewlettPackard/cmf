@@ -15,7 +15,7 @@
  ***/
 
 // ArtifactTable.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ModelCardPopup from "../ModelCardPopup";
 import Highlight from "../Highlight";
 import FastAPIClient from "../../client";
@@ -25,27 +25,37 @@ import LabelCardPopup from "../LabelCardPopup";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue}) => {
-  const [data, setData] = useState([]);
+const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue, onLabelClick, expandedRow: externalExpandedRow, setExpandedRow: externalSetExpandedRow}) => {
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
-  const [expandedRow, setExpandedRow] = useState(null);
+
+  // Use internal state as fallback if external state is not provided
+  const [internalExpandedRow, setInternalExpandedRow] = useState(null);
+
+  // Use external state if provided, otherwise use internal state
+  const expandedRow = externalExpandedRow !== undefined ? externalExpandedRow : internalExpandedRow;
+  const setExpandedRow = externalSetExpandedRow || setInternalExpandedRow;
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
   const [labelData, setLabelData] = useState("");
 
+  // Handle expanded row based on filter value - only when filter actually changes
+  const prevFilterValue = useRef(filterValue);
   useEffect(() => {
-    // if data then set artifacts with that data else set it null.
-    setData(artifacts);
-    // handle expanded row based on filter value
-    if (filterValue.trim() !== ""){
-      // expand all rows when filter value is set
-      setExpandedRow("all");
-    }else{
-      // collapse all rows when filter value is empty
-      setExpandedRow(null);
+    // Only auto-expand/collapse when filter value actually changes, not on every render
+    if (prevFilterValue.current !== filterValue) {
+      if (filterValue.trim() !== ""){
+        // expand all rows when filter value is set
+        setExpandedRow("all");
+      } else {
+        // collapse all rows when filter value is cleared (but not on initial load)
+        if (prevFilterValue.current.trim() !== "") {
+          setExpandedRow(null);
+        }
+      }
+      prevFilterValue.current = filterValue;
     }
-  }, [artifacts]);
+  }, [filterValue, setExpandedRow, artifactType, expandedRow]);
 
 
   const renderArrow = () => (
@@ -73,7 +83,6 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
 
     // Ensure properties is now an array
     if (!Array.isArray(properties)) {
-        console.warn("Expected an array for properties, got:", properties);
         return "N/A";
     }
 
@@ -109,9 +118,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
   };
 
   const getLabelData = (label_name) => {
-    console.log(label_name)
     client.getLabelData(label_name).then((data) => {
-      console.log(data);
       setLabelData(data);
     });
   }
@@ -180,6 +187,9 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                 {artifactType === "Dataset" && (
                   <th scope="col" className="label px-6 py-3">LABEL</th>
                 )}
+                {artifactType === "Label" && (
+                  <th scope="col" className="label px-6 py-3">LABEL</th>
+                )}
                 <th className="px-6 py-3" scope="col">URI</th>
                 <th className="px-6 py-3" scope="col">URL</th>
                 <th className="px-6 py-3" scope="col">GIT REPO</th>
@@ -198,7 +208,22 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   </td>
                   { /* Convert artifact ID to string and render it with highlighted search term if it matches the filter value */}
                   <td className="px-6 py-4"><Highlight text={String(artifact.artifact_id)} highlight={filterValue}/></td>
-                  <td className="px-6 py-4"><Highlight text={String(artifact.name)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4">
+                    {artifactType === "Label" && onLabelClick ? (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onLabelClick(artifact.name, artifact);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        <Highlight text={String(artifact.name)} highlight={filterValue}/>
+                      </button>
+                    ) : (
+                      <Highlight text={String(artifact.name)} highlight={filterValue}/>
+                    )}
+                  </td>
                   <td className="px-6 py-4"><Highlight text={String(artifact.execution)} highlight={filterValue}/></td>
                   {artifactType === "Model" && (
                     <td className="px-6 py-4">
@@ -235,6 +260,15 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                         labelData,
                         handleClosePopup
                       })}
+                    </td>
+                  )}
+                  {artifactType === "Label" && (
+                    <td className="px-6 py-4">
+                      <div className="label">
+                        <span>
+                          {artifact.name}
+                        </span>
+                      </div>
                     </td>
                   )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.uri)} highlight={filterValue}/></td>

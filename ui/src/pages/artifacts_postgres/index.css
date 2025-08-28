@@ -71,3 +71,145 @@ body {
   background: rgb(88, 147, 241);
 }
 */
+
+/* Loading spinner animation */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Standard DataTable styling */
+.rdt_Table {
+  font-size: 14px;
+}
+
+.rdt_TableHead {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.rdt_TableHeadRow {
+  background-color: #f8f9fa;
+}
+
+.rdt_TableRow {
+  border-bottom: 1px solid #dee2e6;
+}
+
+.rdt_TableRow:hover {
+  background-color: #f8f9fa;
+}
+
+.rdt_TableCell {
+  padding: 12px 16px;
+}
+
+/* Horizontal scrolling for label properties table */
+.overflow-x-auto {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Ensure table cells don't wrap */
+.min-w-full td {
+  white-space: nowrap;
+}
+
+/* Make expanded properties table scrollable too */
+.expanded-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Split pane styles */
+.split-pane-container {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+.split-pane-left {
+  overflow: auto;
+  border-right: 1px solid #e5e7eb;
+}
+
+.split-pane-right {
+  overflow: auto;
+  background-color: #f9fafb;
+}
+
+.split-pane-resizer {
+  width: 4px;
+  background-color: #e5e7eb;
+  cursor: col-resize;
+  transition: background-color 0.2s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.split-pane-resizer:hover {
+  background-color: #3b82f6;
+}
+
+.split-pane-resizer:active {
+  background-color: #2563eb;
+}
+
+.split-pane-resizer::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 20px;
+  background-color: #9ca3af;
+  border-radius: 1px;
+}
+
+.split-pane-resizer:hover::after {
+  background-color: white;
+}
+
+/* Label table clickable name styling */
+.label-name-clickable {
+  color: #2563eb;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.label-name-clickable:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* Selected label highlighting */
+.selected-label-row {
+  background-color: #eff6ff !important;
+}
+
+.selected-label-row td {
+  border-color: #3b82f6;
+}
