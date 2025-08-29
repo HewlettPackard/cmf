@@ -296,7 +296,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     model_output_art_df = pd.DataFrame()
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
-    model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(query, modelId)
+    model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await async_api(get_model_data, query, modelId)
     if not model_data_df.empty:
         result_1 = model_data_df.to_json(orient="records")
         json_payload_1 = json.loads(result_1)
