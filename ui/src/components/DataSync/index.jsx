@@ -40,17 +40,17 @@ const DataSync = ({ servers, onClearScreen }) => {
     };
 
     return (
-        <div>
-            <h2 className="text-lg font-bold mb-4">Data Sync</h2>
-            <div className="mb-4">
-                <label htmlFor="serverSelect" className="block mb-2">
+        <div className="max-w-md mx-auto mt-8 p-8 bg-white rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-6 text-teal-600 text-center">Data Sync</h2>
+            <div className="mb-6">
+                <label htmlFor="serverSelect" className="block text-gray-700 font-semibold mb-2">
                     Select a server:
                 </label>
                 <select
                     id="serverSelect"
                     value={selectedServer}
                     onChange={(e) => setSelectedServer(e.target.value)}
-                    className="border border-gray-300 rounded px-2 py-1"
+                    className="w-full px-4 py-2 border border-teal-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400 bg-gray-50"
                 >
                     <option value="">-- Select a server --</option>
                     {servers.map((server, index) => (
@@ -65,11 +65,11 @@ const DataSync = ({ servers, onClearScreen }) => {
                     onClearScreen();
                     handleSync();
                 }}
-                className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
             >
                 Sync Data
             </button>
-            {syncStatus && <p className="mt-4">{syncStatus}</p>}
+            {syncStatus && <p className="mt-4 text-center text-teal-700 font-semibold">{syncStatus}</p>}
         </div>
     );
 };

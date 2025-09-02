@@ -13,6 +13,7 @@ from cmflib.cmfquery import CmfQuery
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
+from server.app.utils import extract_hostname
 from server.app.get_data import (
     get_mlmd_from_server,
     get_artifact_types,
@@ -48,12 +49,15 @@ from server.app.schemas.dataframe import (
 )
 import httpx
 import socket
+import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
 
 
 server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
+
+dotenv.load_dotenv()
 
 #global variables
 dict_of_art_ids = {}
@@ -91,10 +95,12 @@ app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/sta
 
 LOCAL_ADDRESSES = set()
 LOCAL_ADDRESSES.add("127.0.0.1")
-hostname = os.environ.get('HOSTNAME', "localhost")
+LOCAL_ADDRESSES.add("localhost")
+REACT_APP_CMF_API_URL = os.getenv("REACT_APP_CMF_API_URL", "http://localhost:8080")
+hostname = extract_hostname(REACT_APP_CMF_API_URL)
 LOCAL_ADDRESSES.add(hostname)
 LOCAL_ADDRESSES.add(socket.gethostbyname(hostname))
-print("socket.gethostbyname(hostname) = ", socket.gethostbyname(hostname))
+
 
 print("Local addresses = ", LOCAL_ADDRESSES)
 
@@ -426,26 +432,29 @@ async def get_label_data(file_name: str) -> str:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
 
+
 @app.post("/register-server")
 async def register_server(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
     try:
         # Access the data from the Pydantic model
         server_name = request.server_name
-        host_info = request.host_info
+        server_url = request.server_url
 
-        print("host_info = ", host_info)
+        server = extract_hostname(server_url)
 
-        # Check user is registring with own details
-        if host_info in LOCAL_ADDRESSES:
-            # Restrict the user from registering with own details
+
+        print("server = ", server)
+
+        # Check user is registering with own details
+        if server in LOCAL_ADDRESSES or server_url.startswith("http://localhost") or server_url.startswith("http://127.0.0.1"):
             return {"message": "Registration failed: Cannot register the server with its own details."}
 
-        # Step 1: Send a request to the target server
+        # Step 1: Send a request to the target server for acknowledgement
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"http://{host_info}/api/acknowledge",
-                    json={"server_name": server_name, "host_info": host_info}
+                    f"{server_url}/api/acknowledge",
+                    json={"server_name": server_name, "server_url": server_url}
                 )
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -453,12 +462,11 @@ async def register_server(request: ServerRegistrationRequest, db: AsyncSession =
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
 
-        return await register_server_details(db, server_name, host_info)
-    
-    except HTTPException as e:
-        # Re-raise known error without wrapping
-        raise e
+        # Save server details in the database
+        return await register_server_details(db, server_name, server_url)
 
+    except HTTPException as e:
+        raise e
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to register server: {e}")
     
@@ -471,12 +479,12 @@ async def acknowledge(request: AcknowledgeRequest):
     }
 
 
-async def server_mlmd_pull(host_info, last_sync_time):
+async def server_mlmd_pull(server_url, last_sync_time):
     """
     Fetch mlmd data from a specified server.
 
     Args:
-        host_info (str): The host information (IP or hostname) of the target server.
+        server_url (str): The full URL of the target server.
         last_sync_time (int): The last sync time in milliseconds since epoch.
 
     Returns:
@@ -489,7 +497,7 @@ async def server_mlmd_pull(host_info, last_sync_time):
         # Step 1: Send a request to the target server to fetch mlmd data
         async with httpx.AsyncClient(timeout=300.0) as client:
             try:
-                response = await client.post(f"http://{host_info}/api/mlmd_pull", json={'last_sync_time': last_sync_time})
+                response = await client.post(f"{server_url}/api/mlmd_pull", json={'last_sync_time': last_sync_time})
 
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -504,16 +512,14 @@ async def server_mlmd_pull(host_info, last_sync_time):
                     environment_names = {match.value.split(":")[0].split("/")[-1] for match in jsonpath_expr.find(data)}
 
                     # Check if the list is empty or not
-                    # if list is empty then no need to download the zip file
                     if len(environment_names) == 0: 
                         print("No Environment files are found inside json payload.")
                         return json_payload
 
                     list_of_files = list(environment_names)
-                    # Added list_of_files to the request as a optional query parameter 
-                    python_env_zip = await client.get(f"http://{host_info}/api/download-python-env", params=list_of_files)
+                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=list_of_files)
                 else:
-                    python_env_zip = await client.get(f"http://{host_info}/api/download-python-env", params=None)
+                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=None)
 
                 if python_env_zip.status_code == 200:
                     try:
@@ -570,12 +576,10 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         HTTPException: If the server is not found or an error occurs during synchronization.
     """
     try:
-        # Access the data from the Pydantic model
         server_name = request.server_name
-        host_info = request.host_info
+        server_url = request.server_url
 
-        # Fetch the server details from the database
-        row = await get_sync_status(db, server_name, host_info)
+        row = await get_sync_status(db, server_name, server_url)
 
         if not row:
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
@@ -583,22 +587,15 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         last_sync_time = row[0]['last_sync_time']
         current_utc_epoch_time = int(time.time() * 1000)
 
-        # Call the function to fetch the JSON payload
-        json_payload = await server_mlmd_pull(host_info, last_sync_time)      
+        json_payload = await server_mlmd_pull(server_url, last_sync_time)
 
-
-        # Use the JSON payload in json_data
         json_data = {
             "exec_uuid": None,
             "json_payload": json.dumps(json_payload),
             "pipeline_name": None
         }
 
-        # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
-        pipelines = json_payload.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
-        # pipelines contain full mlmd data with the tag - 'Pipeline'
-        # print("type of pipelines = ", type(pipelines))
-        # tell us number of pipelines
+        pipelines = json_payload.get("Pipeline", [])
         len_pipelines = len(pipelines)
         pipeline_names = []
 
@@ -625,22 +622,19 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         message = "Nothing to sync."
         if status != "exists":
             if not last_sync_time:
-                # this is not completely correct 
-                # as before we do the sync first time, it is entirely possible that there exists a 
-                # pipeline on the server 1  - test this scenario
-                message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
+                message = f"Host server is syncing with the selected server '{server_name}' at address '{server_url}' for the first time."
                 for pipeline_name in pipeline_names:
                     dict_of_exe_ids = get_all_exe_ids(query)
                     dict_of_art_ids = get_all_artifact_ids(query, dict_of_exe_ids)
             else:
-                message = f"Host server is being synced with the selected server '{server_name}' at address '{host_info}'."
+                message = f"Host server is being synced with the selected server '{server_name}' at address '{server_url}'."
                 for pipeline_name in pipeline_names:
                     update_global_exe_dict(pipeline_name)
                     update_global_art_dict(pipeline_name)
 
         # Update the last_sync_time in the database only if sync status is successful
         if status == "success":
-            await update_sync_status(db, current_utc_epoch_time, server_name, host_info)
+            await update_sync_status(db, current_utc_epoch_time, server_name, server_url)
         return {
             "message": message,
             "status": status,
