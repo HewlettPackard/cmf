@@ -14,11 +14,10 @@
  * limitations under the License.
  ***/
 
-import React, { useState } from "react";
+import { useState } from "react";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import RegisteredServers from "../../components/Registration/RegisteredServers";
-import DataSync from "../../components/DataSync";
 import RegistrationForm from "../../components/Registration/RegistrationForm";
 import FastAPIClient from '../../client';
 import config from '../../config';
@@ -28,18 +27,11 @@ const client = new FastAPIClient(config);
 const Metahub = () => {
   const [showRegistrationForm, setShowRegistrationForm] = useState(true);
   const [showRegisteredServers, setShowRegisteredServers] = useState(false);
-  const [showDataSync, setShowDataSync] = useState(false);
   const [serverList, setServerList] = useState([]);
   const [activeButton, setActiveButton] = useState("registration");
 
   const closeForm = () => {
     setShowRegistrationForm(false);
-  };
-
-  const clearScreen = () => {
-    setShowRegistrationForm(false);
-    setShowRegisteredServers(false);
-    setShowDataSync(false);
   };
 
   const getRegistredServers = () =>{
@@ -69,24 +61,10 @@ const Metahub = () => {
               onClick={() => {
                 setShowRegistrationForm(true);
                 setShowRegisteredServers(false);
-                setShowDataSync(false);
                 setActiveButton("registration");
               }}
             >
               Registration
-            </button>
-            <button
-              className={`text-lg font-semibold font-sans py-2 px-6 rounded-lg transition-colors duration-200 ${
-                activeButton === "sync" ? "bg-teal-900 text-white" : "bg-teal-600 text-white hover:bg-teal-900"
-              }`}
-              onClick={() => {
-                clearScreen();
-                setShowDataSync(true);
-                getRegistredServers();
-                setActiveButton("sync");
-              }}
-            >
-              Sync server
             </button>
             <button
               className={`text-lg font-semibold font-sans py-2 px-6 rounded-lg transition-colors duration-200 ${
@@ -105,7 +83,6 @@ const Metahub = () => {
         <div className="flex flex-col items-center w-full">
           {activeButton === "registration" && showRegistrationForm && <RegistrationForm closeForm={closeForm} />}
           {activeButton === "registered" && showRegisteredServers && <RegisteredServers serverList={serverList}/>} 
-          {activeButton === "sync" && showDataSync && <DataSync servers={serverList} onClearScreen={clearScreen} />}
         </div>
         <Footer />
       </section>

@@ -12,21 +12,15 @@ const DataSync = ({ servers, onClearScreen }) => {
             setSyncStatus('Syncing data...');
             console.log(`Initiating sync with server: ${selectedServer}`);
 
-            // Extract server_name and ip_or_host from the selected server
-            const [server_name, host_info] = selectedServer.split(' - ');
+            // Extract server_name and server_url from the selected server
+            const [server_name, server_url] = selectedServer.split(' - ');
 
             // Call the sync API
-            client.sync(server_name, host_info)
+            client.sync(server_name, server_url)
                 .then((data) => {
-                    console.log('Sync response from server:', data); // Log the response from the server
-
-                    // Display the message in an alert
+                    console.log('Sync response from server:', data);
                     alert(data.message);
-
-                    // After the user clicks "OK," display the status in another alert
                     alert(`Sync Status: ${data.status}`);
-
-                    // Update the sync status in the UI
                     setSyncStatus(`Sync Status: ${data.status}`);
                 })
                 .catch((error) => {
@@ -54,8 +48,8 @@ const DataSync = ({ servers, onClearScreen }) => {
                 >
                     <option value="">-- Select a server --</option>
                     {servers.map((server, index) => (
-                        <option key={index} value={`${server.server_name} - ${server.host_info}`}>
-                            {server.server_name} - {server.host_info}
+                        <option key={index} value={`${server.server_name} - ${server.server_url}`}>
+                            {server.server_name} - {server.server_url}
                         </option>
                     ))}
                 </select>
