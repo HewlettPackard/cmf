@@ -14,7 +14,7 @@ def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_a
             #creating a dictionary of id and artifact name {id:artifact name}
             artifact_id = row['id']  # This will be an integer
             id_name[artifact_id] = modify_arti_name(row["name"], type_)
-            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id_for_lineage(artifact_id)  # get immediate artifacts with automatic filtering for lineage visualization
+            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id(artifact_id)  # get immediate artifacts with automatic filtering for lineage visualization
             child_parent_artifact_id[artifact_id] = []      # assign empty dict for artifact with no parent artifact
             if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts
                 parents_list = list(one_hop_parent_artifacts["id"])

@@ -22,8 +22,8 @@ def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, 
         for _, df_row in df.iterrows():
             # Fetching executions based on artifact id with automatic filtering for lineage visualization
             # When the same artifact is shared between two pipelines (e.g., Test-env1 and Test-env2),
-            # get_all_executions_for_artifact_id_for_lineage returns executions from both pipelines, not just the current one
-            data = query.get_all_executions_for_artifact_id_for_lineage(df_row['id'])
+            # get_all_executions_for_artifact_id returns executions from both pipelines, not just the current one
+            data = query.get_all_executions_for_artifact_id(df_row['id'])
             
             # Mapping artifact id with artifact name
             # Here appending artifact id with "artifact_name_" which will helpful in gui side to differentiate artifact and execution names
