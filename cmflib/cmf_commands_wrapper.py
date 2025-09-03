@@ -15,6 +15,19 @@
 ###
 
 from cmflib import cli
+from cmflib.cmf_exception_handling import CmfResponse
+
+def exception_handler_decorator(target_function):
+    """
+    Decorator to wrap a function and handle CmfResponse exceptions.
+    """
+    def wrapper(*args, **kwargs):
+        try:
+            return target_function(*args, **kwargs).handle()
+        except CmfResponse as e:
+            return e.handle()
+
+    return wrapper
 
 
 def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
@@ -96,7 +109,6 @@ def _metadata_export(pipeline_name, json_file_name, file_name):
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 def _artifact_push(pipeline_name, file_name, jobs):
@@ -117,15 +129,15 @@ def _artifact_push(pipeline_name, file_name, jobs):
                "-f",
                file_name,
                "-j",
-               jobs
+               jobs,
             ]
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 
+@exception_handler_decorator
 def _artifact_pull(pipeline_name, file_name):
     """ Pulls artifacts from the initialized repository.
     Args:
@@ -146,7 +158,6 @@ def _artifact_pull(pipeline_name, file_name):
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 
@@ -173,10 +184,10 @@ def _artifact_pull_single(pipeline_name, file_name, artifact_name):
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 
+@exception_handler_decorator
 def _cmf_init_show():
     """ Initializes and shows details of the CMF command. 
     Returns: 
@@ -190,7 +201,6 @@ def _cmf_init_show():
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 
@@ -377,6 +387,7 @@ def _artifact_list(pipeline_name, file_name, artifact_name):
     return msg
 
 
+@exception_handler_decorator
 def _pipeline_list(file_name):
     """ Display a list of pipeline name(s) from the available input metadata file.
     Args:
@@ -394,7 +405,6 @@ def _pipeline_list(file_name):
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 
@@ -423,6 +433,7 @@ def _execution_list(pipeline_name, file_name, execution_uuid):
     msg = cmd.do_run()
     print(msg)
     return msg
+
 
 def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid, jobs):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
@@ -484,6 +495,7 @@ def _repo_pull(pipeline_name, file_name, execution_uuid):
     return msg
 
 
+@exception_handler_decorator
 def _dvc_ingest(file_name):
    """ Ingests metadata from the dvc.lock file into the CMF. 
        If an existing MLMD file is provided, it merges and updates execution metadata 
