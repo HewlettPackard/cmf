@@ -182,6 +182,7 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
         if(pipeline_name is not None and query.get_pipeline_id(pipeline_name) != -1 and dict_of_exe_ids is not None):  # checks if pipeline name is available in mlmd
             if exec_uuid != None:
                 dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
+                # Loop through each row in the DataFrame since `dict_of_exe_ids` is a pandas DataFrame.
                 for index, row in dict_of_exe_ids.iterrows():
                     # When user reuses execution, execution_uuid get appeneded separated by ","
                     exec_uuid_list = row['Execution_uuid'].split(",")
