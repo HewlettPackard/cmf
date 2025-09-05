@@ -43,6 +43,7 @@ class SSHremoteArtifacts:
         if os.path.isabs(download_loc):
             download_loc = download_loc[1:]
         if "/" in download_loc:
+            # extracts the directory path from download_loc
             dir_path, _ = download_loc.rsplit("/", 1)
         if dir_path != "":
             # creates subfolders needed as per artifacts' folder structure
@@ -87,6 +88,7 @@ class SSHremoteArtifacts:
         if os.path.isabs(download_loc):
             download_loc = download_loc[1:]
         if "/" in download_loc:
+            # extracts the directory path from download_loc
             dir_path, _ = download_loc.rsplit("/", 1)
         if dir_path != "":
             # creates subfolders needed as per artifacts' folder structure
