@@ -64,4 +64,3 @@ def modify_arti_name(arti_name, type):
         print(f"Error parsing artifact name: {e}")
         name = arti_name  # Fallback to the original arti_name in case of error
     return name
- 
