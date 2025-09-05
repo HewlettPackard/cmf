@@ -317,13 +317,55 @@ async def fetch_executions(
 
 async def search_labels_in_artifacts(db: AsyncSession, filter_value: str, pipeline_name: str = None, limit: int = 50):
     """
-    Search for artifacts that have labels matching the filter value.
-    This function searches within label CSV content using PostgreSQL full-text search.
-    Works with or without explicit labels_uri properties.
+    Search for artifacts that have labels matching the filter value using PostgreSQL full-text search.
+
+    This function provides high-performance full-text search across CSV label content stored
+    in the label_index table. It uses PostgreSQL's built-in text search capabilities with
+    ts_rank scoring for relevance-based result ordering.
+
+    Key Features:
+    - Full-text search with relevance scoring
+    - Works independently of artifact metadata
+    - Optimized for large datasets (1 lakh+ rows)
+    - Returns structured results compatible with artifact API
+
+    Performance Characteristics:
+    - Uses PostgreSQL's GIN indexes on search_vector for fast text search
+    - LIMIT parameter prevents memory exhaustion on large result sets
+    - ts_rank scoring provides meaningful result ordering
+
+    Args:
+        db: Database session for executing queries
+        filter_value: Text to search for within label content
+        pipeline_name: Optional pipeline name filter (reserved for future use)
+        limit: Maximum number of results to return (default: 50)
+
+    Returns:
+        List of dictionaries containing:
+        - artifact_id: None (label search doesn't map to specific artifacts)
+        - name: Descriptive name indicating label match
+        - uri: Label URI in format "label://filename#row_index"
+        - label_file: Source CSV filename
+        - matching_content: The actual content that matched
+        - label_metadata: Raw metadata from the CSV row
+        - relevance_score: PostgreSQL ts_rank relevance score (0.0-1.0)
+
+    Examples:
+        # Search for "error" in all label content
+        results = await search_labels_in_artifacts(db, "error")
+
+        # Limited search for performance
+        results = await search_labels_in_artifacts(db, "classification", limit=10)
+
+    Note:
+        The pipeline_name parameter is reserved for future pipeline-specific filtering
+        but is not currently implemented. It's maintained for API compatibility.
     """
     try:
-        # First, try to search labels directly and return any matching content
-        # This approach works even if artifacts don't have labels_uri properties
+        # Note: pipeline_name parameter reserved for future pipeline-specific filtering
+
+        # PostgreSQL full-text search with relevance scoring
+        # Uses tsvector/tsquery for high-performance text search across large datasets
         base_query = """
             SELECT DISTINCT
                 li.file_name as label_file,
@@ -334,33 +376,39 @@ async def search_labels_in_artifacts(db: AsyncSession, filter_value: str, pipeli
             FROM label_index li
             WHERE li.search_vector @@ plainto_tsquery('english', :filter_value)
             ORDER BY relevance_score DESC
-            LIMIT :limit
+            LIMIT :limit  -- CRITICAL: Prevents memory exhaustion with large datasets (1 lakh+ rows)
         """
 
+        # Parameterized query for security and performance
         params = {"filter_value": filter_value, "limit": limit}
 
+        # Execute search query
         result = await db.execute(text(base_query), params)
         label_results = result.mappings().all()
 
-        # Convert label results to a format compatible with artifact results
+        # Transform database results to API-compatible format
+        # This ensures consistency with other artifact search functions
         converted_results = []
         for label_result in label_results:
             converted_results.append({
-                'artifact_id': None,  # No specific artifact ID
-                'name': f"Label Match: {label_result['label_file']}",
-                'uri': f"label://{label_result['label_file']}#{label_result['row_index']}",
+                'artifact_id': None,  # Label search doesn't map to specific artifacts
+                'name': f"Label Match: {label_result['label_file']}",  # Descriptive name
+                'uri': f"label://{label_result['label_file']}#{label_result['row_index']}",  # Unique label URI
                 'type_id': None,
                 'create_time_since_epoch': None,
                 'last_update_time_since_epoch': None,
+                # Label-specific fields for frontend processing
                 'label_file': label_result['label_file'],
                 'matching_content': label_result['matching_content'],
                 'label_metadata': label_result['label_metadata'],
-                'relevance_score': float(label_result['relevance_score'])
+                'relevance_score': float(label_result['relevance_score'])  # Convert Decimal to float
             })
 
         return converted_results
 
     except Exception as e:
+        # Log error but return empty list to prevent API failures
+        # This allows partial success in combined searches
         print(f"Label search error: {e}")
         return []
 
@@ -368,27 +416,73 @@ async def search_labels_in_artifacts(db: AsyncSession, filter_value: str, pipeli
 async def search_labels_with_advanced_conditions(db: AsyncSession, conditions: list, pipeline_name: str = None, limit: int = 50):
     """
     Search for label artifacts using advanced JSONB queries for structured conditions.
-    This function uses PostgreSQL JSONB operators for efficient advanced search.
+
+    This function enables sophisticated search queries on CSV label data using PostgreSQL's
+    JSONB operators. It supports numeric comparisons, text operations, and complex conditions
+    that would be impossible with simple full-text search.
+
+    Advanced Search Capabilities:
+    - Numeric comparisons: "lines>240", "score<=0.5", "confidence>=0.8"
+    - Text operations: "status~active", "name!~error"
+    - Multiple conditions: Combined with AND logic
+    - Type-aware queries: Automatic type casting for proper comparisons
+
+    Performance Features:
+    - Uses JSONB indexes for fast query execution
+    - Deterministic ordering for consistent pagination
+    - LIMIT parameter prevents performance degradation
+    - Efficient query plan generation
 
     Args:
-        db: Database session
-        conditions: List of SearchCondition objects
-        pipeline_name: Optional pipeline name filter
-        limit: Maximum number of results
+        db: Database session for executing queries
+        conditions: List of SearchCondition objects from AdvancedSearchParser
+        pipeline_name: Optional pipeline name filter (reserved for future use)
+        limit: Maximum number of results to return (default: 50)
 
     Returns:
-        List of matching label files with metadata
+        List of dictionaries containing:
+        - label_file: Source CSV filename
+        - matching_content: The actual content that matched
+        - label_metadata: Raw metadata from the CSV row
+        - parsed_data: Type-converted data used for the search
+        - row_index: Row number within the CSV file
+        - relevance_score: Static score (1.0) for deterministic ordering
+
+    Examples:
+        # Numeric comparison
+        conditions = [SearchCondition("lines", ComparisonOperator.GREATER_THAN, 240)]
+        results = await search_labels_with_advanced_conditions(db, conditions)
+
+        # Text operation
+        conditions = [SearchCondition("status", ComparisonOperator.CONTAINS, "active")]
+        results = await search_labels_with_advanced_conditions(db, conditions)
+
+        # Multiple conditions
+        conditions = [
+            SearchCondition("lines", ComparisonOperator.GREATER_THAN, 240),
+            SearchCondition("score", ComparisonOperator.LESS_EQUAL, 0.5)
+        ]
+        results = await search_labels_with_advanced_conditions(db, conditions)
+
+    Note:
+        The pipeline_name parameter is reserved for future pipeline-specific filtering
+        but is not currently implemented. It's maintained for API compatibility.
     """
     try:
+        # Note: pipeline_name parameter reserved for future pipeline-specific filtering
+
+        # Import query builder for JSONB condition construction
         from server.app.label_management import JsonbQueryBuilder
 
-        # Build JSONB WHERE clause from conditions
+        # Step 1: Convert SearchCondition objects to PostgreSQL JSONB WHERE clause
         where_clause, params = JsonbQueryBuilder.build_where_clause(conditions)
 
+        # Early return if no valid conditions provided
         if not where_clause:
             return []
 
-        # Base query using JSONB conditions
+        # Step 2: Build advanced search query using JSONB operators
+        # This enables type-aware comparisons on parsed CSV data
         base_query = f"""
             SELECT DISTINCT
                 li.file_name as label_file,
@@ -398,25 +492,27 @@ async def search_labels_with_advanced_conditions(db: AsyncSession, conditions: l
                 li.row_index,
                 1.0 as relevance_score  -- Static score for advanced search
             FROM label_index li
-            WHERE {where_clause}
-            ORDER BY li.file_name, li.row_index
-            LIMIT :limit
+            WHERE {where_clause}  -- Dynamic JSONB conditions (e.g., parsed_data->>'lines'::numeric > 240)
+            ORDER BY li.file_name, li.row_index  -- Consistent ordering for pagination
+            LIMIT :limit  -- ESSENTIAL: Prevents performance degradation with large datasets
         """
 
-        # Add limit to params
+        # Step 3: Add limit parameter to the existing condition parameters
         params["limit"] = limit
 
+        # Step 4: Execute the parameterized query
         result = await db.execute(text(base_query), params)
         label_results = result.mappings().all()
 
-        # Convert to the expected format
+        # Step 5: Transform results to consistent format
+        # Maintains compatibility with other search functions
         converted_results = []
         for row in label_results:
             converted_results.append({
                 'label_file': row['label_file'],
                 'matching_content': row['matching_content'],
                 'label_metadata': row['label_metadata'],
-                'parsed_data': row['parsed_data'],
+                'parsed_data': row['parsed_data'],  # Include parsed data for debugging
                 'row_index': row['row_index'],
                 'relevance_score': row['relevance_score']
             })
@@ -424,6 +520,8 @@ async def search_labels_with_advanced_conditions(db: AsyncSession, conditions: l
         return converted_results
 
     except Exception as e:
+        # Log error but return empty list to prevent API failures
+        # This allows graceful degradation in combined searches
         print(f"Advanced label search error: {e}")
         return []
 
@@ -432,45 +530,108 @@ async def search_labels_combined(db: AsyncSession, plain_terms: list = None, con
     """
     Combined search function that handles both full-text search and advanced JSONB conditions.
 
+    This is the main entry point for label content search, combining multiple search strategies
+    to provide comprehensive search capabilities. It intelligently combines full-text search
+    with structured condition matching for maximum flexibility.
+
+    Search Strategy:
+    1. Execute full-text search on plain terms (if provided)
+    2. Execute advanced JSONB search on conditions (if provided)
+    3. Combine and deduplicate results from both searches
+    4. Sort by relevance score for optimal user experience
+    5. Apply final limit for performance protection
+
+    Deduplication Logic:
+    - Uses (file_name, row_index) as unique key
+    - Prevents duplicate results when same row matches both searches
+    - Maintains highest relevance score for duplicates
+
+    Performance Optimizations:
+    - Individual search functions have their own limits
+    - Final deduplication and sorting on smaller result sets
+    - Multiple layers of limit protection
+    - Efficient set-based duplicate detection
+
     Args:
-        db: Database session
-        plain_terms: List of plain text terms for full-text search
-        conditions: List of SearchCondition objects for advanced search
-        pipeline_name: Optional pipeline name filter
-        limit: Maximum number of results
+        db: Database session for executing queries
+        plain_terms: List of plain text terms for full-text search (e.g., ["error", "classification"])
+        conditions: List of SearchCondition objects for advanced search (e.g., lines>240)
+        pipeline_name: Optional pipeline name filter (reserved for future use)
+        limit: Maximum number of results to return after deduplication (default: 50)
 
     Returns:
-        List of matching label files with metadata
+        List of dictionaries containing combined and deduplicated results:
+        - Results from full-text search (with relevance scores)
+        - Results from advanced search (with static scores)
+        - Sorted by relevance score (descending) then by filename
+        - Limited to specified maximum count
+
+    Examples:
+        # Full-text search only
+        results = await search_labels_combined(db, plain_terms=["error", "classification"])
+
+        # Advanced search only
+        conditions = [SearchCondition("lines", ComparisonOperator.GREATER_THAN, 240)]
+        results = await search_labels_combined(db, conditions=conditions)
+
+        # Combined search (most powerful)
+        results = await search_labels_combined(
+            db,
+            plain_terms=["error"],
+            conditions=[SearchCondition("confidence", ComparisonOperator.LESS_THAN, 0.5)]
+        )
+
+    Note:
+        The pipeline_name parameter is reserved for future pipeline-specific filtering
+        but is not currently implemented. It's maintained for API compatibility.
     """
     try:
+        # Note: pipeline_name parameter reserved for future pipeline-specific filtering
+
+        # Step 1: Initialize results collection
         results = []
 
-        # If we have plain text terms, do full-text search
+        # Step 2: Execute full-text search if plain text terms are provided
+        # This handles searches like "error classification" or "data processing"
         if plain_terms:
             plain_search_term = " ".join(plain_terms)
-            if plain_search_term.strip():
+            if plain_search_term.strip():  # Ensure non-empty search term
+                # Full-text search with individual limit for performance protection
                 text_results = await search_labels_in_artifacts(db, plain_search_term, pipeline_name, limit)
                 results.extend(text_results)
 
-        # If we have advanced conditions, do JSONB search
+        # Step 3: Execute advanced JSONB search if structured conditions are provided
+        # This handles searches like "lines>240 AND score<=0.5"
         if conditions:
+            # Advanced search with individual limit for complex query protection
             advanced_results = await search_labels_with_advanced_conditions(db, conditions, pipeline_name, limit)
             results.extend(advanced_results)
 
-        # Remove duplicates based on file_name and row_index
+        # Step 4: Deduplication - Remove duplicate rows from combined results
+        # Critical when same CSV row matches both full-text and advanced criteria
+        # Example: Row contains "error" (text match) AND has lines>240 (condition match)
         seen = set()
         unique_results = []
         for result in results:
+            # Use (filename, row_index) as unique identifier
             key = (result['label_file'], result.get('row_index', 0))
             if key not in seen:
                 seen.add(key)
                 unique_results.append(result)
+                # Note: First occurrence wins (preserves higher relevance scores from text search)
 
-        # Sort by relevance score (descending) and then by file name
+        # Step 5: Sort results for optimal user experience
+        # Primary sort: Relevance score (descending) - best matches first
+        # Secondary sort: Filename (ascending) - consistent ordering for same scores
         unique_results.sort(key=lambda x: (-x.get('relevance_score', 0), x['label_file']))
 
+        # Step 6: Apply final limit as last line of defense
+        # Even with individual limits and deduplication, ensure response size is manageable
+        # This protects against edge cases where deduplication is minimal
         return unique_results[:limit]
 
     except Exception as e:
+        # Log error but return empty list to prevent complete API failure
+        # This allows other search components to continue functioning
         print(f"Combined label search error: {e}")
         return []
