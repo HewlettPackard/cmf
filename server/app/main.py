@@ -19,7 +19,8 @@ from server.app.get_data import (
     get_all_artifact_ids,
     get_all_exe_ids,
     async_api,
-    get_model_data
+    get_model_data,
+    executions_list
 
 )
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
@@ -318,6 +319,20 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
     response = await query_visualization_artifact_execution(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+    return response
+
+
+@app.get("/list-of-executions/{pipeline_name}")
+async def list_of_executions(request: Request, pipeline_name: str):
+    '''
+      This api's returns list of execution types.
+
+    '''
+    # checks if mlmd file exists on server
+    await check_mlmd_file_exists()
+    # checks if pipeline exists
+    await check_pipeline_exists(pipeline_name)
+    response = await async_api(executions_list, query, pipeline_name, dict_of_exe_ids)
     return response
 
 
@@ -780,18 +795,5 @@ async def artifact_lineage(request: Request, pipeline_name: str):
 
     else:
         return None
-
-@app.get("/list-of-executions/{pipeline_name}")
-async def list_of_executions(request: Request, pipeline_name: str):
-    '''
-      This api's returns list of execution types.
-
-    '''
-    # checks if mlmd file exists on server
-    await check_mlmd_file_exists()
-    # checks if pipeline exists
-    await check_pipeline_exists(pipeline_name)
-    response = await async_api(get_lineage_data, query, pipeline_name, "Execution", dict_of_art_ids, dict_of_exe_ids)
-    return response
 
 """
