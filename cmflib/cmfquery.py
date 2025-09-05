@@ -1097,13 +1097,6 @@ class CmfQuery(object):
                     ],
                 )
                 df = pd.concat([df, d1], sort=True, ignore_index=True)
-                # Filter out excluded execution types for lineage visualization
-                if not df.empty and 'execution_type_name' in df.columns:
-                    # Extract string values from the execution_type_name property objects
-                    execution_types = df['execution_type_name'].apply(
-                        lambda x: x.string_value if hasattr(x, 'string_value') else str(x)
-                    )
-                    df = df[~execution_types.isin(EXCLUDED_ARTIFACT_TYPES)]
 
         except:
             return df
