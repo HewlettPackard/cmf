@@ -60,6 +60,7 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
     return msg
 
 
+@exception_handler_decorator
 def _metadata_pull(pipeline_name, file_name, execution_uuid):
     """ Pulls metadata file from CMF-server. 
      Args: 
@@ -84,6 +85,7 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
+    return msg
 
 
 def _metadata_export(pipeline_name, json_file_name, file_name):
@@ -161,6 +163,7 @@ def _artifact_pull(pipeline_name, file_name):
     return msg
 
 
+@exception_handler_decorator
 def _artifact_pull_single(pipeline_name, file_name, artifact_name):
     """ Pulls a single artifact from the initialized repository. 
     Args: 
@@ -408,6 +411,7 @@ def _pipeline_list(file_name):
     return msg
 
 
+@exception_handler_decorator
 def _execution_list(pipeline_name, file_name, execution_uuid):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Args: 

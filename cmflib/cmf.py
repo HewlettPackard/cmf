@@ -1725,7 +1725,7 @@ def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: st
     return output
 
 
-def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: t.Optional[str] = None):
     """ Pulls metadata file from CMF-server. 
     
     ```python 
@@ -1787,7 +1787,7 @@ def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
     return output
 
 
-def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str):
+def artifact_pull_single(pipeline_name: str, file_name= "./mlmd", artifact_name= None):
     """ Pulls a single artifact from the initialized repository. 
     
     ```python 
@@ -2057,7 +2057,7 @@ def pipeline_list(file_name = "./mlmd"):
     return output
 
 
-def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: t.Optional[str] = None):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
 
     ```python 
