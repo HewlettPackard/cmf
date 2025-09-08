@@ -182,7 +182,8 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
         if(pipeline_name is not None and query.get_pipeline_id(pipeline_name) != -1 and dict_of_exe_ids is not None):  # checks if pipeline name is available in mlmd
             if exec_uuid != None:
                 dict_of_exe_ids = dict_of_exe_ids[pipeline_name]
-                for index, row in dict_of_exe_ids.items():
+                # Loop through each row in the DataFrame since `dict_of_exe_ids` is a pandas DataFrame.
+                for index, row in dict_of_exe_ids.iterrows():
                     # When user reuses execution, execution_uuid get appeneded separated by ","
                     exec_uuid_list = row['Execution_uuid'].split(",")
                     if exec_uuid in exec_uuid_list:
@@ -195,6 +196,15 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
     return json_payload
 
 
+def executions_list(query: CmfQuery, pipeline_name, dict_of_exe_ids):
+    list_of_exec = []
+    list_of_exec_uuid = []
+    list_of_exec = dict_of_exe_ids[pipeline_name]["Context_Type"].tolist()
+    list_of_uuid = dict_of_exe_ids[pipeline_name]["Execution_uuid"].tolist()
+    for exec_type, uuid in zip(list_of_exec, list_of_uuid):
+        list_of_exec_uuid.append(exec_type.split("/",1)[1] + "_" + uuid.split("-")[0][:4])
+    print(type(list_of_exec_uuid))
+    return list_of_exec_uuid
 
 
 """ Old implemenation of fetching executions """
