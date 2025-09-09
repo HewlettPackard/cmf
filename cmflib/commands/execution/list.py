@@ -70,7 +70,8 @@ class CmdExecutionList(CmdBase):
             raise PipelineNotFound(pipeline_name)
         else:
             # Process execution ID if provided
-            if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
+            # execution_uuid can be None (CLI), [] (no arg), or [None] (command wrapper) 
+            if not self.args.execution_uuid or not self.args.execution_uuid[0]:         
                 pass
             else:
                 # When user reuses execution, execution_uuid get appeneded separated by ",

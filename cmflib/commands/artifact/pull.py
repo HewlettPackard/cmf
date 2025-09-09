@@ -209,7 +209,7 @@ class CmdArtifactPull(CmdBase):
                 mlmd_file_name = "./"+mlmd_file_name
         current_directory = os.path.dirname(mlmd_file_name)
 
-        if not self.args.artifact_name:         # If self.args.artifact_name[0] is None or an empty list ([]). 
+        if not self.args.artifact_name or not self.args.artifact_name[0]:         # If self.args.artifact_name[0] is None or an empty list ([]). 
             pass
         
         if not os.path.exists(mlmd_file_name):   #checking if MLMD files exists
@@ -267,7 +267,7 @@ class CmdArtifactPull(CmdBase):
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
             # Check if a specific artifact name is provided as input.
-            if self.args.artifact_name: 
+            if self.args.artifact_name and self.args.artifact_name[0]:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
@@ -363,7 +363,9 @@ class CmdArtifactPull(CmdBase):
             # Condition 2 - user can chose to download all the artifacts in one go. 
                 # we can have both dir and files in our list of artifacts
             # Check if a specific artifact name is provided as input.
-            if self.args.artifact_name:
+            # commandline -> None, [train.tsv]
+            # command wrapper -> [None], [train.tsv]
+            if self.args.artifact_name and self.args.artifact_name[0]:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
@@ -443,7 +445,7 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "ssh-storage":
             sshremote_class_obj = sshremote_artifacts.SSHremoteArtifacts(dvc_config_op)
             # Check if a specific artifact name is provided as input.
-            if self.args.artifact_name:
+            if self.args.artifact_name and self.args.artifact_name[0]:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
@@ -545,7 +547,7 @@ class CmdArtifactPull(CmdBase):
             cache_path=cmf_config["osdf-cache"]
 
             osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts()
-            if self.args.artifact_name:
+            if self.args.artifact_name and self.args.artifact_name[0]:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
@@ -602,7 +604,7 @@ class CmdArtifactPull(CmdBase):
                 return status
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
-            if self.args.artifact_name:
+            if self.args.artifact_name and self.args.artifact_name[0]:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])

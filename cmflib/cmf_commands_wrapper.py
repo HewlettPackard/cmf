@@ -30,6 +30,7 @@ def exception_handler_decorator(target_function):
     return wrapper
 
 
+@exception_handler_decorator
 def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
     """ Pushes metadata file to CMF-server.
     Args:
@@ -88,6 +89,7 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
     return msg
 
 
+@exception_handler_decorator
 def _metadata_export(pipeline_name, json_file_name, file_name):
     """ Export local metadata's metadata in json format to a json file. 
      Args: 
@@ -113,6 +115,8 @@ def _metadata_export(pipeline_name, json_file_name, file_name):
     msg = cmd.do_run()
     return msg
 
+
+@exception_handler_decorator
 def _artifact_push(pipeline_name, file_name, jobs):
     """ Pushes artifacts to the initialized repository.
     Args: 
@@ -140,38 +144,14 @@ def _artifact_push(pipeline_name, file_name, jobs):
 
 
 @exception_handler_decorator
-def _artifact_pull(pipeline_name, file_name):
+def _artifact_pull(pipeline_name, file_name, artifact_name):
     """ Pulls artifacts from the initialized repository.
     Args:
         pipeline_name: Name of the pipeline.
         file_name: Specify input metadata file name.
+        artifact_name: Name of the artifact. 
     Returns:
         Output from the artifact pull command.
-    """
-    cli_args = cli.parse_args(
-            [
-               "artifact",
-               "pull",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-            ]
-           )
-    cmd = cli_args.func(cli_args)
-    msg = cmd.do_run()
-    return msg
-
-
-@exception_handler_decorator
-def _artifact_pull_single(pipeline_name, file_name, artifact_name):
-    """ Pulls a single artifact from the initialized repository. 
-    Args: 
-       pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
-       artifact_name: Name of the artifact. 
-    Returns:
-       Output from the artifact pull command. 
     """
     cli_args = cli.parse_args(
             [
@@ -362,7 +342,8 @@ def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, 
     print(msg)
     return msg
   
-    
+
+@exception_handler_decorator  
 def _artifact_list(pipeline_name, file_name, artifact_name):
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     Args: 
@@ -386,7 +367,6 @@ def _artifact_list(pipeline_name, file_name, artifact_name):
            )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
     return msg
 
 
