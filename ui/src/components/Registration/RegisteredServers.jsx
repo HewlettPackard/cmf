@@ -12,6 +12,8 @@ function RegisteredServers({ serverList }) {
     return date.toUTCString();
   };
 
+  console.log(serverList)
+
   const handleSync = (server_name, server_url, id) => {
     setSyncStatus((prev) => ({ ...prev, [id]: 'Syncing data...' }));
     client.sync(server_name, server_url)
@@ -51,12 +53,12 @@ function RegisteredServers({ serverList }) {
             <tr key={server.id} className="hover:bg-teal-50">
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{server.id}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{server.server_name}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{server.server_url}</td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{server.host_info}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{formatEpochToHumanReadable(server.last_sync_time)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <button
                   className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-1 px-3 rounded-lg transition duration-200"
-                  onClick={() => handleSync(server.server_name, server.server_url, server.id)}
+                  onClick={() => handleSync(server.server_name, server.host_info, server.id)}
                 >
                   Sync
                 </button>
