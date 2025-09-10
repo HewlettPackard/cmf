@@ -23,7 +23,7 @@ Proceed with the following steps to set up an SSH Remote Repository:
     cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
         --user XXXXX --port 22 --password example@123 \
         --git-remote-url https://github.com/user/experiment-repo.git \
-        --cmf-server-url http://127.0.0.1
+        --cmf-server-url http://127.0.0.1:80
     ```
     > When running `cmf init sshremote`, ensure that the specified IP address allows access for \
     the specified user XXXX. If the IP address or user does not exist, this command will fail.

@@ -25,7 +25,7 @@ Use the following command to initialize CMF. You can choose from various storage
    cmf init local \
   --path /home/XXXX/local-storage \
   --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x \
+  --cmf-server-url http://x.x.x.x:80 \
   --neo4j-user neo4j \
   --neo4j-password password \
   --neo4j-uri bolt://x.x.x.x:7687

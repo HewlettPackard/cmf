@@ -66,7 +66,7 @@ Usage: cmf init local [-h] --path [path] -
 </pre>
 `cmf init local` initializes the local directory as a cmf artifact repository.
 ```
-cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 > Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage
