@@ -1,28 +1,24 @@
-from cmflib.cmfquery import CmfQuery
+from cmflib.cmfquery import CmfQuery, EXCLUDED_ARTIFACT_TYPES
 from collections import deque, defaultdict
 from typing import List, Dict, Any
 from server.app.utils import modify_arti_name
 
 def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
-    env_list = []
     id_name = {}
     child_parent_artifact_id: Dict[int, List[int]] = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
-        if type_ == "Environment":
-            env_list = list(df["id"])
+        # Skip excluded artifact types entirely
+        if type_ in EXCLUDED_ARTIFACT_TYPES:
+            continue
         for index, row in df.iterrows():
             #creating a dictionary of id and artifact name {id:artifact name}
             artifact_id = row['id']  # This will be an integer
-            if artifact_id in env_list:
-                continue
             id_name[artifact_id] = modify_arti_name(row["name"], type_)
-            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id(artifact_id)  # get immediate artifacts     
+            one_hop_parent_artifacts = query.get_one_hop_parent_artifacts_with_id(artifact_id)  # get immediate artifacts with automatic filtering for lineage visualization
             child_parent_artifact_id[artifact_id] = []      # assign empty dict for artifact with no parent artifact
-            if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts    
-                parents_list =  list(one_hop_parent_artifacts["id"])
-                final_parents_list = list(set(parents_list) - set(env_list))
-                #child_parent_artifact_id[artifact_id] = list(one_hop_parent_artifacts["id"])
-                child_parent_artifact_id[artifact_id] = final_parents_list
+            if not one_hop_parent_artifacts.empty:        # if artifact have parent artifacts
+                parents_list = list(one_hop_parent_artifacts["id"])
+                child_parent_artifact_id[artifact_id] = parents_list
     data_organized: List[List[Dict[str, Any]]] = topological_sort(child_parent_artifact_id, id_name)
     return data_organized
 
