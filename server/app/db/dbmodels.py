@@ -189,12 +189,8 @@ event = Table(
 
 registered_servers = Table(
     "registered_servers", metadata,
-    Column("id", Integer, primary_key=True, nullable=False),
+    Column("id", Integer, autoincrement=True),  # not primary key
     Column("server_name", String(255), nullable=False),
-    Column("host_info", String(255), nullable=False, unique=True),
+    Column("host_info", String(255), primary_key=True, nullable=False),
     Column("last_sync_time", BigInteger, nullable=True),
-    
-    # Indexes
-    Index("idx_registered_servers_server_url", "host_info"),
-    Index("idx_registered_servers_server_name", "server_name")
 )

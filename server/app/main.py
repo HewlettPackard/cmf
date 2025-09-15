@@ -27,7 +27,7 @@ from server.app.get_data import (
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from server.app.db.dbconfig import get_db
+from server.app.db.dbconfig import get_db, init_db
 from server.app.db.dbqueries import (
     fetch_artifacts,
     fetch_executions,
@@ -54,11 +54,11 @@ import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
 
-
-server_store_path = "/cmf-server/data/postgres_data"
-query = CmfQuery(is_server=True)
-
 dotenv.load_dotenv()
+
+# server_store_path = "/cmf-server/data/postgres_data"
+query = CmfQuery(is_server=True)
+print("query object = ", query)
 
 #global variables
 dict_of_art_ids = {}
@@ -70,8 +70,11 @@ lock_counts: defaultdict[str, int] = defaultdict(int)
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
-    
-    if os.path.exists(server_store_path):
+
+    # Initialize the database schema
+    await init_db()
+
+    if query:
         # loaded execution ids with names into memory
         dict_of_exe_ids = await async_api(get_all_exe_ids, query)
         # loaded artifact ids into memory
@@ -94,16 +97,11 @@ app.add_middleware(
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 
-LOCAL_ADDRESSES = set()
-LOCAL_ADDRESSES.add("127.0.0.1")
-LOCAL_ADDRESSES.add("localhost")
 REACT_APP_CMF_API_URL = os.getenv("REACT_APP_CMF_API_URL", "http://localhost:8080")
+LOCAL_ADDRESSES = set()
 hostname = extract_hostname(REACT_APP_CMF_API_URL)
 LOCAL_ADDRESSES.add(hostname)
 LOCAL_ADDRESSES.add(socket.gethostbyname(hostname))
-
-
-print("Local addresses = ", LOCAL_ADDRESSES)
 
 @app.get("/")
 async def read_root(request: Request):
@@ -263,7 +261,7 @@ async def artifact_types():
 @app.get("/pipelines")
 async def pipelines(request: Request):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
+    if query:
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
@@ -733,8 +731,8 @@ async def update_global_exe_dict(pipeline_name):
 
 # Function to checks if mlmd file exists on server
 async def check_mlmd_file_exists():
-    if not os.path.exists(server_store_path):
-        print(f"{server_store_path} file doesn't exist.")
+    if not query:
+        print(f"DB doesn't exist.")
         raise HTTPException(status_code=404, detail=f"{server_store_path} file doesn't exist.")
 
 
