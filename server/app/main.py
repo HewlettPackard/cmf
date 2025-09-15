@@ -297,7 +297,7 @@ async def model_card(request:Request, modelId: int, response_model=List[Dict[str
     model_output_art_df = pd.DataFrame()
     # checks if mlmd file exists on server
     await check_mlmd_file_exists()
-    model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await get_model_data(query, modelId)
+    model_data_df, model_exe_df, model_input_art_df, model_output_art_df  = await async_api(get_model_data, query, modelId)
     if not model_data_df.empty:
         result_1 = model_data_df.to_json(orient="records")
         json_payload_1 = json.loads(result_1)
@@ -319,7 +319,7 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
     await check_mlmd_file_exists()
     # checks if pipeline exists
     await check_pipeline_exists(pipeline_name)
-    response = await query_visualization_artifact_execution(query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
+    response = await async_api(query_visualization_artifact_execution, query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
     return response
 
 
