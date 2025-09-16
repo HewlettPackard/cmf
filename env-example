@@ -13,7 +13,7 @@ NEO4J_PASSWD=XXXXX
 HTTP_PROXY=http://proxy.houston.hpecorp.net:8080
 HTTPS_PROXY=http://proxy.houston.hpecorp.net:8080
 # React App Configuration
-REACT_APP_CMF_API_URL=http://localhost/api
+REACT_APP_CMF_API_URL=http://ai02.labs.hpecorp.net/api
 REACT_APP_MODE=production
 
 # POSTGRES Configuration
@@ -23,3 +23,10 @@ POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword
 POSTGRES_PORT=5432
 POSTGRES_DB=mlmd
+HOSTNAME=localhost
+# Directory for persistent data storage
+CMF_DATA_DIR=/home/kulkashr/sk/
+
+#nginx ports
+NGINX_HTTP_PORT=80
+NGINX_HTTPS_PORT=443
