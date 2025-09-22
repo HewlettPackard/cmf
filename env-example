@@ -23,7 +23,6 @@ POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword
 POSTGRES_PORT=5432
 POSTGRES_DB=mlmd
-HOSTNAME=localhost
 # Directory for persistent data storage
 CMF_DATA_DIR=/home/kulkashr/sk/
 
