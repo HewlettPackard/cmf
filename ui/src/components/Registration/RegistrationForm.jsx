@@ -46,7 +46,7 @@ const RegistrationForm = () => {
             return;
         }
 
-        // Assuming the API expects serverName and serverUrl
+        // API expects serverName and serverUrl
         client.getServerRegistration(serverName, serverUrl)
             .then((data) => {
                 if (data && typeof data === 'object' && 'message' in data) {

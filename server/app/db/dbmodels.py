@@ -187,10 +187,11 @@ event = Table(
     UniqueConstraint("artifact_id", "execution_id", "type", name="uniqueevent") 
 )
 
+
 registered_servers = Table(
     "registered_servers", metadata,
-    Column("id", Integer, autoincrement=True),  # not primary key
+    Column("id", Integer, autoincrement=True, nullable=False),  # not primary key
     Column("server_name", String(255), nullable=False),
     Column("host_info", String(255), primary_key=True, nullable=False),
-    Column("last_sync_time", BigInteger, nullable=True),
+    Column("last_sync_time", BigInteger, nullable=True, default=None),
 )

@@ -13,7 +13,7 @@ from cmflib.cmfquery import CmfQuery
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
-from server.app.utils import extract_hostname
+from server.app.utils import extract_hostname, get_actual_network_ip, get_fqdn
 from server.app.get_data import (
     get_mlmd_from_server,
     get_artifact_types,
@@ -101,7 +101,13 @@ REACT_APP_CMF_API_URL = os.getenv("REACT_APP_CMF_API_URL", "http://localhost:808
 LOCAL_ADDRESSES = set()
 hostname = extract_hostname(REACT_APP_CMF_API_URL)
 LOCAL_ADDRESSES.add(hostname)
-LOCAL_ADDRESSES.add(socket.gethostbyname(hostname))
+# Adding IP if hostname is given 
+LOCAL_ADDRESSES.add(get_actual_network_ip())
+# Adding hostname if IP is given
+LOCAL_ADDRESSES.add(get_fqdn(hostname))
+
+print("Local addresses= ", LOCAL_ADDRESSES)
+
 
 @app.get("/")
 async def read_root(request: Request):

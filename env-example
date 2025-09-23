@@ -12,12 +12,12 @@ NEO4J=TRUE
 NEO4J_PASSWD=XXXXX
 HTTP_PROXY=http://proxy.houston.hpecorp.net:8080
 HTTPS_PROXY=http://proxy.houston.hpecorp.net:8080
+
 # React App Configuration
 REACT_APP_CMF_API_URL=http://ai02.labs.hpecorp.net/api
 REACT_APP_MODE=production
 
 # POSTGRES Configuration
-# In most of the places if I give localhost/machine ip/hostname it is not working
 POSTGRES_HOST=postgres
 POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword

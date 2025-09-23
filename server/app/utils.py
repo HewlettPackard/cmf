@@ -1,4 +1,6 @@
+import socket
 from urllib.parse import urlparse
+
 
 def modify_arti_name(arti_name, type):
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
@@ -80,3 +82,24 @@ def extract_hostname(server_url):
         return host
     except Exception:
         return server_url
+
+def get_actual_network_ip() -> str:
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+
+
+def get_fqdn(name: str) -> str:
+    try:
+        fqdn = socket.getfqdn(name)
+        if fqdn == name or "." not in fqdn:
+            try:
+                return socket.gethostbyaddr(name)[0]
+            except Exception:
+                return socket.gethostbyname(name)
+        return fqdn
+    except Exception:
+        return "127.0.0.1"
