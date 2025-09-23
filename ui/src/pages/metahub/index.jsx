@@ -55,7 +55,7 @@ const Metahub = () => {
         <div className="flex justify-center items-center py-8">
           <div className="bg-white rounded-lg shadow-md p-6 flex space-x-6">
             <button
-              className={`text-lg font-semibold font-sans py-2 px-6 rounded-lg transition-colors duration-200 w-48 ${
+              className={`text-lg font-semibold font-sans py-2 px-6 rounded-lg transition-colors duration-200 w-60 ${
                 activeButton === "registration" ? "bg-teal-900 text-white" : "bg-teal-600 text-white hover:bg-teal-900"
               }`}
               onClick={() => {
@@ -67,7 +67,7 @@ const Metahub = () => {
               Registration
             </button>
             <button
-              className={`text-lg font-semibold font-sans py-2 px-6 rounded-lg transition-colors duration-200 w-48 ${
+              className={`text-lg font-semibold font-sans py-2 px-6 rounded-lg transition-colors duration-200 w-60 ${
                 activeButton === "registered" ? "bg-teal-900 text-white" : "bg-teal-600 text-white hover:bg-teal-900"
               }`}
               onClick={() => {
