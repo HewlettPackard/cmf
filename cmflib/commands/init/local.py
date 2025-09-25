@@ -38,18 +38,19 @@ class CmdInitLocal(CmdBase):
         # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
-              
+
         cmd_args = {
-            "path": self.args.path,
-            "git-remote-url": self.args.git_remote_url,
-            "neo4j-user" : self.args.neo4j_user,
-            "neo4j-password" :  self.args.neo4j_password,
-            "neo4j_uri" : self.args.neo4j_uri
+            "path": (self.args.path, True),
+            "git-remote-url": (self.args.git_remote_url, True),
+            "neo4j-user" : (self.args.neo4j_user, False),
+            "neo4j-password" :  (self.args.neo4j_password, False),
+            "neo4j_uri" : (self.args.neo4j_uri, False),
         }
 
-        for arg_name, arg_value in cmd_args.items():
+        for arg_name, arg_tup in cmd_args.items():
+            arg_value, required = arg_tup
             if arg_value:
-                if arg_value[0] == "":
+                if arg_value[0] == "" and required:
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
@@ -77,7 +78,7 @@ class CmdInitLocal(CmdBase):
             raise Neo4jArgumentNotProvided
 
         output = is_git_repo()
-        
+
         if not output:
             branch_name = "master"
             print("Starting git init.")
