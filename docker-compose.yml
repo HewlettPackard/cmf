@@ -19,18 +19,18 @@ services:
     image: postgres:13
     container_name: postgres
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_DB: ${POSTGRES_DB:-mlmd}
     volumes:
       - ${CMF_DATA_DIR:-./data}/postgres_data:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
-    expose:
-      - 5432
+    #expose and ports for external access if needed
+    # ports:
+    #   - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    # expose:
+    #   - ${POSTGRES_PORT}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -p $${POSTGRES_PORT} -d $${POSTGRES_DB} -U $${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -p 5432 -d ${POSTGRES_DB:-mlmd} -U ${POSTGRES_USER:-myuser}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -60,14 +60,13 @@ services:
       dockerfile: ./server/Dockerfile
     environment:
       POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-mlmd}
       REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL}
     healthcheck:
-      # this is creating issues on one of my machines. 
-      test: curl -f http://localhost:8080 || exit 1
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5
