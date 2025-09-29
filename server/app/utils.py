@@ -83,15 +83,6 @@ def extract_hostname(server_url):
     except Exception:
         return server_url
 
-def get_actual_network_ip() -> str:
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-            s.connect(("8.8.8.8", 80))
-            return s.getsockname()[0]
-    except Exception:
-        return "127.0.0.1"
-
-
 def get_fqdn(name: str) -> str:
     try:
         fqdn = socket.getfqdn(name)

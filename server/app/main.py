@@ -13,7 +13,7 @@ from cmflib.cmfquery import CmfQuery
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
-from server.app.utils import extract_hostname, get_actual_network_ip, get_fqdn
+from server.app.utils import extract_hostname, get_fqdn
 from server.app.get_data import (
     get_mlmd_from_server,
     get_artifact_types,
@@ -58,7 +58,6 @@ dotenv.load_dotenv()
 
 # server_store_path = "/cmf-server/data/postgres_data"
 query = CmfQuery(is_server=True)
-print("query object = ", query)
 
 #global variables
 dict_of_art_ids = {}
@@ -98,14 +97,13 @@ BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 
 REACT_APP_CMF_API_URL = os.getenv("REACT_APP_CMF_API_URL", "http://localhost:8080")
+
 LOCAL_ADDRESSES = set()
+LOCAL_ADDRESSES.update(["127.0.0.1", "localhost"])
 hostname = extract_hostname(REACT_APP_CMF_API_URL)
 LOCAL_ADDRESSES.add(hostname)
-# Adding IP if hostname is given 
-LOCAL_ADDRESSES.add(get_actual_network_ip())
 # Adding hostname if IP is given
 LOCAL_ADDRESSES.add(get_fqdn(hostname))
-
 print("Local addresses= ", LOCAL_ADDRESSES)
 
 
@@ -458,14 +456,11 @@ async def register_server(request: ServerRegistrationRequest, db: AsyncSession =
         # Access the data from the Pydantic model
         server_name = request.server_name
         server_url = request.server_url
-
         server = extract_hostname(server_url)
 
 
-        print("server = ", server)
-
         # Check user is registering with own details
-        if server in LOCAL_ADDRESSES or server_url.startswith("http://localhost") or server_url.startswith("http://127.0.0.1"):
+        if server in LOCAL_ADDRESSES:
             return {"message": "Registration failed: Cannot register the server with its own details."}
 
         # Step 1: Send a request to the target server for acknowledgement
@@ -614,6 +609,8 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
             "pipeline_name": None
         }
 
+        # Ensure the pipeline name in req_info matches the one in the JSON payload
+        # to maintain data integrity
         pipelines = json_payload.get("Pipeline", [])
         len_pipelines = len(pipelines)
         pipeline_names = []
@@ -739,7 +736,7 @@ async def update_global_exe_dict(pipeline_name):
 async def check_mlmd_file_exists():
     if not query:
         print(f"DB doesn't exist.")
-        raise HTTPException(status_code=404, detail=f"{server_store_path} file doesn't exist.")
+        raise HTTPException(status_code=404, detail="Database doesn't exist.")
 
 
 # Function to check if the pipeline exists

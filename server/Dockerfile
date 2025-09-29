@@ -58,7 +58,6 @@ RUN pip install /cmf-server/dist/*
 COPY ./server/app /cmf-server/server/app
 
 # Run the server with uvicorn
-# this will create problem in starting cmf-server on any port
 CMD ["uvicorn", "server.app.main:app", "--host", "0.0.0.0", "--port", "8080"]
 
 RUN cd /cmf-server/data/static
