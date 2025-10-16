@@ -153,7 +153,6 @@ class CmdArtifactPush(CmdBase):
                             for item in stage.get(section, []):
                                 if isinstance(item, dict) and 'path' in item:
                                     final_list.add(item['path'])
-        #print("file_set = ", final_list)
         result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
     
