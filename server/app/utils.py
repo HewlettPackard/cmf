@@ -1,3 +1,7 @@
+import socket
+from urllib.parse import urlparse
+
+
 def modify_arti_name(arti_name, type):
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
     try:
@@ -70,3 +74,28 @@ def modify_arti_name(arti_name, type):
         name = arti_name  # Fallback to the original arti_name in case of error
     return name
  
+
+def extract_hostname(server_url):
+    try:
+        parsed = urlparse(server_url)
+        # If netloc is empty, try parsing as just a hostname
+        if parsed.netloc:
+            host = parsed.hostname
+        else:
+            # If user entered just 'localhost' or similar
+            host = parsed.path.split(':')[0]
+        return host
+    except Exception:
+        return server_url
+
+def get_fqdn(name: str) -> str:
+    try:
+        fqdn = socket.getfqdn(name)
+        if fqdn == name or "." not in fqdn:
+            try:
+                return socket.gethostbyaddr(name)[0]
+            except Exception:
+                return socket.gethostbyname(name)
+        return fqdn
+    except Exception:
+        return "127.0.0.1"

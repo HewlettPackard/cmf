@@ -14,94 +14,100 @@
  * limitations under the License.
  ***/
 
+
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./index.css";
 
 function DashboardHeader() {
-  // STATE WHICH WE WILL USE TO TOGGLE THE MENU ON HAMBURGER BUTTON PRESS
   const [toggleMenu, setToggleMenu] = useState(false);
 
-  let displayButton;
+  const navLinks = [
+    { to: "/artifacts", label: "Artifacts" },
+    { to: "/executions", label: "Executions" },
+    { to: "/display_lineage", label: "Lineage" },
+    { to: "/tensorboard", label: "TensorBoard" },
+    { to: "/metahub", label: "Metahub" },
+  ];
 
   return (
-    <nav className="flex items-center justify-between flex-wrap p-4 border-b border-gray-200 mb-1">
-      <div className="flex items-center flex-shrink-0 mr-6 ">
-        <NavLink
-          to="/"
-          className="cmf-server font-semibold text-2xl tracking-tight"
-          activeClassName="active"
-        >
-          CMF SERVER
-        </NavLink>
+    <nav className="bg-white border-b border-gray-200 shadow-sm">
+      <div className="w-full px-2">
+        <div className="grid grid-cols-3 h-16 items-center w-full">
+          {/* Left: Branding */}
+          <div className="flex items-center pl-2 col-span-1">
+            <NavLink
+              to="/"
+              className="font-bold text-2xl font-sans tracking-tight bg-teal-600 text-white px-4 py-2 rounded-lg shadow"
+              style={{ textAlign: 'left' }}
+            >
+              CMF SERVER
+            </NavLink>
+          </div>
+          {/* Center: NavLinks (desktop only) */}
+          <div className="hidden lg:flex justify-center items-center col-span-1">
+            <div className="flex space-x-6">
+              {navLinks.map((link) => (
+                <NavLink
+                  key={link.to}
+                  to={link.to}
+                  className="text-xl text-gray-700 hover:text-teal-600 font-semibold font-sans transition-colors"
+                  activeClassName="active"
+                >
+                  {link.label}
+                </NavLink>
+              ))}
+              <a
+                href="https://hewlettpackard.github.io/cmf/api/public/cmf/"
+                target="_blank"
+                rel="noreferrer"
+                className="text-xl text-gray-700 hover:text-teal-600 font-semibold font-sans transition-colors whitespace-nowrap"
+              >
+                API Docs
+              </a>
+            </div>
+          </div>
+          {/* Right: Hamburger for mobile */}
+          <div className="flex justify-end items-center col-span-1 lg:hidden">
+            <button
+              className="inline-flex items-center justify-center p-2 rounded-md text-teal-600 hover:text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
+              aria-label="Toggle navigation"
+              onClick={() => setToggleMenu(!toggleMenu)}
+            >
+              <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                {toggleMenu ? (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                )}
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
-      <div className="block lg:hidden">
-        <button
-          className="flex items-center px-3 py-2 border rounded text-black border-teal-400 hover:text-white hover:border-white"
-          onClick={() => setToggleMenu(!toggleMenu)}
-        >
-          <svg
-            className="fill-current h-3 w-3"
-            viewBox="0 0 20 20"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <title>Menu</title>
-            <path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z" />
-          </svg>
-        </button>
-      </div>
-      <div
-        className={`animate-fade-in-down w-full ${
-          toggleMenu ? "block" : "hidden"
-        } flex-grow lg:flex lg:items-center lg:w-auto`}
-      >
-        <div className="text-xl font-semibold lg:flex-grow">
-          <NavLink
-            to="/artifacts"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
-            activeClassName="active"
-          >
-            Artifacts
-          </NavLink>
-          <NavLink
-            to="/executions"
-            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
-            activeClassName="active"
-          >
-            Executions
-          </NavLink>
-          <NavLink
-            to="/display_lineage"
-            className="metadata block mt-4 lg:inline-block lg:mt-0 mx-4"
-            activeClassName="active"
-          >
-            Lineage
-          </NavLink>
-          <NavLink
-            to="/tensorboard"
-            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
-            activeClassName="active"
-          >
-            TensorBoard
-          </NavLink>
-          <NavLink
-            to="/metahub"
-            className="metadata block mt-4 lg:inline-block lg:mt-0  mx-4"
-            activeClassName="active"
-          >
-            Metahub
-          </NavLink>
+      {/* Mobile Sidebar */}
+      <div className={`lg:hidden ${toggleMenu ? "block" : "hidden"}`}>
+        <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-md">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors"
+              activeClassName="active"
+              onClick={() => setToggleMenu(false)}
+            >
+              {link.label}
+            </NavLink>
+          ))}
           <a
-            href={"https://hewlettpackard.github.io/cmf/api/public/cmf/"}
-            target={"_blank"}
-            rel={"noreferrer"}
-            className="metadata block mt-4 lg:inline-block lg:mt-0 text-slate-200 hover:text-white mx-4"
+            href="https://hewlettpackard.github.io/cmf/api/public/cmf/"
+            target="_blank"
+            rel="noreferrer"
+            className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors whitespace-nowrap"
+            onClick={() => setToggleMenu(false)}
           >
             API Docs
           </a>
-        </div>
-        <div>
-          <p>{displayButton}</p>
         </div>
       </div>
     </nav>

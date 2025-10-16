@@ -14,13 +14,11 @@
  * limitations under the License.
  ***/
 
-import React from "react";
-import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 
 const TensorBoard = () => {
-  const env = config.apiBasePathWOPort + ":6006";
+  const TB_PATH = "/tensorboard/"; // same-origin path exposed by NGINX
 
   return (
     <>
@@ -32,8 +30,8 @@ const TensorBoard = () => {
         <div className="flex flex-row">
           <div className="container justify-center items-center mx-auto px-4">
             <iframe
-              title="tensorboard Iframe"
-              src={env}
+              title="Tensorboard"
+              src={TB_PATH}
               allowFullScreen
               width="100%"
               height="1200"
