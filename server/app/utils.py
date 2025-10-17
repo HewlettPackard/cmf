@@ -40,7 +40,12 @@ def modify_arti_name(arti_name, type):
             # rsplit_by_colon[0].split("/")[-1] ---> artifacts/data.xml.gz ---> "data.xml.gz"
             # split_by_colon[-1][:4] ---> ["artifacts/data.xml.gz","236d9502e0283d91f689d7038b8508a2"]  ---> "236d"
             # name = "data.xml.gz:236d"
-            name = rsplit_by_colon[0].split("/")[-1] + ":" +  split_by_colon[-1][:4]
+            # name = rsplit_by_colon[0].split("/")[-1] + ":" +  split_by_colon[-1][:4]
+            # Handle cases where user provides an artifact path like "artifacts/features/" in dvc.yaml.
+            # If the path ends with a slash ("/"), get the second last part as the artifact name.
+            # Combine the artifact name with a shortened lineage ID (e.g., ":2323") to form the final name.
+            artifact_name = rsplit_by_colon[0].split("/")[-1] if rsplit_by_colon[0].split("/")[-1] != "" else rsplit_by_colon[0].split("/")[-2]
+            name = artifact_name + ":" + split_by_colon[-1][:4]
 
         elif type == "Dataslice":
             # split_by_slash = "c1e542fc-8ba1-11ef-abea-ddaa7ef0aa99/dataslice/slice-1:059136b3b35fc4b58cf13f73e4564b9b"
