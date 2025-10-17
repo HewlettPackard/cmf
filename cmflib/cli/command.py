@@ -25,7 +25,7 @@ class CmdBase(ABC):
     def __init__(self, args):
         self.args = args
 
-    def do_run(self, live):
+    def do_run(self, live = None):
         return self.run(live)
 
     @abstractmethod

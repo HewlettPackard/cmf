@@ -32,7 +32,8 @@ from cmflib.cmf_exception_handling import (
     ExecutionsNotFound,
     ArtifactPushSuccess, 
     MissingArgument, 
-    DuplicateArgumentNotAllowed
+    DuplicateArgumentNotAllowed,
+    MsgFailure
 )
 
 class CmdArtifactPush(CmdBase):
@@ -45,6 +46,7 @@ class CmdArtifactPush(CmdBase):
             "jobs": self.args.jobs,
         }
         for arg_name, arg_value in cmd_args.items():
+            print(arg_name," ",arg_value)
             if arg_value:
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)
@@ -55,9 +57,17 @@ class CmdArtifactPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         
-        # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
-        num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
-        
+        # Determine the number of jobs.
+        # - If 'jobs' is provided and is a digit → use its integer value.
+        # - If 'jobs' is missing or empty → default to 4 * cpu_count().
+        # - If 'jobs' is provided but not numeric → raise an error.
+        if self.args.jobs:
+            if not self.args.jobs[0].isdigit():
+                raise MsgFailure(msg_str=f"Invalid '{self.args.jobs[0]}' for jobs. Please provide a numeric value.")
+            num_jobs = int(self.args.jobs[0])
+        else:
+            num_jobs = 4 * os.cpu_count()
+ 
         if dvc_config_op["core.remote"] == "osdf":
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)

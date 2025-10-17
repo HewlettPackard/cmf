@@ -77,8 +77,7 @@ from cmflib.cmf_commands_wrapper import (
     _metadata_export,
     _artifact_pull,
     _artifact_push,
-    _artifact_pull_single,
-    _cmf_cmd_init,
+    _cmf_init_show,
     _init_local,
     _init_minioS3,
     _init_amazonS3,
@@ -1704,7 +1703,7 @@ Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 Cmf.log_label_with_version = log_label_with_version
 
-def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: str = "", execution_uuid: str = ""):
+def metadata_push(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None):
     """ Pushes metadata file to CMF-server.
     
     ```python
@@ -1726,7 +1725,7 @@ def metadata_push(pipeline_name: str, file_name = "./mlmd", tensorboard_path: st
     return output
 
 
-def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def metadata_pull(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", execution_uuid: t.Optional[str] = None):
     """ Pulls metadata file from CMF-server. 
     
     ```python 
@@ -1747,7 +1746,7 @@ def metadata_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str 
     return output
 
 
-def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = "./mlmd"):
+def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, file_name: t.Optional[str] = "./mlmd"):
     """ Export local mlmd's metadata in json format to a json file. 
     
     ```python 
@@ -1768,52 +1767,33 @@ def metadata_export(pipeline_name: str, json_file_name: str = "", file_name = ".
     return output
 
 
-def artifact_pull(pipeline_name: str, file_name = "./mlmd"):
+def artifact_pull(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", artifact_name: t.Optional[str] = None):
     """ Pulls artifacts from the initialized repository.
     
     ```python
-    result = artifact_pull("example_pipeline", "./mlmd_directory")
+    result = artifact_pull("example_pipeline", "./mlmd_directory", "artifact_name)
     ```
     
     Args:
         pipeline_name: Name of the pipeline.
         file_name: Specify input metadata file name.
+        artifact_name: Name of the artifact
     
     Returns:
         Output from the _artifact_pull function.
     """
     # Required arguments: pipeline_name
-    # Optional arguments: file_name
-    output = _artifact_pull(pipeline_name, file_name)
-    return output
-
-
-def artifact_pull_single(pipeline_name: str, file_name: str, artifact_name: str):
-    """ Pulls a single artifact from the initialized repository. 
-    
-    ```python 
-    result = artifact_pull_single("example_pipeline", "./mlmd_directory", "example_artifact") 
-    ```
-    
-    Args: 
-       pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
-       artifact_name: Name of the artifact. 
-    
-    Returns:
-       Output from the _artifact_pull_single function. 
-    """
-    # Required arguments: pipeline_name
     # Optional arguments: file_name, artifact_name
-    output = _artifact_pull_single(pipeline_name, file_name, artifact_name)
+    output = _artifact_pull(pipeline_name, file_name, artifact_name)
     return output
 
-# Prevent multiplying int with NoneType; added default value to jobs.
-def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
+
+# Prevent multiplying str with NoneType; added default value to jobs.
+def artifact_push(pipeline_name: str, filepath: t.Optional[str] = "./mlmd", jobs: t.Optional[str] = "32"):
     """ Pushes artifacts to the initialized repository.
     
     ```python
-    result = artifact_push("example_pipeline", "./mlmd_directory", 32)
+    result = artifact_push("example_pipeline", "./mlmd_directory", "32")
     ```
     
     Args: 
@@ -1824,6 +1804,8 @@ def artifact_push(pipeline_name: str, filepath = "./mlmd", jobs: int = 32):
     Returns:
         Output from the _artifact_push function.
     """
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath, jobs
     output = _artifact_push(pipeline_name, filepath, jobs)
     return output
 
@@ -1836,9 +1818,9 @@ def cmf_init_show():
     ``` 
     
     Returns: 
-       Output from the _cmf_cmd_init function. 
+       Output from the _cmf_init_show function. 
     """
-    output=_cmf_cmd_init()
+    output=_cmf_init_show()
     return output
 
 
@@ -1869,11 +1851,11 @@ def cmf_init(type: str = "",
     ```python
     cmf_init( type="local", 
                 path="/path/to/re",
-                git_remote_url="git@github.com:user/repo.git",
-                cmf_server_url="http://cmf-server"
-                neo4j_user", 
+                git_remote_url="https://github.com/hpe-user/experiment-repo.git",
+                cmf_server_url="http://cmf-server:80",
+                neo4j_user="neo4j",
                 neo4j_password="password",
-                neo4j_uri="bolt://localhost:76"
+                neo4j_uri="bolt://localhost:7687"
             )
     ```
     
@@ -1933,6 +1915,8 @@ def cmf_init(type: str = "",
 
     status_args=non_related_args(type, args)
 
+    # Required arguments: path, git_remote_url
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     if type == "local" and path != "" and  git_remote_url != "" :
         """Initialize local repository"""
         output = _init_local(
@@ -1947,6 +1931,8 @@ def cmf_init(type: str = "",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
          
+    # Required arguments: url, endpoint_url, access_key_id, secret_key, git_remote_url
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     elif type == "minioS3" and url != "" and endpoint_url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize minioS3 repository"""
         output = _init_minioS3(
@@ -1964,6 +1950,8 @@ def cmf_init(type: str = "",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
 
+    # Required arguments: url, access_key_id, secret_key, git_remote_url
+    # Optional arguments: session_token, cmf_server_url, neo4j_user, neo4j_password
     elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize amazonS3 repository"""
         output = _init_amazonS3(
@@ -1982,6 +1970,8 @@ def cmf_init(type: str = "",
 
         return output
 
+    # Required arguments: path, user, port, password, git_remote_url
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     elif type == "sshremote" and path != "" and user != "" and port != 0 and password != "" and git_remote_url != "":
         """Initialize sshremote repository"""
         output = _init_sshremote(
@@ -2000,6 +1990,8 @@ def cmf_init(type: str = "",
 
         return output
 
+    # Required arguments: osdf_path, key_id, key_path, key_issuer, git_remote_url
+    # Optional arguments: osdf_cache, cmf_server_url, neo4j_user, neo4j_password
     elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != "" and key_issuer != "" and git_remote_url != "":
         """Initialize osdfremote repository"""
         output = _init_osdfremote(
@@ -2040,7 +2032,7 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list(file_name = "./mlmd"):
+def pipeline_list(file_name: t.Optional[str] = "./mlmd"):
     """ Display a list of pipeline name(s) from the available input metadata file.
 
     ```python
@@ -2058,7 +2050,7 @@ def pipeline_list(file_name = "./mlmd"):
     return output
 
 
-def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def execution_list(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", execution_uuid: t.Optional[str] = None):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
 
     ```python 
@@ -2079,7 +2071,7 @@ def execution_list(pipeline_name: str, file_name = "./mlmd", execution_uuid: str
     return output
 
 
-def artifact_list(pipeline_name: str, file_name = "./mlmd", artifact_name: str = ""):
+def artifact_list(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", artifact_name: t.Optional[str] = None):
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     
     ```python 
@@ -2144,7 +2136,7 @@ def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""
     return output
 
 
-def dvc_ingest(file_name = "./mlmd"):
+def dvc_ingest(file_name: t.Optional[str] = "./mlmd"):
     """ Ingests metadata from the dvc.lock file into the CMF. 
         If an existing MLMD file is provided, it merges and updates execution metadata 
         based on matching commands, or creates new executions if none exist.
