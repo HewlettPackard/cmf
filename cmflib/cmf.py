@@ -1804,6 +1804,8 @@ def artifact_push(pipeline_name: str, filepath: t.Optional[str] = "./mlmd", jobs
     Returns:
         Output from the _artifact_push function.
     """
+    # Required arguments: pipeline_name
+    # Optional arguments: filepath, jobs
     output = _artifact_push(pipeline_name, filepath, jobs)
     return output
 
@@ -1849,11 +1851,11 @@ def cmf_init(type: str = "",
     ```python
     cmf_init( type="local", 
                 path="/path/to/re",
-                git_remote_url="git@github.com:user/repo.git",
-                cmf_server_url="http://cmf-server"
-                neo4j_user", 
+                git_remote_url="https://github.com/hpe-user/experiment-repo.git",
+                cmf_server_url="http://cmf-server:80",
+                neo4j_user="neo4j",
                 neo4j_password="password",
-                neo4j_uri="bolt://localhost:76"
+                neo4j_uri="bolt://localhost:7687"
             )
     ```
     
@@ -1913,6 +1915,8 @@ def cmf_init(type: str = "",
 
     status_args=non_related_args(type, args)
 
+    # Required arguments: path, git_remote_url
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     if type == "local" and path != "" and  git_remote_url != "" :
         """Initialize local repository"""
         output = _init_local(
@@ -1927,6 +1931,8 @@ def cmf_init(type: str = "",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
          
+    # Required arguments: url, endpoint_url, access_key_id, secret_key, git_remote_url
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     elif type == "minioS3" and url != "" and endpoint_url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize minioS3 repository"""
         output = _init_minioS3(
@@ -1944,6 +1950,8 @@ def cmf_init(type: str = "",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
 
+    # Required arguments: url, access_key_id, secret_key, git_remote_url
+    # Optional arguments: session_token, cmf_server_url, neo4j_user, neo4j_password
     elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize amazonS3 repository"""
         output = _init_amazonS3(
@@ -1962,6 +1970,8 @@ def cmf_init(type: str = "",
 
         return output
 
+    # Required arguments: path, user, port, password, git_remote_url
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     elif type == "sshremote" and path != "" and user != "" and port != 0 and password != "" and git_remote_url != "":
         """Initialize sshremote repository"""
         output = _init_sshremote(
@@ -1980,6 +1990,8 @@ def cmf_init(type: str = "",
 
         return output
 
+    # Required arguments: osdf_path, key_id, key_path, key_issuer, git_remote_url
+    # Optional arguments: osdf_cache, cmf_server_url, neo4j_user, neo4j_password
     elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != "" and key_issuer != "" and git_remote_url != "":
         """Initialize osdfremote repository"""
         output = _init_osdfremote(

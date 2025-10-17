@@ -14,14 +14,17 @@
 # limitations under the License.
 ###
 
+from typing import Callable, Any
 from cmflib import cli
 from cmflib.cmf_exception_handling import CmfResponse
 
-def exception_handler_decorator(target_function):
+def exception_handler_decorator(
+    target_function: Callable[..., Any]
+) -> Callable[..., Any]:
     """
-    Decorator to wrap a function and handle CmfResponse exceptions.
+    Decorator to handle CmfResponse exceptions.
     """
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         try:
             return target_function(*args, **kwargs).handle()
         except CmfResponse as e:
@@ -31,7 +34,9 @@ def exception_handler_decorator(target_function):
 
 
 @exception_handler_decorator
-def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
+def _metadata_push(
+    pipeline_name: str, file_name: str, execution_uuid: str, tensorboard_path: str
+) -> str:
     """ Pushes metadata file to CMF-server.
     Args:
         pipeline_name: Name of the pipeline.
@@ -42,19 +47,19 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
         Output from the metadata push command.
     """
     cli_args = cli.parse_args(
-            [
-               "metadata",
-               "push",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-e",
-               execution_uuid,
-               "-t",
-               tensorboard_path
-            ]
-           )
+        [
+            "metadata",
+            "push",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-e",
+            execution_uuid,
+            "-t",
+            tensorboard_path,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -62,7 +67,7 @@ def _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path):
 
 
 @exception_handler_decorator
-def _metadata_pull(pipeline_name, file_name, execution_uuid):
+def _metadata_pull(pipeline_name: str, file_name: str, execution_uuid: str) -> str:
     """ Pulls metadata file from CMF-server. 
      Args: 
         pipeline_name: Name of the pipeline. 
@@ -72,17 +77,17 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
         Output from the metadata pull command. 
      """
     cli_args = cli.parse_args(
-            [
-               "metadata",
-               "pull",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-e",
-               execution_uuid,
-            ]
-           )
+        [
+            "metadata",
+            "pull",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-e",
+            execution_uuid,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -90,7 +95,7 @@ def _metadata_pull(pipeline_name, file_name, execution_uuid):
 
 
 @exception_handler_decorator
-def _metadata_export(pipeline_name, json_file_name, file_name):
+def _metadata_export(pipeline_name: str, json_file_name: str, file_name: str) -> str:
     """ Export local metadata's metadata in json format to a json file. 
      Args: 
         pipeline_name: Name of the pipeline. 
@@ -100,24 +105,24 @@ def _metadata_export(pipeline_name, json_file_name, file_name):
         Output from the metadata export command. 
      """
     cli_args = cli.parse_args(
-            [
-               "metadata",
-               "export",
-               "-p",
-               pipeline_name,
-               "-j",
-               json_file_name,
-               "-f",
-               file_name,
-            ]
-           )
+        [
+            "metadata",
+            "export",
+            "-p",
+            pipeline_name,
+            "-j",
+            json_file_name,
+            "-f",
+            file_name,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
 
 
 @exception_handler_decorator
-def _artifact_push(pipeline_name, file_name, jobs):
+def _artifact_push(pipeline_name: str, file_name: str, jobs: str) -> str:
     """ Pushes artifacts to the initialized repository.
     Args: 
        pipeline_name: Name of the pipeline. 
@@ -127,24 +132,24 @@ def _artifact_push(pipeline_name, file_name, jobs):
         Output from the artifact push command.
     """
     cli_args = cli.parse_args(
-            [
-               "artifact",
-               "push",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-j",
-               jobs,
-            ]
-           )
+        [
+            "artifact",
+            "push",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-j",
+            jobs,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
 
 
 @exception_handler_decorator
-def _artifact_pull(pipeline_name, file_name, artifact_name):
+def _artifact_pull(pipeline_name: str, file_name: str, artifact_name: str) -> str:
     """ Pulls artifacts from the initialized repository.
     Args:
         pipeline_name: Name of the pipeline.
@@ -154,325 +159,377 @@ def _artifact_pull(pipeline_name, file_name, artifact_name):
         Output from the artifact pull command.
     """
     cli_args = cli.parse_args(
-            [
-               "artifact",
-               "pull",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-a",
-               artifact_name,
-            ]
-           )
+        [
+            "artifact",
+            "pull",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-a",
+            artifact_name,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
 
 
 @exception_handler_decorator
-def _cmf_init_show():
+def _cmf_init_show() -> str:
     """ Initializes and shows details of the CMF command. 
     Returns: 
        Output from the init show command. 
     """ 
-    cli_args = cli.parse_args(
-            [
-               "init",
-               "show"
-            ]
-           )
+    cli_args = cli.parse_args(["init", "show"])
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
 
 
-def _init_local(path, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+@exception_handler_decorator
+def _init_local(
+    path: str,
+    git_remote_url: str,
+    cmf_server_url: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_uri: str,
+) -> str:
     """Initialize local repository"""
     cli_args = cli.parse_args(
-            [
-               "init",
-               "local",
-               "--path",
-               path,
-               "--git-remote-url",
-               git_remote_url,
-               "--cmf-server-url",
-               cmf_server_url,
-               "--neo4j-user",
-               neo4j_user,
-               "--neo4j-password",
-               neo4j_password,
-               "--neo4j-uri",
-               neo4j_uri 
-            ]
-           )
+        [
+            "init",
+            "local",
+            "--path",
+            path,
+            "--git-remote-url",
+            git_remote_url,
+            "--cmf-server-url",
+            cmf_server_url,
+            "--neo4j-user",
+            neo4j_user,
+            "--neo4j-password",
+            neo4j_password,
+            "--neo4j-uri",
+            neo4j_uri,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
 
 
-def _init_minioS3(url, endpoint_url, access_key_id, secret_key, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+@exception_handler_decorator
+def _init_minioS3(
+    url: str,
+    endpoint_url: str,
+    access_key_id: str,
+    secret_key: str,
+    git_remote_url: str,
+    cmf_server_url: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_uri: str,
+) -> str:
     """Initialize minioS3 repository"""
     cli_args = cli.parse_args(
-            [
-               "init",
-               "minioS3",
-               "--url",
-               url ,  
-               "--endpoint-url",
-               endpoint_url,        
-               "--access-key-id",
-               access_key_id,
-               "--secret-key",
-               secret_key,
-               "--git-remote-url",
-               git_remote_url,
-               "--cmf-server-url",
-               cmf_server_url,
-               "--neo4j-user",
-               neo4j_user,
-               "--neo4j-password",
-               neo4j_password,
-               "--neo4j-uri",
-               neo4j_uri 
-            ]
-           )
+        [
+            "init",
+            "minioS3",
+            "--url",
+            url,
+            "--endpoint-url",
+            endpoint_url,
+            "--access-key-id",
+            access_key_id,
+            "--secret-key",
+            secret_key,
+            "--git-remote-url",
+            git_remote_url,
+            "--cmf-server-url",
+            cmf_server_url,
+            "--neo4j-user",
+            neo4j_user,
+            "--neo4j-password",
+            neo4j_password,
+            "--neo4j-uri",
+            neo4j_uri,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
     
 
-def _init_amazonS3(url, access_key_id, secret_key, session_token, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+@exception_handler_decorator
+def _init_amazonS3(
+    url: str,
+    access_key_id: str,
+    secret_key: str,
+    session_token: str,
+    git_remote_url: str,
+    cmf_server_url: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_uri: str,
+) -> str:
     """Initialize amazonS3 repository"""
     cli_args = cli.parse_args(
-            [
-               "init",
-               "amazonS3",
-               "--url",
-               url,
-               "--access-key-id",
-               access_key_id,
-               "--secret-key",
-               secret_key,
-               "--session-token",
-               session_token,
-               "--git-remote-url",
-               git_remote_url,
-               "--cmf-server-url",
-               cmf_server_url,
-               "--neo4j-user",
-               neo4j_user,
-               "--neo4j-password",
-               neo4j_password,
-               "--neo4j-uri",
-               neo4j_uri 
-            ]
-           )
+        [
+            "init",
+            "amazonS3",
+            "--url",
+            url,
+            "--access-key-id",
+            access_key_id,
+            "--secret-key",
+            secret_key,
+            "--session-token",
+            session_token,
+            "--git-remote-url",
+            git_remote_url,
+            "--cmf-server-url",
+            cmf_server_url,
+            "--neo4j-user",
+            neo4j_user,
+            "--neo4j-password",
+            neo4j_password,
+            "--neo4j-uri",
+            neo4j_uri,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
 
 
-def _init_sshremote(path,user, port, password, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+@exception_handler_decorator
+def _init_sshremote(
+    path: str,
+    user: str,
+    port: str,
+    password: str,
+    git_remote_url: str,
+    cmf_server_url: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_uri: str,
+) -> str:
     """Initialize sshremote repository"""
     cli_args = cli.parse_args(
-            [
-               "init",
-               "sshremote",
-               "--path",
-               path,
-               "--user",
-               user , 
-               "--port",
-               port,
-               "--password",
-               password,
-               "--git-remote-url",
-               git_remote_url,
-               "--cmf-server-url",
-               cmf_server_url,
-               "--neo4j-user",
-               neo4j_user,
-               "--neo4j-password",
-               neo4j_password,
-               "--neo4j-uri",
-               neo4j_uri 
-            ]
-           )
+        [
+            "init",
+            "sshremote",
+            "--path",
+            path,
+            "--user",
+            user,
+            "--port",
+            port,
+            "--password",
+            password,
+            "--git-remote-url",
+            git_remote_url,
+            "--cmf-server-url",
+            cmf_server_url,
+            "--neo4j-user",
+            neo4j_user,
+            "--neo4j-password",
+            neo4j_password,
+            "--neo4j-uri",
+            neo4j_uri,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
 
 
-def _init_osdfremote(path, cache, key_id, key_path, key_issuer, git_remote_url, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri):
+@exception_handler_decorator
+def _init_osdfremote(
+    path: str,
+    cache: str,
+    key_id: str,
+    key_path: str,
+    key_issuer: str,
+    git_remote_url: str,
+    cmf_server_url: str,
+    neo4j_user: str,
+    neo4j_password: str,
+    neo4j_uri: str,
+) -> str:
     """Initialize osdfremote repository"""
     cli_args = cli.parse_args(
-            [
-               "init",
-               "osdf",
-               "--path",
-               path,
-               "--cache",
-               cache,
-               "--key-id",
-               key_id, 
-               "--key-path",
-               key_path,
-               "--key-issuer",
-               key_issuer,
-               "--git-remote-url",
-               git_remote_url,
-               "--cmf-server-url",
-               cmf_server_url,
-               "--neo4j-user",
-               neo4j_user,
-               "--neo4j-password",
-               neo4j_password,
-               "--neo4j-uri",
-               neo4j_uri 
-            ]
-           )
+        [
+            "init",
+            "osdf",
+            "--path",
+            path,
+            "--cache",
+            cache,
+            "--key-id",
+            key_id,
+            "--key-path",
+            key_path,
+            "--key-issuer",
+            key_issuer,
+            "--git-remote-url",
+            git_remote_url,
+            "--cmf-server-url",
+            cmf_server_url,
+            "--neo4j-user",
+            neo4j_user,
+            "--neo4j-password",
+            neo4j_password,
+            "--neo4j-uri",
+            neo4j_uri,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
   
 
-@exception_handler_decorator  
-def _artifact_list(pipeline_name, file_name, artifact_name):
-    """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
-    Args: 
-       pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name. 
+@exception_handler_decorator
+def _artifact_list(pipeline_name: str, file_name: str, artifact_name: str) -> str:
+    """Displays artifacts from the input metadata file with a few properties
+    in a 7-column table, limited to 20 records per page.
+    Args:
+       pipeline_name: Name of the pipeline.
+       file_name: Specify input metadata file name.
        artifact_name: Artifacts for particular artifact name.
     Returns:
-       Output from the artifact list command. 
+       Output from the artifact list command.
     """
     cli_args = cli.parse_args(
-            [
-               "artifact",
-               "list",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-a",
-               artifact_name
-            ]
-           )
+        [
+            "artifact",
+            "list",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-a",
+            artifact_name,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
 
 
 @exception_handler_decorator
-def _pipeline_list(file_name):
+def _pipeline_list(file_name: str) -> str:
     """ Display a list of pipeline name(s) from the available input metadata file.
     Args:
         file_name: Specify input metadata file name. 
     Returns:
         Output from the pipeline list command.
     """
-    cli_args = cli.parse_args(
-            [
-               "pipeline",
-               "list",
-               "-f",
-               file_name
-            ]
-           )
+    cli_args = cli.parse_args(["pipeline", "list", "-f", file_name])
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
 
 
 @exception_handler_decorator
-def _execution_list(pipeline_name, file_name, execution_uuid):
-    """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
-    Args: 
-       pipeline_name: Name of the pipeline. 
+def _execution_list(pipeline_name: str, file_name: str, execution_uuid: str) -> str:
+    """Displays executions from the input metadata file with a few properties
+    in a 7-column table, limited to 20 records per page.
+    Args:
+       pipeline_name: Name of the pipeline.
        file_name: Specify input metadata file name.
        execution_uuid: Specify the execution uuid to retrieve execution.
     Returns:
-       Output from the execution list command. 
+       Output from the execution list command.
     """
     cli_args = cli.parse_args(
-            [
-               "execution",
-               "list",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-e",
-               execution_uuid
-            ]
-           )
+        [
+            "execution",
+            "list",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-e",
+            execution_uuid,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
 
 
-def _repo_push(pipeline_name, file_name, tensorboard_path, execution_uuid, jobs):
-    """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
-    Args: 
-       pipeline_name: Name of the pipeline. 
+@exception_handler_decorator
+def _repo_push(
+    pipeline_name: str,
+    file_name: str,
+    tensorboard_path: str,
+    execution_uuid: str,
+    jobs: str,
+) -> str:
+    """Push artifacts, metadata files, and source code to the user's artifact
+    repository, cmf-server, and git respectively.
+    Args:
+       pipeline_name: Name of the pipeline.
        file_name: Specify input metadata file name.
        execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
        jobs: Number of jobs to use for pushing artifacts.
     Returns:
-       Output from the repo push command. 
+       Output from the repo push command.
     """
     cli_args = cli.parse_args(
-            [
-               "repo",
-               "push",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-e",
-               execution_uuid,
-               "-t",
-               tensorboard_path,
-               "-j",
-               jobs
-            ]
-           )
+        [
+            "repo",
+            "push",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-e",
+            execution_uuid,
+            "-t",
+            tensorboard_path,
+            "-j",
+            jobs,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
     return msg
 
-
-def _repo_pull(pipeline_name, file_name, execution_uuid):
-    """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
-    Args: 
-       pipeline_name: Name of the pipeline. 
+@exception_handler_decorator
+def _repo_pull(pipeline_name: str, file_name: str, execution_uuid: str) -> str:
+    """Pull artifacts, metadata files, and source code from the user's artifact
+    repository, cmf-server, and git respectively.
+    Args:
+       pipeline_name: Name of the pipeline.
        file_name: Specify output metadata file name.
        execution_uuid: Specify execution uuid.
     Returns:
-       Output from the repo pull command. 
+       Output from the repo pull command.
     """
     cli_args = cli.parse_args(
-            [
-               "repo",
-               "pull",
-               "-p",
-               pipeline_name,
-               "-f",
-               file_name,
-               "-e",
-               execution_uuid
-            ]
-           )
+        [
+            "repo",
+            "pull",
+            "-p",
+            pipeline_name,
+            "-f",
+            file_name,
+            "-e",
+            execution_uuid,
+        ]
+    )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -480,23 +537,16 @@ def _repo_pull(pipeline_name, file_name, execution_uuid):
 
 
 @exception_handler_decorator
-def _dvc_ingest(file_name):
-   """ Ingests metadata from the dvc.lock file into the CMF. 
-       If an existing MLMD file is provided, it merges and updates execution metadata 
-       based on matching commands, or creates new executions if none exist.
-    Args: 
+def _dvc_ingest(file_name: str) -> str:
+   """Ingests metadata from the dvc.lock file into the CMF.
+       If an existing MLMD file is provided, it merges and updates execution
+       metadata based on matching commands, or creates new executions if none exist.
+    Args:
        file_name: Specify input metadata file name.
     Returns:
-       Output from the dvc ingest command. 
+       Output from the dvc ingest command.
    """
-   cli_args = cli.parse_args(
-            [
-               "dvc",
-               "ingest",
-               "-f",
-               file_name,
-            ]
-           )
+   cli_args = cli.parse_args(["dvc", "ingest", "-f", file_name])
    cmd = cli_args.func(cli_args)
    msg = cmd.do_run()
    print(msg)
