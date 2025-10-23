@@ -54,6 +54,21 @@ class FastAPIClient {
       });
   }
 
+  async searchLabelArtifacts(pipeline_name, content_filter, sort_order = "asc", active_page = 1, record_per_page = 5) {
+    return this.apiClient
+      .get(`/artifacts/${pipeline_name}/Label/search`, {
+        params: {
+          content_filter: content_filter,
+          sort_order: sort_order,
+          active_page: active_page,
+          record_per_page: record_per_page,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
   async getArtifactTypes() {
     return this.apiClient.get(`/artifact_types`).then(({ data }) => {
       return data;
@@ -155,17 +170,37 @@ class FastAPIClient {
       });
   }
 
-  async getLabelData(file_name) {
+  async getLabelData(file_name, search_filter = null, pipeline_name = null, fallback_to_full = true) {
+    const params = {
+      file_name: file_name
+    };
+
+    // Add optional parameters if provided
+    if (search_filter) {
+      params.search_filter = search_filter;
+    }
+    if (pipeline_name) {
+      params.pipeline_name = pipeline_name;
+    }
+    // Always include fallback_to_full parameter
+    params.fallback_to_full = fallback_to_full;
+
     return this.apiClient
-    .get(`/label-data`,{
-      params: {
-        file_name: file_name
-      },
+    .get(`/label-data`, {
+      params: params,
       responseType: "text",
     })
     .then(( response ) => {
       return response.data;
     });
+  }
+
+  async getLabelsList() {
+    return this.apiClient
+      .get(`/api/labels/status`)
+      .then(({ data }) => {
+        return data.files || [];
+      });
   }
 
   async getServerRegistration(server_name, host_info){
