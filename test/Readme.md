@@ -47,7 +47,7 @@ To run the `full sanity test suite`, follow these steps:
    ```
    For example:
    ```json
-   "cmf_server_url": "http://10.10.200.200:8080",
+   "cmf_server_url": "http://10.10.200.200:80",
    "ssh_path": "ssh://10.10.200.200/home/hpe-user/ssh-storage",
    "ssh_user": "xyz",
    "ssh_password": "wxyz"
@@ -82,7 +82,7 @@ To test the `cmf-server`, follow these steps:
    ```
    For example:
    ```json
-   "cmf_server_url": "http://10.10.200.200:8080",
+   "cmf_server_url": "http://10.10.200.200:80",
    ```
 5. **Run the client test suite:** Execute the sanity testing script using the following command:
    ```bash
@@ -135,7 +135,7 @@ To test the `cmf-client`, follow these steps:
    ```
    For example:
    ```json
-   "cmf_server_url": "http://10.10.200.200:8080",
+   "cmf_server_url": "http://10.10.200.200:80",
    "ssh_path": "ssh://10.10.200.200/home/hpe-user/ssh-storage",
    "ssh_user": "xyz",
    "ssh_password": "wxyz"
