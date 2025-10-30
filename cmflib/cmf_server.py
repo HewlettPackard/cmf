@@ -216,6 +216,8 @@ def log_python_env_from_client(
 
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, props.get("url", ""))
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
