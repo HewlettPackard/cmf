@@ -50,7 +50,7 @@ specifies the connection to a CMF server.
 ```
 cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 \
   --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:8080  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
+  --cmf-server-url http://x.x.x.x:80  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
 ```
 Check [here](./cmf_client.md) for more details.
 
