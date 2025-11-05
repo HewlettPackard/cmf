@@ -5,9 +5,9 @@ import zipfile
 
 import re  # Used for cleaning artifact names in label search
 from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, Depends
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any, Optional
@@ -15,6 +15,7 @@ from cmflib.cmfquery import CmfQuery
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
+from server.app.utils import extract_hostname, get_fqdn
 from server.app.get_data import (
     get_mlmd_from_server,
     get_artifact_types,
@@ -28,7 +29,7 @@ from server.app.get_data import (
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from server.app.db.dbconfig import get_db
+from server.app.db.dbconfig import get_db, init_db
 from server.app.db.dbqueries import (
     fetch_artifacts,
     fetch_executions,
@@ -52,6 +53,8 @@ from server.app.schemas.dataframe import (
 )
 import httpx
 import logging
+import socket
+import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
 from server.app.db.dbconfig import DATABASE_URL
@@ -68,10 +71,11 @@ from server.app.label_management import (
 import csv
 import io
 
-server_store_path = "/cmf-server/data/postgres_data"
 # Directory where label CSV files are stored for content search functionality
 # This is the central location where all label files are uploaded and indexed
 labels_dir = "/cmf-server/data/labels"
+dotenv.load_dotenv()
+
 query = CmfQuery(is_server=True)
 
 
@@ -85,8 +89,11 @@ lock_counts: defaultdict[str, int] = defaultdict(int)
 async def lifespan(app: FastAPI):
     global dict_of_art_ids
     global dict_of_exe_ids
-    
-    if os.path.exists(server_store_path):
+
+    # Initialize the database schema
+    await init_db()
+
+    if query:
         # loaded execution ids with names into memory
         dict_of_exe_ids = await async_api(get_all_exe_ids, query)
         # loaded artifact ids into memory
@@ -104,33 +111,30 @@ async def lifespan(app: FastAPI):
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
 
-app = FastAPI(title="cmf-server", lifespan=lifespan)
+app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")
 
-my_ip = os.environ.get("MYIP", "127.0.0.1")
-hostname = os.environ.get('HOSTNAME', "localhost")
+REACT_APP_CMF_API_URL = os.getenv("REACT_APP_CMF_API_URL", "http://localhost:8080")
 
-#checking if IP or Hostname is provided,initializing url accordingly.
-if my_ip != "127.0.0.1":
-    url="http://"+my_ip+":3000"
-else:
-    url="http://"+hostname+":3000"
+LOCAL_ADDRESSES = set()
+LOCAL_ADDRESSES.update(["127.0.0.1", "localhost"])
+hostname = extract_hostname(REACT_APP_CMF_API_URL)
+LOCAL_ADDRESSES.add(hostname)
+# Adding hostname if IP is given
+LOCAL_ADDRESSES.add(get_fqdn(hostname))
+print("Local addresses= ", LOCAL_ADDRESSES)
 
-origins = [
-    "http://localhost:3000",
-    "localhost:3000",
-    url
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 @app.get("/")
 async def read_root(request: Request):
@@ -509,7 +513,7 @@ async def artifact_types():
 @app.get("/pipelines")
 async def pipelines(request: Request):
     # checks if mlmd file exists on server
-    if os.path.exists(server_store_path):
+    if query:
         pipeline_names = query.get_pipeline_names()
         return pipeline_names
     else:
@@ -770,19 +774,26 @@ async def get_label_data(
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
 
+
 @app.post("/register-server")
 async def register_server(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
     try:
         # Access the data from the Pydantic model
         server_name = request.server_name
-        host_info = request.host_info
+        server_url = request.server_url
+        server = extract_hostname(server_url)
 
-        # Step 1: Send a request to the target server
+
+        # Check user is registering with own details
+        if server in LOCAL_ADDRESSES:
+            return {"message": "Registration failed: Cannot register the server with its own details."}
+
+        # Step 1: Send a request to the target server for acknowledgement
         async with httpx.AsyncClient() as client:
             try:
                 response = await client.post(
-                    f"http://{host_info}:8080/acknowledge",
-                    json={"server_name": server_name, "host_info": host_info}
+                    f"{server_url}/api/acknowledge",
+                    json={"server_name": server_name, "server_url": server_url}
                 )
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -790,17 +801,11 @@ async def register_server(request: ServerRegistrationRequest, db: AsyncSession =
             except httpx.RequestError:
                 raise HTTPException(status_code=500, detail="Target server is not reachable")
 
-        # Check user is registring with own details
-        if host_info in [my_ip, hostname, "127.0.0.1", "localhost"]:
-            # Restrict the user from registering with own details
-            return {"message": "Registration failed: Cannot register the server with its own details."}
+        # Save server details in the database
+        return await register_server_details(db, server_name, server_url)
 
-        return await register_server_details(db, server_name, host_info)
-    
     except HTTPException as e:
-        # Re-raise known error without wrapping
         raise e
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to register server: {e}")
     
@@ -813,12 +818,12 @@ async def acknowledge(request: AcknowledgeRequest):
     }
 
 
-async def server_mlmd_pull(host_info, last_sync_time):
+async def server_mlmd_pull(server_url, last_sync_time):
     """
     Fetch mlmd data from a specified server.
 
     Args:
-        host_info (str): The host information (IP or hostname) of the target server.
+        server_url (str): The full URL of the target server.
         last_sync_time (int): The last sync time in milliseconds since epoch.
 
     Returns:
@@ -831,7 +836,7 @@ async def server_mlmd_pull(host_info, last_sync_time):
         # Step 1: Send a request to the target server to fetch mlmd data
         async with httpx.AsyncClient(timeout=300.0) as client:
             try:
-                response = await client.post(f"http://{host_info}:8080/mlmd_pull", json={'last_sync_time': last_sync_time})
+                response = await client.post(f"{server_url}/api/mlmd_pull", json={'last_sync_time': last_sync_time})
 
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -846,16 +851,14 @@ async def server_mlmd_pull(host_info, last_sync_time):
                     environment_names = {match.value.split(":")[0].split("/")[-1] for match in jsonpath_expr.find(data)}
 
                     # Check if the list is empty or not
-                    # if list is empty then no need to download the zip file
                     if len(environment_names) == 0: 
                         print("No Environment files are found inside json payload.")
                         return json_payload
 
                     list_of_files = list(environment_names)
-                    # Added list_of_files to the request as a optional query parameter 
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=list_of_files)
+                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=list_of_files)
                 else:
-                    python_env_zip = await client.get(f"http://{host_info}:8080/download-python-env", params=None)
+                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=None)
 
                 if python_env_zip.status_code == 200:
                     try:
@@ -912,12 +915,10 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         HTTPException: If the server is not found or an error occurs during synchronization.
     """
     try:
-        # Access the data from the Pydantic model
         server_name = request.server_name
-        host_info = request.host_info
+        server_url = request.server_url
 
-        # Fetch the server details from the database
-        row = await get_sync_status(db, server_name, host_info)
+        row = await get_sync_status(db, server_name, server_url)
 
         if not row:
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
@@ -925,22 +926,17 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         last_sync_time = row[0]['last_sync_time']
         current_utc_epoch_time = int(time.time() * 1000)
 
-        # Call the function to fetch the JSON payload
-        json_payload = await server_mlmd_pull(host_info, last_sync_time)      
+        json_payload = await server_mlmd_pull(server_url, last_sync_time)
 
-
-        # Use the JSON payload in json_data
         json_data = {
             "exec_uuid": None,
             "json_payload": json.dumps(json_payload),
             "pipeline_name": None
         }
 
-        # Ensure the pipeline name in req_info matches the one in the JSON payload to maintain data integrity
-        pipelines = json_payload.get("Pipeline", []) # Extract "Pipeline" list, default to empty list if missing
-        # pipelines contain full mlmd data with the tag - 'Pipeline'
-        # print("type of pipelines = ", type(pipelines))
-        # tell us number of pipelines
+        # Ensure the pipeline name in req_info matches the one in the JSON payload
+        # to maintain data integrity
+        pipelines = json_payload.get("Pipeline", [])
         len_pipelines = len(pipelines)
         pipeline_names = []
 
@@ -967,22 +963,19 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         message = "Nothing to sync."
         if status != "exists":
             if not last_sync_time:
-                # this is not completely correct 
-                # as before we do the sync first time, it is entirely possible that there exists a 
-                # pipeline on the server 1  - test this scenario
-                message = f"Host server is syncing with the selected server '{server_name}' at address '{host_info}' for the first time."
+                message = f"Host server is syncing with the selected server '{server_name}' at address '{server_url}' for the first time."
                 for pipeline_name in pipeline_names:
                     dict_of_exe_ids = get_all_exe_ids(query)
                     dict_of_art_ids = get_all_artifact_ids(query, dict_of_exe_ids)
             else:
-                message = f"Host server is being synced with the selected server '{server_name}' at address '{host_info}'."
+                message = f"Host server is being synced with the selected server '{server_name}' at address '{server_url}'."
                 for pipeline_name in pipeline_names:
                     update_global_exe_dict(pipeline_name)
                     update_global_art_dict(pipeline_name)
 
         # Update the last_sync_time in the database only if sync status is successful
         if status == "success":
-            await update_sync_status(db, current_utc_epoch_time, server_name, host_info)
+            await update_sync_status(db, current_utc_epoch_time, server_name, server_url)
         return {
             "message": message,
             "status": status,
@@ -1066,9 +1059,9 @@ async def update_global_exe_dict(pipeline_name):
 
 # Function to checks if mlmd file exists on server
 async def check_mlmd_file_exists():
-    if not os.path.exists(server_store_path):
-        print(f"{server_store_path} file doesn't exist.")
-        raise HTTPException(status_code=404, detail=f"{server_store_path} file doesn't exist.")
+    if not query:
+        print(f"DB doesn't exist.")
+        raise HTTPException(status_code=404, detail="Database doesn't exist.")
 
 
 # Function to check if the pipeline exists
@@ -1080,6 +1073,8 @@ async def check_pipeline_exists(pipeline_name):
 
 """
 following APIs are no longer in use within the project but is retained for reference or potential future use.
+
+# server_store_path = "/cmf-server/data/postgres_data"
 
 @app.get("/execution-lineage/force-directed-graph/{pipeline_name}/{uuid}")
 async def execution_lineage(request: Request, pipeline_name: str, uuid: str):

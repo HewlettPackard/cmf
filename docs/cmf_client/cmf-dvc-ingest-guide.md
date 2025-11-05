@@ -25,7 +25,7 @@ Use the following command to initialize CMF. You can choose from various storage
    cmf init local \
   --path /home/XXXX/local-storage \
   --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:8080 \
+  --cmf-server-url http://x.x.x.x:80 \
   --neo4j-user neo4j \
   --neo4j-password password \
   --neo4j-uri bolt://x.x.x.x:7687
@@ -51,9 +51,6 @@ Start the Neo4j server using Docker. Follow the guide provided below:
 Inside your project directory (for e.g., `example-get-started`), create a `dvc.yaml` file.
 
 Here’s a sample `dvc.yaml`:
-
-<details>
-<summary>Click to expand</summary>
 
 ```yaml
 stages:
@@ -92,8 +89,8 @@ stages:
       - artifacts/test_results/scores.json
 ```
 
-</details>
-
+> ⚠️ **Be Consistent with deps and outs:**  
+> When defining deps and outs in your dvc.yaml, ensure consistency in the format used. Either define both as directories (e.g., artifacts/parsed/) or both as individual files (e.g., artifacts/parsed/train.tsv, artifacts/parsed/test.tsv).
 
 
 ## 5. Remove CMF code from Your `src` Directory

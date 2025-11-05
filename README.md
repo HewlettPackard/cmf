@@ -25,7 +25,7 @@
 ### Requirements
 
 - Linux/Ubuntu/Debian
-- Python >=3.9, <3.11
+- Python >=3.9, <3.12
 - Git (latest)
 
 ### Virtual Environment

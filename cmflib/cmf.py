@@ -610,6 +610,7 @@ class Cmf:
             if existing_artifact and len(existing_artifact) != 0:
                 existing_artifact = existing_artifact[0]
                 uri = c_hash
+                self.update_dataset_url(existing_artifact, dvc_url_with_pipeline)
                 artifact = link_execution_to_artifact(
                     store=self.store,
                     execution_id=self.execution.id,
