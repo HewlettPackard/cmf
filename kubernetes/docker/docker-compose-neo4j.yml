@@ -8,10 +8,10 @@ services:
       - "7474:7474"   # HTTP port
       - "7687:7687"   # Bolt port
     volumes:
-      - $HOME/neo4j/data:/data        # Data storage
-      - $HOME/neo4j/logs:/logs        # Log storage
-      - $HOME/neo4j/import:/var/lib/neo4j/import   # Import folder
-      - $HOME/neo4j/plugins:/plugins  # Plugins folder
+      - $CMF_DATA_DIR/neo4j/data:/data        # Data storage
+      - $CMF_DATA_DIR/neo4j/logs:/logs        # Log storage
+      - $CMF_DATA_DIR/neo4j/import:/var/lib/neo4j/import   # Import folder
+      - $CMF_DATA_DIR/neo4j/plugins:/plugins  # Plugins folder
     environment:
       - NEO4J_AUTH=${neo4j_user}/${neo4j_password}     # Username and password
     restart: unless-stopped

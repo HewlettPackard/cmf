@@ -4,10 +4,9 @@
 #Backup import data first and run this script with caution.
 
 
-sudo rm $HOME/neo4j -rf
-sudo rm $HOME/minio -rf
-sudo rm $HOME/cmf-server -rf
-
+sudo rm $CMF_DATA_DIR/neo4j -rf
+sudo rm $CMF_DATA_DIR/minio -rf
+sudo rm $CMF_DATA_DIR/cmf-server -rf
 
 docker-compose -f docker-compose-neo4j.yml down
 docker-compose -f docker-compose-minio.yml down

@@ -17,8 +17,7 @@
 
 #setup cmf server
 
-export IP=$MYIP
-export hostname=""
+export hostname=$REACT_APP_CMF_API_URL
 
 original_docker_file="../../server/Dockerfile"
 new_docker_file="../../server/Dockerfile_new"
