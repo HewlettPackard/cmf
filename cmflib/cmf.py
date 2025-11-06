@@ -1720,7 +1720,8 @@ def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_pat
         Response output from the _metadata_push function.
     """
     # Required arguments: pipeline_name
-    # Optional arguments: execution_UUID, file_name, tensorboard_path
+    # Optional arguments: execution_UUID, tensorboard_path
+    # Default arguments: file_name
     output = _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path)
     return output
 
@@ -1741,7 +1742,8 @@ def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid:
         Message from the _metadata_pull function. 
      """
     # Required arguments: pipeline_name 
-    # Optional arguments: execution_UUID, file_name 
+    # Optional arguments: execution_uuid
+    # Default arguments: file_name 
     output = _metadata_pull(pipeline_name, file_name, execution_uuid)
     return output
 
@@ -1761,8 +1763,9 @@ def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, 
     Returns: 
         Message from the _metadata_export function. 
      """
-    # Required arguments: pipeline_name 
-    # Optional arguments: json_file_name, file_name
+    # Required arguments: pipeline_name
+    # Optional arguments: json_file_name
+    # Default arguments: file_name
     output = _metadata_export(pipeline_name, json_file_name, file_name)
     return output
 
@@ -1783,7 +1786,8 @@ def artifact_pull(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
         Output from the _artifact_pull function.
     """
     # Required arguments: pipeline_name
-    # Optional arguments: file_name, artifact_name
+    # Optional arguments: artifact_name
+    # Default arguments: file_name
     output = _artifact_pull(pipeline_name, file_name, artifact_name)
     return output
 
@@ -1805,7 +1809,7 @@ def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: int = 32):
         Output from the _artifact_push function.
     """
     # Required arguments: pipeline_name
-    # Optional arguments: filepath, jobs
+    # Default arguments: filepath, jobs
     output = _artifact_push(pipeline_name, filepath, f"{jobs}")
     return output
 
@@ -1827,10 +1831,7 @@ def cmf_init_show():
 def cmf_init(type: str = "",
         path: str = "",
         git_remote_url: str = "",
-        cmf_server_url: str = "",
-        neo4j_user: str = "",
-        neo4j_password: str = "",
-        neo4j_uri: str = "",
+        cmf_server_url: str = "http://127.0.0.1:80",
         url: str = "",
         endpoint_url: str = "",
         access_key_id: str = "",
@@ -1844,6 +1845,9 @@ def cmf_init(type: str = "",
         key_id: str = "",
         key_path: str = "",
         key_issuer: str = "",
+        neo4j_user: t.Optional[str] = None,
+        neo4j_password: t.Optional[str] = None,
+        neo4j_uri: t.Optional[str] = None,
          ):
 
     """ Initializes the CMF configuration based on the provided parameters. 
@@ -1860,26 +1864,30 @@ def cmf_init(type: str = "",
     ```
     
     Args: 
-       type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
-       path: Path for the local repository. 
-       git_remote_url: Git remote URL for version control.
-       cmf_server_url: CMF server URL.
-       neo4j_user: Neo4j database username.
-       neo4j_password: Neo4j database password.
-       neo4j_uri: Neo4j database URI.
-       url: URL for MinioS3 or AmazonS3.
-       endpoint_url: Endpoint URL for MinioS3.
-       access_key_id: Access key ID for MinioS3 or AmazonS3.
-       secret_key: Secret key for MinioS3 or AmazonS3. 
-       session_token: Session token for AmazonS3.
-       user: SSH remote username.
-       password: SSH remote password. 
-       port: SSH remote port.
-       osdf_path: OSDF Origin Path.
-       osdf_cache: OSDF Cache Path (Optional).
-       key_id: OSDF Key ID.
-       key_path: OSDF Private Key Path.
-       key_issuer: OSDF Key Issuer URL.
+       Required Arguments:
+       - type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
+       - path: Path for the local/ssh repository. 
+       - git_remote_url: Git remote URL for version control.
+       - url: URL for MinioS3 or AmazonS3.
+       - endpoint_url: Endpoint URL for MinioS3.
+       - access_key_id: Access key ID for MinioS3 or AmazonS3.
+       - secret_key: Secret key for MinioS3 or AmazonS3. 
+       - session_token: Session token for AmazonS3.
+       - user: SSH remote username.
+       - password: SSH remote password. 
+       - port: SSH remote port.
+       - osdf_path: OSDF Origin Path.
+       - osdf_cache: OSDF Cache Path (Optional).
+       - key_id: OSDF Key ID.
+       - key_path: OSDF Private Key Path.
+       - key_issuer: OSDF Key Issuer URL.
+       Default Arguments:
+       - cmf_server_url: CMF server URL. - this is interesting as this has default value.
+       Optional Arguments:
+       - neo4j_user: Neo4j database username.
+       - neo4j_password: Neo4j database password.
+       - neo4j_uri: Neo4j database URI.
+
     
     Returns:
        Output based on the initialized repository type.
@@ -1916,7 +1924,7 @@ def cmf_init(type: str = "",
     status_args=non_related_args(type, args)
 
     # Required arguments: path, git_remote_url
-    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
     if type == "local" and path != "" and  git_remote_url != "" :
         """Initialize local repository"""
         output = _init_local(
@@ -1932,7 +1940,7 @@ def cmf_init(type: str = "",
         return output
          
     # Required arguments: url, endpoint_url, access_key_id, secret_key, git_remote_url
-    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
     elif type == "minioS3" and url != "" and endpoint_url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize minioS3 repository"""
         output = _init_minioS3(
@@ -1951,7 +1959,7 @@ def cmf_init(type: str = "",
         return output
 
     # Required arguments: url, access_key_id, secret_key, git_remote_url
-    # Optional arguments: session_token, cmf_server_url, neo4j_user, neo4j_password
+    # Optional arguments: session_token, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
     elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
         """Initialize amazonS3 repository"""
         output = _init_amazonS3(
@@ -1971,7 +1979,7 @@ def cmf_init(type: str = "",
         return output
 
     # Required arguments: path, user, port, password, git_remote_url
-    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
     elif type == "sshremote" and path != "" and user != "" and port != 0 and password != "" and git_remote_url != "":
         """Initialize sshremote repository"""
         output = _init_sshremote(
@@ -1991,7 +1999,7 @@ def cmf_init(type: str = "",
         return output
 
     # Required arguments: osdf_path, key_id, key_path, key_issuer, git_remote_url
-    # Optional arguments: osdf_cache, cmf_server_url, neo4j_user, neo4j_password
+    # Optional arguments: osdf_cache, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
     elif type == "osdfremote" and osdf_path != "" and key_id != "" and key_path != "" and key_issuer != "" and git_remote_url != "":
         """Initialize osdfremote repository"""
         output = _init_osdfremote(
@@ -2045,7 +2053,7 @@ def pipeline_list(file_name: str = "./mlmd"):
     Returns:
         Output from the _pipeline_list function.
     """
-    # Optional arguments with default value: file_name( path to store the MLMD file)
+    # Default arguments: file_name
     output = _pipeline_list(file_name)
     return output
 
@@ -2066,7 +2074,8 @@ def execution_list(pipeline_name: str, file_name: str = "./mlmd", execution_uuid
        Output from the _execution_list function. 
     """
     # Required arguments: pipeline_name
-    # Optional arguments: file_name, execution_uuid
+    # Optional arguments: execution_uuid
+    # Default arguments: file_name
     output = _execution_list(pipeline_name, file_name, execution_uuid)
     return output
 
@@ -2087,7 +2096,8 @@ def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
        Output from the _artifact_list function. 
     """
     # Required arguments: pipeline_name
-    # Optional arguments: file_name, artifact_name
+    # Optional arguments: artifact_name
+    # Default arguments: file_name
     output = _artifact_list(pipeline_name, file_name, artifact_name)
     return output
 
@@ -2131,7 +2141,8 @@ def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: t.Option
        Output from the _repo_pull function. 
     """
     # Required arguments: pipeline_name
-    # Optional arguments: file_name, execution_uuid
+    # Optional arguments: execution_uuid
+    # Default arguments: file_name
     output = _repo_pull(pipeline_name, file_name, execution_uuid)
     return output
 
@@ -2151,6 +2162,6 @@ def dvc_ingest(file_name: str = "./mlmd"):
     Returns:
        Output from the _dvc_ingest function. 
     """
-    # Optional argument: file_name
+    # Default arguments: file_name
     output = _dvc_ingest(file_name)
     return output

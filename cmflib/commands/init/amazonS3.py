@@ -71,6 +71,7 @@ class CmdInitAmazonS3(CmdBase):
             attr_dict["uri"] = self.args.neo4j_uri[0]
             CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
         elif(
+            # this case is when none of the neo4j arguments are provided
             not self.args.neo4j_user
             and not self.args.neo4j_password
             and not self.args.neo4j_uri
@@ -146,12 +147,13 @@ def add_parser(subparsers, parent_parser):
         default=argparse.SUPPRESS,
     )
 
-    parser.add_argument(
+    required_arguments.add_argument(
         "--session-token",
         required=True,
         help="Specify Session Token.",
         metavar="<session_token>",
         action="append",
+        default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
@@ -168,7 +170,7 @@ def add_parser(subparsers, parent_parser):
         help="Specify cmf-server URL.",
         metavar="<cmf_server_url>",
         action="append",
-        default=["http://127.0.0.1:80"],
+        default="http://127.0.0.1:80", # Test this default value
     )
     parser.add_argument(
         "--neo4j-user",

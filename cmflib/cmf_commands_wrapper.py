@@ -202,8 +202,7 @@ def _init_local(
     neo4j_uri: str,
 ) -> str:
     """Initialize local repository"""
-    cli_args = cli.parse_args(
-        [
+    args = [
             "init",
             "local",
             "--path",
@@ -212,14 +211,22 @@ def _init_local(
             git_remote_url,
             "--cmf-server-url",
             cmf_server_url,
-            "--neo4j-user",
-            neo4j_user,
-            "--neo4j-password",
-            neo4j_password,
-            "--neo4j-uri",
-            neo4j_uri,
         ]
-    )
+
+    # only append neo4j args if they are provided
+    if neo4j_user and neo4j_password and neo4j_uri:
+        args.extend(
+            [
+                "--neo4j-user",
+                neo4j_user,
+                "--neo4j-password",
+                neo4j_password,
+                "--neo4j-uri",
+                neo4j_uri,
+            ]
+        )
+    
+    cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -239,8 +246,7 @@ def _init_minioS3(
     neo4j_uri: str,
 ) -> str:
     """Initialize minioS3 repository"""
-    cli_args = cli.parse_args(
-        [
+    args = [
             "init",
             "minioS3",
             "--url",
@@ -255,14 +261,20 @@ def _init_minioS3(
             git_remote_url,
             "--cmf-server-url",
             cmf_server_url,
-            "--neo4j-user",
-            neo4j_user,
-            "--neo4j-password",
-            neo4j_password,
-            "--neo4j-uri",
-            neo4j_uri,
         ]
-    )
+    # only append neo4j args if they are provided
+    if neo4j_user and neo4j_password and neo4j_uri:
+        args.extend(
+            [
+                "--neo4j-user",
+                neo4j_user,
+                "--neo4j-password",
+                neo4j_password,
+                "--neo4j-uri",
+                neo4j_uri,
+            ]
+        )
+    cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -282,8 +294,7 @@ def _init_amazonS3(
     neo4j_uri: str,
 ) -> str:
     """Initialize amazonS3 repository"""
-    cli_args = cli.parse_args(
-        [
+    args = [
             "init",
             "amazonS3",
             "--url",
@@ -298,14 +309,22 @@ def _init_amazonS3(
             git_remote_url,
             "--cmf-server-url",
             cmf_server_url,
-            "--neo4j-user",
-            neo4j_user,
-            "--neo4j-password",
-            neo4j_password,
-            "--neo4j-uri",
-            neo4j_uri,
         ]
-    )
+
+    # only append neo4j args if they are provided
+    if neo4j_user and neo4j_password and neo4j_uri:
+        args.extend(
+            [
+                "--neo4j-user",
+                neo4j_user,
+                "--neo4j-password",
+                neo4j_password,
+                "--neo4j-uri",
+                neo4j_uri,
+            ]
+        )
+    
+    cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -325,8 +344,7 @@ def _init_sshremote(
     neo4j_uri: str,
 ) -> str:
     """Initialize sshremote repository"""
-    cli_args = cli.parse_args(
-        [
+    args = [
             "init",
             "sshremote",
             "--path",
@@ -341,14 +359,21 @@ def _init_sshremote(
             git_remote_url,
             "--cmf-server-url",
             cmf_server_url,
-            "--neo4j-user",
-            neo4j_user,
-            "--neo4j-password",
-            neo4j_password,
-            "--neo4j-uri",
-            neo4j_uri,
         ]
-    )
+    # only append neo4j args if they are provided
+    if neo4j_user and neo4j_password and neo4j_uri:
+        args.extend(
+            [
+                "--neo4j-user",
+                    neo4j_user,
+                    "--neo4j-password",
+                    neo4j_password,
+                    "--neo4j-uri",
+                    neo4j_uri,
+                ]
+            )
+
+    cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -369,8 +394,7 @@ def _init_osdfremote(
     neo4j_uri: str,
 ) -> str:
     """Initialize osdfremote repository"""
-    cli_args = cli.parse_args(
-        [
+    args = [
             "init",
             "osdf",
             "--path",
@@ -387,14 +411,20 @@ def _init_osdfremote(
             git_remote_url,
             "--cmf-server-url",
             cmf_server_url,
-            "--neo4j-user",
-            neo4j_user,
-            "--neo4j-password",
-            neo4j_password,
-            "--neo4j-uri",
-            neo4j_uri,
-        ]
-    )
+    ]
+    # only append neo4j args if they are provided
+    if neo4j_user and neo4j_password and neo4j_uri:
+        args.extend(
+            [
+                "--neo4j-user",
+                    neo4j_user,
+                    "--neo4j-password",
+                    neo4j_password,
+                    "--neo4j-uri",
+                    neo4j_uri,
+                ]
+            )
+    cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
