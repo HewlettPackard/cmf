@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tensorboard-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tensorboard
+  template:
+    metadata:
+      labels:
+        app: tensorboard
+    spec:
+      containers:
+      - name: tensorboard
+        image: tensorflow/tensorflow
+        command: ["tensorboard"]
+        args:
+          - --logdir
+          - /logs
+          - --host
+          - 0.0.0.0
+          - --path_prefix=/tensorboard
+        ports:
+        - containerPort: 6006
+        volumeMounts:
+        - mountPath: /logs
+          name: tensorboard-logs
+      volumes:
+      - name: tensorboard-logs
+        persistentVolumeClaim:
+          claimName: pvc-tensorboard-logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorboard
+spec:
+  type: ClusterIP
+  ports:
+  - port: 6006
+    targetPort: 6006
+  selector:
+    app: tensorboard

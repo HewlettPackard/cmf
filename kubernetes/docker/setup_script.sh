@@ -42,7 +42,7 @@ export secret_key="minioadmin"
 
 docker-compose --verbose -f docker-compose-minio.yml build
 
-#setup neo4j serverA
+#setup neo4j server
 #
 export neo4j_user="neo4j"
 export neo4j_password="test1234"

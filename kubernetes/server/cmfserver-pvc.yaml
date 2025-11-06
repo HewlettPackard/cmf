@@ -14,7 +14,20 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: pvc-server-static
+  name: pvc-server-data-env
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: pv-server-data-env
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-server-data-static
 spec:
   storageClassName: ""
   accessModes:
@@ -22,7 +35,20 @@ spec:
   resources:
     requests:
       storage: 20Gi
-  volumeName: pv-server-static  
+  volumeName: pv-server-data-static
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-server-data-labels
+spec:
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: pv-server-data-labels
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
