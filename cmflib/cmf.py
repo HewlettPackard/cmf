@@ -1703,7 +1703,7 @@ Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 Cmf.log_label_with_version = log_label_with_version
 
-def metadata_push(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None):
+def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None):
     """ Pushes metadata file to CMF-server.
     
     ```python
@@ -1725,7 +1725,7 @@ def metadata_push(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", ten
     return output
 
 
-def metadata_pull(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", execution_uuid: t.Optional[str] = None):
+def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.Optional[str] = None):
     """ Pulls metadata file from CMF-server. 
     
     ```python 
@@ -1746,7 +1746,7 @@ def metadata_pull(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", exe
     return output
 
 
-def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, file_name: t.Optional[str] = "./mlmd"):
+def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, file_name: str = "./mlmd"):
     """ Export local mlmd's metadata in json format to a json file. 
     
     ```python 
@@ -1767,7 +1767,7 @@ def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, 
     return output
 
 
-def artifact_pull(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", artifact_name: t.Optional[str] = None):
+def artifact_pull(pipeline_name: str, file_name: str = "./mlmd", artifact_name: t.Optional[str] = None):
     """ Pulls artifacts from the initialized repository.
     
     ```python
@@ -1789,7 +1789,7 @@ def artifact_pull(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", art
 
 
 # Prevent multiplying str with NoneType; added default value to jobs.
-def artifact_push(pipeline_name: str, filepath: t.Optional[str] = "./mlmd", jobs: t.Optional[str] = "32"):
+def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: str = "32"):
     """ Pushes artifacts to the initialized repository.
     
     ```python
@@ -2032,7 +2032,7 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list(file_name: t.Optional[str] = "./mlmd"):
+def pipeline_list(file_name: str = "./mlmd"):
     """ Display a list of pipeline name(s) from the available input metadata file.
 
     ```python
@@ -2045,12 +2045,12 @@ def pipeline_list(file_name: t.Optional[str] = "./mlmd"):
     Returns:
         Output from the _pipeline_list function.
     """
-    # Optional arguments: file_name( path to store the MLMD file)
+    # Optional arguments with default value: file_name( path to store the MLMD file)
     output = _pipeline_list(file_name)
     return output
 
 
-def execution_list(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", execution_uuid: t.Optional[str] = None):
+def execution_list(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.Optional[str] = None):
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
 
     ```python 
@@ -2071,7 +2071,7 @@ def execution_list(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", ex
     return output
 
 
-def artifact_list(pipeline_name: str, file_name: t.Optional[str] = "./mlmd", artifact_name: t.Optional[str] = None):
+def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: t.Optional[str] = None):
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     
     ```python 
@@ -2136,7 +2136,7 @@ def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""
     return output
 
 
-def dvc_ingest(file_name: t.Optional[str] = "./mlmd"):
+def dvc_ingest(file_name: str = "./mlmd"):
     """ Ingests metadata from the dvc.lock file into the CMF. 
         If an existing MLMD file is provided, it merges and updates execution metadata 
         based on matching commands, or creates new executions if none exist.
