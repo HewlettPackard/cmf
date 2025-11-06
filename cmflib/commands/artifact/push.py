@@ -39,14 +39,12 @@ from cmflib.cmf_exception_handling import (
 class CmdArtifactPush(CmdBase):
     def run(self, live):
         dvc_config_op, config_file_path = fetch_cmf_config_path()
-        
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name, 
             "jobs": self.args.jobs,
         }
         for arg_name, arg_value in cmd_args.items():
-            print(arg_name," ",arg_value)
             if arg_value:
                 if arg_value[0] == "":
                     raise MissingArgument(arg_name)

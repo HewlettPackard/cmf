@@ -46,20 +46,23 @@ def _metadata_push(
     Returns:
         Output from the metadata push command.
     """
-    cli_args = cli.parse_args(
-        [
+    cli_args = [
             "metadata",
             "push",
             "-p",
             pipeline_name,
             "-f",
             file_name,
-            "-e",
-            execution_uuid,
-            "-t",
-            tensorboard_path,
         ]
-    )
+    
+    # Only append the execution_uuid and tensorboard path flag if a real value was supplied
+    if execution_uuid:
+         cli_args.extend(["-e", execution_uuid])
+    if tensorboard_path:
+       cli_args.extend(["-t", tensorboard_path])
+
+    
+    cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
@@ -104,18 +107,19 @@ def _metadata_export(pipeline_name: str, json_file_name: str, file_name: str) ->
      Returns: 
         Output from the metadata export command. 
      """
-    cli_args = cli.parse_args(
-        [
+    cli_args = [
             "metadata",
             "export",
             "-p",
             pipeline_name,
-            "-j",
-            json_file_name,
             "-f",
             file_name,
         ]
-    )
+    #  Only append the json_file_name flag if a real value was supplied
+    if json_file_name:
+       cli_args.extend(["-j", json_file_name])
+
+    cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
@@ -158,18 +162,19 @@ def _artifact_pull(pipeline_name: str, file_name: str, artifact_name: str) -> st
     Returns:
         Output from the artifact pull command.
     """
-    cli_args = cli.parse_args(
-        [
+    cli_args = [
             "artifact",
             "pull",
             "-p",
             pipeline_name,
             "-f",
             file_name,
-            "-a",
-            artifact_name,
         ]
-    )
+    # Only append the optional artifact name flag if a real value was supplied
+    if not artifact_name:
+         cli_args.extend(["-a", artifact_name])
+         
+    cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
@@ -407,18 +412,19 @@ def _artifact_list(pipeline_name: str, file_name: str, artifact_name: str) -> st
     Returns:
        Output from the artifact list command.
     """
-    cli_args = cli.parse_args(
-        [
+    cli_args = [
             "artifact",
             "list",
             "-p",
             pipeline_name,
             "-f",
             file_name,
-            "-a",
-            artifact_name,
         ]
-    )
+    # Only append the optional artifact name flag if a real value was supplied
+    if artifact_name:
+        cli_args.extend(["-a", artifact_name])
+
+    cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     return msg
@@ -487,22 +493,23 @@ def _repo_push(
     Returns:
        Output from the repo push command.
     """
-    cli_args = cli.parse_args(
-        [
+    cli_args = [
             "repo",
             "push",
             "-p",
             pipeline_name,
             "-f",
             file_name,
-            "-e",
-            execution_uuid,
-            "-t",
-            tensorboard_path,
-            "-j",
-            jobs,
-        ]
-    )
+            ]
+    # Only append the execution_uuid, tensorboard path and jobs flag if a real value was supplied
+    if execution_uuid:
+        cli_args.extend(["-e", execution_uuid])
+    if tensorboard_path:
+        cli_args.extend(["-t", tensorboard_path])
+    if jobs:
+        cli_args.extend(["-j", jobs])
+
+    cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)

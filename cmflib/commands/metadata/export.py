@@ -81,8 +81,7 @@ class CmdMetadataExport(CmdBase):
         pipeline_name = self.args.pipeline_name[0]
 
         if pipeline_name in query.get_pipeline_names():
-            # json_file_name can be None (CLI), [] (no arg), or [None] (command wrapper) 
-            if not self.args.json_file_name or not self.args.json_file_name[0]:         # If self.args.json_file_name is None or an empty list ([]). 
+            if not self.args.json_file_name:
                 json_file_name = pipeline_name
             else:
                 json_file_name = self.args.json_file_name[0].strip()

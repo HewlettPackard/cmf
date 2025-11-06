@@ -104,8 +104,7 @@ class CmdMetadataPush(CmdBase):
             json_payload = query.dumptojson(pipeline_name, None)
 
             # checks if execution is given by user
-            # execution_uuid can be None (CLI), [] (no arg), or [None] (command wrapper) 
-            if not self.args.execution_uuid or not self.args.execution_uuid[0]:         # If self.args.execution_uuid is None or an empty list ([]).
+            if not self.args.execution_uuid:
                 exec_uuid = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_uuid, pipeline_name)
             else:
@@ -188,8 +187,7 @@ class CmdMetadataPush(CmdBase):
                 if response.json()["status"]=="exists":
                     display_output = "Executions already exists."
                     output = ExecutionsAlreadyExists()
-                # tensorboard_path can be None (CLI), [] (no arg), or [None] (command wrapper) 
-                if not self.args.tensorboard_path or not self.args.tensorboard_path[0]:
+                if not self.args.tensorboard_path:
                     return output
                 print(display_output)
                 # /tensorboard api call is done only if mlmd push is successfully completed

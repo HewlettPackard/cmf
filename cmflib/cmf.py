@@ -1789,7 +1789,7 @@ def artifact_pull(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
 
 
 # Prevent multiplying str with NoneType; added default value to jobs.
-def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: str = "32"):
+def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: int = 32):
     """ Pushes artifacts to the initialized repository.
     
     ```python
@@ -1806,7 +1806,7 @@ def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: str = "32"
     """
     # Required arguments: pipeline_name
     # Optional arguments: filepath, jobs
-    output = _artifact_push(pipeline_name, filepath, jobs)
+    output = _artifact_push(pipeline_name, filepath, f"{jobs}")
     return output
 
 
@@ -2092,7 +2092,7 @@ def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
     return output
 
 # Prevent multiplying int with NoneType; added default value to jobs.
-def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "", execution_uuid: str = "", jobs: int = 32):
+def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None, jobs: int = 32):
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     
     ```python 
@@ -2111,11 +2111,11 @@ def repo_push(pipeline_name: str, filepath = "./mlmd", tensorboard_path: str = "
     """
     # Required arguments: pipeline_name
     # Optional arguments: filepath, execution_uuid, tensorboard_path, jobs
-    output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, jobs)
+    output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, f"{jobs}")
     return output
 
 
-def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: str = ""):
+def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: t.Optional[str] = None):
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     
     ```python 
