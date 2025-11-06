@@ -449,18 +449,19 @@ def _execution_list(pipeline_name: str, file_name: str, execution_uuid: str) -> 
     Returns:
        Output from the execution list command.
     """
-    cli_args = cli.parse_args(
-        [
-            "execution",
-            "list",
-            "-p",
-            pipeline_name,
-            "-f",
-            file_name,
-            "-e",
-            execution_uuid,
-        ]
-    )
+    args = [
+        "execution",
+        "list",
+        "-p",
+        pipeline_name,
+        "-f",
+        file_name,
+    ]
+    # Only append the optional execution uuid flag if a real value was supplied
+    if execution_uuid:
+        args.extend(["-e", execution_uuid])
+
+    cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
     print(msg)
