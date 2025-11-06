@@ -57,7 +57,7 @@ def _metadata_push(
     
     # Only append the execution_uuid and tensorboard path flag if a real value was supplied
     if execution_uuid:
-         cli_args.extend(["-e", execution_uuid])
+        cli_args.extend(["-e", execution_uuid])
     if tensorboard_path:
        cli_args.extend(["-t", tensorboard_path])
 
@@ -79,6 +79,9 @@ def _metadata_pull(pipeline_name: str, file_name: str, execution_uuid: str) -> s
      Returns: 
         Output from the metadata pull command. 
      """
+    # Here, We are not extending the cli_args list directly with execution_uuid 
+    # bcaz in our code[cmf/commands/metadata/pull.py], we are assinging execution_uuid as a none 
+    # if it is not present 
     cli_args = cli.parse_args(
         [
             "metadata",

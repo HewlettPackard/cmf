@@ -1958,9 +1958,9 @@ def cmf_init(type: str = "",
             print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
 
-    # Required arguments: url, access_key_id, secret_key, git_remote_url
-    # Optional arguments: session_token, cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
-    elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
+    # Required arguments: url, access_key_id, secret_key, git_remote_url, session_token
+    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
+    elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "" and session_token != "":
         """Initialize amazonS3 repository"""
         output = _init_amazonS3(
             url,
