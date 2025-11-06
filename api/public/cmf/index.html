@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.22">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
@@ -884,15 +884,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cmflib.cmf.artifact_pull_single" class="md-nav__link">
-    <span class="md-ellipsis">
-      artifact_pull_single
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#cmflib.cmf.artifact_push" class="md-nav__link">
     <span class="md-ellipsis">
       artifact_push
@@ -1602,15 +1593,6 @@
   <a href="#cmflib.cmf.artifact_pull" class="md-nav__link">
     <span class="md-ellipsis">
       artifact_pull
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cmflib.cmf.artifact_pull_single" class="md-nav__link">
-    <span class="md-ellipsis">
-      artifact_pull_single
     </span>
   </a>
   
@@ -2914,7 +2896,7 @@ method. Users are also responsible for committing data slices by calling the
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Output from the _cmf_cmd_init function.</p>
+                <p>Output from the _cmf_init_show function.</p>
               </div>
             </td>
           </tr>
@@ -2930,7 +2912,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.cmf_init" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">session_token</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">osdf_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">osdf_cache</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_issuer</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">cmf_init</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">git_remote_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cmf_server_url</span><span class="o">=</span><span class="s1">&#39;http://127.0.0.1:80&#39;</span><span class="p">,</span> <span class="n">url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">endpoint_url</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">access_key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">secret_key</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">session_token</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">osdf_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">osdf_cache</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">key_issuer</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">neo4j_user</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">neo4j_password</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">neo4j_uri</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.cmf_init" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -2940,11 +2922,11 @@ method. Users are also responsible for committing data slices by calling the
         <p>Initializes the CMF configuration based on the provided parameters. </p>
 <div class="highlight"><pre><span></span><code><span class="n">cmf_init</span><span class="p">(</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> 
             <span class="n">path</span><span class="o">=</span><span class="s2">&quot;/path/to/re&quot;</span><span class="p">,</span>
-            <span class="n">git_remote_url</span><span class="o">=</span><span class="s2">&quot;git@github.com:user/repo.git&quot;</span><span class="p">,</span>
-            <span class="n">cmf_server_url</span><span class="o">=</span><span class="s2">&quot;http://cmf-server&quot;</span>
-            <span class="n">neo4j_user</span><span class="s2">&quot;, </span>
+            <span class="n">git_remote_url</span><span class="o">=</span><span class="s2">&quot;https://github.com/hpe-user/experiment-repo.git&quot;</span><span class="p">,</span>
+            <span class="n">cmf_server_url</span><span class="o">=</span><span class="s2">&quot;http://cmf-server:80&quot;</span><span class="p">,</span>
+            <span class="n">neo4j_user</span><span class="o">=</span><span class="s2">&quot;neo4j&quot;</span><span class="p">,</span>
             <span class="n">neo4j_password</span><span class="o">=</span><span class="s2">&quot;password&quot;</span><span class="p">,</span>
-            <span class="n">neo4j_uri</span><span class="o">=</span><span class="s2">&quot;bolt://localhost:76&quot;</span>
+            <span class="n">neo4j_uri</span><span class="o">=</span><span class="s2">&quot;bolt://localhost:7687&quot;</span>
         <span class="p">)</span>
 </code></pre></div>
 
@@ -2962,10 +2944,24 @@ method. Users are also responsible for committing data slices by calling the
       <tbody>
           <tr class="doc-section-item">
             <td>
-                <code>type</code>
+                <code>Required Arguments</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>- type</code>
+            </td>
+            <td>
             </td>
             <td>
               <div class="doc-md-description">
@@ -2973,31 +2969,29 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>path</code>
+                <code>- path</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>Path for the local repository. </p>
+                <p>Path for the local/ssh repository. </p>
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>git_remote_url</code>
+                <code>- git_remote_url</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3005,79 +2999,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>cmf_server_url</code>
+                <code>- url</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>CMF server URL.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>neo4j_user</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Neo4j database username.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>neo4j_password</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Neo4j database password.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>neo4j_uri</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Neo4j database URI.</p>
-              </div>
-            </td>
-            <td>
-                  <code>&#39;&#39;</code>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>url</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3085,15 +3014,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>endpoint_url</code>
+                <code>- endpoint_url</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3101,15 +3029,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>access_key_id</code>
+                <code>- access_key_id</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3117,15 +3044,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>secret_key</code>
+                <code>- secret_key</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3133,15 +3059,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>session_token</code>
+                <code>- session_token</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3149,15 +3074,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>user</code>
+                <code>- user</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3165,15 +3089,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>password</code>
+                <code>- password</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3181,15 +3104,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>port</code>
+                <code>- port</code>
             </td>
             <td>
-                  <code><span title="int">int</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3197,15 +3119,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>0</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>osdf_path</code>
+                <code>- osdf_path</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3213,15 +3134,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>osdf_cache</code>
+                <code>- osdf_cache</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3229,15 +3149,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>key_id</code>
+                <code>- key_id</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3245,15 +3164,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>key_path</code>
+                <code>- key_path</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3261,15 +3179,14 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
             </td>
           </tr>
           <tr class="doc-section-item">
             <td>
-                <code>key_issuer</code>
+                <code>- key_issuer</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3277,7 +3194,97 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>Default Arguments</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>- cmf_server_url</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>CMF server URL. - this is interesting as this has default value.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>Optional Arguments</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>- neo4j_user</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Neo4j database username.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>- neo4j_password</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Neo4j database password.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>- neo4j_uri</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Neo4j database URI.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
             </td>
           </tr>
       </tbody>
@@ -3314,7 +3321,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.metadata_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_push" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3358,6 +3365,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3373,7 +3381,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>execution_uuid</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3381,7 +3389,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -3389,7 +3397,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>tensorboard_path</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3397,7 +3405,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -3434,7 +3442,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.metadata_pull" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_pull" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3478,6 +3486,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3493,7 +3502,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>execution_uuid</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3501,7 +3510,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -3538,7 +3547,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.metadata_export" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">json_file_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">metadata_export</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">json_file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.metadata_export" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3582,7 +3591,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>json_file_name</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3590,7 +3599,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -3598,6 +3607,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3642,7 +3652,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.artifact_pull" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">artifact_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_pull" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3650,7 +3660,7 @@ method. Users are also responsible for committing data slices by calling the
     <div class="doc doc-contents ">
 
         <p>Pulls artifacts from the initialized repository.</p>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;artifact_name)</span>
 </code></pre></div>
 
 
@@ -3686,6 +3696,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3694,6 +3705,22 @@ method. Users are also responsible for committing data slices by calling the
             </td>
             <td>
                   <code>&#39;./mlmd&#39;</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>artifact_name</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Name of the artifact</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -3729,111 +3756,6 @@ method. Users are also responsible for committing data slices by calling the
 <div class="doc doc-object doc-function">
 
 
-<h3 id="cmflib.cmf.artifact_pull_single" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_pull_single</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">artifact_name</span><span class="p">)</span></code>
-
-<a href="#cmflib.cmf.artifact_pull_single" class="headerlink" title="Permanent link">&para;</a></h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Pulls a single artifact from the initialized repository. </p>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_pull_single</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;example_artifact&quot;</span><span class="p">)</span> 
-</code></pre></div>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>pipeline_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of the pipeline. </p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>file_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Specify input metadata file name.</p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-          <tr class="doc-section-item">
-            <td>
-                <code>artifact_name</code>
-            </td>
-            <td>
-                  <code><span title="str">str</span></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Name of the artifact. </p>
-              </div>
-            </td>
-            <td>
-                <em>required</em>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Output from the _artifact_pull_single function.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-<div class="doc doc-object doc-function">
-
-
 <h3 id="cmflib.cmf.artifact_push" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">artifact_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span></code>
 
@@ -3843,7 +3765,7 @@ method. Users are also responsible for committing data slices by calling the
     <div class="doc doc-contents ">
 
         <p>Pushes artifacts to the initialized repository.</p>
-<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+<div class="highlight"><pre><span></span><code><span class="n">result</span> <span class="o">=</span> <span class="n">artifact_push</span><span class="p">(</span><span class="s2">&quot;example_pipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;./mlmd_directory&quot;</span><span class="p">,</span> <span class="s2">&quot;32&quot;</span><span class="p">)</span>
 </code></pre></div>
 
 
@@ -3879,6 +3801,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>filepath</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3939,7 +3862,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.artifact_list" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">artifact_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">artifact_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.artifact_list" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -3983,6 +3906,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3998,7 +3922,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>artifact_name</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4006,7 +3930,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -4071,6 +3995,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4115,7 +4040,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.execution_list" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">execution_list</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.execution_list" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -4159,6 +4084,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4174,7 +4100,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>execution_uuid</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4182,7 +4108,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -4219,7 +4145,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.repo_push" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">repo_push</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">filepath</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">tensorboard_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">jobs</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.repo_push" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -4278,7 +4204,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>execution_uuid</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4286,7 +4212,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -4294,7 +4220,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>tensorboard_path</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4302,7 +4228,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
           <tr class="doc-section-item">
@@ -4355,7 +4281,7 @@ method. Users are also responsible for committing data slices by calling the
 
 
 <h3 id="cmflib.cmf.repo_pull" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">repo_pull</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="s1">&#39;./mlmd&#39;</span><span class="p">,</span> <span class="n">execution_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 <a href="#cmflib.cmf.repo_pull" class="headerlink" title="Permanent link">&para;</a></h3>
 
@@ -4414,7 +4340,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>execution_uuid</code>
             </td>
             <td>
-                  <code><span title="str">str</span></code>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4422,7 +4348,7 @@ method. Users are also responsible for committing data slices by calling the
               </div>
             </td>
             <td>
-                  <code>&#39;&#39;</code>
+                  <code>None</code>
             </td>
           </tr>
       </tbody>
@@ -4489,6 +4415,7 @@ method. Users are also responsible for committing data slices by calling the
                 <code>file_name</code>
             </td>
             <td>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
