@@ -46,7 +46,7 @@ class CmdExecutionList(CmdBase):
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
-                
+
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
@@ -70,7 +70,7 @@ class CmdExecutionList(CmdBase):
             raise PipelineNotFound(pipeline_name)
         else:
             # Process execution ID if provided
-            if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
+            if not self.args.execution_uuid:
                 pass
             else:
                 # When user reuses execution, execution_uuid get appeneded separated by ",

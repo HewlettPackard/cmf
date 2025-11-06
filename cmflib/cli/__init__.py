@@ -49,13 +49,14 @@ def parse_args(argv=None):
     from .parser import get_main_parser
 
     parser = get_main_parser()
+    # this parse_args is inbuilt method of parser
     args = parser.parse_args(argv)
 
     args.parser = parser
     return args
 
 
-def main(argv=None):
+def main(argv = None):
     """Main entry point for cmf CLI.
 
     Args:

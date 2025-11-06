@@ -125,7 +125,7 @@ class CmdArtifactsList(CmdBase):
         if df.empty:
             raise PipelineNotFound(pipeline_name)
         else:
-            if not self.args.artifact_name:         # If self.args.artifact_name is None or an empty list ([]). 
+            if not self.args.artifact_name:        # If self.args.artifact_name is None or an empty list ([]).
                 pass
             else:
                 artifact_ids = self.search_artifact(df)

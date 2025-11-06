@@ -66,7 +66,8 @@ class CmdRepoPull(CmdBase):
             if artifact_pull_result.status == "success":
                 print(artifact_pull_result.handle())   # Print the message returned by the handle() method of the artifact_pull_result object.
                 print("Executing git pull command..")
-                live.stop()
+                if live:
+                    live.stop()
                 return self.git_pull()
 
 
