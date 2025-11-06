@@ -35,7 +35,22 @@ class FastAPIClient {
       baseURL: `${config.apiBasePath}/`,
     };
     const client = axios.create(initialConfig);
-    /* client.interceptors.request.use(localStorageTokenInterceptor);*/
+    
+    // Simple error interceptor
+    client.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        console.error('API Error:', error);
+        // Show simple error message to user
+        if (error.response?.status >= 500) {
+          alert('Server error. Please try again later.');
+        } else if (error.request && !error.response) {
+          alert('Unable to connect to server. Please check your connection.');
+        }
+        return Promise.reject(error);
+      }
+    );
+    
     return client;
   }
 
@@ -126,7 +141,8 @@ class FastAPIClient {
       const { data } = await this.apiClient.get(`/pipelines`);
       return data;
     } catch (error) {
-      console.error(error);
+      // Error already handled by interceptor, just return empty array
+      return [];
     }
   }
 
@@ -168,11 +184,11 @@ class FastAPIClient {
     });
   }
 
-  async getServerRegistration(server_name, host_info){
+  async getServerRegistration(server_name, server_url){
     return this.apiClient
       .post(`/register-server`, {
           server_name: server_name,
-          host_info: host_info,
+          server_url: server_url,
       })
       .then(({ data }) => {
         return data;
@@ -187,11 +203,11 @@ class FastAPIClient {
       });
   }
 
-  async sync(serverName, addressType) {
+  async sync(serverName, serverUrl) {
     return this.apiClient
       .post(`/sync`, {
         server_name: serverName,
-        host_info: addressType,
+        server_url: serverUrl,
       })
       .then(({ data }) => {
         return data;

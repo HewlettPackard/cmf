@@ -15,7 +15,7 @@ The installation process consists of following components:
 Before installing CMF, ensure you have the following prerequisites:
 
 - **Linux/Ubuntu/Debian**
-- **Python**: Version 3.9 to 3.10 (3.10 recommended)
+- **Python**: Version 3.9 to 3.11 (3.10 recommended)
   
   > ⚠️ **Warning:** "Python 3.9 Installation Issue on Ubuntu"
   >
