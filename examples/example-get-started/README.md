@@ -8,7 +8,7 @@ See [Getting Started Tutorial](./../../docs/examples/getting_started.md) page fo
 
 2. Copy contents of `example-get-started` directory to a separate directory outside this repository.
 
-3. Initialise the project using [`cmf init`](./../../docs/cmf_client/cmf_client.md#cmf-init) command.
+3. Initialise the project using [`cmf init`](./../../docs/cmf_client/cmf_client_commands.md#cmf-init) command.
 
 4. Execute `sh test_script.sh`. This file mimics a Machine Learning pipeline. It has the following stages: 
    [parse](./src/parse.py), [featurize](./src/featurize.py), [train](./src/train.py) and [test](./src/test.py). It will
