@@ -109,55 +109,36 @@ Before installing CMF, ensure you have the following prerequisites:
    cd cmf
    ```
 
-2. **Update your username in `docker-compose-server.yml`:**
+2. **Create a `.env` file in the same directory as `docker-compose-server.yml` with environment variables:**
 
-   Replace `xxxx` with your actual username in the following paths inside the `docker-compose-server.yml` file (found in the root `cmf` directory):
-
-   ```yaml
-   services:
-     server:
-       image: server:latest
-       volumes:
-         - /home/xxxx/cmf-server/data:/cmf-server/data                 # e.g., /home/hpe-user/cmf-server/data:/cmf-server/data
-         - /home/xxxx/cmf-server/data/static:/cmf-server/data/static   # e.g., /home/hpe-user/cmf-server/data/static:/cmf-server/data/static
-       container_name: cmf-server
-       build:
-         ...
-   ```
-
-3. **Create a `.env` file in the same directory as `docker-compose-server.yml` with environment variables:**
-
+   **Required variables:**
    ```env
-   POSTGRES_USER=myuser
-   POSTGRES_PASSWORD=mypassword
-   POSTGRES_PORT=5470
+   CMF_DATA_DIR=./data                    
+   NGINX_HTTP_PORT=80                  
+   NGINX_HTTPS_PORT=443
+   REACT_APP_CMF_API_URL=http://your-server-ip:80
    ```
+   
+   > 📝 **Note:** 
+   > - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
+   > - `REACT_APP_CMF_API_URL` should point to your server's accessible address.
 
-   > ⚠️ **Warning:** Avoid using the `@` character in `POSTGRES_PASSWORD` to prevent connection issues.
-
-4. **Start the containers:**
-
-   Execute one of the following commands. Replace `IP` with the machine’s IP address or `hostname` with its hostname:
+3. **Start the containers:**
 
    ```bash
-   IP=200.200.200.200 docker compose -f docker-compose-server.yml up
-   # OR
-   hostname=your_hostname docker compose -f docker-compose-server.yml up
+   docker compose -f docker-compose-server.yml up
    ```
 
-   > 📝 **Note:**
-   >
-   > * Replace `docker compose` with `docker-compose` if you're using an older version of Docker.
-   > * You can also set the IP directly in `docker-compose-server.yml` and omit it in the command:
+   > 📝 **Note:** Replace `docker compose` with `docker-compose` if you're using an older version of Docker.
 
-   ```yaml
-   environment:
-     REACT_APP_MY_IP: ${IP}
-   ```
+   This command starts all services:
+   - **PostgreSQL**: Database backend for metadata storage
+   - **CMF Server**: API server for metadata management
+   - **UI**: Web interface for visualization
+   - **TensorBoard**: For viewing ML training metrics
+   - **Nginx**: Reverse proxy serving all components
 
-5. **Stop the containers:**
-
-   ```bash
+4. **Stop the containers:**   ```bash
    docker compose -f docker-compose-server.yml stop
    ```
 
