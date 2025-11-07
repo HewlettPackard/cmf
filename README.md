@@ -86,7 +86,7 @@ pip install cmflib
 
 - [Getting Started](https://hewlettpackard.github.io/cmf/)
 - [API Reference](https://hewlettpackard.github.io/cmf/api/public/cmf)
-- [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/cmf_client)
+- [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/index)
 - [Related Docs](https://deepwiki.com/HewlettPackard/cmf)
 
 ---
@@ -153,7 +153,7 @@ cmf metadata push            # Push metadata to server
 cmf metadata pull            # Pull metadata from server
 ```
 	
-➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_client/cmf_client">Command Reference</a>
+➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_clientindext">Command Reference</a>
 
 
 ---
