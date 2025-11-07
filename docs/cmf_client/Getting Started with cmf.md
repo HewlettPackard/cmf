@@ -31,7 +31,7 @@ cmf-server is the primary interface for the user to explore and track their ML t
 metadata. Users can retrieve the saved metadata file and can view the content of the saved metadata file using
 the UI provided by the cmf-server.
 
-Details on how to set up a cmf-server can be found [here](../cmf_server/cmf-server.md).
+Details on how to set up a cmf-server can be found [here](../cmf_server/index.md).
 
 ## Simple Example of using the CMF Client
 In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a MinIO
@@ -52,13 +52,13 @@ cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 \
   --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git \
   --cmf-server-url http://x.x.x.x:80  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
 ```
-Check [here](./cmf_client.md) for more details.
+Check [here](./cmf_client_commands.md) for more details.
 
 **Check status of CMF initialization (Optional)**
 ```
 cmf init show
 ```
-Check [here](./cmf_client.md) for more details.
+Check [here](./cmf_client_commands.md) for more details.
 
 **Track metadata using cmflib**
 
@@ -72,13 +72,13 @@ Push artifacts in the artifact repo initialized in the [Initialize cmf](#initial
 ```
 cmf artifact push
 ```
-Check [here](./cmf_client.md) for more details.
+Check [here](./cmf_client_commands.md) for more details.
 
 **Push metadata to cmf-server**
 ```
 cmf metadata push -p 'Test-env'
 ```
-Check [here](./cmf_client.md) for more details.
+Check [here](./cmf_client_commands.md) for more details.
 
 ### cmf-client with collaborative development
 In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
@@ -89,7 +89,7 @@ Execute `cmf metadata` command in the `example_folder`.
 ```
 cmf metadata pull -p 'Test-env'
 ```
-Check [here](./cmf_client.md) for more details.
+Check [here](./cmf_client_commands.md) for more details.
 
 **Pull artifacts from the central artifact repo**
 
@@ -97,7 +97,7 @@ Execute `cmf artifact` command in the `example_folder`.
 ```
 cmf artifact pull -p "Test-env"
 ```
-Check [here](./cmf_client.md) for more details.
+Check [here](./cmf_client_commands.md) for more details.
 
 ## Flow Chart for cmf
 ![Flow chart for cmf](../assets/flow_chart_cmf.jpg)
