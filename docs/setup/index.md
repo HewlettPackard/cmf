@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # CMF Installation & Setup Guide
+=======
+# `cmf` Installation & Setup Guide
+>>>>>>> master
 
 This guide provides step-by-step instructions for installing, configuring, and using CMF (Common Metadata Framework) for ML pipeline metadata tracking.
 
