@@ -13,22 +13,22 @@
       
       
       
-        <link rel="prev" href="../../cmf_server/metahub-tab-usage/">
+        <link rel="prev" href="../api/public/API/">
       
       
-        <link rel="next" href="../../ui/">
+        <link rel="next" href="cmf_client_commands/">
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.23">
     
     
       
-        <title>🏃🏼‍♂️ cmf-client - CMF</title>
+        <title>💻 CLI Reference - CMF</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.84d31ad4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.84d31ad4.min.css">
       
       
 
@@ -47,11 +47,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../extra.css">
+      <link rel="stylesheet" href="../extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quick-start-with-cmf-client" class="md-skip">
+        <a href="#quick-start-with-cmf-client-needs-to-be-updated" class="md-skip">
           Skip to content
         </a>
       
@@ -86,7 +86,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href=".." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              🏃🏼‍♂️ cmf-client
+              💻 CLI Reference
             
           </span>
         </div>
@@ -196,7 +196,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href=".." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -266,7 +266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -300,8 +300,9 @@
         <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
         
           
-          <label class="md-nav__link" for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../architecture/" class="md-nav__link ">
+              
   
   
   <span class="md-ellipsis">
@@ -310,8 +311,14 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
         <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_2">
@@ -327,30 +334,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/overview/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Overview
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/components/" class="md-nav__link">
+      <a href="../architecture/components/" class="md-nav__link">
         
   
   
@@ -373,7 +357,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/advantages/" class="md-nav__link">
+      <a href="../architecture/advantages/" class="md-nav__link">
         
   
   
@@ -404,7 +388,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../setup/" class="md-nav__link">
+      <a href="../setup/" class="md-nav__link">
         
   
   
@@ -426,239 +410,13 @@
   
   
   
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_1_4" id="__nav_1_4_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    🗄️ cmf-server
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_4">
-            <span class="md-nav__icon md-icon"></span>
-            🗄️ cmf-server
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../../cmf_server/cmf-server/" class="md-nav__link">
+      <a href="../examples/getting_started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Introduction
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../cmf_server/metahub-tab-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Metahub
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    🏃🏼‍♂️ cmf-client
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    🏃🏼‍♂️ cmf-client
-    
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#install-cmf-library-ie-cmflib" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install cmf library i.e. cmflib
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-cmf-server" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install cmf-server
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#setup-a-cmf-client" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setup a cmf-client
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-to-effectively-use-cmf-client" class="md-nav__link">
-    <span class="md-ellipsis">
-      How to effectively use cmf-client?
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="How to effectively use cmf-client?">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initialize-cmf" class="md-nav__link">
-    <span class="md-ellipsis">
-      Initialize cmf
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cmf-client-with-collaborative-development" class="md-nav__link">
-    <span class="md-ellipsis">
-      cmf-client with collaborative development
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#flow-chart-for-cmf" class="md-nav__link">
-    <span class="md-ellipsis">
-      Flow Chart for cmf
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../ui/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    🖥️ cmf-gui
+    🎯 Getting Started Tutorial
     
   </span>
   
@@ -684,80 +442,12 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
         
           
-          <label class="md-nav__link" for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    🎯 Examples
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_7">
-            <span class="md-nav__icon md-icon"></span>
-            🎯 Examples
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="../cmflib/" class="md-nav__link ">
               
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../examples/getting_started/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Getting Started Tutorial
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_1_8" id="__nav_1_8_label" tabindex="0">
-            
   
   
   <span class="md-ellipsis">
@@ -766,11 +456,17 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_8">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5">
             <span class="md-nav__icon md-icon"></span>
             🐍 API Reference
           </label>
@@ -783,12 +479,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmf/" class="md-nav__link">
+      <a href="../api/public/cmf/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Overview
+    Cmf
     
   </span>
   
@@ -806,68 +502,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmflib/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    cmflib
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_1_8_3" id="__nav_1_8_3_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Data Types
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_8_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_8_3">
-            <span class="md-nav__icon md-icon"></span>
-            Data Types
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../api/public/dataslice/" class="md-nav__link">
+      <a href="../api/public/dataslice/" class="md-nav__link">
         
   
   
@@ -890,7 +525,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmfquery/" class="md-nav__link">
+      <a href="../api/public/cmfquery/" class="md-nav__link">
         
   
   
@@ -906,9 +541,24 @@
 
               
             
-          </ul>
-        </nav>
-      
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/public/cmfserver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    cmf-server
+    
+  </span>
+  
+
+      </a>
     </li>
   
 
@@ -921,7 +571,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmf_ray_logger/" class="md-nav__link">
+      <a href="../api/public/cmf_ray_logger/" class="md-nav__link">
         
   
   
@@ -944,7 +594,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/API/" class="md-nav__link">
+      <a href="../api/public/API/" class="md-nav__link">
         
   
   
@@ -972,22 +622,25 @@
                 
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_1_9" id="__nav_1_9_label" tabindex="0">
-            
+          <div class="md-nav__link md-nav__container">
+            <a href="./" class="md-nav__link md-nav__link--active">
+              
   
   
   <span class="md-ellipsis">
@@ -996,11 +649,17 @@
   </span>
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
+            </a>
+            
+              
+              <label class="md-nav__link md-nav__link--active" for="__nav_1_6" id="__nav_1_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_9">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1_6">
             <span class="md-nav__icon md-icon"></span>
             💻 CLI Reference
           </label>
@@ -1013,12 +672,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../cmf_client/" class="md-nav__link">
+      <a href="cmf_client_commands/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Overview
+    cmf-client commands
     
   </span>
   
@@ -1036,30 +695,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../Getting%20Started%20with%20cmf/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    Getting Started with CMF
-    
-  </span>
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../cmf-dvc-ingest-guide/" class="md-nav__link">
+      <a href="cmf-dvc-ingest-guide/" class="md-nav__link">
         
   
   
@@ -1082,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../neo4j_docker/" class="md-nav__link">
+      <a href="neo4j_docker/" class="md-nav__link">
         
   
   
@@ -1113,10 +749,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_9_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6_4" >
         
           
-          <label class="md-nav__link" for="__nav_1_9_5" id="__nav_1_9_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_1_6_4" id="__nav_1_6_4_label" tabindex="0">
             
   
   
@@ -1129,8 +765,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_9_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_1_9_5">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_6_4">
             <span class="md-nav__icon md-icon"></span>
             Storage Backends
           </label>
@@ -1143,7 +779,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../minio-server/" class="md-nav__link">
+      <a href="minio-server/" class="md-nav__link">
         
   
   
@@ -1166,12 +802,35 @@
   
   
     <li class="md-nav__item">
-      <a href="../ssh-setup/" class="md-nav__link">
+      <a href="ssh-setup/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     SSH Setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="cmf_osdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    OSDF
     
   </span>
   
@@ -1205,7 +864,53 @@
   
   
     <li class="md-nav__item">
-      <a href="../tensorflow_guide/" class="md-nav__link">
+      <a href="../ui/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    🖥️ GUI Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cmf_server/metahub-tab-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    🏃🏼‍♂️ Metahub
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="tensorflow_guide/" class="md-nav__link">
         
   
   
@@ -1228,7 +933,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../common-metadata-ontology/readme/" class="md-nav__link">
+      <a href="../common-metadata-ontology/readme/" class="md-nav__link">
         
   
   
@@ -1278,18 +983,9 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#install-cmf-library-ie-cmflib" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
-      Install cmf library i.e. cmflib
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#install-cmf-server" class="md-nav__link">
-    <span class="md-ellipsis">
-      Install cmf-server
+      Prerequisites
     </span>
   </a>
   
@@ -1362,47 +1058,50 @@
 
 
 
-<h1 id="quick-start-with-cmf-client">Quick start with cmf-client<a class="headerlink" href="#quick-start-with-cmf-client" title="Permanent link">&para;</a></h1>
-<p>Common metadata framework (cmf) has the following components:</p>
+<h1 id="quick-start-with-cmf-client-needs-to-be-updated">Quick start with cmf-client [NEEDS TO BE UPDATED]<a class="headerlink" href="#quick-start-with-cmf-client-needs-to-be-updated" title="Permanent link">¤</a></h1>
+<p>Common metadata framework (<code>cmf</code>) has the following components:</p>
 <ul>
 <li><strong>Metadata Library</strong>: exposes APIs for tracking pipeline metadata and provides endpoints to query stored metadata.</li>
-<li><strong>cmf-client</strong>: handles metadata exchange with the CMF server, pushes and pulls artifacts from the artifact repository, and syncs code to and from GitHub.</li>
-<li><strong>cmf-server</strong>: interacts with all the remote clients and is responsible for merging the metadata transferred by the <code>cmf-client</code> and managing the consolidated metadata.</li>
+<li><strong>cmf-client</strong>: handles metadata exchange with the <code>cmf-server</code>, pushes and pulls artifacts from the artifact repository, and syncs code to and from GitHub.</li>
+<li><strong>cmf-server</strong>: interacts with all the remote clients and is responsible for merging the metadata transferred by the <code>cmf-client</code> and manage the consolidated metadata.</li>
 <li><strong>Central Artifact Repositories</strong>: host the code and data.</li>
 </ul>
-<h2 id="install-cmf-library-ie-cmflib">Install cmf library i.e. cmflib<a class="headerlink" href="#install-cmf-library-ie-cmflib" title="Permanent link">&para;</a></h2>
-<p>Before proceeding, ensure that the CMF library is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/#install-cmf-library-ie-cmflib">Installation &amp; Setup</a> page.</p>
-<h2 id="install-cmf-server">Install cmf-server<a class="headerlink" href="#install-cmf-server" title="Permanent link">&para;</a></h2>
-<p>cmf-server is a key interface for the user to explore and track their ML training runs. It allows users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and can view the content of the saved metadata file using the UI provided by the cmf-server.</p>
-<p>Follow the instructions on the <a href="../../setup/#install-cmf-server">Installation &amp; Setup</a> page for details on how to setup a cmf-server.</p>
-<h2 id="setup-a-cmf-client">Setup a cmf-client<a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">&para;</a></h2>
-<p>cmf-client is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the cmf-server.</p>
-<p>Follow the below-mentioned steps for the end-to-end setup of cmf-client:-</p>
+<p>This tutorial walks you through the process of setting up the <code>cmf-client</code>.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¤</a></h2>
+<p>Before proceeding with the setup, ensure the following components are up and running:</p>
+<ul>
+<li><a href="../setup/#install-cmf-library-ie-cmflib">cmflib</a></li>
+<li><a href="../setup/#install-cmf-server-with-gui">cmf-server</a></li>
+</ul>
+<p>Make sure there are no errors during their startup, as <code>cmf-client</code> depends on both of these components.</p>
+<h2 id="setup-a-cmf-client">Setup a <code>cmf-client</code><a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">¤</a></h2>
+<p><code>cmf-client</code> is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the <code>cmf-server</code>.</p>
+<p>Follow the below-mentioned steps for the end-to-end setup of <code>cmf-client</code>:-</p>
 <p><strong>Configuration</strong></p>
 <ol>
 <li>Create working directory <code>mkdir &lt;workdir&gt;</code></li>
-<li>Execute <code>cmf init</code> to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the <a href="../cmf_client/#cmf-init">Getting started with cmf-client commands</a> page for more details.</li>
+<li>Execute <code>cmf init</code> to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the <a href="cmf_client_commands/#cmf-init"><code>cmf init</code></a> for more details.</li>
 </ol>
-<h2 id="how-to-effectively-use-cmf-client">How to effectively use cmf-client?<a class="headerlink" href="#how-to-effectively-use-cmf-client" title="Permanent link">&para;</a></h2>
+<h2 id="how-to-effectively-use-cmf-client">How to effectively use cmf-client?<a class="headerlink" href="#how-to-effectively-use-cmf-client" title="Permanent link">¤</a></h2>
 <p>Let's assume we are tracking the metadata for a pipeline named <code>Test-env</code> with a MinIO S3 bucket as the artifact repository and a cmf-server.</p>
 <p><strong>Create a folder</strong>
 <div class="highlight"><pre><span></span><code>mkdir example-folder
 </code></pre></div></p>
-<h3 id="initialize-cmf">Initialize cmf<a class="headerlink" href="#initialize-cmf" title="Permanent link">&para;</a></h3>
+<h3 id="initialize-cmf">Initialize cmf<a class="headerlink" href="#initialize-cmf" title="Permanent link">¤</a></h3>
 <p>CMF initialization is the first and foremost step to use cmf-client commands. This command, in one go, completes the initialization process, making cmf-client user friendly. Execute <code>cmf init</code> in the <code>example-folder</code> directory created in the above step.
 <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 <blockquote>
 <p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
 </blockquote>
-<p>Check <a href="../cmf_client/#cmf-init-minios3">Getting started with cmf-client commands</a> page for more details.</p>
+<p>Check <a href="cmf_client_commands/#cmf-init-minios3">cmf init minioS3</a> for more details.</p>
 <p><strong>Check status of CMF initialization (Optional)</strong>
 <div class="highlight"><pre><span></span><code>cmf init show
 </code></pre></div>
-Check <a href="../cmf_client/#cmf-init-show">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="cmf_client_commands/#cmf-init-show">cmf init show</a> for more details.</p>
 <p><strong>Track metadata using cmflib</strong></p>
 <p>Use <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md">Sample projects</a> as a reference to create a new project to track metadata for ML pipelines.</p>
-<p>More information is available inside <a href="../../examples/getting_started/">Getting Started</a>.</p>
+<p>More information is available inside <a href="../examples/getting_started/">Getting Started Tutorial</a>.</p>
 <blockquote>
 <p>Before pushing artifacts or metadata, ensure that the cmf server and minioS3 are up and running.</p>
 </blockquote>
@@ -1410,25 +1109,27 @@ Check <a href="../cmf_client/#cmf-init-show">Getting started with cmf-client com
 <p>Push artifacts in the artifact repo initialized in the <a href="#initialize-cmf">Initialize cmf</a> step.
 <div class="highlight"><pre><span></span><code>cmf artifact push -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/#cmf-artifact-push">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="cmf_client_commands/#cmf-artifact-push">cmf artifact push</a> for more details.</p>
 <p><strong>Push metadata to cmf-server</strong>
 <div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/#cmf-metadata-push">Getting started with cmf-client commands</a> page for more details.</p>
-<h3 id="cmf-client-with-collaborative-development">cmf-client with collaborative development<a class="headerlink" href="#cmf-client-with-collaborative-development" title="Permanent link">&para;</a></h3>
+Check <a href="cmf_client_commands/#cmf-metadata-push">cmf metadata push</a> for more details.</p>
+<h3 id="cmf-client-with-collaborative-development">cmf-client with collaborative development<a class="headerlink" href="#cmf-client-with-collaborative-development" title="Permanent link">¤</a></h3>
 <p>In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.</p>
 <p><strong>Pull metadata from the server</strong></p>
-<p>Execute <code>cmf metadata</code> command in the <code>example_folder</code>.
+<p>Execute <code>cmf metadata pull</code> command in the <code>example_folder</code>.
 <div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/#cmf-metadata-pull">Getting started with cmf-client commands</a> page for more details.</p>
+Check <a href="cmf_client_commands/#cmf-metadata-pull">cmf metadata pull</a> for more details.</p>
 <p><strong>Pull artifacts from the central artifact repo</strong></p>
-<p>Execute <code>cmf artifact</code> command in the <code>example_folder</code>.
+<p>Execute <code>cmf artifact pull</code> command in the <code>example_folder</code>.
 <div class="highlight"><pre><span></span><code>cmf artifact pull -p &#39;Test-env&#39;
 </code></pre></div>
-Check <a href="../cmf_client/#cmf-artifact-pull">Getting started with cmf-client commands</a> page for more details.</p>
-<h2 id="flow-chart-for-cmf">Flow Chart for cmf<a class="headerlink" href="#flow-chart-for-cmf" title="Permanent link">&para;</a></h2>
-<p><img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" /></p>
+Check <a href="cmf_client_commands/#cmf-artifact-pull">cmf artifact pull</a> page for more details.</p>
+<h2 id="flow-chart-for-cmf">Flow Chart for cmf<a class="headerlink" href="#flow-chart-for-cmf" title="Permanent link">¤</a></h2>
+<p><img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
+<code>cmf-client</code> is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull/push metadata from or to the <code>cmf-server</code> with similar functionalities for artifact repositories and other commands. 
+** NEEDS TO BE UPDATED **</p>
 
 
 
@@ -1504,10 +1205,10 @@ Check <a href="../cmf_client/#cmf-artifact-pull">Getting started with cmf-client
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
         <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
       
