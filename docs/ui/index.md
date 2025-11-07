@@ -1,6 +1,6 @@
-# Getting Started with cmf-gui
+# Getting Started with CMF GUI
 
-The cmf-gui provides an intuitive, browser-based interface for exploring ML pipeline metadata, visualizing lineage relationships, and monitoring experiment progress. Built with React and D3.js, it offers interactive dashboards for artifacts, executions, and pipeline lineage.
+The CMF GUI provides an intuitive, browser-based interface for exploring ML pipeline metadata, visualizing lineage relationships, and monitoring experiment progress. Built with React and D3.js, it offers interactive dashboards for artifacts, executions, and pipeline lineage.
 
 ## Artifacts and Executions Pages
 

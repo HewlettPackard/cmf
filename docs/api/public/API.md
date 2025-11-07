@@ -1,8 +1,8 @@
-## Logging API'S  NEEDS TO BE UPDATED
+## Logging APIs
 
 ### 1. Library init call - Cmf()
 
-This calls initiates the library and also creates a pipeline object with the name provided.<br/>
+This call initializes the library and also creates a pipeline object with the name provided.<br/>
 Arguments to be passed CMF:<br/>
 ```python
 cmf = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
@@ -14,7 +14,7 @@ cmf = cmf.Cmf(filename="mlmd", pipeline_name="Test-env")
 |----------|------|-------------|
 | filename | String | Path to the sqlite file to store the metadata |
 | pipeline_name | String | Name to uniquely identify the pipeline. Note that name is the unique identification for a pipeline. If a pipeline already exists with the same name, the existing pipeline object is reused |
-| custom_properties | Dictionary (Optional) | Additional properties of the pipeline that needs to be stored |
+| custom_properties | Dictionary (Optional) | Additional properties of the pipeline that need to be stored |
 | graph | Bool (Optional) | If set to true, the library also stores the relationships in the provided graph database. Following environment variables should be set: NEO4J_URI, NEO4J_USER_NAME, NEO4J_PASSWD |
 
 **Return Object:** `mlmd.proto.Context`
@@ -40,7 +40,7 @@ context = cmf.create_context(pipeline_stage="Prepare", custom_properties={"user-
 | Argument | Type | Description |
 |----------|------|-------------|
 | pipeline_stage | String | Name of the pipeline Stage |
-| custom_properties | Dictionary (Optional) | Key value pairs of additional properties of the stage that needs to be stored |
+| custom_properties | Dictionary (Optional) | Key value pairs of additional properties of the stage that need to be stored |
 
 **Return Object:** `mlmd.proto.Context`
 
@@ -56,8 +56,8 @@ context = cmf.create_context(pipeline_stage="Prepare", custom_properties={"user-
 | type_id | int64 | Type identifier |
 
 ### 3. create_execution - Creates an Execution with properties
-A stage can have multiple executions. A unique name should ne provided for exery execution. 
-Properties of the execution can be paased as key value pairs in the custom properties. Eg: The hyper parameters used for the execution can be passed.
+A stage can have multiple executions. A unique name should be provided for every execution. 
+Properties of the execution can be passed as key value pairs in the custom properties. Eg: The hyper parameters used for the execution can be passed.
 ```python
 execution = cmf.create_execution(execution_type="Prepare",
                                  custom_properties={"Split": split, "Seed": seed})

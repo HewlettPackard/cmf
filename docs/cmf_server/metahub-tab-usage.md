@@ -9,7 +9,7 @@ The **Metahub** feature is introduced to **synchronize metadata between two CMF 
 ### 1. Start the CMF Server
 Ensure that the CMF server is up and running. you can follow below document.
 
-📄 [Guide to start cmf-server](./../setup/index.md#install-cmf-server-with-gui)
+📄 [Guide to start CMF Server](./../setup/index.md#install-cmf-server-with-gui)
 
 ---
 

@@ -1919,45 +1919,43 @@ def cmf_init(type: str = "",
 
     """ Initializes the CMF configuration based on the provided parameters. 
     
-    ```python
-    cmf_init( type="local", 
-                path="/path/to/re",
-                git_remote_url="https://github.com/hpe-user/experiment-repo.git",
-                cmf_server_url="http://cmf-server:80",
-                neo4j_user="neo4j",
-                neo4j_password="password",
-                neo4j_uri="bolt://localhost:7687"
-            )
-    ```
+    Example:
+        ```python
+        cmf_init(type="local", 
+                    path="/path/to/repo",
+                    git_remote_url="https://github.com/hpe-user/experiment-repo.git",
+                    cmf_server_url="http://cmf-server:80",
+                    neo4j_user="neo4j",
+                    neo4j_password="password",
+                    neo4j_uri="bolt://localhost:7687"
+                )
+        ```
     
     Args: 
-       Required Arguments:
-       - type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote")
-       - path: Path for the local/ssh repository. 
-       - git_remote_url: Git remote URL for version control.
-       - url: URL for MinioS3 or AmazonS3.
-       - endpoint_url: Endpoint URL for MinioS3.
-       - access_key_id: Access key ID for MinioS3 or AmazonS3.
-       - secret_key: Secret key for MinioS3 or AmazonS3. 
-       - session_token: Session token for AmazonS3.
-       - user: SSH remote username.
-       - password: SSH remote password. 
-       - port: SSH remote port.
-       - osdf_path: OSDF Origin Path.
-       - osdf_cache: OSDF Cache Path (Optional).
-       - key_id: OSDF Key ID.
-       - key_path: OSDF Private Key Path.
-       - key_issuer: OSDF Key Issuer URL.
-       Default Arguments:
-       - cmf_server_url: CMF server URL. - this is interesting as this has default value.
-       Optional Arguments:
-       - neo4j_user: Neo4j database username.
-       - neo4j_password: Neo4j database password.
-       - neo4j_uri: Neo4j database URI.
+        type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote") (required)
+        path: Path for the local/ssh repository. (required for "local" and "sshremote" types)
+        git_remote_url: Git remote URL for version control. (required)
+        url: URL for MinioS3 or AmazonS3. (required)
+        endpoint_url: Endpoint URL for MinioS3. (required)
+        access_key_id: Access key ID for MinioS3 or AmazonS3. (required)
+        secret_key: Secret key for MinioS3 or AmazonS3. (required)
+        session_token: Session token for AmazonS3. (required)
+        user: SSH remote username. (required)
+        password: SSH remote password. (required)
+        port: SSH remote port. (required)
+        osdf_path: OSDF Origin Path. (required)
+        osdf_cache: OSDF Cache Path (required).
+        key_id: OSDF Key ID. (required)
+        key_path: OSDF Private Key Path. (required)
+        key_issuer: OSDF Key Issuer URL. (required)
+        cmf_server_url: CMF server URL. (default: "http://127.0.0.1:80")
+        neo4j_user: Neo4j database username. (optional)
+        neo4j_password: Neo4j database password. (optional)
+        neo4j_uri: Neo4j database URI. (optional)
 
     
     Returns:
-       Output based on the initialized repository type.
+        Output based on the initialized repository type.
     """
 
     if type == "":
@@ -2192,20 +2190,21 @@ def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: t.
     return output
 
 
-def repo_pull(pipeline_name: str, file_name = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def repo_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     
-    ```python 
-    result = _repo_pull("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
-    ```
+    Example:
+        ```python 
+        result = repo_pull("example_pipeline", "./mlmd_directory", "example_execution_uuid") 
+        ```
     
-    Args: 
-       pipeline_name: Name of the pipeline. 
-       file_name: Specify output metadata file name.
-       execution_uuid: Specify execution uuid.
+    Args:
+        pipeline_name: Name of the pipeline.
+        file_name: Specify output metadata file name (default: "./mlmd").
+        execution_uuid: Specify execution uuid (optional).
     
     Returns:
-       Output from the _repo_pull function. 
+        Output from the _repo_pull function.
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_uuid
