@@ -253,6 +253,7 @@ class GraphDriver:
 
     def create_label_node(self, name: str, path: str, uri: str, event: str, execution_id: int,
                           pipeline_context: mlpb.Context, # type: ignore  # Context type not recognized by mypy, using ignore to bypass,
+                          dataset_uri: str,
                           custom_properties= None):
         if custom_properties is None:
             custom_properties = {}
@@ -264,9 +265,20 @@ class GraphDriver:
             node = session.write_transaction(
                 self._run_transaction, label_syntax)
             node_id = node[0]["node_id"]
-            pc_syntax = self._create_execution_artifacts_link_syntax(
-                "Execution", "Label", self.execution_id, node_id, event)
-            _ = session.write_transaction(self._run_transaction, pc_syntax)
+            
+            # OPTIONAL: Uncomment below to link label to execution (for tracking which execution created it)
+            # This creates: Execution --[input]--> Label (or output, depending on event)
+            # pc_syntax = self._create_execution_artifacts_link_syntax(
+            #     "Execution", "Label", self.execution_id, node_id, event)
+            # _ = session.write_transaction(self._run_transaction, pc_syntax)
+            
+            # Link label to its associated dataset only
+            if dataset_uri:
+                dataset_node_id = self._get_node_with_uri("Dataset", dataset_uri)
+                if dataset_node_id:
+                    dataset_label_syntax = self._create_parent_child_syntax(
+                        "Dataset", "Label", dataset_node_id, node_id, "has_label")
+                    _ = session.write_transaction(self._run_transaction, dataset_label_syntax)
 
     def _get_node(self, node_label: str, node_name: str)->int:
         #Match(n:Metrics) where n.Name contains 'metrics_1' return n
@@ -290,6 +302,18 @@ class GraphDriver:
                 self._run_transaction, search_syntax)
 
             node_id = nodes[0]["node_id"]
+        return node_id
+
+    def _get_node_with_uri(self, node_label: str, node_uri: str) -> t.Optional[int]:
+        """Get node ID by URI"""
+        search_syntax = "MATCH (n:{}) WHERE n.uri = '{}' RETURN ELEMENTID(n) as node_id".format(
+            node_label, node_uri)
+        node_id = None
+        with self.driver.session() as session:
+            nodes = session.read_transaction(
+                self._run_transaction, search_syntax)
+            if nodes:
+                node_id = nodes[0]["node_id"]
         return node_id
 
     @staticmethod
@@ -526,8 +550,8 @@ class GraphDriver:
     def _create_label_syntax(name: str, path: str, uri: str, pipeline_id: int, pipeline_name: str, custom_properties):
         custom_properties["Name"] = name
         custom_properties["Path"] = path
-        custom_properties["Pipeline_id"] = str(pipeline_id)
-        custom_properties["Pipeline_name"] = pipeline_name
+        custom_properties["pipeline_id"] = str(pipeline_id)
+        custom_properties["pipeline_name"] = pipeline_name
         syntax_str = "MERGE (a:Label {uri:\"" + uri + "\"}) SET "
         for k, v in custom_properties.items():
             # removes special characters from the key 

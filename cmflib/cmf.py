@@ -1551,6 +1551,7 @@ class Cmf:
             custom_props["Commit"] = label_hash
             
             if self.graph:
+                # directly linked to dataset via create_label_node
                 self.driver.create_label_node(
                     name,
                     url,
@@ -1558,23 +1559,34 @@ class Cmf:
                     "input",
                     self.execution.id,
                     self.parent_context,
+                    dataset_uri,  # Pass dataset_uri to link label to dataset
                     custom_props,
                 )
-                # labels are always input
-                self.input_artifacts.append(
-                    {
-                        "Name": name,
-                        "Path": url,
-                        "URI": uri,
-                        "Event": "input",
-                        "Execution_Name": self.execution_name,
-                        "Type": "Label",
-                        "Execution_Command": self.execution_command,
-                        "Pipeline_Id": self.parent_context.id,
-                        "Pipeline_Name": self.parent_context.name,
-                    }
-                )
-                self.driver.create_execution_links(uri, name, "Label")
+                # NOTE: Labels are NOT added to self.input_artifacts to prevent them from being
+                # linked to other artifacts via create_artifact_relationships(). Labels are 
+                # metadata annotations on datasets and should only be connected via "has_label".
+                
+                # OPTIONAL: Uncomment below to create execution-to-execution links via Label
+                # This finds executions that output the Label and links them to current execution
+                # WARNING: This may create confusing lineage as Labels are metadata, not processing artifacts
+                # self.driver.create_execution_links(uri, name, "Label")
+                
+                # OPTIONAL: Uncomment below to add Label to input_artifacts for artifact lineage
+                # WARNING: This will connect Label to all output artifacts via create_artifact_relationships()
+                # self.input_artifacts.append(
+                #     {
+                #         "Name": name,
+                #         "Path": url,
+                #         "URI": uri,
+                #         "Event": "input",
+                #         "Execution_Name": self.execution_name,
+                #         "Type": "Label",
+                #         "Execution_Command": self.execution_command,
+                #         "Pipeline_Id": self.parent_context.id,
+                #         "Pipeline_Name": self.parent_context.name,
+                #     }
+                # )
+
 
             return artifact
 
