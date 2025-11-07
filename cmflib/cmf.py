@@ -656,22 +656,31 @@ class Cmf:
                     self.parent_context,
                     custom_props,
                 )
-                self.input_artifacts.append(
-                    {
-                        "Name": name,
-                        "Path": url,
-                        "URI": uri,
-                        "Event": "input",
-                        "Execution_Name": self.execution_name,
-                        "Type": "Environment",
-                        "Execution_Command": self.execution_command,
-                        "Pipeline_Id": self.parent_context.id,
-                        "Pipeline_Name": self.parent_context.name,
-                    }
-                )
-                # commented this because input links from 'Env' node to executions 
-                # are getting created without running this piece of code
-                #self.driver.create_execution_links(uri, name, "Environment")
+                # NOTE: Environment is NOT added to self.input_artifacts to prevent it from being
+                # linked to other artifacts via create_artifact_relationships(). Environment is a
+                # context/metadata artifact that documents execution environment, not a data artifact
+                # that flows through the pipeline. The create_env_node() above already creates the
+                # Execution --[input]--> Environment relationship, which is sufficient.
+                
+                # OPTIONAL: Uncomment below to add Environment to input_artifacts for artifact lineage
+                # WARNING: This will connect Environment to all output artifacts via create_artifact_relationships()
+                # self.input_artifacts.append(
+                #     {
+                #         "Name": name,
+                #         "Path": url,
+                #         "URI": uri,
+                #         "Event": "input",
+                #         "Execution_Name": self.execution_name,
+                #         "Type": "Environment",
+                #         "Execution_Command": self.execution_command,
+                #         "Pipeline_Id": self.parent_context.id,
+                #         "Pipeline_Name": self.parent_context.name,
+                #     }
+                # )
+                
+                # OPTIONAL: Uncomment below to create execution-to-execution links via Environment
+                # WARNING: This creates execution lineage through shared Environment artifacts
+                # self.driver.create_execution_links(uri, name, "Environment")
             return artifact
 
 
@@ -716,6 +725,7 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+        artifact_path = url
         logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
@@ -759,19 +769,6 @@ class Cmf:
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
         uri = c_hash
-        label_hash = 0
-        if label:
-            if not os.path.isfile(label):
-                print(f"Error: File '{label}' not found.")
-            else:
-                label_hash = calculate_md5(label)
-                label_custom_props = {} if label_properties is None else label_properties
-                self.log_label(label, label_hash, uri, label_custom_props)
-                # update custom_props
-                label_with_hash = label + ":" + label_hash
-                custom_props["labels"] = label
-                custom_props["labels_uri"] = label_with_hash
-
         # To Do - What happens when uri is the same but names are different
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
@@ -863,6 +860,10 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
+                
+        if label:
+            self.log_label(label, artifact_path, label_properties)
+
         os.chdir(logging_dir)
         return artifact
 
@@ -1364,14 +1365,14 @@ class Cmf:
             if isinstance(value, int):
                 artifact.custom_properties[key].int_value = value
             else:
-                 if key == "labels" or key == "labels_uri":
+                 if key in {"labels", "labels_uri", "dataset_uri"}:
                      existing_value = artifact.custom_properties[key].string_value
                      if existing_value:
                          temp = existing_value + "," + str(value)
-                         new_temp = set(temp.split(","))
-                         # join the temp 
-                         new_new_temp = ",".join(list(new_temp))
-                         artifact.custom_properties[key].string_value = str(new_new_temp)
+                         unique_values = set(temp.split(","))
+                         # join the unique_values 
+                         comma_sep_values = ",".join(list(unique_values))
+                         artifact.custom_properties[key].string_value = str(comma_sep_values)
                      else: 
                         artifact.custom_properties[key].string_value = str(value)
                  else:
@@ -1453,7 +1454,7 @@ class Cmf:
         dataslice_df.index.names = ["Path"]
         dataslice_df.to_parquet(name)
 
-    def log_label(self, url: str, label_hash:str, dataset_uri: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
+    def log_label(self, url: str, dataset_name: str, custom_properties: t.Optional[t.Dict] = None) -> mlpb.Artifact:
         """
         Logs a label artifact associated with a dataset.
 
@@ -1463,8 +1464,7 @@ class Cmf:
 
         Args:
             url (str): The base URL representing the label (e.g., path or storage location).
-            label_hash (str): A unique mdh5 hash calculated on the label content.
-            dataset_uri (str): The URI of the associated dataset.
+            dataset_name (str): The name of the associated dataset.
             custom_properties (Optional[Dict], optional): Additional metadata to associate with the artifact. Defaults to None.
 
         Returns:
@@ -1477,61 +1477,127 @@ class Cmf:
         # We need to append the new properties to the existing dataset properties
         custom_props = {} if custom_properties is None else custom_properties
         git_repo = git_get_repo()
+        name = re.split("/", url)[-1]
 
-        existing_artifact = []
-        if label_hash and label_hash.strip:
-            existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
-        
-        url = url + ":" + label_hash
-
-        # To Do - What happens when uri is the same but names are different
-        if existing_artifact and len(existing_artifact) != 0:
-            existing_artifact = existing_artifact[0]
-
-            # Quick fix- Updating only the name
-            if custom_props is not None:
-                self.update_existing_artifact(
-                    existing_artifact, custom_props)
-            uri = label_hash
-            # update url for existing artifact
-            self.update_dataset_url(existing_artifact, url)
-            artifact = link_execution_to_artifact(
-                store=self.store,
-                execution_id=self.execution.id,
-                uri=uri,
-                input_name=url,
-                event_type=mlpb.Event.Type.INPUT,
-            )
+        # Ensure label file exists
+        if not os.path.isfile(url):
+            print(f"Error: File '{url}' not found.")
         else:
-            uri = label_hash if label_hash and label_hash.strip() else str(uuid.uuid1())
-            artifact = create_new_artifact_event_and_attribution(
-                store=self.store,
-                execution_id=self.execution.id,
-                context_id=self.child_context.id,
-                uri=uri,
-                name=url,
-                type_name="Label",
-                event_type=mlpb.Event.Type.INPUT,
-                properties={
-                    "git_repo": str(git_repo),
-                    # passing hash_value value to commit
-                    "Commit": str(label_hash),
-                    "url": str(url),
-                    "dataset_uri": str(dataset_uri),
-                },
-                artifact_type_properties={
-                    "git_repo": mlpb.STRING,
-                    "Commit": mlpb.STRING,
-                    "url": mlpb.STRING,
-                    "dataset_uri": mlpb.STRING,
-                },
-                custom_properties=custom_props,
-                milliseconds_since_epoch=int(time.time() * 1000),
-            )
-        custom_props["git_repo"] = git_repo
-        custom_props["Commit"] = label_hash
-        custom_props["dataset_uri"] = dataset_uri
-        return artifact
+            # Calculate label_hash
+            label_hash = calculate_md5(url)
+
+            # Get dataset_uri from DVC
+            dataset_uri = dvc_get_hash(dataset_name)
+            if dataset_uri == "":
+                print(f"Error in getting the dvc hash for {dataset_name}, return without logging")
+                return
+            
+            # Fetch existing dataset artifact
+            dataset_artifact = self.store.get_artifacts_by_uri(dataset_uri)[0]
+
+            # Update dataset artifact with label metadata
+            dataset_custom_properties = {
+                    "labels": url,
+                    "labels_uri": f"{url}:{label_hash}"
+                }
+            self.update_existing_artifact(dataset_artifact, dataset_custom_properties)
+
+            # Prepare label custom properties
+            custom_props = {} if custom_properties is None else custom_properties
+            custom_props["dataset_uri"] = dataset_uri
+            git_repo = git_get_repo()
+
+            # Check if label artifact already exists
+            existing_artifact = []
+            if label_hash and label_hash.strip:
+                existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
+            
+            url = url + ":" + label_hash
+
+            # To Do - What happens when uri is the same but names are different
+            if existing_artifact and len(existing_artifact) != 0:
+                existing_artifact = existing_artifact[0]
+
+                # Quick fix- Updating only the name
+                if custom_props is not None:
+                    self.update_existing_artifact(
+                        existing_artifact, custom_props)
+                uri = label_hash
+                # update url for existing artifact
+                self.update_dataset_url(existing_artifact, url)
+                artifact = link_execution_to_artifact(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    uri=uri,
+                    input_name=url,
+                    event_type=mlpb.Event.Type.INPUT,
+                )
+            else:
+                uri = label_hash if label_hash and label_hash.strip() else str(uuid.uuid1())
+                artifact = create_new_artifact_event_and_attribution(
+                    store=self.store,
+                    execution_id=self.execution.id,
+                    context_id=self.child_context.id,
+                    uri=uri,
+                    name=url,
+                    type_name="Label",
+                    event_type=mlpb.Event.Type.INPUT,
+                    properties={
+                        "git_repo": str(git_repo),
+                        # passing hash_value value to commit
+                        "Commit": str(label_hash),
+                        "url": str(url),
+                    },
+                    artifact_type_properties={
+                        "git_repo": mlpb.STRING,
+                        "Commit": mlpb.STRING,
+                        "url": mlpb.STRING,
+                    },
+                    custom_properties=custom_props,
+                    milliseconds_since_epoch=int(time.time() * 1000),
+                )
+            custom_props["git_repo"] = git_repo
+            custom_props["Commit"] = label_hash
+            
+            if self.graph:
+                # directly linked to dataset via create_label_node
+                self.driver.create_label_node(
+                    name,
+                    url,
+                    uri,
+                    "input",
+                    self.execution.id,
+                    self.parent_context,
+                    dataset_uri,  # Pass dataset_uri to link label to dataset
+                    custom_props,
+                )
+                # NOTE: Labels are NOT added to self.input_artifacts to prevent them from being
+                # linked to other artifacts via create_artifact_relationships(). Labels are 
+                # metadata annotations on datasets and should only be connected via "has_label".
+                
+                # OPTIONAL: Uncomment below to create execution-to-execution links via Label
+                # This finds executions that output the Label and links them to current execution
+                # WARNING: This may create confusing lineage as Labels are metadata, not processing artifacts
+                # self.driver.create_execution_links(uri, name, "Label")
+                
+                # OPTIONAL: Uncomment below to add Label to input_artifacts for artifact lineage
+                # WARNING: This will connect Label to all output artifacts via create_artifact_relationships()
+                # self.input_artifacts.append(
+                #     {
+                #         "Name": name,
+                #         "Path": url,
+                #         "URI": uri,
+                #         "Event": "input",
+                #         "Execution_Name": self.execution_name,
+                #         "Type": "Label",
+                #         "Execution_Command": self.execution_command,
+                #         "Pipeline_Id": self.parent_context.id,
+                #         "Pipeline_Name": self.parent_context.name,
+                #     }
+                # )
+
+
+            return artifact
 
     class DataSlice:
         """A data slice represents a named subset of data.

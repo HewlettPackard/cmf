@@ -39,31 +39,57 @@ To access neo4j from browser, open http://IP:7474/
 
 Queries
 <br> Replace "pipelinename" with your pipeline name
-1. Artifact Lineage with processing steps
+
+1. Artifact Lineage with processing steps (all artifact types)
 
 ```
-MATCH (a:Execution{pipeline_name:'<pipelinename>'})-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics) RETURN a,r, b 
+MATCH (a:Execution{pipeline_name:'<pipelinename>'})-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics or b:Step_Metrics or b:Environment or b:Dataslice) RETURN a,r, b 
 ```
 
-2. Artifact Lineage
+2. Artifact Lineage with processing steps and Labels
+
 ```
-MATCH (b) where (b:Dataset or b:Model or b:Metrics) and '<pipelinename>' in b.pipeline_name RETURN b
+MATCH (a:Execution{pipeline_name:'<pipelinename>'})-[r]-(b) WHERE (b:Dataset or b:Model or b:Metrics or b:Step_Metrics or b:Environment) OPTIONAL MATCH (b)-[r2:has_label]->(label:Label) RETURN a, r, b, label, r2
 ```
 
-3. Lineage of processing steps
+3. All Artifacts with their relationships (including Label connections to Datasets)
+
+```
+MATCH (b) where (b:Dataset or b:Model or b:Metrics or b:Step_Metrics or b:Environment or b:Dataslice or b:Label) and '<pipelinename>' in b.pipeline_name OPTIONAL MATCH (b)-[r]-(c:Label) RETURN b, r, c
+```
+
+4. Dataset Lineage with Labels and Dataslices
+
+```
+MATCH (d:Dataset) WHERE '<pipelinename>' in d.pipeline_name OPTIONAL MATCH (d)-[r1:has_label]->(l:Label) OPTIONAL MATCH (d)-[r2:contains]->(ds:Dataslice) RETURN d, r1, l, r2, ds
+```
+
+5. Lineage of processing steps (Execution nodes only)
 
 ```
 MATCH (n:Execution{pipeline_name:'<pipelinename>'}) return n
 ```
 
-4. clean up <br>
-> All execution/stage nodes related to a pipeline
+6. Step Metrics associated with specific execution
+
+```
+MATCH (e:Execution{pipeline_name:'<pipelinename>'})-[r]->(m:Step_Metrics) RETURN e, r, m
+```
+
+7. Environment artifacts for a pipeline
+
+```
+MATCH (env:Environment) WHERE '<pipelinename>' in env.pipeline_name RETURN env
+```
+
+8. clean up <br>
+> All execution/stage/pipeline nodes related to a pipeline
 
  ```
  MATCH (n{pipeline_name:'<pipelinename>'}) detach delete n
  ```
   
-  > All  Dataset nodes
+  > All artifact nodes (Dataset, Model, Metrics, Step_Metrics, Environment, Dataslice, Label)
  
   ```
   MATCH (n) where '<pipelinename>' in n.pipeline_name detach delete n
