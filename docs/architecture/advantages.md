@@ -1,6 +1,6 @@
 # Advantages
 
-1. Tracking of metadata for distributed pipeline, thereby enabling efficient pipeline. 
-2. Enables tracking of code, data and metadata in a single framework. 
-3. Provides a git like ease of management for metadata.
-4. Provides collaboration across teams.
+1. Enables tracking of metadata for distributed pipelines, thereby facilitating efficient pipeline orchestration and management.
+2. Provides unified tracking of code, data, and metadata within a single framework.
+3. Offers Git-like ease of management for metadata versioning and control.
+4. Facilitates collaboration across teams with shared metadata standards.
