@@ -16,7 +16,7 @@
         - log_metric
         - create_dataslice
         - update_dataslice
-        - log_model
+        - log_label
 
 ::: cmflib.cmf
     options:
