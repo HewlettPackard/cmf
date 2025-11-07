@@ -656,22 +656,31 @@ class Cmf:
                     self.parent_context,
                     custom_props,
                 )
-                self.input_artifacts.append(
-                    {
-                        "Name": name,
-                        "Path": url,
-                        "URI": uri,
-                        "Event": "input",
-                        "Execution_Name": self.execution_name,
-                        "Type": "Environment",
-                        "Execution_Command": self.execution_command,
-                        "Pipeline_Id": self.parent_context.id,
-                        "Pipeline_Name": self.parent_context.name,
-                    }
-                )
-                # commented this because input links from 'Env' node to executions 
-                # are getting created without running this piece of code
-                #self.driver.create_execution_links(uri, name, "Environment")
+                # NOTE: Environment is NOT added to self.input_artifacts to prevent it from being
+                # linked to other artifacts via create_artifact_relationships(). Environment is a
+                # context/metadata artifact that documents execution environment, not a data artifact
+                # that flows through the pipeline. The create_env_node() above already creates the
+                # Execution --[input]--> Environment relationship, which is sufficient.
+                
+                # OPTIONAL: Uncomment below to add Environment to input_artifacts for artifact lineage
+                # WARNING: This will connect Environment to all output artifacts via create_artifact_relationships()
+                # self.input_artifacts.append(
+                #     {
+                #         "Name": name,
+                #         "Path": url,
+                #         "URI": uri,
+                #         "Event": "input",
+                #         "Execution_Name": self.execution_name,
+                #         "Type": "Environment",
+                #         "Execution_Command": self.execution_command,
+                #         "Pipeline_Id": self.parent_context.id,
+                #         "Pipeline_Name": self.parent_context.name,
+                #     }
+                # )
+                
+                # OPTIONAL: Uncomment below to create execution-to-execution links via Environment
+                # WARNING: This creates execution lineage through shared Environment artifacts
+                # self.driver.create_execution_links(uri, name, "Environment")
             return artifact
 
 
