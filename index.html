@@ -353,7 +353,7 @@
           <li class="md-nav__item">
   <a href="#cmf-library-cmflib" class="md-nav__link">
     <span class="md-ellipsis">
-      CMF Library (cmflib)
+      CMF Library (CMFLib)
     </span>
   </a>
   
@@ -695,7 +695,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-server
+    Cmf Server
     
   </span>
   
@@ -817,7 +817,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-client commands
+    CMF Client commands
     
   </span>
   
@@ -1162,7 +1162,7 @@
           <li class="md-nav__item">
   <a href="#cmf-library-cmflib" class="md-nav__link">
     <span class="md-ellipsis">
-      CMF Library (cmflib)
+      CMF Library (CMFLib)
     </span>
   </a>
   
@@ -1243,28 +1243,28 @@
 <h1 id="getting-started-with-cmf-needs-to-be-updated">Getting started with cmf - NEEDS TO BE UPDATED<a class="headerlink" href="#getting-started-with-cmf-needs-to-be-updated" title="Permanent link">¤</a></h1>
 <h2 id="purpose-and-scope">Purpose and Scope<a class="headerlink" href="#purpose-and-scope" title="Permanent link">¤</a></h2>
 <p>This document provides a comprehensive overview of the Common Metadata Framework (CMF), which implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.</p>
-<p>For detailed API documentation, see <a href="cmflib/">Core Library (cmflib)</a>. For server deployment instructions, see <a href="setup/">Installation &amp; Setup</a>. For web user interface details, see <a href="ui/">cmf-gui</a>.</p>
+<p>For detailed API documentation, see <a href="cmflib/">Core Library (CMFLib)</a>. For server deployment instructions, see <a href="setup/">Installation &amp; Setup</a>. For web user interface details, see <a href="ui/">CMF GUI</a>.</p>
 <h2 id="system-architecture">System Architecture<a class="headerlink" href="#system-architecture" title="Permanent link">¤</a></h2>
 <p>CMF is designed as a distributed system that enables ML teams to track pipeline metadata locally and synchronize with a central server. The framework automatically tracks code versions, data artifacts, and execution metadata to provide end-to-end traceability of ML experiments.</p>
 <p>Common Metadata Framework (CMF) has the following components:</p>
 <ul>
 <li><strong>Metadata Library</strong> exposes APIs to track pipeline metadata. It also provides APIs to query the stored metadata.</li>
-<li><strong>cmf-client</strong> interacts with the cmf-server to pull or push metadata.</li>
-<li><strong>cmf-server with GUI</strong> interacts with remote cmf-clients and merges the metadata transferred by each
+<li><strong>CMF Client</strong> interacts with the CMF Server to pull or push metadata.</li>
+<li><strong>CMF Server with GUI</strong> interacts with remote CMF Clients and merges the metadata transferred by each
   client. This server also provides a GUI that can render the stored metadata.</li>
 <li><strong>Central Artifact Repositories</strong> host the code and data.</li>
 </ul>
 <pre class="mermaid"><code>graph TB
     subgraph "Local Development Environment"
         CMF_CLIENT["**Metadata Library**&lt;br/&gt;cmflib.cmf.Cmf&lt;br/&gt;Main API Class"]
-        CLI_TOOLS["**cmf-client**&lt;br/&gt;CLI Commands&lt;br/&gt;cmf init, push, pull"]
+        CLI_TOOLS["**CMF Client**&lt;br/&gt;CLI Commands&lt;br/&gt;cmf init, push, pull"]
         LOCAL_MLMD[("Local MLMD&lt;br/&gt;SQLite Database")]
         DVC_GIT["DVC + Git&lt;br/&gt;Artifact Versioning"]
         NEO4J[("Neo4j&lt;br/&gt;Graph Database")]
     end
 
     subgraph "Central Infrastructure"
-        CMF_SERVER["**cmf-server**&lt;br/&gt;FastAPI Application"]
+        CMF_SERVER["**CMF Server**&lt;br/&gt;FastAPI Application"]
         CENTRAL_MLMD[("PostgreSQL&lt;br/&gt;Central Metadata")]
         ARTIFACT_STORAGE[("Artifact Storage&lt;br/&gt;MinIO/S3/SSH")]
     end
@@ -1325,7 +1325,7 @@
     EXEC2 --&gt; MODEL1["Model&lt;br/&gt;'trained_model.pkl'"]
     EXEC3 --&gt; METRICS1["Metrics&lt;br/&gt;'accuracy: 0.95'"]</code></pre>
 <h2 id="component-architecture">Component Architecture<a class="headerlink" href="#component-architecture" title="Permanent link">¤</a></h2>
-<h3 id="cmf-library-cmflib">CMF Library (<code>cmflib</code>)<a class="headerlink" href="#cmf-library-cmflib" title="Permanent link">¤</a></h3>
+<h3 id="cmf-library-cmflib">CMF Library (<code>CMFLib</code>)<a class="headerlink" href="#cmf-library-cmflib" title="Permanent link">¤</a></h3>
 <p>The <code>cmflib</code> package provides the primary API for metadata tracking through the <code>Cmf</code> class and supporting modules:</p>
 <pre class="mermaid"><code>graph TB
     subgraph "cmflib Package"
@@ -1352,9 +1352,9 @@
     CMF_CLASS --&gt; NEO4J_DB
     CMF_MERGER --&gt; CMFQUERY</code></pre>
 <h3 id="server-and-web-components">Server and Web Components<a class="headerlink" href="#server-and-web-components" title="Permanent link">¤</a></h3>
-<p>The CMF server provides centralized metadata storage and a web interface for exploring ML pipeline lineage:</p>
+<p>The CMF Server provides centralized metadata storage and a web interface for exploring ML pipeline lineage:</p>
 <pre class="mermaid"><code>graph TB
-    subgraph "cmf-server"
+    subgraph "CMF Server"
         FASTAPI_SERVER["FastAPI Server&lt;br/&gt;Port 8080"]
         GET_DATA["get_data.py&lt;br/&gt;Data Access Layer"]
         LINEAGE_QUERY["Lineage Query&lt;br/&gt;D3 Visualization"]

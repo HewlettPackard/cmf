@@ -547,7 +547,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-server
+    Cmf Server
     
   </span>
   
@@ -669,7 +669,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-client commands
+    CMF Client commands
     
   </span>
   
@@ -977,7 +977,7 @@
         <li class="md-nav__item">
   <a href="#setup-a-cmf-client" class="md-nav__link">
     <span class="md-ellipsis">
-      Setup a cmf-client
+      Setup a CMF Client
     </span>
   </a>
   
@@ -986,7 +986,7 @@
         <li class="md-nav__item">
   <a href="#install-cmf-server" class="md-nav__link">
     <span class="md-ellipsis">
-      Install cmf-server
+      Install CMF Server
     </span>
   </a>
   
@@ -1014,7 +1014,7 @@
           <li class="md-nav__item">
   <a href="#cmf-client-with-collaborative-development" class="md-nav__link">
     <span class="md-ellipsis">
-      cmf-client with collaborative development
+      CMF Client with collaborative development
     </span>
   </a>
   
@@ -1054,14 +1054,14 @@
 <p>Common Metadata Framework (CMF) has the following components:</p>
 <ul>
 <li><strong>Metadata Library</strong> exposes APIs to track pipeline metadata. It also provides APIs to query the stored metadata.</li>
-<li><strong>cmf-client</strong> interacts with the cmf-server to pull or push metadata.</li>
-<li><strong>cmf-server with GUI</strong> interacts with remote cmf-clients and merges the metadata transferred by each
+<li><strong>CMF Client</strong> interacts with the CMF Server to pull or push metadata.</li>
+<li><strong>CMF Server with GUI</strong> interacts with remote CMF Clients and merges the metadata transferred by each
   client. This server also provides a GUI that can render the stored metadata.</li>
 <li><strong>Central Artifact Repositories</strong> host the code and data.</li>
 </ul>
-<h2 id="setup-a-cmf-client">Setup a cmf-client<a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">¤</a></h2>
-<p><code>cmf-client</code> is a tool that facilitates metadata collaboration between different teams and team members. These clients
-interact with the cmf-server to push/pull metadata.</p>
+<h2 id="setup-a-cmf-client">Setup a CMF Client<a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">¤</a></h2>
+<p><code>CMF Client</code> is a tool that facilitates metadata collaboration between different teams and team members. These clients
+interact with the CMF Server to push/pull metadata.</p>
 <p><strong>Pre-Requisites</strong></p>
 <ul>
 <li>Python 3.9+</li>
@@ -1074,19 +1074,19 @@ interact with the cmf-server to push/pull metadata.</p>
 <div class="highlight"><pre><span></span><code>pip install cmflib
 </code></pre></div>
 <a href="https://hewlettpackard.github.io/cmf/">Documentation</a> for more details.</p>
-<h2 id="install-cmf-server">Install cmf-server<a class="headerlink" href="#install-cmf-server" title="Permanent link">¤</a></h2>
-<p>cmf-server is the primary interface for the user to explore and track their ML training runs by browsing the stored
+<h2 id="install-cmf-server">Install CMF Server<a class="headerlink" href="#install-cmf-server" title="Permanent link">¤</a></h2>
+<p>CMF Server is the primary interface for the user to explore and track their ML training runs by browsing the stored
 metadata. Users can retrieve the saved metadata file and can view the content of the saved metadata file using
-the UI provided by the cmf-server.</p>
-<p>Details on how to set up a cmf-server can be found <a href="../cmf_server/index.md">here</a>.</p>
+the UI provided by the CMF Server.</p>
+<p>Details on how to set up a CMF Server can be found <a href="../../setup/#install-cmf-server-with-gui">here</a>.</p>
 <h2 id="simple-example-of-using-the-cmf-client">Simple Example of using the CMF Client<a class="headerlink" href="#simple-example-of-using-the-cmf-client" title="Permanent link">¤</a></h2>
 <p>In this example, CMF is used to track the metadata for a pipeline named <code>Test-env</code> which interacts with a MinIO</p>
-<p>S3 bucket as the artifact repository and a cmf-server.</p>
+<p>S3 bucket as the artifact repository and a CMF Server.</p>
 <p><strong>Setup the example directory</strong>
 <div class="highlight"><pre><span></span><code>mkdir example-folder &amp;&amp; cd example-folder
 </code></pre></div></p>
 <h3 id="initialize-cmf">Initialize cmf<a class="headerlink" href="#initialize-cmf" title="Permanent link">¤</a></h3>
-<p>CMF must be initialized to use cmf-client commands. The following command configures authentication to an S3 bucket and
+<p>CMF must be initialized to use CMF Client commands. The following command configures authentication to an S3 bucket and
 specifies the connection to a CMF server.
 <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 \
   --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git \
@@ -1105,11 +1105,11 @@ Check <a href="../cmf_client_commands/">here</a> for more details.</p>
 <div class="highlight"><pre><span></span><code>cmf artifact push
 </code></pre></div>
 Check <a href="../cmf_client_commands/">here</a> for more details.</p>
-<p><strong>Push metadata to cmf-server</strong>
+<p><strong>Push metadata to CMF Server</strong>
 <div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;Test-env&#39;
 </code></pre></div>
 Check <a href="../cmf_client_commands/">here</a> for more details.</p>
-<h3 id="cmf-client-with-collaborative-development">cmf-client with collaborative development<a class="headerlink" href="#cmf-client-with-collaborative-development" title="Permanent link">¤</a></h3>
+<h3 id="cmf-client-with-collaborative-development">CMF Client with collaborative development<a class="headerlink" href="#cmf-client-with-collaborative-development" title="Permanent link">¤</a></h3>
 <p>In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.</p>
 <p><strong>Pull metadata from the server</strong></p>
 <p>Execute <code>cmf metadata</code> command in the <code>example_folder</code>.

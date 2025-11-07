@@ -550,7 +550,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-server
+    Cmf Server
     
   </span>
   
@@ -672,7 +672,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-client commands
+    CMF Client commands
     
   </span>
   
@@ -985,20 +985,20 @@
 
   <h1>🏗️ Architecture</h1>
 
-<p>Interactions in data pipelines can be complex. The Different stages in the pipeline, (which may not be next to each other) may have to interact to produce or transform artifacts. </p>
-<p>As the artifacts navigates and undergo transformations through this pipeline, it can take a complicated path, which might also involve bidirectional movement across these stages.  Also there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the metrics at a subsequent stage.  </p>
+<p>Interactions in data pipelines can be complex. The different stages in the pipeline, (which may not be next to each other) may have to interact to produce or transform artifacts. </p>
+<p>As the artifacts navigate and undergo transformations through this pipeline, they can take a complicated path, which might also involve bidirectional movement across these stages.  Also there could be dependencies between the multiple stages, where the metrics produced by a stage could influence the metrics at a subsequent stage.  </p>
 <p>It is important to track the metadata across a pipeline to provide features like, lineage tracking, provenance and reproducibility.  </p>
 <p>The tracking of metadata through these complex pipelines have multiple challenges, some of them being,  </p>
 <ul>
 <li>Each stage in the pipeline could be executed in a different datacenter or an edge site having intermittent connection to the core datacenter.   </li>
 <li>Each stage in the pipeline could be possibly managed by different teams.  </li>
-<li>The artifacts (input or output) needs to be uniquely identified across different sites and across multiple pipelines. </li>
+<li>The artifacts (input or output) need to be uniquely identified across different sites and across multiple pipelines. </li>
 </ul>
-<p><strong>Common metadata framework (CMF)</strong> addresses the problems associated with tracking of pipeline metadata from distributed sites and tracks code, data and metadata together for end-to-end traceability.   </p>
+<p><strong>Common Metadata Framework (CMF)</strong> addresses the problems associated with tracking of pipeline metadata from distributed sites and tracks code, data and metadata together for end-to-end traceability.   </p>
 <p>The framework automatically tracks the code version as one of the metadata for an execution. Additionally the data artifacts are also versioned automatically using a data versioning framework (like DVC) and the metadata regarding the data version is stored along with the code. </p>
-<p>The framework stores the <strong>Git commit id of the metadata</strong> file associated with the artifact and content hash of the artifact as metadata. The framework provides APIs to track the hyper parameters and other metadata of pipelines.  Therefore from the metadata stored, users can zero in on the hyper parameters, code version and the artifact version used for the experiment. </p>
+<p>The framework stores the <strong>Git commit ID of the metadata</strong> file associated with the artifact and content hash of the artifact as metadata. The framework provides APIs to track the hyperparameters and other metadata of pipelines.  Therefore from the metadata stored, users can identify the hyperparameters, code version and the artifact version used for the experiment. </p>
 <p>Identifying the artifacts by content hash allows the framework, to uniquely identify an artifact anywhere in the distributed sites. This enables the metadata from the distributed sites to be precisely merged to a central repository, thereby providing a single global metadata from the distributed sites.   </p>
-<p>On this backbone, we build the Git like experience for metadata, enabling users to push their local metadata to the remote repository, where it is merged to create the global metadata and pull metadata from the global metadata to the local, to create a local view, which would contain only the metadata of interest. </p>
+<p>On this backbone, we build the Git-like experience for metadata, enabling users to push their local metadata to the remote repository, where it is merged to create the global metadata and pull metadata from the global metadata to the local, to create a local view, which would contain only the metadata of interest. </p>
 <p>The framework can be used to track various types of pipelines such as data pipelines or AI pipelines. </p>
 <p align="center">
  <img src="../../assets/framework.png" height="400" align="center" />

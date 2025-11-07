@@ -24,7 +24,7 @@
     
     
       
-        <title>cmf-client commands - CMF</title>
+        <title>CMF Client commands - CMF</title>
       
     
     
@@ -106,7 +106,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              cmf-client commands
+              CMF Client commands
             
           </span>
         </div>
@@ -553,7 +553,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-server
+    Cmf Server
     
   </span>
   
@@ -686,7 +686,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-client commands
+    CMF Client commands
     
   </span>
   
@@ -1000,7 +1000,7 @@
 
 
 
-<h1 id="getting-started-with-cmf-client-commands">Getting started with cmf-client commands<a class="headerlink" href="#getting-started-with-cmf-client-commands" title="Permanent link">¤</a></h1>
+<h1 id="getting-started-with-cmf-client-commands">Getting started with CMF Client commands<a class="headerlink" href="#getting-started-with-cmf-client-commands" title="Permanent link">¤</a></h1>
 <h1 id="cmf">cmf<a class="headerlink" href="#cmf" title="Permanent link">¤</a></h1>
 <div class="highlight"><pre><span></span><code>Usage: cmf [-h] {init, artifact, metadata, execution, pipeline, repo, dvc}
 </code></pre></div>
@@ -1008,7 +1008,7 @@
 <h2 id="cmf-init">cmf init<a class="headerlink" href="#cmf-init" title="Permanent link">¤</a></h2>
 <div class="highlight"><pre><span></span><code>Usage: cmf init [-h] {minioS3, amazonS3, local, sshremote, osdfremote, show}
 </code></pre></div>
-<p><code>cmf init</code> initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available. Additionally, user can provide cmf-server url.</p>
+<p><code>cmf init</code> initializes an artifact repository for cmf. Local directory, Minio S3 bucket, Amazon S3 bucket, SSH Remote and Remote OSDF directory are the options available. Additionally, users can provide the CMF Server URL.</p>
 <h3 id="cmf-init-show">cmf init show<a class="headerlink" href="#cmf-init-show" title="Permanent link">¤</a></h3>
 <div class="highlight"><pre><span></span><code>Usage: cmf init show
 </code></pre></div>
@@ -1032,14 +1032,14 @@
 </blockquote>
 <p>Required Arguments</p>
 <div class="highlight"><pre><span></span><code>  --url [url]                           Specify MinioS3 bucket url.
-  --endpoint-url [endpoint_url]         Specify the endpoint url which is used to accedd Minio&#39;s locally/remotely running UI.
+  --endpoint-url [endpoint_url]         Specify the endpoint url which is used to access Minio&#39;s locally/remotely running UI.
   --access-key-id [access_key_id]       Specify Access Key Id.
   --secret-key [secret_key]             Specify Secret Key.
   --git-remote-url [git_remote_url]     Specify git repo url. eg: https://github.com/XXX/example.git
 </code></pre></div>
 <p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -1064,7 +1064,7 @@
 </code></pre></div>
 <p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -1121,7 +1121,7 @@
 </code></pre></div>
 <p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -1149,7 +1149,7 @@
 </code></pre></div>
 <p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -1178,7 +1178,7 @@
 </code></pre></div>
 <p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -1198,7 +1198,7 @@
 </code></pre></div>
 <p>Optional Arguments</p>
 <div class="highlight"><pre><span></span><code>  -h, --help                                            show this help message and exit.
-  -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name only; don&#39;t use folder name or absolute path.
+  -a [artifact_name], --artifact_name [artifact_name]   Specify artifact name only (do not include folder path or absolute path).
   -f [file_name], --file_name [file_name]               Specify input metadata file name.
 </code></pre></div>
 <h3 id="cmf-artifact-push">cmf artifact push<a class="headerlink" href="#cmf-artifact-push" title="Permanent link">¤</a></h3>
@@ -1233,11 +1233,11 @@
 <h2 id="cmf-metadata">cmf metadata<a class="headerlink" href="#cmf-metadata" title="Permanent link">¤</a></h2>
 <div class="highlight"><pre><span></span><code>Usage: cmf metadata [-h] {pull, push, export}
 </code></pre></div>
-<p><code>cmf metadata</code> push, pull or export the metadata file to and from the cmf-server, respectively.</p>
+<p><code>cmf metadata</code> push, pull or export the metadata file to and from the CMF Server, respectively.</p>
 <h3 id="cmf-metadata-pull">cmf metadata pull<a class="headerlink" href="#cmf-metadata-pull" title="Permanent link">¤</a></h3>
 <div class="highlight"><pre><span></span><code>Usage: cmf metadata pull [-h] -p [pipeline_name] -f [file_name]  -e [exec_uuid]
 </code></pre></div>
-<p><code>cmf metadata pull</code> command pulls the metadata file from the cmf-server to the user's local machine.</p>
+<p><code>cmf metadata pull</code> command pulls the metadata file from the CMF Server to the user's local machine.</p>
 <div class="highlight"><pre><span></span><code>cmf metadata pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
 </code></pre></div>
 <p>Required Arguments</p>
@@ -1251,7 +1251,7 @@
 <h3 id="cmf-metadata-push">cmf metadata push<a class="headerlink" href="#cmf-metadata-push" title="Permanent link">¤</a></h3>
 <div class="highlight"><pre><span></span><code>Usage: cmf metadata push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard_path]
 </code></pre></div>
-<p><code>cmf metadata push</code> command pushes the metadata file from the local machine to the cmf-server.</p>
+<p><code>cmf metadata push</code> command pushes the metadata file from the local machine to the CMF Server.</p>
 <div class="highlight"><pre><span></span><code>cmf metadata push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; -t &#39;/path/to/tensorboard-log&#39;
 </code></pre></div>
 <p>Required Arguments</p>
@@ -1312,11 +1312,11 @@
 <h2 id="cmf-repo">cmf repo<a class="headerlink" href="#cmf-repo" title="Permanent link">¤</a></h2>
 <div class="highlight"><pre><span></span><code>Usage: cmf repo [-h] {push, pull}
 </code></pre></div>
-<p><code>cmf repo</code> command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, cmf-server, and git respectively.</p>
+<p><code>cmf repo</code> command push and pull artifacts, metadata files, and source code to and from the user's artifact repository, CMF Server, and Git respectively.</p>
 <h3 id="cmf-repo-push">cmf repo push<a class="headerlink" href="#cmf-repo-push" title="Permanent link">¤</a></h3>
 <div class="highlight"><pre><span></span><code>Usage: cmf repo push [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid] -t [tensorboard] -j [jobs]
 </code></pre></div>
-<p><code>cmf repo push</code> command push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.</p>
+<p><code>cmf repo push</code> command push artifacts, metadata files, and source code to the user's artifact repository, CMF Server, and Git respectively.</p>
 <div class="highlight"><pre><span></span><code>cmf repo push -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39; -t &#39;tensorboard_log_path&#39; -j &#39;jobs&#39;
 </code></pre></div>
 <p>Required Arguments</p>
@@ -1333,7 +1333,7 @@
 <h3 id="cmf-repo-pull">cmf repo pull<a class="headerlink" href="#cmf-repo-pull" title="Permanent link">¤</a></h3>
 <div class="highlight"><pre><span></span><code>Usage: cmf repo pull [-h] -p [pipeline_name] -f [file_name] -e [exec_uuid]
 </code></pre></div>
-<p><code>cmf repo pull</code> command pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.</p>
+<p><code>cmf repo pull</code> command pull artifacts, metadata files, and source code from the user's artifact repository, CMF Server, and Git respectively.</p>
 <div class="highlight"><pre><span></span><code>cmf repo pull -p &#39;pipeline-name&#39; -f &#39;/path/to/mlmd-file-name&#39; -e &#39;execution_uuid&#39;
 </code></pre></div>
 <p>Required Arguments</p>

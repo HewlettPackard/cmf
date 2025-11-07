@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#logging-apis-needs-to-be-updated" class="md-skip">
+        <a href="#logging-apis" class="md-skip">
           Skip to content
         </a>
       
@@ -555,7 +555,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-server
+    Cmf Server
     
   </span>
   
@@ -642,13 +642,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#logging-apis-needs-to-be-updated" class="md-nav__link">
+  <a href="#logging-apis" class="md-nav__link">
     <span class="md-ellipsis">
-      Logging API'S NEEDS TO BE UPDATED
+      Logging APIs
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Logging API&#39;S NEEDS TO BE UPDATED">
+    <nav class="md-nav" aria-label="Logging APIs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -820,7 +820,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-client commands
+    CMF Client commands
     
   </span>
   
@@ -1124,13 +1124,13 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#logging-apis-needs-to-be-updated" class="md-nav__link">
+  <a href="#logging-apis" class="md-nav__link">
     <span class="md-ellipsis">
-      Logging API'S NEEDS TO BE UPDATED
+      Logging APIs
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Logging API&#39;S NEEDS TO BE UPDATED">
+    <nav class="md-nav" aria-label="Logging APIs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1246,9 +1246,9 @@
 
   <h1>Complete API Documentation</h1>
 
-<h2 id="logging-apis-needs-to-be-updated">Logging API'S  NEEDS TO BE UPDATED<a class="headerlink" href="#logging-apis-needs-to-be-updated" title="Permanent link">¤</a></h2>
+<h2 id="logging-apis">Logging APIs<a class="headerlink" href="#logging-apis" title="Permanent link">¤</a></h2>
 <h3 id="1-library-init-call-cmf">1. Library init call - Cmf()<a class="headerlink" href="#1-library-init-call-cmf" title="Permanent link">¤</a></h3>
-<p>This calls initiates the library and also creates a pipeline object with the name provided.<br/>
+<p>This call initializes the library and also creates a pipeline object with the name provided.<br/>
 Arguments to be passed CMF:<br/>
 <div class="highlight"><pre><span></span><code><span class="n">cmf</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">Cmf</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;Test-env&quot;</span><span class="p">)</span>
 
@@ -1276,7 +1276,7 @@ Arguments to be passed CMF:<br/>
 <tr>
 <td>custom_properties</td>
 <td>Dictionary (Optional)</td>
-<td>Additional properties of the pipeline that needs to be stored</td>
+<td>Additional properties of the pipeline that need to be stored</td>
 </tr>
 <tr>
 <td>graph</td>
@@ -1359,7 +1359,7 @@ Arguments to be passed CMF:<br/>
 <tr>
 <td>custom_properties</td>
 <td>Dictionary (Optional)</td>
-<td>Key value pairs of additional properties of the stage that needs to be stored</td>
+<td>Key value pairs of additional properties of the stage that need to be stored</td>
 </tr>
 </tbody>
 </table>
@@ -1416,8 +1416,8 @@ Arguments to be passed CMF:<br/>
 </tbody>
 </table>
 <h3 id="3-create_execution-creates-an-execution-with-properties">3. create_execution - Creates an Execution with properties<a class="headerlink" href="#3-create_execution-creates-an-execution-with-properties" title="Permanent link">¤</a></h3>
-<p>A stage can have multiple executions. A unique name should ne provided for exery execution. 
-Properties of the execution can be paased as key value pairs in the custom properties. Eg: The hyper parameters used for the execution can be passed.
+<p>A stage can have multiple executions. A unique name should be provided for every execution. 
+Properties of the execution can be passed as key value pairs in the custom properties. Eg: The hyper parameters used for the execution can be passed.
 <div class="highlight"><pre><span></span><code><span class="n">execution</span> <span class="o">=</span> <span class="n">cmf</span><span class="o">.</span><span class="n">create_execution</span><span class="p">(</span><span class="n">execution_type</span><span class="o">=</span><span class="s2">&quot;Prepare&quot;</span><span class="p">,</span>
                                  <span class="n">custom_properties</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Split&quot;</span><span class="p">:</span> <span class="n">split</span><span class="p">,</span> <span class="s2">&quot;Seed&quot;</span><span class="p">:</span> <span class="n">seed</span><span class="p">})</span>
 

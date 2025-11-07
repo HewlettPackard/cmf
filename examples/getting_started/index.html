@@ -70,7 +70,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#using-cmf-to-track-metadata-for-a-ml-pipeline-nedds-to-be-updated" class="md-skip">
+        <a href="#using-cmf-to-track-metadata-for-a-ml-pipeline" class="md-skip">
           Skip to content
         </a>
       
@@ -506,7 +506,7 @@
           <li class="md-nav__item">
   <a href="#setup-a-cmf-server" class="md-nav__link">
     <span class="md-ellipsis">
-      Setup a cmf-server
+      Setup a CMF Server
     </span>
   </a>
   
@@ -515,7 +515,7 @@
           <li class="md-nav__item">
   <a href="#syncing-metadata-on-the-cmf-server" class="md-nav__link">
     <span class="md-ellipsis">
-      Syncing metadata on the cmf-server
+      Syncing metadata on the CMF Server
     </span>
   </a>
   
@@ -688,7 +688,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-server
+    Cmf Server
     
   </span>
   
@@ -810,7 +810,7 @@
   
   
   <span class="md-ellipsis">
-    cmf-client commands
+    CMF Client commands
     
   </span>
   
@@ -1161,7 +1161,7 @@
           <li class="md-nav__item">
   <a href="#setup-a-cmf-server" class="md-nav__link">
     <span class="md-ellipsis">
-      Setup a cmf-server
+      Setup a CMF Server
     </span>
   </a>
   
@@ -1170,7 +1170,7 @@
           <li class="md-nav__item">
   <a href="#syncing-metadata-on-the-cmf-server" class="md-nav__link">
     <span class="md-ellipsis">
-      Syncing metadata on the cmf-server
+      Syncing metadata on the CMF Server
     </span>
   </a>
   
@@ -1224,7 +1224,7 @@
 
 
 
-<h1 id="using-cmf-to-track-metadata-for-a-ml-pipeline-nedds-to-be-updated">Using <code>cmf</code> to track metadata for a ML Pipeline - NEDDS TO BE UPDATED<a class="headerlink" href="#using-cmf-to-track-metadata-for-a-ml-pipeline-nedds-to-be-updated" title="Permanent link">¤</a></h1>
+<h1 id="using-cmf-to-track-metadata-for-a-ml-pipeline">Using <code>cmf</code> to track metadata for a ML Pipeline<a class="headerlink" href="#using-cmf-to-track-metadata-for-a-ml-pipeline" title="Permanent link">¤</a></h1>
 <p>This example demonstrates how <code>cmf</code> tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
 ML steps, such as training and testing ML models. </p>
@@ -1248,12 +1248,12 @@ pipeline consisting of five steps:</p>
   evaluates the performance and execution of the ML model trained in the <code>train</code> step. This step registers two input
   artifacts (ML model and test dataset) and one output artifact (performance metrics).</li>
 <li>The last <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py">query</a> step
-  displays each step of the pipeline's metadata as retrieved from the <code>cmf-server</code>, aggregated over all executions.
+  displays each step of the pipeline's metadata as retrieved from the <code>CMF Server</code>, aggregated over all executions.
   For example, if you rerun the pipeline again, the output will include not only metadata associated with the latest
   run, but also the metadata associated with previous runs.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¤</a></h2>
-<p>Before proceeding, ensure that the <code>cmflib</code> is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/#install-cmf-library-ie-cmflib">Installation &amp; Setup</a> page.</p>
+<p>Before proceeding, ensure that the <code>CMFLib</code> is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/#install-cmf-library-ie-cmflib">Installation &amp; Setup</a> page.</p>
 <p>The initial setup requires creating a workspace directory that will contain all files for this example, cloning the <code>cmf</code> repository that contains source code and data for this example.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create workspace directory</span>
 mkdir<span class="w"> </span>cmf_example
@@ -1263,7 +1263,7 @@ mkdir<span class="w"> </span>cmf_example
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/cmf
 </code></pre></div>
 <h2 id="project-initialization">Project initialization<a class="headerlink" href="#project-initialization" title="Permanent link">¤</a></h2>
-<p>First, copy the code and data for this example into its own directory (that must be outside the <code>cmf</code> source tree). Execute the <code>cmf init</code> command specifying the Data Version Control (dvc) directory, the URL of the git remote, address of the <code>cmf-server</code>, and neo4j credentials along with the appropriate dvc backend for this project.</p>
+<p>First, copy the code and data for this example into its own directory (that must be outside the <code>cmf</code> source tree). Execute the <code>cmf init</code> command specifying the Data Version Control (dvc) directory, the URL of the git remote, address of the <code>CMF Server</code>, and neo4j credentials along with the appropriate dvc backend for this project.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a separate copy of the example project</span>
 cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-started/<span class="w"> </span>./example-get-started
 <span class="nb">cd</span><span class="w"> </span>./example-get-started
@@ -1289,7 +1289,7 @@ Usage: cmf init local [-h] --path [path] -
 </code></pre></div>
 Optional Arguments
 <div class="highlight"><pre><span></span><code>  -h, --help                          show this help message and exit
-  --cmf-server-url [cmf_server_url]   Specify cmf-server url. (default: http://127.0.0.1:80)
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
   --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
@@ -1304,18 +1304,18 @@ execution of these steps (and parent pipeline) will be recorded by the <code>cmf
 <div class="highlight"><pre><span></span><code><span class="c1"># Run the example pipeline</span>
 sh<span class="w"> </span>./test_script.sh
 </code></pre></div></p>
-<h3 id="setup-a-cmf-server">Setup a <code>cmf-server</code><a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">¤</a></h3>
+<h3 id="setup-a-cmf-server">Setup a <code>CMF Server</code><a class="headerlink" href="#setup-a-cmf-server" title="Permanent link">¤</a></h3>
 <blockquote>
-<p>Note: This setup step is not required if the cmf-server is already configured.</p>
+<p>Note: This setup step is not required if the CMF Server is already configured.</p>
 </blockquote>
-<p><strong>cmf-server</strong> is a key interface for the user to explore and track their ML training runs, allowing users to store the metadata file on the cmf-server. The user can retrieve the saved metadata file and view the content of the saved metadata file using the UI provided by the cmf-server.</p>
-<p>Follow <a href="../../setup/#install-cmf-server-with-gui">here</a> to set up a common cmf-server.</p>
-<h3 id="syncing-metadata-on-the-cmf-server">Syncing metadata on the <code>cmf-server</code><a class="headerlink" href="#syncing-metadata-on-the-cmf-server" title="Permanent link">¤</a></h3>
+<p><strong>CMF Server</strong> is a key interface for users to explore and track their ML training runs, allowing them to store metadata files on the CMF Server. Users can retrieve saved metadata files and view their content using the UI provided by the CMF Server.</p>
+<p>Follow <a href="../../setup/#install-cmf-server-with-gui">here</a> to set up a common CMF Server.</p>
+<h3 id="syncing-metadata-on-the-cmf-server">Syncing metadata on the <code>CMF Server</code><a class="headerlink" href="#syncing-metadata-on-the-cmf-server" title="Permanent link">¤</a></h3>
 <p>Metadata generated at each step of the pipeline will be stored in a sqlite file named mlmd. Commits in this
 repository correspond to the creation of pipeline artifacts and can be viewed with <code>git log</code>.</p>
 <p>In production settings, the next steps would be to:
 1. Execute the <code>cmf artifact push</code> command to push the artifacts to the central artifact repository.
-2. Execute the <code>cmf metadata push</code> command to track the metadata of the generated artifacts on a common <a href="./../cmf_server/index.md">cmf-server</a>.</p>
+2. Execute the <code>cmf metadata push</code> command to track the metadata of the generated artifacts on a common <a href="../../setup/#install-cmf-server-with-gui">CMF Server</a>.</p>
 <p>Follow <a href="../../cmf_client/cmf_client_commands/#cmf-artifact">cmf artifact</a> and <a href="../../cmf_client/cmf_client_commands/#cmf-metadata">cmf metadata</a> for more details.</p>
 <h2 id="query">Query<a class="headerlink" href="#query" title="Permanent link">¤</a></h2>
 <p>The stored metadata can be explored using the query layer of <code>cmf</code>. The Jupyter notebook
