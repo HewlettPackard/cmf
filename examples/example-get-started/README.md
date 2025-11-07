@@ -15,9 +15,9 @@ See [Getting Started Tutorial](./../../docs/examples/getting_started.md) page fo
    run the pipeline and will store its pipeline metadata in a sqlite file named mlmd. Verify that all stages are done 
    using "git log" command. You should see commits corresponding to the artifacts that was created.
 
-5. Execute [`cmf artifact push`](./../../docs/cmf_client/cmf_client.md#cmf-artifact) command to push artifacts to the artifact repo.
+5. Execute [`cmf artifact push`](./../../docs/cmf_client/cmf_client_commands.md#cmf-artifact) command to push artifacts to the artifact repo.
 
-6. Execute [`cmf metadata push`](./../../docs/cmf_client/cmf_client.md#cmf-metadata) command to push metadata to central cmf server. To start cmf-server, use [cmf-server.md](./../../docs/cmf_server/cmf-server.md).
+6. Execute [`cmf metadata push`](./../../docs/cmf_client/cmf_client_commands.md#cmf-metadata) command to push metadata to central CMF Server. To start CMF Server, follow the [CMF Server Installation Guide](./../../docs/setup/index.md#install-cmf-server-with-gui).
    
 ### Query 
 The stored metadata can be explored using the query layer. Example Jupyter notebook 

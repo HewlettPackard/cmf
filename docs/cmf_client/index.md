@@ -11,8 +11,8 @@ This tutorial walks you through the process of setting up the `CMF Client`.
 ## Prerequisites 
 Before proceeding with the setup, ensure the following components are up and running:
 
-- [CMFLib](../setup/index.md/#install-cmf-library-ie-cmflib)
-- [CMF Server](../setup/index.md/#install-cmf-server-with-gui)
+- [CMFLib](../setup/index.md#install-cmf-library-ie-cmflib)
+- [CMF Server](../setup/index.md#install-cmf-server-with-gui)
 
 Make sure there are no errors during their startup, as `CMF Client` depends on both of these components.
 
@@ -24,7 +24,7 @@ Follow the below-mentioned steps for the end-to-end setup of `CMF Client`:-
 **Configuration**
 
 1. Create working directory `mkdir <workdir>`
-2. Execute `cmf init` to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the [`cmf init`](./cmf_client_commands.md/#cmf-init) for more details.
+2. Execute `cmf init` to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the [`cmf init`](./cmf_client_commands.md#cmf-init) for more details.
 
 
 ## How to effectively use CMF Client?
@@ -44,13 +44,13 @@ cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-
 ```
 > Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.
 
-Check [cmf init minioS3](./cmf_client_commands.md/#cmf-init-minios3) for more details.
+Check [cmf init minioS3](./cmf_client_commands.md#cmf-init-minios3) for more details.
 
 **Check status of CMF initialization (Optional)**
 ```
 cmf init show
 ```
-Check [cmf init show](./cmf_client_commands.md/#cmf-init-show) for more details.
+Check [cmf init show](./cmf_client_commands.md#cmf-init-show) for more details.
 
 **Track metadata using CMFLib**
 
@@ -68,13 +68,13 @@ Push artifacts in the artifact repo initialized in the [Initialize cmf](#initial
 ```
 cmf artifact push -p 'Test-env'
 ```
-Check [cmf artifact push](./cmf_client_commands.md/#cmf-artifact-push) for more details.
+Check [cmf artifact push](./cmf_client_commands.md#cmf-artifact-push) for more details.
 
 **Push metadata to CMF Server**
 ```
 cmf metadata push -p 'Test-env'
 ```
-Check [cmf metadata push](./cmf_client_commands.md/#cmf-metadata-push) for more details.
+Check [cmf metadata push](./cmf_client_commands.md#cmf-metadata-push) for more details.
 
 ### CMF Client with collaborative development
 In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common CMF Server and a central artifact repository.
@@ -85,7 +85,7 @@ Execute `cmf metadata pull` command in the `example_folder`.
 ```
 cmf metadata pull -p 'Test-env'
 ```
-Check [cmf metadata pull](./cmf_client_commands.md/#cmf-metadata-pull) for more details.
+Check [cmf metadata pull](./cmf_client_commands.md#cmf-metadata-pull) for more details.
 
 **Pull artifacts from the central artifact repo**
 
@@ -93,7 +93,7 @@ Execute `cmf artifact pull` command in the `example_folder`.
 ```
 cmf artifact pull -p 'Test-env'
 ```
-Check [cmf artifact pull](./cmf_client_commands.md/#cmf-artifact-pull) page for more details.
+Check [cmf artifact pull](./cmf_client_commands.md#cmf-artifact-pull) page for more details.
 
 ## Flow Chart for cmf
 <img src="./../../assets/flow_chart_cmf.jpg" alt="Flow chart for cmf" style="display: block; margin: 0 auto" />
