@@ -611,7 +611,7 @@ class CmfQuery(object):
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
-            artifact name: Name of an artifact.
+            artifact_name: Name of an artifact.
 
         Returns:
             Output artifacts of all executions that consumed given artifact.
