@@ -124,11 +124,8 @@ cmf dvc ingest
 
 ### 8. Push/Pull Metadata and Artifacts
 
-<<<<<<< HEAD
 Use [CMF Client commands](./cmf_client_commands.md) to push or pull your metadata and artifacts as required:
-=======
-Use [cmf-client commands](./cmf_client_commands.md) to push or pull your metadata and artifacts as required:
->>>>>>> master
+
 
 - `cmf metadata push`
 - `cmf metadata pull`
