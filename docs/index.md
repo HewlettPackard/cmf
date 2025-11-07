@@ -1,4 +1,4 @@
-# Getting started with cmf - NEEDS TO BE UPDATED
+# Getting started with CMF
 
 ## Purpose and Scope
 
