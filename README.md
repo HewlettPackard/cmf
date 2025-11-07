@@ -153,7 +153,7 @@ cmf metadata push            # Push metadata to server
 cmf metadata pull            # Pull metadata from server
 ```
 	
-➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_clientindext">Command Reference</a>
+➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_client/index">Command Reference</a>
 
 
 ---
