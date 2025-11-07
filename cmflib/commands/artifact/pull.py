@@ -267,7 +267,7 @@ class CmdArtifactPull(CmdBase):
         if dvc_config_op["core.remote"] == "minio":
             minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
             # Check if a specific artifact name is provided as input.
-            if self.args.artifact_name: 
+            if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])

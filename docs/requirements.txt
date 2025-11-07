@@ -1,4 +1,6 @@
 mkdocs>=1.0.4
 mkdocs-material>=4.4.0
+mkdocs-autorefs
 pymdown-extensions>=7.1
 mkdocstrings[python]
+mkdocs-section-index>=0.3
