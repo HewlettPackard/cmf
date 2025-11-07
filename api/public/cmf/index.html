@@ -814,6 +814,15 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#cmflib.cmf.Cmf.log_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      log_label
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1524,6 +1533,15 @@
   <a href="#cmflib.cmf.Cmf.update_dataslice" class="md-nav__link">
     <span class="md-ellipsis">
       update_dataslice
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmflib.cmf.Cmf.log_label" class="md-nav__link">
+    <span class="md-ellipsis">
+      log_label
     </span>
   </a>
   
@@ -2813,6 +2831,113 @@ method. Users are also responsible for committing data slices by calling the
             <td>
               <div class="doc-md-description">
                 <p>None</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="cmflib.cmf.Cmf.log_label" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">log_label</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">dataset_name</span><span class="p">,</span> <span class="n">custom_properties</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#cmflib.cmf.Cmf.log_label" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Logs a label artifact associated with a dataset.</p>
+<p>This function checks whether a label artifact (identified by <code>label_hash</code>) already exists in the metadata store.
+- If the artifact exists, it links it to the current execution and optionally updates its properties and URL.
+- If the artifact does not exist, it creates a new artifact with the provided properties and links it to the execution context.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>url</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The base URL representing the label (e.g., path or storage location).</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>dataset_name</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The name of the associated dataset.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>custom_properties</code>
+            </td>
+            <td>
+                  <code><span title="Optional">Optional</span>[<span title="Dict">Dict</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional metadata to associate with the artifact. Defaults to None.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ml_metadata.proto.metadata_store_pb2.Artifact">Artifact</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>mlpb.Artifact: The logged or linked label artifact.</p>
               </div>
             </td>
           </tr>
