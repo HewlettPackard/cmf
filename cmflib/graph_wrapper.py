@@ -555,7 +555,7 @@ class GraphDriver:
         syntax_str = "MERGE (a:Label {uri:\"" + uri + "\"}) SET "
         for k, v in custom_properties.items():
             # removes special characters from the key 
-            k = re.sub("\W+", "", k)
+            k = re.sub(r"\W+", "", k)
             props_str = "a." + k + \
             " = coalesce([x in a." + k + " where x <>\"" + str(v) + "\"], []) + \"" + str(v) + "\","
             syntax_str = syntax_str + props_str

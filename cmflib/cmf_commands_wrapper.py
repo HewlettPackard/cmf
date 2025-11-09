@@ -174,7 +174,7 @@ def _artifact_pull(pipeline_name: str, file_name: str, artifact_name: str) -> st
             file_name,
         ]
     # Only append the optional artifact name flag if a real value was supplied
-    if not artifact_name:
+    if artifact_name:
          cli_args.extend(["-a", artifact_name])
          
     cli_args = cli.parse_args(cli_args)
