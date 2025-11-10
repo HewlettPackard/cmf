@@ -1,7 +1,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tensorboard
+  name: tensorboard-deployment
+  labels:
+    app: tensorboard
 spec:
   replicas: 1
   selector:
@@ -12,19 +14,34 @@ spec:
       labels:
         app: tensorboard
     spec:
-      initContainers:
-      - name: wait-for-cmf-server
-        image: busybox
-        command: ['sh', '-c', 'until nc -z cmf-service 8080; do echo waiting for cmf-service; sleep 2; done;']
       containers:
       - name: tensorboard
-        image: tensorflow/tensorflow
-        command: ["tensorboard", "--logdir", "/logs", "--host", "0.0.0.0"]
+        image: tensorflow/tensorflow:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
         ports:
         - containerPort: 6006
         volumeMounts:
-        - mountPath: /logs
-          name: tensorboard-logs
+        - name: tensorboard-logs
+          mountPath: /logs
+        readinessProbe:
+          httpGet:
+            path: /tensorboard
+            port: 6006
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /tensorboard
+            port: 6006
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
       volumes:
       - name: tensorboard-logs
         persistentVolumeClaim:
@@ -33,12 +50,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: tensorboard-service
+  name: tensorboard
+  labels:
+    app: tensorboard
 spec:
+  type: ClusterIP
   selector:
     app: tensorboard
   ports:
-  - protocol: TCP
+  - name: http
     port: 6006
     targetPort: 6006
-  type: LoadBalancer
