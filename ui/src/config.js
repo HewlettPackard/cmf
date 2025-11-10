@@ -14,9 +14,13 @@
  * limitations under the License.
  ***/
 
-const runtimeConfig = window.__RUNTIME_CONFIG__ || {};
+/**
+ * Runtime configuration for the application, we get the CMF Backend URL from environment variables.
+ */
 
-let apiUrl = runtimeConfig.REACT_APP_CMF_API_URL || window.location.origin;
+const runtimeConfig = window.RUNTIME_CONFIG || {};
+
+let apiUrl = runtimeConfig.REACT_APP_CMF_API_URL || "http://localhost";
 // Only append /api if it's not already there
 if (apiUrl && !apiUrl.endsWith('/api')) {
   apiUrl = `${apiUrl}/api`;
