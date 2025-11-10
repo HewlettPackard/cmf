@@ -141,6 +141,14 @@ kubectl apply -f kubernetes/nginx/nginx-configmap.yaml
 kubectl apply -f kubernetes/nginx/nginx-deployment.yaml
 ```
 
+**Neo4j**
+
+```bash
+kubectl apply -f kubernetes/neo4j/neo4j-pv.yaml
+kubectl apply -f kubernetes/neo4j/neo4j-pvc.yaml
+kubectl apply -f kubernetes/neo4j/neo4j.yaml
+```
+
 ---
 
 ## 9. Check Minikube status
@@ -166,9 +174,24 @@ nohup kubectl port-forward --address 0.0.0.0 service/nginx 30080:80 > /tmp/port-
 sleep 2 && ps aux | grep "port-forward" | grep -v grep
 ```
 
+## 11. Do port forwarding
+
+Forward Neo4j service port to host and verify running process.
+
+```bash
+nohup kubectl port-forward --address 0.0.0.0 service/neo4j 7474:7474 > /tmp/port-forward.log 2>&1 &
+sleep 2 && ps aux | grep "port-forward" | grep -v grep
+```
+
+```bash
+nohup kubectl port-forward --address 0.0.0.0 service/neo4j 7687:7687 > /tmp/port-forward.log 2>&1 &
+sleep 2 && ps aux | grep "port-forward" | grep -v grep
+```
+
+
 ---
 
-## 11. Access the application
+## 12. Access the application
 
 Open the following URL in a browser:
 
@@ -178,7 +201,7 @@ http://x.x.x.x:30080
 
 ---
 
-## 12. Initialize CMF locally
+## 13. Initialize CMF locally
 
 Copy example files and initialize CMF local setup.
 
@@ -188,7 +211,7 @@ cmf init local --path /home/username/local-storage --git-remote-url https://gith
 
 ---
 
-## 13. Run test script and push metadata
+## 14. Run test script and push metadata
 
 Execute test script and push CMF metadata.
 
@@ -199,7 +222,7 @@ cmf metadata push
 
 ---
 
-## 14. Restart pods after image rebuild
+## 15. Restart pods after image rebuild
 
 Whenever a new image is built, restart the corresponding pod.
 
