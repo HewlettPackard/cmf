@@ -22,7 +22,7 @@ spec:
         - containerPort: 3000
         env:
         - name: REACT_APP_CMF_API_URL
-          value: http://ayesha-test-cmf.labs.hpecorp.net:30080           # ✅ same cluster DNS; backend reachable via Nginx
+          value: http://x.x.x.x:30080           # ✅ same cluster DNS; backend reachable via Nginx
         readinessProbe:
           httpGet:
             path: /
