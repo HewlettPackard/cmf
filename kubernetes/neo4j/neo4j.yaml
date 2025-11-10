@@ -55,7 +55,7 @@ kind: Service
 metadata:
   name: neo4j
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - port: 7474    
     targetPort: 7474
