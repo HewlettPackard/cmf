@@ -22,7 +22,7 @@ spec:
         - containerPort: 3000
         env:
         - name: REACT_APP_CMF_API_URL
-          value: "http://nginx"           # ✅ same cluster DNS; backend reachable via Nginx
+          value: ""           # ✅ same cluster DNS; backend reachable via Nginx
         readinessProbe:
           httpGet:
             path: /
