@@ -1,56 +1,78 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cmf-deployment
+  name: cmf-server-deployment
+  labels:
+    app: cmf-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: cmf
+      app: cmf-server
   template:
     metadata:
       labels:
-        app: cmf
+        app: cmf-server
     spec:
       containers:
       - name: cmf-server
-        image: localhost:5000/cmf-server:latest
+        image: cmf-server:latest
+        imagePullPolicy: IfNotPresent   # important for Minikube local builds
         ports:
-        - containerPort: 8080 # CMF server port
+        - containerPort: 8080
         env:
-        - name: MYIP
-          value: "192.168.30.116"
-        volumeMounts:
-        - mountPath: /cmf-server/data
-          name: server-data
-        - mountPath: /cmf-server/data/static
-          name: server-static
-        - mountPath: /cmf-server/data/tensorboard-logs
-          name: tensorboard-logs
+        - name: POSTGRES_HOST
+          value: "postgres"           # Kubernetes Service for Postgres
+        - name: POSTGRES_USER
+          value: "myuser"
+        - name: POSTGRES_PASSWORD
+          value: "mypassword"
+        - name: POSTGRES_DB
+          value: "mlmd"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: REACT_APP_CMF_API_URL
+          value: "http://nginx"       # for internal reference, safe to keep
         readinessProbe:
           httpGet:
             path: /
             port: 8080
-          initialDelaySeconds: 5
+          initialDelaySeconds: 10
           periodSeconds: 10
-        # Add resources and volume mounts if needed 
-      - name: cmf-ui
-        image: localhost:5000/cmf-ui:latest
-        ports:
-        - containerPort: 3000 # CMF UI port
-        # Add resources and volume mounts if needed
-        env:
-        - name: REACT_APP_MY_IP
-          value: "192.168.30.116"
-        - name: REACT_APP_MY_HOSTNAME
-          value: ""
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+        volumeMounts:
+        - mountPath: /cmf-server/data
+          name: server-data
+        - mountPath: /cmf-server/data/env
+          name: server-env
+        - mountPath: /cmf-server/data/static
+          name: server-static
+        - mountPath: /cmf-server/data/labels
+          name: server-labels
+        - mountPath: /cmf-server/data/tensorboard-logs
+          name: tensorboard-logs
       volumes:
       - name: server-data
         persistentVolumeClaim:
           claimName: pvc-server-data
+      - name: server-env
+        persistentVolumeClaim:
+          claimName: pvc-server-data-env
       - name: server-static
         persistentVolumeClaim:
-          claimName: pvc-server-static
+          claimName: pvc-server-data-static
+      - name: server-labels
+        persistentVolumeClaim:
+          claimName: pvc-server-data-labels
       - name: tensorboard-logs
         persistentVolumeClaim:
           claimName: pvc-tensorboard-logs
@@ -58,15 +80,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cmf-service
+  name: server             # 👈 matches your nginx.conf (proxy_pass http://server:8080/)
+  labels:
+    app: cmf-server
 spec:
-  type: LoadBalancer
-  ports:
-  - name: cmf-server-port
-    port: 8080 # External port for CMF Server access
-    targetPort: 8080 # CMF server container port
-  - name: cmf-ui-port
-    port: 3000 # External port for CMF UI access
-    targetPort: 3000 # CMF UI container port
+  type: ClusterIP
   selector:
-    app: cmf
+    app: cmf-server
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080

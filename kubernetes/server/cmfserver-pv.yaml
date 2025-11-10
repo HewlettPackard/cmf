@@ -7,8 +7,9 @@ spec:
     storage: 40Gi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /mnt/cmf/data  
+    path: /mnt/cmf/data
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -19,6 +20,7 @@ spec:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/cmf/data/env
 ---
@@ -31,8 +33,9 @@ spec:
     storage: 20Gi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: /mnt/cmf/data/static 
+    path: /mnt/cmf/data/static
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -43,9 +46,9 @@ spec:
     storage: 5Gi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/cmf/data/labels
-
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -56,5 +59,6 @@ spec:
     storage: 20Gi
   accessModes:
     - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
   hostPath:
     path: /mnt/cmf/data/tensorboard-logs

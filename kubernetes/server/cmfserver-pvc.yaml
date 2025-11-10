@@ -9,7 +9,7 @@ spec:
   resources:
     requests:
       storage: 40Gi
-  volumeName: pv-server-data  
+  volumeName: pv-server-data
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -62,4 +62,3 @@ spec:
     requests:
       storage: 20Gi
   volumeName: pv-tensorboard-logs
-
