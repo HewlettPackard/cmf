@@ -20,12 +20,26 @@
 
 ---
 
+## 🏛 Quick Start
+
+Get started with CMF in minutes using our example ML pipeline:
+
+**[📖 Try the Getting Started Example](./examples/example-get-started/)**
+
+This example demonstrates:
+- Initializing a CMF project
+- Tracking an ML pipeline with multiple stages (parse → featurize → train → test)
+- Versioning datasets and models
+- Pushing artifacts and metadata
+- Querying tracked metadata
+
+
 ## 📦 Installation
 
 ### Requirements
 
 - Linux/Ubuntu/Debian
-- Python >=3.9, <3.11
+- Python: Version 3.9 to 3.11 (3.10 recommended)
 - Git (latest)
 
 ### Virtual Environment
@@ -64,7 +78,7 @@ pip install cmflib
 
 ### Server Setup
 
-📖 Follow the guide in <a href="docs/cmf_server/cmf-server.md" target="_blank">docs/cmf_server/cmf-server.md</a>
+📖 Follow the [CMF Server Installation Guide](https://hewlettpackard.github.io/cmf/setup/index.html#install-cmf-server-with-gui)
 
 ---
 
@@ -72,7 +86,7 @@ pip install cmflib
 
 - [Getting Started](https://hewlettpackard.github.io/cmf/)
 - [API Reference](https://hewlettpackard.github.io/cmf/api/public/cmf)
-- [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/cmf_client)
+- [Command Reference](https://hewlettpackard.github.io/cmf/cmf_client/index)
 - [Related Docs](https://deepwiki.com/HewlettPackard/cmf)
 
 ---
@@ -92,9 +106,9 @@ CMF tracks pipeline stages, inputs/outputs, metrics, and code. It supports decen
 
 CMF is composed of:
 
-- **cmflib** - metadata library provides API to log/query metadata
-- **cmf-client** – CLI to sync metadata with server, push/pull artifacts to the user-specified repo, push/pull code from git.
-- **cmf-server** – REST API for metadata merge
+- **CMFLib** - Metadata library provides API to log/query metadata
+- **CMF Client** – CLI to sync metadata with server, push/pull artifacts to the user-specified repo, push/pull code from Git
+- **CMF Server** – REST API for metadata merge
 - **Central Repositories** – Git (code), DVC (artifacts), CMF (metadata)
 
 <p align="center">
@@ -110,21 +124,24 @@ CMF is composed of:
 ## 🔧 Sample Usage
 
 ```python
-
 from cmflib.cmf import Cmf
 from ml_metadata.proto import metadata_store_pb2 as mlpb
+
 cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
-context: mlpb.proto.Context = cmf.create_context(
+
+context: mlpb.Context = cmf.create_context(
     pipeline_stage="prepare",
-    custom_properties ={"user-metadata1": "metadata_value"}
+    custom_properties={"user-metadata1": "metadata_value"}
 )
-execution: mlpb.proto.Execution = cmf.create_execution(
+
+execution: mlpb.Execution = cmf.create_execution(
     execution_type="Prepare",
-    custom_properties = {"split": split, "seed": seed}
+    custom_properties={"split": split, "seed": seed}
 )
-artifact: mlpb.proto.Artifact = metawriter.log_dataset(
-	"artifacts/data.xml.gz", "input",
-	custom_properties={"user-metadata1": "metadata_value"}
+
+artifact: mlpb.Artifact = cmf.log_dataset(
+    "artifacts/data.xml.gz", "input",
+    custom_properties={"user-metadata1": "metadata_value"}
 )
 ```
 
@@ -136,7 +153,7 @@ cmf metadata push            # Push metadata to server
 cmf metadata pull            # Pull metadata from server
 ```
 	
-➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_client/cmf_client">Command Reference</a>
+➡️ For the complete list of commands, please refer to the <a href="https://hewlettpackard.github.io/cmf/cmf_client/index">Command Reference</a>
 
 
 ---

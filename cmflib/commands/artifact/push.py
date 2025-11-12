@@ -32,13 +32,13 @@ from cmflib.cmf_exception_handling import (
     ExecutionsNotFound,
     ArtifactPushSuccess, 
     MissingArgument, 
-    DuplicateArgumentNotAllowed
+    DuplicateArgumentNotAllowed,
+    MsgFailure
 )
 
 class CmdArtifactPush(CmdBase):
     def run(self, live):
         dvc_config_op, config_file_path = fetch_cmf_config_path()
-        
         cmd_args = {
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name, 
@@ -55,9 +55,17 @@ class CmdArtifactPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         
-        # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
-        num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
-        
+        # Determine the number of jobs.
+        # - If 'jobs' is provided and is a digit → use its integer value.
+        # - If 'jobs' is missing or empty → default to 4 * cpu_count().
+        # - If 'jobs' is provided but not numeric → raise an error.
+        if self.args.jobs:
+            if not self.args.jobs[0].isdigit():
+                raise MsgFailure(msg_str=f"Invalid '{self.args.jobs[0]}' for jobs. Please provide a numeric value.")
+            num_jobs = int(self.args.jobs[0])
+        else:
+            num_jobs = 4 * os.cpu_count()
+ 
         if dvc_config_op["core.remote"] == "osdf":
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)
@@ -143,7 +151,6 @@ class CmdArtifactPush(CmdBase):
                             for item in stage.get(section, []):
                                 if isinstance(item, dict) and 'path' in item:
                                     final_list.add(item['path'])
-        #print("file_set = ", final_list)
         result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
     

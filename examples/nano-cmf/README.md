@@ -9,14 +9,14 @@ In the traditional apporach in CMF, the typical sequence involves the initializa
 
 2. Create python virtual environment (version >= 3.7 and < 3.9), install git, install python dependencies.
 
-3. Initialise the project using [`cmf init`](./../../docs/cmf_client/cmf_client.md#cmf-init) command.
+3. Initialise the project using [`cmf init`](./../../docs/cmf_client/cmf_client_commands.md#cmf-init) command.
 
 4. Execute `sh test_script.sh`. This file mimics a Machine Learning pipeline. It has one stage: 
    [parse](./src/parse.py). It will run the pipeline and will store its pipeline metadata in a sqlite file named mlmd
    
-5. Execute [`cmf artifact push`](./../../docs/cmf_client/cmf_client.md#cmf-artifact) command to push artifacts to the artifact repo.
+5. Execute [`cmf artifact push`](./../../docs/cmf_client/cmf_client_commands.md#cmf-artifact) command to push artifacts to the artifact repo.
 
-6. Execute [`cmf metadata push`](./../../docs/cmf_client/cmf_client.md#cmf-metadata) command to push metadata to central cmf server. To start cmf-server, use [cmf-server.md](./../../docs/cmf_server/cmf-server.md).
+6. Execute [`cmf metadata push`](./../../docs/cmf_client/cmf_client_commands.md#cmf-metadata) command to push metadata to central CMF Server. To start CMF Server, follow the [CMF Server Installation Guide](./../../docs/setup/index.md#install-cmf-server-with-gui).
 
 
 ### Query 
