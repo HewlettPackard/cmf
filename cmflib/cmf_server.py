@@ -216,6 +216,8 @@ def log_python_env_from_client(
 
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, props.get("url", ""))
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -467,13 +469,11 @@ def log_label_with_version(self, url: str, version:str, props: t.Optional[t.Dict
                 "git_repo": str(git_repo),
                 "Commit": str(label_commit),
                 "url": props.get("url", " "),
-                "dataset_uri": props.get("dataset_uri", " ")
             },
             artifact_type_properties={
                 "git_repo": mlpb.STRING,    # type: ignore  # String type not recognized by mypy, using ignore to bypass
                 "Commit": mlpb.STRING,      # type: ignore  # String type not recognized by mypy, using ignore to bypass
                 "url": mlpb.STRING,         # type: ignore  # String type not recognized by mypy, using ignore to bypass
-                "dataset_uri": mlpb.STRING, # type: ignore  # String type not recognized by mypy, using ignore to bypass
             },
             custom_properties=custom_props,
             milliseconds_since_epoch=int(time.time() * 1000),

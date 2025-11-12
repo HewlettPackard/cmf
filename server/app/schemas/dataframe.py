@@ -44,13 +44,13 @@ class ArtifactRequest(BaseRequest):
 # Define a Pydantic model for the request body
 class ServerRegistrationRequest(BaseModel):
     server_name: str
-    host_info: str
+    server_url: str
     last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
 
 
 class AcknowledgeRequest(BaseModel):
     server_name: str
-    host_info: str
+    server_url: str
 
 # Don't forget description
 class MLMDPullRequest(BaseModel):

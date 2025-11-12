@@ -135,7 +135,7 @@ def add_parser(subparsers, parent_parser):
         "--cmf-server-url",
         help="Specify cmf-server URL.",
         metavar="<cmf_server_url>",
-        default="http://127.0.0.1:8080",
+        default="http://127.0.0.1:80",
     )
 
     parser.add_argument(

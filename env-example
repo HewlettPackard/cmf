@@ -1,14 +1,35 @@
-USER=frist
-UID=123456789
-GROUP=users
-GID=100
-DVC_REMOTE_URL=/home/jovyan/dvc_remote
-GIT_USER_NAME=first.second
-GIT_USER_EMAIL=first.second@hpe.com
-GIT_REMOTE_URL=git@github.hpe.com:first-second/cmf-demo.git
-GIT_BRANCH=first_checkout
-NEO4J_USER_NAME=USER
-NEO4J=TRUE
-NEO4J_PASSWD=XXXXX
-HTTP_PROXY=http://proxy.houston.hpecorp.net:8080
-HTTPS_PROXY=http://proxy.houston.hpecorp.net:8080
+#nginx ports
+NGINX_HTTP_PORT=80
+NGINX_HTTPS_PORT=443
+
+# React App Configuration
+# REACT_APP_CMF_API_URL=URL:NGINX_PORT
+# If you change the NGINX port, make sure to update the same port number in the env variable REACT_APP_CMF_API_URL.
+# This ensures that the frontend correctly communicates with the backend through the updated NGINX port.
+REACT_APP_CMF_API_URL=http://ai02.labs.corp.net:80
+
+# POSTGRES Configuration only for external postgress
+POSTGRES_HOST=postgres
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=mypassword
+POSTGRES_PORT=5432
+POSTGRES_DB=mlmd
+
+# Directory for persistent data storage
+CMF_DATA_DIR=/home/kulkashr/sk/
+
+
+#USER=frist
+#UID=123456789
+#GROUP=users
+#GID=100
+#DVC_REMOTE_URL=/home/jovyan/dvc_remote
+#GIT_USER_NAME=first.second
+#GIT_USER_EMAIL=first.second@hpe.com
+#GIT_REMOTE_URL=git@github.hpe.com:first-second/cmf-demo.git
+#GIT_BRANCH=first_checkout
+#NEO4J_USER_NAME=USER
+#NEO4J=TRUE
+#NEO4J_PASSWD=XXXXX
+#HTTP_PROXY=http://proxy.houston.hpecorp.net:8080
+#HTTPS_PROXY=http://proxy.houston.hpecorp.net:8080

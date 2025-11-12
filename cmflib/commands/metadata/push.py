@@ -104,7 +104,7 @@ class CmdMetadataPush(CmdBase):
             json_payload = query.dumptojson(pipeline_name, None)
 
             # checks if execution is given by user
-            if not self.args.execution_uuid:         # If self.args.execution_uuid is None or an empty list ([]).
+            if not self.args.execution_uuid:
                 exec_uuid = None
                 response = server_interface.call_mlmd_push(json_payload, url, exec_uuid, pipeline_name)
             else:

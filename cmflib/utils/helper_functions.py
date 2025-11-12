@@ -282,19 +282,13 @@ def get_postgres_config() -> dict:
     Returns:
         dict: A dictionary containing PostgreSQL configuration.
     """
-    IP = os.getenv('MYIP')
-    HOSTNAME = os.getenv('HOSTNAME')
-    HOST = ""
-    if(HOSTNAME!="localhost"):
-        HOST = HOSTNAME if HOSTNAME else ""
-    else:
-        HOST = IP if IP else ""
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST')
     POSTGRES_DB = os.getenv('POSTGRES_DB')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
     POSTGRES_PORT = os.getenv('POSTGRES_PORT')
-    config_dict = {"host":HOST, "port": POSTGRES_PORT, "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
-    #print("config_dict = ", config_dict)
+    config_dict = {"host":POSTGRES_HOST, "port": POSTGRES_PORT, "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    # print("config_dict = ", config_dict)
     return config_dict
 
 
