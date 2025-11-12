@@ -14,7 +14,7 @@
  * limitations under the License.
  ***/
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
 
 const ArtifactTypeSidebar = ({
@@ -25,7 +25,6 @@ const ArtifactTypeSidebar = ({
   const [clickedArtifactType, setClickedArtifactType] = useState(
     artifactTypes[0],
   );
-
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
 
@@ -33,10 +32,12 @@ const ArtifactTypeSidebar = ({
     handleClick(artifactTypes[0]);
     // eslint-disable-next-line
   }, []);
+
   useEffect(() => {
     setClickedArtifactType(artifactTypes[0]);
     // eslint-disable-next-line
   }, [artifactTypes]);
+  
   const handleClick = (artifactType) => {
     setClickedArtifactType(artifactType);
     handleArtifactTypeClick(artifactType);
@@ -51,7 +52,7 @@ const ArtifactTypeSidebar = ({
   return (
     <>
       <div className="flex justify-between border-b border-gray-200">
-        <div className="artifacttype-tabs flex flex-row ">
+        <div className="font-custom-fam color-black flex flex-row ">
           {artifactTypes.map((artifactType, index) => (
             <button
               key={artifactType}
@@ -68,13 +69,7 @@ const ArtifactTypeSidebar = ({
         </div>
         <div className="flex flex-row">
           <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginBottom: "0.5rem",
-              marginTop: "0.5rem",
-              fontfamily: "Arial,sans-serif",
-            }}
+            className="flex flex-end mb-2 mt-2 font-custom-fam"
           >
             <input
               type="text"

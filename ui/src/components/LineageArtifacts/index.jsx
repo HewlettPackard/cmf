@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as d3 from "d3";
-import "./index.css"; // Adjust the path if needed
+// import "./index.css"; // Adjust the path if needed
 
 const LineageArtifacts = ({ data }) => {
   // eslint-disable-next-line no-unused-vars
@@ -17,12 +17,12 @@ const LineageArtifacts = ({ data }) => {
 
   useEffect(() => {
     setJsonData(data);
-    if (!jsondata) {
+    if (!data) {
       // Data is not yet available
       return;
     }
-    jsondata.nodes.forEach((node) => {
-      const hasIncomingLinks = jsondata.links.some(
+    data.nodes.forEach((node) => {
+      const hasIncomingLinks = data.links.some(
         (link) => link.target === node.id,
       );
       if (!hasIncomingLinks) {
@@ -33,8 +33,8 @@ const LineageArtifacts = ({ data }) => {
 
     var width = window.innerWidth;
     var height = window.innerHeight;
-    const links = jsondata.links.map((d) => ({ ...d }));
-    const nodes = jsondata.nodes.map((d) => ({ ...d }));
+    const links = data.links.map((d) => ({ ...d }));
+    const nodes = data.nodes.map((d) => ({ ...d }));
 
     var svg = d3
       .select("#chart-container")
@@ -110,19 +110,19 @@ const LineageArtifacts = ({ data }) => {
 
     node
       .append("g")
-      .attr("class", "text-group")
+      .attr("class", "cursor-pointer")
       .on("mouseover", handleMouseOver)
       .on("mouseout", handleMouseOut)
       .append("text")
       .attr("x", 15) // Set x position to the center of the rectangle
       .attr("y", 15)
-      .attr("class", "truncated-text")
+      .attr("class", "text-xs font-bold fill-black")
       .text((d) => d.name.substring(0, 5) + "...");
 
     node
       .select(".text-group")
       .append("text")
-      .attr("class", "full-text")
+      .attr("class", "text-xs font-bold fill-black")
       .text((d) => d.name)
       .attr("x", 50) // Set x position to the center of the rectangle
       .attr("y", -5)
@@ -185,7 +185,7 @@ const LineageArtifacts = ({ data }) => {
     return () => {
       svg.remove(); // Remove the SVG when the component is unmounted
     };
-  }, [jsondata]);
+  }, [data]);
 
   return <div id="chart-container"></div>;
 };
