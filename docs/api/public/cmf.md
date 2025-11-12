@@ -16,6 +16,7 @@
         - log_metric
         - create_dataslice
         - update_dataslice
+        - log_label
 
 ::: cmflib.cmf
     options:
@@ -29,7 +30,6 @@
         - metadata_pull
         - metadata_export
         - artifact_pull
-        - artifact_pull_single
         - artifact_push
         - artifact_list
         - pipeline_list

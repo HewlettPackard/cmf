@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import FastAPIClient from '../../client';
 import config from '../../config';
@@ -7,9 +8,7 @@ const client = new FastAPIClient(config);
 const RegistrationForm = () => {
     const [formData, setFormData] = useState({
         serverName: '',
-        addressType: 'ipAddress', // Default to IP Address
-        ipAddress: '',
-        hostName: '',
+        serverUrl: '',
     });
 
     const handleChange = (e) => {
@@ -25,40 +24,43 @@ const RegistrationForm = () => {
         callRegistrationAPI();
     };
 
-    const validateIPAddress = (ip) => {
-        const ipRegex = /^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$/;
-        return ipRegex.test(ip);
+    const validateUrl = (url) => {
+        // Basic URL validation
+        try {
+            new URL(url);
+            return true;
+        } catch {
+            return false;
+        }
     };
 
     const callRegistrationAPI = () => {
-        const { serverName, addressType, ipAddress, hostName } = formData;
+        const { serverName, serverUrl } = formData;
 
-        if (addressType === 'ipAddress' && !validateIPAddress(ipAddress)) {
-            alert('Invalid IP Address');
+        if (!serverName.trim()) {
+            alert('Server name is required.');
+            return;
+        }
+        if (!validateUrl(serverUrl)) {
+            alert('Invalid server URL.');
             return;
         }
 
-        const addressValue = addressType === 'ipAddress' ? ipAddress : hostName;
-
-        client.getServerRegistration(serverName, addressValue)
+        // API expects serverName and serverUrl
+        client.getServerRegistration(serverName, serverUrl)
             .then((data) => {
                 if (data && typeof data === 'object' && 'message' in data) {
                     alert(data.message);
                 } else {
                     alert('Unexpected response from server.');
                 }
-
-                // Reset form fields
                 setFormData({
                     serverName: '',
-                    addressType: 'ipAddress',
-                    ipAddress: '',
-                    hostName: '',
+                    serverUrl: '',
                 });
             })
             .catch((error) => {
                 console.error('Error while registering server:', error);
-
                 if (error.response?.data?.detail) {
                     alert(`Error: ${error.response.data.detail}`);
                 } else {
@@ -68,58 +70,38 @@ const RegistrationForm = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
-                <label htmlFor="serverName">Server Name: </label>
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-8 p-8 bg-white rounded-lg shadow-md">
+            <h2 className="text-2xl font-bold mb-6 text-center">Register Server</h2>
+            <div className="mb-6">
+                <label htmlFor="serverName" className="block text-gray-700 font-semibold mb-2">Server Name</label>
                 <input
                     type="text"
                     id="serverName"
                     name="serverName"
                     value={formData.serverName}
                     onChange={handleChange}
-                    style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="Enter server name"
                     required
                 />
             </div>
-            <div style={{ marginBottom: '16px' }}>
-                <label>
-                    <input
-                        type="radio"
-                        name="addressType"
-                        value="ipAddress"
-                        checked={formData.addressType === 'ipAddress'}
-                        onChange={handleChange}
-                    />
-                    IP Address
-                </label>
-                <label style={{ marginLeft: '16px' }}>
-                    <input
-                        type="radio"
-                        name="addressType"
-                        value="hostName"
-                        checked={formData.addressType === 'hostName'}
-                        onChange={handleChange}
-                    />
-                    Host Name
-                </label>
-            </div>
-            <div style={{ marginBottom: '16px' }}>
-                <label htmlFor={formData.addressType}>
-                    {formData.addressType === 'ipAddress' ? 'IP Address: ' : 'Host Name: '}
-                </label>
+            <div className="mb-6">
+                <label htmlFor="serverUrl" className="block text-gray-700 font-semibold mb-2">Server URL</label>
                 <input
                     type="text"
-                    id={formData.addressType}
-                    name={formData.addressType}
-                    value={formData[formData.addressType]}
+                    id="serverUrl"
+                    name="serverUrl"
+                    value={formData.serverUrl}
                     onChange={handleChange}
-                    style={{ border: '1px solid #ccc', borderRadius: '8px' }}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="http://localhost:8080"
                     required
                 />
             </div>
             <button
                 type="submit"
-                className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded m-2 border-5">
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200"
+            >
                 Submit
             </button>
         </form>

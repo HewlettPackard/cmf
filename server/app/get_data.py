@@ -8,7 +8,7 @@ from fastapi.concurrency import run_in_threadpool
 async def async_api(function_to_async, query: CmfQuery, *argv):
     return await run_in_threadpool(function_to_async, query, *argv)
 
-async def get_model_data(query: CmfQuery, modelId: int):
+def get_model_data(query: CmfQuery, modelId: int):
     '''
       This function retrieves the necessary model data required for generating a model card.
 

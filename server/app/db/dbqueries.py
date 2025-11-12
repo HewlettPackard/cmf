@@ -16,16 +16,16 @@ from server.app.db.dbmodels import (
     registered_servers
 )
 
-async def register_server_details(db: AsyncSession, server_name: str, host_info: str):
+
+async def register_server_details(db: AsyncSession, server_name: str, server_url: str):
     """
     Register server details in the database.
     """
     # Step 1: Check if the server is already registered
     query_check = select(registered_servers.c.id).where(
-        registered_servers.c.host_info == host_info
+        registered_servers.c.host_info == server_url
     )
     result = await db.execute(query_check)
-    # If a matching row exists, scalar() returns 1 (from SELECT 1). If not, it returns None
     exists = result.scalar()
 
     if exists:
@@ -33,8 +33,8 @@ async def register_server_details(db: AsyncSession, server_name: str, host_info:
 
     # Step 2: Insert new server
     query_insert = insert(registered_servers).values(
-        server_name=server_name, 
-        host_info=host_info
+        server_name=server_name,
+        host_info=server_url,
     )
     await db.execute(query_insert)
     await db.commit()
@@ -51,25 +51,27 @@ async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     return result.mappings().all()
 
 
-async def get_sync_status(db: AsyncSession, server_name: str, host_info: str):
+
+async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
     """
     Get the sync status from the database.
     """
     query = select(registered_servers.c.last_sync_time).where(
         (registered_servers.c.server_name == server_name) & 
-        (registered_servers.c.host_info == host_info)
+        (registered_servers.c.host_info == server_url)
     )
     result = await db.execute(query)
     return result.mappings().all()
 
 
-async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, host_info: str):
+
+async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, server_url: str):
     """
     Update the sync status in the database.
     """
     query = update(registered_servers).where(
         (registered_servers.c.server_name == server_name) & 
-        (registered_servers.c.host_info == host_info)
+        (registered_servers.c.host_info == server_url)
     ).values(last_sync_time=current_utc_time)
     await db.execute(query)
     await db.commit()  # Commit the transaction

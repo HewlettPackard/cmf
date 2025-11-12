@@ -1,30 +1,28 @@
-from cmflib.cmfquery import CmfQuery
+from cmflib.cmfquery import CmfQuery, EXCLUDED_ARTIFACT_TYPES
 from collections import deque, defaultdict
 import warnings
 
 warnings.filterwarnings("ignore")
 
-async def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
+def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
     arti_exe_dict = {} # Used to map artifact and execution ids with artifact and execution names
     dict_output: dict[str, list[str]] = {}   # Used to establish parent-child relationship between artifacts and executions
-    exclusion_list: list[int] = []
 
     df = dict_exe_id[pipeline_name]
-    
+
     # Mapping execution id with execution name
     # Here appending execution id with "execution_name_" which will helpful in gui side to differentiate artifact and execution names
     for _, df_row in df.iterrows():
         arti_exe_dict["e_"+str(df_row['id'])] = "execution_name_"+df_row['Context_Type']+":"+df_row['Execution_uuid'][:4]  
-    
+
     for type_, df in dict_art_id[pipeline_name].items():
-        if type_ == "Environment" or type_ == "Label":
-            exclusion_list = list(df["id"])
+        # Skip excluded artifact types entirely
+        if type_ in EXCLUDED_ARTIFACT_TYPES:
+            continue
         for _, df_row in df.iterrows():
-            if df_row['id'] in exclusion_list:
-                continue
-            # Fetching executions based on artifact id 
+            # Fetching executions based on artifact id with automatic filtering for lineage visualization
             # When the same artifact is shared between two pipelines (e.g., Test-env1 and Test-env2),
-            # get_all_executions_for_artifact_id returns executions from both pipelines, not just the current one.
+            # get_all_executions_for_artifact_id returns executions from both pipelines, not just the current one
             data = query.get_all_executions_for_artifact_id(df_row['id'])
             
             # Mapping artifact id with artifact name
@@ -128,7 +126,11 @@ def modify_artifact_name(artifact_name: str, type: str) -> str:
                 name = artifact_name.split(':')[0].split("/")[-1]+ ":" + artifact_name.split(':')[-1][:4] 
             else:
                 # Example artifacts/data.xml.gz:236d9502e0283d91f689d7038b8508a2 -> data.xml.gz:236d 
-                name = artifact_name.rsplit(':')[0].split("/")[-1] + ":" +  artifact_name.split(':')[-1][:4]
+                # Handle cases where user provides an artifact path like "artifacts/features/" in dvc.yaml.
+                # If the path ends with a slash ("/"), get the second last part as the artifact name.
+                # Combine the artifact name with a shortened lineage ID (e.g., ":2323") to form the final name.
+                short_name = artifact_name.rsplit(':')[0].split("/")[-1] if artifact_name.rsplit(':')[0].split("/")[-1] != "" else artifact_name.rsplit(':')[0].split("/")[-2]
+                name = short_name + ":" +  artifact_name.split(':')[-1][:4]
         elif type == "Dataslice":
             # cmf_artifacts/dataslices/ecd6dcde-4f3b-11ef-b8cd-f71a4cc9ba38/slice-1:e77e3466872898fcf2fa22a3752bc1ca
             dataslice_part1 = artifact_name.split("/",1)[1] #remove cmf_artifacts/

@@ -94,7 +94,7 @@ class CmdRepoPush(CmdBase):
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
-            "tensorboad": self.args.tensorboard,
+            "tensorboad": self.args.tensorboard_path,
             "jobs": self.args.jobs
         }
         # Validates the command arguments.
@@ -214,7 +214,8 @@ class CmdRepoPush(CmdBase):
             if metadata_push_result.status == "success":
                 print(metadata_push_result.handle())  # Print the message returned by the handle() method of the metadata_push_result object.
                 print("Executing git push command..")
-                live.stop()
+                if live:
+                    live.stop()
                 return self.git_push()
             else:
                 return metadata_push_result

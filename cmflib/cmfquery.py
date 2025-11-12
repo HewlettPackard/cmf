@@ -29,7 +29,13 @@ from cmflib.store.postgres import PostgresStore
 from cmflib.store.sqllite_store import SqlliteStore
 from cmflib.utils.helper_functions import get_postgres_config
 
-__all__ = ["CmfQuery"]
+# Constants for filtering artifact and execution types in lineage visualizations
+EXCLUDED_ARTIFACT_TYPES = ["Environment", "Label"]
+
+__all__ = [
+    "CmfQuery",
+    "EXCLUDED_ARTIFACT_TYPES"
+]
 
 logger = logging.getLogger(__name__)
 
@@ -605,7 +611,7 @@ class CmfQuery(object):
         """Get artifacts produced by executions that consume given artifact.
 
         Args:
-            artifact name: Name of an artifact.
+            artifact_name: Name of an artifact.
 
         Returns:
             Output artifacts of all executions that consumed given artifact.
@@ -920,6 +926,9 @@ class CmfQuery(object):
         df = self._as_pandas_df(self.store.get_artifacts_by_id(input_artifact_ids), 
                 lambda _artifact: self.get_artifact_df(_artifact)
                 )
+        # Filter out excluded types for lineage visualization
+        if not df.empty:
+            df = df[~df['type'].isin(EXCLUDED_ARTIFACT_TYPES)]
         return df
 
     def _get_node_attributes(self, _node: t.Union[mlpb.Context, mlpb.Execution, mlpb.Event], _attrs: t.Dict) -> t.Dict: # type: ignore  # Execution, Context, Event type not recognized by mypy, using ignore to bypass
@@ -1088,10 +1097,11 @@ class CmfQuery(object):
                     ],
                 )
                 df = pd.concat([df, d1], sort=True, ignore_index=True)
+
         except:
             return df
         return df
-    
+
     def get_all_executions_by_stage(self, stage_id: int, execution_uuid: t.Optional[str] = None) -> t.List[mlpb.Execution]: # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         """
         Return executions of the given stage.

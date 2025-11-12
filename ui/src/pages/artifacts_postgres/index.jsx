@@ -22,7 +22,7 @@ import ArtifactPTable from "../../components/ArtifactPTable";
 import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
-import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
+import ArtifactTypeSidebar from "../../components/ArtifactPTypeSidebar";
 
 const client = new FastAPIClient(config);
 
@@ -40,7 +40,7 @@ const ArtifactsPostgres = () => {
   const [activePage, setActivePage] = useState(1);
   const [clickedButton, setClickedButton] = useState("page"); 
   const [selectedCol, setSelectedCol] = useState("name");
-  
+
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
   },[]);
