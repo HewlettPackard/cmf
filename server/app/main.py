@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request, HTTPException, Query, UploadFile, File, De
 from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from contextlib import asynccontextmanager
 import pandas as pd
 from typing import List, Dict, Any, Optional
@@ -53,6 +54,10 @@ import socket
 import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
+# Import authentication routes
+from server.app.auth_routes import router as auth_router
+# Optional: Import authentication middleware (uncomment to enable)
+from server.app.auth_middleware import AuthenticationMiddleware
 
 dotenv.load_dotenv()
 
@@ -84,6 +89,16 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
 
+# Add Session Middleware (REQUIRED for OAuth)
+# This must be added BEFORE CORS middleware
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=os.getenv("SECRET_KEY", "your-secret-key-change-this-in-production"),
+    max_age=3600,  # 1 hour
+    same_site="lax",
+    https_only=False  # Set to True in production with HTTPS
+)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -92,6 +107,12 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+# Optional: Add authentication middleware (uncomment to enable route protection)
+# app.add_middleware(AuthenticationMiddleware)
+
+# Include authentication routes
+app.include_router(auth_router)
 
 BASE_PATH = Path(__file__).resolve().parent
 app.mount("/cmf-server/data/static", StaticFiles(directory="/cmf-server/data/static"), name="static")

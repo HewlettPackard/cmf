@@ -18,6 +18,39 @@ POSTGRES_DB=mlmd
 # Directory for persistent data storage
 CMF_DATA_DIR=/home/kulkashr/sk/
 
+# ========================================
+# OAuth2 Authentication Configuration
+# ========================================
+
+# Google OAuth2 Credentials (REQUIRED for Google Login)
+# Get these from: https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_REDIRECT_URI=http://localhost:8080/api/auth/google/callback
+
+# JWT Secret Key (REQUIRED - Generate a secure random string)
+# Generate with: python -c "import secrets; print(secrets.token_urlsafe(32))"
+SECRET_KEY=your-secret-key-change-this-in-production
+
+# Session Configuration (OPTIONAL - defaults provided)
+ACCESS_TOKEN_EXPIRE_MINUTES=60
+REFRESH_TOKEN_EXPIRE_DAYS=30
+
+# Frontend URL (REQUIRED for OAuth callback)
+FRONTEND_URL=http://localhost:3000
+
+# Authentication Toggle (OPTIONAL - set to false to disable auth)
+AUTH_ENABLED=true
+
+# Email Domain Whitelist (OPTIONAL - comma separated, leave empty to allow all)
+# Example: ALLOWED_EMAIL_DOMAINS=company.com,partner.com
+ALLOWED_EMAIL_DOMAINS=
+
+# Cookie Security (OPTIONAL - set to true in production with HTTPS)
+COOKIE_SECURE=false
+
+# ========================================
+
 
 #USER=frist
 #UID=123456789
