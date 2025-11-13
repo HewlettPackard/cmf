@@ -1,4 +1,4 @@
-.user-profile {
+/* .user-profile {
   position: relative;
 }
 
@@ -117,10 +117,10 @@
 
 .logout-button svg {
   flex-shrink: 0;
-}
+} */
 
 /* Responsive */
-@media (max-width: 768px) {
+/* @media (max-width: 768px) {
   .user-name {
     display: none;
   }
@@ -128,4 +128,4 @@
   .user-profile-menu {
     right: -12px;
   }
-}
+}  */

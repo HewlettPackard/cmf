@@ -1,7 +1,7 @@
 """
 OAuth2 Authentication Routes for Google Login
 """
-from fastapi import APIRouter, Request, HTTPException, Depends
+from fastapi import APIRouter, Request, HTTPException
 from fastapi.responses import RedirectResponse, JSONResponse
 from authlib.integrations.starlette_client import OAuth
 from starlette.config import Config

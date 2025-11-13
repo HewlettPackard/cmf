@@ -57,7 +57,7 @@ from cmflib.cmf_federation import update_mlmd
 # Import authentication routes
 from server.app.auth_routes import router as auth_router
 # Optional: Import authentication middleware (uncomment to enable)
-from server.app.auth_middleware import AuthenticationMiddleware
+#from server.app.auth_middleware import AuthenticationMiddleware
 
 dotenv.load_dotenv()
 
