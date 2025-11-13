@@ -16,7 +16,10 @@
 
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/home";
+import Login from "./pages/login";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
 import Metahub from "./pages/metahub";
@@ -28,14 +31,64 @@ function App() {
   return (
     <div className="App bg-white">
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route exact path="/artifacts" element={<ArtifactsPostgres />} />
-          <Route exact path="/executions" element={<ExecutionsPostgres />} />
-          <Route exact path="/display_lineage" element={<Lineage />} />
-          <Route exact path="/tensorboard" element={<TensorBoard />} />
-          <Route exact path="/metahub" element={<Metahub />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Home />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              exact
+              path="/artifacts"
+              element={
+                <ProtectedRoute>
+                  <ArtifactsPostgres />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              exact
+              path="/executions"
+              element={
+                <ProtectedRoute>
+                  <ExecutionsPostgres />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              exact
+              path="/display_lineage"
+              element={
+                <ProtectedRoute>
+                  <Lineage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              exact
+              path="/tensorboard"
+              element={
+                <ProtectedRoute>
+                  <TensorBoard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              exact
+              path="/metahub"
+              element={
+                <ProtectedRoute>
+                  <Metahub />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </div>
   );

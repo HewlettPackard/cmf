@@ -33,6 +33,7 @@ class FastAPIClient {
   getApiClient(config) {
     const initialConfig = {
       baseURL: `${config.apiBasePath}/`,
+      withCredentials: true, // Important: include cookies in all requests
     };
     const client = axios.create(initialConfig);
     
@@ -41,8 +42,12 @@ class FastAPIClient {
       (response) => response,
       (error) => {
         console.error('API Error:', error);
-        // Show simple error message to user
-        if (error.response?.status >= 500) {
+        
+        // Handle authentication errors
+        if (error.response?.status === 401) {
+          // Redirect to login page
+          window.location.href = '/login';
+        } else if (error.response?.status >= 500) {
           alert('Server error. Please try again later.');
         } else if (error.request && !error.response) {
           alert('Unable to connect to server. Please check your connection.');
