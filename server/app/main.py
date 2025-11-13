@@ -47,12 +47,17 @@ from server.app.schemas.dataframe import (
     MLMDPullRequest,
     ArtifactRequest,
     ExecutionRequest,
+    EmailRequest,
+    OTPRequest,
 )
 import httpx
 import socket
 import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
+import random, time
+from email.mime.text import MIMEText
+import smtplib
 
 dotenv.load_dotenv()
 
@@ -105,6 +110,13 @@ LOCAL_ADDRESSES.add(hostname)
 # Adding hostname if IP is given
 LOCAL_ADDRESSES.add(get_fqdn(hostname))
 print("Local addresses= ", LOCAL_ADDRESSES)
+
+# temporary in-memory OTP store
+otp_db = {}
+
+# Your Gmail credentials (App Password)
+SENDER_EMAIL = "ayeshasanadi09@gmail.com"
+SENDER_PASSWORD = "cdah rpey owfa woxz"  # generated from Gmail App Passwords
 
 
 @app.get("/")
@@ -718,6 +730,47 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
         return {"error": str(e)}
 
 
+def send_email(recipient_email, otp):
+    subject = "Your OTP Verification Code"
+    body = f"Your One Time Password (OTP) is: {otp}. It will expire in 5 minutes."
+
+    msg = MIMEText(body)
+    msg["Subject"] = subject
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = recipient_email
+
+    try:
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.send_message(msg)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {e}")
+
+
+@app.post("/send-otp")
+async def send_otp(request: EmailRequest):
+    otp = str(random.randint(100000, 999999))
+    otp_db[request.recipient_email] = {"otp": otp, "expiry": time.time() + 300}
+
+    # Send email via SMTP
+    send_email(request.recipient_email, otp)
+
+    print(f"OTP sent to {request.recipient_email}: {otp}")
+    return {"message": "OTP sent successfully"}
+
+
+@app.post("/verify-otp")
+async def verify_otp(request: OTPRequest):
+    record = otp_db.get(request.recipient_email)
+    if not record:
+        raise HTTPException(status_code=404, detail="No OTP found for this email")
+    if record["expiry"] < time.time():
+        raise HTTPException(status_code=400, detail="OTP has expired")
+    if record["otp"] != request.otp:
+        raise HTTPException(status_code=400, detail="Invalid OTP")
+    return {"message": "OTP verified successfully"}
+
+
 async def update_global_art_dict(pipeline_name):
     global dict_of_art_ids
     output_dict = await async_api(get_all_artifact_ids, query, dict_of_exe_ids, pipeline_name)
@@ -744,6 +797,7 @@ async def check_pipeline_exists(pipeline_name):
     if pipeline_name not in query.get_pipeline_names():
         print(f"Pipeline {pipeline_name} not found.")
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
+
 
 
 """
@@ -791,3 +845,4 @@ async def artifact_lineage(request: Request, pipeline_name: str):
         return None
 
 """
+
