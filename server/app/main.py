@@ -730,33 +730,20 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
         return {"error": str(e)}
 
 
-def send_email(recipient_email, otp):
-    subject = "Your OTP Verification Code"
-    body = f"Your One Time Password (OTP) is: {otp}. It will expire in 5 minutes."
-
-    msg = MIMEText(body)
-    msg["Subject"] = subject
-    msg["From"] = SENDER_EMAIL
-    msg["To"] = recipient_email
-
-    try:
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            server.send_message(msg)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to send email: {e}")
-
-
 @app.post("/send-otp")
 async def send_otp(request: EmailRequest):
     otp = str(random.randint(100000, 999999))
     otp_db[request.recipient_email] = {"otp": otp, "expiry": time.time() + 300}
 
-    # Send email via SMTP
-    send_email(request.recipient_email, otp)
-
-    print(f"OTP sent to {request.recipient_email}: {otp}")
-    return {"message": "OTP sent successfully"}
+    # Send email via SMTP (now async)
+    try:
+        await send_email(request.recipient_email, otp)
+        print(f"OTP sent to {request.recipient_email}: {otp}")
+        return {"message": "OTP sent successfully"}
+    except Exception as e:
+        # Clean up OTP if email fails
+        otp_db.pop(request.recipient_email, None)
+        raise
 
 
 @app.post("/verify-otp")
@@ -798,6 +785,89 @@ async def check_pipeline_exists(pipeline_name):
         print(f"Pipeline {pipeline_name} not found.")
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
 
+
+async def send_email(recipient_email, otp):
+    """Send OTP email asynchronously with timeout handling"""
+    
+    subject = "Your OTP for CMF Server Login"
+    html_body = f"""
+        <div style="border: 2px solid #e0e0e0; padding: 20px; font-family: Arial, sans-serif;">
+            <div style="
+                background-color: #1fb7a6;
+                color: white;
+                font-size: 20px;
+                font-weight: bold;
+                padding: 10px 20px;
+                border-radius: 10px;
+                width: fit-content;
+                font-family: Arial, sans-serif;
+                margin-bottom: 20px;
+            ">
+                CMF SERVER
+            </div>
+            <p style="font-size: 16px; color: #333;">
+                Dear User,<br><br>
+                Please enter the OTP below to log in to CMF Server:<br><br>
+                <span style="font-size: 26px; font-weight: bold; color: #000;">{otp}</span><br><br>
+                Note: This OTP is valid for the next <b>5 minutes</b>.<br>
+                If you did not request this, please ignore this email.<br>
+            </p>
+            <br>
+            <div style="margin-top: 20px;">
+                <a href="https://github.com/HewlettPackard/cmf" 
+                style="text-decoration: none; color: #0366d6; font-size: 16px;">
+                    <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+                        width="28" height="28"
+                        style="vertical-align: middle; margin-right: 8px;">
+                    Visit CMF GitHub Repository
+                </a>
+            </div>
+        </div>
+    """
+
+    msg = MIMEText(html_body, "html")
+    msg["Subject"] = subject
+    msg["From"] = SENDER_EMAIL
+    msg["To"] = recipient_email
+
+    def _send_email_sync():
+        """Synchronous email sending function to run in thread pool"""
+        try:
+            # Using SMTP with STARTTLS (port 587) - more reliable than SMTP_SSL
+            server = smtplib.SMTP("smtp.gmail.com", 587, timeout=30)
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            server.send_message(msg)
+            server.quit()
+            return True
+        except smtplib.SMTPException as e:
+            print(f"SMTP error: {e}")
+            raise HTTPException(status_code=500, detail=f"SMTP error: {e}")
+        except socket.timeout:
+            print("SMTP timeout: Connection timed out")
+            raise HTTPException(status_code=504, detail="Email service timeout. Please try again.")
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to send email: {e}")
+
+    # Run the blocking SMTP call in a thread pool with timeout
+    try:
+        loop = asyncio.get_event_loop()
+        await asyncio.wait_for(
+            loop.run_in_executor(None, _send_email_sync),
+            timeout=45.0  # Overall timeout of 45 seconds
+        )
+    except asyncio.TimeoutError:
+        print("Email sending timed out after 45 seconds")
+        raise HTTPException(status_code=504, detail="Email service is taking too long. Please try again.")
+    except Exception as e:
+        # Re-raise HTTPException from inner function
+        if isinstance(e, HTTPException):
+            raise e
+        print(f"Unexpected error sending email: {e}")
+        raise HTTPException(status_code=500, detail="Failed to send email. Please try again later.")
 
 
 """
