@@ -11,7 +11,9 @@ from sqlalchemy import(
     Index,
     UniqueConstraint,
     MetaData,
-    SmallInteger
+    SmallInteger,
+    DateTime,
+    func
 )
 
 metadata = MetaData()
@@ -198,4 +200,16 @@ registered_servers = Table(
     # indexes for registered_servers
     Index("idx_registered_servers_host_info", "host_info"),
     Index("idx_registered_servers_server_name", "server_name")
+)
+
+# Table to logged in users
+login_users = Table(
+    "login_users", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+    Column("email", String(100), nullable=False),
+    # server_default to set default time at DB level
+    Column("login_time", DateTime(timezone=True), nullable=False, server_default=func.now()),
+
+    # indexes for email lookups
+    Index("idx_login_users_email", "email"),
 )

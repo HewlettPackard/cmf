@@ -34,7 +34,8 @@ from server.app.db.dbqueries import (
     register_server_details,
     get_registered_server_details,
     get_sync_status,
-    update_sync_status
+    update_sync_status,
+    record_user_login,
 )
 from pathlib import Path
 import os
@@ -747,7 +748,7 @@ async def send_otp(request: EmailRequest):
 
 
 @app.post("/verify-otp")
-async def verify_otp(request: OTPRequest):
+async def verify_otp(request: OTPRequest, db: AsyncSession = Depends(get_db)):
     record = otp_db.get(request.recipient_email)
     if not record:
         raise HTTPException(status_code=404, detail="No OTP found for this email")
@@ -755,7 +756,8 @@ async def verify_otp(request: OTPRequest):
         raise HTTPException(status_code=400, detail="OTP has expired")
     if record["otp"] != request.otp:
         raise HTTPException(status_code=400, detail="Invalid OTP")
-    return {"message": "OTP verified successfully"}
+    # if login successful, Add user to database
+    return await record_user_login(db, request.recipient_email)
 
 
 async def update_global_art_dict(pipeline_name):
