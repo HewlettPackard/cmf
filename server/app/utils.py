@@ -74,7 +74,6 @@ def modify_arti_name(arti_name, type):
         name = arti_name  # Fallback to the original arti_name in case of error
     return name
  
-
 def extract_hostname(server_url):
     try:
         parsed = urlparse(server_url)

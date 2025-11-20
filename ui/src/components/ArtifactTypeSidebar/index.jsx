@@ -17,6 +17,54 @@
 import React, { useState, useEffect } from "react";
 import "./index.css";
 
+const SearchHelpModal = ({ isOpen, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-6 rounded-lg max-w-2xl max-h-96 overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Advanced Search Help</h3>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            ✕
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <h4 className="font-medium mb-2">Supported Operators:</h4>
+            <ul className="text-sm space-y-1">
+              <li><code>&gt;</code> - Greater than (e.g., lines&gt;240)</li>
+              <li><code>&lt;</code> - Less than (e.g., score&lt;0.5)</li>
+              <li><code>&gt;=</code> - Greater than or equal (e.g., count&gt;=100)</li>
+              <li><code>&lt;=</code> - Less than or equal (e.g., accuracy&lt;=0.8)</li>
+              <li><code>=</code> - Equal to (e.g., status=active)</li>
+              <li><code>!=</code> - Not equal to (e.g., type!=test)</li>
+              <li><code>~</code> - Contains (e.g., name~prod)</li>
+              <li><code>!~</code> - Does not contain (e.g., path!~temp)</li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-medium mb-2">Examples:</h4>
+            <ul className="text-sm space-y-1">
+              <li><code>lines&gt;240</code> - Find rows where lines column &gt; 240</li>
+              <li><code>score&lt;=0.5</code> - Find rows where score column ≤ 0.5</li>
+              <li><code>name="test"</code> - Find rows where name equals "test"</li>
+              <li><code>status!=active</code> - Find rows where status is not "active"</li>
+              <li><code>lines&gt;240 score&lt;=0.5</code> - Multiple conditions (AND logic)</li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">
+              You can combine structured conditions with plain text search.
+              Use quotes for values containing spaces.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ArtifactTypeSidebar = ({
   artifactTypes,
   handleArtifactTypeClick,
@@ -28,6 +76,7 @@ const ArtifactTypeSidebar = ({
 
   // Local filter value state
   const [filterValue, setFilterValue] = useState("");
+  const [showHelpModal, setShowHelpModal] = useState(false);
 
   useEffect(() => {
     handleClick(artifactTypes[0]);
@@ -80,16 +129,39 @@ const ArtifactTypeSidebar = ({
               type="text"
               value={filterValue}
               onChange={handleFilterChange}
-              placeholder="Filter by Name/Properties"
+              placeholder={
+                clickedArtifactType === "Label"
+                  ? "Search labels: lines>240, score<=0.5, name=\"test\""
+                  : "Filter by Name/Properties"
+              }
+              title={
+                clickedArtifactType === "Label"
+                  ? "Advanced search: Use operators like >, <, >=, <=, =, !=, ~, !~ with column names. Examples: lines>240, score<=0.5, status!=active"
+                  : "Filter by Name/Properties"
+              }
               style={{
                 marginRight: "1rem",
                 padding: "0.5rem",
                 border: "1px solid #ccc",
+                width: clickedArtifactType === "Label" ? "350px" : "auto",
               }}
             />
+            {clickedArtifactType === "Label" && (
+              <button
+                onClick={() => setShowHelpModal(true)}
+                className="ml-2 px-2 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                title="Show advanced search help"
+              >
+                ?
+              </button>
+            )}
           </div>
         </div>
       </div>
+      <SearchHelpModal
+        isOpen={showHelpModal}
+        onClose={() => setShowHelpModal(false)}
+      />
     </>
   );
 };
