@@ -14,7 +14,6 @@
  * limitations under the License.
  ***/
 
-
 /**
  * Runtime configuration for the application, we get the CMF Backend URL from environment variables.
  */
