@@ -3,33 +3,117 @@
 # Declare variables to be passed into your templates.
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
-image:
-  repository: neo4j
-  tag: latest
-  # This sets the pull policy for images.
-  pullPolicy: IfNotPresent
-
-neo4jAuth: "neo4j/test1234"
+replicaCount: 1
 
 service:
   type: NodePort
-  port: 7474
-  boltPort: 7687
 
-useExistingPvc: true
+neo4j_service:
+  image:
+    repository: neo4j
+    tag: latest
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
 
-pvc:
-  data: 
-    storage: 10Gi
-  logs:
-    storage: 5Gi
-  import:
-    storage: 5Gi
-  plugins:
-    storage: 5Gi
+  neo4jAuth: "neo4j/test1234"
+
+  service:
+    type: NodePort
+    port: 7474
+    boltPort: 7687
+
+  useExistingPvc: true
+
+  pvc:
+    data: 
+      storage: 10Gi
+    logs:
+      storage: 5Gi
+    import:
+      storage: 5Gi
+    plugins:
+      storage: 5Gi
+
+cmf_service:
+  image:
+    repository: cmf-server
+    tag: latest
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  useExistingPvc: true
+
+  pvc:
+    data: 
+      storage: 40Gi
+    env:
+      storage: 5Gi
+    static:
+      storage: 20Gi
+    labels:
+      storage: 5Gi
+
+postgres_service:
+  image:
+    repository: postgres
+    tag: 13
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 5432
+
+  useExistingPvc: true
+
+  pvc:
+    data: 
+      storage: 50Gi
+
+nginx_service:
+  image:
+    repository: nginx
+    tag: alpine
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+
+  service:
+    type: NodePort
+    port: 80
+
+tensorboard_service:
+  image:
+    repository: tensorflow/tensorflow
+    tag: latest
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 6006
+
+  pvc:
+    logs:
+      storage: 20Gi
+   
+ui_service:
+  image:
+    repository: ui
+    tag: latest
+    # This sets the pull policy for images.
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 3000
+
+
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []

@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: postgres-deployment
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: postgres
@@ -14,9 +14,9 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:13
+        image: "{{ .Values.postgres_service.image.repository }}:{{ .Values.postgres_service.image.tag }}"
         ports:
-        - containerPort: 5432
+        - containerPort: {{ .Values.postgres_service.service.port }}
         env:
         - name: POSTGRES_USER
           value: "myuser"
@@ -32,7 +32,7 @@ spec:
             command:
             - pg_isready
             - -p
-            - "5432"
+            - "{{ .Values.postgres_service.service.port }}"
             - -d
             - mlmd
             - -U
@@ -46,7 +46,7 @@ spec:
             command:
             - pg_isready
             - -p
-            - "5432"
+            - "{{ .Values.postgres_service.service.port }}"
             - -d
             - mlmd
             - -U
@@ -65,9 +65,9 @@ kind: Service
 metadata:
   name: postgres
 spec:
-  type: ClusterIP
+  type: {{ .Values.postgres_service.service.type }}
   ports:
-  - port: 5432
-    targetPort: 5432
+  - port: {{ .Values.postgres_service.service.port }}
+    targetPort: {{ .Values.postgres_service.service.port }}
   selector:
     app: postgres

@@ -7,7 +7,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.pvc.data.storage }}  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.data.storage }}  # Should match the size of the corresponding PV
 
 ---
 apiVersion: v1
@@ -19,7 +19,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.pvc.logs.storage }}  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.logs.storage }}  # Should match the size of the corresponding PV
 
 ---
 apiVersion: v1
@@ -31,7 +31,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.pvc.import.storage }}  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.import.storage }}  # Should match the size of the corresponding PV
 
 ---
 apiVersion: v1
@@ -43,4 +43,4 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: {{ .Values.pvc.plugins.storage }}  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.plugins.storage }}  # Should match the size of the corresponding PV

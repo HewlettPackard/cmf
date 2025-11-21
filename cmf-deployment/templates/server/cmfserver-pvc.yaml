@@ -8,7 +8,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 40Gi
+      storage: {{ .Values.cmf_service.pvc.data.storage }}
   volumeName: pv-server-data
 ---
 apiVersion: v1
@@ -21,7 +21,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ .Values.cmf_service.pvc.env.storage }}
   volumeName: pv-server-data-env
 ---
 apiVersion: v1
@@ -34,7 +34,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.cmf_service.pvc.static.storage }}
   volumeName: pv-server-data-static
 ---
 apiVersion: v1
@@ -47,7 +47,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ .Values.cmf_service.pvc.labels.storage }}
   volumeName: pv-server-data-labels
 ---
 apiVersion: v1
@@ -60,5 +60,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.tensorboard_service.pvc.logs.storage }}
   volumeName: pv-tensorboard-logs

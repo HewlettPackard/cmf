@@ -8,5 +8,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.postgres_service.pvc.data.storage }}
   volumeName: pv-postgres-data

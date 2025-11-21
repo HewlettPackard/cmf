@@ -5,7 +5,7 @@ metadata:
   labels:
     app: nginx
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: nginx
@@ -15,11 +15,11 @@ spec:
         app: nginx
     spec:
       containers:
-      - name: nginx
-        image: nginx:alpine
-        imagePullPolicy: IfNotPresent
+      - name: {{ .Values.nginx_service.image.repository }}
+        image: "{{ .Values.nginx_service.image.repository }}:{{ .Values.nginx_service.image.tag }}"
+        imagePullPolicy: {{ .Values.nginx_service.image.pullPolicy }}
         ports:
-        - containerPort: 80
+        - containerPort: {{ .Values.nginx_service.service.port }}
         - containerPort: 443
         volumeMounts:
         - name: nginx-config
@@ -41,8 +41,8 @@ spec:
   type: NodePort   # 👈 Makes it accessible from your host
   ports:
   - name: http
-    port: 80
-    targetPort: 80
+    port: {{ .Values.nginx_service.service.port }}
+    targetPort: {{ .Values.nginx_service.service.port }}
     nodePort: 30080  # 👈 consistent access point: http://$(minikube ip):30080
   - name: https
     port: 443

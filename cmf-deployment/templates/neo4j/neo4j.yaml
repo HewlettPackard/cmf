@@ -14,10 +14,10 @@ spec:
     spec:
       containers:
       - name: neo4j
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: "{{ .Values.neo4j_service.image.repository }}:{{ .Values.neo4j_service.image.tag }}"
         ports:
-        - containerPort: {{ .Values.service.port }}
-        - containerPort: {{ .Values.service.boltPort }}  
+        - containerPort: {{ .Values.neo4j_service.service.port }}
+        - containerPort: {{ .Values.neo4j_service.service.boltPort }}  
         volumeMounts:
         - name: data-volume
           mountPath: /data
@@ -29,11 +29,11 @@ spec:
           mountPath: /plugins
         env:
         - name: NEO4J_AUTH
-          value: {{ .Values.neo4jAuth }}
+          value: {{ .Values.neo4j_service.neo4jAuth }}
         - name: NEO4J_dbms_connector_http_listen__address
-          value: "0.0.0.0:{{ .Values.service.port }}"  
+          value: "0.0.0.0:{{ .Values.neo4j_service.service.port }}"  
         - name: NEO4J_dbms_connector_bolt_listen__address
-          value: "0.0.0.0:{{ .Values.service.boltPort }}" 
+          value: "0.0.0.0:{{ .Values.neo4j_service.service.boltPort }}" 
         - name: NEO4J_server_config_strict__validation_enabled
           value: "false"
       volumes:
@@ -57,11 +57,11 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - port: {{ .Values.service.port }}    
-    targetPort: {{ .Values.service.port }}
+  - port: {{ .Values.neo4j_service.service.port }}    
+    targetPort: {{ .Values.neo4j_service.service.port }}
     name: http
-  - port: {{ .Values.service.boltPort }}  
-    targetPort: {{ .Values.service.boltPort }}
+  - port: {{ .Values.neo4j_service.service.boltPort }}  
+    targetPort: {{ .Values.neo4j_service.service.boltPort }}
     name: bolt
   selector:
     app: neo4j

@@ -4,7 +4,7 @@ metadata:
   name: pv-postgres-data
 spec:
   capacity:
-    storage: 50Gi
+    storage: {{ .Values.postgres_service.pvc.data.storage }}
   accessModes:
     - ReadWriteOnce
   hostPath:

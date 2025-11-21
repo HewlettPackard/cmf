@@ -5,7 +5,7 @@ metadata:
   labels:
     app: cmf-server
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: cmf-server
@@ -16,10 +16,10 @@ spec:
     spec:
       containers:
       - name: cmf-server
-        image: cmf-server:latest
-        imagePullPolicy: IfNotPresent   # important for Minikube local builds
+        image: "{{ .Values.cmf_service.image.repository }}:{{ .Values.cmf_service.image.tag }}"
+        imagePullPolicy: {{ .Values.cmf_service.image.pullPolicy }}   # important for Minikube local builds
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.cmf_service.service.port }}
         env:
         - name: POSTGRES_HOST
           value: "postgres"           # Kubernetes Service for Postgres
@@ -36,7 +36,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /
-            port: 8080
+            port: {{ .Values.cmf_service.service.port }}
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
@@ -44,7 +44,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 8080
+            port: {{ .Values.cmf_service.service.port }}
           initialDelaySeconds: 30
           periodSeconds: 20
           timeoutSeconds: 5
@@ -84,10 +84,10 @@ metadata:
   labels:
     app: cmf-server
 spec:
-  type: ClusterIP
+  type: {{ .Values.cmf_service.service.type }}
   selector:
     app: cmf-server
   ports:
   - name: http
-    port: 8080
-    targetPort: 8080
+    port: {{ .Values.cmf_service.service.port }}
+    targetPort: {{ .Values.cmf_service.service.port }}
