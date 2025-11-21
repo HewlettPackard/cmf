@@ -4,7 +4,7 @@ metadata:
   name: pv-neo4j-data
 spec:
   capacity:
-    storage: 10Gi
+    storage: {{ .Values.pvc.data.storage }}
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -17,7 +17,7 @@ metadata:
   name: pv-neo4j-logs
 spec:
   capacity:
-    storage: 5Gi  
+    storage: {{ .Values.pvc.logs.storage }}
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -30,7 +30,7 @@ metadata:
   name: pv-neo4j-import
 spec:
   capacity:
-    storage: 5Gi  
+    storage: {{ .Values.pvc.import.storage }}
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -43,7 +43,7 @@ metadata:
   name: pv-neo4j-plugins
 spec:
   capacity:
-    storage: 5Gi  
+    storage: {{ .Values.pvc.plugins.storage }}
   accessModes:
     - ReadWriteOnce
   hostPath:
