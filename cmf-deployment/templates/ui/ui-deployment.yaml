@@ -17,7 +17,7 @@ spec:
       containers:
       - name: {{ .Values.ui_service.image.repository }}
         image: "{{ .Values.ui_service.image.repository }}:{{ .Values.ui_service.image.tag }}"
-        imagePullPolicy: {{ .Values.ui_service.image.pullPolicy }}     # ✅ important for Minikube local builds
+        imagePullPolicy: {{ .Values.pullPolicy }}     # ✅ important for Minikube local builds
         ports:
         - containerPort: {{ .Values.ui_service.service.port }}
         env:

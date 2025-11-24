@@ -19,11 +19,11 @@ spec:
         - containerPort: {{ .Values.postgres_service.service.port }}
         env:
         - name: POSTGRES_USER
-          value: "myuser"
+          value: {{ .Values.common_env.POSTGRES_USER }}
         - name: POSTGRES_PASSWORD
-          value: "mypassword"
+          value: {{ .Values.common_env.POSTGRES_PASSWORD}}
         - name: POSTGRES_DB
-          value: "mlmd"
+          value: {{ .Values.common_env.POSTGRES_DB }}
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: postgres-data
@@ -34,9 +34,9 @@ spec:
             - -p
             - "{{ .Values.postgres_service.service.port }}"
             - -d
-            - mlmd
+            - {{ .Values.common_env.POSTGRES_DB }}
             - -U
-            - myuser
+            - {{ .Values.common_env.POSTGRES_USER }}
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -48,9 +48,9 @@ spec:
             - -p
             - "{{ .Values.postgres_service.service.port }}"
             - -d
-            - mlmd
+            - {{ .Values.common_env.POSTGRES_DB }}
             - -U
-            - myuser
+            - {{ .Values.common_env.POSTGRES_USER }}
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5

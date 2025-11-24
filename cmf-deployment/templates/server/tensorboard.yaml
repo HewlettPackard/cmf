@@ -17,7 +17,7 @@ spec:
       containers:
       - name: tensorboard
         image: "{{ .Values.tensorboard_service.image.repository }}:{{ .Values.tensorboard_service.image.tag }}"
-        imagePullPolicy: {{ .Values.tensorboard_service.image.pullPolicy }}
+        imagePullPolicy: {{ .Values.pullPolicy }}
         command: ["/bin/bash", "-c"]
         args:
           - tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard

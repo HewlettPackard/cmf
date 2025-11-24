@@ -17,22 +17,14 @@ spec:
       containers:
       - name: cmf-server
         image: "{{ .Values.cmf_service.image.repository }}:{{ .Values.cmf_service.image.tag }}"
-        imagePullPolicy: {{ .Values.cmf_service.image.pullPolicy }}   # important for Minikube local builds
+        imagePullPolicy: {{ .Values.pullPolicy }}   # important for Minikube local builds
         ports:
         - containerPort: {{ .Values.cmf_service.service.port }}
         env:
-        - name: POSTGRES_HOST
-          value: "postgres"           # Kubernetes Service for Postgres
-        - name: POSTGRES_USER
-          value: "myuser"
-        - name: POSTGRES_PASSWORD
-          value: "mypassword"
-        - name: POSTGRES_DB
-          value: "mlmd"
-        - name: POSTGRES_PORT
-          value: "5432"
-        - name: REACT_APP_CMF_API_URL
-          value: "http://nginx"       # for internal reference, safe to keep
+        {{- range $key, $value := .Values.common_env }}
+          - name: {{ $key }}
+            value: "{{ $value }}"
+        {{- end }}     
         readinessProbe:
           httpGet:
             path: /

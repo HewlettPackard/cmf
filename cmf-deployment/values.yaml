@@ -7,15 +7,24 @@
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 replicaCount: 1
 
+common_env:
+  POSTGRES_HOST: "postgres"           # Kubernetes Service for Postgres
+  POSTGRES_USER: "myuser"
+  POSTGRES_PASSWORD: "mypassword"
+  POSTGRES_DB: "mlmd"
+  POSTGRES_PORT: "5432"
+  REACT_APP_CMF_API_URL: "http://nginx"  # for internal reference, safe to keep
+
 service:
   type: NodePort
+
+# This sets the pull policy for images.
+pullPolicy: IfNotPresent
 
 neo4j_service:
   image:
     repository: neo4j
     tag: latest
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
 
   neo4jAuth: "neo4j/test1234"
 
@@ -40,8 +49,6 @@ cmf_service:
   image:
     repository: cmf-server
     tag: latest
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
 
   service:
     type: ClusterIP
@@ -63,8 +70,6 @@ postgres_service:
   image:
     repository: postgres
     tag: 13
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
 
   service:
     type: ClusterIP
@@ -80,8 +85,6 @@ nginx_service:
   image:
     repository: nginx
     tag: alpine
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
 
   service:
     type: NodePort
@@ -91,8 +94,6 @@ tensorboard_service:
   image:
     repository: tensorflow/tensorflow
     tag: latest
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
 
   service:
     type: ClusterIP
@@ -106,8 +107,6 @@ ui_service:
   image:
     repository: ui
     tag: latest
-    # This sets the pull policy for images.
-    pullPolicy: IfNotPresent
 
   service:
     type: ClusterIP
