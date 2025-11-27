@@ -19,11 +19,11 @@ spec:
         - containerPort: {{ .Values.postgres_service.service.port }}
         env:
         - name: POSTGRES_USER
-          value: {{ .Values.common_env.POSTGRES_USER }}
+          value: "{{ .Values.common_env.POSTGRES_USER }}"
         - name: POSTGRES_PASSWORD
-          value: {{ .Values.common_env.POSTGRES_PASSWORD}}
+          value: "{{ .Values.common_env.POSTGRES_PASSWORD }}"
         - name: POSTGRES_DB
-          value: {{ .Values.common_env.POSTGRES_DB }}
+          value: "{{ .Values.common_env.POSTGRES_DB }}"
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: postgres-data

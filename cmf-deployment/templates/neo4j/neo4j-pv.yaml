@@ -8,7 +8,8 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-    path: /mnt/neo4j/data  
+    path: /mnt/neo4j/data
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
@@ -22,6 +23,7 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: /mnt/neo4j/logs 
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
@@ -35,6 +37,7 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: /mnt/neo4j/import 
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
@@ -48,4 +51,4 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: /mnt/neo4j/plugins  
-
+    type: DirectoryOrCreate

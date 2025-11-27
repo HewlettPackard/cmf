@@ -9,3 +9,4 @@ spec:
     - ReadWriteOnce
   hostPath:
     path: /mnt/cmf/data/postgres_data
+    type: DirectoryOrCreate
