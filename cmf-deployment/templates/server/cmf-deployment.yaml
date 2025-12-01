@@ -72,7 +72,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: server             # 👈 matches your nginx.conf (proxy_pass http://server:8080/)
+  name: server             # matches your nginx.conf (proxy_pass http://server:8080/)
   labels:
     app: cmf-server
 spec:

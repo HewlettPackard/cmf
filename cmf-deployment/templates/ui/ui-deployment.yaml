@@ -17,12 +17,12 @@ spec:
       containers:
       - name: {{ .Values.ui_service.image.repository }}
         image: "{{ .Values.ui_service.image.repository }}:{{ .Values.ui_service.image.tag }}"
-        imagePullPolicy: {{ .Values.pullPolicy }}     # ✅ important for Minikube local builds
+        imagePullPolicy: {{ .Values.pullPolicy }}     # important for Minikube local builds
         ports:
         - containerPort: {{ .Values.ui_service.service.port }}
         env:
         - name: REACT_APP_CMF_API_URL
-          value: http://10.93.226.222:30080           # ✅ same cluster DNS; backend reachable via Nginx
+          value: http://10.93.226.222:30080           # same cluster DNS; backend reachable via Nginx
         readinessProbe:
           httpGet:
             path: /
@@ -31,7 +31,7 @@ spec:
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 5
-        livenessProbe:                    # ✅ added for better health management
+        livenessProbe:                    # added for better health management
           httpGet:
             path: /
             port: {{ .Values.ui_service.service.port }}
@@ -43,11 +43,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ui                              # ✅ matches proxy_pass http://ui:3000/;
+  name: ui                              # matches proxy_pass http://ui:3000/;
   labels:
     app: ui
 spec:
-  type: {{ .Values.ui_service.service.type }}                       # ✅ internal-only (access via Nginx)
+  type: {{ .Values.ui_service.service.type }}                       # internal-only (access via Nginx)
   ports:
   - name: http
     port: {{ .Values.ui_service.service.port }}
