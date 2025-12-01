@@ -37,7 +37,7 @@ neo4j_service:
 
   pvc:
     data: 
-      storage: 10Gi
+      storage: 5Gi
     logs:
       storage: 5Gi
     import:
@@ -101,7 +101,7 @@ tensorboard_service:
 
   pvc:
     logs:
-      storage: 20Gi
+      storage: 10Gi
    
 ui_service:
   image:
