@@ -1,4 +1,3 @@
-#!/bin/bash
 set -e
 
 NAMESPACE="cmf-deployment"
@@ -14,7 +13,8 @@ kubectl create namespace $NAMESPACE
 echo "Installing Helm chart..."
 helm upgrade --install $NAMESPACE $CHART_DIR \
   --namespace $NAMESPACE \
-  -f $CHART_DIR/values.yaml
+  -f $CHART_DIR/values.yaml \
+  -f $CHART_DIR/secrets.yaml
 
 echo "Deployment status:"
 kubectl get pods -n $NAMESPACE
