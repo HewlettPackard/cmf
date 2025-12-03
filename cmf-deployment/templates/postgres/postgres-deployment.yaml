@@ -19,9 +19,15 @@ spec:
         - containerPort: {{ .Values.postgres_service.service.port }}
         env:
         - name: POSTGRES_USER
-          value: "{{ .Values.common_env.POSTGRES_USER }}"
+          valueFrom: 
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
-          value: "{{ .Values.common_env.POSTGRES_PASSWORD }}"
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
           value: "{{ .Values.common_env.POSTGRES_DB }}"
         volumeMounts:
@@ -29,14 +35,10 @@ spec:
           name: postgres-data
         livenessProbe:
           exec:
-            command:
-            - pg_isready
-            - -p
-            - "{{ .Values.postgres_service.service.port }}"
-            - -d
-            - {{ .Values.common_env.POSTGRES_DB }}
-            - -U
-            - {{ .Values.common_env.POSTGRES_USER }}
+              command:
+              - /bin/sh
+              - -c
+              - 'pg_isready -p {{ .Values.postgres_service.service.port }} -d {{ .Values.common_env.POSTGRES_DB }} -U "$POSTGRES_USER"'
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -44,13 +46,9 @@ spec:
         readinessProbe:
           exec:
             command:
-            - pg_isready
-            - -p
-            - "{{ .Values.postgres_service.service.port }}"
-            - -d
-            - {{ .Values.common_env.POSTGRES_DB }}
-            - -U
-            - {{ .Values.common_env.POSTGRES_USER }}
+                - /bin/sh
+                - -c
+                - 'pg_isready -p {{ .Values.postgres_service.service.port }} -d {{ .Values.common_env.POSTGRES_DB }} -U "$POSTGRES_USER"'
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5

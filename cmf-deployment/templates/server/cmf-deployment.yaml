@@ -25,6 +25,16 @@ spec:
           - name: {{ $key }}
             value: "{{ $value }}"
         {{- end }}     
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: POSTGRES_PASSWORD
         readinessProbe:
           httpGet:
             path: /
