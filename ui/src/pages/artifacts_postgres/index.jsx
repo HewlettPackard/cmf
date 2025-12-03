@@ -25,6 +25,7 @@ import Sidebar from "../../components/Sidebar";
 import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
 import LabelContentPanel from "./components/LabelContentPanel";
 import ResizableSplitPane from "../../components/ResizableSplitPane";
+import PaginationControls from "./components/PaginationControls";
 import Papa from "papaparse";
 
 const client = new FastAPIClient(config);
@@ -242,82 +243,14 @@ const ArtifactsPostgres = () => {
                           filterValue={filter}
                           onLabelClick={handleLabelClick}
                         />
-                        {totalItems > 0 && (
-                          <div className="mt-4">
-                            <button
-                              onClick={handlePrevClick}
-                              disabled={activePage === 1}
-                              className={clickedButton === "prev" ? "active-page" : ""}
-                            >
-                              Previous
-                            </button>
-                            {Array.from({ length: Math.ceil(totalItems / 5) }).map(
-                              (_, index) => {
-                                const pageNumber = index + 1;
-                                if (
-                                  pageNumber === 1 ||
-                                  pageNumber === Math.ceil(totalItems / 5)
-                                ) {
-                                  return (
-                                    <button
-                                      key={pageNumber}
-                                      onClick={() => handlePageClick(pageNumber)}
-                                      className={`pagination-button ${
-                                        activePage === pageNumber &&
-                                        clickedButton === "page"
-                                          ? "active-page"
-                                          : ""
-                                      }`}
-                                    >
-                                      {pageNumber}
-                                    </button>
-                                  );
-                                } else if (
-                                  (activePage <= 3 && pageNumber <= 6) ||
-                                  (activePage >= Math.ceil(totalItems / 5) - 2 &&
-                                    pageNumber >= Math.ceil(totalItems / 5) - 5) ||
-                                  Math.abs(pageNumber - activePage) <= 2
-                                ) {
-                                  return (
-                                    <button
-                                      key={pageNumber}
-                                      onClick={() => handlePageClick(pageNumber)}
-                                      className={`pagination-button ${
-                                        activePage === pageNumber &&
-                                        clickedButton === "page"
-                                          ? "active-page"
-                                          : ""
-                                      }`}
-                                    >
-                                      {pageNumber}
-                                    </button>
-                                  );
-                                } else if (
-                                  (pageNumber === 2 && activePage > 3) ||
-                                  (pageNumber === Math.ceil(totalItems / 5) - 1 &&
-                                    activePage < Math.ceil(totalItems / 5) - 3)
-                                ) {
-                                  return (
-                                    <span
-                                      key={`ellipsis-${pageNumber}`}
-                                      className="ellipsis"
-                                    >
-                                      ...
-                                    </span>
-                                  );
-                                }
-                                return null;
-                              },
-                            )}
-                            <button
-                              onClick={handleNextClick}
-                              disabled={activePage === Math.ceil(totalItems / 5)}
-                              className={clickedButton === "next" ? "active-page" : ""}
-                            >
-                              Next
-                            </button>
-                          </div>
-                        )}
+                        <PaginationControls
+                          totalItems={totalItems}
+                          activePage={activePage}
+                          clickedButton={clickedButton}
+                          onPageClick={handlePageClick}
+                          onPrevClick={handlePrevClick}
+                          onNextClick={handleNextClick}
+                        />
                       </>
                     ) : (
                       <div>No data available</div>
@@ -353,82 +286,14 @@ const ArtifactsPostgres = () => {
                 ) : (
                   <div>No data available</div> // Display message when there are no artifacts
                 )}
-                {artifacts !== null && totalItems > 0 && (
-                  <>
-                    <button
-                      onClick={handlePrevClick}
-                      disabled={activePage === 1}
-                      className={clickedButton === "prev" ? "active-page" : ""}
-                    >
-                      Previous
-                    </button>
-                    {Array.from({ length: Math.ceil(totalItems / 5) }).map(
-                      (_, index) => {
-                        const pageNumber = index + 1;
-                        if (
-                          pageNumber === 1 ||
-                          pageNumber === Math.ceil(totalItems / 5)
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageClick(pageNumber)}
-                              className={`pagination-button ${
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active-page"
-                                  : ""
-                              }`}
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          (activePage <= 3 && pageNumber <= 6) ||
-                          (activePage >= Math.ceil(totalItems / 5) - 2 &&
-                            pageNumber >= Math.ceil(totalItems / 5) - 5) ||
-                          Math.abs(pageNumber - activePage) <= 2
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageClick(pageNumber)}
-                              className={`pagination-button ${
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active-page"
-                                  : ""
-                              }`}
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          (pageNumber === 2 && activePage > 3) ||
-                          (pageNumber === Math.ceil(totalItems / 5) - 1 &&
-                            activePage < Math.ceil(totalItems / 5) - 3)
-                        ) {
-                          return (
-                            <span
-                              key={`ellipsis-${pageNumber}`}
-                              className="ellipsis"
-                            >
-                              ...
-                            </span>
-                          );
-                        }
-                        return null;
-                      },
-                    )}
-                    <button
-                      onClick={handleNextClick}
-                      disabled={activePage === Math.ceil(totalItems / 5)}
-                      className={clickedButton === "next" ? "active-page" : ""}
-                    >
-                      Next
-                    </button>
-                  </>
-                )}
+                <PaginationControls
+                  totalItems={totalItems}
+                  activePage={activePage}
+                  clickedButton={clickedButton}
+                  onPageClick={handlePageClick}
+                  onPrevClick={handlePrevClick}
+                  onNextClick={handleNextClick}
+                />
               </div>
             )}
           </div>
