@@ -1,6 +1,6 @@
 # Guide to `cmf dvc ingest` Command
 
-The `cmf dvc ingest` command is used to ingest metadata from the `dvc.lock` file into the `cmf-server`. If an existing MLMD (Metadata) file is provided, the command will merge and update execution metadata based on matching commands or create new executions if none exist.
+The `cmf dvc ingest` command is used to ingest metadata from the `dvc.lock` file into the `CMF Server`. If an existing MLMD (Metadata) file is provided, the command will merge and update execution metadata based on matching commands or create new executions if none exist.
 
 
 ## 📌 Steps to Get Started
@@ -124,7 +124,8 @@ cmf dvc ingest
 
 ### 8. Push/Pull Metadata and Artifacts
 
-Use [cmf-client commands](./cmf_client_commands.md) to push or pull your metadata and artifacts as required:
+Use [CMF Client commands](./cmf_client_commands.md) to push or pull your metadata and artifacts as required:
+
 
 - `cmf metadata push`
 - `cmf metadata pull`
