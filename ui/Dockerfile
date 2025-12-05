@@ -2,9 +2,6 @@ FROM node:18.15.0-alpine AS build
 WORKDIR /app
 ENV PATH=/app/node_modules/.bin:$PATH
 
-# Environment variables needed for build
-ENV REACT_APP_CMF_API_URL=${REACT_APP_CMF_API_URL}
-
 COPY package.json ./
 COPY package-lock.json ./
 RUN npm install --silent
