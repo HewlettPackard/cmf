@@ -39,6 +39,11 @@
     font-size: 1.2em; /* Adjust the size as needed */
   }
   
+  .sort-header-content {
+    display: inline-flex;
+    align-items: center;
+  }
+  
   td {
     text-align: left;
   }

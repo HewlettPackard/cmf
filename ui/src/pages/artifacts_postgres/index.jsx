@@ -23,6 +23,10 @@ import Footer from "../../components/Footer";
 import "./index.css";
 import Sidebar from "../../components/Sidebar";
 import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
+import LabelContentPanel from "./components/LabelContentPanel";
+import ResizableSplitPane from "../../components/ResizableSplitPane";
+import PaginationControls from "./components/PaginationControls";
+import Papa from "papaparse";
 
 const client = new FastAPIClient(config);
 
@@ -40,6 +44,15 @@ const ArtifactsPostgres = () => {
   const [activePage, setActivePage] = useState(1);
   const [clickedButton, setClickedButton] = useState("page"); 
   const [selectedCol, setSelectedCol] = useState("name");
+  
+  // Label content panel states
+  const [selectedTableLabel, setSelectedTableLabel] = useState(null);
+  const [labelContentLoading, setLabelContentLoading] = useState(false);
+  const [labelData, setLabelData] = useState(null);
+  const [parsedLabelData, setParsedLabelData] = useState([]);
+  const [labelColumns, setLabelColumns] = useState([]);
+  const [labelCurrentPage, setLabelCurrentPage] = useState(0);
+  const [labelRowsPerPage, setLabelRowsPerPage] = useState(10);
   
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
@@ -87,6 +100,11 @@ const ArtifactsPostgres = () => {
     if (selectedArtifactType !== artifactType) {
       // if same artifact type is not clicked, sets page as null until it retrieves data for that type.
       setArtifacts(null);
+      // Reset label panel state when switching artifact types
+      setSelectedTableLabel(null);
+      setLabelData(null);
+      setParsedLabelData([]);
+      setLabelColumns([]);
     }  
     setSelectedArtifactType(artifactType);
     setActivePage(1);
@@ -135,6 +153,51 @@ const ArtifactsPostgres = () => {
       setClickedButton("next");
       handlePageClick(activePage + 1);
     }  
+  };
+
+  const handleLabelClick = (labelName, artifact) => {
+    setSelectedTableLabel({ name: labelName, ...artifact });
+    setLabelContentLoading(true);
+    setLabelCurrentPage(0); // Reset to first page
+    
+    // Extract UUID from labelName (format: "path/to/labels.csv:uuid" or just "uuid")
+    const labelId = labelName.includes(":") ? labelName.split(":")[1] : labelName;
+    
+    client.getLabelData(labelId).then((csvData) => {
+      setLabelData(csvData);
+      console.log("label CSV data = ", csvData);
+      
+      // Parse CSV data using Papa.parse
+      if (csvData && typeof csvData === 'string' && csvData.trim().length > 0) {
+        const parsed = Papa.parse(csvData, { header: true });
+        console.log("parsed data = ", parsed.data);
+        
+        if (parsed.data && parsed.data.length > 0) {
+          setParsedLabelData(parsed.data);
+          
+          // Extract columns from Papa.parse meta fields
+          if (parsed.meta.fields) {
+            const columns = parsed.meta.fields.map(field => ({ name: field }));
+            console.log("columns = ", columns);
+            setLabelColumns(columns);
+          }
+        } else {
+          console.warn("Parsed CSV data is empty");
+          setParsedLabelData([]);
+          setLabelColumns([]);
+        }
+      } else {
+        console.warn("No CSV data received from getLabelData");
+        setParsedLabelData([]);
+        setLabelColumns([]);
+      }
+      setLabelContentLoading(false);
+    }).catch((error) => {
+      console.error("Error fetching label data:", error);
+      setLabelContentLoading(false);
+      setParsedLabelData([]);
+      setLabelColumns([]);
+    });
   };  
 
   return (
@@ -162,7 +225,55 @@ const ArtifactsPostgres = () => {
                   />
                 )}
             </div>
-            <div>
+            {selectedArtifactType === "Label" ? (
+              // Resizable split view for Label artifact type
+              <ResizableSplitPane
+                initialSplitPercentage={50}
+                minPercentage={30}
+                maxPercentage={70}
+                leftContent={
+                  <div>
+                    {artifacts !== null && artifacts.length > 0 ? (
+                      <>
+                        <ArtifactPTable 
+                          artifacts={artifacts}
+                          artifactType={selectedArtifactType}
+                          onsortOrder={toggleSortOrder}
+                          onsortTimeOrder={toggleSortTime}
+                          filterValue={filter}
+                          onLabelClick={handleLabelClick}
+                        />
+                        <PaginationControls
+                          totalItems={totalItems}
+                          activePage={activePage}
+                          clickedButton={clickedButton}
+                          onPageClick={handlePageClick}
+                          onPrevClick={handlePrevClick}
+                          onNextClick={handleNextClick}
+                        />
+                      </>
+                    ) : (
+                      <div>No data available</div>
+                    )}
+                  </div>
+                }
+                rightContent={
+                  <LabelContentPanel
+                    selectedTableLabel={selectedTableLabel}
+                    labelContentLoading={labelContentLoading}
+                    labelData={labelData}
+                    parsedLabelData={parsedLabelData}
+                    labelColumns={labelColumns}
+                    currentPage={labelCurrentPage}
+                    rowsPerPage={labelRowsPerPage}
+                    setCurrentPage={setLabelCurrentPage}
+                    setRowsPerPage={setLabelRowsPerPage}
+                  />
+                }
+              />
+            ) : (
+              // Standard view for other artifact types
+              <div>
                 {artifacts !== null && artifacts.length > 0 ? (
                   <ArtifactPTable 
                     artifacts={artifacts}
@@ -175,83 +286,16 @@ const ArtifactsPostgres = () => {
                 ) : (
                   <div>No data available</div> // Display message when there are no artifacts
                 )}
-                {artifacts !== null && totalItems > 0 && (
-                  <>
-                    <button
-                      onClick={handlePrevClick}
-                      disabled={activePage === 1}
-                      className={clickedButton === "prev" ? "active-page" : ""}
-                    >
-                      Previous
-                    </button>
-                    {Array.from({ length: Math.ceil(totalItems / 5) }).map(
-                      (_, index) => {
-                        const pageNumber = index + 1;
-                        if (
-                          pageNumber === 1 ||
-                          pageNumber === Math.ceil(totalItems / 5)
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageClick(pageNumber)}
-                              className={`pagination-button ${
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active-page"
-                                  : ""
-                              }`}
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          (activePage <= 3 && pageNumber <= 6) ||
-                          (activePage >= Math.ceil(totalItems / 5) - 2 &&
-                            pageNumber >= Math.ceil(totalItems / 5) - 5) ||
-                          Math.abs(pageNumber - activePage) <= 2
-                        ) {
-                          return (
-                            <button
-                              key={pageNumber}
-                              onClick={() => handlePageClick(pageNumber)}
-                              className={`pagination-button ${
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active-page"
-                                  : ""
-                              }`}
-                            >
-                              {pageNumber}
-                            </button>
-                          );
-                        } else if (
-                          (pageNumber === 2 && activePage > 3) ||
-                          (pageNumber === Math.ceil(totalItems / 5) - 1 &&
-                            activePage < Math.ceil(totalItems / 5) - 3)
-                        ) {
-                          return (
-                            <span
-                              key={`ellipsis-${pageNumber}`}
-                              className="ellipsis"
-                            >
-                              ...
-                            </span>
-                          );
-                        }
-                        return null;
-                      },
-                    )}
-                    <button
-                      onClick={handleNextClick}
-                      disabled={activePage === Math.ceil(totalItems / 5)}
-                      className={clickedButton === "next" ? "active-page" : ""}
-                    >
-                      Next
-                    </button>
-                  </>
-                )}
-            </div>
+                <PaginationControls
+                  totalItems={totalItems}
+                  activePage={activePage}
+                  clickedButton={clickedButton}
+                  onPageClick={handlePageClick}
+                  onPrevClick={handlePrevClick}
+                  onNextClick={handleNextClick}
+                />
+              </div>
+            )}
           </div>
         </div>
         <Footer />
