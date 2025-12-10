@@ -15,7 +15,7 @@
  ***/
 
 // ArtifactTable.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ModelCardPopup from "../ModelCardPopup";
 import Highlight from "../Highlight";
 import FastAPIClient from "../../client";
@@ -25,43 +25,61 @@ import LabelCardPopup from "../LabelCardPopup";
 
 const client = new FastAPIClient(config);
 
-const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, filterValue}) => {
-  const [data, setData] = useState([]);
+
+const ArtifactPTable = ({
+  artifacts,
+  artifactType,
+  onSortOrder,
+  onSortTimeOrder,
+  filterValue,
+  onLabelClick,
+  expandedRow: externalExpandedRow,
+  setExpandedRow: externalSetExpandedRow,
+}) => {
+  
   const [sortOrder, setSortOrder] = useState("asc");
   const [sortTimeOrder, setSortTimeOrder] = useState("asc");
-  const [expandedRow, setExpandedRow] = useState(null);
-  const [showPopup, setShowPopup] = useState(false);
+  // Use internal state as fallback if external state is not provided
+  const [internalExpandedRow, setInternalExpandedRow] = useState(null);
+  // Use external state if provided, otherwise use internal state
+  const expandedRow = externalExpandedRow !== undefined ? externalExpandedRow : internalExpandedRow;
+  const setExpandedRow = externalSetExpandedRow || setInternalExpandedRow;
+
+  
+  const [showModelPopup, setShowModelPopup] = useState(false);
+  const [showLabelPopup, setShowLabelPopup] = useState(false);
   const [popupData, setPopupData] = useState("");
   const [labelData, setLabelData] = useState("");
 
+  // Handle expanded row based on filter value - only when filter actually changes
+  const prevFilterRef = useRef(String(filterValue || ""));
+
+  console.log("artifacts in ArtifactPTable:", artifacts);
   useEffect(() => {
-    // if data then set artifacts with that data else set it null.
-    setData(artifacts);
-    // handle expanded row based on filter value
-    if (filterValue.trim() !== ""){
-      // expand all rows when filter value is set
-      setExpandedRow("all");
-    }else{
-      // collapse all rows when filter value is empty
-      setExpandedRow(null);
+    const prev = prevFilterRef.current;
+    const current = String(filterValue || "");
+
+    if (prev !== current) {
+      if (current.trim() !== "") {
+        setExpandedRow("all");
+      } else if (prev.trim() !== "") {
+        // only collapse if previously non-empty
+        setExpandedRow(null);
+      }
+      prevFilterRef.current = current;
     }
-  }, [artifacts]);
+  }, [filterValue, setExpandedRow, artifactType]); // minimal deps
+  // removed expandedRow - not sure for what reason it was here
 
 
-  const renderArrow = () => (
+  const renderArrow = (order) => (
     <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
-      {sortOrder === "asc" ? "↑" : sortOrder === "desc" ? "↓" : "↑"}
-    </span>
-  );
-
-  const renderArrowDate = () => (
-    <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
-      {sortTimeOrder === "asc" ? "↑" : sortTimeOrder === "desc" ? "↓" : "↑"}
+      {order === "asc" ? "↑" : "↓"}
     </span>
   );
 
   const getPropertyValue = (properties, propertyName) => {
-    // // Check if properties is a string and parse it
+    // Check if properties is a string and parse it
     if (typeof properties === "string") {
         try {
             properties = JSON.parse(properties);  // Parse the string to an array
@@ -73,7 +91,6 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
 
     // Ensure properties is now an array
     if (!Array.isArray(properties)) {
-        console.warn("Expected an array for properties, got:", properties);
         return "N/A";
     }
 
@@ -82,7 +99,7 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
       .filter(prop => prop.name === propertyName)  // Filter properties by name
       .map(prop => prop.value);  // Extract string_value
 
-    // // Return the values as a comma-separated string or "N/A" if no values are found
+    // Return the values as a comma-separated string or "N/A" if no values are found
     return values.length > 0 ? values.join(", ") : "N/A";
   };
 
@@ -92,31 +109,29 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
     setExpandedRow(expandedRow === rowId ? null : rowId);
   };
 
+  const toggleSort = (currentOrder, setOrder, callback) => {
+    const newSortOrder = currentOrder === "asc" ? "desc" : "asc";
+    setOrder(newSortOrder);
+    callback(newSortOrder);
+  };
+
   const toggleSortOrder = () => {
-    const newSortOrder = sortOrder === "asc" ? "desc" : "asc";
-    setSortOrder(newSortOrder);
-    onsortOrder(newSortOrder);
+    toggleSort(sortOrder, setSortOrder, onSortOrder);
   };
 
   const toggleSortTimeOrder = () => {
-    const newSortOrder = sortTimeOrder === "asc" ? "desc" : "asc";
-    setSortTimeOrder(newSortOrder);
-    onsortTimeOrder(newSortOrder);
+    toggleSort(sortTimeOrder, setSortTimeOrder, onSortTimeOrder);
   };
 
-  const handleClosePopup = () => {
-    setShowPopup(false);
+  const handleCloseModelPopup = () => {
+    setShowModelPopup(false);
   };
 
-  const getLabelData = (label_name) => {
-    console.log(label_name)
-    client.getLabelData(label_name).then((data) => {
-      console.log(data);
-      setLabelData(data);
-    });
-  }
+  const handleCloseLabelPopup = () => {
+    setShowLabelPopup(false);
+  };
 
-  const renderLabels = ({ artifact, filterValue, client, setLabelData, setShowPopup, showPopup, labelData, handleClosePopup }) => {
+  const renderLabels = (artifact) => {
     const labelsUri = getPropertyValue(artifact.artifact_properties, "labels_uri");
 
     if (!labelsUri || labelsUri === "N/A" || labelsUri.trim() === "") {
@@ -135,19 +150,12 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
               e.preventDefault();
               client.getLabelData(label_name.split(":")[1] || label_name).then((data) => {
                 setLabelData(data);
-                setShowPopup(true);
+                setShowLabelPopup(true);
               });
             }}
           >
-            {label_name}
+            <Highlight text={label_name} highlight={filterValue}/>
           </a>
-          {showPopup && (
-            <LabelCardPopup
-              show={showPopup}
-              label_data={labelData}
-              onClose={handleClosePopup}
-            />
-          )}
         </div>
       ));
   };
@@ -162,8 +170,8 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                 <th scope="col" className="px-6 py-3"></th>
                 <th scope="col" className="px-6 py-3">ID</th>
                 <th scope="col" className="px-6 py-3" onClick={toggleSortOrder}>
-                <span style={{ display: 'inline-flex', alignItems: 'center' }} >
-                  Name {renderArrow()}
+                <span className="sort-header-content">
+                  Name {renderArrow(sortOrder)}
                 </span>
                 </th>
                 <th className="px-6 py-3" scope="col">Execution TYPE</th>
@@ -173,8 +181,8 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   </th>
                 )}
                 <th scope="col" className="px-6 py-3" onClick={toggleSortTimeOrder}>
-                <span style={{ display: 'inline-flex', alignItems: 'center' }} >
-                  DATE {renderArrowDate()}
+                <span className="sort-header-content">
+                  DATE {renderArrow(sortTimeOrder)}
                 </span>
                 </th>
                 {artifactType === "Dataset" && (
@@ -198,7 +206,23 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                   </td>
                   { /* Convert artifact ID to string and render it with highlighted search term if it matches the filter value */}
                   <td className="px-6 py-4"><Highlight text={String(artifact.artifact_id)} highlight={filterValue}/></td>
-                  <td className="px-6 py-4"><Highlight text={String(artifact.name)} highlight={filterValue}/></td>
+                  <td className="px-6 py-4">
+                    {artifactType === "Label" && onLabelClick ? (
+                      <a
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onLabelClick(artifact.name, artifact);
+                        }}
+                        className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+                      >
+                        <Highlight text={String(artifact.name)} highlight={filterValue}/>
+                      </a>
+                    ) : (
+                      <Highlight text={String(artifact.name)} highlight={filterValue}/>
+                    )}
+                  </td>
                   <td className="px-6 py-4"><Highlight text={String(artifact.execution)} highlight={filterValue}/></td>
                   {artifactType === "Model" && (
                     <td className="px-6 py-4">
@@ -207,34 +231,18 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
                         onClick={() => {
                           client.getModelCard(artifact.artifact_id).then((res) => {
                             setPopupData(res);
-                            setShowPopup(true);
+                            setShowModelPopup(true);
                           });
                         }}
                       >
                         View Model Card
                       </button>
-                      {showPopup && (
-                        <ModelCardPopup
-                          show={showPopup}
-                          model_data={popupData}
-                          onClose={handleClosePopup}
-                        />
-                      )}
                     </td>
                   )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.create_time_since_epoch)} highlight={filterValue}/></td>
                   {artifactType === "Dataset" && (
                     <td className="px-6 py-4">
-                      {renderLabels({
-                        artifact,
-                        filterValue,
-                        client,
-                        setLabelData,
-                        setShowPopup,
-                        showPopup,
-                        labelData,
-                        handleClosePopup
-                      })}
+                      {renderLabels(artifact)}
                     </td>
                   )}
                   <td className="px-6 py-4"><Highlight text={String(artifact.uri)} highlight={filterValue}/></td>
@@ -264,6 +272,20 @@ const ArtifactPTable = ({artifacts, artifactType, onsortOrder, onsortTimeOrder, 
             </table>
         </div>
       </div>
+      {showModelPopup && (
+        <ModelCardPopup
+          show={showModelPopup}
+          model_data={popupData}
+          onClose={handleCloseModelPopup}
+        />
+      )}
+      {showLabelPopup && (
+        <LabelCardPopup
+          show={showLabelPopup}
+          label_data={labelData}
+          onClose={handleCloseLabelPopup}
+        />
+      )}
     </div>
   );
 };
