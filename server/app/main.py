@@ -11,9 +11,13 @@ import pandas as pd
 from typing import List, Dict, Any, Optional
 from cmflib.cmfquery import CmfQuery
 import asyncio
+import logging
+
+# Configure SQLAlchemy logging to WARNING level to reduce INFO messages
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
-from server.app.utils import extract_hostname, get_fqdn
+from server.app.utils import extract_hostname, get_fqdn, extract_csv_text_content
 from server.app.get_data import (
     get_mlmd_from_server,
     get_artifact_types,
@@ -34,7 +38,9 @@ from server.app.db.dbqueries import (
     register_server_details,
     get_registered_server_details,
     get_sync_status,
-    update_sync_status
+    update_sync_status,
+    insert_label_content,
+    get_artifact_id_by_filename
 )
 from pathlib import Path
 import os
@@ -392,7 +398,11 @@ async def get_python_env(file_name: str) -> str:
 
 # Rest api to push the label to /cmf-server/data/labels dir.
 @app.post("/label")
-async def upload_label(request:Request, file: UploadFile = File(..., description="The file to upload")):
+async def upload_label(
+    request: Request, 
+    file: UploadFile = File(..., description="The file to upload"),
+    db: AsyncSession = Depends(get_db)
+):
     try:
         if not file.filename:
             raise HTTPException(status_code=400, detail="No file provided.")
@@ -408,15 +418,52 @@ async def upload_label(request:Request, file: UploadFile = File(..., description
         if os.path.exists(file_path):
             return {"message": f"File '{file.filename}' already exists at {labels_dir}. Skipping upload."}
 
-
         # Save the uploaded file
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
 
-        return {"message": f"File '{file.filename}' uploaded successfully to {labels_dir}."}
+        # Step 1: Extract text content from CSV
+        try:
+            full_text_content, is_truncated = extract_csv_text_content(file_path)
+            
+            if is_truncated:
+                print(f"Warning: CSV content was truncated for file: {file.filename}")
+        except Exception as e:
+            print(f"Error extracting CSV content for {file.filename}: {str(e)}")
+            # Continue even if text extraction fails - file is still uploaded
+            return {
+                "message": f"File '{file.filename}' uploaded successfully to {labels_dir}.",
+                "warning": f"Could not extract searchable content: {str(e)}"
+            }
+
+        # Step 2: Find the artifact_id for this label file
+        artifact_id = await get_artifact_id_by_filename(db, file.filename)
+        
+        if artifact_id is None:
+            print(f"Warning: Could not find artifact_id for file: {file.filename}")
+            return {
+                "message": f"File '{file.filename}' uploaded successfully to {labels_dir}.",
+                "warning": "Artifact not found in database. Content not indexed for search."
+            }
+
+        # Step 3: Insert label content into database for searchability
+        result = await insert_label_content(db, artifact_id, file.filename, full_text_content)
+        
+        if result["status"] == "success":
+            return {
+                "message": f"File '{file.filename}' uploaded successfully to {labels_dir}.",
+                "indexed": True,
+                "artifact_id": artifact_id,
+                "truncated": is_truncated
+            }
+        else:
+            return {
+                "message": f"File '{file.filename}' uploaded successfully to {labels_dir}.",
+                "warning": f"Content indexing failed: {result['message']}"
+            }
     
     except Exception as e:
-        return {"error": f"Failed to up load file: {e}"}
+        return {"error": f"Failed to upload file: {e}"}
     
 
 # Rest api to fetch the label data from the /cmf-server/data/labels folder
