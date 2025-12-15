@@ -108,13 +108,20 @@ def extract_csv_text_content(file_path: str, max_size_mb: int = 500) -> Tuple[st
     """
     Extract searchable text content from a CSV file.
     
+    Tokenization strategy: Splits compound words (e.g., "data.xml.gz" → "data xml gz")
+    to enable partial word searches. This means:
+    - Searching "xml" will match "data.xml.gz" 
+    - Searching "data.xml.gz" will still match (tokenized as "data & xml & gz")
+    - Trade-off: Exact phrase search for "data.xml.gz" won't work
+    
     Args:
         file_path (str): Full path to the CSV file
         max_size_mb (int): Maximum file size in MB to process (default: 500 MB)
     
     Returns:
         Tuple[str, bool]: (extracted_text, is_truncated)
-            - extracted_text: All CSV cell values concatenated with spaces
+            - extracted_text: All CSV cell values concatenated with spaces, 
+                              with special chars replaced for better tokenization
             - is_truncated: True if file was too large and content was truncated
     
     Raises:
@@ -135,6 +142,8 @@ def extract_csv_text_content(file_path: str, max_size_mb: int = 500) -> Tuple[st
     text_parts = []
     
     try:
+        import re
+        
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as csvfile:
             csv_reader = csv.reader(csvfile)
             
@@ -145,7 +154,11 @@ def extract_csv_text_content(file_path: str, max_size_mb: int = 500) -> Tuple[st
                 # Convert all cells in the row to strings and join with spaces
                 row_text = ' '.join(str(cell).strip() for cell in row if cell)
                 if row_text:
-                    text_parts.append(row_text)
+                    # Tokenize compound words: Replace dots, hyphens, underscores with spaces
+                    # This allows "data.xml.gz" to become "data xml gz" for searchability
+                    # User searching "xml" will now match, and "data.xml.gz" becomes "data & xml & gz"
+                    tokenized_text = re.sub(r'[._-]', ' ', row_text)
+                    text_parts.append(tokenized_text)
                 
                 rows_processed += 1
                 

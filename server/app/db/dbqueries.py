@@ -316,7 +316,7 @@ async def fetch_artifacts(
         # No executions found for the pipeline, return empty result
         return {"total_items": 0, "items": []}
 
-    # Step 3: Based on execution ids list fetching equivalent artifact lists from event_path table
+    # Step 3: Based on execution ids list fetch equivalent artifact lists from event_path table
     artifact_ids_cte = (
         select(distinct(event.c.artifact_id).label("artifact_id"))
         .where(event.c.execution_id.in_(execution_ids))
@@ -408,18 +408,31 @@ async def fetch_artifacts(
         # For Label artifacts, add full-text search on CSV content
         # Use EXISTS subquery to check if ANY associated CSV file contains the filter_value
         
-        # Subquery: Check if artifact has matching CSV content
-        label_content_match_subquery = (
-            select(label_content.c.artifact_id)
-            .where(
-                label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
-                label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+        # Build the full WHERE clause conditions
+        # Only add content search if filter_value is not empty
+        if filter_value and filter_value.strip():
+            # Subquery: Check if artifact has matching CSV content using full-text search
+            # Using plainto_tsquery for user-friendly plain text search:
+            # - Automatically handles special characters and empty strings
+            # - Works well with our tokenization (compound words split into tokens)
+            # - "xml" will match the 'xml' token from tokenized "data.xml.gz" → "data xml gz"
+            label_content_match_subquery = (
+                select(label_content.c.artifact_id)
+                .where(
+                    label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
+                    label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+                )
+                .exists()
             )
-            .exists()
-        )
-        
-        print(f"[DEBUG] Label search for filter_value: '{filter_value}'")
-        print(f"[DEBUG] Metadata conditions count: {len(where_conditions)}")
+            
+            # Combine metadata conditions with content search
+            final_where_conditions = or_(
+                *where_conditions,
+                label_content_match_subquery
+            )
+        else:
+            # If filter_value is empty, only use metadata conditions
+            final_where_conditions = or_(*where_conditions)
         
         query = (
             select(
@@ -435,21 +448,10 @@ async def fetch_artifacts(
             .select_from(artifact_metadata_cte)
             .outerjoin(artifact_properties_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id)
             .outerjoin(artifact_execution_types_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_execution_types_agg_cte.c.artifact_id)
-            .where(
-                # Match metadata OR CSV content (using EXISTS subquery)
-                # This ensures labels appear if EITHER:
-                # 1. filter_value matches any metadata field, OR
-                # 2. filter_value matches CSV file content
-                or_(
-                    *where_conditions,
-                    label_content_match_subquery
-                )
-            )
+            .where(final_where_conditions)
             .limit(page_size)
             .offset((active_page - 1) * page_size)
         )
-        
-        print(f"[DEBUG] Label query compiled:\n{query}")
         
     else:
         # For non-Label artifacts, use standard search (no CSV content)
