@@ -1,0 +1,115 @@
+###
+# Copyright (2023) Hewlett Packard Enterprise Development LP
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_DB: ${POSTGRES_DB:-mlmd}
+    volumes:
+      - ${CMF_DATA_DIR:-./data}/postgres_data:/var/lib/postgresql/data
+    #expose and ports for external access if needed
+    # ports:
+    #   - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    # expose:
+    #   - ${POSTGRES_PORT}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p 5432 -d ${POSTGRES_DB:-mlmd} -U ${POSTGRES_USER:-myuser}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cmf-network
+
+  tensorboard:
+    image: tensorflow/tensorflow
+    container_name: tensorboard
+    command: tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
+    volumes:
+      - ${CMF_DATA_DIR:-./data}/tensorboard-logs:/logs
+    networks:
+      - cmf-network
+
+  server:
+    image: server:latest
+    container_name: cmf-server
+    volumes:
+      - ${CMF_DATA_DIR:-./data}:/cmf-server/data
+      - ${CMF_DATA_DIR:-./data}/env:/cmf-server/data/env
+      - ${CMF_DATA_DIR:-./data}/static:/cmf-server/data/static
+      - ${CMF_DATA_DIR:-./data}/labels:/cmf-server/data/labels
+      - ${CMF_DATA_DIR:-./data}/tensorboard-logs:/cmf-server/data/tensorboard-logs
+    build:
+      context: ./
+      dockerfile: ./server/Dockerfile
+    environment:
+      POSTGRES_HOST: ${POSTGRES_HOST:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-myuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-mlmd}
+      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      cmf-network:
+        aliases:
+          - server
+
+  ui:
+    image: ui:latest
+    container_name: ui-server
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    environment:
+      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL}
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      cmf-network:
+        aliases:
+          - ui
+
+  nginx:
+    image: nginx:alpine
+    container_name: cmf-nginx
+    ports:
+      - ${NGINX_HTTP_PORT:-80}:80
+      - ${NGINX_HTTPS_PORT:-443}:443
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - cmf-network
+    depends_on:
+      - ui
+      - server
+    restart: unless-stopped
+
+networks:
+  cmf-network:
+    driver: bridge
