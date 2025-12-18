@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-deployment
+  labels:
+    app: ui
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: ui
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+      - name: ui
+        image: "{{ .Values.ui_service.image.repository }}:{{ .Values.ui_service.image.tag }}"
+        imagePullPolicy: {{ .Values.pullPolicy }}     # important for Minikube local builds
+        ports:
+        - containerPort: {{ .Values.ui_service.service.port }}
+        env:
+        - name: REACT_APP_CMF_API_URL
+          value: http://x.x.x.x:30080           # same cluster DNS; backend reachable via Nginx
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.ui_service.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:                    # added for better health management
+          httpGet:
+            path: /
+            port: {{ .Values.ui_service.service.port }}
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ui                              # matches proxy_pass http://ui:3000/;
+  labels:
+    app: ui
+spec:
+  type: {{ .Values.ui_service.service.type }}                       # internal-only (access via Nginx)
+  ports:
+  - name: http
+    port: {{ .Values.ui_service.service.port }}
+    targetPort: {{ .Values.ui_service.service.port }}
+  selector:
+    app: ui
