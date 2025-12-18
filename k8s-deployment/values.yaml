@@ -51,7 +51,7 @@ neo4j_service:
 
 cmf_service:
   image:
-    repository: ayeshasanadi/cmf-server
+    repository: "image_name"  # replace with actual image name
     tag: latest
 
   service:
@@ -109,7 +109,7 @@ tensorboard_service:
    
 ui_service:
   image:
-    repository: ayeshasanadi/ui
+    repository: "image_name" # replace with actual image name
     tag: latest
 
   service:
