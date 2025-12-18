@@ -1,0 +1,23 @@
+set -e
+
+NAMESPACE="k8s-namespace"
+CHART_DIR="./k8s-deployment"
+
+echo "Checking Kubernetes connection..."
+kubectl cluster-info > /dev/null
+
+echo "Creating namespace if not exists..."
+kubectl get namespace $NAMESPACE >/dev/null 2>&1 || \
+kubectl create namespace $NAMESPACE
+
+echo "Installing Helm chart..."
+helm upgrade --install $NAMESPACE $CHART_DIR \
+  --namespace $NAMESPACE \
+  -f $CHART_DIR/values.yaml \
+  -f $CHART_DIR/secrets.yaml
+
+echo "Deployment status:"
+kubectl get pods -n $NAMESPACE
+kubectl get svc -n $NAMESPACE
+
+echo "CMF deployed successfully."
