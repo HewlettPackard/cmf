@@ -411,16 +411,23 @@ async def fetch_artifacts(
         # Build the full WHERE clause conditions
         # Only add content search if filter_value is not empty
         if filter_value and filter_value.strip():
-            # Subquery: Check if artifact has matching CSV content using full-text search
-            # Using plainto_tsquery for user-friendly plain text search:
-            # - Automatically handles special characters and empty strings
-            # - Works well with our tokenization (compound words split into tokens)
-            # - "xml" will match the 'xml' token from tokenized "data.xml.gz" → "data xml gz"
+            # Subquery: Check if artifact has matching CSV content using ILIKE search
+            # Using ILIKE for case-insensitive substring matching on full text content
+            # This allows searching for partial matches like "4KB", "240", etc.
+            # TODO: Re-enable tsvector full-text search once tokenization is optimized
+            # label_content_match_subquery = (
+            #     select(label_content.c.artifact_id)
+            #     .where(
+            #         label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
+            #         label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+            #     )
+            #     .exists()
+            # )
             label_content_match_subquery = (
                 select(label_content.c.artifact_id)
                 .where(
                     label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
-                    label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+                    label_content.c.full_text_content.ilike(f"%{filter_value}%")
                 )
                 .exists()
             )

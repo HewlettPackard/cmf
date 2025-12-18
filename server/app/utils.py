@@ -108,11 +108,12 @@ def extract_csv_text_content(file_path: str, max_size_mb: int = 500) -> Tuple[st
     """
     Extract searchable text content from a CSV file.
     
-    Tokenization strategy: Splits compound words (e.g., "data.xml.gz" → "data xml gz")
-    to enable partial word searches. This means:
-    - Searching "xml" will match "data.xml.gz" 
-    - Searching "data.xml.gz" will still match (tokenized as "data & xml & gz")
-    - Trade-off: Exact phrase search for "data.xml.gz" won't work
+    Stores original CSV content without pre-tokenization. Tokenization for full-text
+    search is handled by PostgreSQL's to_tsvector() on the content_tsvector column.
+    This approach:
+    - Keeps full_text_content readable and true to original data
+    - Allows ILIKE substring matching on original text (e.g., "data.xml.gz", "4KB")
+    - Enables future tsvector full-text search with PostgreSQL's built-in tokenization
     
     Args:
         file_path (str): Full path to the CSV file
@@ -154,11 +155,10 @@ def extract_csv_text_content(file_path: str, max_size_mb: int = 500) -> Tuple[st
                 # Convert all cells in the row to strings and join with spaces
                 row_text = ' '.join(str(cell).strip() for cell in row if cell)
                 if row_text:
-                    # Tokenize compound words: Replace dots, hyphens, underscores with spaces
-                    # This allows "data.xml.gz" to become "data xml gz" for searchability
-                    # User searching "xml" will now match, and "data.xml.gz" becomes "data & xml & gz"
-                    tokenized_text = re.sub(r'[._-]', ' ', row_text)
-                    text_parts.append(tokenized_text)
+                    # Store original text without manipulation
+                    # PostgreSQL's to_tsvector() will handle tokenization for content_tsvector column
+                    # This keeps full_text_content readable and allows ILIKE substring matching
+                    text_parts.append(row_text)
                 
                 rows_processed += 1
                 

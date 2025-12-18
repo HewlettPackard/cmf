@@ -16,6 +16,7 @@
 
 import React from "react";
 import Loader from "../../../components/Loader";
+import Highlight from "../../../components/Highlight";
 
 const LabelContentPanel = ({
   selectedTableLabel,
@@ -104,7 +105,10 @@ const LabelContentPanel = ({
                   <tr key={rowIndex} className="text-sm font-medium text-gray-800">
                     {labelColumns.map((column, colIndex) => (
                       <td key={colIndex} className="px-6 py-4">
-                        {String(row[column.name] || '')}
+                        <Highlight 
+                          text={String(row[column.name] || '')} 
+                          highlight={selectedTableLabel?.searchFilter || ''} 
+                        />
                       </td>
                     ))}
                   </tr>

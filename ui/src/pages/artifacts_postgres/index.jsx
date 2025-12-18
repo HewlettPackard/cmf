@@ -54,6 +54,9 @@ const ArtifactsPostgres = () => {
   const [labelCurrentPage, setLabelCurrentPage] = useState(0);
   const [labelRowsPerPage, setLabelRowsPerPage] = useState(10);
   
+  // Expanded row state - persists across artifact type switches
+  const [expandedRow, setExpandedRow] = useState(null);
+  
   useEffect(() => {
     fetchPipelines(); // Fetch pipelines and artifact types when the component mounts
   },[]);
@@ -93,6 +96,22 @@ const ArtifactsPostgres = () => {
       .then((data) => {
         setArtifacts(data.items);
         setTotalItems(data.total_items);
+        
+        // Auto-load first label's content when Label artifact type is selected
+        if (artifactType === "Label" && data.items && data.items.length > 0) {
+          // Load first label if none selected, OR reload current label to update highlighting
+          if (!selectedTableLabel) {
+            const firstLabel = data.items[0];
+            handleLabelClick(firstLabel.name, firstLabel);
+          } else {
+            // Update the searchFilter in the currently selected label to trigger highlighting
+            setSelectedTableLabel(prev => ({
+              ...prev,
+              searchFilter: filter,
+              isSearchResult: filter && filter.trim() !== ''
+            }));
+          }
+        }
       });  
   };    
   
@@ -156,7 +175,12 @@ const ArtifactsPostgres = () => {
   };
 
   const handleLabelClick = (labelName, artifact) => {
-    setSelectedTableLabel({ name: labelName, ...artifact });
+    setSelectedTableLabel({ 
+      name: labelName, 
+      ...artifact,
+      searchFilter: filter,  // Pass current filter for highlighting
+      isSearchResult: filter && filter.trim() !== ''  // Mark as search result if filter exists
+    });
     setLabelContentLoading(true);
     setLabelCurrentPage(0); // Reset to first page
     
@@ -242,6 +266,8 @@ const ArtifactsPostgres = () => {
                           onsortTimeOrder={toggleSortTime}
                           filterValue={filter}
                           onLabelClick={handleLabelClick}
+                          expandedRow={expandedRow}
+                          setExpandedRow={setExpandedRow}
                         />
                         <PaginationControls
                           totalItems={totalItems}
@@ -281,6 +307,8 @@ const ArtifactsPostgres = () => {
                     onsortOrder={toggleSortOrder}
                     onsortTimeOrder={toggleSortTime}
                     filterValue={filter}
+                    expandedRow={expandedRow}
+                    setExpandedRow={setExpandedRow}
                     />
                     
                 ) : (
