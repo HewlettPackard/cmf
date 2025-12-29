@@ -1,5 +1,22 @@
+/***
+ * Copyright (2025) Hewlett Packard Enterprise Development LP
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * You may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ ***/
+
 import React, { useState } from 'react';
 import FastAPIClient from '../../client';
+import PeriodicSyncPicker from '../PeriodicSyncPicker';
 
 const client = new FastAPIClient();
 
@@ -29,6 +46,10 @@ function RegisteredServers({ serverList }) {
       });
   };
 
+  const handleScheduleSync = (serverId, serverName, dateTime) => {
+    console.log(`Scheduled sync for server ${serverId} (${serverName}) at ${dateTime}`);
+  };
+
   if (!serverList || serverList.length === 0) {
     return (
       <div className="p-4 text-center text-gray-500 bg-white rounded-lg shadow-md">No servers registered.</div>
@@ -46,6 +67,7 @@ function RegisteredServers({ serverList }) {
             <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Server URL</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Last Sync Time</th>
             <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Actions</th>
+            <th scope="col" className="px-6 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Periodic Sync Actions</th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
@@ -60,11 +82,18 @@ function RegisteredServers({ serverList }) {
                   className="bg-teal-600 hover:bg-teal-700 text-white font-bold py-1 px-3 rounded-lg transition duration-200"
                   onClick={() => handleSync(server.server_name, server.host_info, server.id)}
                 >
-                  Sync
+                  Sync Now
                 </button>
                 {syncStatus[server.id] && (
                   <div className="mt-2 text-teal-700 font-semibold text-xs">{syncStatus[server.id]}</div>
                 )}
+              </td>
+              <td className="px-6 py-4 text-sm">
+                <PeriodicSyncPicker
+                  serverId={server.id}
+                  serverName={server.server_name}
+                  onSchedule={handleScheduleSync}
+                />
               </td>
             </tr>
           ))}
