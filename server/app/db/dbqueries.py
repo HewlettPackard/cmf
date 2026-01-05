@@ -403,95 +403,70 @@ async def fetch_artifacts(
         (func.coalesce(artifact_properties_agg_cte.c.artifact_properties.cast(String), '').ilike(f"%{filter_value}%"))
     ]
 
-    # Step 8: Query construction with conditional Label content search
-    if artifact_type == "Label":
-        # For Label artifacts, add full-text search on CSV content
-        # Use EXISTS subquery to check if ANY associated CSV file contains the filter_value
-        
-        # Build the full WHERE clause conditions
-        # Only add content search if filter_value is not empty
-        if filter_value and filter_value.strip():
-            # Subquery: Check if artifact has matching CSV content using ILIKE search
-            # Using ILIKE for case-insensitive substring matching on full text content
-            # This allows searching for partial matches like "4KB", "240", etc.
-            # TODO: Re-enable tsvector full-text search once tokenization is optimized
-            # label_content_match_subquery = (
-            #     select(label_content.c.artifact_id)
-            #     .where(
-            #         label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
-            #         label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
-            #     )
-            #     .exists()
-            # )
-            label_content_match_subquery = (
-                select(label_content.c.artifact_id)
-                .where(
-                    label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
-                    label_content.c.full_text_content.ilike(f"%{filter_value}%")
-                )
-                .exists()
+    # Step 8: Determine WHERE clause based on artifact type
+    if artifact_type == "Label" and filter_value and filter_value.strip():
+        # For Label artifacts with non-empty filter, add full-text search on CSV content
+        # Subquery: Check if artifact has matching CSV content using ILIKE search
+        # Using ILIKE for case-insensitive substring matching on full text content
+        # This allows searching for partial matches like "4KB", "240", etc.
+        # TODO: Re-enable tsvector full-text search once tokenization is optimized
+        # label_content_match_subquery = (
+        #     select(label_content.c.artifact_id)
+        #     .where(
+        #         label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
+        #         label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+        #     )
+        #     .exists()
+        # )
+        label_content_match_subquery = (
+            select(label_content.c.artifact_id)
+            .where(
+                label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
+                label_content.c.full_text_content.ilike(f"%{filter_value}%")
             )
-            
-            # Combine metadata conditions with content search
-            final_where_conditions = or_(
-                *where_conditions,
-                label_content_match_subquery
-            )
-        else:
-            # If filter_value is empty, only use metadata conditions
-            final_where_conditions = or_(*where_conditions)
-        
-        query = (
-            select(
-                artifact_metadata_cte.c.artifact_id,
-                artifact_metadata_cte.c.name,
-                artifact_execution_types_agg_cte.c.execution,
-                artifact_metadata_cte.c.uri,
-                artifact_metadata_cte.c.create_time_since_epoch,
-                artifact_metadata_cte.c.last_update_time_since_epoch,
-                artifact_properties_agg_cte.c.artifact_properties,
-                func.count().over().label("total_records")
-            )
-            .select_from(artifact_metadata_cte)
-            .outerjoin(artifact_properties_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id)
-            .outerjoin(artifact_execution_types_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_execution_types_agg_cte.c.artifact_id)
-            .where(final_where_conditions)
-            .limit(page_size)
-            .offset((active_page - 1) * page_size)
+            .exists()
         )
         
+        # Combine metadata conditions with content search
+        final_where_conditions = or_(
+            *where_conditions,
+            label_content_match_subquery
+        )
     else:
-        # For non-Label artifacts, use standard search (no CSV content)
-        query = (
-            select(
-                artifact_metadata_cte.c.artifact_id,
-                artifact_metadata_cte.c.name,
-                artifact_execution_types_agg_cte.c.execution,
-                artifact_metadata_cte.c.uri,
-                artifact_metadata_cte.c.create_time_since_epoch,
-                artifact_metadata_cte.c.last_update_time_since_epoch,
-                artifact_properties_agg_cte.c.artifact_properties,
-                func.count().over().label("total_records")
-            )
-            .select_from(artifact_metadata_cte)
-            .outerjoin(artifact_properties_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id)
-            .outerjoin(artifact_execution_types_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_execution_types_agg_cte.c.artifact_id)
-            .where(or_(*where_conditions))
-            .limit(page_size)
-            .offset((active_page - 1) * page_size)
-        )
+        # For non-Label artifacts or empty filter, use standard metadata search only
+        final_where_conditions = or_(*where_conditions)
     
-    # Step 9: Apply sorting (order by the specified column and order)
+    # Step 9: Build query with common structure
+    query = (
+        select(
+            artifact_metadata_cte.c.artifact_id,
+            artifact_metadata_cte.c.name,
+            artifact_execution_types_agg_cte.c.execution,
+            artifact_metadata_cte.c.uri,
+            artifact_metadata_cte.c.create_time_since_epoch,
+            artifact_metadata_cte.c.last_update_time_since_epoch,
+            artifact_properties_agg_cte.c.artifact_properties,
+            func.count().over().label("total_records")
+        )
+        .select_from(artifact_metadata_cte)
+        .outerjoin(artifact_properties_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id)
+        .outerjoin(artifact_execution_types_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_execution_types_agg_cte.c.artifact_id)
+        .where(final_where_conditions)
+        .limit(page_size)
+        .offset((active_page - 1) * page_size)
+    )
+    
+    # Step 10: Apply sorting (order by the specified column and order)
     if sort_order.lower() == "desc":
         query = query.order_by(getattr(artifact_metadata_cte.c, sort_column).desc())
     else:
         query = query.order_by(getattr(artifact_metadata_cte.c, sort_column).asc())
 
-    # Step 10: Execute the query
+    # Step 11: Execute the query
     result = await db.execute(query)
     rows = result.mappings().all()
 
-    # Step 11: Extract total records and format results
+    # Step 12: Extract total records and format results
     total_records = rows[0]["total_records"] if rows else 0
     return {
         "total_items": total_records,

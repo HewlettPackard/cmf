@@ -143,8 +143,6 @@ def extract_csv_text_content(file_path: str, max_size_mb: int = 500) -> Tuple[st
     text_parts = []
     
     try:
-        import re
-        
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as csvfile:
             csv_reader = csv.reader(csvfile)
             
