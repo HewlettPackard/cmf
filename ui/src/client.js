@@ -214,6 +214,32 @@ class FastAPIClient {
       });
   }
 
+  async scheduleSync(serverId, timezone, startTimeLocalIso, timesPerDay, oneTime = false) {
+    return this.apiClient
+      .post(`/schedule-sync`, {
+        server_id: serverId,
+        timezone: timezone,
+        start_time_local_iso: startTimeLocalIso,
+        times_per_day: timesPerDay,
+        one_time: oneTime,
+      })
+      .then(({ data }) => data);
+  }
+
+  async getSchedules(serverId) {
+    return this.apiClient
+      .get(`/schedules`, {
+        params: { server_id: serverId },
+      })
+      .then(({ data }) => data);
+  }
+
+  async getScheduleLogs(scheduleId) {
+    return this.apiClient
+      .get(`/schedule-sync/logs/${scheduleId}`)
+      .then(({ data }) => data);
+  }
+
 }
 
 
