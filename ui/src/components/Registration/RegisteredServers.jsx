@@ -29,7 +29,7 @@ function RegisteredServers({ serverList }) {
     return date.toUTCString();
   };
 
-  console.log(serverList)
+  // console.log(serverList)
 
   const handleSync = (server_name, server_url, id) => {
     setSyncStatus((prev) => ({ ...prev, [id]: 'Syncing data...' }));
@@ -46,8 +46,46 @@ function RegisteredServers({ serverList }) {
       });
   };
 
-  const handleScheduleSync = (serverId, serverName, dateTime) => {
-    console.log(`Scheduled sync for server ${serverId} (${serverName}) at ${dateTime}`);
+  const handleScheduleSync = ({ serverId, serverName, dateTime, timezone, timesPerDay, one_time }) => {
+    client.scheduleSync(serverId, timezone, dateTime, timesPerDay, one_time)
+      .then((data) => {
+        alert(`Schedule created for ${serverName}. Next run (UTC ms): ${data.next_run_time_utc}`);
+      })
+      .catch((error) => {
+        console.error('Error creating schedule:', error);
+        alert('Failed to create schedule.');
+      });
+  };
+
+  const [scheduleLogs, setScheduleLogs] = useState({});
+
+  const fetchLatestLogs = (serverId) => {
+    client.getSchedules(serverId)
+      .then((schedules) => {
+        if (!schedules || schedules.length === 0) {
+          setScheduleLogs((prev) => ({ ...prev, [serverId]: [] }));
+          return;
+        }
+        const latest = schedules[schedules.length - 1];
+        client.getScheduleLogs(latest.id)
+          .then((logs) => {
+            setScheduleLogs((prev) => ({ ...prev, [serverId]: logs }));
+          });
+      })
+      .catch(() => setScheduleLogs((prev) => ({ ...prev, [serverId]: [] })));
+  };
+
+  const formatIST = (utcMs) => {
+    try {
+      const date = new Date(utcMs);
+      return new Intl.DateTimeFormat('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: true,
+      }).format(date);
+    } catch {
+      return 'Invalid time';
+    }
   };
 
   if (!serverList || serverList.length === 0) {
@@ -94,6 +132,21 @@ function RegisteredServers({ serverList }) {
                   serverName={server.server_name}
                   onSchedule={handleScheduleSync}
                 />
+                <button
+                  className="mt-2 bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold py-1 px-3 rounded border border-teal-600"
+                  onClick={() => fetchLatestLogs(server.id)}
+                >
+                  View Status
+                </button>
+                {scheduleLogs[server.id] && scheduleLogs[server.id].length > 0 && (
+                  <div className="mt-2 text-xs text-gray-700">
+                    {scheduleLogs[server.id].slice(0, 3).map((log) => (
+                      <div key={log.id}>
+                        {formatIST(log.run_time_utc)} — {log.status} {log.message ? `(${log.message})` : ''}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </td>
             </tr>
           ))}
