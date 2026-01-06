@@ -59,4 +59,19 @@ class MLMDPullRequest(BaseModel):
     last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
     
 
+class ScheduleCreateRequest(BaseModel):
+    server_id: int = Field(..., description="Registered server id")
+    timezone: str = Field("Asia/Kolkata", description="IANA timezone, e.g., Asia/Kolkata")
+    start_time_local_iso: str = Field(..., description="Local ISO datetime, e.g., 2026-01-04T15:00")
+    times_per_day: int = Field(1, gt=0, description="Number of sync runs per day")
+    one_time: bool = Field(False, description="If true, run only once and deactivate")
+
+
+class ScheduleUpdateRequest(BaseModel):
+    schedule_id: int = Field(..., description="Schedule id to update")
+    timezone: Optional[str] = Field(None, description="IANA timezone")
+    start_time_local_iso: Optional[str] = Field(None, description="Local ISO datetime")
+    times_per_day: Optional[int] = Field(None, gt=0, description="New runs per day")
+    one_time: Optional[bool] = Field(None, description="Toggle one-time behavior")
+
     
