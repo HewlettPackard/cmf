@@ -27,14 +27,22 @@ from server.app.get_data import (
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from server.app.db.dbconfig import get_db, init_db
+from server.app.db.dbconfig import get_db, init_db, async_session
 from server.app.db.dbqueries import (
     fetch_artifacts,
     fetch_executions,
     register_server_details,
     get_registered_server_details,
     get_sync_status,
-    update_sync_status
+    update_sync_status,
+    create_schedule,
+    list_schedules,
+    due_schedules,
+    update_next_run,
+    log_sync_run,
+    list_sync_logs,
+    get_registered_server_by_id,
+    update_schedule_fields,
 )
 from pathlib import Path
 import os
@@ -47,12 +55,16 @@ from server.app.schemas.dataframe import (
     MLMDPullRequest,
     ArtifactRequest,
     ExecutionRequest,
+    ScheduleCreateRequest,
+    ScheduleUpdateRequest,
 )
 import httpx
 import socket
 import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 dotenv.load_dotenv()
 
@@ -78,7 +90,13 @@ async def lifespan(app: FastAPI):
         dict_of_exe_ids = await async_api(get_all_exe_ids, query)
         # loaded artifact ids into memory
         dict_of_art_ids = await async_api(get_all_artifact_ids, query, dict_of_exe_ids)
+    # Start background scheduler task
+    app.state.scheduler_task = asyncio.create_task(schedule_runner())
     yield
+    # Cancel scheduler on shutdown
+    task = getattr(app.state, "scheduler_task", None)
+    if task:
+        task.cancel()
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
 
@@ -105,6 +123,65 @@ LOCAL_ADDRESSES.add(hostname)
 # Adding hostname if IP is given
 LOCAL_ADDRESSES.add(get_fqdn(hostname))
 print("Local addresses= ", LOCAL_ADDRESSES)
+
+# ---- Simple async scheduler runner ----
+async def compute_next_run_utc(current_run_utc_ms: int, timezone: str, times_per_day: int) -> int:
+    try:
+        tz = ZoneInfo(timezone)
+    except Exception:
+        tz = ZoneInfo("UTC")
+    interval_seconds = int(86400 / times_per_day)
+    current_dt_utc = datetime.utcfromtimestamp(current_run_utc_ms / 1000.0)
+    current_dt_local = current_dt_utc.replace(tzinfo=ZoneInfo("UTC")).astimezone(tz)
+    next_dt_local = current_dt_local + timedelta(seconds=interval_seconds)
+    next_dt_utc = next_dt_local.astimezone(ZoneInfo("UTC"))
+    return int(next_dt_utc.timestamp() * 1000)
+
+
+async def schedule_runner():
+    while True:
+        try:
+            async with async_session() as db:
+                now_ms = int(time.time() * 1000)
+                schedules = await due_schedules(db, now_ms)
+                for sch in schedules:
+                    # Resolve server
+                    server = await get_registered_server_by_id(db, sch["server_id"])
+                    if not server:
+                        await log_sync_run(db, sch["id"], now_ms, "failed", "Registered server not found")
+                        # Skip and compute next run anyway to avoid tight loop
+                        next_ms = await compute_next_run_utc(sch["next_run_time_utc"], sch["timezone"], sch["times_per_day"])
+                        await update_next_run(db, sch["id"], next_ms)
+                        continue
+
+                    req = ServerRegistrationRequest(server_name=server["server_name"], server_url=server["host_info"]) 
+                    status_msg = ""
+                    status = "failed"
+                    try:
+                        # Reuse existing sync logic
+                        result = await sync_metadata(request=req, db=db)
+                        status = result.get("status", "unknown")
+                        status_msg = result.get("message", "")
+                    except HTTPException as he:
+                        status = "failed"
+                        status_msg = he.detail if isinstance(he.detail, str) else str(he.detail)
+                    except Exception as e:
+                        status = "failed"
+                        status_msg = f"Unexpected error: {e}"
+
+                    await log_sync_run(db, sch["id"], now_ms, status, status_msg)
+                    # For one-time schedules, deactivate after first run
+                    if sch.get("one_time"):
+                        await update_schedule_fields(db, schedule_id=sch["id"], active=False)
+                    else:
+                        # Compute and set next run time
+                        next_ms = await compute_next_run_utc(sch["next_run_time_utc"], sch["timezone"], sch["times_per_day"])
+                        await update_next_run(db, sch["id"], next_ms)
+        except Exception as e:
+            # Prevent scheduler from crashing; log to stdout
+            print(f"Scheduler error: {e}")
+
+        await asyncio.sleep(30)
 
 
 @app.get("/")
@@ -143,6 +220,58 @@ async def mlmd_push(info: MLMDPushRequest):
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
     return {"status": status}
+
+
+# ---- Scheduling APIs ----
+
+@app.post("/schedule-sync")
+async def schedule_sync(request: ScheduleCreateRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        server = await get_registered_server_by_id(db, request.server_id)
+        if not server:
+            raise HTTPException(status_code=404, detail="Registered server not found")
+
+        # Parse local ISO datetime and convert to UTC epoch ms
+        try:
+            tz = ZoneInfo(request.timezone)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid timezone")
+
+        try:
+            # Accepts e.g. 2026-01-04T15:00
+            local_dt = datetime.strptime(request.start_time_local_iso, "%Y-%m-%dT%H:%M")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid datetime format. Use YYYY-MM-DDTHH:MM")
+
+        local_dt = local_dt.replace(tzinfo=tz)
+        start_utc_ms = int(local_dt.astimezone(ZoneInfo("UTC")).timestamp() * 1000)
+
+        now_ms = int(time.time() * 1000)
+        if request.one_time:
+            if start_utc_ms <= now_ms:
+                raise HTTPException(status_code=400, detail="Start time must be in the future for one-time schedules")
+            next_ms = start_utc_ms
+        else:
+            next_ms = start_utc_ms if start_utc_ms > now_ms else await compute_next_run_utc(start_utc_ms, request.timezone, request.times_per_day)
+
+        created = await create_schedule(db, server_id=request.server_id, times_per_day=request.times_per_day, timezone=request.timezone, start_time_utc=start_utc_ms, next_run_time_utc=next_ms, created_at=now_ms, one_time=request.one_time)
+        return {"message": "Schedule created", "schedule_id": created["id"], "next_run_time_utc": next_ms}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create schedule: {e}")
+
+
+@app.get("/schedules")
+async def get_schedules(server_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
+    rows = await list_schedules(db, server_id)
+    return rows
+
+
+@app.get("/schedule-sync/logs/{schedule_id}")
+async def get_schedule_logs(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    rows = await list_sync_logs(db, schedule_id)
+    return rows
 
 
 # api to get mlmd file from cmf-server
@@ -201,19 +330,6 @@ async def execution(request: Request,
 
     """Retrieve paginated executions with filtering, sorting, and full-text search."""
     return await fetch_executions(db, pipeline_name, filter_value, active_page, record_per_page, sort_field, sort_order)
-    
-
-# api to display executions available in mlmd file[from postgres]
-@app.get("/executions/{pipeline_name}")
-async def execution(request: Request,
-                   pipeline_name: str,
-                   active_page: int = Query(1, description="Page number", gt=0),
-                   filter_value: str = Query("", description="Search based on value"),  
-                   sort_order: str = Query("asc", description="Sort by context_type(asc or desc)"),
-                   db: AsyncSession = Depends(get_db)
-                   ):
-    """Retrieve paginated executions with filtering, sorting, and full-text search."""
-    return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
     
 
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")

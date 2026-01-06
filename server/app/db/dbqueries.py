@@ -13,7 +13,9 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
-    registered_servers
+    registered_servers,
+    scheduled_syncs,
+    sync_logs
 )
 
 
@@ -51,6 +53,16 @@ async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     return result.mappings().all()
 
 
+async def get_registered_server_by_id(db: AsyncSession, server_id: int):
+    """
+    Get registered server details by ID from the database.
+    """
+    query = select(registered_servers).where(registered_servers.c.id == server_id)
+    result = await db.execute(query)
+    row = result.mappings().first()
+    return row
+
+
 
 async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
     """
@@ -75,6 +87,95 @@ async def update_sync_status(db: AsyncSession, current_utc_time: int, server_nam
     ).values(last_sync_time=current_utc_time)
     await db.execute(query)
     await db.commit()  # Commit the transaction
+
+
+# -------- Periodic Sync Scheduling Queries --------
+
+async def create_schedule(db: AsyncSession, server_id: int, times_per_day: int, timezone: str, start_time_utc: int, next_run_time_utc: int, created_at: int, one_time: bool = False):
+    query = insert(scheduled_syncs).values(
+        server_id=server_id,
+        times_per_day=times_per_day,
+        timezone=timezone,
+        start_time_utc=start_time_utc,
+        next_run_time_utc=next_run_time_utc,
+        active=True,
+        one_time=one_time,
+        created_at=created_at,
+    ).returning(scheduled_syncs.c.id)
+    result = await db.execute(query)
+    await db.commit()
+    return {"id": result.scalar()}
+
+
+async def list_schedules(db: AsyncSession, server_id: int | None = None):
+    query = select(scheduled_syncs)
+    if server_id is not None:
+        query = query.where(scheduled_syncs.c.server_id == server_id)
+    result = await db.execute(query)
+    return result.mappings().all()
+
+async def due_schedules(db: AsyncSession, now_utc_ms: int):
+    query = select(scheduled_syncs).where(
+        (scheduled_syncs.c.active == True) & (scheduled_syncs.c.next_run_time_utc <= now_utc_ms)
+    )
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def update_next_run(db: AsyncSession, schedule_id: int, next_run_time_utc: int):
+    query = update(scheduled_syncs).where(scheduled_syncs.c.id == schedule_id).values(next_run_time_utc=next_run_time_utc)
+    await db.execute(query)
+    await db.commit()
+
+
+async def log_sync_run(db: AsyncSession, schedule_id: int, run_time_utc: int, status: str, message: str | None):
+    query = insert(sync_logs).values(
+        schedule_id=schedule_id,
+        run_time_utc=run_time_utc,
+        status=status,
+        message=message,
+    )
+    await db.execute(query)
+    await db.commit()
+
+
+async def list_sync_logs(db: AsyncSession, schedule_id: int, limit: int = 50):
+    query = select(sync_logs).where(sync_logs.c.schedule_id == schedule_id).order_by(sync_logs.c.run_time_utc.desc()).limit(limit)
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def update_schedule_fields(
+    db: AsyncSession,
+    schedule_id: int,
+    times_per_day: int | None = None,
+    timezone: str | None = None,
+    start_time_utc: int | None = None,
+    next_run_time_utc: int | None = None,
+    active: bool | None = None,
+    one_time: bool | None = None,
+):
+    values = {}
+    if times_per_day is not None:
+        values[scheduled_syncs.c.times_per_day] = times_per_day
+    if timezone is not None:
+        values[scheduled_syncs.c.timezone] = timezone
+    if start_time_utc is not None:
+        values[scheduled_syncs.c.start_time_utc] = start_time_utc
+    if next_run_time_utc is not None:
+        values[scheduled_syncs.c.next_run_time_utc] = next_run_time_utc
+    if active is not None:
+        values[scheduled_syncs.c.active] = active
+    if one_time is not None:
+        values[scheduled_syncs.c.one_time] = one_time
+
+    if not values:
+        return {"message": "No fields to update"}
+
+    query = update(scheduled_syncs).where(scheduled_syncs.c.id == schedule_id).values(values)
+    await db.execute(query)
+    await db.commit()
+    return {"message": "Schedule updated"}
 
 
 async def fetch_artifacts(
