@@ -14,19 +14,17 @@
  * limitations under the License.
  ***/
 
-import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
 import Metahub from "./pages/metahub";
-import "./App.css";
 import ArtifactsPostgres from "./pages/artifacts_postgres";
 import ExecutionsPostgres from "./pages/executions_postgres";
 
 function App() {
   return (
-    <div className="App bg-white">
+    <div className="text-center bg-white">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />

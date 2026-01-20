@@ -1,5 +1,5 @@
 fastapi
-uvicorn
+uvicorn[standard]
 pydantic
 pandas
 dvc[s3,ssh]==3.51.1
