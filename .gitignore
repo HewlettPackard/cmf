@@ -9,6 +9,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 ./build/
+build
 mlcommons_box/build
 develop-eggs/
 dist/
@@ -25,6 +26,8 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+examples/compiled-applications/build
+install/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
