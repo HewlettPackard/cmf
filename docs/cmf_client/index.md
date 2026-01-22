@@ -64,7 +64,7 @@ More information is available inside [Getting Started Tutorial](../examples/gett
 
 **Push artifacts**
 
-Push artifacts in the artifact repo initialized in the [Initialize cmf](#initialize-cmf) step.
+Push artifacts in the artifact repository initialized in the [Initialize cmf](#initialize-cmf) step.
 ```
 cmf artifact push -p 'Test-env'
 ```
@@ -87,7 +87,7 @@ cmf metadata pull -p 'Test-env'
 ```
 Check [cmf metadata pull](./cmf_client_commands.md#cmf-metadata-pull) for more details.
 
-**Pull artifacts from the central artifact repo**
+**Pull artifacts from the central artifact repository**
 
 Execute `cmf artifact pull` command in the `example_folder`.
 ```

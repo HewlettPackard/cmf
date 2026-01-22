@@ -1,4 +1,4 @@
-# MinIO S3 Artifact Repo Setup
+# MinIO S3 Artifact Repository Setup
 ## Steps to set up a MinIO server
 Object storage is an abstraction layer above the file system that provides an API to
 interact with data. MinIO is an easy way to start working with object storage. It
