@@ -10,46 +10,17 @@ For detailed API documentation, see [Core Library (CMFLib)](cmflib/index.md). Fo
 
 CMF is designed as a distributed system that enables ML teams to track pipeline metadata locally and synchronize with a central server. The framework automatically tracks code versions, data artifacts, and execution metadata to provide end-to-end traceability of ML experiments.
 
-Common Metadata Framework (CMF) has the following components:
 
-- **Metadata Library** exposes APIs to track pipeline metadata. It also provides APIs to query the stored metadata.
-- **CMF Client** interacts with the CMF Server to pull or push metadata.
-- **CMF Server with GUI** interacts with remote CMF Clients and merges the metadata transferred by each
-  client. This server also provides a GUI that can render the stored metadata.
-- **Central Artifact Repositories** host the code and data.
+Common Metadata Framework (`CMF`) has the following components:
 
-```mermaid
-graph TB
-    subgraph "Local Development Environment"
-        CMF_CLIENT["**Metadata Library**<br/>cmflib.cmf.Cmf<br/>Main API Class"]
-        CLI_TOOLS["**CMF Client**<br/>CLI Commands<br/>cmf init, push, pull"]
-        LOCAL_MLMD[("Local MLMD<br/>SQLite Database")]
-        DVC_GIT["DVC + Git<br/>Artifact Versioning"]
-        NEO4J[("Neo4j<br/>Graph Database")]
-    end
+- **CMFLib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
+- **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
+- **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
+- **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
 
-    subgraph "Central Infrastructure"
-        CMF_SERVER["**CMF Server**<br/>FastAPI Application"]
-        CENTRAL_MLMD[("PostgreSQL<br/>Central Metadata")]
-        ARTIFACT_STORAGE[("Artifact Storage<br/>MinIO/S3/SSH")]
-    end
-
-    subgraph "Web Interface"
-        REACT_UI["React Application<br/>Port 3000"]
-        LINEAGE_VIZ["D3.js Lineage<br/>Visualization"]
-        TENSORBOARD["TensorBoard<br/>Port 6006"]
-    end
-
-    CMF_CLIENT --> LOCAL_MLMD
-    CMF_CLIENT --> DVC_GIT
-    CMF_CLIENT --> NEO4J
-    CLI_TOOLS --> CMF_SERVER
-    CMF_SERVER --> CENTRAL_MLMD
-    DVC_GIT --> ARTIFACT_STORAGE
-    REACT_UI --> CMF_SERVER
-    REACT_UI --> LINEAGE_VIZ
-    CMF_SERVER --> TENSORBOARD
-```
+<p align="center">
+ <img src="../../assets/framework.png" height="400" align="center" />
+</p>
 
 ## Core Abstractions
 
@@ -74,73 +45,6 @@ graph LR
     EXEC1 --> DATASET1["Dataset<br/>'raw_data.csv'"]
     EXEC2 --> MODEL1["Model<br/>'trained_model.pkl'"]
     EXEC3 --> METRICS1["Metrics<br/>'accuracy: 0.95'"]
-```
-
-## Component Architecture
-
-### CMF Library (`CMFLib`)
-
-The `cmflib` package provides the primary API for metadata tracking through the `Cmf` class and supporting modules:
-
-```mermaid
-graph TB
-    subgraph "cmflib Package"
-        CMF_CLASS["cmf.Cmf<br/>Main API Class"]
-        METADATA_HELPER["metadata_helper.py<br/>MLMD Integration"]
-        CMF_MERGER["cmf_merger.py<br/>Push/Pull Operations"]
-        CMFQUERY["cmfquery.py<br/>Query Interface"]
-        DATASLICE["dataslice.py<br/>Data Subset Tracking"]
-    end
-
-    subgraph "External Dependencies"
-        MLMD[("ML Metadata<br/>SQLite/PostgreSQL")]
-        DVC_SYSTEM["DVC<br/>Data Version Control"]
-        GIT_SYSTEM["Git<br/>Code Version Control"]
-        NEO4J_DB[("Neo4j<br/>Graph Database")]
-    end
-
-    CMF_CLASS --> METADATA_HELPER
-    CMF_CLASS --> CMF_MERGER
-    CMF_CLASS --> DATASLICE
-    METADATA_HELPER --> MLMD
-    CMF_CLASS --> DVC_SYSTEM
-    CMF_CLASS --> GIT_SYSTEM
-    CMF_CLASS --> NEO4J_DB
-    CMF_MERGER --> CMFQUERY
-```
-
-### Server and Web Components
-
-The CMF Server provides centralized metadata storage and a web interface for exploring ML pipeline lineage:
-
-```mermaid
-graph TB
-    subgraph "CMF Server"
-        FASTAPI_SERVER["FastAPI Server<br/>Port 8080"]
-        GET_DATA["get_data.py<br/>Data Access Layer"]
-        LINEAGE_QUERY["Lineage Query<br/>D3 Visualization"]
-    end
-
-    subgraph "UI Components"
-        REACT_APP["React Application<br/>ui/ directory"]
-        ARTIFACTS_PAGE["Artifacts Page<br/>Browse Datasets/Models"]
-        EXECUTIONS_PAGE["Executions Page<br/>Browse Pipeline Runs"]
-        LINEAGE_PAGE["Lineage Visualization<br/>D3.js Graphs"]
-    end
-
-    subgraph "Storage Layer"
-        POSTGRES[("PostgreSQL<br/>Central MLMD")]
-        TENSORBOARD_LOGS[("TensorBoard Logs<br/>Training Metrics")]
-    end
-
-    FASTAPI_SERVER --> GET_DATA
-    FASTAPI_SERVER --> LINEAGE_QUERY
-    REACT_APP --> FASTAPI_SERVER
-    REACT_APP --> ARTIFACTS_PAGE
-    REACT_APP --> EXECUTIONS_PAGE
-    REACT_APP --> LINEAGE_PAGE
-    GET_DATA --> POSTGRES
-    FASTAPI_SERVER --> TENSORBOARD_LOGS
 ```
 
 ## Key Features

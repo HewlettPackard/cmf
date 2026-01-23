@@ -1,72 +1,71 @@
 # Getting Started with CMF GUI
 
-The CMF GUI provides an intuitive, browser-based interface for exploring ML pipeline metadata, visualizing lineage relationships, and monitoring experiment progress. Built with React and D3.js, it offers interactive dashboards for artifacts, executions, and pipeline lineage.
+The CMF GUI provides an intuitive, browser-based interface for exploring ML pipeline metadata, visualizing lineage relationships, and synchronizing metadata between multiple CMF servers. Built with React and D3.js, it offers interactive dashboards for artifacts, executions, and pipeline lineage.
 
-## Artifacts and Executions Pages
+## Overview
 
-The web interface provides dedicated pages for browsing and analyzing pipeline artifacts and executions.
+The CMF GUI consists of several main sections:
 
-### Artifacts Page
+- **[Artifacts](artifacts.md)**: Browse and search datasets, models, and metrics
+- **[Executions](executions.md)**: View pipeline runs and execution history
+- **[Lineage](lineage.md)**: Visualize data flow and dependencies
+- **[Metahub](../cmf_server/metahub-tab-usage.md)**: Synchronize metadata between CMF servers
+- **[TensorBoard](../cmf_client/tensorflow_guide.md)**: View ML training metrics
 
-The Artifacts page allows users to explore all datasets, models, and metrics tracked by CMF:
+---
 
-```mermaid
-graph TB
-    subgraph "Artifacts Page Features"
-        FILTER["Filter Panel<br/>• Type (Dataset/Model/Metrics)<br/>• Pipeline Name<br/>• Custom Properties"]
-        TABLE["Artifacts Table<br/>• Name and Path<br/>• Type and Framework<br/>• Creation Time<br/>• Associated Pipeline"]
-        DETAILS["Artifact Details<br/>• Properties and Metadata<br/>• Version History"]
-        SEARCH["Search and Sort<br/>• Full-text Search<br/>• Column Sorting<br/>• Pagination<br/>"]
-    end
+## Quick Start
 
-    FILTER --> TABLE
-    TABLE --> DETAILS
-    TABLE --> SEARCH
-```
+### Accessing the CMF GUI
 
-#### Key Features
+1. Ensure the [CMF Server is running](../setup/index.md#install-cmf-server-with-gui)
+2. Open your browser and navigate to the server URL (default: `http://your-server-ip:80`)
+3. The GUI will display the available pipelines in the sidebar
 
-| Feature | Description | Usage |
-|---------|-------------|-------|
-| **Type Filtering** | Filter by artifact type | Select Dataset, Model, or Metrics |
-| **Pipeline Filtering** | Filter by pipeline name | Choose from available pipelines |
-| **Search** | Full-text search across metadata | Search names, properties, descriptions |
-| **Sorting** | Sort by any column | Click column headers to sort |
-| **Details View** | Detailed artifact information | Click artifact name for details |
+![CMF Artifacts Page](../assets/artifacts.jpeg)
 
-#### Artifact Details
+---
 
-Each artifact provides comprehensive information:
+## Lineage Visualization
 
-- **Basic Information**: Name, type, creation time
-- **Pipeline Context**: Associated pipeline, stage, and execution
-- **Custom Properties**: User-defined metadata and labels
-- **Version History**: All versions of the artifact with diffs
+The Lineage page offers interactive visualizations of data flow and dependencies in your ML pipelines. It provides following different visualization modes:
 
-### Executions Page
+### Visualization Types
 
-The Executions page provides insights into pipeline runs and their performance:
+1. **Artifact Tree**: Hierarchical view of artifact dependencies
+2. **Execution Tree**: Hierarchical view of execution flow
+3. **Artifact-Execution Tree**: Combined view showing both artifacts and executions
 
-```mermaid
-graph TB
-    subgraph "Executions Page Features"
-        EXEC_FILTER["Execution Filters<br/>• Pipeline Name<br/>• Execution Type<br/>"]
-        EXEC_TABLE["Executions Table<br/>• Execution ID and Name<br/>• Pipeline and Stage<br/>"]
-        EXEC_DETAILS["Execution Details<br/>• Properties<br/>• Git Commit Information<br/>• Environment Details<br/>• Custom Properties"]
-        EXEC_SEARCH["Search and Sort<br/>• Full-text Search<br/>• Column Sorting<br/>• Pagination<br/>"]
-    end
+---
 
-    EXEC_FILTER --> EXEC_TABLE
-    EXEC_TABLE --> EXEC_DETAILS
-    EXEC_TABLE --> EXEC_SEARCH
-```
+## Metahub
 
-#### Execution Information
+The [Metahub](../cmf_server/metahub-tab-usage.md) feature enables synchronization of metadata between two CMF servers, allowing distributed teams to collaborate and share ML pipeline metadata.
 
-Each execution entry displays:
+👉 [Read more about Metahub](../cmf_server/metahub-tab-usage.md)
 
-- **Execution Metadata**: ID, name, type
-- **Pipeline Context**: Pipeline name, stage, context information
-- **Git Information**: Commit hash, branch, repository URL
-- **Parameters**: Execution parameters and configuration
+---
 
+## TensorBoard Integration
+
+CMF integrates with [TensorBoard](../cmf_client/tensorflow_guide.md) to visualize training metrics, model graphs, and other ML-specific visualizations alongside CMF metadata.
+
+👉 [Read more about TensorBoard Integration](../cmf_client/tensorflow_guide.md)
+
+---
+
+## Prerequisites
+
+Before using the CMF GUI, ensure you have:
+
+1. **CMF Server Running**: Follow the [installation guide](../setup/index.md#install-cmf-server-with-gui)
+2. **Metadata Pushed**: Use `cmf metadata push` to send metadata to server
+3. **Browser Compatibility**: Modern browser (Chrome, Firefox, Safari, Edge)
+
+---
+
+## Getting Help
+
+- For API details, see [CMFLib Documentation](../cmflib/index.md)
+- For CLI commands, see [CMF Client Commands](../cmf_client/cmf_client_commands.md)
+- For server setup, see [Installation & Setup](../setup/index.md)

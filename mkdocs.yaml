@@ -147,9 +147,6 @@ nav:
         - OSDF: cmf_client/cmf_osdf.md
     - 🖥️ GUI Reference: 
       - ui/index.md
-      - Artifacts: ui/artifacts.md
-      - Executions: ui/executions.md
-      - Lineage:  ui/lineage.md
       - Metahub: cmf_server/metahub-tab-usage.md
       - TensorBoard: cmf_client/tensorflow_guide.md
     - 🔗 Ontology: common-metadata-ontology/readme.md

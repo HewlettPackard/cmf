@@ -1,13 +1,13 @@
 # Using `cmf` to track metadata for a ML Pipeline
 
-This example demonstrates how `cmf` tracks metadata associated with executions of various machine learning (ML)
+[example-get-started](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates how `cmf` tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
 ML steps, such as training and testing ML models. 
 
 More comprehensive ML pipelines may include steps such as deploying a
 trained model and tracking its inference parameters (such as response latency, memory consumption, etc.).
 
-This example, located [here](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started), implements a simple
+This [example](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started), implements a simple
 pipeline consisting of five steps:
 
 - The [parse](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py) step splits
@@ -54,17 +54,22 @@ cp -r ./cmf/examples/example-get-started/ ./example-get-started
 cd ./example-get-started
 ```
 ### cmf init
-<pre>
-Usage: cmf init local [-h] --path [path] -
+```
+Usage: cmf init local [-h] --path [path]
                            --git-remote-url [git_remote_url]
                            --cmf-server-url [cmf_server_url]
                            --neo4j-user [neo4j_user]
                            --neo4j-password [neo4j_password]
                            --neo4j-uri [neo4j_uri]
-</pre>
+```
 `cmf init local` initializes the local directory as a cmf artifact repository.
 ```
-cmf init local --path /home/XXXX/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init local --path /home/XXXX/local-storage
+               --git-remote-url https://github.com/user/experiment-repo.git
+               --cmf-server-url http://x.x.x.x:80
+               --neo4j-user neo4j
+               --neo4j-password password
+               --neo4j-uri bolt://localhost:7687
 ```
 
 > Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage
@@ -108,8 +113,10 @@ Metadata generated at each step of the pipeline will be stored in a sqlite file 
 repository correspond to the creation of pipeline artifacts and can be viewed with `git log`.
 
 In production settings, the next steps would be to:
+
 1. Execute the `cmf artifact push` command to push the artifacts to the central artifact repository.
 2. Execute the `cmf metadata push` command to track the metadata of the generated artifacts on a common [CMF Server](../setup/index.md#install-cmf-server-with-gui).
+
 
 Follow [cmf artifact](./../cmf_client/cmf_client_commands.md#cmf-artifact) and [cmf metadata](./../cmf_client/cmf_client_commands.md#cmf-metadata) for more details.
 
