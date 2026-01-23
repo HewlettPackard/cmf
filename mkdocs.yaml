@@ -136,7 +136,6 @@ nav:
       - CmfQuery: api/public/cmfquery.md
       - Cmf Server: api/public/cmfserver.md
       - Ray Logger: api/public/cmf_ray_logger.md
-      - Complete API Documentation: api/public/API.md
     - 💻 CLI Reference: 
       - cmf_client/index.md
       - CMF Client commands: cmf_client/cmf_client_commands.md

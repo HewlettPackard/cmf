@@ -68,7 +68,7 @@ More info is available [here](https://hewlettpackard.github.io/cmf/examples/gett
 
 **Push artifacts**
 
-Push artifacts in the artifact repo initialized in the [Initialize cmf](#initialize-cmf) step.
+Push artifacts in the artifact repository initialized in the [Initialize cmf](#initialize-cmf) step.
 ```
 cmf artifact push
 ```
@@ -81,7 +81,7 @@ cmf metadata push -p 'Test-env'
 Check [here](./cmf_client_commands.md) for more details.
 
 ### CMF Client with collaborative development
-In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
+In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common CMF Server and a central artifact repository.
 
 **Pull metadata from the server**
 
@@ -91,7 +91,7 @@ cmf metadata pull -p 'Test-env'
 ```
 Check [here](./cmf_client_commands.md) for more details.
 
-**Pull artifacts from the central artifact repo**
+**Pull artifacts from the central artifact repository**
 
 Execute `cmf artifact` command in the `example_folder`.
 ```

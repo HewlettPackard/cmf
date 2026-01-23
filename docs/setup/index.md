@@ -16,6 +16,8 @@ The installation process consists of the following components:
 
 Before installing CMF, ensure you have the following prerequisites:
 
+### Common Prerequisites
+
 - **Linux/Ubuntu/Debian**
 
 - **Python**: Version 3.9 to 3.11 (3.10 recommended)
@@ -47,6 +49,8 @@ Before installing CMF, ensure you have the following prerequisites:
     >   
     >     This ensures Python 3.9 and its essential modules are fully installed.
 
+### CMF Client Prerequisites
+
 - **Git**: Latest version for code versioning
 
     > Make sure Git is properly configured using `git config`, as it's required for the product.
@@ -56,6 +60,10 @@ Before installing CMF, ensure you have the following prerequisites:
     > git config --global user.name "Your Name"
     > git config --global user.email "you@example.com"
     > ```
+
+- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts.
+
+### CMF Server Prerequisites {#cmf-server-prerequisites}
 
 - **Docker**: For containerized deployment of `CMF Server` and `CMF UI`
 
@@ -67,8 +75,6 @@ Before installing CMF, ensure you have the following prerequisites:
 - **Docker Proxy Settings**: Needed for some of the server packages
 
     > Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
-
-- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts
 
 ---
 
@@ -108,7 +114,7 @@ Before installing CMF, ensure you have the following prerequisites:
 
 #### Prerequisites Check
 
-Ensure that Docker is installed on your machine, as mentioned in the [prerequisites](#prerequisites). If not, please install it before proceeding.
+Ensure that Docker is installed on your machine, as mentioned in the [CMF Server Prerequisites](#cmf-server-prerequisites). If not, please install it before proceeding.
 
 #### Installation Steps
 

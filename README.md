@@ -127,19 +127,19 @@ CMF is composed of:
 from cmflib.cmf import Cmf
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
-cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
 
-context: mlpb.Context = cmf.create_context(
+context: mlpb.Context = metawriter.create_context(
     pipeline_stage="prepare",
     custom_properties={"user-metadata1": "metadata_value"}
 )
 
-execution: mlpb.Execution = cmf.create_execution(
+execution: mlpb.Execution = metawriter.create_execution(
     execution_type="Prepare",
     custom_properties={"split": split, "seed": seed}
 )
 
-artifact: mlpb.Artifact = cmf.log_dataset(
+artifact: mlpb.Artifact = metawriter.log_dataset(
     "artifacts/data.xml.gz", "input",
     custom_properties={"user-metadata1": "metadata_value"}
 )
