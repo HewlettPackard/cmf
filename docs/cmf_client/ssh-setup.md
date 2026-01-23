@@ -1,4 +1,4 @@
-# SSH Remote Artifact Repo Setup
+# SSH Remote Artifact Repository Setup
 ## Steps to set up an SSH Remote Repo
 SSH (Secure Shell) remote storage refers to using the SSH protocol to securely
 access and manage files and data on a remote server or storage system over a
