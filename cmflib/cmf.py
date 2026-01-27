@@ -98,7 +98,8 @@ class Cmf:
     The user has to provide the name of the pipeline, that needs to be recorded with CMF.
     
     ```python
-    metawriter = cmflib.cmf.Cmf(
+	from cmflib.cmf import Cmf
+    metawriter = Cmf(
         filepath="mlmd",
         pipeline_name="test_pipeline",
         custom_properties={"owner": "user_a"},
@@ -2231,3 +2232,4 @@ def dvc_ingest(file_name: str = "./mlmd") -> str:
     # Default arguments: file_name
     output = _dvc_ingest(file_name)
     return output
+
