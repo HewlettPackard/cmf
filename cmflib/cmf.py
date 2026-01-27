@@ -98,8 +98,7 @@ class Cmf:
     The user has to provide the name of the pipeline, that needs to be recorded with CMF.
     
     ```python
-    from cmflib.cmf import Cmf
-    metawriter = Cmf(
+    metawriter = cmflib.cmf.Cmf(
         filepath="mlmd",
         pipeline_name="test_pipeline",
         custom_properties={"owner": "user_a"},
