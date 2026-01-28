@@ -1,0 +1,2100 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CMF - Common Metadata Framework">
+      
+      
+        <meta name="author" content="AI Research & Development Lab (Hewlett-Packard Labs)">
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.1">
+    
+    
+      
+        <title>Lineage Visualization Page - CMF</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#lineage-visualization-page" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CMF
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Lineage Visualization Page
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/HewlettPackard/cmf" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    HewlettPackard/cmf
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CMF
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/HewlettPackard/cmf" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    HewlettPackard/cmf
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" >
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Home
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔗 Welcome to CMF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Architecture
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/advantages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advantages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📚 Installation & Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🎯 Getting Started Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../cmflib/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🐍 API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🐍 API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cmf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/dataslice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DataSlice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmfquery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CmfQuery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmfserver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cmf Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmf_ray_logger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ray Logger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../cmf_client/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    💻 CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_6" id="__nav_1_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    💻 CLI Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/cmf_client_commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMF Client commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/cmf-dvc-ingest-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide for the cmf dvc ingest command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/neo4j_docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start Neo4j with Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_6_4" id="__nav_1_6_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Backends
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Storage Backends
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/minio-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DVC MinIO Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/ssh-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSH Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/cmf_osdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSDF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🖥️ GUI Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🖥️ GUI Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_server/metahub-tab-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metahub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/tensorflow_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TensorBoard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../common-metadata-ontology/readme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔗 Ontology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#visualization-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualization Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Visualization Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-artifact-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Artifact Tree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-execution-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Execution Tree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-artifact-execution-tree" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Artifact-Execution Tree
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-force-directed-graph-legacy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Force-Directed Graph (Legacy)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#page-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Page Interface
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Page Interface">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#navigation-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation Controls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visualization-controls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Visualization Controls
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node-information" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Node Information
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-lineage-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Lineage Page
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the Lineage Page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-trace-data-provenance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Trace Data Provenance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-debug-pipeline-execution-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Debug Pipeline Execution Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-analyze-full-pipeline-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Analyze Full Pipeline Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-find-reused-artifacts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: Find Reused Artifacts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#path-highlighting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path Highlighting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering Options
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#search-in-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Search in Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graph-layouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph Layouts
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Endpoints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#programmatic-lineage-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Programmatic Lineage Queries
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lineage-data-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lineage Data Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tips-and-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tips and Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#empty-lineage-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empty Lineage Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#incomplete-lineage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incomplete Lineage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Issues
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#overlapping-nodes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overlapping Nodes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-pages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Related Pages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-resources" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Resources
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Resources">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#understanding-lineage-concepts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding Lineage Concepts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices-for-lineage-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Best Practices for Lineage Tracking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="lineage-visualization-page">Lineage Visualization Page<a class="headerlink" href="#lineage-visualization-page" title="Permanent link">¤</a></h1>
+<p>The Lineage page provides interactive visualizations of data flow and dependencies in your ML pipelines. It helps you understand how artifacts and executions are connected, trace data provenance, and analyze pipeline structure.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¤</a></h2>
+<p>Lineage tracking captures the relationships between:
+- <strong>Artifacts</strong>: Datasets, models, and metrics
+- <strong>Executions</strong>: Pipeline stage runs
+- <strong>Data Flow</strong>: How data moves through pipeline stages
+- <strong>Dependencies</strong>: Which artifacts depend on which executions</p>
+<pre class="mermaid"><code>graph LR
+    subgraph "Lineage Concepts"
+        DATA1["Dataset&lt;br/&gt;raw_data.csv"]
+        EXEC1["Execution&lt;br/&gt;preprocess"]
+        DATA2["Dataset&lt;br/&gt;clean_data.csv"]
+        EXEC2["Execution&lt;br/&gt;train"]
+        MODEL["Model&lt;br/&gt;trained_model.pkl"]
+        EXEC3["Execution&lt;br/&gt;evaluate"]
+        METRICS["Metrics&lt;br/&gt;accuracy.json"]
+    end
+
+    DATA1 --&gt;|"input"| EXEC1
+    EXEC1 --&gt;|"output"| DATA2
+    DATA2 --&gt;|"input"| EXEC2
+    EXEC2 --&gt;|"output"| MODEL
+    MODEL --&gt;|"input"| EXEC3
+    EXEC3 --&gt;|"output"| METRICS
+
+    style DATA1 fill:#e3f2fd
+    style DATA2 fill:#e3f2fd
+    style MODEL fill:#fff3e0
+    style METRICS fill:#f3e5f5
+    style EXEC1 fill:#c8e6c9
+    style EXEC2 fill:#c8e6c9
+    style EXEC3 fill:#c8e6c9</code></pre>
+<hr />
+<h2 id="visualization-types">Visualization Types<a class="headerlink" href="#visualization-types" title="Permanent link">¤</a></h2>
+<p>The Lineage page offers four different visualization modes:</p>
+<h3 id="1-artifact-tree">1. Artifact Tree<a class="headerlink" href="#1-artifact-tree" title="Permanent link">¤</a></h3>
+<p><strong>Purpose</strong>: Hierarchical view of artifact dependencies</p>
+<p><strong>Use Cases</strong>:
+- Understand data transformation pipeline
+- Trace dataset lineage from raw to final
+- Identify reused artifacts across stages</p>
+<p><strong>Features</strong>:
+- Tree layout showing parent-child relationships
+- Color-coded by artifact type (Dataset/Model/Metrics)
+- Expandable/collapsible nodes
+- Hover for artifact details</p>
+<pre class="mermaid"><code>graph TB
+    ROOT["raw_data.csv&lt;br/&gt;(Dataset)"]
+    CLEAN["cleaned_data.csv&lt;br/&gt;(Dataset)"]
+    TRAIN["train_split.csv&lt;br/&gt;(Dataset)"]
+    TEST["test_split.csv&lt;br/&gt;(Dataset)"]
+    MODEL["model_v1.pkl&lt;br/&gt;(Model)"]
+    METRICS["eval_metrics.json&lt;br/&gt;(Metrics)"]
+
+    ROOT --&gt; CLEAN
+    CLEAN --&gt; TRAIN
+    CLEAN --&gt; TEST
+    TRAIN --&gt; MODEL
+    MODEL --&gt; METRICS
+    TEST --&gt; METRICS
+
+    style ROOT fill:#e3f2fd
+    style CLEAN fill:#e3f2fd
+    style TRAIN fill:#e3f2fd
+    style TEST fill:#e3f2fd
+    style MODEL fill:#fff3e0
+    style METRICS fill:#f3e5f5</code></pre>
+<h3 id="2-execution-tree">2. Execution Tree<a class="headerlink" href="#2-execution-tree" title="Permanent link">¤</a></h3>
+<p><strong>Purpose</strong>: Hierarchical view of execution dependencies</p>
+<p><strong>Use Cases</strong>:
+- Understand pipeline execution flow
+- Debug pipeline stage ordering
+- Identify parallel vs sequential stages</p>
+<p><strong>Features</strong>:
+- Select specific execution type from dropdown
+- Shows execution order and dependencies
+- Git commit info on hover
+- Execution status indicators</p>
+<p><strong>Example View</strong>:
+<div class="highlight"><pre><span></span><code>pipeline_root
+├── download_data
+│   └── outputs: raw_data.csv
+├── preprocess
+│   ├── inputs: raw_data.csv
+│   └── outputs: clean_data.csv
+├── split_data
+│   ├── inputs: clean_data.csv
+│   └── outputs: train.csv, test.csv
+├── train_model (parallel)
+│   ├── inputs: train.csv
+│   └── outputs: model.pkl
+└── evaluate (parallel)
+    ├── inputs: model.pkl, test.csv
+    └── outputs: metrics.json
+</code></pre></div></p>
+<h3 id="3-artifact-execution-tree">3. Artifact-Execution Tree<a class="headerlink" href="#3-artifact-execution-tree" title="Permanent link">¤</a></h3>
+<p><strong>Purpose</strong>: Combined view showing both artifacts and executions</p>
+<p><strong>Use Cases</strong>:
+- Complete end-to-end pipeline visualization
+- Understand which execution created which artifact
+- Trace full data lineage with transformations</p>
+<p><strong>Features</strong>:
+- Alternating artifact and execution nodes
+- Shows input/output relationships
+- Complete provenance trail
+- Filtered by pipeline</p>
+<p><strong>Visualization</strong>:
+<pre class="mermaid"><code>graph TB
+    A1["📦 raw_data.csv"]
+    E1["⚙️ preprocess"]
+    A2["📦 cleaned_data.csv"]
+    E2["⚙️ train"]
+    A3["🤖 model.pkl"]
+    E3["⚙️ evaluate"]
+    A4["📊 metrics.json"]
+
+    A1 --&gt;|"INPUT"| E1
+    E1 --&gt;|"OUTPUT"| A2
+    A2 --&gt;|"INPUT"| E2
+    E2 --&gt;|"OUTPUT"| A3
+    A3 --&gt;|"INPUT"| E3
+    E3 --&gt;|"OUTPUT"| A4
+
+    style A1 fill:#e3f2fd
+    style A2 fill:#e3f2fd
+    style A3 fill:#fff3e0
+    style A4 fill:#f3e5f5
+    style E1 fill:#c8e6c9
+    style E2 fill:#c8e6c9
+    style E3 fill:#c8e6c9</code></pre></p>
+<h3 id="4-force-directed-graph-legacy">4. Force-Directed Graph (Legacy)<a class="headerlink" href="#4-force-directed-graph-legacy" title="Permanent link">¤</a></h3>
+<p><strong>Purpose</strong>: Network graph showing all relationships</p>
+<p><strong>Use Cases</strong>:
+- Explore complex pipeline relationships
+- Identify data sharing between stages
+- Find circular dependencies</p>
+<p><strong>Features</strong>:
+- Interactive physics-based layout
+- Zoom and pan controls
+- Node dragging for custom layout
+- Multiple artifacts and executions visible</p>
+<hr />
+<h2 id="page-interface">Page Interface<a class="headerlink" href="#page-interface" title="Permanent link">¤</a></h2>
+<h3 id="navigation-controls">Navigation Controls<a class="headerlink" href="#navigation-controls" title="Permanent link">¤</a></h3>
+<ol>
+<li><strong>Pipeline Selector</strong>: Dropdown to choose which pipeline to visualize</li>
+<li><strong>Lineage Type Tabs</strong>: Switch between visualization modes</li>
+<li>Artifact Tree</li>
+<li>Execution Tree</li>
+<li>Artifact-Execution Tree</li>
+<li><strong>Execution Dropdown</strong>: (for Execution Tree) Select specific execution</li>
+<li><strong>Zoom Controls</strong>: Zoom in/out of visualization</li>
+<li><strong>Reset View</strong>: Reset zoom and pan to default</li>
+<li><strong>Export</strong>: Save visualization as PNG or SVG</li>
+</ol>
+<h3 id="visualization-controls">Visualization Controls<a class="headerlink" href="#visualization-controls" title="Permanent link">¤</a></h3>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Function</th>
+<th>Shortcut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pan</strong></td>
+<td>Click and drag background</td>
+<td>Mouse drag</td>
+</tr>
+<tr>
+<td><strong>Zoom</strong></td>
+<td>Scroll to zoom in/out</td>
+<td>Mouse wheel</td>
+</tr>
+<tr>
+<td><strong>Node Click</strong></td>
+<td>Show node details</td>
+<td>Left click</td>
+</tr>
+<tr>
+<td><strong>Node Hover</strong></td>
+<td>Quick preview</td>
+<td>Hover</td>
+</tr>
+<tr>
+<td><strong>Reset View</strong></td>
+<td>Reset to default view</td>
+<td>Double click</td>
+</tr>
+<tr>
+<td><strong>Select Node</strong></td>
+<td>Highlight path</td>
+<td>Click + Ctrl</td>
+</tr>
+</tbody>
+</table>
+<h3 id="node-information">Node Information<a class="headerlink" href="#node-information" title="Permanent link">¤</a></h3>
+<p><strong>Artifact Nodes</strong> show:
+- Artifact name
+- Type icon (📦 Dataset, 🤖 Model, 📊 Metrics)
+- Version/hash (shortened)
+- Creation timestamp</p>
+<p><strong>Execution Nodes</strong> show:
+- Execution name
+- Status icon (✅ Completed, ❌ Failed, 🔄 Running)
+- Duration
+- Git commit (short hash)</p>
+<hr />
+<h2 id="using-the-lineage-page">Using the Lineage Page<a class="headerlink" href="#using-the-lineage-page" title="Permanent link">¤</a></h2>
+<h3 id="example-1-trace-data-provenance">Example 1: Trace Data Provenance<a class="headerlink" href="#example-1-trace-data-provenance" title="Permanent link">¤</a></h3>
+<p><strong>Goal</strong>: Understand where a specific model's training data came from</p>
+<ol>
+<li>Navigate to <strong>Lineage</strong> page</li>
+<li>Select your pipeline from dropdown</li>
+<li>Choose <strong>Artifact Tree</strong> tab</li>
+<li>Find your trained model in the tree</li>
+<li>Trace backwards to see:</li>
+<li>Training dataset used</li>
+<li>Preprocessing steps applied</li>
+<li>Original raw data source</li>
+<li>Click on artifacts to see version details</li>
+</ol>
+<h3 id="example-2-debug-pipeline-execution-order">Example 2: Debug Pipeline Execution Order<a class="headerlink" href="#example-2-debug-pipeline-execution-order" title="Permanent link">¤</a></h3>
+<p><strong>Goal</strong>: Verify stages executed in correct sequence</p>
+<ol>
+<li>Select <strong>Execution Tree</strong> tab</li>
+<li>Choose the execution type from dropdown</li>
+<li>View the tree structure showing:</li>
+<li>Which stages ran first</li>
+<li>Which stages ran in parallel</li>
+<li>Dependencies between stages</li>
+<li>Check timestamps to verify timing</li>
+<li>Identify any out-of-order executions</li>
+</ol>
+<h3 id="example-3-analyze-full-pipeline-flow">Example 3: Analyze Full Pipeline Flow<a class="headerlink" href="#example-3-analyze-full-pipeline-flow" title="Permanent link">¤</a></h3>
+<p><strong>Goal</strong>: Get complete picture of data flow through pipeline</p>
+<ol>
+<li>Select <strong>Artifact-Execution Tree</strong> tab</li>
+<li>View the alternating artifact → execution → artifact pattern</li>
+<li>Trace a specific data path:</li>
+<li>Start from input dataset</li>
+<li>Follow through each transformation</li>
+<li>End at final output (model/metrics)</li>
+<li>Hover on nodes to see details</li>
+<li>Click to navigate to artifact or execution page</li>
+</ol>
+<h3 id="example-4-find-reused-artifacts">Example 4: Find Reused Artifacts<a class="headerlink" href="#example-4-find-reused-artifacts" title="Permanent link">¤</a></h3>
+<p><strong>Goal</strong>: Identify which artifacts are used by multiple executions</p>
+<ol>
+<li>Use <strong>Artifact Tree</strong> visualization</li>
+<li>Look for artifacts with multiple outgoing edges</li>
+<li>These artifacts are inputs to multiple stages</li>
+<li>Useful for understanding data sharing patterns</li>
+<li>Can help identify opportunities for caching</li>
+</ol>
+<hr />
+<h2 id="advanced-features">Advanced Features<a class="headerlink" href="#advanced-features" title="Permanent link">¤</a></h2>
+<h3 id="path-highlighting">Path Highlighting<a class="headerlink" href="#path-highlighting" title="Permanent link">¤</a></h3>
+<p>Click on a node to highlight the full path:
+- <strong>Upstream</strong>: Shows all ancestors (sources)
+- <strong>Downstream</strong>: Shows all descendants (consumers)
+- <strong>Complete Path</strong>: Full lineage from source to current node</p>
+<h3 id="filtering-options">Filtering Options<a class="headerlink" href="#filtering-options" title="Permanent link">¤</a></h3>
+<p>Filter the lineage graph:
+- <strong>By Artifact Type</strong>: Show only Datasets, Models, or Metrics
+- <strong>By Time Range</strong>: Show only recent executions
+- <strong>By Status</strong>: Show only completed/failed executions
+- <strong>By Branch</strong>: Filter by Git branch</p>
+<h3 id="search-in-graph">Search in Graph<a class="headerlink" href="#search-in-graph" title="Permanent link">¤</a></h3>
+<p>Search for specific nodes:
+<div class="highlight"><pre><span></span><code>Search by name: &quot;train_data&quot;
+Search by type: type:model
+Search by property: property:accuracy&gt;0.9
+Search by date: created:2026-01-21
+</code></pre></div></p>
+<h3 id="graph-layouts">Graph Layouts<a class="headerlink" href="#graph-layouts" title="Permanent link">¤</a></h3>
+<p>Choose different layout algorithms:
+- <strong>Tree (Hierarchical)</strong>: Top-down or left-right tree
+- <strong>Force-Directed</strong>: Physics-based natural layout
+- <strong>Radial</strong>: Circular layout with center node
+- <strong>Layered</strong>: Organized by pipeline stage layers</p>
+<hr />
+<h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">¤</a></h2>
+<p>The Lineage page uses these CMF Server endpoints:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Artifact lineage (force-directed graph)</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">artifact</span><span class="o">-</span><span class="n">lineage</span><span class="o">/</span><span class="n">force</span><span class="o">-</span><span class="n">directed</span><span class="o">-</span><span class="n">graph</span><span class="o">/</span><span class="p">{</span><span class="n">pipeline</span><span class="p">}</span>
+
+<span class="c1"># Artifact tree (hierarchical)</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">artifact</span><span class="o">-</span><span class="n">lineage</span><span class="o">/</span><span class="n">tangled</span><span class="o">-</span><span class="n">tree</span><span class="o">/</span><span class="p">{</span><span class="n">pipeline</span><span class="p">}</span>
+
+<span class="c1"># Execution types list</span>
+<span class="n">GET</span> <span class="o">/</span><span class="nb">list</span><span class="o">-</span><span class="n">of</span><span class="o">-</span><span class="n">executions</span><span class="o">/</span><span class="p">{</span><span class="n">pipeline</span><span class="p">}</span>
+
+<span class="c1"># Execution lineage</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">execution</span><span class="o">-</span><span class="n">lineage</span><span class="o">/</span><span class="n">force</span><span class="o">-</span><span class="n">directed</span><span class="o">-</span><span class="n">graph</span><span class="o">/</span><span class="p">{</span><span class="n">pipeline</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">uuid</span><span class="p">}</span>
+
+<span class="c1"># Execution tree</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">execution</span><span class="o">-</span><span class="n">lineage</span><span class="o">/</span><span class="n">tangled</span><span class="o">-</span><span class="n">tree</span><span class="o">/</span><span class="p">{</span><span class="n">uuid</span><span class="p">}</span><span class="o">/</span><span class="p">{</span><span class="n">pipeline</span><span class="p">}</span>
+
+<span class="c1"># Combined artifact-execution tree</span>
+<span class="n">GET</span> <span class="o">/</span><span class="n">artifact</span><span class="o">-</span><span class="n">execution</span><span class="o">-</span><span class="n">lineage</span><span class="o">/</span><span class="n">tangled</span><span class="o">-</span><span class="n">tree</span><span class="o">/</span><span class="p">{</span><span class="n">pipeline</span><span class="p">}</span>
+</code></pre></div>
+<h3 id="programmatic-lineage-queries">Programmatic Lineage Queries<a class="headerlink" href="#programmatic-lineage-queries" title="Permanent link">¤</a></h3>
+<p>Query lineage using CmfQuery:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">cmflib.cmfquery</span><span class="w"> </span><span class="kn">import</span> <span class="n">CmfQuery</span>
+
+<span class="c1"># Initialize query</span>
+<span class="n">query</span> <span class="o">=</span> <span class="n">CmfQuery</span><span class="p">(</span><span class="n">mlmd_path</span><span class="o">=</span><span class="s2">&quot;/path/to/mlmd&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get all artifacts in a lineage</span>
+<span class="n">artifact</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">get_artifact</span><span class="p">(</span><span class="s2">&quot;trained_model.pkl&quot;</span><span class="p">)</span>
+<span class="n">lineage</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">get_artifact_lineage</span><span class="p">(</span><span class="n">artifact</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">])</span>
+
+<span class="c1"># Get upstream artifacts (inputs)</span>
+<span class="n">upstream</span> <span class="o">=</span> <span class="n">lineage</span><span class="p">[</span><span class="s1">&#39;upstream_artifacts&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">art</span> <span class="ow">in</span> <span class="n">upstream</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input: </span><span class="si">{</span><span class="n">art</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (Type: </span><span class="si">{</span><span class="n">art</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get downstream artifacts (outputs)</span>
+<span class="n">downstream</span> <span class="o">=</span> <span class="n">lineage</span><span class="p">[</span><span class="s1">&#39;downstream_artifacts&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">art</span> <span class="ow">in</span> <span class="n">downstream</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output: </span><span class="si">{</span><span class="n">art</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2"> (Type: </span><span class="si">{</span><span class="n">art</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get execution lineage</span>
+<span class="n">execution_id</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="n">exec_lineage</span> <span class="o">=</span> <span class="n">query</span><span class="o">.</span><span class="n">get_execution_lineage</span><span class="p">(</span><span class="n">execution_id</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input artifacts: </span><span class="si">{</span><span class="n">exec_lineage</span><span class="p">[</span><span class="s1">&#39;inputs&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output artifacts: </span><span class="si">{</span><span class="n">exec_lineage</span><span class="p">[</span><span class="s1">&#39;outputs&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="lineage-data-structure">Lineage Data Structure<a class="headerlink" href="#lineage-data-structure" title="Permanent link">¤</a></h2>
+<p>The lineage visualizations use this data structure:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a_123&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;artifact_name_train_data.csv&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;artifact&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;artifact_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Dataset&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;s3://bucket/data/train.csv&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-21T10:30:00Z&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e_456&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;execution_name_train_model&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;execution&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;git_commit&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a3f9e2b7&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">328</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;links&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a_123&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e_456&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;INPUT&quot;</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;e_456&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a_789&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;OUTPUT&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="tips-and-best-practices">Tips and Best Practices<a class="headerlink" href="#tips-and-best-practices" title="Permanent link">¤</a></h2>
+<ol>
+<li><strong>Start with Artifact Tree</strong>: Easiest to understand data flow</li>
+<li><strong>Use Execution Tree for Debugging</strong>: Shows actual execution order</li>
+<li><strong>Full Tree for Documentation</strong>: Artifact-Execution tree shows complete story</li>
+<li><strong>Export Visualizations</strong>: Save lineage graphs for documentation</li>
+<li><strong>Regular Review</strong>: Check lineage after pipeline changes</li>
+<li><strong>Identify Bottlenecks</strong>: Long execution times visible in lineage</li>
+<li><strong>Reusability Analysis</strong>: Find commonly reused artifacts</li>
+<li><strong>Version Tracking</strong>: Use lineage to track artifact versions</li>
+</ol>
+<hr />
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">¤</a></h2>
+<h3 id="empty-lineage-graph">Empty Lineage Graph<a class="headerlink" href="#empty-lineage-graph" title="Permanent link">¤</a></h3>
+<p><strong>Issue</strong>: No nodes appear in visualization</p>
+<p><strong>Solutions</strong>:
+1. Verify pipeline has executions
+2. Check if metadata was pushed to server
+3. Ensure artifacts were logged during execution
+4. Refresh the page
+5. Try different lineage type</p>
+<h3 id="incomplete-lineage">Incomplete Lineage<a class="headerlink" href="#incomplete-lineage" title="Permanent link">¤</a></h3>
+<p><strong>Issue</strong>: Some connections are missing</p>
+<p><strong>Solutions</strong>:
+1. Ensure all artifacts are logged:
+   <div class="highlight"><pre><span></span><code><span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">)</span>
+<span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+</code></pre></div>
+2. Verify execution completion
+3. Check for errors in metadata push
+4. Ensure proper input/output event logging</p>
+<h3 id="performance-issues">Performance Issues<a class="headerlink" href="#performance-issues" title="Permanent link">¤</a></h3>
+<p><strong>Issue</strong>: Large graphs are slow to render</p>
+<p><strong>Solutions</strong>:
+1. Use filters to reduce complexity
+2. Focus on specific pipeline stages
+3. Use Tree view instead of Force-Directed
+4. Consider breaking large pipelines into sub-pipelines
+5. Increase browser memory allocation</p>
+<h3 id="overlapping-nodes">Overlapping Nodes<a class="headerlink" href="#overlapping-nodes" title="Permanent link">¤</a></h3>
+<p><strong>Issue</strong>: Nodes overlap and are hard to read</p>
+<p><strong>Solutions</strong>:
+1. Use zoom controls to spread out graph
+2. Manually drag nodes to reposition
+3. Try different layout algorithm
+4. Export as SVG and edit externally
+5. Increase visualization area size</p>
+<hr />
+<h2 id="related-pages">Related Pages<a class="headerlink" href="#related-pages" title="Permanent link">¤</a></h2>
+<ul>
+<li><a href="../artifacts/">Artifacts Page</a> - Detailed artifact information</li>
+<li><a href="../executions/">Executions Page</a> - Execution details and logs</li>
+<li><a href="../../cmf_client/cmf_client_commands/">CMF Client Commands</a> - CLI for metadata management</li>
+<li><a href="../../setup/">Installation &amp; Setup</a> - Set up CMF Server</li>
+</ul>
+<hr />
+<h2 id="additional-resources">Additional Resources<a class="headerlink" href="#additional-resources" title="Permanent link">¤</a></h2>
+<h3 id="understanding-lineage-concepts">Understanding Lineage Concepts<a class="headerlink" href="#understanding-lineage-concepts" title="Permanent link">¤</a></h3>
+<ul>
+<li><strong>Provenance</strong>: History of an artifact's creation and transformations</li>
+<li><strong>Upstream</strong>: Artifacts and executions that contributed to current node</li>
+<li><strong>Downstream</strong>: Artifacts and executions that depend on current node</li>
+<li><strong>Lineage Graph</strong>: Directed acyclic graph (DAG) of dependencies</li>
+</ul>
+<h3 id="best-practices-for-lineage-tracking">Best Practices for Lineage Tracking<a class="headerlink" href="#best-practices-for-lineage-tracking" title="Permanent link">¤</a></h3>
+<ol>
+<li>
+<p><strong>Always log inputs and outputs</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1"># Log input</span>
+<span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span><span class="s2">&quot;input.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;input&quot;</span><span class="p">)</span>
+
+<span class="c1"># Your processing logic</span>
+
+<span class="c1"># Log output</span>
+<span class="n">cmf</span><span class="o">.</span><span class="n">log_dataset</span><span class="p">(</span><span class="s2">&quot;output.csv&quot;</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">)</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Use descriptive names</strong>: Makes lineage graphs easier to understand</p>
+</li>
+<li>
+<p><strong>Track all transformations</strong>: Don't skip intermediate artifacts</p>
+</li>
+<li>
+<p><strong>Version consistently</strong>: Use semantic versioning for clarity</p>
+</li>
+<li>
+<p><strong>Document pipelines</strong>: Add descriptions to help interpret lineage</p>
+</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/HewlettPackard/cmf" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://commonmetadata.slack.com/" target="_blank" rel="noopener" title="commonmetadata.slack.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M94.1 315.1c0 25.9-21.2 47.1-47.1 47.1S0 341 0 315.1 21.2 268 47.1 268h47.1v47.1zm23.7 0c0-25.9 21.2-47.1 47.1-47.1s47.1 21.2 47.1 47.1v117.8c0 25.9-21.2 47.1-47.1 47.1s-47.1-21.2-47.1-47.1zm47.1-189c-25.9 0-47.1-21.2-47.1-47.1s21.2-47 47.1-47S212 53.2 212 79.1v47.1h-47.1zm0 23.7c25.9 0 47.1 21.2 47.1 47.1S190.8 244 164.9 244H47.1C21.2 244 0 222.8 0 196.9s21.2-47.1 47.1-47.1zm189 47.1c0-25.9 21.2-47.1 47.1-47.1s47 21.2 47 47.1-21.2 47.1-47.1 47.1h-47.1v-47.1zm-23.7 0c0 25.9-21.2 47.1-47.1 47.1S236 222.8 236 196.9V79.1c0-25.9 21.2-47.1 47.1-47.1s47.1 21.2 47.1 47.1zm-47.1 189c25.9 0 47.1 21.2 47.1 47.1s-21.2 47-47.1 47-47.1-21.2-47.1-47.1v-47.1h47.1zm0-23.7c-25.9 0-47.1-21.2-47.1-47.1s21.2-47.1 47.1-47.1h117.8c25.9 0 47.1 21.2 47.1 47.1s-21.2 47.1-47.1 47.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
