@@ -149,7 +149,7 @@ execution = metawriter.create_execution(
 
 **Log artifacts**. A stage execution can consume (inputs) and produce (outputs) multiple artifacts (datasets, models, and
 performance metrics). The path of these artifacts must be relative to the project (repository) root path. Artifacts
-might have optional metadata associated with them. These metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
+might have optional metadata associated with them. This metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
 instance, number of trees in a random forest classifier).
 
 - **Datasets** are logged with the [log_dataset][cmflib.cmf.Cmf.log_dataset] method.
