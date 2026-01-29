@@ -6,7 +6,7 @@ This document covers the core library components, main API classes, and integrat
 
 ## Core Architecture
 
-**Note:** The CMF library should be imported as `from cmflib.cmf import Cmf` (not `from cmflib import cmf`). See examples below for the correct usage pattern.
+**Note:** The CMF library should be imported as `from cmflib.cmf import Cmf`. See examples below for the correct usage pattern.
 
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
 each stage performs a particular task, such as data loading, pre-processing, ML model training, and testing stages.
