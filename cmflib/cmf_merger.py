@@ -18,7 +18,7 @@ import json
 import os
 import traceback
 
-from cmflib import cmf
+from cmflib.cmf import Cmf
 from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -223,12 +223,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
 
         # Initialize the cmf class with pipeline_name and graph_status
         if cmd == "pull":
-            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                                graph=graph)
+            cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                            graph=graph)
         else:
             # in else, we are assuming cmd="push"
-            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                                graph=graph, is_server=True)
+            cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                            graph=graph, is_server=True)
 
         # Process each stage sequentially
         for stage in data["stages"]:
