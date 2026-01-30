@@ -98,7 +98,8 @@ class Cmf:
     The user has to provide the name of the pipeline, that needs to be recorded with CMF.
     
     ```python
-    cmflib.cmf.Cmf(
+	from cmflib.cmf import Cmf
+    metawriter = Cmf(
         filepath="mlmd",
         pipeline_name="test_pipeline",
         custom_properties={"owner": "user_a"},
@@ -280,14 +281,14 @@ class Cmf:
         Updates Pipeline_stage name.
         
         ```python
-        #Create context
+        # Create context
         # Import CMF
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
         # Create context
-        context: mlmd.proto.Context = cmf.create_context(
+        context: mlmd.proto.Context = metawriter.create_context(
             pipeline_stage="prepare",
             custom_properties ={"user-metadata1": "metadata_value"}
         )
@@ -367,14 +368,14 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
         # Create or reuse context for this stage
-        context: mlmd.proto.Context = cmf.create_context(
+        context: mlmd.proto.Context = metawriter.create_context(
             pipeline_stage="prepare",
             custom_properties ={"user-metadata1": "metadata_value"}
         )
         # Create a new execution for this stage run
-        execution: mlmd.proto.Execution = cmf.create_execution(
+        execution: mlmd.proto.Execution = metawriter.create_execution(
             execution_type="Prepare",
             custom_properties = {"split": split, "seed": seed}
         )
@@ -507,9 +508,9 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
         # Update a execution
-        execution: mlmd.proto.Execution = cmf.update_execution(
+        execution: mlmd.proto.Execution = metawriter.update_execution(
             execution_id=8,
             custom_properties = {"split": split, "seed": seed}
         )
@@ -706,7 +707,7 @@ class Cmf:
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
         
         ```python
-        artifact: mlmd.proto.Artifact = cmf.log_dataset(
+        artifact: mlmd.proto.Artifact = metawriter.log_dataset(
             url="/repo/data.xml",
             event="input",
             custom_properties={"source":"kaggle"},
@@ -872,7 +873,7 @@ class Cmf:
            Updates url of given artifact.
            Example
                ```python
-               artifact: mlmd.proto.Artifact = cmf.update_dataset_url(
+               artifact: mlmd.proto.Artifact = metawriter.update_dataset_url(
                 artifact="data.xml.gz"
                 updated_url="/repo/data.xml",
                )
@@ -906,7 +907,7 @@ class Cmf:
                ```python
                dup_artifact = [...] # List of artifacts
                updated_url = "/new/url"
-               updated_artifacts = cmf.update_model_url(dup_artifact, updated_url)
+               updated_artifacts = metawriter.update_model_url(dup_artifact, updated_url)
                ```
                Args:
                   dup_artifact: List of artifacts to update.
@@ -949,7 +950,7 @@ class Cmf:
         The model is added to dvc and the metadata file (.dvc) gets committed to git.
         
         ```python
-        artifact: mlmd.proto.Artifact= cmf.log_model(
+        artifact: mlmd.proto.Artifact= metawriter.log_model(
             path="path/to/model.pkl",
             event="output",
             model_framework="SKlearn",
@@ -1116,7 +1117,7 @@ class Cmf:
         have.
         
         ```python
-        exec_metrics: mlpb.Artifact = cmf.log_execution_metrics(
+        exec_metrics: mlpb.Artifact = metawriter.log_execution_metrics(
             metrics_name="Training_Metrics",
             {"auc": auc, "loss": loss}
         )
@@ -1198,8 +1199,8 @@ class Cmf:
         # at the commit stage.
         # Inside training loop
         while True:
-                cmf.log_metric("training_metrics", {"train_loss": train_loss})
-        cmf.commit_metrics("training_metrics")
+                metawriter.log_metric("training_metrics", {"train_loss": train_loss})
+        metawriter.commit_metrics("training_metrics")
         ```
 
         Args:
@@ -1220,7 +1221,7 @@ class Cmf:
 
         Example:
         ```python
-        artifact: mlpb.Artifact = cmf.commit_metrics("example_metrics")
+        artifact: mlpb.Artifact = metawriter.commit_metrics("example_metrics")
         ```
 
         Args:
@@ -1353,7 +1354,7 @@ class Cmf:
         """ Updates an existing artifact with the provided custom properties and stores it back to MLMD. 
           Example: 
           ```python
-                update_artifact=cmf.update_existing_artifact(existing_artifact, {"key1": "updated_value"}) 
+                update_artifact=metawriter.update_existing_artifact(existing_artifact, {"key1": "updated_value"}) 
           ``` 
           Args: 
              artifact: Existing artifact to be updated. 
@@ -1404,7 +1405,7 @@ class Cmf:
         [commit][cmflib.cmf.Cmf.DataSlice.commit] method.
         
         ```python
-        dataslice = cmf.create_dataslice("slice-a")
+        dataslice = metawriter.create_dataslice("slice-a")
         ```
         
         Args:
@@ -1431,7 +1432,7 @@ class Cmf:
         """Updates a dataslice record in a Parquet file with the provided custom properties.
         
         ```python
-           dataslice=cmf.update_dataslice("dataslice_file.parquet", "record_id", 
+           dataslice=metawriter.update_dataslice("dataslice_file.parquet", "record_id", 
            {"key1": "updated_value"})
         ```
         
@@ -2231,3 +2232,4 @@ def dvc_ingest(file_name: str = "./mlmd") -> str:
     # Default arguments: file_name
     output = _dvc_ingest(file_name)
     return output
+

@@ -19,8 +19,8 @@ import yaml
 import pandas as pd
 import typing as t
 import uuid
-from cmflib import cmfquery
-from cmflib import cmf
+from cmflib.cmfquery import CmfQuery
+from cmflib.cmf import Cmf
 
 
 """
@@ -62,7 +62,7 @@ args
     metawrite: cmf object 
 """
 tracked = {} #Used to keep a record of files tracked by outs and therefore not needed to be tracked in deps
-def ingest_metadata(execution_lineage:str, metadata:dict, metawriter:cmf.Cmf, command:str = "") :
+def ingest_metadata(execution_lineage:str, metadata:dict, metawriter:Cmf, command:str = "") :
     pipeline_name, context_name, execution = get_cmf_hierarchy(execution_lineage)
 
     _ = metawriter.create_execution(
@@ -91,7 +91,7 @@ def find_location(string, elements):
 
 #Query mlmd to get all the executions and its commands
 cmd_exe: t.Dict[str, str] = {}
-cmf_query = cmfquery.CmfQuery(args.cmf_filename)
+cmf_query = CmfQuery(args.cmf_filename)
 pipelines: t.List[str] = cmf_query.get_pipeline_names()
 for pipeline in pipelines:
     pipeline_name = pipeline
@@ -161,7 +161,7 @@ Create a unique Pipeline name if there is no mlmd file
 
 
 pipeline_name = "Pipeline"+"-"+str(uuid_) if not pipeline_name else pipeline_name
-metawriter = cmf.Cmf(filepath = "mlmd", pipeline_name=pipeline_name, graph=True)
+metawriter = Cmf(filepath = "mlmd", pipeline_name=pipeline_name, graph=True)
 
 """
 Parse the dvc.lock dictionary and get the command section

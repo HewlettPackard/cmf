@@ -7,8 +7,10 @@ This guide provides step-by-step instructions for installing, configuring, and u
 
 The installation process consists of the following components:
 
-1. **CMFLib**: Exposes APIs to track the pipeline metadata. It also provides APIs to query the stored metadata.
-2. **CMF Server with GUI**: Enables users to store, retrieve, and view ML training metadata through an intuitive UI.
+1. **[CMFLib](#install-cmf-library-ie-cmflib)**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.
+2. **[CMF Server with GUI](#install-cmf-server-with-gui)**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships.
+
+> **Note:** Every CMF setup requires a CMF Server instance. In collaborative environments, multiple users working on the same project can share a single CMF Server to centralize metadata and facilitate team coordination.
 
 ---
 
@@ -16,36 +18,15 @@ The installation process consists of the following components:
 
 Before installing CMF, ensure you have the following prerequisites:
 
+### Common Prerequisites
+
 - **Linux/Ubuntu/Debian**
 
 - **Python**: Version 3.9 to 3.11 (3.10 recommended)
 
-    > ⚠️ **Warning:** "Python 3.9 Installation Issue on Ubuntu"
-    >
-    > **Issue**: When creating Python 3.9 virtual environments, you may encounter:
-    > 
-    > ```
-    > ModuleNotFoundError: No module named 'distutils.cmd'
-    > ```
-    > 
-    > **Root Cause**: Python 3.9 may be missing required modules like `distutils` or `venv` when installed on Ubuntu systems.
-    > 
-    > **Resolution**:
-    > 
-    > 1. Add the deadsnakes PPA (provides newer Python versions):
-    >     
-    >     ```bash
-    >     sudo add-apt-repository ppa:deadsnakes/ppa
-    >     sudo apt-get update
-    >     ```
-    >    
-    > 2. Install Python 3.9 with required modules:
-    >    
-    >     ```bash
-    >     sudo apt install python3.9 python3.9-dev python3.9-distutils
-    >     ```
-    >   
-    >     This ensures Python 3.9 and its essential modules are fully installed.
+    > **Note:** If you encounter issues with Python 3.9 on Ubuntu, refer to the [Troubleshooting](#troubleshooting) section at the end of this guide.
+
+### CMF Client Prerequisites
 
 - **Git**: Latest version for code versioning
 
@@ -57,6 +38,10 @@ Before installing CMF, ensure you have the following prerequisites:
     > git config --global user.email "you@example.com"
     > ```
 
+- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts.
+
+### CMF Server Prerequisites {#cmf-server-prerequisites}
+
 - **Docker**: For containerized deployment of `CMF Server` and `CMF UI`
 
     > 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/linux-postinstall/) privileges.
@@ -67,8 +52,6 @@ Before installing CMF, ensure you have the following prerequisites:
 - **Docker Proxy Settings**: Needed for some of the server packages
 
     > Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
-
-- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts
 
 ---
 
@@ -99,16 +82,18 @@ Before installing CMF, ensure you have the following prerequisites:
 
 === "Stable version from PyPI"
     ```shell
-    # pip install cmflib
+    pip install cmflib
     ```
 
 ---
 
 ### 2. Install CMF Server with GUI {#install-cmf-server-with-gui}
 
+> **Note:** Every CMF setup requires a CMF Server instance. In collaborative environments, multiple users working on the same project can share a single CMF Server to centralize metadata and facilitate team coordination.
+
 #### Prerequisites Check
 
-Ensure that Docker is installed on your machine, as mentioned in the [prerequisites](#prerequisites). If not, please install it before proceeding.
+Ensure that Docker is installed on your machine, as mentioned in the [CMF Server Prerequisites](#cmf-server-prerequisites). If not, please install it before proceeding.
 
 #### Installation Steps
 
@@ -186,5 +171,47 @@ docker compose -f docker-compose-server.yml stop
 > docker compose -f docker-compose-server.yml build --no-cache
 > docker compose -f docker-compose-server.yml up
 > ```
+
+---
+
+## Troubleshooting
+
+### Python 3.9 Installation Issues on Ubuntu
+
+If you are using Python 3.9 on Ubuntu systems, you may encounter installation or virtual environment issues.
+
+**Issue**: When creating Python 3.9 virtual environments, you may encounter:
+
+```
+ModuleNotFoundError: No module named 'distutils.cmd'
+```
+
+**Root Cause**: Python 3.9 may be missing required modules like `distutils` or `venv` when installed on Ubuntu systems.
+
+**Resolution**:
+
+1. Add the deadsnakes PPA (provides newer Python versions):
+   
+   ```bash
+   sudo add-apt-repository ppa:deadsnakes/ppa
+   sudo apt-get update
+   ```
+
+2. Install Python 3.9 with required modules:
+   
+   ```bash
+   sudo apt install python3.9 python3.9-dev python3.9-distutils python3.9-venv
+   ```
+
+3. Verify the installation:
+   
+   ```bash
+   python3.9 --version
+   python3.9 -m venv test_env
+   ```
+
+This ensures Python 3.9 and its essential modules are fully installed and functional.
+
+> 💡 **Recommendation:** If you're starting fresh, we recommend using Python 3.10 to avoid these compatibility issues.
 
 ---

@@ -14,7 +14,7 @@
 # limitations under the License.
 ###
 
-from cmflib import cmf
+from cmflib.cmf import Cmf
 import random
 import pandas as pd
 import os
@@ -59,7 +59,7 @@ generate_dataset()
 
 # Note - metadata is stored in a file called "mlmd". It is a sqlite file.
 # To delete earlier metadata, delete this mlmd file.
-metawriter = cmf.Cmf(filepath="mlmd", pipeline_name="Test-env")
+metawriter = Cmf(filepath="mlmd", pipeline_name="Test-env")
 _ = metawriter.create_context(pipeline_stage="Prepare")
 _ = metawriter.create_execution(execution_type="Prepare")
 
@@ -70,7 +70,7 @@ _ = metawriter.log_dataset(folder_path, "input")
 # Creating the data slice - today we have only path and hash.
 # Would need to expand to take in more metadata.
 for i in range(1, 3, 1):
-    dataslice: cmf.Cmf.DataSlice = metawriter.create_dataslice(name="slice-" + str(i))
+    dataslice: Cmf.DataSlice = metawriter.create_dataslice(name="slice-" + str(i))
     for _ in range(1, 20, 1):
         j = random.randrange(1, 100)
         print(folder_path + "/" + str(j) + ".txt")

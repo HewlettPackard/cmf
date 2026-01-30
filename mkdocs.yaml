@@ -105,7 +105,6 @@ plugins:
             show_source: false
             members_order: source
             merge_init_into_class: true
-            style: table
 
 extra_javascript:
   - https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js
@@ -136,7 +135,6 @@ nav:
       - CmfQuery: api/public/cmfquery.md
       - Cmf Server: api/public/cmfserver.md
       - Ray Logger: api/public/cmf_ray_logger.md
-      - Complete API Documentation: api/public/API.md
     - 💻 CLI Reference: 
       - cmf_client/index.md
       - CMF Client commands: cmf_client/cmf_client_commands.md
@@ -146,7 +144,8 @@ nav:
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
         - OSDF: cmf_client/cmf_osdf.md
-    - 🖥️ GUI Reference: ui/index.md
-    - 🏃🏼‍♂️ Metahub: cmf_server/metahub-tab-usage.md
-    - 📊 TensorBoard: cmf_client/tensorflow_guide.md
+    - 🖥️ GUI Reference: 
+      - ui/index.md
+      - Metahub: cmf_server/metahub-tab-usage.md
+      - TensorBoard: cmf_client/tensorflow_guide.md
     - 🔗 Ontology: common-metadata-ontology/readme.md
