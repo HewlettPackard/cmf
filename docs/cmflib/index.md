@@ -23,7 +23,7 @@ Metadata associated with each <u>run</u> of a <u>stage</u> is captured in the Ex
 Inputs and outputs of Executions can be logged as dataset, model, or metrics. While parameters of executions
 are recorded as properties of executions.
 
-<img src="../assets/cmf_concepts_1.png" alt="CMF abstractions" style="display: block; margin: 0 auto" />
+<img src="../assets/cmf_concepts.png" alt="CMF abstractions" style="display: block; margin: 0 auto" />
 
 ## Main API
 
