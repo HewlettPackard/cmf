@@ -53,7 +53,7 @@ The `Cmf` class is the primary interface for metadata tracking in CMF. It provid
     from ml_metadata.proto import metadata_store_pb2 as mlpb
 
     metawriter = Cmf(
-        filename="mlmd",
+        filepath="mlmd",
         pipeline_name="test_pipeline",
     )
     ```
