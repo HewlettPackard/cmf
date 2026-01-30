@@ -23,7 +23,7 @@ Use the following command to initialize `cmf`. You can choose from various stora
 
 ```bash
    cmf init local \
-  --path /home/XXXX/local-storage \
+  --path /path/to/local-storage \
   --git-remote-url https://github.com/user/experiment-repo.git \
   --cmf-server-url http://x.x.x.x:80 \
   --neo4j-user neo4j \
@@ -32,8 +32,8 @@ Use the following command to initialize `cmf`. You can choose from various stora
 ```
 
 > 🔁 Replace the following:
-> - `x.x.x.x` with your IP address  
-> - `XXXX` with your system username  
+> - `x.x.x.x` with your IP address 
+> - For `--path`, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.
 > - Provide your correct Neo4j username and password
 
 
