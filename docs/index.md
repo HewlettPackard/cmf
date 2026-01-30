@@ -16,7 +16,7 @@ Common Metadata Framework (`CMF`) has the following components:
 - **CMFLib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
   
   <div style="text-align: center; margin: 20px 0;">
-    <img src="../assets/framework.png" height="400" />
+    <img src="./assets/framework.png" height="400" />
   </div>
 
 - **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
