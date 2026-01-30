@@ -72,7 +72,7 @@ cmf init local --path /home/XXXX/local-storage
                --neo4j-uri bolt://localhost:7687
 ```
 
-> Replace 'XXXX' with a folder outside the current working directory, which would serve as the artifact repository. eg :-  /home/username/local-storage
+> For path provide a folder outside the current working directory, which would serve as the artifact repository. eg :-  /home/username/local-storage
 
 Required Arguments
 ```
