@@ -55,9 +55,9 @@ import time
 import copy
 
 # importing cmf for pipeline logging 
-from cmflib import cmf
+from cmflib.cmf import Cmf
 import collections
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 
 # import numba lib for GPU operation
 from numba import cuda
@@ -68,7 +68,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 # Defining cmf pipeline for logging artifacts 
 graph = True 
-metawriter = cmf.Cmf(filename="mlmd", pipeline_name="aifcmf-env", graph=graph)
+metawriter = Cmf(filename="mlmd", pipeline_name="aifcmf-env", graph=graph)
 
 
 # # Step 1: Load and Process Images

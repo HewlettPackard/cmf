@@ -20,7 +20,7 @@ import math
 import pickle
 import click
 import sklearn.metrics as metrics
-from cmflib import cmf
+from cmflib.cmf import Cmf
 
 __all__ = ['test']
 
@@ -48,7 +48,7 @@ def test(model_dir: str, dataset_dir: str, output_dir: str) -> None:
     )
     graph_env = os.getenv("NEO4J", "False")
     graph = True if graph_env == "True" or graph_env == "TRUE" else False
-    metawriter = cmf.Cmf(filepath="mlmd", pipeline_name="Test-env", graph=graph)
+    metawriter = Cmf(filepath="mlmd", pipeline_name="Test-env", graph=graph)
     _ = metawriter.create_context(pipeline_stage="Evaluate")
     _ = metawriter.create_execution(execution_type="Evaluate-execution")
 
