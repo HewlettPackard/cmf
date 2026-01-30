@@ -1,7 +1,7 @@
 ## Quick start with CMF Client
 Common Metadata Framework (`CMF`) has the following components:
 
-- **CMFLib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
+- **cmflib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
 - **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
 - **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
@@ -11,7 +11,7 @@ This tutorial walks you through the process of setting up the `CMF Client`.
 ## Prerequisites 
 Before proceeding with the setup, ensure the following components are up and running:
 
-- [CMFLib](../setup/index.md#install-cmf-library-ie-cmflib)
+- [cmflib](../setup/index.md#install-cmf-library-ie-cmflib)
 - [CMF Server](../setup/index.md#install-cmf-server-with-gui)
 
 Make sure there are no errors during their startup, as `CMF Client` depends on both of these components.
@@ -60,7 +60,7 @@ cmf init show
 ```
 Check [cmf init show](./cmf_client_commands.md#cmf-init-show) for more details.
 
-**Track metadata using CMFLib**
+**Track metadata using cmflib**
 
 Use [Sample projects](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md) as a reference to create a new project to track metadata for ML pipelines.
 

@@ -4,7 +4,7 @@
 
 This document provides a comprehensive overview of the Common Metadata Framework (CMF), which implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.
 
-For detailed API documentation, see [Core Library (CMFLib)](cmflib/index.md). For deployment instructions, see [Installation & Setup](setup/index.md). For web user interface details, see [CMF GUI](ui/index.md).
+For detailed API documentation, see [Core Library (cmflib)](cmflib/index.md). For deployment instructions, see [Installation & Setup](setup/index.md). For web user interface details, see [CMF GUI](ui/index.md).
 
 ## System Architecture
 
@@ -13,7 +13,7 @@ CMF is designed as a distributed system that enables ML teams to track pipeline 
 
 Common Metadata Framework (`CMF`) has the following components:
 
-- **CMFLib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
+- **cmflib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
   
   <div style="text-align: center; margin: 20px 0;">
     <img src="./assets/framework.png" height="400" />
