@@ -1,7 +1,7 @@
-from cmflib import cmf
-from cmflib import cmfquery
+from cmflib.cmf import Cmf
+from cmflib.cmfquery import CmfQuery
 
-metawriter = cmf.Cmf("mlmd", "test-execution-update")
+metawriter = Cmf("mlmd", "test-execution-update")
 _  = metawriter.create_context("Train", {"test":"1"})
 
 #Creating execution with create_new_execution flag set to false.

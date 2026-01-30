@@ -6,6 +6,8 @@ This document covers the core library components, main API classes, and integrat
 
 ## Core Architecture
 
+**Note:** The CMF library should be imported as `from cmflib.cmf import Cmf`. See examples below for the correct usage pattern.
+
 Complex ML projects rely on `ML pipelines` to train and test ML models. An ML pipeline is a sequence of stages where
 each stage performs a particular task, such as data loading, pre-processing, ML model training, and testing stages.
 Each stage can have multiple Executions which:
@@ -23,7 +25,7 @@ are recorded as properties of executions.
 
 <img src="../assets/cmf_concepts.png" alt="CMF abstractions" style="display: block; margin: 0 auto" />
 
-## Main API (cmf.Cmf)
+## Main API
 
 The `Cmf` class is the primary interface for metadata tracking in CMF. It provides methods for creating pipelines, contexts, executions, and logging artifacts.
 
@@ -147,7 +149,7 @@ execution = metawriter.create_execution(
 
 **Log artifacts**. A stage execution can consume (inputs) and produce (outputs) multiple artifacts (datasets, models, and
 performance metrics). The path of these artifacts must be relative to the project (repository) root path. Artifacts
-might have optional metadata associated with them. These metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
+might have optional metadata associated with them. This metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
 instance, number of trees in a random forest classifier).
 
 - **Datasets** are logged with the [log_dataset][cmflib.cmf.Cmf.log_dataset] method.

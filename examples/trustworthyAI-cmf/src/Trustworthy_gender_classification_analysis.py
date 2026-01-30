@@ -44,8 +44,8 @@ from aif360.metrics import BinaryLabelDatasetMetric
 from aif360.metrics import ClassificationMetric
 from aif360.algorithms.preprocessing.reweighing import Reweighing
 from aif360.algorithms.inprocessing.adversarial_debiasing import AdversarialDebiasing
-from cmflib import cmf
-from cmflib import cmfquery
+from cmflib.cmf import Cmf
+from cmflib.cmfquery import CmfQuery
 
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
@@ -487,7 +487,7 @@ print('*************************************************************************
 
 ## cmf querry for geting artifact and metrics
 pipeline_name="aifcmf-env"
-query = cmfquery.CmfQuery("./mlmd")
+query = CmfQuery("./mlmd")
 pipelines = query.get_pipeline_names()
 stages = query.get_pipeline_stages(pipelines[0])
 print('************ stages *************')
