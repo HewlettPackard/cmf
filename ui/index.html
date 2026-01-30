@@ -1180,6 +1180,62 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#artifacts-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Artifacts View
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Artifacts View">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executions-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executions View
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Executions View">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-features_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#lineage-visualization" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1287,24 +1343,42 @@
 <li>Open your browser and navigate to the server URL (default: <code>http://your-server-ip:80</code>)</li>
 <li>The GUI will display the available pipelines in the sidebar</li>
 </ol>
+<hr />
+<h2 id="artifacts-view">Artifacts View<a class="headerlink" href="#artifacts-view" title="Permanent link">¤</a></h2>
+<p>The Artifacts page displays all datasets, models, and metrics tracked by CMF. You can browse, search, and explore artifact metadata, versions, and lineage.</p>
+<h3 id="key-features">Key Features<a class="headerlink" href="#key-features" title="Permanent link">¤</a></h3>
+<ul>
+<li><strong>Artifact Listing</strong>: View all artifacts with their types (Dataset, Model, Metrics)</li>
+<li><strong>Search &amp; Filter</strong>: Find specific artifacts by name, type, or properties</li>
+<li><strong>Artifact Details</strong>: Examine metadata, custom properties, and version information</li>
+</ul>
 <p><img alt="CMF Artifacts Page" src="../assets/artifacts.jpeg" /></p>
+<hr />
+<h2 id="executions-view">Executions View<a class="headerlink" href="#executions-view" title="Permanent link">¤</a></h2>
+<p>The Executions page displays all pipeline runs and execution history. You can view execution details, parameters, and associated artifacts for each run.</p>
+<h3 id="key-features_1">Key Features<a class="headerlink" href="#key-features_1" title="Permanent link">¤</a></h3>
+<ul>
+<li><strong>Execution History</strong>: View all past executions with timestamps</li>
+<li><strong>Execution Details</strong>: See parameters, properties, and metadata for each run</li>
+<li><strong>Filtering &amp; Search</strong>: Find specific executions by name, type, or properties</li>
+</ul>
+<p><img alt="CMF Executions Page" src="../assets/executions.png" /></p>
 <hr />
 <h2 id="lineage-visualization">Lineage Visualization<a class="headerlink" href="#lineage-visualization" title="Permanent link">¤</a></h2>
 <p>The Lineage page offers interactive visualizations of data flow and dependencies in your ML pipelines. It provides following different visualization modes:</p>
 <h3 id="visualization-types">Visualization Types<a class="headerlink" href="#visualization-types" title="Permanent link">¤</a></h3>
 <ol>
-<li><strong>Artifact Tree</strong>: Hierarchical view of artifact dependencies</li>
-<li><strong>Execution Tree</strong>: Hierarchical view of execution flow</li>
-<li><strong>Artifact-Execution Tree</strong>: Combined view showing both artifacts and executions</li>
+<li><strong>Artifact Lineage</strong>: Hierarchical view of artifact dependencies</li>
+<li><strong>Execution Lineage</strong>: Hierarchical view of execution flow</li>
+<li><strong>Artifact-Execution Lineage</strong>: Combined view showing both artifacts and executions</li>
 </ol>
+<p><img alt="CMF ArtifactExecution Page" src="../assets/ArtifactExecutionLineage.png" /></p>
 <hr />
 <h2 id="metahub">Metahub<a class="headerlink" href="#metahub" title="Permanent link">¤</a></h2>
 <p>The <a href="../cmf_server/metahub-tab-usage/">Metahub</a> feature enables synchronization of metadata between two CMF servers, allowing distributed teams to collaborate and share ML pipeline metadata.</p>
-<p>👉 <a href="../cmf_server/metahub-tab-usage/">Read more about Metahub</a></p>
 <hr />
 <h2 id="tensorboard-integration">TensorBoard Integration<a class="headerlink" href="#tensorboard-integration" title="Permanent link">¤</a></h2>
 <p>CMF integrates with <a href="../cmf_client/tensorflow_guide/">TensorBoard</a> to visualize training metrics, model graphs, and other ML-specific visualizations alongside CMF metadata.</p>
-<p>👉 <a href="../cmf_client/tensorflow_guide/">Read more about TensorBoard Integration</a></p>
 <hr />
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¤</a></h2>
 <p>Before using the CMF GUI, ensure you have:</p>
