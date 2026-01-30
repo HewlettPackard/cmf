@@ -4,7 +4,7 @@
 
 This document provides a comprehensive overview of the Common Metadata Framework (CMF), which implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.
 
-For detailed API documentation, see [Core Library (CMFLib)](cmflib/index.md). For server deployment instructions, see [Installation & Setup](setup/index.md). For web user interface details, see [CMF GUI](ui/index.md).
+For detailed API documentation, see [Core Library (CMFLib)](cmflib/index.md). For deployment instructions, see [Installation & Setup](setup/index.md). For web user interface details, see [CMF GUI](ui/index.md).
 
 ## System Architecture
 
@@ -14,13 +14,15 @@ CMF is designed as a distributed system that enables ML teams to track pipeline 
 Common Metadata Framework (`CMF`) has the following components:
 
 - **CMFLib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
+  
+  <div style="text-align: center; margin: 20px 0;">
+    <img src="../assets/framework.png" height="400" />
+  </div>
+
 - **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
 - **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
 
-<p align="center">
- <img src="../../assets/framework.png" height="400" align="center" />
-</p>
 
 ## Core Abstractions
 
@@ -33,18 +35,45 @@ CMF uses three primary abstractions to model ML pipeline metadata:
 | **Execution** | Represents a specific run of a stage | Created via `create_execution()` method |
 
 ```mermaid
-graph LR
-    PIPELINE["Pipeline<br/>'mnist_experiment'"] --> CONTEXT1["Context<br/>'download'"]
-    PIPELINE --> CONTEXT2["Context<br/>'train'"]
-    PIPELINE --> CONTEXT3["Context<br/>'test'"]
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#e3f2fd','primaryTextColor':'#546e7a','primaryBorderColor':'#90caf9','lineColor':'#cfd8dc','secondaryColor':'#f3e5f5','tertiaryColor':'#e8f5e9','fontSize':'13px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart LR
+    PIPELINE([Pipeline<br/>'mnist_experiment'])
+    CONTEXT1([Context<br/>'download'])
+    CONTEXT2([Context<br/>'train'])
+    CONTEXT3([Context<br/>'test'])
+    
+    EXEC1[/Execution<br/>'download_data'/]
+    EXEC2[/Execution<br/>'train_model'/]
+    EXEC3[/Execution<br/>'evaluate_model'/]
+    
+    DATASET1[(Dataset<br/>'raw_data.csv')]
+    MODEL1[(Model<br/>'trained_model.pkl')]
+    METRICS1[(Metrics<br/>'accuracy: 0.95')]
 
-    CONTEXT1 --> EXEC1["Execution<br/>'download_data'"]
-    CONTEXT2 --> EXEC2["Execution<br/>'train_model'"]
-    CONTEXT3 --> EXEC3["Execution<br/>'evaluate_model'"]
+    PIPELINE -.-> CONTEXT1
+    PIPELINE -.-> CONTEXT2
+    PIPELINE -.-> CONTEXT3
 
-    EXEC1 --> DATASET1["Dataset<br/>'raw_data.csv'"]
-    EXEC2 --> MODEL1["Model<br/>'trained_model.pkl'"]
-    EXEC3 --> METRICS1["Metrics<br/>'accuracy: 0.95'"]
+    CONTEXT1 -.-> EXEC1
+    CONTEXT2 -.-> EXEC2
+    CONTEXT3 -.-> EXEC3
+
+    EXEC1 -.-> DATASET1
+    EXEC2 -.-> MODEL1
+    EXEC3 -.-> METRICS1
+    
+    style PIPELINE fill:#e3f2fd,stroke:#90caf9,stroke-width:2px,color:#546e7a
+    style CONTEXT1 fill:#fff8e1,stroke:#ffcc80,stroke-width:2px,color:#d84315
+    style CONTEXT2 fill:#fff8e1,stroke:#ffcc80,stroke-width:2px,color:#d84315
+    style CONTEXT3 fill:#fff8e1,stroke:#ffcc80,stroke-width:2px,color:#d84315
+    style EXEC1 fill:#f3e5f5,stroke:#ce93d8,stroke-width:2px,color:#7b1fa2
+    style EXEC2 fill:#f3e5f5,stroke:#ce93d8,stroke-width:2px,color:#7b1fa2
+    style EXEC3 fill:#f3e5f5,stroke:#ce93d8,stroke-width:2px,color:#7b1fa2
+    style DATASET1 fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px,color:#388e3c
+    style MODEL1 fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px,color:#388e3c
+    style METRICS1 fill:#e8f5e9,stroke:#a5d6a7,stroke-width:2px,color:#388e3c
+    
+    linkStyle default stroke:#cfd8dc,stroke-width:1.5px,color:#cfd8dc,fill:none
 ```
 
 ## Key Features
