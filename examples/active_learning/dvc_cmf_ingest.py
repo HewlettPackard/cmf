@@ -5,8 +5,8 @@ import typing as t
 import uuid
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
-from cmflib import cmfquery
-from cmflib import cmf
+from cmflib.cmfquery import CmfQuery
+from cmflib.cmf import Cmf
 
 
 """
@@ -46,7 +46,7 @@ args
     execution_exist : True if it exeist, False otherwise
     metawrite: cmf object 
 """
-def ingest_metadata(execution_lineage:str, metadata:dict, execution_exist:bool, metawriter:cmf.Cmf) :
+def ingest_metadata(execution_lineage:str, metadata:dict, execution_exist:bool, metawriter:Cmf) :
     pipeline_name, context_name, execution = get_cmf_hierarchy(execution_lineage)
     _ = metawriter.create_context(pipeline_stage=context_name)
 
@@ -65,7 +65,7 @@ def ingest_metadata(execution_lineage:str, metadata:dict, execution_exist:bool, 
 
 #Query mlmd to get all the executions and its commands
 cmd_exe = {}
-cmf_query = cmfquery.CmfQuery(args.cmf_filename)
+cmf_query = CmfQuery(args.cmf_filename)
 pipelines: t.List[str] = cmf_query.get_pipeline_names()
 for pipeline in pipelines:
     pipeline_name = pipeline
@@ -123,7 +123,7 @@ Create a unique Pipeline name if there is no mlmd file
 pipeline_name = "Pipeline"+"-"+str(uuid.uuid4()) if not pipeline_name else pipeline_name
 
 
-metawriter = cmf.Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=True)
+metawriter = Cmf(filename="mlmd", pipeline_name=pipeline_name, graph=True)
 
 """
 Parse the dvc.lock dictionary and get the command section
