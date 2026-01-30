@@ -1424,36 +1424,36 @@
 
 
 
-<h1 id="using-cmf-to-track-metadata-for-a-ml-pipeline">Using <code>cmf</code> to track metadata for a ML Pipeline<a class="headerlink" href="#using-cmf-to-track-metadata-for-a-ml-pipeline" title="Permanent link">¤</a></h1>
-<p><a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started">example-get-started</a> demonstrates how <code>cmf</code> tracks metadata associated with executions of various machine learning (ML)
+<h1 id="using-cmf-to-track-metadata-for-a-ml-pipeline">Using <code>Cmf</code> to track metadata for a ML Pipeline<a class="headerlink" href="#using-cmf-to-track-metadata-for-a-ml-pipeline" title="Permanent link">¤</a></h1>
+<p><a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started">example-get-started</a> demonstrates how <code>Cmf</code> tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
-ML steps, such as training and testing ML models. </p>
-<p>More comprehensive ML pipelines may include steps such as deploying a
+ML stages, such as training and testing ML models. </p>
+<p>More comprehensive ML pipelines may include stages such as deploying a
 trained model and tracking its inference parameters (such as response latency, memory consumption, etc.).</p>
 <p>This <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started">example</a>, implements a simple
-pipeline consisting of five steps:</p>
+pipeline consisting of five stages:</p>
 <ul>
-<li>The <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py">parse</a> step splits
+<li>The <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py">parse</a> stage splits
   the <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started/artifacts">raw data</a> into
-  <code>train</code> and <code>test</code> raw datasets for training and testing a machine learning model. This step registers one
+  <code>train</code> and <code>test</code> raw datasets for training and testing a machine learning model. This stage registers one
   input artifact (raw <code>dataset</code>) and two output artifacts (train and test <code>datasets</code>).</li>
 <li>The <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/featurize.py">featurize</a>
-  step creates two machine learning splits - train and test splits - that will be used by an ML training algorithm to
-  train ML models. This step registers two input artifacts (raw train and test datasets) and two output artifacts (
+  stage creates two machine learning splits - train and test splits - that will be used by an ML training algorithm to
+  train ML models. This stage registers two input artifacts (raw train and test datasets) and two output artifacts (
   train and test ML datasets).</li>
-<li>The next <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/train.py">train</a> step
+<li>The next <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/train.py">train</a> stage
   trains an ML model (random forest classifier). It registers one input artifact (the dataset from the previous step)
   and one output artifact (trained ML model).</li>
-<li>The fourth <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/test.py">test</a> step
-  evaluates the performance and execution of the ML model trained in the <code>train</code> step. This step registers two input
+<li>The fourth <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/test.py">test</a> stage
+  evaluates the performance and execution of the ML model trained in the <code>train</code> step. This stage registers two input
   artifacts (ML model and test dataset) and one output artifact (performance metrics).</li>
-<li>The last <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py">query</a> step
-  displays each step of the pipeline's metadata as retrieved from the <code>CMF Server</code>, aggregated over all executions.
+<li>The last <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py">query</a> stage
+  displays each stage of the pipeline's metadata as retrieved from the <code>CMF Server</code>, aggregated over all executions.
   For example, if you rerun the pipeline again, the output will include not only metadata associated with the latest
   run, but also the metadata associated with previous runs.</li>
 </ul>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¤</a></h2>
-<p>Before proceeding, ensure that the <code>CMFLib</code> is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/#install-cmf-library-ie-cmflib">Installation &amp; Setup</a> page.</p>
+<p>Before proceeding, ensure that the <code>cmflib</code> is installed on your system. If not, follow the installation instructions provided in the <a href="../../setup/#install-cmf-library-ie-cmflib">Installation &amp; Setup</a> page.</p>
 <p>The initial setup requires creating a workspace directory that will contain all files for this example, cloning the <code>cmf</code> repository that contains source code and data for this example.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create workspace directory</span>
 mkdir<span class="w"> </span>cmf_example
@@ -1485,7 +1485,7 @@ cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-s
                --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 <blockquote>
-<p>Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage</p>
+<p>For path provide a folder outside the current working directory, which would serve as the artifact repository. eg :-  /home/username/local-storage</p>
 </blockquote>
 <p>Required Arguments
 <div class="highlight"><pre><span></span><code>  --path [path]                         Specify local directory path.
@@ -1502,7 +1502,7 @@ Follow <a href="../../cmf_client/cmf_client_commands/#cmf-init">here</a> for mor
 <h2 id="project-execution">Project execution<a class="headerlink" href="#project-execution" title="Permanent link">¤</a></h2>
 <p>To execute the example pipeline, run the
 <a href="https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started">test_script.sh</a>
-file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
+file. In brief, this script runs a sequence of stages typical of machine learning pipelines - getting raw data,
 splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
 execution of these steps (and parent pipeline) will be recorded by the <code>cmf</code>.
 <div class="highlight"><pre><span></span><code><span class="c1"># Run the example pipeline</span>

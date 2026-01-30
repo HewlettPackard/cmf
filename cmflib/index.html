@@ -1152,15 +1152,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#main-api-cmfcmf" class="md-nav__link">
+  <a href="#main-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Main API (cmf.Cmf)
+        Main API
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Main API (cmf.Cmf)">
+    <nav class="md-nav" aria-label="Main API">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1233,6 +1233,7 @@
 <p>The <code>cmflib</code> package is the foundational Python library that provides the core metadata tracking capabilities for the Common Metadata Framework (CMF). It offers a unified API for logging metadata across distributed AI/ML pipelines, integrating with multiple storage backends and versioning systems.</p>
 <p>This document covers the core library components, main API classes, and integration mechanisms. For CLI usage patterns, see <a href="../cmf_client/">Quick Start with CMF Client</a>. For server-side components, see <a href="../setup/#install-cmf-server-with-gui">CMF Server</a>.</p>
 <h2 id="core-architecture">Core Architecture<a class="headerlink" href="#core-architecture" title="Permanent link">¤</a></h2>
+<p><strong>Note:</strong> The CMF library should be imported as <code>from cmflib.cmf import Cmf</code>. See examples below for the correct usage pattern.</p>
 <p>Complex ML projects rely on <code>ML pipelines</code> to train and test ML models. An ML pipeline is a sequence of stages where
 each stage performs a particular task, such as data loading, pre-processing, ML model training, and testing stages.
 Each stage can have multiple Executions which:</p>
@@ -1247,7 +1248,7 @@ Metadata associated with each <u>run</u> of a <u>stage</u> is captured in the Ex
 Inputs and outputs of Executions can be logged as dataset, model, or metrics. While parameters of executions
 are recorded as properties of executions.</p>
 <p><img src="../assets/cmf_concepts.png" alt="CMF abstractions" style="display: block; margin: 0 auto" /></p>
-<h2 id="main-api-cmfcmf">Main API (cmf.Cmf)<a class="headerlink" href="#main-api-cmfcmf" title="Permanent link">¤</a></h2>
+<h2 id="main-api">Main API<a class="headerlink" href="#main-api" title="Permanent link">¤</a></h2>
 <p>The <code>Cmf</code> class is the primary interface for metadata tracking in CMF. It provides methods for creating pipelines, contexts, executions, and logging artifacts.</p>
 <h3 id="key-methods">Key Methods<a class="headerlink" href="#key-methods" title="Permanent link">¤</a></h3>
 <table>
@@ -1387,7 +1388,7 @@ this execution with the context created previously. Stage executions are created
 </code></pre></div></p>
 <p><strong>Log artifacts</strong>. A stage execution can consume (inputs) and produce (outputs) multiple artifacts (datasets, models, and
 performance metrics). The path of these artifacts must be relative to the project (repository) root path. Artifacts
-might have optional metadata associated with them. These metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
+might have optional metadata associated with them. This metadata could include feature statistics for ML datasets, or useful parameters for ML models (such as, for
 instance, number of trees in a random forest classifier).</p>
 <ul>
 <li>
