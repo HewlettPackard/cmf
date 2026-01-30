@@ -7,7 +7,7 @@ This guide provides step-by-step instructions for installing, configuring, and u
 
 The installation process consists of the following components:
 
-1. **[CMFLib](#install-cmf-library-ie-cmflib)**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.
+1. **[cmflib](#install-cmf-library-ie-cmflib)**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.
 2. **[CMF Server with GUI](#install-cmf-server-with-gui)**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships.
 
 > **Note:** Every CMF setup requires a CMF Server instance. In collaborative environments, multiple users working on the same project can share a single CMF Server to centralize metadata and facilitate team coordination.
@@ -38,7 +38,7 @@ Before installing CMF, ensure you have the following prerequisites:
     > git config --global user.email "you@example.com"
     > ```
 
-- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts.
+- **Storage Backend**: local, S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
 
 ### CMF Server Prerequisites {#cmf-server-prerequisites}
 
@@ -57,7 +57,7 @@ Before installing CMF, ensure you have the following prerequisites:
 
 ## Installation
 
-### 1. Install cmf library i.e. CMFLib {#install-cmf-library-ie-cmflib}
+### 1. Install cmf library i.e. cmflib {#install-cmf-library-ie-cmflib}
 
 #### Step 1: Set up Python Virtual Environment
 
@@ -73,16 +73,16 @@ Before installing CMF, ensure you have the following prerequisites:
     source .cmf/bin/activate
     ```
 
-#### Step 2: Install CMFLib
-
-=== "Latest version from GitHub"
-    ```shell
-    pip install git+https://github.com/HewlettPackard/cmf
-    ```
+#### Step 2: Install cmflib
 
 === "Stable version from PyPI"
     ```shell
     pip install cmflib
+    ```
+
+=== "Latest version from GitHub"
+    ```shell
+    pip install git+https://github.com/HewlettPackard/cmf
     ```
 
 ---

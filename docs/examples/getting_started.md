@@ -63,8 +63,16 @@ Usage: cmf init local [-h] --path [path]
                            --neo4j-uri [neo4j_uri]
 ```
 `cmf init local` initializes the local directory as a cmf artifact repository.
+
+**Basic Usage (Required Parameters Only):**
 ```
-cmf init local --path /home/XXXX/local-storage
+cmf init local --path /path/to/local-storage
+               --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
+```
+cmf init local --path /path/to/local-storage
                --git-remote-url https://github.com/user/experiment-repo.git
                --cmf-server-url http://x.x.x.x:80
                --neo4j-user neo4j
@@ -72,11 +80,11 @@ cmf init local --path /home/XXXX/local-storage
                --neo4j-uri bolt://localhost:7687
 ```
 
-> For path provide a folder outside the current working directory, which would serve as the artifact repository. eg :-  /home/username/local-storage
+> **Note:** For `--path`, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.
 
 Required Arguments
 ```
-  --path [path]                         Specify local directory path.
+  --path [path]                         Specify local directory path.                            
   --git-remote-url [git_remote_url]     Specify git repo url.
 ```
 Optional Arguments
