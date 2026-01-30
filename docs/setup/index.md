@@ -38,7 +38,7 @@ Before installing CMF, ensure you have the following prerequisites:
     > git config --global user.email "you@example.com"
     > ```
 
-- **Storage Backend**: S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md), [OSDF](./../cmf_client/cmf_osdf.md) or local storage for artifacts.
+- **Storage Backend**: local, S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
 
 ### CMF Server Prerequisites {#cmf-server-prerequisites}
 
@@ -75,14 +75,14 @@ Before installing CMF, ensure you have the following prerequisites:
 
 #### Step 2: Install CMFLib
 
-=== "Latest version from GitHub"
-    ```shell
-    pip install git+https://github.com/HewlettPackard/cmf
-    ```
-
 === "Stable version from PyPI"
     ```shell
     pip install cmflib
+    ```
+
+=== "Latest version from GitHub"
+    ```shell
+    pip install git+https://github.com/HewlettPackard/cmf
     ```
 
 ---
