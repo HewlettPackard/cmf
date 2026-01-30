@@ -21,6 +21,14 @@ cd /path/to/your/project
 
 Use the following command to initialize `cmf`. You can choose from various storage options like `local`, `ssh`, `amazons3`, `osdfremote`, or `minios3`.
 
+**Basic Usage (Required Parameters Only):**
+```bash
+cmf init local \
+  --path /path/to/local-storage \
+  --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters (including Neo4j):**
 ```bash
    cmf init local \
   --path /path/to/local-storage \

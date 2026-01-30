@@ -19,12 +19,22 @@ Proceed with the following steps to set up an SSH Remote Repository:
    ```
 
 3.  Execute the following command to initialize the SSH remote storage as a CMF artifact repository.
+
+    **Basic Usage (Required Parameters Only):**
+    ```
+    cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
+        --user XXXXX --port 22 --password example@123 \
+        --git-remote-url https://github.com/user/experiment-repo.git
+    ```
+
+    **With Optional Parameters:**
     ```
     cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
         --user XXXXX --port 22 --password example@123 \
         --git-remote-url https://github.com/user/experiment-repo.git \
         --cmf-server-url http://127.0.0.1:80
     ```
+
     > When running `cmf init sshremote`, ensure that the specified IP address allows access for \
     the specified user XXXX. If the IP address or user does not exist, this command will fail.
 

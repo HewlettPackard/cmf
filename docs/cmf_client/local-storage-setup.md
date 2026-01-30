@@ -36,6 +36,13 @@ mkdir -p /path/to/local-storage
 
 Execute the following command to initialize the local directory as a CMF artifact repository:
 
+**Basic Usage (Required Parameters Only):**
+```bash
+cmf init local --path /path/to/local-storage \
+  --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
 ```bash
 cmf init local --path /path/to/local-storage \
   --git-remote-url https://github.com/user/experiment-repo.git \

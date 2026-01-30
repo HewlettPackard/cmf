@@ -37,6 +37,12 @@ Usage: cmf init local [-h] --path [path]
 
 `cmf init local` initialises local directory as a cmf artifact repository. Refer [local-storage-setup.md](./local-storage-setup.md) to set up a local storage.
 
+**Basic Usage (Required Parameters Only):**
+```
+cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
 ```
 cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
@@ -76,6 +82,12 @@ Usage: cmf init minioS3 [-h] --url [url]
 
 `cmf init minioS3` configures Minio S3 bucket as a cmf artifact repository. Refer [minio-server.md](./minio-server.md#steps-to-set-up-a-minio-server) to set up a minio server.
 
+**Basic Usage (Required Parameters Only):**
+```
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
 ```
 cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
@@ -160,6 +172,12 @@ Usage: cmf init amazonS3 [-h] --url [url]
 
 `cmf init amazonS3` initialises Amazon S3 bucket as a CMF artifact repository.
 
+**Basic Usage (Required Parameters Only):**
+```
+cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
 ```
 cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
@@ -204,6 +222,12 @@ Usage: cmf init sshremote [-h] --path [path]
 
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 
+**Basic Usage (Required Parameters Only):**
+```
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
 ```
 cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
@@ -245,14 +269,21 @@ Usage: cmf init osdfremote [-h] --path [path]
 
 `cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
 
+**Basic Usage (Required Parameters Only):**
 ```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
+```
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 
 Required Arguments
 
 ```
   --path [path]                        Specify FQDN for OSDF origin including including port and directory path if any
+  --cache                              Specify OSDF cache/director URL for retrieving data
   --key-id [key_id]                    Specify key_id for provided private key. eg. b2d3
   --key-path [key_path]                Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem
   --key-issuer [key_issuer]            Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX
