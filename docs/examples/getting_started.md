@@ -1,38 +1,38 @@
-# Using `cmf` to track metadata for a ML Pipeline
+# Using `Cmf` to track metadata for a ML Pipeline
 
-[example-get-started](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates how `cmf` tracks metadata associated with executions of various machine learning (ML)
+[example-get-started](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates how `Cmf` tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
-ML steps, such as training and testing ML models. 
+ML stages, such as training and testing ML models. 
 
-More comprehensive ML pipelines may include steps such as deploying a
+More comprehensive ML pipelines may include stages such as deploying a
 trained model and tracking its inference parameters (such as response latency, memory consumption, etc.).
 
 This [example](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started), implements a simple
-pipeline consisting of five steps:
+pipeline consisting of five stages:
 
-- The [parse](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py) step splits
+- The [parse](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/parse.py) stage splits
   the [raw data](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started/artifacts) into
-  `train` and `test` raw datasets for training and testing a machine learning model. This step registers one
+  `train` and `test` raw datasets for training and testing a machine learning model. This stage registers one
   input artifact (raw `dataset`) and two output artifacts (train and test `datasets`).
 - The [featurize](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/featurize.py)
-  step creates two machine learning splits - train and test splits - that will be used by an ML training algorithm to
-  train ML models. This step registers two input artifacts (raw train and test datasets) and two output artifacts (
+  stage creates two machine learning splits - train and test splits - that will be used by an ML training algorithm to
+  train ML models. This stage registers two input artifacts (raw train and test datasets) and two output artifacts (
   train and test ML datasets).
-- The next [train](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/train.py) step
+- The next [train](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/train.py) stage
   trains an ML model (random forest classifier). It registers one input artifact (the dataset from the previous step)
   and one output artifact (trained ML model).
-- The fourth [test](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/test.py) step
-  evaluates the performance and execution of the ML model trained in the `train` step. This step registers two input
+- The fourth [test](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/test.py) stage
+  evaluates the performance and execution of the ML model trained in the `train` step. This stage registers two input
   artifacts (ML model and test dataset) and one output artifact (performance metrics).
-- The last [query](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py) step
-  displays each step of the pipeline's metadata as retrieved from the `CMF Server`, aggregated over all executions.
+- The last [query](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/src/query.py) stage
+  displays each stage of the pipeline's metadata as retrieved from the `CMF Server`, aggregated over all executions.
   For example, if you rerun the pipeline again, the output will include not only metadata associated with the latest
   run, but also the metadata associated with previous runs.
 
 
 ## Prerequisites 
 
-Before proceeding, ensure that the `CMFLib` is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md#install-cmf-library-ie-cmflib) page.
+Before proceeding, ensure that the `cmflib` is installed on your system. If not, follow the installation instructions provided in the [Installation & Setup](../setup/index.md#install-cmf-library-ie-cmflib) page.
 
 The initial setup requires creating a workspace directory that will contain all files for this example, cloning the `cmf` repository that contains source code and data for this example.
 
@@ -72,7 +72,7 @@ cmf init local --path /home/XXXX/local-storage
                --neo4j-uri bolt://localhost:7687
 ```
 
-> Replace 'XXXX' with your system username in the following path: /home/XXXX/local-storage
+> Replace 'XXXX' with a folder outside the current working directory, which would serve as the artifact repository. eg :-  /home/username/local-storage
 
 Required Arguments
 ```
@@ -92,7 +92,7 @@ Follow [here](./../cmf_client/cmf_client_commands.md#cmf-init) for more details.
 ## Project execution
 To execute the example pipeline, run the
 [test_script.sh](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started)
-file. In brief, this script runs a sequence of steps typical of machine learning pipelines - getting raw data,
+file. In brief, this script runs a sequence of stages typical of machine learning pipelines - getting raw data,
 splitting that data into machine learning train/test datasets, training the model, and evaluating a model. The
 execution of these steps (and parent pipeline) will be recorded by the `cmf`.
 ```shell
