@@ -4,7 +4,7 @@
 Local storage allows you to use a directory on your local file system as a CMF artifact repository. This is the simplest storage option and is ideal for development, testing, or single-machine workflows where artifacts don't need to be shared across multiple systems.
 
 ## Prerequisites
-- CMF installed on your system
+- [cmflib](../setup/index.md#install-cmf-library-ie-cmflib) installed on your system
 - A Git repository for tracking your experiment code
 - Sufficient disk space in the chosen local directory
 
