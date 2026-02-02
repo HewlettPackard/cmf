@@ -354,6 +354,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-interaction-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Interaction Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1176,6 +1193,90 @@
   
   
     <li class="md-nav__item">
+      <a href="ui/artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ui/executions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="ui/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="cmf_server/metahub-tab-usage/" class="md-nav__link">
         
   
@@ -1314,6 +1415,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="System Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#system-interaction-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        System Interaction Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1413,6 +1531,39 @@
 <li><strong>CMF Server with GUI</strong>: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.</li>
 <li><strong>Central Artifact Repositories</strong>: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.</li>
 </ul>
+<h3 id="system-interaction-flow">System Interaction Flow<a class="headerlink" href="#system-interaction-flow" title="Permanent link">¤</a></h3>
+<pre class="mermaid"><code>%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'14px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart TB
+    WEBUSER([Web Users &amp; ML Teams])
+    CMFCLIENT([CMF Client CLI])
+
+    UI[Web Interface]
+    SERVERBOX[CMF Server]
+
+    DB[(Metadata Store)]
+    ARTIFACTS[Artifact Repositories&lt;br/&gt;&lt;i&gt;local/ S3 / MinIO / SSH&lt;/i&gt;]
+
+    WEBUSER --&gt;|Access| UI
+    CMFCLIENT --&gt;|Push Metadata| SERVERBOX
+    CMFCLIENT --&gt;|Pull Metadata| SERVERBOX
+
+    UI --&gt;|Request Data| SERVERBOX
+    SERVERBOX --&gt;|Response| UI
+
+    SERVERBOX --&gt;|Query &amp; Store| DB
+    DB --&gt;|Query &amp; Store| SERVERBOX
+
+    CMFCLIENT --&gt;|Push Artifacts| ARTIFACTS
+    CMFCLIENT --&gt;|Pull Artifacts| ARTIFACTS
+
+    style WEBUSER fill:#e8eaf6,stroke:#5c6bc0,stroke-width:2px,color:#37474f
+    style CMFCLIENT fill:#e0f2f1,stroke:#26a69a,stroke-width:2px,color:#37474f
+    style UI fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#37474f
+    style SERVERBOX fill:#e8f5e9,stroke:#66bb6a,stroke-width:2.5px,color:#37474f
+    style DB fill:#fce4ec,stroke:#ec407a,stroke-width:2px,color:#37474f
+    style ARTIFACTS fill:#fff9c4,stroke:#ffca28,stroke-width:2px,color:#37474f
+
+    linkStyle default stroke:#78909c,stroke-width:2px</code></pre>
 <h2 id="core-abstractions">Core Abstractions<a class="headerlink" href="#core-abstractions" title="Permanent link">¤</a></h2>
 <p>CMF uses three primary abstractions to model ML pipeline metadata:</p>
 <table>

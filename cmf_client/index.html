@@ -1050,6 +1050,90 @@
   
   
     <li class="md-nav__item">
+      <a href="../ui/artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/executions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ui/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cmf_server/metahub-tab-usage/" class="md-nav__link">
         
   
@@ -1280,12 +1364,15 @@
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¤</a></h2>
 <p>Before proceeding with the setup, ensure the following components are up and running:</p>
 <ul>
-<li><a href="../setup/#install-cmf-library-ie-cmflib">cmflib</a></li>
-<li><a href="../setup/#install-cmf-server-with-gui">CMF Server</a></li>
+<li><a href="../setup/#install-cmf-library-ie-cmflib">cmflib with CMF Client</a></li>
+<li><a href="../setup/#install-cmf-server-with-gui">CMF Server with GUI</a></li>
 </ul>
 <p>Make sure there are no errors during their startup, as <code>CMF Client</code> depends on both of these components.</p>
 <h2 id="setup-a-cmf-client">Setup a <code>CMF Client</code><a class="headerlink" href="#setup-a-cmf-client" title="Permanent link">¤</a></h2>
 <p><code>CMF Client</code> is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the <code>CMF Server</code>.</p>
+<blockquote>
+<p><strong>Note:</strong> The <code>CMF Client</code> is automatically installed when you install <code>cmflib</code>. No separate installation is required.</p>
+</blockquote>
 <p>Follow the below-mentioned steps for the end-to-end setup of <code>CMF Client</code>:-</p>
 <p><strong>Configuration</strong></p>
 <ol>
@@ -1293,26 +1380,19 @@
 <li>Execute <code>cmf init</code> to configure the Data Version Control (DVC) remote directory, Git remote URL, CMF server, and Neo4j. Follow the <a href="cmf_client_commands/#cmf-init"><code>cmf init</code></a> for more details.</li>
 </ol>
 <h2 id="how-to-effectively-use-cmf-client">How to effectively use CMF Client?<a class="headerlink" href="#how-to-effectively-use-cmf-client" title="Permanent link">¤</a></h2>
-<p>Let's assume we are tracking the metadata for a pipeline named <code>Test-env</code> with a MinIO S3 bucket as the artifact repository and a CMF Server.</p>
+<p>Let's assume we are tracking the metadata for a pipeline named <code>Test-env</code> with a local artifact repository and a CMF Server.</p>
 <p><strong>Create a folder</strong>
 <div class="highlight"><pre><span></span><code>mkdir example-folder
 </code></pre></div></p>
 <h3 id="initialize-cmf">Initialize cmf<a class="headerlink" href="#initialize-cmf" title="Permanent link">¤</a></h3>
-<p>CMF initialization is the first and foremost step to use CMF Client commands. This command completes the initialization process in one step, making the CMF Client user-friendly. Execute <code>cmf init</code> in the <code>example-folder</code> directory created in the above step.
-<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art
-                 --endpoint-url http://x.x.x.x:9000
-                 --access-key-id minioadmin
-                 --secret-key minioadmin
-                 --git-remote-url https://github.com/user/experiment-repo.git
-                 --cmf-server-url http://x.x.x.x:80
-                 --neo4j-user neo4j
-                 --neo4j-password password
-                 --neo4j-uri bolt://localhost:7687
+<p>CMF initialization is the first and foremost step to use CMF Client commands. This command completes the initialization process in one step, making the CMF Client user-friendly. Execute <code>cmf init</code> in the <code>example-folder</code> directory created in the above step.</p>
+<p><strong>Basic Usage (Required Parameters Only):</strong>
+<div class="highlight"><pre><span></span><code>cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
 </code></pre></div></p>
-<blockquote>
-<p>Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.</p>
-</blockquote>
-<p>Check <a href="cmf_client_commands/#cmf-init-minios3">cmf init minioS3</a> for more details.</p>
+<p><strong>With Optional Parameters:</strong>
+<div class="highlight"><pre><span></span><code>cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+</code></pre></div></p>
+<p>Check <a href="cmf_client_commands/#cmf-init-local">cmf init local</a> for more details.</p>
 <p><strong>Check status of CMF initialization (Optional)</strong>
 <div class="highlight"><pre><span></span><code>cmf init show
 </code></pre></div>
@@ -1321,7 +1401,7 @@ Check <a href="cmf_client_commands/#cmf-init-show">cmf init show</a> for more de
 <p>Use <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md">Sample projects</a> as a reference to create a new project to track metadata for ML pipelines.</p>
 <p>More information is available inside <a href="../examples/getting_started/">Getting Started Tutorial</a>.</p>
 <blockquote>
-<p>Before pushing artifacts or metadata, ensure that the CMF Server and minioS3 are up and running.</p>
+<p>Before pushing artifacts or metadata, ensure that the CMF Server is up and running.</p>
 </blockquote>
 <p><strong>Push artifacts</strong></p>
 <p>Push artifacts in the artifact repository initialized in the <a href="#initialize-cmf">Initialize cmf</a> step.

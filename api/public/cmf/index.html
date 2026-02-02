@@ -1384,6 +1384,90 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../ui/artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ui/executions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ui/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../cmf_server/metahub-tab-usage/" class="md-nav__link">
         
   
@@ -1827,7 +1911,7 @@
 The class instance creates an ML metadata store to store the metadata.
 It creates a driver to store nodes and its relationships to neo4j.
 The user has to provide the name of the pipeline, that needs to be recorded with CMF.</p>
-<div class="highlight"><pre><span></span><code>    <span class="kn">from</span><span class="w"> </span><span class="nn">cmflib.cmf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cmf</span>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">cmflib.cmf</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cmf</span>
 <span class="n">metawriter</span> <span class="o">=</span> <span class="n">Cmf</span><span class="p">(</span>
     <span class="n">filepath</span><span class="o">=</span><span class="s2">&quot;mlmd&quot;</span><span class="p">,</span>
     <span class="n">pipeline_name</span><span class="o">=</span><span class="s2">&quot;test_pipeline&quot;</span><span class="p">,</span>
