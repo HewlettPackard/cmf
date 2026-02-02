@@ -3,6 +3,7 @@
 The Executions page provides detailed insights into pipeline runs, showing when stages executed, what parameters were used, and what artifacts were produced. This page is essential for debugging pipeline issues, comparing runs, and understanding execution history.
 
 An **Execution** represents a single run of a pipeline stage. Each execution captures:
+
 - **Configuration**: Parameters and environment settings
 - **Code Version**: Git commit that was executed
 - **Artifacts**: Input and output artifacts
@@ -39,6 +40,7 @@ The main table displays execution runs with these columns:
 | **Git Commit** | Code version | Short commit hash |
 
 **Table Interactions:**
+
 - **Click execution name**: Opens detailed execution view
 - **Sort columns**: Click headers to sort by that field
 

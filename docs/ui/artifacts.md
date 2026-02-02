@@ -3,6 +3,7 @@
 The Artifacts page provides a comprehensive interface for exploring all types of artifacts (datasets, models, metrics, step metrics) tracked by CMF across your ML pipelines. This page enables users to search, filter, and analyze artifacts with detailed metadata and version history.
 
 Artifacts represent the data entities in your ML pipeline:
+
 - **Datasets**: Training data, test data, validation sets, feature matrices
 - **Models**: Trained ML models, model checkpoints, exported models
 - **Metrics**: Performance metrics, evaluation results, quality measures
@@ -23,6 +24,7 @@ The filter panel allows you to narrow down artifacts based on multiple criteria:
 | **Custom Properties** | Filter by user-defined metadata | Based on tracked properties |
 
 **Usage:**
+
 1. Select a pipeline from the dropdown to view its artifacts
 2. Choose artifact type (Dataset/Model/Metrics) from tabs
 3. Use search box for full-text search across artifact names and properties
@@ -33,14 +35,15 @@ The main table displays artifacts with the following columns:
 
 | Column | Description |
 |--------|-------------|
-| **Name** | Artifact name and identifier |
-| **Type** | Artifact type (Dataset/Model/Metrics) |
-| **URI** | Artifact location/path |
-| **Pipeline** | Associated pipeline name |
-| **Created At** | Timestamp of creation |
-| **Custom Properties** | User-defined metadata |
+| Name | Artifact name and identifier |
+| Type | Artifact type (Dataset/Model/Metrics) |
+| URI | Artifact location/path |
+| Pipeline | Associated pipeline name |
+| Created At | Timestamp of creation |
+| Custom Properties | User-defined metadata |
 
 **Interactions:**
+
 - **Click on artifact name**: Opens detailed view with full metadata
 - **Click column headers**: Sort by that column (ascending/descending)
 - **Pagination controls**: Navigate through large artifact lists
