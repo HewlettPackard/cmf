@@ -23,6 +23,43 @@ Common Metadata Framework (`CMF`) has the following components:
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
 - **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
 
+### System Interaction Flow
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'14px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart TB
+    WEBUSER([Web Users & ML Teams])
+    CMFCLIENT([CMF Client CLI])
+    
+    UI[Web Interface]
+    SERVERBOX[CMF Server]
+        
+    DB[(Metadata Store)]
+    ARTIFACTS[Artifact Repositories<br/><i>local/ S3 / MinIO / SSH</i>]
+    
+    WEBUSER -->|Access| UI
+    CMFCLIENT -->|Push Metadata| SERVERBOX
+    CMFCLIENT -->|Pull Metadata| SERVERBOX
+    
+    UI -->|Request Data| SERVERBOX
+    SERVERBOX -->|Response| UI
+    
+    SERVERBOX -->|Query & Store| DB
+    DB -->|Query & Store| SERVERBOX
+    
+    CMFCLIENT -->|Push Artifacts| ARTIFACTS
+    CMFCLIENT -->|Pull Artifacts| ARTIFACTS
+    
+    style WEBUSER fill:#e8eaf6,stroke:#5c6bc0,stroke-width:2px,color:#37474f
+    style CMFCLIENT fill:#e0f2f1,stroke:#26a69a,stroke-width:2px,color:#37474f
+    style UI fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#37474f
+    style SERVERBOX fill:#e8f5e9,stroke:#66bb6a,stroke-width:2.5px,color:#37474f
+    style DB fill:#fce4ec,stroke:#ec407a,stroke-width:2px,color:#37474f
+    style ARTIFACTS fill:#fff9c4,stroke:#ffca28,stroke-width:2px,color:#37474f
+    
+    linkStyle default stroke:#78909c,stroke-width:2px
+```
+
 
 ## Core Abstractions
 
