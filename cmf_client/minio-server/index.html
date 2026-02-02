@@ -13,7 +13,7 @@
       
       
       
-        <link rel="prev" href="../neo4j_docker/">
+        <link rel="prev" href="../local-storage-setup/">
       
       
         <link rel="next" href="../ssh-setup/">
@@ -867,6 +867,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1248,11 +1276,17 @@ Execute the &#39;cmf init&#39; command.
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository:
-    <div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
+<p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository:</p>
+<p><strong>Basic Usage (Required Parameters Only):</strong>
+<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
+  --access-key-id minioadmin --secret-key minioadmin \
+  --git-remote-url https://github.com/user/experiment-repo.git
+</code></pre></div></p>
+<p><strong>With Optional Parameters:</strong>
+<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
   --access-key-id minioadmin --secret-key minioadmin \
   --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:80  --neo4j-user neo4j \
+  --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j \
   --neo4j-password password --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 </li>

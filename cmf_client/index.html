@@ -868,6 +868,34 @@
   
   
     <li class="md-nav__item">
+      <a href="local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="minio-server/" class="md-nav__link">
         
   
@@ -1243,7 +1271,7 @@
 <h2 id="quick-start-with-cmf-client">Quick start with CMF Client<a class="headerlink" href="#quick-start-with-cmf-client" title="Permanent link">¤</a></h2>
 <p>Common Metadata Framework (<code>CMF</code>) has the following components:</p>
 <ul>
-<li><strong>CMFLib</strong>: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.</li>
+<li><strong>cmflib</strong>: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.</li>
 <li><strong>CMF Client</strong>: A command-line tool that synchronizes metadata with the <code>CMF Server</code>, manages artifact transfers to and from storage repositories, and integrates with Git for version control.</li>
 <li><strong>CMF Server with GUI</strong>: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.</li>
 <li><strong>Central Artifact Repositories</strong>: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.</li>
@@ -1252,7 +1280,7 @@
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">¤</a></h2>
 <p>Before proceeding with the setup, ensure the following components are up and running:</p>
 <ul>
-<li><a href="../setup/#install-cmf-library-ie-cmflib">CMFLib</a></li>
+<li><a href="../setup/#install-cmf-library-ie-cmflib">cmflib</a></li>
 <li><a href="../setup/#install-cmf-server-with-gui">CMF Server</a></li>
 </ul>
 <p>Make sure there are no errors during their startup, as <code>CMF Client</code> depends on both of these components.</p>
@@ -1289,7 +1317,7 @@
 <div class="highlight"><pre><span></span><code>cmf init show
 </code></pre></div>
 Check <a href="cmf_client_commands/#cmf-init-show">cmf init show</a> for more details.</p>
-<p><strong>Track metadata using CMFLib</strong></p>
+<p><strong>Track metadata using cmflib</strong></p>
 <p>Use <a href="https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md">Sample projects</a> as a reference to create a new project to track metadata for ML pipelines.</p>
 <p>More information is available inside <a href="../examples/getting_started/">Getting Started Tutorial</a>.</p>
 <blockquote>

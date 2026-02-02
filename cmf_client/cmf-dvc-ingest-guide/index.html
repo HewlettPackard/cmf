@@ -1020,6 +1020,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../minio-server/" class="md-nav__link">
         
   
@@ -1424,18 +1452,24 @@
 </code></pre></div>
 <h3 id="2-initialize-cmf-with-neo4j-credentials">2. Initialize <code>cmf</code> with Neo4j Credentials<a class="headerlink" href="#2-initialize-cmf-with-neo4j-credentials" title="Permanent link">¤</a></h3>
 <p>Use the following command to initialize <code>cmf</code>. You can choose from various storage options like <code>local</code>, <code>ssh</code>, <code>amazons3</code>, <code>osdfremote</code>, or <code>minios3</code>.</p>
+<p><strong>Basic Usage (Required Parameters Only):</strong>
+<div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--path<span class="w"> </span>/path/to/local-storage<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git
+</code></pre></div></p>
+<p><strong>With Optional Parameters (including Neo4j):</strong>
 <div class="highlight"><pre><span></span><code><span class="w">   </span>cmf<span class="w"> </span>init<span class="w"> </span><span class="nb">local</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--path<span class="w"> </span>/home/XXXX/local-storage<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--path<span class="w"> </span>/path/to/local-storage<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--cmf-server-url<span class="w"> </span>http://x.x.x.x:80<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--neo4j-user<span class="w"> </span>neo4j<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--neo4j-password<span class="w"> </span>password<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--neo4j-uri<span class="w"> </span>bolt://x.x.x.x:7687
-</code></pre></div>
+</code></pre></div></p>
 <blockquote>
 <p>🔁 Replace the following:
-- <code>x.x.x.x</code> with your IP address<br />
-- <code>XXXX</code> with your system username<br />
+- <code>x.x.x.x</code> with your IP address 
+- For <code>--path</code>, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.
 - Provide your correct Neo4j username and password</p>
 </blockquote>
 <h3 id="3-start-the-neo4j-server">3. Start the Neo4j Server<a class="headerlink" href="#3-start-the-neo4j-server" title="Permanent link">¤</a></h3>

@@ -870,6 +870,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../minio-server/" class="md-nav__link">
         
   
@@ -1247,14 +1275,22 @@ Execute the &#39;cmf init&#39; command.
 </code></pre></div></p>
 </li>
 <li>
-<p>Execute the following command to initialize the SSH remote storage as a CMF artifact repository.
-    <div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
+<p>Execute the following command to initialize the SSH remote storage as a CMF artifact repository.</p>
+<p><strong>Basic Usage (Required Parameters Only):</strong>
+<div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
+    --user XXXXX --port 22 --password example@123 \
+    --git-remote-url https://github.com/user/experiment-repo.git
+</code></pre></div></p>
+<p><strong>With Optional Parameters:</strong>
+<div class="highlight"><pre><span></span><code>cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
     --user XXXXX --port 22 --password example@123 \
     --git-remote-url https://github.com/user/experiment-repo.git \
     --cmf-server-url http://127.0.0.1:80
-</code></pre></div>
-    &gt; When running <code>cmf init sshremote</code>, ensure that the specified IP address allows access for \
-    the specified user XXXX. If the IP address or user does not exist, this command will fail.</p>
+</code></pre></div></p>
+<blockquote>
+<p>When running <code>cmf init sshremote</code>, ensure that the specified IP address allows access for \
+the specified user XXXX. If the IP address or user does not exist, this command will fail.</p>
+</blockquote>
 </li>
 <li>
 <p>Execute <code>cmf init show</code> to check the CMF configuration.</p>

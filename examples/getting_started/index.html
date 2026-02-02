@@ -1024,6 +1024,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../cmf_client/local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../cmf_client/minio-server/" class="md-nav__link">
         
   
@@ -1476,8 +1504,13 @@ cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-s
                            --neo4j-password [neo4j_password]
                            --neo4j-uri [neo4j_uri]
 </code></pre></div>
-<code>cmf init local</code> initializes the local directory as a cmf artifact repository.
-<div class="highlight"><pre><span></span><code>cmf init local --path /home/XXXX/local-storage
+<code>cmf init local</code> initializes the local directory as a cmf artifact repository.</p>
+<p><strong>Basic Usage (Required Parameters Only):</strong>
+<div class="highlight"><pre><span></span><code>cmf init local --path /path/to/local-storage
+               --git-remote-url https://github.com/user/experiment-repo.git
+</code></pre></div></p>
+<p><strong>With Optional Parameters:</strong>
+<div class="highlight"><pre><span></span><code>cmf init local --path /path/to/local-storage
                --git-remote-url https://github.com/user/experiment-repo.git
                --cmf-server-url http://x.x.x.x:80
                --neo4j-user neo4j
@@ -1485,10 +1518,10 @@ cp<span class="w"> </span>-r<span class="w"> </span>./cmf/examples/example-get-s
                --neo4j-uri bolt://localhost:7687
 </code></pre></div></p>
 <blockquote>
-<p>For path provide a folder outside the current working directory, which would serve as the artifact repository. eg :-  /home/username/local-storage</p>
+<p><strong>Note:</strong> For <code>--path</code>, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.</p>
 </blockquote>
 <p>Required Arguments
-<div class="highlight"><pre><span></span><code>  --path [path]                         Specify local directory path.
+<div class="highlight"><pre><span></span><code>  --path [path]                         Specify local directory path.                            
   --git-remote-url [git_remote_url]     Specify git repo url.
 </code></pre></div>
 Optional Arguments

@@ -559,12 +559,12 @@
   <a href="#install-cmf-library-ie-cmflib" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Install cmf library i.e. CMFLib
+        1. Install cmf library i.e. cmflib
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Install cmf library i.e. CMFLib">
+    <nav class="md-nav" aria-label="1. Install cmf library i.e. cmflib">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -582,7 +582,7 @@
   <a href="#step-2-install-cmflib" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Install CMFLib
+        Step 2: Install cmflib
       
     </span>
   </a>
@@ -1119,6 +1119,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../cmf_client/local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../cmf_client/minio-server/" class="md-nav__link">
         
   
@@ -1468,12 +1496,12 @@
   <a href="#install-cmf-library-ie-cmflib" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Install cmf library i.e. CMFLib
+        1. Install cmf library i.e. cmflib
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. Install cmf library i.e. CMFLib">
+    <nav class="md-nav" aria-label="1. Install cmf library i.e. cmflib">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1491,7 +1519,7 @@
   <a href="#step-2-install-cmflib" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Install CMFLib
+        Step 2: Install cmflib
       
     </span>
   </a>
@@ -1619,7 +1647,7 @@
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¤</a></h2>
 <p>The installation process consists of the following components:</p>
 <ol>
-<li><strong><a href="#install-cmf-library-ie-cmflib">CMFLib</a></strong>: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.</li>
+<li><strong><a href="#install-cmf-library-ie-cmflib">cmflib</a></strong>: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.</li>
 <li><strong><a href="#install-cmf-server-with-gui">CMF Server with GUI</a></strong>: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships.</li>
 </ol>
 <blockquote>
@@ -1653,7 +1681,7 @@ git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"
 </blockquote>
 </li>
 <li>
-<p><strong>Storage Backend</strong>: S3, <a href="../cmf_client/minio-server/">MinIOS3</a>, <a href="../cmf_client/ssh-setup/">ssh storage</a>, <a href="../cmf_client/cmf_osdf/">OSDF</a> or local storage for artifacts.</p>
+<p><strong>Storage Backend</strong>: local, S3, <a href="../cmf_client/minio-server/">MinIOS3</a>, <a href="../cmf_client/ssh-setup/">ssh storage</a> or <a href="../cmf_client/cmf_osdf/">OSDF</a> storage for artifacts.</p>
 </li>
 </ul>
 <h3 id="cmf-server-prerequisites">CMF Server Prerequisites<a class="headerlink" href="#cmf-server-prerequisites" title="Permanent link">¤</a></h3>
@@ -1677,7 +1705,7 @@ git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"
 </ul>
 <hr />
 <h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">¤</a></h2>
-<h3 id="install-cmf-library-ie-cmflib">1. Install cmf library i.e. CMFLib<a class="headerlink" href="#install-cmf-library-ie-cmflib" title="Permanent link">¤</a></h3>
+<h3 id="install-cmf-library-ie-cmflib">1. Install cmf library i.e. cmflib<a class="headerlink" href="#install-cmf-library-ie-cmflib" title="Permanent link">¤</a></h3>
 <h4 id="step-1-set-up-python-virtual-environment">Step 1: Set up Python Virtual Environment<a class="headerlink" href="#step-1-set-up-python-virtual-environment" title="Permanent link">¤</a></h4>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Using Conda</label><label for="__tabbed_1_2">Using VirtualEnv</label></div>
 <div class="tabbed-content">
@@ -1693,15 +1721,15 @@ conda<span class="w"> </span>activate<span class="w"> </span>cmf
 </div>
 </div>
 </div>
-<h4 id="step-2-install-cmflib">Step 2: Install CMFLib<a class="headerlink" href="#step-2-install-cmflib" title="Permanent link">¤</a></h4>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Latest version from GitHub</label><label for="__tabbed_2_2">Stable version from PyPI</label></div>
+<h4 id="step-2-install-cmflib">Step 2: Install cmflib<a class="headerlink" href="#step-2-install-cmflib" title="Permanent link">¤</a></h4>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Stable version from PyPI</label><label for="__tabbed_2_2">Latest version from GitHub</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/HewlettPackard/cmf
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>cmflib
 </code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>cmflib
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/HewlettPackard/cmf
 </code></pre></div>
 </div>
 </div>
