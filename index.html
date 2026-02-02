@@ -1545,7 +1545,7 @@ flowchart TB
 
     WEBUSER --&gt;|Access| UI
     CMFCLIENT --&gt;|Push Metadata| SERVERBOX
-    CMFCLIENT --&gt;|Pull Metadata| SERVERBOX
+    SERVERBOX --&gt;|Pull Metadata| CMFCLIENT
 
     UI --&gt;|Request Data| SERVERBOX
     SERVERBOX --&gt;|Response| UI
@@ -1554,7 +1554,7 @@ flowchart TB
     DB --&gt;|Query &amp; Store| SERVERBOX
 
     CMFCLIENT --&gt;|Push Artifacts| ARTIFACTS
-    CMFCLIENT --&gt;|Pull Artifacts| ARTIFACTS
+    ARTIFACTS --&gt;|Pull Artifacts| CMFCLIENT
 
     style WEBUSER fill:#e8eaf6,stroke:#5c6bc0,stroke-width:2px,color:#37474f
     style CMFCLIENT fill:#e0f2f1,stroke:#26a69a,stroke-width:2px,color:#37474f
