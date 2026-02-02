@@ -1,8 +1,8 @@
 ## cmflib
 
-The APIs and abstractions provided by cmflib enable tracking of pipeline metadata. 
+The APIs and abstractions provided by `cmflib` enable tracking of pipeline metadata. 
 
-cmflib tracks the stages in the pipeline, the input and output artifacts at each stage, and metrics. 
+`cmflib` tracks the stages in the pipeline, the input and output artifacts at each stage, and metrics. 
 
 The framework allows metrics to be tracked at both coarse and fine-grained intervals. Stage metrics can be captured at the end of a stage, while fine-grained metrics can be tracked per step (epoch) or at regular intervals during the execution of the stage. 
 
@@ -16,7 +16,7 @@ For every pipeline, the metadata tracker creates a new branch to track the code.
 
 The special metadata file created for artifacts, “.dvc” file is too committed to Git, and its commit ID is tracked as a metadata information. Whenever there is a change in the artifact, the metadata file is modified to reflect its current content hash, and the file is tracked as a new version of the metadata file.  
 
-The metadata tracker automatically tracks the start commit when cmflib was initialized and creates a separate commit for each change in the artifact during the experiment. This helps to track the transformations of the artifacts across the different stages in the pipeline. 
+The metadata tracker automatically tracks the start commit when `cmflib` was initialized and creates a separate commit for each change in the artifact during the experiment. This helps to track the transformations of the artifacts across the different stages in the pipeline. 
 
 ## CMF Client 
 

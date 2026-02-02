@@ -1,6 +1,6 @@
 # Artifacts Page
 
-The Artifacts page provides a comprehensive interface for exploring all datasets, models, and metrics tracked by CMF across your ML pipelines. This page enables users to search, filter, and analyze artifacts with detailed metadata and version history.
+The Artifacts page provides a comprehensive interface for exploring all types of artifacts (datasets, models, metrics, step metrics) tracked by CMF across your ML pipelines. This page enables users to search, filter, and analyze artifacts with detailed metadata and version history.
 
 ## Overview
 

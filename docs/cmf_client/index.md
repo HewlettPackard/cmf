@@ -11,13 +11,16 @@ This tutorial walks you through the process of setting up the `CMF Client`.
 ## Prerequisites 
 Before proceeding with the setup, ensure the following components are up and running:
 
-- [cmflib](../setup/index.md#install-cmf-library-ie-cmflib)
-- [CMF Server](../setup/index.md#install-cmf-server-with-gui)
+- [cmflib with CMF Client](../setup/index.md#install-cmf-library-ie-cmflib)
+- [CMF Server with GUI](../setup/index.md#install-cmf-server-with-gui)
 
 Make sure there are no errors during their startup, as `CMF Client` depends on both of these components.
 
 ## Setup a `CMF Client`
 `CMF Client` is a command-line tool that facilitates metadata collaboration between different teams or two team members. It allows users to pull or push metadata from or to the `CMF Server`.
+
+> **Note:** The `CMF Client` is automatically installed when you install `cmflib`. No separate installation is required.
+
 
 Follow the below-mentioned steps for the end-to-end setup of `CMF Client`:-
 

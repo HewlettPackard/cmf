@@ -110,7 +110,7 @@ sh ./test_script.sh
 
 ### Setup a `CMF Server` 
 
-> Note: This setup step is not required if the CMF Server is already configured.
+> Note: This step is not required if the CMF Server is already configured.
 
 **CMF Server** is a key interface for users to explore and track their ML training runs, allowing them to store metadata files on the CMF Server. Users can retrieve saved metadata files and view their content using the UI provided by the CMF Server.
 
