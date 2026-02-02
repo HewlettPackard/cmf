@@ -393,4 +393,4 @@ Set up alerts for:
 - [Artifacts Page](artifacts.md) - View artifacts produced by executions
 - [Lineage Page](lineage.md) - Visualize execution flow and dependencies
 - [CMF Client Commands](../cmf_client/cmf_client_commands.md) - CLI for execution management
-- [CMFLib API](../cmflib/index.md) - Programmatic execution tracking
+- [cmflib API](../cmflib/index.md) - Programmatic execution tracking

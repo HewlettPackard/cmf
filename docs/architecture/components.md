@@ -1,14 +1,14 @@
-## CMFLib
+## cmflib
 
-The APIs and abstractions provided by CMFLib enable tracking of pipeline metadata. 
+The APIs and abstractions provided by cmflib enable tracking of pipeline metadata. 
 
-CMFLib tracks the stages in the pipeline, the input and output artifacts at each stage, and metrics. 
+cmflib tracks the stages in the pipeline, the input and output artifacts at each stage, and metrics. 
 
 The framework allows metrics to be tracked at both coarse and fine-grained intervals. Stage metrics can be captured at the end of a stage, while fine-grained metrics can be tracked per step (epoch) or at regular intervals during the execution of the stage. 
 
-The metadata logged through the APIs is written to a backend relational database. `CMFLib` also provides APIs to query the metadata stored in the relational database, allowing users to inspect pipelines.   
+The metadata logged through the APIs is written to a backend relational database. `cmflib` also provides APIs to query the metadata stored in the relational database, allowing users to inspect pipelines.   
 
-In addition to explicit tracking through the APIs, `CMFLib` provides implicit tracking. This automatically tracks the software version used in the pipelines.  
+In addition to explicit tracking through the APIs, `cmflib` provides implicit tracking. This automatically tracks the software version used in the pipelines.  
 
 All artifacts are versioned using a data versioning framework (e.g., DVC). The content hash of the artifacts is generated and stored along with the user-provided metadata. A special artifact metadata file called a ".dvc" file is created for every artifact (file or folder) that is added to the data version management system. The .dvc file contains the content hash of the artifact.
 
@@ -16,7 +16,7 @@ For every pipeline, the metadata tracker creates a new branch to track the code.
 
 The special metadata file created for artifacts, “.dvc” file is too committed to Git, and its commit ID is tracked as a metadata information. Whenever there is a change in the artifact, the metadata file is modified to reflect its current content hash, and the file is tracked as a new version of the metadata file.  
 
-The metadata tracker automatically tracks the start commit when CMFLib was initialized and creates a separate commit for each change in the artifact during the experiment. This helps to track the transformations of the artifacts across the different stages in the pipeline. 
+The metadata tracker automatically tracks the start commit when cmflib was initialized and creates a separate commit for each change in the artifact during the experiment. This helps to track the transformations of the artifacts across the different stages in the pipeline. 
 
 ## CMF Client 
 

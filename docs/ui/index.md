@@ -90,6 +90,6 @@ Before using the CMF GUI, ensure you have:
 
 ## Getting Help
 
-- For API details, see [CMFLib Documentation](../cmflib/index.md)
+- For API details, see [cmflib Documentation](../cmflib/index.md)
 - For CLI commands, see [CMF Client Commands](../cmf_client/cmf_client_commands.md)
 - For server setup, see [Installation & Setup](../setup/index.md)
