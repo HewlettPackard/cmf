@@ -3,6 +3,7 @@
 The Lineage page provides interactive visualizations of data flow and dependencies in your ML pipelines. It helps you understand how artifacts and executions are connected, trace data provenance, and analyze pipeline structure.
 
 Lineage tracking captures the relationships between:
+
 - **Artifacts**: Datasets, models, and metrics
 - **Executions**: Pipeline stage runs
 - **Data Flow**: How data moves through pipeline stages
@@ -37,11 +38,13 @@ The Lineage page offers four different visualization modes:
 **Purpose**: Hierarchical view of execution dependencies
 
 **Use Cases**:
+
 - Understand pipeline execution flow
 - Debug pipeline stage ordering
 - Identify parallel vs sequential stages
 
 **Features**:
+
 - Select specific execution type from dropdown
 - Shows execution order and dependencies
 
@@ -53,11 +56,13 @@ The Lineage page offers four different visualization modes:
 **Purpose**: Combined view showing both artifacts and executions
 
 **Use Cases**:
+
 - Complete end-to-end pipeline visualization
 - Understand which execution created which artifact
 - Trace full data lineage with transformations
 
 **Features**:
+
 - Alternating artifact and execution nodes
 - Shows input/output relationships
 - Complete provenance trail
