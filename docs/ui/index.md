@@ -22,7 +22,33 @@ The CMF GUI consists of several main sections:
 2. Open your browser and navigate to the server URL (default: `http://your-server-ip:80`)
 3. The GUI will display the available pipelines in the sidebar
 
+---
+
+## Artifacts View
+
+The Artifacts page displays all datasets, models, and metrics tracked by CMF. You can browse, search, and explore artifact metadata, versions, and lineage.
+
+### Key Features
+
+- **Artifact Listing**: View all artifacts with their types (Dataset, Model, Metrics)
+- **Search & Filter**: Find specific artifacts by name, type, or properties
+- **Artifact Details**: Examine metadata, custom properties, and version information
+
 ![CMF Artifacts Page](../assets/artifacts.jpeg)
+
+---
+
+## Executions View
+
+The Executions page displays all pipeline runs and execution history. You can view execution details, parameters, and associated artifacts for each run.
+
+### Key Features
+
+- **Execution History**: View all past executions with timestamps
+- **Execution Details**: See parameters, properties, and metadata for each run
+- **Filtering & Search**: Find specific executions by name, type, or properties
+
+![CMF Executions Page](../assets/executions.png)
 
 ---
 
@@ -32,9 +58,11 @@ The Lineage page offers interactive visualizations of data flow and dependencies
 
 ### Visualization Types
 
-1. **Artifact Tree**: Hierarchical view of artifact dependencies
-2. **Execution Tree**: Hierarchical view of execution flow
-3. **Artifact-Execution Tree**: Combined view showing both artifacts and executions
+1. **Artifact Lineage**: Hierarchical view of artifact dependencies
+2. **Execution Lineage**: Hierarchical view of execution flow
+3. **Artifact-Execution Lineage**: Combined view showing both artifacts and executions
+
+![CMF ArtifactExecution Page](../assets/ArtifactExecutionLineage.png)
 
 ---
 
@@ -42,15 +70,11 @@ The Lineage page offers interactive visualizations of data flow and dependencies
 
 The [Metahub](../cmf_server/metahub-tab-usage.md) feature enables synchronization of metadata between two CMF servers, allowing distributed teams to collaborate and share ML pipeline metadata.
 
-👉 [Read more about Metahub](../cmf_server/metahub-tab-usage.md)
-
 ---
 
 ## TensorBoard Integration
 
 CMF integrates with [TensorBoard](../cmf_client/tensorflow_guide.md) to visualize training metrics, model graphs, and other ML-specific visualizations alongside CMF metadata.
-
-👉 [Read more about TensorBoard Integration](../cmf_client/tensorflow_guide.md)
 
 ---
 
@@ -66,6 +90,6 @@ Before using the CMF GUI, ensure you have:
 
 ## Getting Help
 
-- For API details, see [CMFLib Documentation](../cmflib/index.md)
+- For API details, see [cmflib Documentation](../cmflib/index.md)
 - For CLI commands, see [CMF Client Commands](../cmf_client/cmf_client_commands.md)
 - For server setup, see [Installation & Setup](../setup/index.md)

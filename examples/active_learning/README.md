@@ -1,5 +1,5 @@
 ### Steps to reproduce this example with CMF.
-1. Clone this reposirory and install the cmflib 
+1. Clone this repository and install the `cmflib` 
 2. Copy this directory outside the cloned repository to a seperate folder.
 3. Update the variables in sample_env and run command `source sample_env`
 4. Run command sh initialize.sh

@@ -43,7 +43,7 @@ jobs:
           mkdocs build --theme material --site-dir ../site/
           rm -r ../site/_src
 
-      - name: Deploy Docts To GitHub Pages
+      - name: Deploy Docs To GitHub Pages
         # This step will deploy the generated documentation to `gh-pages` branch.
         uses: peaceiris/actions-gh-pages@v3.9.0
         with:
