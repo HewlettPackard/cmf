@@ -2,7 +2,7 @@
 
 This document compares two implementations of the same ML pipeline - one using standard scikit-learn workflow and another enhanced with CMF (Common Metadata Framework) tracking.
 
-> **📁 Want to run this example?** See the [SMS Spam Example](/examples/sms_spam/) with complete setup instructions and runnable code.
+> **📁 Want to run this example?** See the [SMS Spam Example](https://github.com/HewlettPackard/cmf/tree/master/examples/sms_spam) with complete setup instructions and runnable code.
 
 ## Overview
 
@@ -69,6 +69,7 @@ metawriter.log_dataset(cleaned_path, "output",
 </table>
 
 **What CMF Adds:**
+
 - Creates a pipeline context for "Prepare" stage
 - Tracks input dataset location and usage
 - Logs output artifacts with metadata (label encoding info)
@@ -130,6 +131,7 @@ metawriter.log_dataset(tf_file, "output",
 </table>
 
 **What CMF Adds:**
+
 - Creates separate context for "Featurize" stage
 - Tracks TF-IDF configuration (max_features parameter)
 - Links cleaned data input to vectorizer output
@@ -245,6 +247,7 @@ metawriter.log_execution_metrics(
 </table>
 
 **What CMF Adds:**
+
 - Tracks all hyperparameters used for training
 - Logs model as a distinct artifact type (not just a file)
 - Records model framework, type, and name for easy identification
@@ -361,10 +364,11 @@ metawriter.log_execution_metrics(
 </table>
 
 **What CMF Adds:**
-- ✅ Tracks the baseline model as input to optimization stage
-- ✅ Records complete hyperparameter search space
-- ✅ Logs comparison metrics (baseline vs optimized)
-- ✅ Creates full lineage: baseline model → tuning process → optimized model
+
+- Tracks the baseline model as input to optimization stage
+- Records complete hyperparameter search space
+- Logs comparison metrics (baseline vs optimized)
+- Creates full lineage: baseline model → tuning process → optimized model
 
 ---
 
@@ -373,11 +377,13 @@ metawriter.log_execution_metrics(
 ### 1. **Complete Lineage Tracking**
 
 **Without CMF:**
+
 - No record of which dataset version was used
 - No link between data, vectorizer, and models
 - Cannot trace how models evolved
 
 **With CMF:**
+
 - Full data lineage from raw data → cleaned data → features → models
 - Every artifact knows its inputs and outputs
 - Can trace any model back to its exact training data
@@ -385,11 +391,13 @@ metawriter.log_execution_metrics(
 ### 2. **Reproducibility**
 
 **Without CMF:**
+
 - Hyperparameters might be scattered in code/notebooks
 - No guaranteed record of exact configurations used
 - Hard to reproduce specific model versions
 
 **With CMF:**
+
 - All hyperparameters logged as metadata
 - Complete record of model configurations
 - Can query: "Which model used max_features=3000?"
@@ -398,11 +406,13 @@ metawriter.log_execution_metrics(
 ### 3. **Experiment Comparison**
 
 **Without CMF:**
+
 - Manual tracking in spreadsheets or notebooks
 - Easy to lose track of experiment variations
 - Difficult to compare metrics across runs
 
 **With CMF:**
+
 - Automatic metric logging per execution
 - Query capabilities: "Show all models with accuracy > 95%"
 - Compare baseline vs optimized models systematically
@@ -410,11 +420,13 @@ metawriter.log_execution_metrics(
 ### 4. **Pipeline Visibility**
 
 **Without CMF:**
+
 - Pipeline stages exist only in code organization
 - No runtime visibility into execution flow
 - Hard to debug which stage failed
 
 **With CMF:**
+
 - Explicit pipeline stage contexts
 - Execution tracking per stage
 - Clear visibility: Prepare → Featurize → Train → Tune
@@ -422,11 +434,13 @@ metawriter.log_execution_metrics(
 ### 5. **Collaboration & Governance**
 
 **Without CMF:**
+
 - Team members may not know which models were tried
 - No centralized metadata repository
 - Difficult to audit ML workflows
 
 **With CMF:**
+
 - Centralized metadata store (MLMD)
 - Team can query and discover past experiments
 - Audit trail: who ran what, when, with which data
@@ -435,11 +449,13 @@ metawriter.log_execution_metrics(
 ### 6. **Model Registry Capabilities**
 
 **Without CMF:**
+
 - Models are just files on disk
 - No metadata about model characteristics
 - Manual tracking of model versions
 
 **With CMF:**
+
 - Models logged with framework, type, and name
 - Rich metadata (hyperparameters, metrics, lineage)
 - Foundation for model registry and deployment
@@ -467,16 +483,17 @@ Ready to see the difference in action?
 
 ### 🚀 Run the Example
 
-Complete runnable code and setup instructions are available in the [SMS Spam Example](/examples/sms_spam/) directory.
+Complete runnable code and setup instructions are available in the [SMS Spam Example](https://github.com/HewlettPackard/cmf/tree/master/examples/sms_spam) directory.
 
 **Quick steps:**
+
 1. Navigate to `examples/sms_spam/`
 2. Download the dataset (instructions in README)
 3. Run `sms_spam_without_cmf.py` to see the basic pipeline
 4. Run `sms_spam_with_cmf.py` to see CMF tracking in action
 5. Query the metadata to explore tracked information
 
-See the [SMS Spam Example README](/examples/sms_spam/README.md) for detailed instructions.
+See the [SMS Spam Example README](https://github.com/HewlettPackard/cmf/blob/master/examples/sms_spam/README.md) for detailed instructions.
 
 ---
 
