@@ -52,7 +52,7 @@ class CmdInitOSDFRemote(CmdBase):
 
         if not access_token_provided and not default_token_exists and not key_args_provided:
             raise CmfInitFailed(
-                "Initialization cannot be completed. Please provide one of the following:\n"
+                msg_str="Initialization cannot be completed. Please provide one of the following:\n"
                 "  1. --access-token <token or file path>\n"
                 "  2. A token file at ~/.fdp/osdf_token\n"
                 "  3. All of --key-id, --key-path, and --key-issuer"
@@ -192,7 +192,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "--key-id",
         required=False,
-        help="Specify key_id for provided private key. eg. b2d3. Required if --token is not provided.",
+        help="Specify key_id for provided private key. eg. b2d3. Required if --access-token is not provided.",
         metavar="<key_id>",
         default=None,
     )
@@ -200,7 +200,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "--key-path",
         required=False,
-        help="Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem. Required if --token is not provided.",
+        help="Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem. Required if --access-token is not provided.",
         metavar="<key_path>",
         default=None,
     )
@@ -208,7 +208,7 @@ def add_parser(subparsers, parent_parser):
     parser.add_argument(
         "--key-issuer",
         required=False,
-        help="Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX. Required if --token is not provided.",
+        help="Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX. Required if --access-token is not provided.",
         metavar="<key_issuer>",
         default=None,
     )

@@ -288,10 +288,13 @@ class Neo4jArgumentNotProvided(CmfFailure):
 
 
 class CmfInitFailed(CmfFailure):
-    def __init__(self, return_code=115):
+    def __init__(self, msg_str: Optional[str] = None, return_code=115):
+        self.msg_str = msg_str
         super().__init__(return_code)
 
     def handle(self):
+        if self.msg_str:
+            return self.msg_str
         return "ERROR: cmf init failed."
 
 
