@@ -18,7 +18,8 @@ dependencies = [
 	"cryptography",   
 	"ray==2.34.0",
 	"readchar",
-        "protobuf>=4.25,<5",
+    "protobuf>=4.25,<5",
+	"boto3==1.41.0",
 ]
 authors = [
   { name = "Hewlett Packard Enterprise"}
