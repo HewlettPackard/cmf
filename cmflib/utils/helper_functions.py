@@ -178,6 +178,100 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
     return dynamic_pass
 
 
+def validate_and_examine_osdf_token(token_str: str, token_source: str = None) -> bool:
+    """
+    Validate and examine an OSDF token (SciToken/JWT).
+    
+    Decodes the token, prints its status (issuer, subject, expiry, etc.),
+    and checks if it has expired.
+    
+    Args:
+        token_str: The token string (with or without 'Bearer ' prefix)
+        token_source: Optional description of where the token came from (file path, "generated", etc.)
+    
+    Returns:
+        bool: True if token is valid and not expired, False otherwise
+    """
+    import jwt
+    from datetime import datetime, timezone
+    
+    # Remove 'Bearer ' prefix if present
+    if token_str.startswith("Bearer "):
+        token_str = token_str[7:]
+    
+    try:
+        # Decode without verification to examine the token
+        # (We're just checking claims, not cryptographic validity)
+        decoded = jwt.decode(token_str, options={"verify_signature": False})
+        
+        print("\n" + "="*60)
+        print("OSDF Token Status")
+        print("="*60)
+        
+        # Print token source if provided
+        if token_source:
+            print(f"Source:    {token_source}")
+        
+        # Extract common claims
+        issuer = decoded.get("iss", "N/A")
+        subject = decoded.get("sub", "N/A")
+        audience = decoded.get("aud", "N/A")
+        issued_at = decoded.get("iat", None)
+        expires_at = decoded.get("exp", None)
+        scope = decoded.get("scope", "N/A")
+        
+        print(f"Issuer:    {issuer}")
+        print(f"Subject:   {subject}")
+        print(f"Audience:  {audience}")
+        print(f"Scope:     {scope}")
+        
+        # Format timestamps
+        if issued_at:
+            issued_dt = datetime.fromtimestamp(issued_at, tz=timezone.utc)
+            print(f"Issued At: {issued_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        else:
+            print("Issued At: N/A")
+        
+        if expires_at:
+            expiry_dt = datetime.fromtimestamp(expires_at, tz=timezone.utc)
+            print(f"Expires:   {expiry_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            
+            # Check if expired
+            current_time = datetime.now(timezone.utc)
+            time_until_expiry = expiry_dt - current_time
+            
+            if current_time >= expiry_dt:
+                print("\n⚠️  STATUS: TOKEN HAS EXPIRED")
+                print("="*60 + "\n")
+                return False
+            else:
+                # Show time remaining
+                hours, remainder = divmod(int(time_until_expiry.total_seconds()), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                print(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
+                print("✓  STATUS: TOKEN IS VALID")
+                print("="*60 + "\n")
+                return True
+        else:
+            print("Expires:   N/A (No expiration claim found)")
+            print("\n⚠️  STATUS: CANNOT VERIFY EXPIRY")
+            print("="*60 + "\n")
+            return True  # Assume valid if no expiry claim
+            
+    except jwt.DecodeError as e:
+        print("\n" + "="*60)
+        print("⚠️  ERROR: Failed to decode token")
+        print(f"Details: {e}")
+        print("="*60 + "\n")
+        return False
+    except Exception as e:
+        print("\n" + "="*60)
+        print("⚠️  ERROR: Unexpected error examining token")
+        print(f"Details: {e}")
+        print("="*60 + "\n")
+        return False
+
+
 def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     """
     Check if a branch exists in a GitHub repository.

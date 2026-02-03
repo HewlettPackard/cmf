@@ -23,7 +23,7 @@ import argparse
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
-from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path
+from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path, validate_and_examine_osdf_token
 from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
@@ -69,8 +69,36 @@ class CmdArtifactPush(CmdBase):
         if dvc_config_op["core.remote"] == "osdf":
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)
-            #print("key_id="+cmf_config["osdf-key_id"])
-            dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+            
+            # Check if access_token is provided (either as a file path or "provided" marker)
+            access_token = cmf_config.get("osdf-access_token", "")
+            token_source_description = ""
+            
+            if access_token and access_token != "":
+                # Token-based authentication
+                if access_token == "provided":
+                    # Token was provided as raw text during init, but we can't retrieve it
+                    # User needs to use key-based auth or provide token file
+                    raise MsgFailure(msg_str="OSDF token was provided as raw text during init. Please re-run 'cmf init osdfremote' with --access-token pointing to a token file, or use --key-id, --key-path, --key-issuer for dynamic token generation.")
+                elif os.path.isfile(os.path.expanduser(access_token)):
+                    # Read token from file
+                    with open(os.path.expanduser(access_token), "r") as token_file:
+                        token_str = token_file.read().strip()
+                    dynamic_password = "Bearer " + token_str
+                    token_source_description = f"Token file: {access_token}"
+                else:
+                    # Assume it's a raw token string (though this shouldn't happen with new code)
+                    dynamic_password = "Bearer " + access_token
+                    token_source_description = "Provided token string"
+            else:
+                # Key-based authentication - generate token dynamically
+                dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+                token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
+            
+            # Validate and examine the token before proceeding
+            if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
+                raise MsgFailure(msg_str="OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
+            
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
