@@ -24,7 +24,6 @@ import yaml
 import pandas as pd
 import typing as t
 import json
-from cmflib import cmfquery, cmf_merger
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
