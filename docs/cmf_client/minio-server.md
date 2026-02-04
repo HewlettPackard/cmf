@@ -21,19 +21,20 @@ Follow the steps below to set up a MinIO server:
 3. Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository:
 
     **Basic Usage (Required Parameters Only):**
-    ```
+    ```bash
     cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
-      --access-key-id minioadmin --secret-key minioadmin \
-      --git-remote-url https://github.com/user/experiment-repo.git
+    --access-key-id minioadmin --secret-key minioadmin \
+    --git-remote-url https://github.com/user/experiment-repo.git
     ```
 
     **With Optional Parameters:**
-    ```
+    ```bash
     cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
-      --access-key-id minioadmin --secret-key minioadmin \
-      --git-remote-url https://github.com/user/experiment-repo.git \
-      --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j \
-      --neo4j-password password --neo4j-uri bolt://localhost:7687
+    --access-key-id minioadmin --secret-key minioadmin \
+    --git-remote-url https://github.com/user/experiment-repo.git \
+    --cmf-server-url http://x.x.x.x:80 \
+    --neo4j-user neo4j --neo4j-password password \
+    --neo4j-uri bolt://localhost:7687
     ```
 
    > Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed. If the user chooses to change it, they will need to update the Dockerfile for minioS3 accordingly.
@@ -69,5 +70,5 @@ Follow the steps below to set up a MinIO server:
 
 8. The following image is a snapshot of this example using a MinIO server and a bucket named 'dvc-art'.
 
-![image](https://miro.medium.com/max/1100/1*sIOUllU2O6YGdT7ARoY-xw.webp)
+![MinioS3 image](../assets/MinioS3.png)
 
