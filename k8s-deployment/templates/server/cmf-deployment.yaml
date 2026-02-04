@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cmf-server-deployment
+  labels:
+    app: cmf-server
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: cmf-server
+  template:
+    metadata:
+      labels:
+        app: cmf-server
+    spec:
+      containers:
+      - name: cmf-server
+        image: "{{ .Values.cmf_service.image.repository }}:{{ .Values.cmf_service.image.tag }}"
+        imagePullPolicy: {{ .Values.pullPolicy }}   # important for Minikube local builds
+        ports:
+        - containerPort: {{ .Values.cmf_service.service.port }}
+        env:
+        {{- range $key, $value := .Values.common_env }}
+          - name: {{ $key }}
+            value: "{{ $value }}"
+        {{- end }}     
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: POSTGRES_PASSWORD
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.cmf_service.service.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.cmf_service.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+        volumeMounts:
+        - mountPath: /cmf-server/data
+          name: server-data
+        - mountPath: /cmf-server/data/env
+          name: server-env
+        - mountPath: /cmf-server/data/static
+          name: server-static
+        - mountPath: /cmf-server/data/labels
+          name: server-labels
+        - mountPath: /cmf-server/data/tensorboard-logs
+          name: tensorboard-logs
+      volumes:
+      - name: server-data
+        persistentVolumeClaim:
+          claimName: pvc-server-data
+      - name: server-env
+        persistentVolumeClaim:
+          claimName: pvc-server-data-env
+      - name: server-static
+        persistentVolumeClaim:
+          claimName: pvc-server-data-static
+      - name: server-labels
+        persistentVolumeClaim:
+          claimName: pvc-server-data-labels
+      - name: tensorboard-logs
+        persistentVolumeClaim:
+          claimName: pvc-tensorboard-logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: server             # matches your nginx.conf (proxy_pass http://server:8080/)
+  labels:
+    app: cmf-server
+spec:
+  type: {{ .Values.cmf_service.service.type }}
+  selector:
+    app: cmf-server
+  ports:
+  - name: http
+    port: {{ .Values.cmf_service.service.port }}
+    targetPort: {{ .Values.cmf_service.service.port }}
