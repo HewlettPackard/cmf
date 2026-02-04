@@ -23,20 +23,17 @@ Use the following command to initialize `cmf`. You can choose from various stora
 
 **Basic Usage (Required Parameters Only):**
 ```bash
-cmf init local \
-  --path /path/to/local-storage \
-  --git-remote-url https://github.com/user/experiment-repo.git
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters (including Neo4j):**
 ```bash
-   cmf init local \
-  --path /path/to/local-storage \
-  --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:80 \
-  --neo4j-user neo4j \
-  --neo4j-password password \
-  --neo4j-uri bolt://x.x.x.x:7687
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://x.x.x.x:7687
 ```
 
 > 🔁 Replace the following:

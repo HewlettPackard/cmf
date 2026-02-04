@@ -39,17 +39,16 @@ Execute the following command to initialize the local directory as a CMF artifac
 **Basic Usage (Required Parameters Only):**
 ```bash
 cmf init local --path /path/to/local-storage \
-  --git-remote-url https://github.com/user/experiment-repo.git
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
 ```bash
 cmf init local --path /path/to/local-storage \
-  --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:80 \
-  --neo4j-user neo4j \
-  --neo4j-password password \
-  --neo4j-uri bolt://localhost:7687
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 **Required Parameters:**
