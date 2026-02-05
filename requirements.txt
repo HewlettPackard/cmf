@@ -15,6 +15,7 @@ scitokens
 cryptography
 ray==2.34.0
 readchar
+boto3==1.41.0
 # Development-only type checking tools like mypy are included here.
 # These are not needed at runtime and are used solely to ensure code quality during development.
 mypy
