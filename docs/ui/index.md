@@ -48,7 +48,7 @@ The Executions page displays all pipeline runs and execution history. You can vi
 - **Execution Details**: See parameters, properties, and metadata for each run
 - **Filtering & Search**: Find specific executions by name, type, or properties
 
-![CMF Executions Page](../assets/executions.png)
+![CMF Executions Page](../assets/ExecutionPage.png)
 
 ---
 
