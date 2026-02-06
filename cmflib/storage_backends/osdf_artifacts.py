@@ -15,6 +15,7 @@
 ###
 
 import os
+import logging
 import requests
 #import urllib3
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -22,6 +23,8 @@ import hashlib
 import time
 
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 def generate_cached_url(url, cache):
     #This takes host URL as supplied from MLMD records and generates cached URL=cache_path + path
@@ -41,7 +44,7 @@ def calculate_md5_from_file(file_path, chunk_size=8192):
             while chunk := f.read(chunk_size):
                 md5.update(chunk)
     except Exception as e:
-        print(f"An error occurred while reading the file: {e}")
+        logger.error(f"[calculate_md5_from_file] An error occurred while reading the file: {e}")
         return None
     return md5.hexdigest()
 
@@ -54,21 +57,21 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
                 - remote.osdf.url: Remote repository URL
                 - remote.osdf.password: Dynamic password/token
     """          
-    #print(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
+    #logger.info(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
     data= None
     try:
         response = requests.get(host, headers=headers, timeout=timeout, verify=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
         if response.status_code == 200 and response.content:
             data = response.content
         else:
-            #print(f"Inside download_and_verify_file: Failed to download file. HTTP Status Code: {response.status_code}. Response content: {response.content}")
+            #logger.error(f"Inside download_and_verify_file: Failed to download file. HTTP Status Code: {response.status_code}. Response content: {response.content}")
             return False, "No data received from the server."
             #pass
     except requests.exceptions.Timeout:
         return False, "The request timed out."
         #pass
     except Exception as exception:
-        #print(f"Inside download_and_verify_file: An error occurred during the download: {exception}")
+        #logger.error(f"Inside download_and_verify_file: An error occurred during the download: {exception}")
         return False, str(exception)
 
     if data is not None:
@@ -82,22 +85,21 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
                 end_time = time.time()
                 time_taken = end_time - start_time
                 if md5_hash:
-                    #print(f"MD5 hash of the downloaded file is: {md5_hash}")
-                    #print(f"Artifact hash from MLMD records is: {artifact_hash}")
-                    #print(f"Time taken to calculate MD5 hash: {time_taken:.2f} seconds")
+                    #logger.debug(f"MD5 hash of the downloaded file is: {md5_hash}")
+                    #logger.debug(f"Artifact hash from MLMD records is: {artifact_hash}")
+                    #logger.debug(f"Time taken to calculate MD5 hash: {time_taken:.2f} seconds")
                     if artifact_hash == md5_hash:
-                        #print("MD5 hash of the downloaded file matches the hash in MLMD records.")
+                        #logger.debug("MD5 hash of the downloaded file matches the hash in MLMD records.")
                         stmt = f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and matches MLMD records."
                         success=True
                     else:
-                        #print("Error: MD5 hash of the downloaded file does not match the hash in MLMD records.")
+                        #logger.error("Error: MD5 hash of the downloaded file does not match the hash in MLMD records.")
                         stmt = f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and does NOT match MLMD records."
                         success=False
                     return success, stmt
                 else:
-                    print("Failed to calculate MD5 hash of the downloaded file.")
+                    logger.error("Failed to calculate MD5 hash of the downloaded file.")
         except Exception as e:
-            print(f"An error occurred while writing to the file: {e}")
             return False, f"An error occurred while writing to the file: {e}"
     
     return False, "Data is None."
@@ -146,9 +148,9 @@ class OSDFremoteArtifacts:
             #Fetch from Origin
             success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
             if success:
-                #print(result)
+                #logger.info(result)
                 return success, result
-            #print(f"Failed to download and verify file: {result}")
+            #logger.error(f"Failed to download and verify file: {result}")
             return success, result
         else:
             #Generate Cached path for artifact
@@ -156,17 +158,17 @@ class OSDFremoteArtifacts:
             #Try to fetch from cache first
             success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=5)
             if success:
-                #print(cached_result)
+                #logger.info(cached_result)
                 return success, cached_result
             else:
-                print(f"Failed to download and verify file from cache: {cached_result}")
-                print(f"Trying Origin at {host}")
+                logger.error(f"Failed to download and verify file from cache: {cached_result}")
+                logger.info(f"Trying Origin at {host}")
                 #Fetch from Origin 
                 success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
                 if success: 
-                    #print(origin_result)
+                    #logger.info(origin_result)
                     return success, origin_result
-                #print(f"Failed to download and verify file: {origin_result}")
+                #logger.error(f"Failed to download and verify file: {origin_result}")
                 return success, origin_result
 
     def download_file(
@@ -192,8 +194,8 @@ class OSDFremoteArtifacts:
         Returns:
             tuple: (object_name, download_loc, status) where status indicates success (True) or failure (False).
         """
-        #print(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
-        #print(f"Fetching artifact={object_name}, surl={host} to {download_loc} when this has been called at {current_directory}")
+        #logger.debug(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
+        #logger.debug(f"Fetching artifact={object_name}, surl={host} to {download_loc} when this has been called at {current_directory}")
         
         # Prepare directories and file paths
         dir_path = ""
@@ -235,8 +237,8 @@ class OSDFremoteArtifacts:
         Returns:
             tuple: (total_files_in_directory, files_downloaded, status) where status indicates success (True) or failure (False).
         """
-        #print(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
-        #print(f"Fetching artifact={object_name}, surl={host} to {download_loc} when this has been called at {current_directory}")
+        #logger.debug(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
+        #logger.debug(f"Fetching artifact={object_name}, surl={host} to {download_loc} when this has been called at {current_directory}")
         # Prepare directories
         dir_path = ""
         if "/" in download_loc:
@@ -247,7 +249,7 @@ class OSDFremoteArtifacts:
             os.makedirs(dir_path, mode=0o777, exist_ok=True)
 
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
-        #print(f"Absolute download location: {abs_download_loc}")
+        #logger.debug(f"Absolute download location: {abs_download_loc}")
         
         # in case of .dir, abs_download_loc is an absolute path for a folder
         os.makedirs(abs_download_loc, mode=0o777, exist_ok=True)
@@ -264,11 +266,11 @@ class OSDFremoteArtifacts:
             )
             
             if not success:
-                print(f"object {object_name} is not downloaded.")
+                logger.error(f"object {object_name} is not downloaded.")
                 total_files_in_directory = 1
                 return total_files_in_directory, files_downloaded, False
             
-            #print(f"{object_name} downloaded at {download_loc} when this has been called at {current_directory}")
+            #logger.info(f"{object_name} downloaded at {download_loc} when this has been called at {current_directory}")
 
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
@@ -311,18 +313,18 @@ class OSDFremoteArtifacts:
                     )
                     if success:
                         files_downloaded += 1
-                        print(f"object {relpath} downloaded at {temp_download_loc}.")
+                        logger.info(f"object {relpath} downloaded at {temp_download_loc}.")
                     else:
-                        print(f"object {relpath} is not downloaded.")
+                        logger.error(f"object {relpath} is not downloaded.")
                 except Exception as e:
-                    print(f"object {relpath} is not downloaded.")
+                    logger.error(f"object {relpath} is not downloaded.")
 
             # total_files - files_downloaded gives us the number of files which failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
             return total_files_in_directory, files_downloaded, False
         except Exception as e:
-            print(f"object {object_name} is not downloaded. Error: {e}")
+            logger.error(f"[download_directory] object {object_name} is not downloaded. Error: {e}")
             # We usually don't count .dir as a file while counting total_files_in_directory.
             # However, here we failed to download the .dir folder itself. 
             # So we need to make, total_files_in_directory = 1

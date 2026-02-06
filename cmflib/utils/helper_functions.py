@@ -23,11 +23,14 @@ import subprocess
 import hashlib
 import sys
 import pandas as pd
+import logging
 
 from tabulate import tabulate
 from cmflib.cli.utils import find_root
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.cmf_exception_handling import CmfNotConfigured
+
+logger = logging.getLogger(__name__)
 
 def is_url(url)-> bool:
     from urllib.parse import urlparse
@@ -40,7 +43,7 @@ def is_url(url)-> bool:
 
 def is_git_repo():
     git_dir = os.path.join(os.getcwd(), '.git')
-    print("git_dir", git_dir)
+    logger.info("git dir: %s", git_dir)
     result = os.path.exists(git_dir) and os.path.isdir(git_dir)
     if result:
         return f"A Git repository already exists in {git_dir}."
@@ -93,7 +96,7 @@ def get_python_env(env_name='cmf'):
             return pip_packages
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"[get_python_env] An error occurred: {e}")
 
     return
 
@@ -144,7 +147,7 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     #Read Private Key using load_pem_private_key() method 
     if not os.path.exists(key_path):
-        print(f"File {key_path} does not exist.")
+        logger.error(f"[generate_osdf_token] File {key_path} does not exist.")
         return dynamic_pass
 
     try:
@@ -170,10 +173,10 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
             token_str=token_ser.decode()
             dynamic_pass="Bearer "+ token_str
         else:
-            print(f"{key_issuer} is not a valid URL.")
+            logger.error(f"[generate_osdf_token] {key_issuer} is not a valid URL.")
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[generate_osdf_token] Unexpected {err}, {type(err)}")
 
     return dynamic_pass
 
@@ -204,13 +207,13 @@ def validate_and_examine_osdf_token(token_str: str, token_source: str = None) ->
         # (We're just checking claims, not cryptographic validity)
         decoded = jwt.decode(token_str, options={"verify_signature": False})
         
-        print("\n" + "="*60)
-        print("OSDF Token Status")
-        print("="*60)
+        logger.info("\n" + "="*60)
+        logger.info("OSDF Token Status")
+        logger.info("="*60)
         
         # Print token source if provided
         if token_source:
-            print(f"Source:    {token_source}")
+            logger.info(f"Source:    {token_source}")
         
         # Extract common claims
         issuer = decoded.get("iss", "N/A")
@@ -220,55 +223,55 @@ def validate_and_examine_osdf_token(token_str: str, token_source: str = None) ->
         expires_at = decoded.get("exp", None)
         scope = decoded.get("scope", "N/A")
         
-        print(f"Issuer:    {issuer}")
-        print(f"Subject:   {subject}")
-        print(f"Audience:  {audience}")
-        print(f"Scope:     {scope}")
+        logger.info(f"Issuer:    {issuer}")
+        logger.info(f"Subject:   {subject}")
+        logger.info(f"Audience:  {audience}")
+        logger.info(f"Scope:     {scope}")
         
         # Format timestamps
         if issued_at:
             issued_dt = datetime.fromtimestamp(issued_at, tz=timezone.utc)
-            print(f"Issued At: {issued_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            logger.info(f"Issued At: {issued_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
         else:
-            print("Issued At: N/A")
+            logger.info("Issued At: N/A")
         
         if expires_at:
             expiry_dt = datetime.fromtimestamp(expires_at, tz=timezone.utc)
-            print(f"Expires:   {expiry_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            logger.info(f"Expires:   {expiry_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
             
             # Check if expired
             current_time = datetime.now(timezone.utc)
             time_until_expiry = expiry_dt - current_time
             
             if current_time >= expiry_dt:
-                print("\n⚠️  STATUS: TOKEN HAS EXPIRED")
-                print("="*60 + "\n")
+                logger.warning("\n⚠️  STATUS: TOKEN HAS EXPIRED")
+                logger.warning("="*60 + "\n")
                 return False
             else:
                 # Show time remaining
                 hours, remainder = divmod(int(time_until_expiry.total_seconds()), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                print(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
-                print("✓  STATUS: TOKEN IS VALID")
-                print("="*60 + "\n")
+                logger.info(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
+                logger.info("✓  STATUS: TOKEN IS VALID")
+                logger.info("="*60 + "\n")
                 return True
         else:
-            print("Expires:   N/A (No expiration claim found)")
-            print("\n⚠️  STATUS: CANNOT VERIFY EXPIRY")
-            print("="*60 + "\n")
+            logger.info("Expires:   N/A (No expiration claim found)")
+            logger.warning("\n⚠️  STATUS: CANNOT VERIFY EXPIRY")
+            logger.warning("="*60 + "\n")
             return True  # Assume valid if no expiry claim
             
     except jwt.DecodeError as e:
-        print("\n" + "="*60)
-        print("⚠️  ERROR: Failed to decode token")
-        print(f"Details: {e}")
-        print("="*60 + "\n")
+        logger.error("\n" + "="*60)
+        logger.error("⚠️  ERROR: Failed to decode token")
+        logger.error(f"Details: {e}")
+        logger.error("="*60 + "\n")
         return False
     except Exception as e:
-        print("\n" + "="*60)
-        print("⚠️  ERROR: Unexpected error examining token")
-        print(f"Details: {e}")
-        print("="*60 + "\n")
+        logger.error("\n" + "="*60)
+        logger.error("⚠️  ERROR: Unexpected error examining token")
+        logger.error(f"Details: {e}")
+        logger.error("="*60 + "\n")
         return False
 
 
@@ -325,15 +328,15 @@ def display_table(df: pd.DataFrame, columns: list) -> None:
             tablefmt="grid",
             showindex=False,
         )
-        print(table)
+        logger.info(table)
 
         # Check if we've reached the end of the records.
         if end_index >= total_records:
-            print("\nEnd of records.")
+            logger.info("\nEnd of records.")
             break
 
         # Ask the user for input to navigate pages.
-        print("Press any key to see more or 'q' to quit: ", end="", flush=True)
+        logger.info("Press any key to see more or 'q' to quit: ")
         user_input = readchar.readchar()
         if user_input.lower() == 'q':
             break
@@ -398,7 +401,7 @@ def calculate_md5(file_path):
     """
     # Check if file exists
     if not os.path.isfile(file_path):
-        print(f"Error: File '{file_path}' not found.")
+        logger.error(f"Error: File '{file_path}' not found.")
         sys.exit(1)
         
     # Calculate MD5 hash
