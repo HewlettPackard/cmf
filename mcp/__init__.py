@@ -1,0 +1,3 @@
+"""
+CMF MCP Server module
+"""
