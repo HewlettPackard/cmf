@@ -93,64 +93,205 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
 
 
 class OSDFremoteArtifacts:
-    def download_artifacts(
-        self,
-        dvc_config_op,
-        host: str, #s_url 
-        cache: str, #cache_path from cmfconfig
-        current_directory: str, #current_directory where cmf artifact pull is executed
-        remote_file_path: str, # download_loc of the artifact 
-        local_path: str, #name of the artifact
-        artifact_hash: str, #hash of the artifact from MLMD records
-    ):
-        #print(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
-        output = ""
-        remote_repo = dvc_config_op["remote.osdf.url"]
-        user = "nobody"
-        dynamic_password = dvc_config_op["remote.osdf.password"]
-        custom_auth_header = dvc_config_op["remote.osdf.custom_auth_header"]
-        #print(f"dynamic password from download_artifacts={dynamic_password}")
-        #print(f"Fetching artifact={local_path}, surl={host} to {remote_file_path} when this has been called at {current_directory}")
+    def __init__(self, dvc_config_op):
+        """
+        Initialize the OSDFremoteArtifacts class with OSDF configuration.
 
+        Args:
+            dvc_config_op (dict): Dictionary containing OSDF configuration including:
+                - remote.osdf.url: Remote repository URL
+                - remote.osdf.password: Dynamic password/token
+                - remote.osdf.custom_auth_header: Custom authentication header name
+        """
+        self.remote_repo = dvc_config_op["remote.osdf.url"]
+        self.user = "nobody"
+        self.dynamic_password = dvc_config_op["remote.osdf.password"]
+        self.custom_auth_header = dvc_config_op["remote.osdf.custom_auth_header"]
+        self.headers = {self.custom_auth_header: self.dynamic_password}
+
+    def download_file(
+        self,
+        host: str, # s_url
+        cache: str, # cache_path from cmfconfig
+        current_directory: str, # current_directory where cmf artifact pull is executed
+        object_name: str, # name of the artifact
+        download_loc: str, # download_loc of the artifact
+        artifact_hash: str, # hash of the artifact from MLMD records
+    ):
+        """
+        Download a single file from an OSDF repository.
+
+        Args:
+            host (str): Source URL of the artifact.
+            cache (str): Cache path from cmfconfig (can be empty).
+            current_directory (str): Current working directory where cmf artifact pull is executed.
+            object_name (str): Key (path) of the file in the OSDF repo.
+            download_loc (str): Local path where the file should be downloaded.
+            artifact_hash (str): MD5 hash of the artifact from MLMD records.
+
+        Returns:
+            tuple: (object_name, download_loc, status) where status indicates success (True) or failure (False).
+        """
+        #print(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
+        #print(f"Fetching artifact={object_name}, surl={host} to {download_loc} when this has been called at {current_directory}")
+        
         # Prepare directories and file paths
-        headers={dvc_config_op["remote.osdf.custom_auth_header"]: dvc_config_op["remote.osdf.password"]}
-        temp = local_path.split("/")
-        temp.pop()
-        dir_path = "/".join(temp)
-        dir_to_create = os.path.join(current_directory, dir_path)
-        os.makedirs(
-            dir_to_create, mode=0o777, exist_ok=True
-        )  # creates subfolders needed as per artifacts folder structure
-        local_file_path = os.path.join(current_directory, local_path)
-        local_file_path = os.path.abspath(local_file_path)
+        dir_path = ""
+        if "/" in download_loc:
+            # extracts the directory path from download_loc
+            dir_path, _ = download_loc.rsplit("/", 1)
+        if dir_path != "":
+            # creates subfolders needed as per artifacts' folder structure
+            os.makedirs(dir_path, mode=0o777, exist_ok=True)
+        
+        abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
         
         #Cache can be Blank. If so, fetch from Origin
         if cache == "":
             #Fetch from Origin
-            success, result = download_and_verify_file(host, headers, remote_file_path, local_file_path, artifact_hash, timeout=10)
+            success, result = download_and_verify_file(host, self.headers, abs_download_loc, abs_download_loc, artifact_hash, timeout=10)
             if success:
                 #print(result)
-                return success, result
+                return object_name, abs_download_loc, True
             #print(f"Failed to download and verify file: {result}")
-            return success, f"Failed to download and verify file: {result}"
+            return object_name, abs_download_loc, False
         else:
             #Generate Cached path for artifact
-            cached_s_url=generate_cached_url(host,cache)
+            cached_s_url = generate_cached_url(host, cache)
             #Try to fetch from cache first
-            success, cached_result = download_and_verify_file(cached_s_url, headers, remote_file_path, local_path, artifact_hash,timeout=5)
+            success, cached_result = download_and_verify_file(cached_s_url, self.headers, abs_download_loc, download_loc, artifact_hash, timeout=5)
             if success:
                 #print(cached_result)
-                return success, cached_result
+                return object_name, abs_download_loc, True
             else:
                 print(f"Failed to download and verify file from cache: {cached_result}")
                 print(f"Trying Origin at {host}")
                 #Fetch from Origin 
-                success, origin_result = download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout=10)
+                success, origin_result = download_and_verify_file(host, self.headers, abs_download_loc, download_loc, artifact_hash, timeout=10)
                 if success: 
                     #print(origin_result)
-                    return success, origin_result
-                #print(f"Failed to download and verify file: {result}")
-                return success, f"Failed to download and verify file: {origin_result}"
+                    return object_name, abs_download_loc, True
+                #print(f"Failed to download and verify file: {origin_result}")
+                return object_name, abs_download_loc, False
+
+    def download_directory(
+        self,
+        host: str, # s_url
+        cache: str, # cache_path from cmfconfig
+        current_directory: str, # current_directory where cmf artifact pull is executed
+        object_name: str, # name of the artifact
+        download_loc: str, # download_loc of the artifact
+    ):
+        """
+        Download a directory from an OSDF repo using its .dir metadata object.
+
+        Args:
+            host (str): Source URL of the artifact.
+            cache (str): Cache path from cmfconfig (can be empty).
+            current_directory (str): Current working directory.
+            object_name (str): Key (path) of the .dir object in the OSDF repository.
+            download_loc (str): Local directory path where the directory should be downloaded.
+
+        Returns:
+            tuple: (total_files_in_directory, files_downloaded, status) where status indicates success (True) or failure (False).
+        """
+        #print(f"Configured Host from MLMD record={host}. User configured cache redirector={cache}")
+        #print(f"Fetching artifact={object_name}, surl={host} to {download_loc} when this has been called at {current_directory}")
+        # Prepare directories
+        dir_path = ""
+        if "/" in download_loc:
+            # extracts the directory path from download_loc
+            dir_path, _ = download_loc.rsplit("/", 1)
+        if dir_path != "":
+            # creates subfolders needed as per artifacts' folder structure
+            os.makedirs(dir_path, mode=0o777, exist_ok=True)
+
+        abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
+        
+        # in case of .dir, abs_download_loc is an absolute path for a folder
+        os.makedirs(abs_download_loc, mode=0o777, exist_ok=True)
+
+        total_files_in_directory = 0
+        files_downloaded = 0
+
+        # download .dir object
+        temp_dir = f"{abs_download_loc}/temp_dir"
+        try:
+            # Try to download from cache first if available, otherwise from origin
+            if cache == "":
+                success, result = download_and_verify_file(host, self.headers, temp_dir, temp_dir, "", timeout=10)
+            else:
+                cached_s_url = generate_cached_url(host, cache)
+                success, cached_result = download_and_verify_file(cached_s_url, self.headers, temp_dir, temp_dir, "", timeout=5)
+                if not success:
+                    print(f"Failed to download .dir from cache: {cached_result}")
+                    print(f"Trying Origin at {host}")
+                    success, result = download_and_verify_file(host, self.headers, temp_dir, temp_dir, "", timeout=10)
+            
+            if not success:
+                print(f"object {object_name} is not downloaded.")
+                total_files_in_directory = 1
+                return total_files_in_directory, files_downloaded, False
+
+            with open(temp_dir, 'r') as file:
+                tracked_files = eval(file.read())
+
+            # removing temp_dir
+            if os.path.exists(temp_dir):
+                os.remove(temp_dir)
+
+            """
+            object_name contains the path of the .dir on the artifact repo
+            we need to remove the hash of the .dir from the object_name
+            which will leave us with the artifact repo path
+            """
+            # Parse host URL to extract the path
+            parsed_url = urlparse(host)
+            repo_path = "/".join(parsed_url.path.split("/")[:-2])
+
+            for file_info in tracked_files:
+                total_files_in_directory += 1
+                relpath = file_info['relpath']
+                md5_val = file_info['md5']
+                # md5_val = a237457aa730c396e5acdbc5a64c8453
+                # we need a2/37457aa730c396e5acdbc5a64c8453
+                formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
+                temp_download_loc = f"{abs_download_loc}/{relpath}"
+                
+                # Construct the full URL for the file
+                parsed_cache_url = urlparse(cache) if cache else None
+                if cache:
+                    temp_host = f"{parsed_cache_url.scheme}://{parsed_cache_url.netloc}{repo_path}/{formatted_md5}"
+                else:
+                    parsed_host_url = urlparse(host)
+                    temp_host = f"{parsed_host_url.scheme}://{parsed_host_url.netloc}{repo_path}/{formatted_md5}"
+                
+                try:
+                    # Create subdirectories if needed
+                    temp_dir_path = os.path.dirname(temp_download_loc)
+                    if temp_dir_path:
+                        os.makedirs(temp_dir_path, mode=0o777, exist_ok=True)
+                    
+                    success, result = download_and_verify_file(temp_host, self.headers, temp_download_loc, temp_download_loc, md5_val, timeout=10)
+                    if success:
+                        files_downloaded += 1
+                        print(f"object {relpath} downloaded at {temp_download_loc}.")
+                    else:
+                        print(f"object {relpath} is not downloaded.")
+                except Exception as e:
+                    print(f"object {relpath} is not downloaded.")
+
+            # total_files - files_downloaded gives us the number of files which failed to download
+            if (total_files_in_directory - files_downloaded) == 0:   
+                return total_files_in_directory, files_downloaded, True
+            return total_files_in_directory, files_downloaded, False
+        except Exception as e:
+            print(f"object {object_name} is not downloaded. Error: {e}")
+            # We usually don't count .dir as a file while counting total_files_in_directory.
+            # However, here we failed to download the .dir folder itself. 
+            # So we need to make, total_files_in_directory = 1
+            total_files_in_directory = 1 
+            return total_files_in_directory, files_downloaded, False
         
 
         

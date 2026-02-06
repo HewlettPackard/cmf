@@ -571,7 +571,7 @@ class CmdArtifactPull(CmdBase):
             #Now Ready to do dvc pull 
             cache_path=cmf_config["osdf-cache"]
 
-            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts()
+            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op)
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
@@ -580,53 +580,83 @@ class CmdArtifactPull(CmdBase):
                 # output[1] = url
                 # output[3]=artifact_hash
                 args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
-                download_flag, message = osdfremote_class_obj.download_artifacts(
-                    dvc_config_op,
-                    args[0], # s_url of the artifact
-                    cache_path,
-                    current_directory,
-                    args[1], # download_loc of the artifact
-                    args[2],  # name of the artifact
-                    output[3] #Artifact Hash
-                )
-                
-                if download_flag :
-                    status = MsgSuccess(msg_str = message)
-                else:
-                    status = MsgFailure(msg_str = message)
-                return status
-            else:
-                total_files_count = 0
-                files_downloaded = 0
-                for name, url in name_url_dict.items():
-                    #print(name, url)
-                    if not isinstance(url, str):
-                        continue
-                    total_files_count += 1
-                    artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
-                    #print(f"Hash for the artifact {name} is {artifact_hash}")
-                    args = self.extract_repo_args("osdf", name, url, current_directory)
-                        
-                    download_flag, message = osdfremote_class_obj.download_artifacts(
-                        dvc_config_op,
-                        args[0], # host,
+                # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                if not args[1].endswith(".dir"):
+                    # Download a single file from OSDF.
+                    object_name, download_loc, download_flag = osdfremote_class_obj.download_file(
+                        args[0], # s_url of the artifact
                         cache_path,
                         current_directory,
-                        args[1], # remote_loc of the artifact
-                        args[2],  # name
-                        artifact_hash #Artifact Hash
+                        args[2], # name of the artifact
+                        args[1], # download_loc of the artifact
+                        output[3] #Artifact Hash
                     )
                     if download_flag:
-                        print(message)   #### success message
-                        files_downloaded += 1
-                    else:
-                        print(message)    ### failure message
-                files_failed_to_download = total_files_count - files_downloaded
-                if files_failed_to_download == 0:
-                    status = BatchDownloadSuccess(files_downloaded=files_downloaded)
+                        # Return success if the file is downloaded successfully.
+                        return ObjectDownloadSuccess(object_name, download_loc)
+                    raise ObjectDownloadFailure(object_name)
                 else:
-                    status = BatchDownloadFailure(files_downloaded, files_failed_to_download)
-                return status
+                    # If object name ends with `.dir`, download multiple files from a directory
+                    total_files_in_directory, dir_files_downloaded, download_flag = osdfremote_class_obj.download_directory(
+                        args[0], # s_url of the artifact
+                        cache_path,
+                        current_directory,
+                        args[2], # name of the artifact
+                        args[1] # download_loc of the artifact
+                    )
+                if download_flag:
+                    # Return success if all files in the directory are downloaded.
+                    return BatchDownloadSuccess(dir_files_downloaded)
+                # Calculate the number of files that failed to download.
+                file_failed_to_download = total_files_in_directory - dir_files_downloaded
+                raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
+            else:
+                # Handle the case where no specific artifact name is provided.
+                files_downloaded = 0
+                files_failed_to_download = 0
+                # Iterate through the dictionary of artifact names and URLs.
+                for name, url in name_url_dict.items():
+                    if not isinstance(url, str):
+                        continue
+                    artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
+                    args = self.extract_repo_args("osdf", name, url, current_directory)
+                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
+                    if not args[1].endswith(".dir"):
+                        # Download a single file from OSDF.
+                        object_name, download_loc, download_flag = osdfremote_class_obj.download_file(
+                            args[0], # host,
+                            cache_path,
+                            current_directory,
+                            args[2], # name
+                            args[1], # remote_loc of the artifact
+                            artifact_hash #Artifact Hash
+                        )
+                        # print output here because we are in a loop and can't return the control
+                        if download_flag:
+                            print(f"object {object_name} downloaded at {download_loc}.")
+                            files_downloaded += 1
+                        else:
+                            print(f"object {object_name} is not downloaded.")
+                            files_failed_to_download += 1
+                    else:
+                        # If object name ends with `.dir`, download multiple files from a directory.
+                        total_files_in_directory, dir_files_downloaded, download_flag = osdfremote_class_obj.download_directory(
+                            args[0], # host,
+                            cache_path,
+                            current_directory,
+                            args[2], # name
+                            args[1] # remote_loc of the artifact
+                        )
+                        if download_flag:
+                            files_downloaded += dir_files_downloaded
+                        else:
+                            files_downloaded += dir_files_downloaded
+                            files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            
+                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
+                if not files_failed_to_download:
+                    return BatchDownloadSuccess(files_downloaded)
+                raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
         elif dvc_config_op["core.remote"] == "amazons3":
             amazonS3_class_obj = amazonS3_artifacts.AmazonS3Artifacts(dvc_config_op)
             if self.args.artifact_name:
