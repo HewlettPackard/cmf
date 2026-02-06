@@ -610,7 +610,8 @@ class CmdArtifactPull(CmdBase):
                         cache_path,
                         current_directory,
                         args[2], # name of the artifact
-                        args[1] # download_loc of the artifact
+                        args[1], # download_loc of the artifact
+                        output[3].split(".dir")[0] # Artifact hash without optional `.dir` suffix
                     )
                 if download_flag:
                     # Return success if all files in the directory are downloaded.
