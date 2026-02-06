@@ -38,13 +38,18 @@ Usage: cmf init local [-h] --path [path]
 `cmf init local` initialises local directory as a cmf artifact repository. Refer [local-storage-setup.md](./local-storage-setup.md) to set up a local storage.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 > **Note:** For `--path`, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.
@@ -83,13 +88,20 @@ Usage: cmf init minioS3 [-h] --url [url]
 `cmf init minioS3` configures Minio S3 bucket as a cmf artifact repository. Refer [minio-server.md](./minio-server.md#steps-to-set-up-a-minio-server) to set up a minio server.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
+--access-key-id minioadmin --secret-key minioadmin \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
+--access-key-id minioadmin --secret-key minioadmin \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 > Here, "dvc-art" is provided as an example bucket name. However, users can change it as needed, if the user chooses to change it, they will need to update the Dockerfile for MinIOS3 accordingly.
@@ -173,13 +185,22 @@ Usage: cmf init amazonS3 [-h] --url [url]
 `cmf init amazonS3` initialises Amazon S3 bucket as a CMF artifact repository.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init amazonS3 --url s3://bucket-name \
+--access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX \
+--session-token XXXXXXXXXXXXX \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init amazonS3 --url s3://bucket-name --access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX --session-token XXXXXXXXXXXXX --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init amazonS3 --url s3://bucket-name \
+--access-key-id XXXXXXXXXXXXX --secret-key XXXXXXXXXXXXX \
+--session-token XXXXXXXXXXXXX \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 > Here, use the --access-key-id, --secret-key and --session-token generated from the `aws sts` command which is mentioned above.
@@ -223,13 +244,20 @@ Usage: cmf init sshremote [-h] --path [path]
 `cmf init sshremote` command initialises remote ssh directory as a cmf artifact repository.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
+--user XXXXX --port 22 --password example@123 \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage --user XXXXX --port 22 --password example@123 --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init sshremote --path ssh://127.0.0.1/home/user/ssh-storage \
+--user XXXXX --port 22 --password example@123 \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 Required Arguments
@@ -270,13 +298,24 @@ Usage: cmf init osdfremote [-h] --path [path]
 `cmf init osdfremote` configures a OSDF Origin as a cmf artifact repository.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ \
+--cache http://[Some Redirector] \
+--key-id XXXX --key-path ~/.ssh/private.pem \
+--key-issuer https://[Token Issuer] \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ --cache http://[Some Redirector] --key-id XXXX --key-path ~/.ssh/private.pem --key-issuer https://[Token Issuer] --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://127.0.0.1:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init osdfremote --path https://[Some Origin]:8443/nrp/fdp/ \
+--cache http://[Some Redirector] \
+--key-id XXXX --key-path ~/.ssh/private.pem \
+--key-issuer https://[Token Issuer] \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://127.0.0.1:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 Required Arguments
