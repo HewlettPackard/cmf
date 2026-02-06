@@ -15,10 +15,13 @@
 ###
 
 import os
+import logging
 import typing as t
 from minio import Minio
 from minio.error import S3Error
 from cmflib.cmf_exception_handling import BucketNotFound
+
+logger = logging.getLogger(__name__)
 
 class MinioArtifacts:
 
@@ -72,7 +75,7 @@ class MinioArtifacts:
                 return object_name, download_loc, True
             return object_name, download_loc, False
         except S3Error as exception:
-            print(exception)
+            logger.error(f"[download_file] {exception}")
             return object_name, download_loc, False
         except Exception as e:
             return object_name, download_loc, False
@@ -152,22 +155,22 @@ class MinioArtifacts:
                     obj = self.client.fget_object(bucket_name, temp_object_name, temp_download_loc)
                     if obj:
                         files_downloaded +=1
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                        logger.info(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                     else:
-                        print(f"object {temp_object_name} is not downloaded.")
+                        logger.error(f"object {temp_object_name} is not downloaded.")
                 except Exception as e:
-                    print(f"object {temp_object_name} is not downloaded.")
+                    logger.error(f"object {temp_object_name} is not downloaded.")
                     
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
             return total_files_in_directory, files_downloaded, False  
         except S3Error as exception:
-            print(exception)
+            logger.error(f"[download_directory] {exception}")
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
         except Exception as e:
-            print(f"object {object_name} is not downloaded.")
+            logger.error(f"object {object_name} is not downloaded.")
             # need to improve this  
             # We usually don't count .dir as a file while counting total_files_in_directory.
             # However, here we failed to download the .dir folder itself. So we need to make 
