@@ -16,7 +16,10 @@
 
 #!/usr/bin/env python3
 import os
+import logging
 import argparse
+
+logger = logging.getLogger(__name__)
 
 from cmflib import cmfquery
 from cmflib.storage_backends import (
@@ -643,15 +646,17 @@ class CmdArtifactPull(CmdBase):
                         )
                         # print output here because we are in a loop and can't return the control
                         if download_flag:
-                            print(f"object {object_name} downloaded at {download_loc}.")
+                            #print(f"[FILE] {object_name} -> {download_loc}")
+                            print(f"[FILE] {object_name}")
                             files_downloaded += 1
                         else:
-                            print(f"object {object_name} is not downloaded.")
+                            print(f"[FAILED] {object_name}")
                             files_failed_to_download += 1
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory.
                         #print(f"Artifact {args[0]} is a directory with remote_loc={args[1]}, name={args[2]}. Downloading all files from the directory...")
-                        print(f"--- object {args[2]} is a directory. Downloading all files indexed in this directory...")
+                        print(f"\n[DIRECTORY] {args[2]}")
+                        print(f"  Downloading directory contents...")
                         
                         #Artifact hash for directory is same as hash for the files inside that directory with .dir at the end. 
                         #So we are removing .dir from the end of the artifact hash to get the hash for the directory which is needed for downloading the directory.
@@ -667,9 +672,11 @@ class CmdArtifactPull(CmdBase):
                         )
                         if download_flag:
                             files_downloaded += dir_files_downloaded
+                            print(f"  +-- Completed: {dir_files_downloaded}/{total_files_in_directory} files downloaded\n")
                         else:
                             files_downloaded += dir_files_downloaded
                             files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+                            print(f"  +-- Completed: {dir_files_downloaded}/{total_files_in_directory} files downloaded (some failed)\n")
                             
                 # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
                 if not files_failed_to_download:

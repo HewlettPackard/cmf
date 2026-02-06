@@ -313,11 +313,12 @@ class OSDFremoteArtifacts:
                     )
                     if success:
                         files_downloaded += 1
-                        logger.info(f"object {relpath} downloaded at {temp_download_loc}.")
+                        #logger.info(f"  |-- {relpath} -> {temp_download_loc}")
+                        logger.info(f"  |-- {relpath}")
                     else:
-                        logger.error(f"object {relpath} is not downloaded.")
+                        logger.error(f"  |-- [FAILED] {relpath}")
                 except Exception as e:
-                    logger.error(f"object {relpath} is not downloaded.")
+                    logger.error(f"  |-- [FAILED] {relpath}")
 
             # total_files - files_downloaded gives us the number of files which failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
