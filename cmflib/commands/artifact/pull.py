@@ -580,8 +580,12 @@ class CmdArtifactPull(CmdBase):
                 # output[1] = url
                 # output[3]=artifact_hash
                 args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
+                #print("Downloading artifact with following details:")
+                #print(f"s_url={args[0]}, download_loc={args[1]}, name={args[2]}, hash={output[3]}")
+                
                 # Check if the object name doesn't end with `.dir` (indicating it's a file).
-                if not args[1].endswith(".dir"):
+                if not args[0].endswith(".dir"):
+                    #print(f"Artifact {args[0]} is a file. Downloading the file...")
                     # Download a single file from OSDF.
                     object_name, download_loc, download_flag = osdfremote_class_obj.download_file(
                         args[0], # s_url of the artifact
@@ -597,6 +601,7 @@ class CmdArtifactPull(CmdBase):
                     raise ObjectDownloadFailure(object_name)
                 else:
                     # If object name ends with `.dir`, download multiple files from a directory
+                    #print(f"Artifact {args[0]} is a directory. Downloading all files from the directory...")
                     total_files_in_directory, dir_files_downloaded, download_flag = osdfremote_class_obj.download_directory(
                         args[0], # s_url of the artifact
                         cache_path,
@@ -620,8 +625,13 @@ class CmdArtifactPull(CmdBase):
                         continue
                     artifact_hash = name.split(':')[1] #Extract Hash of the artifact from name
                     args = self.extract_repo_args("osdf", name, url, current_directory)
+                    
+                    #print("Downloading artifact with following details:")
+                    #print(f"s_url={args[0]}, download_loc={args[1]}, name={args[2]}")                    
+                    
                     # Check if the object name doesn't end with `.dir` (indicating it's a file).
-                    if not args[1].endswith(".dir"):
+                    if not args[0].endswith(".dir"):
+                        #print(f"Artifact {args[0]} is a file. Downloading the file...")
                         # Download a single file from OSDF.
                         object_name, download_loc, download_flag = osdfremote_class_obj.download_file(
                             args[0], # host,
@@ -640,12 +650,20 @@ class CmdArtifactPull(CmdBase):
                             files_failed_to_download += 1
                     else:
                         # If object name ends with `.dir`, download multiple files from a directory.
+                        #print(f"Artifact {args[0]} is a directory with remote_loc={args[1]}, name={args[2]}. Downloading all files from the directory...")
+                        print(f"--- object {args[2]} is a directory. Downloading all files indexed in this directory...")
+                        
+                        #Artifact hash for directory is same as hash for the files inside that directory with .dir at the end. 
+                        #So we are removing .dir from the end of the artifact hash to get the hash for the directory which is needed for downloading the directory.
+                        parsed_artifact_hash = artifact_hash.split('.dir')[0] #Extracting the hash for the directory by removing .dir from the end of the hash
+                        
                         total_files_in_directory, dir_files_downloaded, download_flag = osdfremote_class_obj.download_directory(
                             args[0], # host,
                             cache_path,
                             current_directory,
                             args[2], # name
-                            args[1] # remote_loc of the artifact
+                            args[1], # remote_loc of the artifact
+                            parsed_artifact_hash #Parsed Artifact Hash
                         )
                         if download_flag:
                             files_downloaded += dir_files_downloaded

@@ -46,19 +46,29 @@ def calculate_md5_from_file(file_path, chunk_size=8192):
     return md5.hexdigest()
 
 def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout):
-    print(f"Fetching artifact={local_path}, surl={host} to {remote_file_path}")
+    """
+        Initialize the OSDFremoteArtifacts class with OSDF configuration.
+
+        Args:
+            dvc_config_op (dict): Dictionary containing OSDF configuration including:
+                - remote.osdf.url: Remote repository URL
+                - remote.osdf.password: Dynamic password/token
+    """          
+    #print(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
     data= None
     try:
         response = requests.get(host, headers=headers, timeout=timeout, verify=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
         if response.status_code == 200 and response.content:
             data = response.content
         else:
+            #print(f"Inside download_and_verify_file: Failed to download file. HTTP Status Code: {response.status_code}. Response content: {response.content}")
             return False, "No data received from the server."
             #pass
     except requests.exceptions.Timeout:
         return False, "The request timed out."
         #pass
     except Exception as exception:
+        #print(f"Inside download_and_verify_file: An error occurred during the download: {exception}")
         return False, str(exception)
 
     if data is not None:
@@ -73,6 +83,7 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
                 time_taken = end_time - start_time
                 if md5_hash:
                     #print(f"MD5 hash of the downloaded file is: {md5_hash}")
+                    #print(f"Artifact hash from MLMD records is: {artifact_hash}")
                     #print(f"Time taken to calculate MD5 hash: {time_taken:.2f} seconds")
                     if artifact_hash == md5_hash:
                         #print("MD5 hash of the downloaded file matches the hash in MLMD records.")
@@ -108,6 +119,55 @@ class OSDFremoteArtifacts:
         self.dynamic_password = dvc_config_op["remote.osdf.password"]
         self.custom_auth_header = dvc_config_op["remote.osdf.custom_auth_header"]
         self.headers = {self.custom_auth_header: self.dynamic_password}
+
+    def _download_with_cache_fallback(
+        self,
+        host: str,
+        cache: str,
+        download_path: str,
+        local_path: str,
+        artifact_hash: str,
+    ):
+        """
+        Helper method to download a file with cache fallback to origin.
+
+        Args:
+            host (str): Origin URL of the artifact.
+            cache (str): Cache URL (can be empty).
+            download_path (str): Absolute path where file will be saved.
+            local_path (str): Local path for logging purposes.
+            artifact_hash (str): MD5 hash for verification.
+
+        Returns:
+            tuple: (success, result_message)
+        """
+        #Cache can be Blank. If so, fetch from Origin
+        if cache == "":
+            #Fetch from Origin
+            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
+            if success:
+                #print(result)
+                return success, result
+            #print(f"Failed to download and verify file: {result}")
+            return success, result
+        else:
+            #Generate Cached path for artifact
+            cached_s_url = generate_cached_url(host, cache)
+            #Try to fetch from cache first
+            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=5)
+            if success:
+                #print(cached_result)
+                return success, cached_result
+            else:
+                print(f"Failed to download and verify file from cache: {cached_result}")
+                print(f"Trying Origin at {host}")
+                #Fetch from Origin 
+                success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
+                if success: 
+                    #print(origin_result)
+                    return success, origin_result
+                #print(f"Failed to download and verify file: {origin_result}")
+                return success, origin_result
 
     def download_file(
         self,
@@ -146,33 +206,11 @@ class OSDFremoteArtifacts:
         
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
         
-        #Cache can be Blank. If so, fetch from Origin
-        if cache == "":
-            #Fetch from Origin
-            success, result = download_and_verify_file(host, self.headers, abs_download_loc, abs_download_loc, artifact_hash, timeout=10)
-            if success:
-                #print(result)
-                return object_name, abs_download_loc, True
-            #print(f"Failed to download and verify file: {result}")
-            return object_name, abs_download_loc, False
-        else:
-            #Generate Cached path for artifact
-            cached_s_url = generate_cached_url(host, cache)
-            #Try to fetch from cache first
-            success, cached_result = download_and_verify_file(cached_s_url, self.headers, abs_download_loc, download_loc, artifact_hash, timeout=5)
-            if success:
-                #print(cached_result)
-                return object_name, abs_download_loc, True
-            else:
-                print(f"Failed to download and verify file from cache: {cached_result}")
-                print(f"Trying Origin at {host}")
-                #Fetch from Origin 
-                success, origin_result = download_and_verify_file(host, self.headers, abs_download_loc, download_loc, artifact_hash, timeout=10)
-                if success: 
-                    #print(origin_result)
-                    return object_name, abs_download_loc, True
-                #print(f"Failed to download and verify file: {origin_result}")
-                return object_name, abs_download_loc, False
+        # Download with cache fallback to origin
+        success, result = self._download_with_cache_fallback(
+            host, cache, abs_download_loc, download_loc, artifact_hash
+        )
+        return object_name, abs_download_loc, success
 
     def download_directory(
         self,
@@ -181,6 +219,7 @@ class OSDFremoteArtifacts:
         current_directory: str, # current_directory where cmf artifact pull is executed
         object_name: str, # name of the artifact
         download_loc: str, # download_loc of the artifact
+        artifact_hash: str, # hash of the artifact from MLMD records
     ):
         """
         Download a directory from an OSDF repo using its .dir metadata object.
@@ -191,6 +230,7 @@ class OSDFremoteArtifacts:
             current_directory (str): Current working directory.
             object_name (str): Key (path) of the .dir object in the OSDF repository.
             download_loc (str): Local directory path where the directory should be downloaded.
+            artifact_hash (str): MD5 hash of the artifact from MLMD records.
 
         Returns:
             tuple: (total_files_in_directory, files_downloaded, status) where status indicates success (True) or failure (False).
@@ -207,6 +247,7 @@ class OSDFremoteArtifacts:
             os.makedirs(dir_path, mode=0o777, exist_ok=True)
 
         abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
+        #print(f"Absolute download location: {abs_download_loc}")
         
         # in case of .dir, abs_download_loc is an absolute path for a folder
         os.makedirs(abs_download_loc, mode=0o777, exist_ok=True)
@@ -218,20 +259,16 @@ class OSDFremoteArtifacts:
         temp_dir = f"{abs_download_loc}/temp_dir"
         try:
             # Try to download from cache first if available, otherwise from origin
-            if cache == "":
-                success, result = download_and_verify_file(host, self.headers, temp_dir, temp_dir, "", timeout=10)
-            else:
-                cached_s_url = generate_cached_url(host, cache)
-                success, cached_result = download_and_verify_file(cached_s_url, self.headers, temp_dir, temp_dir, "", timeout=5)
-                if not success:
-                    print(f"Failed to download .dir from cache: {cached_result}")
-                    print(f"Trying Origin at {host}")
-                    success, result = download_and_verify_file(host, self.headers, temp_dir, temp_dir, "", timeout=10)
+            success, result = self._download_with_cache_fallback(
+                host, cache, temp_dir, temp_dir, artifact_hash
+            )
             
             if not success:
                 print(f"object {object_name} is not downloaded.")
                 total_files_in_directory = 1
                 return total_files_in_directory, files_downloaded, False
+            
+            #print(f"{object_name} downloaded at {download_loc} when this has been called at {current_directory}")
 
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
@@ -258,13 +295,9 @@ class OSDFremoteArtifacts:
                 formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
                 temp_download_loc = f"{abs_download_loc}/{relpath}"
                 
-                # Construct the full URL for the file
-                parsed_cache_url = urlparse(cache) if cache else None
-                if cache:
-                    temp_host = f"{parsed_cache_url.scheme}://{parsed_cache_url.netloc}{repo_path}/{formatted_md5}"
-                else:
-                    parsed_host_url = urlparse(host)
-                    temp_host = f"{parsed_host_url.scheme}://{parsed_host_url.netloc}{repo_path}/{formatted_md5}"
+                # Construct the full URL for the file (origin)
+                parsed_host_url = urlparse(host)
+                temp_host = f"{parsed_host_url.scheme}://{parsed_host_url.netloc}{repo_path}/{formatted_md5}"
                 
                 try:
                     # Create subdirectories if needed
@@ -272,7 +305,10 @@ class OSDFremoteArtifacts:
                     if temp_dir_path:
                         os.makedirs(temp_dir_path, mode=0o777, exist_ok=True)
                     
-                    success, result = download_and_verify_file(temp_host, self.headers, temp_download_loc, temp_download_loc, md5_val, timeout=10)
+                    # Download with cache fallback to origin
+                    success, result = self._download_with_cache_fallback(
+                        temp_host, cache, temp_download_loc, temp_download_loc, md5_val
+                    )
                     if success:
                         files_downloaded += 1
                         print(f"object {relpath} downloaded at {temp_download_loc}.")
