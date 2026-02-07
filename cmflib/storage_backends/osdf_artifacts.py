@@ -21,6 +21,7 @@ import requests
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 import hashlib
 import time
+import ast
 
 from urllib.parse import urlparse
 
@@ -217,7 +218,8 @@ class OSDFremoteArtifacts:
             # creates subfolders needed as per artifacts' folder structure
             os.makedirs(dir_path, mode=0o777, exist_ok=True)
         
-        abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
+        # download_loc already contains the full path (from extract_repo_args), so use it directly
+        abs_download_loc = os.path.abspath(download_loc)
         
         # Download with cache fallback to origin
         success, result = self._download_with_cache_fallback(
@@ -259,7 +261,8 @@ class OSDFremoteArtifacts:
             # creates subfolders needed as per artifacts' folder structure
             os.makedirs(dir_path, mode=0o777, exist_ok=True)
 
-        abs_download_loc = os.path.abspath(os.path.join(current_directory, download_loc))
+        # download_loc already contains the full path (from extract_repo_args), so use it directly
+        abs_download_loc = os.path.abspath(download_loc)
         #logger.debug(f"Absolute download location: {abs_download_loc}")
         
         # in case of .dir, abs_download_loc is an absolute path for a folder
@@ -283,8 +286,9 @@ class OSDFremoteArtifacts:
             
             #logger.info(f"{object_name} downloaded at {download_loc} when this has been called at {current_directory}")
 
+            # Parse .dir file safely using ast.literal_eval to prevent code execution vulnerabilities
             with open(temp_dir, 'r') as file:
-                tracked_files = eval(file.read())
+                tracked_files = ast.literal_eval(file.read())
 
             # removing temp_dir
             if os.path.exists(temp_dir):
@@ -302,11 +306,34 @@ class OSDFremoteArtifacts:
             for file_info in tracked_files:
                 total_files_in_directory += 1
                 relpath = file_info['relpath']
+                
+                # Validate relpath to prevent path traversal attacks
+                # Normalize the path and ensure it doesn't escape the download directory
+                normalized_relpath = os.path.normpath(relpath)
+                
+                # Reject absolute paths
+                if os.path.isabs(normalized_relpath):
+                    logger.error(f"  |-- [SECURITY] Rejected absolute path in .dir metadata: {relpath}")
+                    continue
+                
+                # Reject paths that try to traverse up (e.g., ../)
+                if normalized_relpath.startswith('..') or '/..' in normalized_relpath:
+                    logger.error(f"  |-- [SECURITY] Rejected path traversal attempt in .dir metadata: {relpath}")
+                    continue
+                
                 md5_val = file_info['md5']
                 # md5_val = a237457aa730c396e5acdbc5a64c8453
                 # we need a2/37457aa730c396e5acdbc5a64c8453
                 formatted_md5 = md5_val[:2] + '/' + md5_val[2:]
-                temp_download_loc = f"{abs_download_loc}/{relpath}"
+                temp_download_loc = os.path.join(abs_download_loc, normalized_relpath)
+                
+                # Final safety check: ensure temp_download_loc is within abs_download_loc
+                # Resolve to absolute paths and check containment
+                abs_temp_download_loc = os.path.abspath(temp_download_loc)
+                abs_base_dir = os.path.abspath(abs_download_loc)
+                if not abs_temp_download_loc.startswith(abs_base_dir + os.sep) and abs_temp_download_loc != abs_base_dir:
+                    logger.error(f"  |-- [SECURITY] Resolved path escapes download directory: {relpath}")
+                    continue
                 
                 # Construct the full URL for the file (origin)
                 parsed_host_url = urlparse(host)
@@ -314,20 +341,20 @@ class OSDFremoteArtifacts:
                 
                 try:
                     # Create subdirectories if needed
-                    temp_dir_path = os.path.dirname(temp_download_loc)
+                    temp_dir_path = os.path.dirname(abs_temp_download_loc)
                     if temp_dir_path:
                         os.makedirs(temp_dir_path, mode=0o777, exist_ok=True)
                     
                     # Download with cache fallback to origin
                     success, result = self._download_with_cache_fallback(
-                        temp_host, cache, temp_download_loc, temp_download_loc, md5_val
+                        temp_host, cache, abs_temp_download_loc, abs_temp_download_loc, md5_val
                     )
                     if success:
                         files_downloaded += 1
-                        #logger.info(f"  |-- {relpath} -> {temp_download_loc}")
-                        logger.info(f"  |-- {relpath}")
+                        #logger.info(f"  |-- {relpath} -> {abs_temp_download_loc}")
+                        logger.info(f"  |-- {normalized_relpath}")
                     else:
-                        logger.error(f"  |-- [FAILED] {relpath}")
+                        logger.error(f"  |-- [FAILED] {normalized_relpath}")
                 except Exception as e:
                     logger.error(f"  |-- [FAILED] {relpath}")
 
