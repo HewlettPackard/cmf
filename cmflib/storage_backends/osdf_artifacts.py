@@ -50,13 +50,24 @@ def calculate_md5_from_file(file_path, chunk_size=8192):
 
 def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout):
     """
-        Initialize the OSDFremoteArtifacts class with OSDF configuration.
+    Download a file from the given host URL, write it to disk, and verify its MD5 hash.
 
-        Args:
-            dvc_config_op (dict): Dictionary containing OSDF configuration including:
-                - remote.osdf.url: Remote repository URL
-                - remote.osdf.password: Dynamic password/token
-    """          
+    The function performs an HTTP GET request to ``host`` using the provided ``headers`` and
+    ``timeout``. If data is received, it is written to ``remote_file_path``. The MD5 checksum of
+    the downloaded file is then computed and compared against ``artifact_hash``.
+
+    Args:
+        host (str): Fully qualified URL from which to download the artifact.
+        headers (dict): HTTP headers to include in the GET request.
+        remote_file_path (str): Local filesystem path where the downloaded file will be written.
+        local_path (str): Logical or original path/name used for logging and status messages.
+        artifact_hash (str): Expected MD5 hash of the artifact, used for integrity verification.
+        timeout (float | int): Timeout (in seconds) for the HTTP request.
+
+    Returns:
+        tuple[bool, str]: A pair ``(success, message)`` where ``success`` indicates whether the
+            download and MD5 verification succeeded, and ``message`` describes the outcome.
+    """
     #logger.info(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
     data= None
     try:
