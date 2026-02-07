@@ -171,9 +171,13 @@ class CmdArtifactPull(CmdBase):
             file_name = file_path.split('/')[-1]
            
             if remote == "osdf":
-                # Extracting the artifact hash from the artifact name.
-                artifact_hash = name = name.split(":")[1]
-                return name, url, artifact_hash
+                # OSDF requires checking artifact name match before returning (like other backends)
+                # because OSDF returns 3 values (name, url, artifact_hash) instead of 2,
+                # we need to extract and return the hash only when we find the matching artifact
+                if name == artifact_name or file_path == artifact_name or file_name == artifact_name:
+                    # Extracting the artifact hash from the artifact name.
+                    artifact_hash = name.split(":")[1]
+                    return name, url, artifact_hash
             elif name == artifact_name or file_path == artifact_name or file_name == artifact_name:
                 # If the artifact name matches, set flag to False and break the loop
                 flag = False
@@ -181,6 +185,10 @@ class CmdArtifactPull(CmdBase):
             
         if flag:
             # Raise an exception if the artifact is not found
+            raise ArtifactNotFound(artifact_name)
+        
+        if remote == "osdf":
+            # This should not happen, but just in case
             raise ArtifactNotFound(artifact_name)
         return name, url
 
@@ -581,10 +589,10 @@ class CmdArtifactPull(CmdBase):
                 output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
                 # output[0] = name
                 # output[1] = url
-                # output[3]=artifact_hash
+                # output[2] = artifact_hash
                 args = self.extract_repo_args("osdf", output[0], output[1], current_directory)
                 #print("Downloading artifact with following details:")
-                #print(f"s_url={args[0]}, download_loc={args[1]}, name={args[2]}, hash={output[3]}")
+                #print(f"s_url={args[0]}, download_loc={args[1]}, name={args[2]}, hash={output[2]}")
                 
                 # Check if the object name doesn't end with `.dir` (indicating it's a file).
                 if not args[0].endswith(".dir"):
@@ -596,27 +604,33 @@ class CmdArtifactPull(CmdBase):
                         current_directory,
                         args[2], # name of the artifact
                         args[1], # download_loc of the artifact
-                        output[3] #Artifact Hash
+                        output[2] #Artifact Hash
                     )
                     if download_flag:
+                        print(f"[FILE] {object_name}")
                         # Return success if the file is downloaded successfully.
                         return ObjectDownloadSuccess(object_name, download_loc)
                     raise ObjectDownloadFailure(object_name)
                 else:
                     # If object name ends with `.dir`, download multiple files from a directory
                     #print(f"Artifact {args[0]} is a directory. Downloading all files from the directory...")
+                    print(f"\n[DIRECTORY] {args[2]}")
+                    print(f"  Downloading directory contents...")
+                    
                     total_files_in_directory, dir_files_downloaded, download_flag = osdfremote_class_obj.download_directory(
                         args[0], # s_url of the artifact
                         cache_path,
                         current_directory,
                         args[2], # name of the artifact
                         args[1], # download_loc of the artifact
-                        output[3].split(".dir")[0] # Artifact hash without optional `.dir` suffix
+                        output[2].split(".dir")[0] # Artifact hash without optional `.dir` suffix
                     )
                 if download_flag:
+                    print(f"  +-- Completed: {dir_files_downloaded}/{total_files_in_directory} files downloaded\n")
                     # Return success if all files in the directory are downloaded.
                     return BatchDownloadSuccess(dir_files_downloaded)
                 # Calculate the number of files that failed to download.
+                print(f"  +-- Completed: {dir_files_downloaded}/{total_files_in_directory} files downloaded (some failed)\n")
                 file_failed_to_download = total_files_in_directory - dir_files_downloaded
                 raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
             else:
