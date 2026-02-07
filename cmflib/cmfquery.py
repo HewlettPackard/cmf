@@ -242,7 +242,7 @@ class CmfQuery(object):
         pipelines: t.List = self._get_pipelines(name)
         if pipelines:
             if len(pipelines) >= 2:
-                logger.debug("Found %d pipelines with '%s' name.", len(pipelines), name)
+                logger.info("Found %d pipelines with '%s' name.", len(pipelines), name)
             return pipelines[0]
         return None
 
@@ -350,7 +350,7 @@ class CmfQuery(object):
         ]
         unique_artifact_ids = set(artifact_ids)
         if len(unique_artifact_ids) != len(artifact_ids):
-            logger.warning("Multiple executions claim the same output artifacts")
+            logger.warning("[_get_output_artifacts] Multiple executions claim the same output artifacts")
 #        artifacts=self.get_all_artifacts_by_ids_list(list(unique_artifact_ids))
 #        for key,val in artifacts.iterrows():
 #                print(val["name"])
@@ -821,7 +821,7 @@ class CmfQuery(object):
         """
         artifact: t.Optional[mlpb.Artifact] = self._get_artifact(artifact_name) # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
         if not artifact:
-            logger.debug("Artifact does not exist (name=%s).", artifact_name)
+            logger.error("[get_all_executions_for_artifact] Artifact does not exist (name=%s).", artifact_name)
             return None
 
         executions_ids = set(
@@ -831,16 +831,16 @@ class CmfQuery(object):
             if event.type == mlpb.Event.OUTPUT  # type: ignore  # Event type not recognized by mypy, using ignore to bypass
         )
         if not executions_ids:
-            logger.debug("No producer execution exists for artifact (name=%s, id=%s).", artifact.name, artifact.id)
+            logger.error("No producer execution exists for artifact (name=%s, id=%s).", artifact.name, artifact.id)
             return None
 
         executions: t.List[mlpb.Execution] = self.store.get_executions_by_id(executions_ids)    # type: ignore  # Execution type not recognized by mypy, using ignore to bypass
         if not executions:
-            logger.debug("No executions exist for given IDs (ids=%s)", str(executions_ids))
+            logger.error("No executions exist for given IDs (ids=%s)", str(executions_ids))
             return None
 
         if len(executions) >= 2:
-            logger.debug(
+            logger.info(
                 "Multiple executions (ids=%s) claim artifact (name=%s) as output.",
                 [e.id for e in executions],
                 artifact.name,
