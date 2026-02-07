@@ -15,7 +15,7 @@
 ###
 
 mcp[cli]>=1.6.0
-cmfAPI>=0.0.2
+requests>=2.26.0
 python-dotenv
 uvicorn>=0.34.1
 tomli>=2.0.0

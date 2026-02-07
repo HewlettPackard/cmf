@@ -20,7 +20,7 @@ from mcp.server.streamable_http_manager import StreamableHTTPSessionManager
 from starlette.applications import Starlette
 from starlette.routing import Mount
 from starlette.middleware.cors import CORSMiddleware
-from cmfapi import cmfClient
+from tools.cmfclient import cmfClient
 import os
 import tomli
 from dotenv import load_dotenv
