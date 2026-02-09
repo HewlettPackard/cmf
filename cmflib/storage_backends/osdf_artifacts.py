@@ -22,6 +22,7 @@ import requests
 import hashlib
 import time
 import ast
+from pathlib import Path
 
 from urllib.parse import urlparse
 
@@ -317,7 +318,10 @@ class OSDFremoteArtifacts:
                     continue
                 
                 # Reject paths that try to traverse up (e.g., ../)
-                if normalized_relpath.startswith('..') or '/..' in normalized_relpath:
+                # Old POSIX-specific check (replaced for platform independence):
+                # if normalized_relpath.startswith('..') or '/..' in normalized_relpath:
+                # Use Path.parts for platform-independent check (works on both POSIX and Windows)
+                if '..' in Path(normalized_relpath).parts:
                     logger.error(f"  |-- [SECURITY] Rejected path traversal attempt in .dir metadata: {relpath}")
                     continue
                 
