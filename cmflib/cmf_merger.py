@@ -16,13 +16,16 @@
 
 import json
 import os
+import logging
 import traceback
 
-from cmflib import cmf
+from cmflib.cmf import Cmf
 from ml_metadata.errors import AlreadyExistsError
 from ml_metadata.metadata_store import metadata_store
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 from typing import Union
+
+logger = logging.getLogger(__name__)
 
 def handle_context(cmf_class, stage):
     """
@@ -50,7 +53,7 @@ def handle_context(cmf_class, stage):
             custom_properties=stage["custom_properties"]
         )
     except Exception as e:
-        print(f"Error in merge_created_context: {e}")
+        logger.error(f"[handle_context] Error in merge_created_context: {e}")
 
 def handle_execution(cmf_class, execution):
     """
@@ -76,7 +79,7 @@ def handle_execution(cmf_class, execution):
             execution["custom_properties"]
         )
     except Exception as e:
-        print(f"Error in merge_created_execution: {e}")
+        logger.error(f"[handle_execution] Error in merge_created_execution: {e}")
 
 def handle_event(cmf_class, store, event):
     """
@@ -130,7 +133,7 @@ def handle_event(cmf_class, store, event):
         artifact = store.get_artifacts_by_uri(uri)
         cmf_class.update_existing_artifact(artifact[0], custom_properties=custom_props)
     except Exception as e:
-        print(f"Error in log_{artifact_type}_with_version: {e}")
+        logger.error(f"[handle_event] Error in log_{artifact_type}_with_version: {e}")
 
 def process_execution(cmf_class, store, stage, execution):
     """
@@ -151,7 +154,7 @@ def process_execution(cmf_class, store, stage, execution):
         try:
             handle_event(cmf_class, store, event)
         except Exception as e:
-            print(f"Error in event processing: {e}")
+            logger.error(f"[process_execution] Error in event processing: {e}")
 
 def process_stage(cmf_class, stage, exec_uuid):
     """
@@ -182,7 +185,7 @@ def process_stage(cmf_class, stage, exec_uuid):
         try:
             process_execution(cmf_class, cmf_class.store, stage, execution)
         except Exception as e:
-            print(f"Error in execution processing: {e}")
+            logger.error(f"[process_stage] Error in execution processing: {e}")
 
 def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union[str, str]) -> Union[str, None]:
     """
@@ -203,12 +206,12 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
     try:
         # from now we are going to make it like this 
         # we will online pass the data of only one pipeline
-        # print("Parsing JSON to MLMD...")
+        # logger.info("Parsing JSON to MLMD...")
         #mlmd_data = json.loads(mlmd_json)
         pipeline_data = json.loads(mlmd_json)
         # this line won't be needed
         # pipelines = mlmd_data["Pipeline"]
-        # print("pipelines = ", pipelines)
+        # logger.info("pipelines = ", pipelines)
         # pipeline = pipelines[0]
         pipeline_name = pipeline_data["name"]
         stage = {}
@@ -223,24 +226,24 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
 
         # Initialize the cmf class with pipeline_name and graph_status
         if cmd == "pull":
-            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                                graph=graph)
+            cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                            graph=graph)
         else:
             # in else, we are assuming cmd="push"
-            cmf_class = cmf.Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                                graph=graph, is_server=True)
+            cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+                            graph=graph, is_server=True)
 
         # Process each stage sequentially
         for stage in data["stages"]:
             try:
                 process_stage(cmf_class, stage, exec_uuid)
             except Exception as e:
-                print(f"Error in stage processing: {e}")
+                logger.error(f"[process_stage] Error in stage processing: {e}")
 
         return "success"
 
     except Exception as e:
-        print(f"An error occurred in parse_json_to_mlmd: {e}")
+        logger.error(f"[parse_json_to_mlmd] An error occurred in parse_json_to_mlmd: {e}")
         traceback.print_exc()
         return "An error occurred in parse_json_to_mlmd"
 

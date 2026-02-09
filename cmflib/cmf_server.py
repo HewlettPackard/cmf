@@ -19,6 +19,9 @@ import time
 import uuid
 import re
 import typing as t
+import logging
+
+logger = logging.getLogger(__name__)
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -133,7 +136,7 @@ def merge_created_execution(
     self.input_artifacts = []
     self.execution_label_props = {}
     custom_props = {} if custom_properties is None else custom_properties
-    # print(custom_props)
+    # logger.info(custom_props)
     git_repo = properties.get("Git_Repo", "")
     git_start_commit = properties.get("Git_Start_Commit", "")
     #name = properties.get("Name", "")
@@ -655,7 +658,7 @@ def log_execution_metrics_from_client(self, metrics_name: str,
         uri = name_tokens[1]
         execution_id = name_tokens[2]
     else:
-        print(f"Error : metrics name {metrics_name} is not in the correct format")
+        logger.error(f"[log_execution_metrics_from_client] Error : metrics name {metrics_name} is not in the correct format")
         return 
 
     #we need to add the execution id to the metrics name
@@ -796,7 +799,7 @@ def log_dataslice_from_client(self, uri: str, props: t.Optional[t.Dict] = None, 
         existing_artifact.extend(
             self.writer.store.get_artifacts_by_uri(c_hash))
     if existing_artifact and len(existing_artifact) != 0:
-        print("Adding to existing data slice")
+        logger.info("Adding to existing data slice")
             # Haven't added event type in this if cond, is it not needed??
         slice = link_execution_to_input_artifact(
             store=self.writer.store,

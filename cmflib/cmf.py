@@ -24,7 +24,10 @@ import yaml
 import pandas as pd
 import typing as t
 import json
-from cmflib import cmfquery, cmf_merger
+import logging
+
+# Initialize logger for this module
+logger = logging.getLogger(__name__)
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -98,7 +101,8 @@ class Cmf:
     The user has to provide the name of the pipeline, that needs to be recorded with CMF.
     
     ```python
-    cmflib.cmf.Cmf(
+    from cmflib.cmf import Cmf
+    metawriter = Cmf(
         filepath="mlmd",
         pipeline_name="test_pipeline",
         custom_properties={"owner": "user_a"},
@@ -241,9 +245,10 @@ class Cmf:
     def __check_git_remote():
         """Executes precheck for git remote"""
         if not check_git_remote():
-            print(
+            logger.error(
                 "*** Error git remote not set ***\n"
-                "*** Run cmf init ***"
+                "*** Run cmf init ***\n"
+                f"Current Directory: {os.getcwd()}"
             )
             sys.exit(1)
 
@@ -251,9 +256,10 @@ class Cmf:
     def __check_default_remote():
         """Executes precheck for default dvc remote"""
         if not check_default_remote():
-            print(
+            logger.error(
                 "*** DVC not configured correctly ***\n"
-                "*** Run command cmf init ***" 
+                "*** Run command cmf init ***\n"
+                f"Current Directory: {os.getcwd()}"
             )
             sys.exit(1)
 
@@ -261,9 +267,10 @@ class Cmf:
     def __check_git_init():
         """Verifies that the directory is a git repo"""
         if not check_git_repo():
-            print(
+            logger.error(
                 "*** Not a git repo, Please do the following ***\n"
-                "*** Run Command cmf init ***"
+                "*** Run Command cmf init ***\n"
+                f"Current Directory: {os.getcwd()}"
             )
             sys.exit(1)
 
@@ -280,14 +287,14 @@ class Cmf:
         Updates Pipeline_stage name.
         
         ```python
-        #Create context
+        # Create context
         # Import CMF
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
         # Create context
-        context: mlmd.proto.Context = cmf.create_context(
+        context: mlmd.proto.Context = metawriter.create_context(
             pipeline_stage="prepare",
             custom_properties ={"user-metadata1": "metadata_value"}
         )
@@ -332,7 +339,7 @@ class Cmf:
                            custom_properties = custom_properties
                        )
         if self.context is None:
-            print("Error - no context id")
+            logger.error("[update_context] Error - no context id")
             return
 
         if custom_properties:
@@ -367,14 +374,14 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
         # Create or reuse context for this stage
-        context: mlmd.proto.Context = cmf.create_context(
+        context: mlmd.proto.Context = metawriter.create_context(
             pipeline_stage="prepare",
             custom_properties ={"user-metadata1": "metadata_value"}
         )
         # Create a new execution for this stage run
-        execution: mlmd.proto.Execution = cmf.create_execution(
+        execution: mlmd.proto.Execution = metawriter.create_execution(
             execution_type="Prepare",
             custom_properties = {"split": split, "seed": seed}
         )
@@ -507,9 +514,9 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
         # Update a execution
-        execution: mlmd.proto.Execution = cmf.update_execution(
+        execution: mlmd.proto.Execution = metawriter.update_execution(
             execution_id=8,
             custom_properties = {"split": split, "seed": seed}
         )
@@ -525,7 +532,7 @@ class Cmf:
         """
         self.execution = self.store.get_executions_by_id([execution_id])[0]
         if self.execution is None:
-            print("Error - no execution id")
+            logger.error("[update_execution] Error - no execution id")
             return
         execution_type = self.store.get_execution_types_by_id([self.execution.type_id])[0]
 
@@ -590,13 +597,15 @@ class Cmf:
             existing_artifact: list[mlpb.Artifact] = [] # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
 
             if self.execution is None:
-                raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
+                error_msg = "[log_python_env] Execution is not initialized. Please create an execution before calling this method."
+                logger.error(error_msg)
+                raise ValueError(error_msg)
             
             commit_output(url, self.execution.id)
             c_hash = dvc_get_hash(url)
 
             if c_hash == "":
-                print("Error in getting the dvc hash,return without logging")
+                logger.error("[log_python_env] Error in getting the dvc hash,return without logging")
                 return
 
             commit = c_hash
@@ -686,9 +695,11 @@ class Cmf:
 
     def log_dvc_lock(self, file_path: str):
         """Used to update the dvc lock file created with dvc run command."""
-        print("Entered dvc lock file commit")
+        logger.info("Entered dvc lock file commit")
         if self.execution is None:
-            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
+            error_msg = "[log_dvc_lock] Execution is not initialized. Please create an execution before calling this method."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         return commit_dvc_lock_file(file_path, self.execution.id)
 
 
@@ -706,11 +717,11 @@ class Cmf:
         version of the  dataset is automatically obtained from the versioning software(DVC) and tracked as a metadata.
         
         ```python
-        artifact: mlmd.proto.Artifact = cmf.log_dataset(
+        artifact: mlmd.proto.Artifact = metawriter.log_dataset(
             url="/repo/data.xml",
             event="input",
             custom_properties={"source":"kaggle"},
-            label=artifacts/labels.csv,
+            label="artifacts/labels.csv",
             label_properties={"user":"Ron"}
         )
         ```
@@ -758,7 +769,7 @@ class Cmf:
         c_hash = dvc_get_hash(url)
 
         if c_hash == "":
-            print("Error in getting the dvc hash,return without logging")
+            logger.error("[log_dataset] Error in getting the dvc hash,return without logging")
             return
 
         dataset_commit = c_hash
@@ -872,7 +883,7 @@ class Cmf:
            Updates url of given artifact.
            Example
                ```python
-               artifact: mlmd.proto.Artifact = cmf.update_dataset_url(
+               artifact: mlmd.proto.Artifact = metawriter.update_dataset_url(
                 artifact="data.xml.gz"
                 updated_url="/repo/data.xml",
                )
@@ -906,7 +917,7 @@ class Cmf:
                ```python
                dup_artifact = [...] # List of artifacts
                updated_url = "/new/url"
-               updated_artifacts = cmf.update_model_url(dup_artifact, updated_url)
+               updated_artifacts = metawriter.update_model_url(dup_artifact, updated_url)
                ```
                Args:
                   dup_artifact: List of artifacts to update.
@@ -949,7 +960,7 @@ class Cmf:
         The model is added to dvc and the metadata file (.dvc) gets committed to git.
         
         ```python
-        artifact: mlmd.proto.Artifact= cmf.log_model(
+        artifact: mlmd.proto.Artifact= metawriter.log_model(
             path="path/to/model.pkl",
             event="output",
             model_framework="SKlearn",
@@ -1003,7 +1014,7 @@ class Cmf:
         c_hash = dvc_get_hash(path)
 
         if c_hash == "":
-            print("Error in getting the dvc hash,return without logging")
+            logger.error("[log_model] Error in getting the dvc hash,return without logging")
             return
 
         model_commit = c_hash
@@ -1116,7 +1127,7 @@ class Cmf:
         have.
         
         ```python
-        exec_metrics: mlpb.Artifact = cmf.log_execution_metrics(
+        exec_metrics: mlpb.Artifact = metawriter.log_execution_metrics(
             metrics_name="Training_Metrics",
             {"auc": auc, "loss": loss}
         )
@@ -1198,8 +1209,8 @@ class Cmf:
         # at the commit stage.
         # Inside training loop
         while True:
-                cmf.log_metric("training_metrics", {"train_loss": train_loss})
-        cmf.commit_metrics("training_metrics")
+                metawriter.log_metric("training_metrics", {"train_loss": train_loss})
+        metawriter.commit_metrics("training_metrics")
         ```
 
         Args:
@@ -1220,7 +1231,7 @@ class Cmf:
 
         Example:
         ```python
-        artifact: mlpb.Artifact = cmf.commit_metrics("example_metrics")
+        artifact: mlpb.Artifact = metawriter.commit_metrics("example_metrics")
         ```
 
         Args:
@@ -1258,7 +1269,7 @@ class Cmf:
         uri = dvc_get_hash(metrics_path)
 
         if uri == "":
-            print("Error in getting the dvc hash,return without logging")
+            logger.error("[commit_metrics] Error in getting the dvc hash,return without logging")
             return
         metrics_commit = uri
         dvc_url = dvc_get_url(metrics_path)
@@ -1331,7 +1342,9 @@ class Cmf:
     ) -> object: 
         uri = str(uuid.uuid1())
         if self.execution is None:
-            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
+            error_msg = "[log_validation_output] Execution is not initialized. Please create an execution before calling this method."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         return create_new_artifact_event_and_attribution(
             store=self.store,
             execution_id=self.execution.id,
@@ -1353,7 +1366,7 @@ class Cmf:
         """ Updates an existing artifact with the provided custom properties and stores it back to MLMD. 
           Example: 
           ```python
-                update_artifact=cmf.update_existing_artifact(existing_artifact, {"key1": "updated_value"}) 
+                update_artifact=metawriter.update_existing_artifact(existing_artifact, {"key1": "updated_value"}) 
           ``` 
           Args: 
              artifact: Existing artifact to be updated. 
@@ -1404,7 +1417,7 @@ class Cmf:
         [commit][cmflib.cmf.Cmf.DataSlice.commit] method.
         
         ```python
-        dataslice = cmf.create_dataslice("slice-a")
+        dataslice = metawriter.create_dataslice("slice-a")
         ```
         
         Args:
@@ -1419,7 +1432,9 @@ class Cmf:
         """Reads the dataslice"""
         # To do checkout if not there
         if self.execution is None:
-            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
+            error_msg = "[read_dataslice] Execution is not initialized. Please create an execution before calling this method."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
@@ -1431,7 +1446,7 @@ class Cmf:
         """Updates a dataslice record in a Parquet file with the provided custom properties.
         
         ```python
-           dataslice=cmf.update_dataslice("dataslice_file.parquet", "record_id", 
+           dataslice=metawriter.update_dataslice("dataslice_file.parquet", "record_id", 
            {"key1": "updated_value"})
         ```
         
@@ -1444,7 +1459,9 @@ class Cmf:
            None
         """
         if self.execution is None:
-            raise ValueError("Execution is not initialized. Please create an execution before calling this method.")
+            error_msg = "[update_dataslice] Execution is not initialized. Please create an execution before calling this method."
+            logger.error(error_msg)
+            raise ValueError(error_msg)
         directory_path = os.path.join(self.ARTIFACTS_PATH, self.execution.properties["Execution_uuid"].string_value.split(',')[0], self.DATASLICE_PATH)
         name = os.path.join(directory_path, name)
         df = pd.read_parquet(name)
@@ -1481,7 +1498,7 @@ class Cmf:
 
         # Ensure label file exists
         if not os.path.isfile(url):
-            print(f"Error: File '{url}' not found.")
+            logger.error(f"[log_label] Error: File '{url}' not found.")
         else:
             # Calculate label_hash
             label_hash = calculate_md5(url)
@@ -1489,7 +1506,7 @@ class Cmf:
             # Get dataset_uri from DVC
             dataset_uri = dvc_get_hash(dataset_name)
             if dataset_uri == "":
-                print(f"Error in getting the dvc hash for {dataset_name}, return without logging")
+                logger.error(f"[log_label] Error in getting the dvc hash for {dataset_name}, return without logging")
                 return
             
             # Fetch existing dataset artifact
@@ -1693,7 +1710,7 @@ class Cmf:
             commit_output(dataslice_path, self.writer.execution.id)
             c_hash = dvc_get_hash(dataslice_path)
             if c_hash == "":
-                print("Error in getting the dvc hash,return without logging")
+                logger.error("[DataSlice.commit] Error in getting the dvc hash,return without logging")
                 return
 
             dataslice_commit = c_hash
@@ -1703,7 +1720,7 @@ class Cmf:
                 existing_artifact.extend(
                     self.writer.store.get_artifacts_by_uri(c_hash))
             if existing_artifact and len(existing_artifact) != 0:
-                print("Adding to existing data slice")
+                logger.info("Adding to existing data slice")
                 # Haven't added event type in this if cond, is it not needed??
                 slice = link_execution_to_input_artifact(
                     store=self.writer.store,
@@ -1959,16 +1976,22 @@ def cmf_init(type: str = "",
     """
 
     if type == "":
-        return print("Error: Type is not provided")
+        msg = "Error: Type is not provided"
+        logger.debug(f"[cmf_init] {msg}")
+        return print(msg)
     if type not in ["local","minioS3","amazonS3","sshremote","osdfremote"]:
-        return print("Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote","osdfremote"]))
+        msg = "Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote","osdfremote"])
+        logger.debug(f"[cmf_init] {msg}")
+        return print(msg)
 
     if neo4j_user != "" and  neo4j_password != "" and neo4j_uri != "":
         pass
     elif neo4j_user == "" and  neo4j_password == "" and neo4j_uri == "":
         pass
     else:
-        return print("Error: Enter all neo4j parameters.") 
+        msg = "Error: Enter all neo4j parameters or leave all blank."
+        logger.debug(f"[cmf_init] {msg}")
+        return print(msg) 
 
     args={'path': path,
         'git_remote_url': git_remote_url,
@@ -2001,7 +2024,7 @@ def cmf_init(type: str = "",
             neo4j_uri
         )
         if status_args != []:
-            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+            logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
          
     # Required arguments: url, endpoint_url, access_key_id, secret_key, git_remote_url
@@ -2020,7 +2043,7 @@ def cmf_init(type: str = "",
             neo4j_uri,
         )
         if status_args != []:
-            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+            logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
 
     # Required arguments: url, access_key_id, secret_key, git_remote_url, session_token
@@ -2039,7 +2062,7 @@ def cmf_init(type: str = "",
             neo4j_uri,
         )
         if status_args != []:
-            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+            logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
 
         return output
 
@@ -2059,7 +2082,7 @@ def cmf_init(type: str = "",
             neo4j_uri,
         )
         if status_args != []:
-            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+            logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
 
         return output
 
@@ -2080,12 +2103,12 @@ def cmf_init(type: str = "",
             neo4j_uri,
         )
         if status_args != []:
-            print("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
+            logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
 
         return output
 
     else:
-        print("Error: Enter all arguments")
+        logger.error("[cmf_init] Error: Enter all arguments")
 
 
 def non_related_args(type : str, args : dict):
@@ -2231,3 +2254,4 @@ def dvc_ingest(file_name: str = "./mlmd") -> str:
     # Default arguments: file_name
     output = _dvc_ingest(file_name)
     return output
+
