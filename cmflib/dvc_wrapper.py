@@ -22,6 +22,10 @@ import dvc.api  # type: ignore
 import dvc.exceptions   # type: ignore
 import typing as t
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def check_git_remote() -> bool:
     process: subprocess.Popen
     commit = ""
@@ -39,6 +43,9 @@ def check_git_remote() -> bool:
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
+        logger.error(f"[check_git_remote] Unexpected {err}, {type(err)}")
+        logger.error(f"[check_git_remote] Unexpected {outs}")
+        logger.error(f"[check_git_remote] Unexpected {errs}")
     return git_remote_configured
 
 
@@ -58,6 +65,9 @@ def check_default_remote() -> bool:
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
+        logger.error(f"[check_default_remote] Unexpected {err}, {type(err)}")
+        logger.error(f"[check_default_remote] Unexpected {outs}")
+        logger.error(f"[check_default_remote] Unexpected {errs}")
     return dvc_configured
 
 
@@ -70,11 +80,11 @@ def dvc_get_url(folder: str, retry: bool = False, repo: str = "") -> str:
             url = dvc.api.get_url(folder, repo)
     except dvc.exceptions.PathMissingError as err:
         if not retry:
-            print(f"Retrying with full path")
+            logger.warning(f"[dvc_get_url] Retrying with full path")
             folder = os.path.join(os.getcwd(), folder)
             url = dvc_get_url(folder, True)
         else:
-            print(f"dvc.exceptions.PathMissingError Caught  Unexpected {err}, {type(err)}")
+            logger.error(f"[dvc_get_url] dvc.exceptions.PathMissingError Caught  Unexpected {err}, {type(err)}")
     except dvc.exceptions.OutputNotFoundError as err:
         if not retry:
             filename = folder.split('/')[-1]
@@ -82,7 +92,7 @@ def dvc_get_url(folder: str, retry: bool = False, repo: str = "") -> str:
             url = dvc_get_url(folder, True)
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_get_url] Unexpected {err}, {type(err)}")
     return url
 
 
@@ -95,9 +105,9 @@ def dvc_get_hash(folder: str, repo: str = "") -> str:
         c_hash = ''.join(url_list[len_list - 2:len_list])
 
     except dvc.exceptions.PathMissingError as err:
-        print(f"dvc.exceptions.PathMissingError Caught  Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_get_hash] dvc.exceptions.PathMissingError Caught  Unexpected {err}, {type(err)}")
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_get_hash] Unexpected {err}, {type(err)}")
     return c_hash
 
 
@@ -117,6 +127,9 @@ def check_git_repo() -> bool:
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
+        logger.error(f"[check_git_repo] Unexpected {err}, {type(err)}")
+        logger.error(f"[check_git_repo] Unexpected {outs}")
+        logger.error(f"[check_git_repo] Unexpected {errs}")
     return is_git_repo
 
 
@@ -132,16 +145,16 @@ def git_checkout_new_branch(branch_name: str):
                                    universal_newlines=True)
         # output = process.stdout.readline()
         output, error = process.communicate(timeout=60)
-        print(f"*** Note: CMF will check out a new branch in git to commit the metadata files ***\n"
+        logger.info(f"*** Note: CMF will check out a new branch in git to commit the metadata files ***\n"
               f"*** The checked out branch is {branch_name}. ***")
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
         
-        print(f"Unexpected {err}, {type(err)}")
-        print(f"Unexpected {outs}")
-        print(f"Unexpected {errs}")
-        print(f"Checking out new branch for the execution failed, continuing in the default branch.")
+        logger.error(f"[git_checkout_new_branch] Unexpected {err}, {type(err)}")
+        logger.error(f"[git_checkout_new_branch] Unexpected {outs}")
+        logger.error(f"[git_checkout_new_branch] Unexpected {errs}")
+        logger.error(f"[git_checkout_new_branch] Checking out new branch for the execution failed, continuing in the default branch.")
 
 
 def git_get_commit() -> str:
@@ -157,9 +170,9 @@ def git_get_commit() -> str:
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
-        print(f"Unexpected {err}, {type(err)}")
-        print(f"Unexpected {outs}")
-        print(f"Unexpected {errs}")
+        logger.error(f"[git_get_commit] Unexpected {err}, {type(err)}")
+        logger.error(f"[git_get_commit] Unexpected {outs}")
+        logger.error(f"[git_get_commit] Unexpected {errs}")
     return commit
 
 
@@ -195,9 +208,9 @@ def commit_dvc_lock_file(file_path: str, execution_id) -> str:
     except Exception as err:
         process.kill()
         outs, errs = process.communicate()
-        print(f"Unexpected {err}, {type(err)}")
-        print(f"Unexpected {outs}")
-        print(f"Unexpected {errs}")
+        logger.error(f"[commit_dvc_lock_file] Unexpected {err}, {type(err)}")
+        logger.error(f"[commit_dvc_lock_file] Unexpected {outs}")
+        logger.error(f"[commit_dvc_lock_file] Unexpected {errs}")
     return commit
 
 
@@ -220,12 +233,12 @@ def git_commit(execution_id: str) -> str:
         output, errs = process.communicate(timeout=60)
         commit = output.splitlines()[0].strip()
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[git_commit] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[git_commit] Unexpected {outs}")
+           logger.error(f"[git_commit] Unexpected {errs}")
     return commit
 
 
@@ -267,11 +280,9 @@ def commit_output(folder: str, execution_id: str) -> str:
             raise Exception(f"Git add failed, Check gitignore: {errs}")
         
     except Exception as err:
-        process.kill()
-        outs, errs = process.communicate()
-        print(f"Unexpected {err}, {type(err)}")
-        print(f"Unexpected {outs}")
-        print(f"Unexpected {errs}")
+        logger.error(f"[commit_output] Error in commit_output: {err}")
+        logger.error(f"[commit_output] Exception type: {type(err)}")
+        # Don't kill process if it already finished, just log the error
     return commit
 
 
@@ -290,9 +301,9 @@ def git_get_repo() -> str:
 
     except Exception as err:
         process.kill()
-        print(f"Unexpected {err}, {type(err)}")
-        print(f"Unexpected {output}")
-        print(f"Unexpected {errs}")
+        logger.error(f"[git_get_repo] Unexpected {err}, {type(err)}")
+        logger.error(f"[git_get_repo] Unexpected {output}")
+        logger.error(f"[git_get_repo] Unexpected {errs}")
     return commit.split()[1]
 
 
@@ -307,12 +318,12 @@ def git_quiet_init() -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[git_quiet_init] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[git_quiet_init] Unexpected {outs}")
+           logger.error(f"[git_quiet_init] Unexpected {errs}")
     return commit
 
 
@@ -327,12 +338,12 @@ def git_initial_commit() -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[git_initial_commit] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[git_initial_commit] Unexpected {outs}")
+           logger.error(f"[git_initial_commit] Unexpected {errs}")
     return commit
 
 
@@ -347,12 +358,12 @@ def git_add_remote(git_url) -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[git_add_remote] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[git_add_remote] Unexpected {outs}")
+           logger.error(f"[git_add_remote] Unexpected {errs}")
     return commit
 
 
@@ -367,12 +378,12 @@ def dvc_quiet_init() -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_quiet_init] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[dvc_quiet_init] Unexpected {outs}")
+           logger.error(f"[dvc_quiet_init] Unexpected {errs}")
     return commit
 
 
@@ -387,12 +398,12 @@ def dvc_add_remote_repo(repo_type, repo_path) -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_add_remote_repo] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[dvc_add_remote_repo] Unexpected {outs}")
+           logger.error(f"[dvc_add_remote_repo] Unexpected {errs}")
     return commit
 
 
@@ -407,12 +418,12 @@ def dvc_add_attribute(repo_type, attribute_type, attribute_value) -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_add_attribute] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[dvc_add_attribute] Unexpected {outs}")
+           logger.error(f"[dvc_add_attribute] Unexpected {errs}")
     return commit
 
 
@@ -427,12 +438,12 @@ def dvc_get_config() -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[dvc_get_config] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[dvc_get_config] Unexpected {outs}")
+           logger.error(f"[dvc_get_config] Unexpected {errs}")
     return commit
 
 
@@ -449,12 +460,12 @@ def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
             commit = output.strip()
 
         except Exception as err:
-           print(f"Unexpected {err}, {type(err)}")
+           logger.error(f"[dvc_push] Unexpected {err}, {type(err)}")
            if isinstance(object, subprocess.Popen):
               process.kill()
               outs, errs = process.communicate()
-              print(f"Unexpected {outs}")
-              print(f"Unexpected {errs}")
+              logger.error(f"[dvc_push] Unexpected {outs}")
+              logger.error(f"[dvc_push] Unexpected {errs}")
 
     else:
         file_list.insert(0, 'dvc')
@@ -469,12 +480,12 @@ def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
             commit = output.strip()
 
         except Exception as err:
-           print(f"Unexpected {err}, {type(err)}")
+           logger.error(f"[dvc_push] Unexpected {err}, {type(err)}")
            if isinstance(object, subprocess.Popen):
               process.kill()
               outs, errs = process.communicate()
-              print(f"Unexpected {outs}")
-              print(f"Unexpected {errs}")
+              logger.error(f"[dvc_push] Unexpected {outs}")
+              logger.error(f"[dvc_push] Unexpected {errs}")
     return commit
 
 
@@ -489,12 +500,12 @@ def git_modify_remote_url(git_url) -> str:
         commit = output.strip()
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[git_modify_remote_url] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
            process.kill()
            outs, errs = process.communicate()
-           print(f"Unexpected {outs}")
-           print(f"Unexpected {errs}")
+           logger.error(f"[git_modify_remote_url] Unexpected {outs}")
+           logger.error(f"[git_modify_remote_url] Unexpected {errs}")
     return commit
 
 

@@ -21,6 +21,16 @@ Proceed with the following steps to set up an OSDF Remote Repository:
    ```
 
 3. Execute the following command to initialize the OSDF remote storage as a CMF artifact repository.
+   
+   **Option 1: Using a pre-generated token (recommended for convenience)**
+   ```
+   cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
+       --cache https://osdf-director.osg-htc.org/ \
+       --access-token ~/.fdp/osdf_token \
+       --git-remote-url https://github.com/user/experiment-repo.git
+   ```
+   
+   **Option 2: Using key-based dynamic token generation**
    ```
    cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
        --cache https://osdf-director.osg-htc.org/ \
@@ -30,13 +40,25 @@ Proceed with the following steps to set up an OSDF Remote Repository:
        --git-remote-url https://github.com/user/experiment-repo.git
    ```
    
-   Parameters:
-   - `--path`: The OSDF origin server URL where data will be stored
-   - `--cache`: The OSDF cache/director URL for retrieving data
-   - `--key-id`: The key identifier for authentication
-   - `--key-path`: Path to the private key file for token generation
-   - `--key-issuer`: The issuer URL for token generation
-   - `--git-remote-url`: Git repository URL for version control
+   **Option 3: Using the default token location**
+   
+   If you place your token at `~/.fdp/osdf_token`, you can omit the `--access-token` parameter:
+   ```
+   cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
+       --cache https://osdf-director.osg-htc.org/ \
+       --git-remote-url https://github.com/user/experiment-repo.git
+   ```
+   
+   **Parameters:**
+   - `--path`: (Required) The OSDF origin server URL where data will be stored
+   - `--cache`: (Optional) The OSDF cache/director URL for retrieving data (improves read performance)
+   - `--access-token`: (Optional) Pre-generated token (plain text or path to token file). If not provided, CMF looks for token at `~/.fdp/osdf_token`
+   - `--key-id`: (Optional) The key identifier for authentication (required if --access-token not provided)
+   - `--key-path`: (Optional) Path to the private key file for token generation (required if --access-token not provided)
+   - `--key-issuer`: (Optional) The issuer URL for token generation (required if --access-token not provided)
+   - `--git-remote-url`: (Required) Git repository URL for version control
+   
+   **Note:** You must provide either `--access-token` OR all three key parameters (`--key-id`, `--key-path`, `--key-issuer`), or have a token at `~/.fdp/osdf_token`.
 
 4. Execute `cmf init show` to check the CMF configuration.
 
@@ -54,14 +76,22 @@ Proceed with the following steps to set up an OSDF Remote Repository:
 
 ## Notes
 
-- Ensure you have the proper authentication credentials from your OSDF provider
-   - private key, 
-   - key ID, 
-   - issuerURL, 
-   - origin FQDN and Federation Path 
+- **Authentication Options:** You can authenticate with OSDF in three ways:
+   1. **Pre-generated token file** (recommended): Store your token in a file (default location: `~/.fdp/osdf_token`) or specify with `--access-token`
+   2. **Raw token string**: Provide the token directly with `--access-token "your-token-string"`
+   3. **Dynamic token generation**: Provide private key (`--key-path`), key ID (`--key-id`), and issuer URL (`--key-issuer`)
+- **Token Validation:** Before each push/pull operation, CMF automatically validates the token and displays its status including:
+   - Issuer, Subject, Audience, and Scope
+   - Issue and expiration timestamps
+   - Time remaining until expiry
+   - If the token has expired, the operation will be aborted with a clear error message
+- Ensure you have the proper authentication credentials from your OSDF provider:
+   - For token-based: A valid OSDF token (either pre-generated or via token file)
+   - For key-based: private key, key ID, issuerURL, origin FQDN and Federation Path
 - The cache server (`--cache`) is used for reading data to improve performance (It identifies files directly from their path and contacts the topologically nearest cache to pull from)
-- The origin server (`--path`) is used for writing data (push). Caches cannot be written to. 
-- OSDF uses token-based authentication that is automatically generated from your private key. This is handled internally by CMF under the covers. 
+- The origin server (`--path`) is used for writing data (push). Caches cannot be written to.
+- When using token files, CMF automatically reads and refreshes the token before each push/pull operation
+- When using key-based authentication, OSDF tokens are automatically generated from your private key. This is handled internally by CMF under the covers.
 - CMF also verifies that the retrieved file has the same Hash value as is recorded in MLMD
 
 
@@ -76,7 +106,10 @@ Proceed with the following steps to set up an OSDF Remote Repository:
 - Running CMF's examples/example-getting-started workflow and pushing artifacts to a specific remote
 
 ```
-(cmf) tripataa@ai07:~/cmf-examples/example-get-started$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test           --cache https://osdf-director.osg-htc.org/   --key-id XXXX    --key-path ~/private_hpe.pem    --key-issuer https://t.nationalresearchplatform.org/fdp-hpe --git-remote-url https://github.com/user/experiment-repo.git
+(cmf) tripataa@ai07:~/cmf-examples/example-get-started$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
+    --cache https://osdf-director.osg-htc.org/ \
+    --access-token ~/.fdp/osdf_token \
+    --git-remote-url https://github.com/user/experiment-repo.git
 git_dir /home/tripataa/cmf-examples/example-get-started/.git
 Starting cmf init.
 Setting 'osdf' as a default remote.
@@ -109,6 +142,21 @@ The output matrix artifacts/features/test.pkl size is (4983, 3002) and data type
 100% Adding...|########################################|1/1 [00:00, 47.62file/s]
 
 (cmf) tripataa@ai07:~/cmf-examples/example-get-started$ cmf artifact push -p Test-env
+
+============================================================
+OSDF Token Status
+============================================================
+Issuer:    https://t.nationalresearchplatform.org/fdp-hpe
+Subject:   anything
+Audience:  https://wlcg.cern.ch/jwt/v1/any
+Scope:     storage.create:/ storage.modify:/ storage.read:/
+Issued At: 2026-02-02 23:25:42 UTC
+Expires:   2026-02-02 23:45:42 UTC
+
+Time Remaining: 0h 12m 30s
+✓  STATUS: TOKEN IS VALID
+============================================================
+
 Collecting                                            |0.00 [00:00,    ?entry/s]
 Pushing...
 Everything is up to date.
@@ -124,11 +172,9 @@ Everything is up to date.
 (cmf) tripataa@ai07:~/cmf-examples/test$ ls
 mlmd
 (cmf) tripataa@ai07:~/cmf-examples/test$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
-          --cache https://osdf-director.osg-htc.org/ \
-        --key-id XXX \
-        --key-path ~/private_hpe.pem \
-        --key-issuer https://t.nationalresearchplatform.org/fdp-hpe \
---git-remote-url https://github.com/user/experiment-repo.git
+    --cache https://osdf-director.osg-htc.org/ \
+    --access-token ~/.fdp/osdf_token \
+    --git-remote-url https://github.com/user/experiment-repo.git
 git_dir /home/tripataa/cmf-examples/test/.git
 Starting git init.
 *** Note: CMF will check out a new branch in git to commit the metadata files
@@ -140,6 +186,21 @@ Setting 'osdf' as a default remote.
 SUCCESS: cmf init complete.
 
 (cmf) tripataa@ai07:~/cmf-examples/test$ cmf artifact pull -p Test-env
+
+============================================================
+OSDF Token Status
+============================================================
+Issuer:    https://t.nationalresearchplatform.org/fdp-hpe
+Subject:   anything
+Audience:  https://wlcg.cern.ch/jwt/v1/any
+Scope:     storage.create:/ storage.modify:/ storage.read:/
+Issued At: 2026-02-02 23:25:42 UTC
+Expires:   2026-02-02 23:45:42 UTC
+
+Time Remaining: 0h 11m 15s
+✓  STATUS: TOKEN IS VALID
+============================================================
+
 Fetching
 artifact=cmf_artifacts/python_env_4927239f4c14b700b637ff03ab787e65.yaml,
 surl=https://osdf-director.osg-htc.org/fdp-hpe/cmf_test/files/md5/49/27239f4c14b
@@ -203,10 +264,10 @@ SUCCESS: Number of files downloaded = 8.
 (cmf) tripataa@ai07:~/cmf-examples/test2$ ls
 mlmd
 (cmf) tripataa@ai07:~/cmf-examples/test2$ cmf init osdfremote --path https://fdp-origin.labs.hpe.com:8443/fdp-hpe/cmf_test \
-        --key-id XXXX \
-        --key-path ~/private_hpe.pem \
-        --key-issuer https://t.nationalresearchplatform.org/fdp-hpe \
---git-remote-url https://github.com/user/experiment-repo.git
+    --key-id XXXX \
+    --key-path ~/private_hpe.pem \
+    --key-issuer https://t.nationalresearchplatform.org/fdp-hpe \
+    --git-remote-url https://github.com/user/experiment-repo.git
 git_dir /home/tripataa/cmf-examples/test2/.git
 Starting git init.
 *** Note: CMF will check out a new branch in git to commit the metadata files

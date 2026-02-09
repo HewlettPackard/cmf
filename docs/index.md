@@ -4,7 +4,7 @@
 
 This document provides a comprehensive overview of the Common Metadata Framework (CMF), which implements a system for collecting, storing, and querying metadata associated with Machine Learning (ML) pipelines. CMF adopts a data-first approach where all artifacts (datasets, ML models, and performance metrics) are versioned and identified by their content hash, enabling distributed metadata tracking and collaboration across ML teams.
 
-For detailed API documentation, see [Core Library (CMFLib)](cmflib/index.md). For deployment instructions, see [Installation & Setup](setup/index.md). For web user interface details, see [CMF GUI](ui/index.md).
+For detailed API documentation, see [Core Library (cmflib)](cmflib/index.md). For deployment instructions, see [Installation & Setup](setup/index.md). For web user interface details, see [CMF GUI](ui/index.md).
 
 ## System Architecture
 
@@ -13,15 +13,52 @@ CMF is designed as a distributed system that enables ML teams to track pipeline 
 
 Common Metadata Framework (`CMF`) has the following components:
 
-- **CMFLib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
+- **cmflib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
   
   <div style="text-align: center; margin: 20px 0;">
-    <img src="../assets/framework.png" height="400" />
+    <img src="./assets/framework.png" height="400" />
   </div>
 
 - **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
 - **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
+
+### System Interaction Flow
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'14px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart TB
+    WEBUSER([Web Users & ML Teams])
+    CMFCLIENT([CMF Client CLI])
+    
+    UI[Web Interface]
+    SERVERBOX[CMF Server]
+        
+    DB[(Metadata Store)]
+    ARTIFACTS[Artifact Repositories<br/><i>local/ S3 / MinIO / SSH</i>]
+    
+    WEBUSER -->|Access| UI
+    CMFCLIENT -->|Push Metadata| SERVERBOX
+    SERVERBOX -->|Pull Metadata| CMFCLIENT
+    
+    UI -->|Request Data| SERVERBOX
+    SERVERBOX -->|Response| UI
+    
+    SERVERBOX -->|Query & Store| DB
+    DB -->|Query & Store| SERVERBOX
+    
+    CMFCLIENT -->|Push Artifacts| ARTIFACTS
+    ARTIFACTS -->|Pull Artifacts| CMFCLIENT
+    
+    style WEBUSER fill:#e8eaf6,stroke:#5c6bc0,stroke-width:2px,color:#37474f
+    style CMFCLIENT fill:#e0f2f1,stroke:#26a69a,stroke-width:2px,color:#37474f
+    style UI fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#37474f
+    style SERVERBOX fill:#e8f5e9,stroke:#66bb6a,stroke-width:2.5px,color:#37474f
+    style DB fill:#fce4ec,stroke:#ec407a,stroke-width:2px,color:#37474f
+    style ARTIFACTS fill:#fff9c4,stroke:#ffca28,stroke-width:2px,color:#37474f
+    
+    linkStyle default stroke:#78909c,stroke-width:2px
+```
 
 
 ## Core Abstractions

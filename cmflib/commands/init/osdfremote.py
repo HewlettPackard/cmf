@@ -40,6 +40,24 @@ class CmdInitOSDFRemote(CmdBase):
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
+        # Validate that either --access-token, default token file, or (--key-id, --key-path, --key-issuer) are provided
+        default_token_path = os.path.expanduser("~/.fdp/osdf_token")
+        access_token_provided = self.args.access_token is not None
+        default_token_exists = os.path.isfile(default_token_path)
+        key_args_provided = (
+            self.args.key_id is not None and
+            self.args.key_path is not None and
+            self.args.key_issuer is not None
+        )
+
+        if not access_token_provided and not default_token_exists and not key_args_provided:
+            raise CmfInitFailed(
+                msg_str="Initialization cannot be completed. Please provide one of the following:\n"
+                "  1. --access-token <token or file path>\n"
+                "  2. A token file at ~/.fdp/osdf_token\n"
+                "  3. All of --key-id, --key-path, and --key-issuer"
+            )
+
         attr_dict = {}
         # cmf_server_url is default parameter for cmf init command 
         # if user does not provide cmf-server-url, default value is http://127.0.0.1:80
@@ -90,15 +108,46 @@ class CmdInitOSDFRemote(CmdBase):
         dvc_add_attribute(repo_type,"ask_password", "false")
         dvc_add_attribute(repo_type,"auth", "custom")
         dvc_add_attribute(repo_type,"custom_auth_header", "Authorization")
-        dynamic_password = generate_osdf_token(self.args.key_id,self.args.key_path,self.args.key_issuer)
+
+        # Determine the dynamic password based on --access-token, default token file, or key arguments
+        token_source = ""  # Track the token source for config storage
+        if access_token_provided:
+            # --access-token can be a plain text token or a file path
+            token_value = self.args.access_token
+            if os.path.isfile(token_value):
+                # Read token from file
+                with open(token_value, "r") as token_file:
+                    token_str = token_file.read().strip()
+                # Store the file path as token source
+                token_source = token_value
+            else:
+                # Use token as plain text
+                token_str = token_value
+                # For raw tokens, we don't store the token itself, just mark it was provided
+                token_source = "provided"
+            dynamic_password = "Bearer " + token_str
+        elif default_token_exists:
+            # Read token from default location ~/.fdp/osdf_token
+            with open(default_token_path, "r") as token_file:
+                token_str = token_file.read().strip()
+            dynamic_password = "Bearer " + token_str
+            # Store the default token path so future operations can find it
+            token_source = default_token_path
+        else:
+            # Generate token using key_id, key_path, key_issuer
+            dynamic_password = generate_osdf_token(self.args.key_id, self.args.key_path, self.args.key_issuer)
+            token_source = ""
+
         dvc_add_attribute(repo_type,"password",dynamic_password)
 
         attr_dict = {}
         attr_dict["path"] = self.args.path
         attr_dict["cache"] = self.args.cache
-        attr_dict["key_id"] = self.args.key_id
-        attr_dict["key_path"] = self.args.key_path
-        attr_dict["key_issuer"] = self.args.key_issuer
+        attr_dict["key_id"] = self.args.key_id if self.args.key_id else ""
+        attr_dict["key_path"] = self.args.key_path if self.args.key_path else ""
+        attr_dict["key_issuer"] = self.args.key_issuer if self.args.key_issuer else ""
+        # Store the token source: file path, "provided" for raw token, or empty if using key generation
+        attr_dict["access_token"] = token_source
         CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
 
         return CmfInitComplete()
@@ -132,28 +181,36 @@ def add_parser(subparsers, parent_parser):
         default="",
     )
 
-    required_arguments.add_argument(
+    parser.add_argument(
+        "--access-token",
+        required=False,
+        help="Specify a pre-generated token (plain text or path to a token file). If not provided, looks for token at ~/.fdp/osdf_token. Bypasses token generation via --key-id, --key-path, --key-issuer.",
+        metavar="<access_token>",
+        default=None,
+    )
+
+    parser.add_argument(
         "--key-id",
-        required=True,
-        help="Specify key_id for provided private key. eg. b2d3",
+        required=False,
+        help="Specify key_id for provided private key. eg. b2d3. Required if --access-token is not provided.",
         metavar="<key_id>",
-        default=argparse.SUPPRESS,
+        default=None,
     )
 
-    required_arguments.add_argument(
+    parser.add_argument(
         "--key-path",
-        required=True,
-        help="Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem",
+        required=False,
+        help="Specify path for private key on local filesystem. eg. ~/.ssh/XXX.pem. Required if --access-token is not provided.",
         metavar="<key_path>",
-        default=argparse.SUPPRESS,
+        default=None,
     )
 
-    required_arguments.add_argument(
+    parser.add_argument(
         "--key-issuer",
-        required=True,
-        help="Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX",
+        required=False,
+        help="Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX. Required if --access-token is not provided.",
         metavar="<key_issuer>",
-        default=argparse.SUPPRESS,
+        default=None,
     )
 
     required_arguments.add_argument(
