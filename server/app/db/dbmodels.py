@@ -210,12 +210,14 @@ scheduled_syncs = Table(
     Column("start_time_utc", BigInteger, nullable=False),
     Column("next_run_time_utc", BigInteger, nullable=False),
     Column("active", Boolean, nullable=False, default=True),
+    Column("status", String(64), nullable=False, default="new"),
     Column("one_time", Boolean, nullable=False, default=False),
     Column("created_at", BigInteger, nullable=False),
 
     Index("idx_scheduled_syncs_server_id", "server_id"),
     Index("idx_scheduled_syncs_next_run_time_utc", "next_run_time_utc"),
     Index("idx_scheduled_syncs_active", "active"),
+    Index("idx_scheduled_syncs_status", "status"),
     Index("idx_scheduled_syncs_one_time", "one_time")
 )
 
@@ -227,7 +229,9 @@ sync_logs = Table(
     Column("run_time_utc", BigInteger, nullable=False),
     Column("status", String(64), nullable=False),
     Column("message", Text, nullable=True),
+    Column("sync_type", String(64), nullable=False, default="periodic"),  # sync_now, schedule_once, periodic
 
     Index("idx_sync_logs_schedule_id", "schedule_id"),
-    Index("idx_sync_logs_run_time_utc", "run_time_utc")
+    Index("idx_sync_logs_run_time_utc", "run_time_utc"),
+    Index("idx_sync_logs_sync_type", "sync_type")
 )

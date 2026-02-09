@@ -214,15 +214,32 @@ class FastAPIClient {
       });
   }
 
-  async scheduleSync(serverId, timezone, startTimeLocalIso, timesPerDay, oneTime = false) {
+  async scheduleSync(serverId, timezone, startTimeLocalIso, oneTime = false, recurrenceMode = 'interval', intervalUnit = 'hours', intervalValue = 6, dailyTime = null, weeklyDay = null, weeklyTime = null) {
+    const payload = {
+      server_id: serverId,
+      timezone: timezone,
+      start_time_local_iso: startTimeLocalIso,
+      one_time: oneTime,
+    };
+
+    // Only add recurrence mode for periodic syncs
+    if (!oneTime) {
+      payload.recurrence_mode = recurrenceMode;
+
+      // Add mode-specific fields
+      if (recurrenceMode === 'interval') {
+        payload.interval_unit = intervalUnit;
+        payload.interval_value = intervalValue;
+      } else if (recurrenceMode === 'daily') {
+        payload.daily_time = dailyTime;
+      } else if (recurrenceMode === 'weekly') {
+        payload.weekly_day = weeklyDay;
+        payload.weekly_time = weeklyTime;
+      }
+    }
+
     return this.apiClient
-      .post(`/schedule-sync`, {
-        server_id: serverId,
-        timezone: timezone,
-        start_time_local_iso: startTimeLocalIso,
-        times_per_day: timesPerDay,
-        one_time: oneTime,
-      })
+      .post(`/schedule-sync`, payload)
       .then(({ data }) => data);
   }
 
@@ -237,6 +254,18 @@ class FastAPIClient {
   async getScheduleLogs(scheduleId) {
     return this.apiClient
       .get(`/schedule-sync/logs/${scheduleId}`)
+      .then(({ data }) => data);
+  }
+
+  async getCompletedLogs(serverId) {
+    return this.apiClient
+      .get(`/server/${serverId}/completed-logs`)
+      .then(({ data }) => data);
+  }
+
+  async deleteSchedule(scheduleId) {
+    return this.apiClient
+      .delete(`/schedule-sync/${scheduleId}`)
       .then(({ data }) => data);
   }
 
