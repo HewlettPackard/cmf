@@ -16,7 +16,6 @@
 
 import pytest
 import subprocess
-import time
 import os
 import shutil
 from cmflib import cmf
