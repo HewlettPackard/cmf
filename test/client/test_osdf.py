@@ -98,7 +98,7 @@ def test_metadata_push(start_server):
 def test_metadata_pull(stop_server):
     print("-------------------------------Test Case Name: cmf metadata pull  ----------------------------------")
     os.makedirs("./pull", exist_ok=True)
-    _ = cmf.metadata_pull(pipeline_name="Test-env", filename="./pull/mlmd")
+    _ = cmf.metadata_pull("Test-env", "./pull/mlmd")
 
 
 def test_artifact_pull_all():
