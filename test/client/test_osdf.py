@@ -87,7 +87,7 @@ def test_script():
 
 def test_artifact_push():
     print("-------------------------------Test Case Name: cmf artifact push ----------------------------------")
-    _ = cmf.artifact_push()
+    _ = cmf.artifact_push("Test-env")
 
 
 def test_metadata_push(start_server):
