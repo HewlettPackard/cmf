@@ -109,6 +109,8 @@ services:
       MCP_HOST: 0.0.0.0
       MCP_PORT: 8000
       MCP_TRANSPORT_SECURITY: ${MCP_TRANSPORT_SECURITY:-disabled}
+      MCP_ALLOWED_HOSTS: ${MCP_ALLOWED_HOSTS:-}
+      MCP_ALLOWED_ORIGINS: ${MCP_ALLOWED_ORIGINS:-}
     # External port mapping: host:container
     ports:
       - "${MCP_EXTERNAL_PORT:-8382}:8000"
