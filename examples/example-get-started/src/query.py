@@ -1,13 +1,13 @@
 import click
 import typing as t
 import pandas as pd
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 from tabulate import tabulate
 
 __all__ = ['query']
 
 
-def _print_executions_in_stage(cmf_query: cmfquery.CmfQuery, stage_name: str) -> None:
+def _print_executions_in_stage(cmf_query: CmfQuery, stage_name: str) -> None:
     print('\n')
     print('\n')
     df: pd.DataFrame = cmf_query.get_all_executions_in_stage(stage_name)
@@ -16,7 +16,7 @@ def _print_executions_in_stage(cmf_query: cmfquery.CmfQuery, stage_name: str) ->
 
 
 def query(mlmd_path: str) -> None:
-    cmf_query = cmfquery.CmfQuery(mlmd_path)
+    cmf_query = CmfQuery(mlmd_path)
     stages: t.List[str] = cmf_query.get_pipeline_stages("Test-env")
     print(stages)
 

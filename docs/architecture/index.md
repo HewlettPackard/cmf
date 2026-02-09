@@ -23,6 +23,6 @@ On this backbone, we build the Git-like experience for metadata, enabling users 
 
 The framework can be used to track various types of pipelines such as data pipelines or AI pipelines. 
 <p align="center">
- <img src="../../assets/framework.png" height="400" align="center" />
+ <img src="./../assets/framework.png" height="400" align="center" />
 </p>
 
