@@ -128,9 +128,7 @@ nav:
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: setup/index.md
     - 🎯 Getting Started Tutorial: examples/getting_started.md
-    - 📘 Examples:
-      - SMS Spam Classification Comparison: examples/sms_spam_comparison.md
-    - 🐍 API Reference:
+    - 🔗 API Reference:
       - cmflib/index.md
       - Cmf: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
