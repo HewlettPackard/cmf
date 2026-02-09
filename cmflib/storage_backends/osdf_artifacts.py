@@ -15,6 +15,7 @@
 ###
 
 import os
+import logging
 import requests
 #import urllib3
 #urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -22,6 +23,8 @@ import hashlib
 import time
 
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 def generate_cached_url(url, cache):
     #This takes host URL as supplied from MLMD records and generates cached URL=cache_path + path
@@ -41,12 +44,12 @@ def calculate_md5_from_file(file_path, chunk_size=8192):
             while chunk := f.read(chunk_size):
                 md5.update(chunk)
     except Exception as e:
-        print(f"An error occurred while reading the file: {e}")
+        logger.error(f"[calculate_md5_from_file] An error occurred while reading the file: {e}")
         return None
     return md5.hexdigest()
 
 def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout):
-    print(f"Fetching artifact={local_path}, surl={host} to {remote_file_path}")
+    logger.info(f"Fetching artifact={local_path}, surl={host} to {remote_file_path}")
     data= None
     try:
         response = requests.get(host, headers=headers, timeout=timeout, verify=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
@@ -84,9 +87,8 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
                         success=False
                     return success, stmt
                 else:
-                    print("Failed to calculate MD5 hash of the downloaded file.")
+                    logger.error("Failed to calculate MD5 hash of the downloaded file.")
         except Exception as e:
-            print(f"An error occurred while writing to the file: {e}")
             return False, f"An error occurred while writing to the file: {e}"
     
     return False, "Data is None."
@@ -142,8 +144,8 @@ class OSDFremoteArtifacts:
                 #print(cached_result)
                 return success, cached_result
             else:
-                print(f"Failed to download and verify file from cache: {cached_result}")
-                print(f"Trying Origin at {host}")
+                logger.error(f"Failed to download and verify file from cache: {cached_result}")
+                logger.info(f"Trying Origin at {host}")
                 #Fetch from Origin 
                 success, origin_result = download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout=10)
                 if success: 

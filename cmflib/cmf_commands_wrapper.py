@@ -18,6 +18,10 @@ from typing import Callable, Any
 from cmflib import cli
 from cmflib.cmf_exception_handling import CmfResponse
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 def exception_handler_decorator(
     target_function: Callable[..., Any]
 ) -> Callable[..., Any]:
@@ -65,7 +69,7 @@ def _metadata_push(
     cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -96,7 +100,7 @@ def _metadata_pull(pipeline_name: str, file_name: str, execution_uuid: str) -> s
     )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -232,7 +236,7 @@ def _init_local(
     cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -280,7 +284,7 @@ def _init_minioS3(
     cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
     
 
@@ -330,7 +334,7 @@ def _init_amazonS3(
     cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -379,7 +383,7 @@ def _init_sshremote(
     cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -430,7 +434,7 @@ def _init_osdfremote(
     cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
   
 
@@ -460,6 +464,7 @@ def _artifact_list(pipeline_name: str, file_name: str, artifact_name: str) -> st
     cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
+    logger.info(msg)
     return msg
 
 
@@ -503,7 +508,7 @@ def _execution_list(pipeline_name: str, file_name: str, execution_uuid: str) -> 
     cli_args = cli.parse_args(args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -545,7 +550,7 @@ def _repo_push(
     cli_args = cli.parse_args(cli_args)
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 @exception_handler_decorator
@@ -573,7 +578,7 @@ def _repo_pull(pipeline_name: str, file_name: str, execution_uuid: str) -> str:
     )
     cmd = cli_args.func(cli_args)
     msg = cmd.do_run()
-    print(msg)
+    logger.info(msg)
     return msg
 
 
@@ -590,5 +595,5 @@ def _dvc_ingest(file_name: str) -> str:
    cli_args = cli.parse_args(["dvc", "ingest", "-f", file_name])
    cmd = cli_args.func(cli_args)
    msg = cmd.do_run()
-   print(msg)
+   logger.info(msg)
    return msg

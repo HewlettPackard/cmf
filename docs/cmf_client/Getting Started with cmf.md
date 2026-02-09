@@ -34,9 +34,7 @@ the UI provided by the CMF Server.
 Details on how to set up a CMF Server can be found [here](../setup/index.md#install-cmf-server-with-gui).
 
 ## Simple Example of using the CMF Client
-In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a MinIO
-
-S3 bucket as the artifact repository and a CMF Server.
+In this example, CMF is used to track the metadata for a pipeline named `Test-env` which interacts with a local artifact repository and a CMF Server.
 
 **Setup the example directory**
 ```
@@ -45,12 +43,16 @@ mkdir example-folder && cd example-folder
 
 ### Initialize cmf
 
-CMF must be initialized to use CMF Client commands. The following command configures authentication to an S3 bucket and
-specifies the connection to a CMF server.
+CMF must be initialized to use CMF Client commands. The following command configures a local artifact repository and specifies the connection to a CMF server.
+
+**Basic Usage (Required Parameters Only):**
 ```
-cmf init minioS3 --url s3://bucket-name --endpoint-url http://localhost:9000 \
-  --access-key-id minioadmin --secret-key minioadmin --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:80  --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://X.X.X.X:7687
+cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
+```
+cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
 ```
 Check [here](./cmf_client_commands.md) for more details.
 
@@ -68,7 +70,7 @@ More info is available [here](https://hewlettpackard.github.io/cmf/examples/gett
 
 **Push artifacts**
 
-Push artifacts in the artifact repo initialized in the [Initialize cmf](#initialize-cmf) step.
+Push artifacts in the artifact repository initialized in the [Initialize cmf](#initialize-cmf) step.
 ```
 cmf artifact push
 ```
@@ -81,7 +83,7 @@ cmf metadata push -p 'Test-env'
 Check [here](./cmf_client_commands.md) for more details.
 
 ### CMF Client with collaborative development
-In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common cmf server and a central artifact repository.
+In the case of collaborative development, in addition to the above commands, users can follow the commands below to pull metadata and artifacts from a common CMF Server and a central artifact repository.
 
 **Pull metadata from the server**
 
@@ -91,7 +93,7 @@ cmf metadata pull -p 'Test-env'
 ```
 Check [here](./cmf_client_commands.md) for more details.
 
-**Pull artifacts from the central artifact repo**
+**Pull artifacts from the central artifact repository**
 
 Execute `cmf artifact` command in the `example_folder`.
 ```
