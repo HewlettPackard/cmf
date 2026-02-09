@@ -356,7 +356,7 @@ class OSDFremoteArtifacts:
                     else:
                         logger.error(f"  |-- [FAILED] {normalized_relpath}")
                 except Exception as e:
-                    logger.error(f"  |-- [FAILED] {relpath}")
+                    logger.exception(f"  |-- [FAILED] {relpath} due to unexpected error")
 
             # total_files - files_downloaded gives us the number of files which failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
