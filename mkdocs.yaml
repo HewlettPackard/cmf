@@ -141,11 +141,15 @@ nav:
       - Guide for the cmf dvc ingest command: cmf_client/cmf-dvc-ingest-guide.md
       - Start Neo4j with Docker: cmf_client/neo4j_docker.md
       - Storage Backends:
+        - Local Setup: cmf_client/local-storage-setup.md
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
         - OSDF: cmf_client/cmf_osdf.md
     - 🖥️ GUI Reference: 
       - ui/index.md
+      - Artifacts: ui/artifacts.md
+      - Executions: ui/executions.md
+      - Lineage: ui/lineage.md
       - Metahub: cmf_server/metahub-tab-usage.md
       - TensorBoard: cmf_client/tensorflow_guide.md
     - 🔗 Ontology: common-metadata-ontology/readme.md

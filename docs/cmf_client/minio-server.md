@@ -19,11 +19,20 @@ Follow the steps below to set up a MinIO server:
    ```
 
 3. Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository:
+
+    **Basic Usage (Required Parameters Only):**
+    ```
+    cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
+      --access-key-id minioadmin --secret-key minioadmin \
+      --git-remote-url https://github.com/user/experiment-repo.git
+    ```
+
+    **With Optional Parameters:**
     ```
     cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
       --access-key-id minioadmin --secret-key minioadmin \
       --git-remote-url https://github.com/user/experiment-repo.git \
-      --cmf-server-url http://x.x.x.x:80  --neo4j-user neo4j \
+      --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j \
       --neo4j-password password --neo4j-uri bolt://localhost:7687
     ```
 
