@@ -135,7 +135,6 @@ nav:
       - CmfQuery: api/public/cmfquery.md
       - Cmf Server: api/public/cmfserver.md
       - Ray Logger: api/public/cmf_ray_logger.md
-    - 🤖 MCP Server Reference: api/public/mcp_server.md
     - 💻 CLI Reference: 
       - cmf_client/index.md
       - CMF Client commands: cmf_client/cmf_client_commands.md
@@ -146,6 +145,12 @@ nav:
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
         - OSDF: cmf_client/cmf_osdf.md
+    - 🤖 MCP Server:
+      - mcp/index.md
+      - Quick Start: mcp/quickstart.md
+      - Configuration: mcp/configuration.md
+      - Tools Reference: mcp/tools.md
+      - Examples: mcp/examples.md
     - 🖥️ GUI Reference: 
       - ui/index.md
       - Artifacts: ui/artifacts.md
