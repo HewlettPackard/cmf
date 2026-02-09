@@ -15,7 +15,10 @@
 ###
 
 import os
+import logging
 import boto3
+
+logger = logging.getLogger(__name__)
 
 class AmazonS3Artifacts:
 
@@ -82,10 +85,10 @@ class AmazonS3Artifacts:
         except self.s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist
             if e.response['Error']['Code'] == '404':
-                print(f"{bucket_name}  doesn't exists!!")
+                logger.error(f"{bucket_name}  doesn't exists!!")
                 return object_name, download_loc, False   
             else:
-                print(e)
+                logger.error(e)
                 return object_name, download_loc, False
         except Exception as e:
             return object_name, download_loc, False
@@ -161,9 +164,9 @@ class AmazonS3Artifacts:
                 obj = self.s3.download_file(bucket_name, temp_object_name, temp_download_loc)
                 if obj == None:
                     files_downloaded += 1
-                    print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                    logger.info(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                 else:
-                    print(f"object {temp_object_name} is not downloaded.")
+                    logger.error(f"object {temp_object_name} is not downloaded.")
 
             # Check if all files were successfully downloaded.
             if (total_files_in_directory - files_downloaded) == 0:   
@@ -172,14 +175,14 @@ class AmazonS3Artifacts:
         except self.s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist
             if e.response['Error']['Code'] == '404':
-                print(f"{bucket_name}  doesn't exists!!")
+                logger.error(f"{bucket_name}  doesn't exists!!")
                 total_files_in_directory = 1 
                 return total_files_in_directory, files_downloaded, False    
-            print(e)
+            logger.error(e)
             total_files_in_directory = 1 
             return total_files_in_directory, files_downloaded, False
         except Exception as e:
-            print(f"object {object_name} is not downloaded.")
+            logger.error(f"object {object_name} is not downloaded.")
             # Handle failure to download the .dir metadata.
             # need to improve this  
             # We usually don't count .dir as a file while counting total_files_in_directory.
