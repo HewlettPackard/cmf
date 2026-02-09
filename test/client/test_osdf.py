@@ -104,7 +104,7 @@ def test_metadata_pull(stop_server):
 def test_artifact_pull_all():
     """Test pulling all artifacts from OSDF including files and directories."""
     print("-------------------------------Test Case Name: cmf artifact pull (all) ----------------------------------")
-    _ = cmf.artifact_pull(pipeline_name="Test-env", filename="./pull/mlmd")
+    _ = cmf.artifact_pull(pipeline_name="Test-env", "./pull/mlmd")
     
     # Verify that artifacts were downloaded
     assert os.path.exists("./pull"), "Pull directory should exist"
