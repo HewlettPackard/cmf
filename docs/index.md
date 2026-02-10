@@ -23,39 +23,73 @@ Common Metadata Framework (`CMF`) has the following components:
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
 - **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
 
-### System Interaction Flow
+### User Interaction Flow
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'14px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'15px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
 flowchart TB
-    WEBUSER([Web Users & ML Teams])
-    CMFCLIENT([CMF Client CLI])
-    
-    UI[Web Interface]
-    SERVERBOX[CMF Server]
+    subgraph CLIUSER["👩‍💻 ML Engineer / Data Scientist Workflow"]
+        direction TB
+        CLI1([1. Write ML Pipeline Code])
+        CLI2([2. Log Metadata with cmflib])
+        CLI3([3. Run Pipeline Locally])
+        CLI4([4. Push Metadata to Server])
+        CLI5([5. Push Artifacts to Storage])
+        CLI6([6. Pull Metadata from Server])
+        CLI7([7. Pull Artifacts from Server])
         
-    DB[(Metadata Store)]
-    ARTIFACTS[Artifact Repositories<br/><i>local/ S3 / MinIO / SSH</i>]
+        CLI1 --> CLI2 --> CLI3 --> CLI4 --> CLI5
+        CLI6 -.->|Collaborate| CLI2
+        CLI6 -.->|Collaborate| CLI2
+    end
     
-    WEBUSER -->|Access| UI
-    CMFCLIENT -->|Push Metadata| SERVERBOX
-    SERVERBOX -->|Pull Metadata| CMFCLIENT
+    subgraph WEBUSER["👥 Team Members / Stakeholders Workflow"]
+        direction TB
+        WEB1([1. Access Web Interface])
+        WEB2([2. Browse Pipelines & Executions])
+        WEB3([3. View Lineage Graphs])
+        WEB4([4. Analyze Metrics & Models])
+        WEB5([5. Compare Experiments])
+        
+        WEB1 --> WEB2 --> WEB3 --> WEB4 --> WEB5
+    end
     
-    UI -->|Request Data| SERVERBOX
-    SERVERBOX -->|Response| UI
+    subgraph INFRA["🔧 CMF Infrastructure"]
+        direction LR
+        SERVER[CMF Server]
+        DB[(Metadata Store)]
+        STORAGE[Artifact Storage<br/><i>S3/MinIO/SSH</i>]
+        
+        SERVER <--> DB
+    end
     
-    SERVERBOX -->|Query & Store| DB
-    DB -->|Query & Store| SERVERBOX
+    CLI4 -.->|cmf metadata push| SERVER
+    CLI5 -.->|cmf artifact push| STORAGE
+    CLI6 -.->|cmf metadata pull| SERVER
     
-    CMFCLIENT -->|Push Artifacts| ARTIFACTS
-    ARTIFACTS -->|Pull Artifacts| CMFCLIENT
+    WEB1 -.->|HTTPS| SERVER
+    SERVER -.->|Query| DB
     
-    style WEBUSER fill:#e8eaf6,stroke:#5c6bc0,stroke-width:2px,color:#37474f
-    style CMFCLIENT fill:#e0f2f1,stroke:#26a69a,stroke-width:2px,color:#37474f
-    style UI fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#37474f
-    style SERVERBOX fill:#e8f5e9,stroke:#66bb6a,stroke-width:2.5px,color:#37474f
-    style DB fill:#fce4ec,stroke:#ec407a,stroke-width:2px,color:#37474f
-    style ARTIFACTS fill:#fff9c4,stroke:#ffca28,stroke-width:2px,color:#37474f
+    style CLI1 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI2 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI3 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI4 fill:#b3e5fc,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI5 fill:#b3e5fc,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI6 fill:#b3e5fc,stroke:#0288d1,stroke-width:2px,color:#01579b
+    
+    style WEB1 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB2 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB3 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB4 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB5 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    
+    style SERVER fill:#e8f5e9,stroke:#43a047,stroke-width:2.5px,color:#1b5e20
+    style DB fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#e65100
+    style STORAGE fill:#fce4ec,stroke:#d81b60,stroke-width:2px,color:#880e4f
+    
+    style CLIUSER fill:#f1f8ff,stroke:#0366d6,stroke-width:3px,color:#0366d6
+    style WEBUSER fill:#fef3ff,stroke:#8e24aa,stroke-width:3px,color:#8e24aa
+    style INFRA fill:#f6f8fa,stroke:#586069,stroke-width:2px,color:#586069
     
     linkStyle default stroke:#78909c,stroke-width:2px
 ```
