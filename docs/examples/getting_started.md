@@ -65,19 +65,18 @@ Usage: cmf init local [-h] --path [path]
 `cmf init local` initializes the local directory as a cmf artifact repository.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init local --path /path/to/local-storage
-               --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init local --path /path/to/local-storage
-               --git-remote-url https://github.com/user/experiment-repo.git
-               --cmf-server-url http://x.x.x.x:80
-               --neo4j-user neo4j
-               --neo4j-password password
-               --neo4j-uri bolt://localhost:7687
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 > **Note:** For `--path`, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.
