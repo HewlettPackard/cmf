@@ -244,7 +244,7 @@ def validate_and_examine_osdf_token(token_str: str, token_source: str = None) ->
             time_until_expiry = expiry_dt - current_time
             
             if current_time >= expiry_dt:
-                logger.warning("\n⚠️  STATUS: TOKEN HAS EXPIRED")
+                logger.warning("\n[!] STATUS: TOKEN HAS EXPIRED")
                 logger.warning("="*60 + "\n")
                 return False
             else:
@@ -252,24 +252,24 @@ def validate_and_examine_osdf_token(token_str: str, token_source: str = None) ->
                 hours, remainder = divmod(int(time_until_expiry.total_seconds()), 3600)
                 minutes, seconds = divmod(remainder, 60)
                 logger.info(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
-                logger.info("✓  STATUS: TOKEN IS VALID")
+                logger.info("[OK] STATUS: TOKEN IS VALID")
                 logger.info("="*60 + "\n")
                 return True
         else:
             logger.info("Expires:   N/A (No expiration claim found)")
-            logger.warning("\n⚠️  STATUS: CANNOT VERIFY EXPIRY")
+            logger.warning("\n[!] STATUS: CANNOT VERIFY EXPIRY")
             logger.warning("="*60 + "\n")
             return True  # Assume valid if no expiry claim
             
     except jwt.DecodeError as e:
         logger.error("\n" + "="*60)
-        logger.error("⚠️  ERROR: Failed to decode token")
+        logger.error("[ERROR] Failed to decode token")
         logger.error(f"Details: {e}")
         logger.error("="*60 + "\n")
         return False
     except Exception as e:
         logger.error("\n" + "="*60)
-        logger.error("⚠️  ERROR: Unexpected error examining token")
+        logger.error("[ERROR] Unexpected error examining token")
         logger.error(f"Details: {e}")
         logger.error("="*60 + "\n")
         return False

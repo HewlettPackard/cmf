@@ -8,7 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-./build/
+build/
 mlcommons_box/build
 develop-eggs/
 dist/
