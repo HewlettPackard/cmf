@@ -14,13 +14,13 @@
  * limitations under the License.
  ***/
 
-import React, { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useMemo } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Sidebar";
-import LineageTypeSidebar from "./LineageTypeSidebar";
+import LineageTypeSidebar from "../../components/TypeSidebar/LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import TangledTree from "../../components/TangledTree";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
@@ -34,11 +34,11 @@ const client = new FastAPIClient(config);
 const Lineage = () => {
   const [pipelines, setPipelines] = useState([]);
   const [selectedPipeline, setSelectedPipeline] = useState(null);
-  const LineageTypes = [
+  const LineageTypes = useMemo(() => [
     "Artifact_Tree",
     "Execution_Tree",
     "Artifact_Execution_Tree",
-  ];
+  ], []);
   const [selectedLineageType, setSelectedLineageType] = useState("Artifact_Tree");
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
   const [lineageData, setLineageData] = useState(null);
@@ -49,12 +49,9 @@ const Lineage = () => {
   const [artiexetreeData, setArtiExeTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // fetching list of pipelines
-  useEffect(() => {
-    fetchPipelines();
-  }, []);
-
-  const fetchPipelines = () => {
+  // useCallback prevents fetchPipelines from being recreated on every render, 
+  // avoiding unnecessary useEffect calls
+  const fetchPipelines = useCallback(() => {
     setLoading(true);
     client.getPipelines("").then((data) => {
       setPipelines(data);
@@ -69,7 +66,12 @@ const Lineage = () => {
       }
       setLoading(false);
     });
-  };
+  }, [LineageTypes]);
+
+  // fetching list of pipelines
+  useEffect(() => {
+    fetchPipelines();
+  }, [fetchPipelines]);
 
   const handlePipelineClick = (pipeline) => {
     setLineageData(null);
@@ -162,7 +164,7 @@ const Lineage = () => {
         setExecDropdownData(data);
         setSelectedExecutionType(data[0]); // data[0] = "Prepare_3f45"
         // method used such that even with multiple "_" it will get right execution_name and uuid
-        const uuid= extractUuid(data[0]);     // 3f45
+        const uuid = extractUuid(data[0]);     // 3f45
         if (lineageType === "Execution") {
           fetchExecutionLineage(pipelineName, uuid);
         } else {
@@ -184,7 +186,7 @@ const Lineage = () => {
     setExecutionData(null);
 
     setSelectedExecutionType(executionType);
-    const uuid= extractUuid(executionType);
+    const uuid = extractUuid(executionType);
     fetchExecutionLineage(selectedPipeline, uuid);
   };
 
@@ -192,7 +194,7 @@ const Lineage = () => {
   const handleTreeClick = (executionType) => {
     setExecutionData(null);
     setSelectedExecutionType(executionType);
-    const uuid= extractUuid(executionType);
+    const uuid = extractUuid(executionType);
     fetchExecTree(selectedPipeline, uuid);
   };
 
@@ -219,12 +221,11 @@ const Lineage = () => {
     <>
       <section
         className="flex flex-col bg-white min-h-screen"
-        style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
 
-        <div className="flex flex-grow" style={{ padding: "1px" }}>
-          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+        <div className="flex flex-grow p-px">
+          <div className="min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
             <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}
@@ -296,7 +297,7 @@ const Lineage = () => {
               selectedLineageType === "Execution_Tree" &&
               execDropdownData !== null &&
               executionData !== null && (
-                <div style={{ justifyContent: "center", alignItems: "center" }}>
+                <div className="justify-center items-center">
                   <ExecutionTree
                     key={lineageArtifactsKey}
                     data={executionData}
@@ -307,13 +308,7 @@ const Lineage = () => {
               selectedPipeline !== null &&
               selectedLineageType === "Artifact_Tree" &&
               artitreeData !== null && (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: "20px",
-                  }}
-                >
+                <div className="justify-center items-center p-4">
                   <TangledTree key={lineageArtifactsKey} data={artitreeData} />
                 </div>
               )}
@@ -321,7 +316,7 @@ const Lineage = () => {
               selectedPipeline !== null &&
               selectedLineageType === "Artifact_Execution_Tree" &&
               artiexetreeData !== null && (
-                <div style={{ justifyContent: "center", alignItems: "center" }}>
+                <div className="justify-center items-center">
                   <ArtifactExecutionTangledTree
                     key={lineageArtifactsKey}
                     data={artiexetreeData}

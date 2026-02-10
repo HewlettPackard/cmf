@@ -16,7 +16,6 @@
 
 //ExecutionTable.jsx
 import React, { useState, useEffect } from "react";
-import "./index.module.css";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import PythonEnvPopup from "../../components/PythonEnvPopup";
@@ -69,7 +68,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     }
   };
 
-  
+
   const handleLinkClick = (file_name) => {
     setShowPopup(true);
     client.getPythonEnv(file_name).then((data) => {
@@ -88,19 +87,18 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     if (sortOrder === "desc") {
       return (
         <span
-          className="text-2xl cursor-pointer"
-          style={{ marginLeft: "4px", display: "inline-flex" }}
+          className="text-2xl cursor-pointer ml-1 inline-flex"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
             fill="currentColor"
-            class="bi bi-arrow-down"
+            className="bi bi-arrow-down"
             viewBox="0 0 16 16"
           >
             <path
-              fill-rule="evenodd"
+              fillerule="evenodd"
               d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"
             />
           </svg>
@@ -109,19 +107,18 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     } else if (sortOrder === "asc") {
       return (
         <span
-          className="text-2xl cursor-pointer"
-          style={{ marginLeft: "4px", display: "inline-flex" }}
+          className="text-2xl cursor-pointer ml-4 inline-flex"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
             fill="currentColor"
-            class="bi bi-arrow-up"
+            className="bi bi-arrow-up"
             viewBox="0 0 16 16"
           >
             <path
-              fill-rule="evenodd"
+              fillerule="evenodd"
               d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"
             />
           </svg>
@@ -130,19 +127,18 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
     } else {
       return (
         <span
-          className="text-2xl cursor-pointer"
-          style={{ marginLeft: "4px", display: "inline-flex" }}
+          className="text-2xl cursor-pointer ml-4 inline-flex"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
             fill="currentColor"
-            class="bi bi-arrow-down-up"
+            className="bi bi-arrow-down-up"
             viewBox="0 0 16 16"
           >
             <path
-              fill-rule="evenodd"
+              fillerule="evenodd"
               d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5m-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5"
             />
           </svg>
@@ -154,29 +150,20 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
   return (
     <div className="flex flex-col">
       <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          marginBottom: "0.5rem",
-          marginTop: "0.5rem",
-        }}
+        className="flex justify-end mb-2 mt-2"
       >
         <input
           type="text"
           value={filterValue}
           onChange={handleFilterChange}
           placeholder="Filter by Context Type"
-          style={{
-            marginRight: "1rem",
-            padding: "0.5rem",
-            border: "1px solid #ccc",
-          }}
+          className="mr-2 p-1 border border-solid border-gray-300"
         />
       </div>
       <div className="overflow-x-auto">
         <div className="p-1.5 w-full inline-block align-middle">
           <table className="min-w-full divide-y divide-gray-200" id="mytable">
-            <thead>
+            <thead className="bg-custom-white">
               <tr className="text-xs font-bold text-left text-black uppercase">
                 <th scope="col" className="px-6 py-3"></th>
                 <th scope="col" className="px-6 py-3">Execution uuid</th>
@@ -185,7 +172,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                   onClick={handleSort}
                   className="px-6 py-3 Context_Type"
                 >
-                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span className="inline-flex items-center">
                     Context Type {renderArrow()}
                   </span>
                 </th>
@@ -193,7 +180,7 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                   Execution
                 </th>
                 <th scope="col" className="px-6 py-3 Env">
-                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span className="inline-flex items-center">
                     Python Env
                   </span>
                 </th>
@@ -215,8 +202,8 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     key={index}
                     className="text-sm font-medium text-gray-800"
                   >
-                    <td className="px-6 py-4 cursor-pointer"
-                      onClick={() => {toggleRow(index)}}
+                    <td className="px-6 py-4 cursor-pointer text-left"
+                      onClick={() => { toggleRow(index) }}
                     >
                       {expandedRow === index ? "-" : "+"}
                     </td>
@@ -224,30 +211,27 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                     <td className="px-6 py-4">{data.Context_Type}</td>
                     <td className="px-6 py-4">{data.Execution}</td>
                     <td className="px-6 py-4">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleLinkClick(data.custom_properties_Python_Env);
-                    
-                            }}
-                          >
-                            View Env Details
-                          </a>
-                          <PythonEnvPopup
-                            show={showPopup}
-                            python_env={popupData}
-                            onClose={handleClosePopup}
-                          />
+                      <button
+                        type="button"
+                        onClick={() => handleLinkClick(data.custom_properties_Python_Env)}
+                        className="text-blue-600 underline cursor-pointer bg-transparent border-none p-0 background-none"
+                      >
+                        View Env Details
+                      </button>
+                      <PythonEnvPopup
+                        show={showPopup}
+                        python_env={popupData}
+                        onClose={handleClosePopup}
+                      />
                     </td>
-                    <td className="px-6 py-4">{data.Git_Repo}</td>
-                    <td className="px-6 py-4">{data.Git_Start_Commit}</td>
-                    <td className="px-6 py-4">{data.Pipeline_Type}</td>
+                    <td className="px-6 py-4 text-left">{data.Git_Repo}</td>
+                    <td className="px-6 py-4 text-left">{data.Git_Start_Commit}</td>
+                    <td className="px-6 py-4 text-left">{data.Pipeline_Type}</td>
                   </tr>
                   {expandedRow === index && (
                     <tr>
-                      <td colSpan="4">
-                        <table className="expanded-table">
+                      <td colSpan="4" className="text-left">
+                        <table className="w-full border-collapse border border-gray-300">
                           <tbody>
                             {Object.entries(data).map(([key, value]) => {
                               if (
@@ -256,9 +240,9 @@ const ExecutionTable = ({ executions, onSort, onFilter }) => {
                               ) {
                                 return (
                                   <React.Fragment key={key}>
-                                    <tr>
-                                      <td key={key}>{key}</td>
-                                      <td key={value} className="break-words whitespace-normal max-w-md">
+                                    <tr className="even:bg-gray-100">
+                                      <td key={key} className="p-1 border-b border-r border-gray-300 text-left">{key}</td>
+                                      <td key={value} className="p-1 border-b border-r border-gray-300 text-left">
                                         {value ? value : "Null"}
                                       </td>
                                     </tr>

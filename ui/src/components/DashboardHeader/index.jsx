@@ -17,7 +17,6 @@
 
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import "./index.css";
 
 function DashboardHeader() {
   const [toggleMenu, setToggleMenu] = useState(false);
@@ -40,6 +39,7 @@ function DashboardHeader() {
               to="/"
               className="font-bold text-2xl font-sans tracking-tight bg-teal-600 text-white px-4 py-2 rounded-lg shadow"
               style={{ textAlign: 'left' }}
+              onClick={() => { window.location.href = "/" }}
             >
               CMF SERVER
             </NavLink>

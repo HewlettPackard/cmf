@@ -165,9 +165,6 @@ const renderChart = (data, options = {}) => {
           .node {
             stroke-linecap: round;
           }
-          .link {
-            fill: none;
-          }
         `}
       </style>
       <svg width={svg_width} height={tangled_height + textPadding * 10}>
@@ -185,8 +182,8 @@ const renderChart = (data, options = {}) => {
             .join('');
           return (
             <React.Fragment key={b.id}>
-              <path className="link" d={d} stroke={options.background_color} strokeWidth="5" />
-              <path className="link" d={d} stroke={options.color(b, i)} strokeWidth="2" />
+              <path className="fill-none" d={d} stroke={options.background_color} strokeWidth="5" />
+              <path className="fill-none" d={d} stroke={options.color(b, i)} strokeWidth="2" />
             </React.Fragment>
           );
         })}
@@ -253,14 +250,14 @@ const ArtifactExecutionTangledTree = ({ data }) => {
     }
     const options = {
       color: d3.scaleOrdinal(d3.schemeDark2), // Use provided color scale
-      background_color: 'white' // Provided background color
+      className: "bg-white"
     };
     const renderedChart = renderChart(data, options);
     setChart(renderedChart);
   }, [data]);
 
   return (
-    <div ref={chartContainerRef} style={{ justifyContent: 'center', alignItems: 'center', overflow: 'auto' }}>
+    <div ref={chartContainerRef} className="justify-center items-center overflow-auto">
       {chart}
     </div>
   );

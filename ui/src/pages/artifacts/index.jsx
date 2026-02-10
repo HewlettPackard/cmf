@@ -20,9 +20,8 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import ArtifactTable from "../../components/ArtifactTable";
 import Footer from "../../components/Footer";
-import "./index.css";
 import Sidebar from "../../components/Sidebar";
-import ArtifactTypeSidebar from "../../components/ArtifactTypeSidebar";
+import ArtifactTypeSidebar from "../../components/TypeSidebar/ArtifactTypeSidebar";
 import Loader from "../../components/Loader";
 
 const client = new FastAPIClient(config);
@@ -103,7 +102,7 @@ const Artifacts = () => {
       fetchArtifactTypes(selectedPipeline);
     }
     // eslint-disable-next-line
-  }, [selectedPipeline]);
+  }, [selectedPipeline, fetchArtifactTypes]);
 
   const fetchArtifacts = (
     pipelineName,
@@ -148,6 +147,7 @@ const Artifacts = () => {
       );
     }
   }, [
+    selectedPipeline,
     selectedArtifactType,
     activePage,
     sortField,
@@ -191,11 +191,10 @@ const Artifacts = () => {
     <>
       <section
         className="flex flex-col bg-white min-h-screen"
-        style={{ minHeight: "100vh" }}
       >
         <DashboardHeader />
-        <div className="flex flex-grow" style={{ padding: "1px" }}>
-          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+        <div className="flex flex-grow p-px">
+          <div className="min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
             <Sidebar
               pipelines={pipelines}
               handlePipelineClick={handlePipelineClick}
@@ -245,20 +244,20 @@ const Artifacts = () => {
                           pageNumber === 1 ||
                           pageNumber === Math.ceil(totalItems / 5)
                         ) {
-                          return (
+                            return (
                             <button
                               key={pageNumber}
                               onClick={() => handlePageClick(pageNumber)}
                               className={`pagination-button ${
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active-page"
-                                  : ""
-                              }`}
+                              activePage === pageNumber &&
+                              clickedButton === "page"
+                                ? "bg-custom-blue text-white font-bold border-custom-active-page"
+                                : ""
+                              } transition duration-300 hover:bg-custom-blue hover:text-white hover:border-custom-blue`}
                             >
                               {pageNumber}
                             </button>
-                          );
+                            );
                         } else if (
                           (activePage <= 3 && pageNumber <= 6) ||
                           (activePage >= Math.ceil(totalItems / 5) - 2 &&
@@ -270,11 +269,11 @@ const Artifacts = () => {
                               key={pageNumber}
                               onClick={() => handlePageClick(pageNumber)}
                               className={`pagination-button ${
-                                activePage === pageNumber &&
-                                clickedButton === "page"
-                                  ? "active-page"
-                                  : ""
-                              }`}
+                              activePage === pageNumber &&
+                              clickedButton === "page"
+                              ? "bg-custom-blue text-white font-bold border-custom-active-page"
+                              : ""
+                              } transition duration-300 hover:bg-custom-blue hover:text-white hover:border-custom-blue`}
                             >
                               {pageNumber}
                             </button>

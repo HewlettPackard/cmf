@@ -23,8 +23,7 @@ const TensorBoard = () => {
   return (
     <>
       <section
-        className="flex flex-col bg-white"
-        style={{ minHeight: "100vh" }}
+        className="flex flex-col bg-white min-h-screen"
       >
         <DashboardHeader />
         <div className="flex flex-row">
