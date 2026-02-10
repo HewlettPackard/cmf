@@ -13,6 +13,7 @@ from sqlalchemy import(
     MetaData,
     SmallInteger
 )
+from sqlalchemy.dialects.postgresql import TSVECTOR
 
 metadata = MetaData()
 
@@ -198,4 +199,21 @@ registered_servers = Table(
     # indexes for registered_servers
     Index("idx_registered_servers_host_info", "host_info"),
     Index("idx_registered_servers_server_name", "server_name")
+)
+
+label_content = Table(
+    "label_content", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+    Column("artifact_id", Integer, nullable=False),
+    Column("file_name", String(255), nullable=False),
+    Column("full_text_content", Text, nullable=False),
+    Column("content_tsvector", TSVECTOR, nullable=True),
+    Column("created_at", BigInteger, nullable=False),
+
+    # Indexes
+    Index("idx_label_content_artifact_id", "artifact_id"),
+    Index("idx_label_content_tsvector", "content_tsvector", postgresql_using="gin"),
+    
+    # Unique Constraint - composite key to allow multiple labels per artifact
+    UniqueConstraint("artifact_id", "file_name", name="label_content_artifact_file_key")
 )
