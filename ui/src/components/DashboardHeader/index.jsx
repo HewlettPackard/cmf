@@ -16,11 +16,19 @@
 
 
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import "./index.css";
 
 function DashboardHeader() {
   const [toggleMenu, setToggleMenu] = useState(false);
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   const navLinks = [
     { to: "/artifacts", label: "Artifacts" },
@@ -33,11 +41,11 @@ function DashboardHeader() {
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">
       <div className="w-full px-2">
-        <div className="grid grid-cols-3 h-16 items-center w-full">
+        <div className="flex justify-between items-center h-16 w-full">
           {/* Left: Branding */}
-          <div className="flex items-center pl-2 col-span-1">
+          <div className="flex items-center pl-2">
             <NavLink
-              to="/"
+              to="/home"
               className="font-bold text-2xl font-sans tracking-tight bg-teal-600 text-white px-4 py-2 rounded-lg shadow"
               style={{ textAlign: 'left' }}
             >
@@ -45,8 +53,8 @@ function DashboardHeader() {
             </NavLink>
           </div>
           {/* Center: NavLinks (desktop only) */}
-          <div className="hidden lg:flex justify-center items-center col-span-1">
-            <div className="flex space-x-6">
+          <div className="hidden lg:flex items-center flex-1 justify-center mx-4">
+            <div className="flex space-x-6 items-center">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.to}
@@ -61,53 +69,70 @@ function DashboardHeader() {
                 href="https://hewlettpackard.github.io/cmf/api/public/cmf/"
                 target="_blank"
                 rel="noreferrer"
-                className="text-xl text-gray-700 hover:text-teal-600 font-semibold font-sans transition-colors whitespace-nowrap"
+                className="text-xl text-gray-700 hover:text-teal-600 font-semibold font-sans transition-colors whitespace-nowrap cursor-pointer"
               >
                 API Docs
               </a>
             </div>
           </div>
-          {/* Right: Hamburger for mobile */}
-          <div className="flex justify-end items-center col-span-1 lg:hidden">
+          {/* Right: Logout button for desktop, Hamburger for mobile */}
+          <div className="flex justify-end items-center pr-2">
             <button
-              className="inline-flex items-center justify-center p-2 rounded-md text-teal-600 hover:text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
-              aria-label="Toggle navigation"
-              onClick={() => setToggleMenu(!toggleMenu)}
+              onClick={handleLogout}
+              className="hidden lg:block bg-teal-500 hover:bg-teal-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
             >
-              <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                {toggleMenu ? (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                ) : (
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                )}
-              </svg>
+              Logout
             </button>
+            <div className="lg:hidden">
+              <button
+                className="inline-flex items-center justify-center p-2 rounded-md text-teal-600 hover:text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
+                aria-label="Toggle navigation"
+                onClick={() => setToggleMenu(!toggleMenu)}
+              >
+                <svg className="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                  {toggleMenu ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-      {/* Mobile Sidebar */}
-      <div className={`lg:hidden ${toggleMenu ? "block" : "hidden"}`}>
-        <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-md">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors"
-              activeClassName="active"
+        {/* Mobile Sidebar */}
+        <div className={`lg:hidden ${toggleMenu ? "block" : "hidden"}`}>
+          <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200 shadow-md">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors"
+                activeClassName="active"
+                onClick={() => setToggleMenu(false)}
+              >
+                {link.label}
+              </NavLink>
+            ))}
+            <a
+              href="https://hewlettpackard.github.io/cmf/api/public/cmf/"
+              target="_blank"
+              rel="noreferrer"
+              className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors whitespace-nowrap"
               onClick={() => setToggleMenu(false)}
             >
-              {link.label}
-            </NavLink>
-          ))}
-          <a
-            href="https://hewlettpackard.github.io/cmf/api/public/cmf/"
-            target="_blank"
-            rel="noreferrer"
-            className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors whitespace-nowrap"
-            onClick={() => setToggleMenu(false)}
-          >
-            API Docs
-          </a>
+              API Docs
+            </a>
+            <button
+              onClick={() => {
+                handleLogout();
+                setToggleMenu(false);
+              }}
+              className="font-bold text-2xl font-sans tracking-tight bg-teal-600 text-white px-4 py-2 rounded-lg shadow"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
     </nav>
