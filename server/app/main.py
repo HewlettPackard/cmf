@@ -125,8 +125,9 @@ LOCAL_ADDRESSES.add(hostname)
 LOCAL_ADDRESSES.add(get_fqdn(hostname))
 print("Local addresses= ", LOCAL_ADDRESSES)
 
-# ---- Simple async scheduler runner ----
+
 async def compute_next_run_utc(current_run_utc_ms: int, timezone: str, times_per_day: int) -> int:
+    # Compute the next run time in UTC milliseconds based on the current run time, timezone, and times per day
     try:
         tz = ZoneInfo(timezone)
     except Exception:
@@ -227,105 +228,6 @@ async def mlmd_push(info: MLMDPushRequest):
                 del pipeline_locks[pipeline_name]  # Remove the lock if it's no longer needed
                 del lock_counts[pipeline_name]
     return {"status": status}
-
-
-# ---- Scheduling APIs ----
-
-@app.post("/schedule-sync")
-async def schedule_sync(request: ScheduleCreateRequest, db: AsyncSession = Depends(get_db)):
-    try:
-        server = await get_registered_server_by_id(db, request.server_id)
-        if not server:
-            raise HTTPException(status_code=404, detail="Registered server not found")
-
-        # Parse local ISO datetime and convert to UTC epoch ms
-        try:
-            tz = ZoneInfo(request.timezone)
-        except Exception:
-            raise HTTPException(status_code=400, detail="Invalid timezone")
-
-        try:
-            # Accepts e.g. 2026-01-04T15:00
-            local_dt = datetime.strptime(request.start_time_local_iso, "%Y-%m-%dT%H:%M")
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Invalid datetime format. Use YYYY-MM-DDTHH:MM")
-
-        local_dt = local_dt.replace(tzinfo=tz)
-        start_utc_ms = int(local_dt.astimezone(ZoneInfo("UTC")).timestamp() * 1000)
-
-        # Convert new recurrence modes to times_per_day for backward compatibility
-        # TODO: Update database schema to store recurrence mode details properly
-        times_per_day = 1  # default
-        if not request.one_time:
-            if request.recurrence_mode == 'interval':
-                # Calculate times per day from interval
-                if request.interval_unit == 'hours' and request.interval_value:
-                    times_per_day = max(1, 24 // request.interval_value)
-                elif request.interval_unit == 'minutes' and request.interval_value:
-                    times_per_day = max(1, (24 * 60) // request.interval_value)
-            elif request.recurrence_mode == 'daily':
-                times_per_day = 1  # once per day
-            elif request.recurrence_mode == 'weekly':
-                # For weekly mode, calculate the next occurrence of the selected weekday
-                if request.weekly_day and request.weekly_time:
-                    day_map = {
-                        'sunday': 6, 'monday': 0, 'tuesday': 1, 'wednesday': 2,
-                        'thursday': 3, 'friday': 4, 'saturday': 5
-                    }
-                    target_weekday = day_map.get(request.weekly_day.lower())
-                    if target_weekday is not None:
-                        try:
-                            hours, minutes = map(int, request.weekly_time.split(':'))
-                            # Get current time in the target timezone
-                            now_local = datetime.now(tz)
-                            # Create a datetime for the target weekday and time
-                            cursor = now_local.replace(hour=hours, minute=minutes, second=0, microsecond=0)
-                            current_weekday = cursor.weekday()
-                            days_until_target = (target_weekday - current_weekday) % 7
-                            
-                            # If it's the same day but time has passed, move to next week
-                            if days_until_target == 0 and cursor <= now_local:
-                                days_until_target = 7
-                            
-                            cursor = cursor + timedelta(days=days_until_target)
-                            start_utc_ms = int(cursor.astimezone(ZoneInfo("UTC")).timestamp() * 1000)
-                        except ValueError:
-                            pass  # Use default start_utc_ms
-                times_per_day = 1  # treated as once per day
-            elif request.times_per_day:
-                times_per_day = request.times_per_day  # legacy support
-
-        now_ms = int(time.time() * 1000)
-        if request.one_time:
-            if start_utc_ms <= now_ms:
-                raise HTTPException(status_code=400, detail="Start time must be in the future for one-time schedules")
-            next_ms = start_utc_ms
-        else:
-            next_ms = start_utc_ms if start_utc_ms > now_ms else await compute_next_run_utc(start_utc_ms, request.timezone, times_per_day)
-
-        created = await create_schedule(db, server_id=request.server_id, times_per_day=times_per_day, timezone=request.timezone, start_time_utc=start_utc_ms, next_run_time_utc=next_ms, created_at=now_ms, one_time=request.one_time)
-        return {"message": "Schedule created", "schedule_id": created["id"], "next_run_time_utc": next_ms}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to create schedule: {e}")
-
-
-@app.get("/schedules")
-async def get_schedules(server_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
-    rows = await list_schedules(db, server_id)
-    return rows
-
-
-@app.get("/schedule-sync/logs/{schedule_id}")
-async def get_schedule_logs(schedule_id: int, db: AsyncSession = Depends(get_db)):
-    rows = await list_sync_logs(db, schedule_id)
-    return rows
-
-
-@app.delete("/schedule-sync/{schedule_id}")
-async def delete_schedule_route(schedule_id: int, db: AsyncSession = Depends(get_db)):
-    return await delete_schedule(db, schedule_id)
 
 
 # api to get mlmd file from cmf-server
@@ -619,7 +521,6 @@ async def get_label_data(file_name: str) -> str:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
 
-
 @app.post("/register-server")
 async def register_server(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
     try:
@@ -752,7 +653,10 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
 
     Args:
         request (ServerRegistrationRequest): The request containing server details.
-        skip_logging (bool): If True, skip logging (used when called from scheduler).
+        skip_logging (bool): If True, prevents duplicate log entries in the database.
+            When the background scheduler calls this function, it creates its own 
+            schedule and log entries, so we skip the immediate sync logging to avoid 
+            duplicate records. Set to False for manual/API-triggered syncs.
 
     Returns:
         dict: A response containing the sync status and last sync time.
@@ -764,13 +668,19 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
     server_url = request.server_url
     current_utc_epoch_time = int(time.time() * 1000)
     
-    # Helper function to log sync attempt
+    # This function is used to log the sync attempt in the database. 
+    # It creates a one-time schedule entry for this immediate sync and 
+    # logs the run with the provided status and message.
     async def log_sync_attempt(status: str, message: str):
+        # If skip_logging is True, it means this function was called from the scheduler 
+        # which already has a log entry for this run, so we skip to avoid duplicates.
         if skip_logging:
             return
         try:
+            # Fetch the registered server to get its ID for logging
             server_row = await get_registered_server_by_name_url(db, server_name, server_url)
             if server_row:
+                # Create a one-time schedule for this immediate sync to log it in the same format as scheduled syncs
                 created = await create_schedule(
                     db,
                     server_id=server_row["id"],
@@ -781,12 +691,14 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
                     created_at=current_utc_epoch_time,
                     one_time=True,
                 )
+                # Immediately mark the schedule as completed since this is a one-time sync
                 await update_schedule_fields(
                     db,
                     schedule_id=created["id"],
                     active=False,
                     status="completed",
                 )
+                # Log the sync run with the provided status and message
                 await log_sync_run(
                     db,
                     schedule_id=created["id"],
@@ -799,9 +711,11 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
             print(f"Immediate sync logging error: {le}")
     
     try:
+        # Step 1: Verify the server exists in the registered servers list and get last sync time
         row = await get_sync_status(db, server_name, server_url)
 
         if not row:
+            # Log the failed sync attempt before raising the exception
             await log_sync_attempt("failed", "Server not found in the registered servers list")
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
 
@@ -886,24 +800,6 @@ async def server_list(db: AsyncSession = Depends(get_db)):
     return rows
 
 
-@app.get("/server/{server_id}/completed-logs")
-async def get_server_completed_logs(server_id: int, db: AsyncSession = Depends(get_db)):
-    """
-    Get all completed sync logs for a specific server.
-    
-    Args:
-        server_id (int): The ID of the server to get logs for.
-    
-    Returns:
-        list: A list of completed sync logs with sync_type, status, message, and timestamp.
-    """
-    try:
-        logs = await get_completed_logs_by_server(db, server_id)
-        return logs
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch completed logs: {e}")
-
-
 @app.get("/download-python-env")
 def download_python_env(request: Request, list_of_files: Optional[list[str]] = Query(None)):
     """
@@ -952,6 +848,130 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
         )
     except Exception as e:
         return {"error": str(e)}
+
+
+# ---- Scheduling APIs ----
+@app.post("/schedule-sync")
+async def schedule_sync(request: ScheduleCreateRequest, db: AsyncSession = Depends(get_db)):
+    try:
+        server = await get_registered_server_by_id(db, request.server_id)
+        if not server:
+            raise HTTPException(status_code=404, detail="Registered server not found")
+
+        # Parse local ISO datetime and convert to UTC epoch ms
+        try:
+            tz = ZoneInfo(request.timezone)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid timezone")
+
+        try:
+            # Accepts e.g. 2026-01-04T15:00
+            local_dt = datetime.strptime(request.start_time_local_iso, "%Y-%m-%dT%H:%M")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid datetime format. Use YYYY-MM-DDTHH:MM")
+
+        # Convert local datetime with timezone info to UTC epoch milliseconds
+        local_dt = local_dt.replace(tzinfo=tz)
+        start_utc_ms = int(local_dt.astimezone(ZoneInfo("UTC")).timestamp() * 1000)
+
+        # Convert new recurrence modes to times_per_day for backward compatibility
+        # TODO: Update database schema to store recurrence mode details properly
+        times_per_day = 1  # default
+        if not request.one_time:
+            if request.recurrence_mode == 'interval':
+                # Calculate times per day from interval
+                if request.interval_unit == 'hours' and request.interval_value:
+                    # For eg if interval is 6 hours, it should run 4 times a day (24//6)
+                    times_per_day = max(1, 24 // request.interval_value)
+                elif request.interval_unit == 'minutes' and request.interval_value:
+                    # For eg if interval is 30 minutes, it should run 48 times a day (24*60//30)
+                    times_per_day = max(1, (24 * 60) // request.interval_value)
+            elif request.recurrence_mode == 'daily':
+                times_per_day = 1  # once per day
+            elif request.recurrence_mode == 'weekly':
+                # For weekly mode, calculate the next occurrence of the selected weekday
+                if request.weekly_day and request.weekly_time:
+                    # For eg if user selects every Monday at 15:00
+                    day_map = {
+                        'sunday': 6, 'monday': 0, 'tuesday': 1, 'wednesday': 2,
+                        'thursday': 3, 'friday': 4, 'saturday': 5
+                    }
+                    # Get the target weekday number from the day name
+                    target_weekday = day_map.get(request.weekly_day.lower())
+                    if target_weekday is not None:
+                        try:
+                            # Parse the time part (e.g. 15:00) to get hours and minutes
+                            hours, minutes = map(int, request.weekly_time.split(':'))
+                            # Get current time in the target timezone
+                            now_local = datetime.now(tz)
+                            # Create a datetime for the target weekday and time
+                            cursor = now_local.replace(hour=hours, minute=minutes, second=0, microsecond=0)
+                            # Calculate how many days until the target weekday
+                            # for example if today is Tuesday (1) and target is Monday (0), then days_until_target = (0 - 1) % 7 = 6 days until next Monday
+                            current_weekday = cursor.weekday()
+                            days_until_target = (target_weekday - current_weekday) % 7
+                            
+                            # If it's the same day but time has passed, move to next week
+                            if days_until_target == 0 and cursor <= now_local:
+                                days_until_target = 7
+                            
+                            cursor = cursor + timedelta(days=days_until_target)
+                            start_utc_ms = int(cursor.astimezone(ZoneInfo("UTC")).timestamp() * 1000)
+                        except ValueError:
+                            pass  # Use default start_utc_ms
+                times_per_day = 1  # treated as once per day
+            elif request.times_per_day:
+                times_per_day = request.times_per_day  # legacy support
+
+        now_ms = int(time.time() * 1000)
+        if request.one_time:
+            if start_utc_ms <= now_ms:
+                raise HTTPException(status_code=400, detail="Start time must be in the future for one-time schedules")
+            next_ms = start_utc_ms
+        else:
+            next_ms = start_utc_ms if start_utc_ms > now_ms else await compute_next_run_utc(start_utc_ms, request.timezone, times_per_day)
+
+        created = await create_schedule(db, server_id=request.server_id, times_per_day=times_per_day, timezone=request.timezone, start_time_utc=start_utc_ms, next_run_time_utc=next_ms, created_at=now_ms, one_time=request.one_time)
+        return {"message": "Schedule created", "schedule_id": created["id"], "next_run_time_utc": next_ms}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create schedule: {e}")
+
+
+@app.get("/schedules")
+async def get_schedules(server_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
+    rows = await list_schedules(db, server_id)
+    return rows
+
+
+@app.get("/schedule-sync/logs/{schedule_id}")
+async def get_schedule_logs(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    rows = await list_sync_logs(db, schedule_id)
+    return rows
+
+
+@app.get("/server/{server_id}/completed-logs")
+async def get_server_completed_logs(server_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Get all completed sync logs for a specific server.
+    
+    Args:
+        server_id (int): The ID of the server to get logs for.
+    
+    Returns:
+        list: A list of completed sync logs with sync_type, status, message, and timestamp.
+    """
+    try:
+        logs = await get_completed_logs_by_server(db, server_id)
+        return logs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch completed logs: {e}")
+
+
+@app.delete("/schedule-sync/{schedule_id}")
+async def delete_schedule_route(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    return await delete_schedule(db, schedule_id)
 
 
 async def update_global_art_dict(pipeline_name):
