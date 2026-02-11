@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from server.app.db.dbconfig import get_db
-from sqlalchemy import select, func, text, String, bindparam, case, distinct, insert, update
+from sqlalchemy import select, func, text, String, bindparam, case, distinct, insert, update, delete
 from server.app.db.dbmodels import (
     artifact, 
     artifactproperty, 
@@ -13,7 +13,9 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
-    registered_servers
+    registered_servers,
+    scheduled_syncs,
+    sync_logs
 )
 
 
@@ -51,18 +53,23 @@ async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     return result.mappings().all()
 
 
+async def get_registered_server_by_id(db: AsyncSession, server_id: int):
+    """
+    Get registered server details by ID from the database.
+    """
+    query = select(registered_servers).where(registered_servers.c.id == server_id)
+    result = await db.execute(query)
+    row = result.mappings().first()
+    return row
 
-async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
-    """
-    Get the sync status from the database.
-    """
-    query = select(registered_servers.c.last_sync_time).where(
-        (registered_servers.c.server_name == server_name) & 
-        (registered_servers.c.host_info == server_url)
+
+async def get_registered_server_by_name_url(db: AsyncSession, server_name: str, server_url: str):
+    """Fetch a registered server row by name and URL."""
+    query = select(registered_servers).where(
+        (registered_servers.c.server_name == server_name) & (registered_servers.c.host_info == server_url)
     )
     result = await db.execute(query)
-    return result.mappings().all()
-
+    return result.mappings().first()
 
 
 async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, server_url: str):
@@ -338,3 +345,159 @@ async def fetch_executions(
         "total_items": total_record,
         "items": [dict(row) for row in rows]
     }
+
+# -------- Periodic Sync Scheduling Queries --------
+
+async def create_schedule(
+    db: AsyncSession, 
+    server_id: int, 
+    times_per_day: int, 
+    timezone: str, 
+    start_time_utc: int, 
+    next_run_time_utc: int, 
+    created_at: int, 
+    one_time: bool = False,
+    recurrence_mode: str = None,
+    interval_unit: str = None,
+    interval_value: int = None,
+    weekly_day: str = None,
+    weekly_time: str = None
+):
+    query = insert(scheduled_syncs).values(
+        server_id=server_id,
+        times_per_day=times_per_day,
+        timezone=timezone,
+        start_time_utc=start_time_utc,
+        next_run_time_utc=next_run_time_utc,
+        active=True,
+        status='new',
+        one_time=one_time,
+        created_at=created_at,
+        recurrence_mode=recurrence_mode,
+        interval_unit=interval_unit,
+        interval_value=interval_value,
+        weekly_day=weekly_day,
+        weekly_time=weekly_time,
+    ).returning(scheduled_syncs.c.id)
+    result = await db.execute(query)
+    await db.commit()
+    return {"id": result.scalar()}
+
+
+async def list_schedules(db: AsyncSession, server_id: int | None = None):
+    query = select(scheduled_syncs).where(scheduled_syncs.c.active == True)
+    if server_id is not None:
+        query = query.where(scheduled_syncs.c.server_id == server_id)
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def due_schedules(db: AsyncSession, now_utc_ms: int):
+    query = select(scheduled_syncs).where(
+        (scheduled_syncs.c.active == True) & (scheduled_syncs.c.next_run_time_utc <= now_utc_ms)
+    )
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def update_next_run(db: AsyncSession, schedule_id: int, next_run_time_utc: int):
+    query = update(scheduled_syncs).where(scheduled_syncs.c.id == schedule_id).values(next_run_time_utc=next_run_time_utc)
+    await db.execute(query)
+    await db.commit()
+
+
+async def log_sync_run(db: AsyncSession, schedule_id: int, run_time_utc: int, status: str, message: str | None, sync_type: str = "periodic"):
+    query = insert(sync_logs).values(
+        schedule_id=schedule_id,
+        run_time_utc=run_time_utc,
+        status=status,
+        message=message,
+        sync_type=sync_type,
+    )
+    await db.execute(query)
+    await db.commit()
+
+
+async def list_sync_logs(db: AsyncSession, schedule_id: int, limit: int = 50):
+    query = select(sync_logs).where(sync_logs.c.schedule_id == schedule_id).order_by(sync_logs.c.run_time_utc.desc()).limit(limit)
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def get_completed_logs_by_server(db: AsyncSession, server_id: int, limit: int = 100):
+    """Get all completed sync logs for a specific server."""
+    query = (
+        select(
+            sync_logs.c.id,
+            sync_logs.c.run_time_utc,
+            sync_logs.c.status,
+            sync_logs.c.message,
+            sync_logs.c.sync_type,
+            scheduled_syncs.c.server_id
+        )
+        .select_from(sync_logs.join(scheduled_syncs, sync_logs.c.schedule_id == scheduled_syncs.c.id))
+        .where(scheduled_syncs.c.server_id == server_id)
+        .order_by(sync_logs.c.run_time_utc.desc())
+        .limit(limit)
+    )
+    result = await db.execute(query)
+    return result.mappings().all()
+
+
+async def update_schedule_fields(
+    db: AsyncSession,
+    schedule_id: int,
+    times_per_day: int | None = None,
+    timezone: str | None = None,
+    start_time_utc: int | None = None,
+    next_run_time_utc: int | None = None,
+    active: bool | None = None,
+    one_time: bool | None = None,
+    status: str | None = None,
+):
+    values = {}
+    if times_per_day is not None:
+        values[scheduled_syncs.c.times_per_day] = times_per_day
+    if timezone is not None:
+        values[scheduled_syncs.c.timezone] = timezone
+    if start_time_utc is not None:
+        values[scheduled_syncs.c.start_time_utc] = start_time_utc
+    if next_run_time_utc is not None:
+        values[scheduled_syncs.c.next_run_time_utc] = next_run_time_utc
+    if active is not None:
+        values[scheduled_syncs.c.active] = active
+    if one_time is not None:
+        values[scheduled_syncs.c.one_time] = one_time
+    if status is not None:
+        values[scheduled_syncs.c.status] = status
+
+    if not values:
+        return {"message": "No fields to update"}
+
+    query = update(scheduled_syncs).where(scheduled_syncs.c.id == schedule_id).values(values)
+    await db.execute(query)
+    await db.commit()
+    return {"message": "Schedule updated"}
+
+
+async def delete_schedule(db: AsyncSession, schedule_id: int):
+    # Delete dependent logs first
+    await db.execute(delete(sync_logs).where(sync_logs.c.schedule_id == schedule_id))
+    # Delete the schedule
+    result = await db.execute(delete(scheduled_syncs).where(scheduled_syncs.c.id == schedule_id))
+    await db.commit()
+    # result.rowcount may be None depending on dialect; return a generic message
+    return {"message": "Schedule deleted"}
+
+
+async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
+    """
+    Get the sync status from the database.
+    """
+    query = select(registered_servers.c.last_sync_time).where(
+        (registered_servers.c.server_name == server_name) & 
+        (registered_servers.c.host_info == server_url)
+    )
+    result = await db.execute(query)
+    return result.mappings().all()
+
