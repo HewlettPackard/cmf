@@ -213,6 +213,12 @@ scheduled_syncs = Table(
     Column("status", String(64), nullable=False, default="new"),
     Column("one_time", Boolean, nullable=False, default=False),
     Column("created_at", BigInteger, nullable=False),
+    # Recurrence details for proper scheduling
+    Column("recurrence_mode", String(64), nullable=True),  # 'interval', 'daily', 'weekly'
+    Column("interval_unit", String(64), nullable=True),  # 'minutes', 'hours'
+    Column("interval_value", Integer, nullable=True),  # e.g., 6 for "every 6 hours"
+    Column("weekly_day", String(64), nullable=True),  # 'monday', 'tuesday', etc.
+    Column("weekly_time", String(16), nullable=True),  # 'HH:MM' format
 
     Index("idx_scheduled_syncs_server_id", "server_id"),
     Index("idx_scheduled_syncs_next_run_time_utc", "next_run_time_utc"),
