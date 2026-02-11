@@ -20,6 +20,17 @@ import PeriodicSyncPicker from '../PeriodicSync/PeriodicSyncPicker';
 
 const client = new FastAPIClient();
 
+// Reusable chevron toggle icon component
+const ChevronToggleIcon = ({ isExpanded }) => (
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    {isExpanded ? (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+    ) : (
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+    )}
+  </svg>
+);
+
 function RegisteredServers({ serverList }) {
   const [syncStatus, setSyncStatus] = useState({});
   const [isSyncing, setIsSyncing] = useState({}); // Track if sync is in progress
@@ -191,6 +202,7 @@ function RegisteredServers({ serverList }) {
                       {/* Header */}
                       <div className="flex justify-between items-center mb-4 pb-3 border-b-2 border-gray-300">
                         <h3 className="text-lg font-bold text-teal-600">Manage Server - {server.server_name}</h3>
+                        {/* Close Button */}
                         <button
                           onClick={() => setOpenManageFor(null)}
                           className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
@@ -208,13 +220,7 @@ function RegisteredServers({ serverList }) {
                             onClick={() => toggleSection(server.id, showScheduledLogs, setShowScheduledLogs, fetchScheduledLogs)}
                             title={showScheduledLogs[server.id] ? 'Hide' : 'Show'}
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              {showScheduledLogs[server.id] ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                              ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              )}
-                            </svg>
+                            <ChevronToggleIcon isExpanded={showScheduledLogs[server.id]} />
                           </button>
                         </div>
                         {showScheduledLogs[server.id] && (
@@ -244,6 +250,7 @@ function RegisteredServers({ serverList }) {
                                             onClick={() => handleDeleteScheduledSync(server.id, log.id)}
                                             title="Delete scheduled sync"
                                           >
+                                            {/* Trash Icon */}
                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                             </svg>
@@ -270,13 +277,7 @@ function RegisteredServers({ serverList }) {
                             onClick={() => toggleSection(server.id, showSyncActions, setShowSyncActions)}
                             title={showSyncActions[server.id] ? 'Hide' : 'Show'}
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              {showSyncActions[server.id] ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                              ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              )}
-                            </svg>
+                            <ChevronToggleIcon isExpanded={showSyncActions[server.id]} />
                           </button>
                         </div>
 
@@ -386,13 +387,7 @@ function RegisteredServers({ serverList }) {
                               (id) => !completedLogs[id] && fetchCompletedLogs(id))}
                             title={showCompletedLogs[server.id] ? 'Hide' : 'Show'}
                           >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              {showCompletedLogs[server.id] ? (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                              ) : (
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              )}
-                            </svg>
+                            <ChevronToggleIcon isExpanded={showCompletedLogs[server.id]} />
                           </button>
                         </div>
                         {showCompletedLogs[server.id] && (

@@ -18,6 +18,7 @@ import React, { useMemo, useState } from 'react';
 import { buildTimeZoneOptions, getLocalTimeZone } from '../../utils/timezones';
 
 function toLocalInputValue(date) {
+  // Convert a Date object to a string suitable for input[type="datetime-local"]
   const pad = (n) => String(n).padStart(2, '0');
   const yyyy = date.getFullYear();
   const mm = pad(date.getMonth() + 1);
@@ -28,6 +29,8 @@ function toLocalInputValue(date) {
 }
 
 function formatInTZ(date, timeZone) {
+  // Format a Date object as a string in the specified timezone, 
+  // with fallback to UTC string if Intl fails (e.g. invalid timezone)
   try {
     return new Intl.DateTimeFormat('en-IN', {
       timeZone,
@@ -44,11 +47,15 @@ function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes * 60000);
 }
 
-export default function PeriodicSyncPicker({ serverId, serverName, onSchedule, mode = 'periodic', open, onClose, inline = false }) {
+export default function PeriodicSyncPicker({ serverId, serverName, onSchedule, mode = 'periodic' }) {
+  // Memoize timezone options to avoid rebuilding the entire list (hundreds of timezones) on every render
   const tzOptions = useMemo(() => buildTimeZoneOptions(), []);
+
+  // Memoize default timezone detection to avoid repeated browser API calls on every render
   const defaultTZ = useMemo(() => getLocalTimeZone(), []);
 
   const [timezone, setTimezone] = useState(defaultTZ);
+  // Store start time as local datetime string for input binding, convert to Date object only when needed for calculations
   const [startLocal, setStartLocal] = useState(() => {
     const d = new Date(Date.now() + 5 * 60 * 1000);
     return toLocalInputValue(d);
@@ -63,8 +70,11 @@ export default function PeriodicSyncPicker({ serverId, serverName, onSchedule, m
   const [weeklyDay, setWeeklyDay] = useState('monday'); // Day for weekly sync
   const [weeklyTime, setWeeklyTime] = useState('09:00'); // Time for weekly sync
 
+  // Memoize Date object creation to avoid unnecessary re-creation when startLocal hasn't changed
   const startDate = useMemo(() => new Date(startLocal), [startLocal]);
 
+  // Memoize expensive preview calculation (generates 5 future dates with timezone conversions)
+  // Only recalculates when mode, dates, or recurrence settings change
   const preview = useMemo(() => {
     if (mode === 'one-time') {
       return [new Date(startDate)];
@@ -139,12 +149,15 @@ export default function PeriodicSyncPicker({ serverId, serverName, onSchedule, m
     return [];
   }, [mode, startDate, recurrenceMode, intervalUnit, intervalValue, dailyTime, weeklyDay, weeklyTime]);
 
+  // Memoize past time validation to avoid creating Date objects and comparing on every render
   const isPastTime = useMemo(() => {
     const selectedDateTime = new Date(startLocal);
     const now = new Date();
     return selectedDateTime < now;
   }, [startLocal]);
 
+  // Memoize form validation to avoid running all validation checks on every render
+  // Only revalidates when form fields actually change
   const canSubmit = useMemo(() => {
     if (!serverId || !serverName) return false;
     if (!timezone) return false;
@@ -159,6 +172,7 @@ export default function PeriodicSyncPicker({ serverId, serverName, onSchedule, m
   }, [serverId, serverName, timezone, startLocal, isPastTime, mode, recurrenceMode, intervalValue, dailyTime, weeklyDay, weeklyTime]);
 
   const handleSubmit = async () => {
+    // Guard against invalid form submission and prevent multiple submissions
     if (!canSubmit || submitting) return;
     setSubmitting(true);
 
@@ -191,317 +205,139 @@ export default function PeriodicSyncPicker({ serverId, serverName, onSchedule, m
 
       console.log('Submitting schedule data:', scheduleData); // Debug log
       await onSchedule(scheduleData);
-      if (onClose && !inline) {
-        onClose();
-      }
     } finally {
       setSubmitting(false);
     }
   };
 
-  // Inline rendering without modal
-  if (inline) {
-    return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Server</label>
-            <div className="text-sm text-gray-900">{serverName} (ID: {serverId})</div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
-            <select
-              className="w-full border rounded px-3 py-2 text-sm"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-            >
-              {!tzOptions.find(o => o.value === timezone) && (
-                <option value={timezone}>{timezone}</option>
-              )}
-              {tzOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
-            <input
-              type="datetime-local"
-              className={`w-full border rounded px-3 py-2 text-sm ${isPastTime ? 'border-red-500' : ''}`}
-              value={startLocal}
-              onChange={(e) => setStartLocal(e.target.value)}
-            />
-            {isPastTime && (
-              <p className="text-red-600 text-xs mt-1">
-                ⚠ Cannot select a past date and time. Please choose a future time.
-              </p>
+  return (
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Server</label>
+          <div className="text-sm text-gray-900">{serverName} (ID: {serverId})</div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+          <select
+            className="w-full border rounded px-3 py-2 text-sm"
+            value={timezone}
+            onChange={(e) => setTimezone(e.target.value)}
+          >
+            {!tzOptions.find(o => o.value === timezone) && (
+              <option value={timezone}>{timezone}</option>
             )}
-          </div>
-          {mode === 'periodic' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Recurrence Mode</label>
-              <select
-                className="w-full border rounded px-3 py-2 text-sm"
-                value={recurrenceMode}
-                onChange={(e) => setRecurrenceMode(e.target.value)}
-              >
-                <option value="interval">Every N minutes/hours</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-              </select>
-            </div>
+            {tzOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
+          <input
+            type="datetime-local"
+            className={`w-full border rounded px-3 py-2 text-sm ${isPastTime ? 'border-red-500' : ''}`}
+            value={startLocal}
+            onChange={(e) => setStartLocal(e.target.value)}
+          />
+          {isPastTime && (
+            <p className="text-red-600 text-xs mt-1">
+              ⚠ Cannot select a past date and time. Please choose a future time.
+            </p>
           )}
         </div>
-
-        {mode === 'periodic' && recurrenceMode === 'interval' && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Interval Value</label>
-              <input
-                type="number"
-                min={1}
-                className="w-full border rounded px-3 py-2 text-sm"
-                value={intervalValue}
-                onChange={(e) => setIntervalValue(parseInt(e.target.value || '0', 10))}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-              <select
-                className="w-full border rounded px-3 py-2 text-sm"
-                value={intervalUnit}
-                onChange={(e) => setIntervalUnit(e.target.value)}
-              >
-                <option value="minutes">Minutes</option>
-                <option value="hours">Hours</option>
-              </select>
-            </div>
-          </div>
-        )}
-
-        {mode === 'periodic' && recurrenceMode === 'daily' && (
-          <div className="text-sm text-gray-600 italic">
-            Daily sync will run at the time specified in "Start Date & Time" above.
-          </div>
-        )}
-
-        {mode === 'periodic' && recurrenceMode === 'weekly' && (
+        {mode === 'periodic' && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Day of Week</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Recurrence Mode</label>
             <select
               className="w-full border rounded px-3 py-2 text-sm"
-              value={weeklyDay}
-              onChange={(e) => setWeeklyDay(e.target.value)}
+              value={recurrenceMode}
+              onChange={(e) => setRecurrenceMode(e.target.value)}
             >
-              <option value="monday">Monday</option>
-              <option value="tuesday">Tuesday</option>
-              <option value="wednesday">Wednesday</option>
-              <option value="thursday">Thursday</option>
-              <option value="friday">Friday</option>
-              <option value="saturday">Saturday</option>
-              <option value="sunday">Sunday</option>
+              <option value="interval">Every N minutes/hours</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
             </select>
-            <p className="text-sm text-gray-600 italic">
-              Weekly sync will run at the time specified in "Start Date & Time" above.
-            </p>
           </div>
         )}
-
-
-        <div>
-          <div className="text-sm font-medium text-gray-700 mb-2">Preview next runs (in {timezone})</div>
-          <ul className="list-disc pl-5 text-sm text-gray-800 space-y-1 bg-gray-50 p-3 rounded border border-gray-200">
-            {preview.length === 0 && (
-              <li>No upcoming runs (adjust settings)</li>
-            )}
-            {preview.map((d, idx) => (
-              <li key={idx}>{formatInTZ(d, timezone)}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            type="button"
-            className={`px-6 py-2 rounded text-white font-semibold ${canSubmit && !submitting ? 'bg-teal-600 hover:bg-teal-700' : 'bg-gray-400 cursor-not-allowed'}`}
-            disabled={!canSubmit || submitting}
-            onClick={handleSubmit}
-          >
-            {submitting ? 'Creating...' : (mode === 'periodic' ? 'Create Periodic Schedule' : 'Create One-time Schedule')}
-          </button>
-        </div>
       </div>
-    );
-  }
 
-  // Modal rendering (original behavior)
-  return (
-    <div>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl">
-            <div className="px-4 py-3 border-b">
-              <h3 className="text-lg font-semibold text-teal-700">
-                {mode === 'periodic' ? 'Configure Periodic Sync' : 'Configure One-time Sync'}
-              </h3>
-            </div>
-
-            <div className="p-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Server</label>
-                  <div className="text-sm text-gray-900">{serverName} (ID: {serverId})</div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
-                  <select
-                    className="w-full border rounded px-3 py-2 text-sm"
-                    value={timezone}
-                    onChange={(e) => setTimezone(e.target.value)}
-                  >
-                    {/* Ensure current selection is present even if not in options */}
-                    {!tzOptions.find(o => o.value === timezone) && (
-                      <option value={timezone}>{timezone}</option>
-                    )}
-                    {tzOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>{opt.label}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
-                  <input
-                    type="datetime-local"
-                    className={`w-full border rounded px-3 py-2 text-sm ${isPastTime ? 'border-red-500' : ''}`}
-                    value={startLocal}
-                    onChange={(e) => setStartLocal(e.target.value)}
-                  />
-                  {isPastTime && (
-                    <p className="text-red-600 text-xs mt-1">
-                      ⚠ Cannot select a past date and time. Please choose a future time.
-                    </p>
-                  )}
-                </div>
-                {mode === 'periodic' && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Recurrence Mode</label>
-                    <select
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      value={recurrenceMode}
-                      onChange={(e) => setRecurrenceMode(e.target.value)}
-                    >
-                      <option value="interval">Every N minutes/hours</option>
-                      <option value="daily">Daily</option>
-                      <option value="weekly">Weekly</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-
-              {mode === 'periodic' && recurrenceMode === 'interval' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Interval Value</label>
-                    <input
-                      type="number"
-                      min={1}
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      value={intervalValue}
-                      onChange={(e) => setIntervalValue(parseInt(e.target.value || '0', 10))}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                    <select
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      value={intervalUnit}
-                      onChange={(e) => setIntervalUnit(e.target.value)}
-                    >
-                      <option value="minutes">Minutes</option>
-                      <option value="hours">Hours</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {mode === 'periodic' && recurrenceMode === 'daily' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Time of Day</label>
-                    <input
-                      type="time"
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      value={dailyTime}
-                      onChange={(e) => setDailyTime(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {mode === 'periodic' && recurrenceMode === 'weekly' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Day of Week</label>
-                    <select
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      value={weeklyDay}
-                      onChange={(e) => setWeeklyDay(e.target.value)}
-                    >
-                      <option value="monday">Monday</option>
-                      <option value="tuesday">Tuesday</option>
-                      <option value="wednesday">Wednesday</option>
-                      <option value="thursday">Thursday</option>
-                      <option value="friday">Friday</option>
-                      <option value="saturday">Saturday</option>
-                      <option value="sunday">Sunday</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Time of Day</label>
-                    <input
-                      type="time"
-                      className="w-full border rounded px-3 py-2 text-sm"
-                      value={weeklyTime}
-                      onChange={(e) => setWeeklyTime(e.target.value)}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-2">
-                <div className="text-sm font-medium text-gray-700 mb-1">Preview next runs (in {timezone})</div>
-                <ul className="list-disc pl-5 text-sm text-gray-800 space-y-1">
-                  {preview.length === 0 && (
-                    <li>No upcoming runs (adjust settings)</li>
-                  )}
-                  {preview.map((d, idx) => (
-                    <li key={idx}>{formatInTZ(d, timezone)}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="px-4 py-3 border-t flex items-center justify-end gap-2">
-              <button
-                type="button"
-                className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded"
-                onClick={() => onClose && onClose()}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className={`px-4 py-2 rounded text-white ${canSubmit && !submitting ? 'bg-teal-600 hover:bg-teal-700' : 'bg-gray-400 cursor-not-allowed'}`}
-                disabled={!canSubmit || submitting}
-                onClick={handleSubmit}
-              >
-                {submitting ? 'Creating...' : (mode === 'periodic' ? 'Create Periodic Schedule' : 'Create One-time Schedule')}
-              </button>
-            </div>
+      {mode === 'periodic' && recurrenceMode === 'interval' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Interval Value</label>
+            <input
+              type="number"
+              min={1}
+              className="w-full border rounded px-3 py-2 text-sm"
+              value={intervalValue}
+              onChange={(e) => setIntervalValue(parseInt(e.target.value || '0', 10))}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+            <select
+              className="w-full border rounded px-3 py-2 text-sm"
+              value={intervalUnit}
+              onChange={(e) => setIntervalUnit(e.target.value)}
+            >
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+            </select>
           </div>
         </div>
       )}
+
+      {mode === 'periodic' && recurrenceMode === 'daily' && (
+        <div className="text-sm text-gray-600 italic">
+          Daily sync will run at the time specified in "Start Date & Time" above.
+        </div>
+      )}
+
+      {mode === 'periodic' && recurrenceMode === 'weekly' && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Day of Week</label>
+          <select
+            className="w-full border rounded px-3 py-2 text-sm"
+            value={weeklyDay}
+            onChange={(e) => setWeeklyDay(e.target.value)}
+          >
+            <option value="monday">Monday</option>
+            <option value="tuesday">Tuesday</option>
+            <option value="wednesday">Wednesday</option>
+            <option value="thursday">Thursday</option>
+            <option value="friday">Friday</option>
+            <option value="saturday">Saturday</option>
+            <option value="sunday">Sunday</option>
+          </select>
+          <p className="text-sm text-gray-600 italic">
+            Weekly sync will run at the time specified in "Start Date & Time" above.
+          </p>
+        </div>
+      )}
+
+      <div>
+        <div className="text-sm font-medium text-gray-700 mb-2">Preview next runs (in {timezone})</div>
+        <ul className="list-disc pl-5 text-sm text-gray-800 space-y-1 bg-gray-50 p-3 rounded border border-gray-200">
+          {preview.length === 0 && (
+            <li>No upcoming runs (adjust settings)</li>
+          )}
+          {preview.map((d, idx) => (
+            <li key={idx}>{formatInTZ(d, timezone)}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          type="button"
+          className={`px-6 py-2 rounded text-white font-semibold ${canSubmit && !submitting ? 'bg-teal-600 hover:bg-teal-700' : 'bg-gray-400 cursor-not-allowed'}`}
+          disabled={!canSubmit || submitting}
+          onClick={handleSubmit}
+        >
+          {submitting ? 'Creating...' : (mode === 'periodic' ? 'Create Periodic Schedule' : 'Create One-time Schedule')}
+        </button>
+      </div>
     </div>
   );
 }
