@@ -73,6 +73,11 @@ The server will be available at `http://localhost:8000`
 - **CMF3_BASE_URL** (Optional): Tertiary CMF Server  
 - **CMF4_BASE_URL** (Optional): Quaternary CMF Server
 
+- **CMF_TLS_VERIFY** (Optional): TLS certificate verification for HTTPS connections
+  - Default: `false` (CMF server typically runs on HTTP)
+  - Options: `false`, `true`, or path to CA bundle file
+  - Set to `true` when using HTTPS with valid certificates
+
 ### Example .env
 
 ```env
@@ -177,8 +182,8 @@ Retrieves the model card for a specific model artifact.
 {
   "servers": {
     "cmf-mcp-server": {
-      "type": "sse",
-      "url": "http://localhost:8000/sse"
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
     }
   }
 }

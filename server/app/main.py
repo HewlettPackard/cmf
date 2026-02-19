@@ -84,6 +84,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
 
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,

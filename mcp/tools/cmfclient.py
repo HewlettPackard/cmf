@@ -28,13 +28,14 @@ from .conn import cmfConnection
 
 
 class cmfClient:
-    def __init__(self, base_url):
+    def __init__(self, base_url, tls_verify=None):
         """
         Initialize the CMF API client wrapper.
 
         :param base_url: CMF Server base URL
+        :param tls_verify: TLS certificate verification (True/False/path to CA bundle, default from env)
         """
-        self.connection = cmfConnection(base_url)
+        self.connection = cmfConnection(base_url, tls_verify=tls_verify)
 
     def get_pipelines(self):
         """

@@ -26,28 +26,45 @@ CMF_BASE_URL=http://server:8080
 # Additional CMF Server URLs (optional - for connecting to multiple CMF servers)
 # CMF2_BASE_URL=http://cmf-server-2:8080
 # CMF3_BASE_URL=http://cmf-server-3:8080
-# CMF4_BASE_BASE_URL=http://cmf-server-4:8080
+# CMF4_BASE_URL=http://cmf-server-4:8080
+
+# TLS/SSL Certificate Verification
+# =========================================================================
+# Controls TLS certificate verification for CMF API requests (HTTPS only).
+# Default is "false" since CMF server typically runs on HTTP.
+# Set to "true" when using HTTPS with valid certificates.
+#
+# CMF_TLS_VERIFY options:
+#   - "false" (default): Disable verification (for HTTP or self-signed HTTPS)
+#   - "true": Verify certificates using system CA bundle
+#   - "/path/to/ca-bundle.crt": Use custom CA bundle file
+#
+# CMF_TLS_VERIFY=false
 
 # MCP Transport Security Configuration
 # =========================================================================
-# The MCP SDK validates Host headers for security. When running behind
-# Docker port mapping or reverse proxies, the Host header might not match
-# the internal port, causing "421 Misdirected Request" errors.
+# Controls DNS rebinding protection for the MCP server.
+# 
+# MCP_TRANSPORT_SECURITY: "disabled" (default) or "enabled"
+#   - "disabled": Disable DNS rebinding protection (recommended for Docker/proxy setups)
+#   - "enabled": Enable DNS rebinding protection with allowed hosts/origins
 #
-# MCP_TRANSPORT_SECURITY: "disabled" (default) or comma-separated allowed hosts
-#   - "disabled": Disable host validation (for Docker/proxy with port mapping)
-#   - Allowed hosts list: "localhost,127.0.0.1,10.93.244.228:8390"
+# When enabled, configure allowed hosts and origins:
+#   MCP_ALLOWED_HOSTS - Comma-separated list of allowed hosts (supports wildcard ports)
+#                       Example: "localhost:*,127.0.0.1:*,myserver.com:8000"
+#   MCP_ALLOWED_ORIGINS - Comma-separated list of allowed origins
+#                         Example: "http://localhost:*,http://127.0.0.1:*"
 MCP_TRANSPORT_SECURITY=disabled
+# MCP_ALLOWED_HOSTS=localhost:*,127.0.0.1:*
+# MCP_ALLOWED_ORIGINS=http://localhost:*,http://127.0.0.1:*
 
-# Optional: Specify allowed hosts explicitly (if transport security is not "disabled")
-# MCP_ALLOWED_HOSTS=localhost,127.0.0.1,10.93.244.228:8390
-
-# MCP Host and Port Configuration for external mcp
+# MCP Host and Port Configuration
 # =========================================================================
+# Configure the network interface and port for the MCP server
 MCP_HOST=0.0.0.0
 MCP_PORT=8382
 
-#Environment variables for Junpyter container with CMF installed (Dockerfile)
+# Environment variables for Jupyter container with CMF installed (Dockerfile)
 #USER=first
 #UID=123456789
 #GROUP=users

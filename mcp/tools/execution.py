@@ -3,10 +3,11 @@ CMF MCP Execution tools
 """
 
 from typing import List, Dict, Optional, Any
-import time
-import secrets
-import threading
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def register_tools(mcp, cmf_clients):
     """Register execution related tools for Common Metadata Framework (CMF) with the MCP server."""
@@ -31,7 +32,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_executions(pipeline)
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         
@@ -59,7 +60,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_executions_list(pipeline)
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         
@@ -86,7 +87,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_execution_lineage_tangled_tree(selected_uuid_pared,pipeline)
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         

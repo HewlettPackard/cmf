@@ -18,6 +18,9 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
+# Install system dependencies (curl for healthcheck)
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 # Install dependencies
 RUN pip install --no-cache-dir -U pip setuptools wheel
 

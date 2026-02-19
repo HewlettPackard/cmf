@@ -26,7 +26,7 @@ import tomli
 from dotenv import load_dotenv
 import uvicorn
 import contextlib
-from typing import List, Dict, Optional, Any
+ 
 from pathlib import Path
 import atexit
 import signal
@@ -203,10 +203,18 @@ async def lifespan(app: Starlette):
 
 
 # Create the ASGI app with StreamableHTTP transport
+
+from starlette.responses import PlainTextResponse
+from starlette.routing import Route
+
+async def health(request):
+    return PlainTextResponse("OK")
+
 app = Starlette(
     debug=False,
     routes=[
         Mount("/mcp", app=session_manager.handle_request),
+        Route("/health", health, methods=["GET"]),
     ],
     lifespan=lifespan,
 )

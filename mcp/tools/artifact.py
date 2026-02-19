@@ -3,10 +3,10 @@ CMF MCP Artifact tools
 """
 
 from typing import List, Dict, Optional, Any
-import time
-import secrets
-import threading
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def register_tools(mcp, cmf_clients):
     """Register artifact related tools for Common Metadata Framework (CMF) with the MCP server."""
@@ -29,7 +29,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_artifact_types()
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         
@@ -57,7 +57,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_artifacts(pipeline, artifact_type)
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         
@@ -83,7 +83,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_artifact_lineage_tangled_tree(pipeline)
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         

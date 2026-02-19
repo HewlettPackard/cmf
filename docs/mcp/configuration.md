@@ -70,6 +70,43 @@ CMF4_BASE_URL=http://cmf-test:8080
 - Aggregate metadata from multiple teams
 - Unified view of development and production pipelines
 
+#### CMF_TLS_VERIFY
+
+Controls TLS/SSL certificate verification for CMF API requests over HTTPS.
+
+**Required**: No
+
+**Default**: `false` (CMF server typically runs on HTTP)
+
+**Options**:
+- `false` - Disable verification (default, suitable for HTTP or self-signed HTTPS)
+- `true` - Verify certificates using system CA bundle
+- `/path/to/ca-bundle.crt` - Use custom CA bundle file
+
+**Examples**:
+
+=== "Default (HTTP or Self-Signed)"
+    ```env
+    CMF_TLS_VERIFY=false
+    # OR omit the variable to use default
+    ```
+
+=== "Production HTTPS with Valid Certs"
+    ```env
+    CMF_TLS_VERIFY=true
+    ```
+
+=== "Custom CA Bundle"
+    ```env
+    CMF_TLS_VERIFY=/etc/ssl/certs/company-ca-bundle.crt
+    ```
+
+!!! info "HTTP vs HTTPS"
+    CMF server typically runs on HTTP (e.g., `http://server:8080`), so TLS verification is not applicable. Only configure this when using HTTPS URLs.
+
+!!! tip "Best Practice"
+    For production HTTPS deployments with properly signed certificates, set `CMF_TLS_VERIFY=true` to enable certificate validation. If using internal CAs, specify the CA bundle path.
+
 #### MCP_HOST
 
 The host interface the MCP Server binds to.

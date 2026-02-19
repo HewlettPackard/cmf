@@ -7,6 +7,9 @@ import time
 import secrets
 import threading
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def register_tools(mcp, cmf_clients):
     """Register pipeline related tools for Common Metadata Framework (CMF) with the MCP server."""
@@ -29,7 +32,7 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_pipelines()
                 result.append({"cmfClient": url, "data": data})
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         

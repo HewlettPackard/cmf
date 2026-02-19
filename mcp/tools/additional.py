@@ -3,10 +3,10 @@ CMF MCP Additional tools
 """
 
 from typing import List, Dict, Optional, Any
-import time
-import secrets
-import threading
 import json
+import logging
+
+logger = logging.getLogger(__name__)
 
 def register_tools(mcp, cmf_clients):
     """Register additional tools for Common Metadata Framework (CMF) with the MCP server."""
@@ -15,7 +15,7 @@ def register_tools(mcp, cmf_clients):
     def cmf_show_model_card(model_id: str, cmfClient_instances: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
         Retrieve the model card for a Model Artifact in CMF Server(s)
-        This requires that the model_id provided nis a valid ID of a Model Artifact type on the CMF server.
+        This requires that the model_id provided is a valid ID of a Model Artifact type on the CMF server.
         Can run cmf_show_artifacts tool with artifact_type="Model" to find out "id" of the artifact on Common Metadata Framework (CMF) server.
         Can run cmf_show_artifact_types tool to validate that Model artifact type exists on the Common Metadata Framework (CMF) server.
         
@@ -37,10 +37,10 @@ def register_tools(mcp, cmf_clients):
             try:
                 data = client.get_model_card(model_id)
                 result.append({"cmfClient": url, "data": data})
-                #The response is 4 JSON payloads (Pandas dataframes) in a List cooresponding to the 4 sections of the Model card: 
+                # The response is 4 JSON payloads (Pandas dataframes) in a List corresponding to the 4 sections of the Model card: 
                 # Model Data, Model Execution, Model Input Artifacts, Model Output Artifacts
                 # Each of these dataframes can be converted to JSON format using the json.dumps function.
-                json.dumps(data, indent=4)
+                logger.debug(json.dumps(data, indent=4))
             except Exception as e:
                 result.append({"cmfClient": url, "error": str(e)})
         

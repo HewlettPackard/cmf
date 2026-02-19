@@ -28,12 +28,9 @@ import requests
 import urllib3
 import warnings
 import logging
+import os
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
-
-# Suppress InsecureRequestWarning
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-warnings.simplefilter("ignore", category=urllib3.exceptions.InsecureRequestWarning)
 
 # Configure logging
 logger = logging.getLogger("cmf-mcp.conn")
@@ -41,7 +38,7 @@ logger = logging.getLogger("cmf-mcp.conn")
 
 class cmfConnection:
     def __init__(self, base_url, max_retries=3, retry_delay=1,
-                 connection_timeout=10, disable_connection_pooling=False):
+                 connection_timeout=10, disable_connection_pooling=False, tls_verify=None):
         """
         Initialize the CMF API connection.
 
@@ -50,12 +47,39 @@ class cmfConnection:
         :param retry_delay: Base delay in seconds between retries (exponential backoff)
         :param connection_timeout: Connection timeout in seconds
         :param disable_connection_pooling: If True, disable connection pooling
+        :param tls_verify: TLS certificate verification. Can be:
+                          - None (default): Read from CMF_TLS_VERIFY env var, defaults to False
+                          - True: Verify certificates using system CA bundle
+                          - False: Disable verification (default for HTTP-based CMF servers)
+                          - str: Path to custom CA bundle file
         """
         self.base_url = base_url.rstrip("/")
         self.max_retries = max_retries
         self.retry_delay = retry_delay
         self.connection_timeout = connection_timeout
         self.disable_connection_pooling = disable_connection_pooling
+        
+        # Configure TLS verification (default: disabled for HTTP-based CMF servers)
+        if tls_verify is None:
+            env_verify = os.getenv("CMF_TLS_VERIFY", "false").lower()
+            if env_verify in ("false", "0", "no", "disabled"):
+                self.tls_verify = False
+            elif env_verify in ("true", "1", "yes", "enabled"):
+                self.tls_verify = True
+            else:
+                # Treat as path to CA bundle
+                self.tls_verify = env_verify
+        else:
+            self.tls_verify = tls_verify
+        
+        # Only suppress warnings when TLS verification is explicitly disabled
+        if self.tls_verify is False:
+            logger.warning("TLS certificate verification is DISABLED. This is insecure and not recommended for production.")
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+            warnings.simplefilter("ignore", category=urllib3.exceptions.InsecureRequestWarning)
+        else:
+            verify_msg = f"path: {self.tls_verify}" if isinstance(self.tls_verify, str) else "system CA bundle"
+            logger.info(f"TLS certificate verification ENABLED using {verify_msg}")
 
         # Create a session for connection reuse
         self.session = requests.Session()
@@ -101,7 +125,7 @@ class cmfConnection:
                 json=request_data,
                 files=files,
                 data=form_data,
-                verify=False,
+                verify=self.tls_verify,
                 timeout=self.connection_timeout
             )
 
