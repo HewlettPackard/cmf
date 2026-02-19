@@ -13,25 +13,25 @@
       
       
       
-        <link rel="prev" href="../cmfquery/">
+        <link rel="prev" href="../cmf_client/cmf_osdf/">
       
       
-        <link rel="next" href="../cmf_ray_logger/">
+        <link rel="next" href="quickstart/">
       
       
         
       
       
-      <link rel="icon" href="../../../assets/images/favicon.png">
+      <link rel="icon" href="../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
-        <title>Cmf Server - CMF</title>
+        <title>🤖 MCP Server - CMF</title>
       
     
     
-      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -50,11 +50,11 @@
       
     
     
-      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../../extra.css">
+      <link rel="stylesheet" href="../extra.css">
     
-    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cmf-server-api-reference" class="md-skip">
+        <a href="#cmf-mcp-server" class="md-skip">
           Skip to content
         </a>
       
@@ -88,7 +88,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href=".." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Cmf Server
+              🤖 MCP Server
             
           </span>
         </div>
@@ -198,7 +198,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href=".." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -277,7 +277,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -317,7 +317,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../architecture/" class="md-nav__link ">
+            <a href="../architecture/" class="md-nav__link ">
               
   
   
@@ -359,7 +359,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/components/" class="md-nav__link">
+      <a href="../architecture/components/" class="md-nav__link">
         
   
   
@@ -387,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../architecture/advantages/" class="md-nav__link">
+      <a href="../architecture/advantages/" class="md-nav__link">
         
   
   
@@ -423,7 +423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../setup/" class="md-nav__link">
+      <a href="../setup/" class="md-nav__link">
         
   
   
@@ -451,7 +451,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../examples/getting_started/" class="md-nav__link">
+      <a href="../examples/getting_started/" class="md-nav__link">
         
   
   
@@ -476,24 +476,22 @@
                 
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../cmflib/" class="md-nav__link ">
+            <a href="../cmflib/" class="md-nav__link ">
               
   
   
@@ -517,7 +515,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -535,7 +533,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cmf/" class="md-nav__link">
+      <a href="../api/public/cmf/" class="md-nav__link">
         
   
   
@@ -563,7 +561,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dataslice/" class="md-nav__link">
+      <a href="../api/public/dataslice/" class="md-nav__link">
         
   
   
@@ -591,7 +589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cmfquery/" class="md-nav__link">
+      <a href="../api/public/cmfquery/" class="md-nav__link">
         
   
   
@@ -616,37 +614,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Cmf Server
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../api/public/cmfserver/" class="md-nav__link">
         
   
   
@@ -662,65 +633,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#api-reference" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        API Reference
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="API Reference">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#list-of-apis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        List of APIs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#http-response-status-codes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        HTTP Response Status Codes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -733,7 +645,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../cmf_ray_logger/" class="md-nav__link">
+      <a href="../api/public/cmf_ray_logger/" class="md-nav__link">
         
   
   
@@ -781,7 +693,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../cmf_client/" class="md-nav__link ">
+            <a href="../cmf_client/" class="md-nav__link ">
               
   
   
@@ -823,7 +735,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/cmf_client_commands/" class="md-nav__link">
+      <a href="../cmf_client/cmf_client_commands/" class="md-nav__link">
         
   
   
@@ -851,7 +763,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/cmf-dvc-ingest-guide/" class="md-nav__link">
+      <a href="../cmf_client/cmf-dvc-ingest-guide/" class="md-nav__link">
         
   
   
@@ -879,7 +791,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/neo4j_docker/" class="md-nav__link">
+      <a href="../cmf_client/neo4j_docker/" class="md-nav__link">
         
   
   
@@ -954,7 +866,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/local-storage-setup/" class="md-nav__link">
+      <a href="../cmf_client/local-storage-setup/" class="md-nav__link">
         
   
   
@@ -982,7 +894,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/minio-server/" class="md-nav__link">
+      <a href="../cmf_client/minio-server/" class="md-nav__link">
         
   
   
@@ -1010,7 +922,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/ssh-setup/" class="md-nav__link">
+      <a href="../cmf_client/ssh-setup/" class="md-nav__link">
         
   
   
@@ -1038,7 +950,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/cmf_osdf/" class="md-nav__link">
+      <a href="../cmf_client/cmf_osdf/" class="md-nav__link">
         
   
   
@@ -1079,22 +991,24 @@
                 
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../mcp/" class="md-nav__link ">
+            <a href="./" class="md-nav__link md-nav__link--active">
               
   
   
@@ -1112,13 +1026,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
+              <label class="md-nav__link md-nav__link--active" for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1_7">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1136,7 +1050,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../mcp/quickstart/" class="md-nav__link">
+      <a href="quickstart/" class="md-nav__link">
         
   
   
@@ -1164,7 +1078,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../mcp/configuration/" class="md-nav__link">
+      <a href="configuration/" class="md-nav__link">
         
   
   
@@ -1192,7 +1106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../mcp/tools/" class="md-nav__link">
+      <a href="tools/" class="md-nav__link">
         
   
   
@@ -1220,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../mcp/examples/" class="md-nav__link">
+      <a href="examples/" class="md-nav__link">
         
   
   
@@ -1268,7 +1182,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../../ui/" class="md-nav__link ">
+            <a href="../ui/" class="md-nav__link ">
               
   
   
@@ -1310,7 +1224,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ui/artifacts/" class="md-nav__link">
+      <a href="../ui/artifacts/" class="md-nav__link">
         
   
   
@@ -1338,7 +1252,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ui/executions/" class="md-nav__link">
+      <a href="../ui/executions/" class="md-nav__link">
         
   
   
@@ -1366,7 +1280,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../ui/lineage/" class="md-nav__link">
+      <a href="../ui/lineage/" class="md-nav__link">
         
   
   
@@ -1394,7 +1308,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_server/metahub-tab-usage/" class="md-nav__link">
+      <a href="../cmf_server/metahub-tab-usage/" class="md-nav__link">
         
   
   
@@ -1422,7 +1336,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../cmf_client/tensorflow_guide/" class="md-nav__link">
+      <a href="../cmf_client/tensorflow_guide/" class="md-nav__link">
         
   
   
@@ -1458,7 +1372,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../common-metadata-ontology/readme/" class="md-nav__link">
+      <a href="../common-metadata-ontology/readme/" class="md-nav__link">
         
   
   
@@ -1513,22 +1427,66 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#api-reference" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        API Reference
+        Overview
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="API Reference">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-model-context-protocol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Model Context Protocol?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Features
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-cases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Use Cases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Use Cases">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list-of-apis" class="md-nav__link">
+  <a href="#metadata-discovery" class="md-nav__link">
     <span class="md-ellipsis">
       
-        List of APIs
+        Metadata Discovery
       
     </span>
   </a>
@@ -1536,10 +1494,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#http-response-status-codes" class="md-nav__link">
+  <a href="#lineage-analysis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HTTP Response Status Codes
+        Lineage Analysis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#model-governance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Model Governance
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-environment-queries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Environment Queries
       
     </span>
   </a>
@@ -1548,6 +1528,61 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quick-links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Quick Links
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#supported-ai-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Supported AI Tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-started" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Started
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#response-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1568,138 +1603,144 @@
 
 
 
-<h1 id="cmf-server-api-reference">CMF Server API Reference<a class="headerlink" href="#cmf-server-api-reference" title="Permanent link">¤</a></h1>
-<p><strong>CMF Server</strong> is a key interface for users to explore and track their ML training runs by storing metadata files on the CMF Server. Users can retrieve the saved metadata files and view their content using the UI provided by the CMF Server.</p>
-<blockquote>
-<p>For CMF Server installation and setup instructions, see the <a href="../../../setup/#install-cmf-server-with-gui">Installation &amp; Setup</a> guide.</p>
-</blockquote>
-<h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">¤</a></h2>
-<p>CMF Server APIs are organized around <a href="https://fastapi.tiangolo.com/">FastAPI</a>.
-They accept and return JSON-encoded request bodies and responses and return standard HTTP response codes.</p>
-<h3 id="list-of-apis">List of APIs<a class="headerlink" href="#list-of-apis" title="Permanent link">¤</a></h3>
+<h1 id="cmf-mcp-server">CMF MCP Server<a class="headerlink" href="#cmf-mcp-server" title="Permanent link">¤</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">¤</a></h2>
+<p>The CMF MCP Server is a <a href="https://modelcontextprotocol.io/">Model Context Protocol</a> (MCP) server that exposes CMF Server functionality as tools that can be used by AI assistants and language models. This enables LLMs like Claude, GitHub Copilot, and custom AI applications to interact directly with your CMF infrastructure to query pipelines, executions, artifacts, and model metadata.</p>
+<p>The MCP Server acts as a bridge between AI assistants and the CMF Server, translating natural language requests into structured CMF API calls and returning results in a format optimized for AI processing.</p>
+<h2 id="what-is-model-context-protocol">What is Model Context Protocol?<a class="headerlink" href="#what-is-model-context-protocol" title="Permanent link">¤</a></h2>
+<p><a href="https://modelcontextprotocol.io/">Model Context Protocol (MCP)</a> is an open standard developed by Anthropic that enables AI applications to securely connect to external data sources and tools. MCP provides a standardized way for LLMs to:</p>
+<ul>
+<li>Access external APIs and services</li>
+<li>Query databases and knowledge bases</li>
+<li>Execute tools and retrieve results</li>
+<li>Maintain context across interactions</li>
+</ul>
+<p>By implementing MCP, CMF becomes instantly accessible to any MCP-compatible AI assistant.</p>
+<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">¤</a></h2>
+<p>The MCP Server is a separate service that communicates with the CMF Server API. It provides a standardized interface that AI assistants can use to explore metadata, analyze lineage, and retrieve model information.</p>
+<pre class="mermaid"><code>%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#e3f2fd','primaryTextColor':'#546e7a','primaryBorderColor':'#90caf9','lineColor':'#cfd8dc','fontSize':'13px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+flowchart TB
+    AI([AI Assistant&lt;br/&gt;Claude / Copilot / Cursor])
+    MCP[CMF MCP Server&lt;br/&gt;Port 8000]
+    CMF[CMF Server&lt;br/&gt;Port 8080]
+    DB[(Metadata&lt;br/&gt;Store)]
+
+    AI --&gt;|MCP Protocol| MCP
+    MCP --&gt;|CMF API| CMF
+    CMF --&gt;|Query/Store| DB
+
+    style AI fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#7b1fa2
+    style MCP fill:#e8f5e9,stroke:#66bb6a,stroke-width:2.5px,color:#2e7d32
+    style CMF fill:#fff3e0,stroke:#ffa726,stroke-width:2px,color:#e65100
+    style DB fill:#fce4ec,stroke:#ec407a,stroke-width:2px,color:#c2185b
+
+    linkStyle default stroke:#78909c,stroke-width:2px</code></pre>
+<h2 id="features">Features<a class="headerlink" href="#features" title="Permanent link">¤</a></h2>
+<p>The CMF MCP Server provides comprehensive access to CMF functionality:</p>
+<ul>
+<li><strong>Pipeline Exploration</strong>: List and discover all pipelines in your CMF infrastructure</li>
+<li><strong>Execution Analysis</strong>: Retrieve detailed execution information and lineage trees</li>
+<li><strong>Artifact Discovery</strong>: Query artifacts by type and analyze artifact relationships</li>
+<li><strong>Model Cards</strong>: Access complete model metadata including training details and performance</li>
+<li><strong>Multi-Server Support</strong>: Connect to up to 4 CMF Servers simultaneously for multi-environment queries</li>
+<li><strong>Production Ready</strong>: Docker containerization, health checks, and automatic dependency management</li>
+</ul>
+<h2 id="use-cases">Use Cases<a class="headerlink" href="#use-cases" title="Permanent link">¤</a></h2>
+<h3 id="metadata-discovery">Metadata Discovery<a class="headerlink" href="#metadata-discovery" title="Permanent link">¤</a></h3>
+<p>Use natural language to explore your ML pipeline metadata:</p>
+<ul>
+<li>"What pipelines are available in CMF?"</li>
+<li>"Show me all executions for the training pipeline"</li>
+<li>"What datasets were used in the last experiment?"</li>
+</ul>
+<h3 id="lineage-analysis">Lineage Analysis<a class="headerlink" href="#lineage-analysis" title="Permanent link">¤</a></h3>
+<p>Understand relationships between artifacts and executions:</p>
+<ul>
+<li>"What is the execution lineage for UUID abc123?"</li>
+<li>"Show me the artifact lineage for the production pipeline"</li>
+<li>"Which models were trained from this dataset?"</li>
+</ul>
+<h3 id="model-governance">Model Governance<a class="headerlink" href="#model-governance" title="Permanent link">¤</a></h3>
+<p>Retrieve comprehensive model information:</p>
+<ul>
+<li>"Get the model card for model ID 42"</li>
+<li>"What are the input artifacts for this model?"</li>
+<li>"Show model training metrics and parameters"</li>
+</ul>
+<h3 id="multi-environment-queries">Multi-Environment Queries<a class="headerlink" href="#multi-environment-queries" title="Permanent link">¤</a></h3>
+<p>Query across development, staging, and production environments:</p>
+<ul>
+<li>"Compare model versions between dev and production"</li>
+<li>"Find all artifacts in the staging environment"</li>
+</ul>
+<h2 id="quick-links">Quick Links<a class="headerlink" href="#quick-links" title="Permanent link">¤</a></h2>
+<ul>
+<li><strong><a href="quickstart/">Quick Start</a></strong> - Get the MCP Server running in minutes</li>
+<li><strong><a href="configuration/">Configuration</a></strong> - Environment variables and multi-server setup</li>
+<li><strong><a href="tools/">Tools Reference</a></strong> - Complete documentation of available tools</li>
+<li><strong><a href="examples/">Examples</a></strong> - Real-world usage examples and AI assistant integration</li>
+</ul>
+<h2 id="supported-ai-tools">Supported AI Tools<a class="headerlink" href="#supported-ai-tools" title="Permanent link">¤</a></h2>
+<p>The CMF MCP Server works with any MCP-compatible AI assistant:</p>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>URL</th>
-<th>Description</th>
+<th>Tool</th>
+<th>Transport</th>
+<th>Configuration</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>POST</code></td>
-<td><code>/mlmd_push</code></td>
-<td>Pushes JSON-encoded data to the CMF Server.</td>
+<td><strong>GitHub Copilot</strong></td>
+<td>SSE/HTTP</td>
+<td><code>.vscode/mcp.json</code></td>
 </tr>
 <tr>
-<td><code>GET</code></td>
-<td><code>/mlmd_pull/{pipeline_name}</code></td>
-<td>Retrieves an MLMD file from the CMF Server.</td>
+<td><strong>Claude Desktop</strong></td>
+<td>StreamableHTTP</td>
+<td><code>~/.claude_desktop_config.json</code></td>
 </tr>
 <tr>
-<td><code>GET</code></td>
-<td><code>/executions/{pipeline_name}</code></td>
-<td>Retrieves all executions from the CMF Server.</td>
+<td><strong>Cursor IDE</strong></td>
+<td>HTTP</td>
+<td>Settings → MCP Servers</td>
 </tr>
 <tr>
-<td><code>GET</code></td>
-<td><code>/list-of-executions/{pipeline_name}</code></td>
-<td>Retrieves a list of execution types.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/execution-lineage/tangled-tree/{uuid}/{pipeline_name}</code></td>
-<td>Retrieves a dictionary of nodes and links for a given execution type.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifacts/{pipeline_name}/{type}</code></td>
-<td>Retrieves all artifacts of the specified type from the CMF Server.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifact-lineage/tangled-tree/{pipeline_name}</code></td>
-<td>Retrieves a nested list of dictionaries with <code>id</code> and <code>parents</code> keys for artifacts.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifact_types</code></td>
-<td>Retrieves a list of artifact types.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/pipelines</code></td>
-<td>Retrieves all pipelines present in the MLMD file.</td>
-</tr>
-<tr>
-<td><code>POST</code></td>
-<td><code>/tensorboard</code></td>
-<td>Uploads TensorBoard logs to the CMF Server.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/model-card</code></td>
-<td>Retrieves model data, input/output artifacts, and executions for a model.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifact-execution-lineage/tangled-tree/{pipeline_name}</code></td>
-<td>Retrieves a nested list of dictionaries with <code>id</code> and <code>parents</code> keys for artifacts and executions.</td>
-</tr>
-<tr>
-<td><code>POST</code></td>
-<td><code>/python-env</code></td>
-<td>Pushes Python environment data to the CMF Server.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/python-env</code></td>
-<td>Retrieves environment data from the <code>/cmf_server/data/env</code> folder.</td>
+<td><strong>Custom Apps</strong></td>
+<td>HTTP/SSE</td>
+<td>Direct API integration</td>
 </tr>
 </tbody>
 </table>
-<h3 id="http-response-status-codes">HTTP Response Status Codes<a class="headerlink" href="#http-response-status-codes" title="Permanent link">¤</a></h3>
-<table>
-<thead>
-<tr>
-<th>Code</th>
-<th>Title</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>200</code></td>
-<td><code>OK</code></td>
-<td>MLMD is successfully pushed (e.g., when using <code>GET</code>, <code>POST</code>).</td>
-</tr>
-<tr>
-<td><code>400</code></td>
-<td><code>Bad Request</code></td>
-<td>When the CMF Server is not available.</td>
-</tr>
-<tr>
-<td><code>404</code></td>
-<td><code>Not Found</code></td>
-<td>Requested resource not found (e.g., pipeline, database, file, or registered server).</td>
-</tr>
-<tr>
-<td><code>406</code></td>
-<td><code>Not Acceptable</code></td>
-<td>Pipeline not found in the database.</td>
-</tr>
-<tr>
-<td><code>422</code></td>
-<td><code>Unprocessable Entity</code></td>
-<td>Version update required. The metadata schema version is incompatible.</td>
-</tr>
-<tr>
-<td><code>500</code></td>
-<td><code>Internal Server Error</code></td>
-<td>Server error occurred (e.g., target server unreachable, file read error, sync failure).</td>
-</tr>
-</tbody>
-</table>
+<p>See <a href="examples/">Examples</a> for detailed integration instructions.</p>
+<h2 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">¤</a></h2>
+<p>The fastest way to get started is with Docker:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Start the full CMF stack with MCP Server</span>
+docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>up<span class="w"> </span>-d
+
+<span class="c1"># Verify MCP Server is running</span>
+docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>ps
+</code></pre></div>
+<p>The MCP Server will be available at <code>http://localhost:8000</code></p>
+<p>For detailed installation instructions, see the <a href="quickstart/">Quick Start Guide</a>.</p>
+<h2 id="response-format">Response Format<a class="headerlink" href="#response-format" title="Permanent link">¤</a></h2>
+<p>All MCP tools return consistent, structured responses:</p>
+<div class="highlight"><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;cmfClient&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;http://cmf-server-url&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="cm">/* CMF API results */</span><span class="w"> </span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
+<p>This format enables querying multiple CMF Servers and aggregating results for comprehensive analysis.</p>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">¤</a></h2>
+<ul>
+<li><strong>New Users</strong>: Start with the <a href="quickstart/">Quick Start Guide</a></li>
+<li><strong>Configuration</strong>: Learn about <a href="configuration/">environment variables and multi-server setup</a></li>
+<li><strong>Integration</strong>: Explore <a href="examples/">AI assistant integration examples</a></li>
+<li><strong>Development</strong>: See the <a href="tools/">Tools Reference</a> for implementation details</li>
+</ul>
 
 
 
@@ -1776,10 +1817,10 @@ They accept and return JSON-encoded request bodies and responses and return stan
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
       
         <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
       

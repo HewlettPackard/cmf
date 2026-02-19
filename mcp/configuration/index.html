@@ -1,0 +1,3149 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="CMF - Common Metadata Framework">
+      
+      
+        <meta name="author" content="AI Research & Development Lab (Hewlett-Packard Labs)">
+      
+      
+      
+        <link rel="prev" href="../quickstart/">
+      
+      
+        <link rel="next" href="../tools/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>Configuration - CMF</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration-guide" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CMF
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/HewlettPackard/cmf" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    HewlettPackard/cmf
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CMF
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/HewlettPackard/cmf" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    HewlettPackard/cmf
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_1" id="__nav_1_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Home
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔗 Welcome to CMF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../architecture/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🏗️ Architecture
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_2" id="__nav_1_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🏗️ Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/components/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Components
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/advantages/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Advantages
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    📚 Installation & Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🎯 Getting Started Tutorial
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../cmflib/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🐍 API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_5" id="__nav_1_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🐍 API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cmf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/dataslice/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DataSlice
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmfquery/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CmfQuery
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmfserver/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Cmf Server
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/public/cmf_ray_logger/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ray Logger
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../cmf_client/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    💻 CLI Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_6" id="__nav_1_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    💻 CLI Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/cmf_client_commands/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CMF Client commands
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/cmf-dvc-ingest-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide for the cmf dvc ingest command
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/neo4j_docker/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Start Neo4j with Docker
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_1_6_4" id="__nav_1_6_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage Backends
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_1_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Storage Backends
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/local-storage-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Local Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/minio-server/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DVC MinIO Backend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/ssh-setup/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SSH Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/cmf_osdf/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    OSDF
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_7" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🤖 MCP Server
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_7" id="__nav_1_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_1_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🤖 MCP Server
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quick Start
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Required Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmf_base_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMF_BASE_URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optional Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additional-cmf-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional CMF Servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmf_tls_verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMF_TLS_VERIFY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_HOST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_port" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_PORT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_transport_security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_TRANSPORT_SECURITY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_allowed_hosts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_ALLOWED_HOSTS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_allowed_origins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_ALLOWED_ORIGINS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#env-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .env File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-compose-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Compose Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-server-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Server Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi-Server Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-dev-staging-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: Dev, Staging, Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-multi-team-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: Multi-Team Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Health Checks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-health-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Health Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-health-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Health Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-network-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Network Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#network-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Isolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transport-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-configuration-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Configuration Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Configuration Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mcp-server-cant-connect-to-cmf-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Server Can't Connect to CMF Server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port Conflicts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-check-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Check Failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Tuning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-server-latency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Server Latency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-dockerfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Dockerfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tools Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../ui/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🖥️ GUI Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_1_8" id="__nav_1_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_1_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    🖥️ GUI Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/artifacts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Artifacts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/executions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Executions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ui/lineage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lineage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_server/metahub-tab-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Metahub
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../cmf_client/tensorflow_guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    TensorBoard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../common-metadata-ontology/readme/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    🔗 Ontology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment Variables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Environment Variables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Required Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cmf_base_url" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMF_BASE_URL
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Optional Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#additional-cmf-servers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional CMF Servers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cmf_tls_verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CMF_TLS_VERIFY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_HOST
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_port" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_PORT
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_transport_security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_TRANSPORT_SECURITY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_allowed_hosts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_ALLOWED_HOSTS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mcp_allowed_origins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP_ALLOWED_ORIGINS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Files
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Files">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#env-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        .env File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker-compose-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Compose Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-server-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Server Setup
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi-Server Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scenario-dev-staging-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: Dev, Staging, Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scenario-multi-team-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scenario: Multi-Team Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Health Checks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-health-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Health Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manual-health-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Manual Health Check
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#network-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Network Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#docker-network-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Docker Network Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Security Considerations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Security Considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#network-isolation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Network Isolation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transport-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport Security
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-configuration-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common Configuration Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Configuration Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mcp-server-cant-connect-to-cmf-server" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Server Can't Connect to CMF Server
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#port-conflicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Port Conflicts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#health-check-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Check Failures
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Performance Tuning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Performance Tuning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#multiple-server-latency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Server Latency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource-limits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resource Limits
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Advanced Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-dockerfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Dockerfile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom Tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-best-practices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Best Practices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="configuration-guide">Configuration Guide<a class="headerlink" href="#configuration-guide" title="Permanent link">¤</a></h1>
+<p>This guide covers all configuration options for the CMF MCP Server, including environment variables, multi-server setup, and advanced deployment scenarios.</p>
+<h2 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">¤</a></h2>
+<p>The MCP Server is configured primarily through environment variables, which can be set in a <code>.env</code> file or passed directly to the Docker container.</p>
+<h3 id="required-configuration">Required Configuration<a class="headerlink" href="#required-configuration" title="Permanent link">¤</a></h3>
+<h4 id="cmf_base_url">CMF_BASE_URL<a class="headerlink" href="#cmf_base_url" title="Permanent link">¤</a></h4>
+<p>The base URL of your primary CMF Server.</p>
+<p><strong>Required</strong>: Yes</p>
+<p><strong>Format</strong>: <code>http://host:port</code> or <code>https://host:port</code></p>
+<p><strong>Examples</strong>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Local Development</label><label for="__tabbed_1_2">Docker Compose</label><label for="__tabbed_1_3">Remote Server</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>CMF_BASE_URL=http://localhost:8080
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>CMF_BASE_URL=http://server:8080
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>CMF_BASE_URL=https://cmf-prod.example.com
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Docker Network Names</p>
+<p>When running in Docker Compose, use the service name from <code>docker-compose.yml</code> (e.g., <code>http://server:8080</code>) instead of <code>localhost</code>.</p>
+</div>
+<h3 id="optional-configuration">Optional Configuration<a class="headerlink" href="#optional-configuration" title="Permanent link">¤</a></h3>
+<h4 id="additional-cmf-servers">Additional CMF Servers<a class="headerlink" href="#additional-cmf-servers" title="Permanent link">¤</a></h4>
+<p>Connect to multiple CMF Servers for cross-environment queries.</p>
+<p><strong>Required</strong>: No</p>
+<p><strong>Variables</strong>:
+- <code>CMF2_BASE_URL</code> - Secondary CMF Server
+- <code>CMF3_BASE_URL</code> - Tertiary CMF Server
+- <code>CMF4_BASE_URL</code> - Quaternary CMF Server</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight"><pre><span></span><code># Primary server (production)
+CMF_BASE_URL=http://cmf-prod:8080
+
+# Development server
+CMF2_BASE_URL=http://cmf-dev:8080
+
+# Staging server
+CMF3_BASE_URL=http://cmf-staging:8080
+
+# Test environment
+CMF4_BASE_URL=http://cmf-test:8080
+</code></pre></div>
+<p><strong>Use Cases</strong>:
+- Compare artifacts across environments
+- Aggregate metadata from multiple teams
+- Unified view of development and production pipelines</p>
+<h4 id="cmf_tls_verify">CMF_TLS_VERIFY<a class="headerlink" href="#cmf_tls_verify" title="Permanent link">¤</a></h4>
+<p>Controls TLS/SSL certificate verification for CMF API requests over HTTPS.</p>
+<p><strong>Required</strong>: No</p>
+<p><strong>Default</strong>: <code>false</code> (CMF server typically runs on HTTP)</p>
+<p><strong>Options</strong>:
+- <code>false</code> - Disable verification (default, suitable for HTTP or self-signed HTTPS)
+- <code>true</code> - Verify certificates using system CA bundle
+- <code>/path/to/ca-bundle.crt</code> - Use custom CA bundle file</p>
+<p><strong>Examples</strong>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:3"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Default (HTTP or Self-Signed)</label><label for="__tabbed_2_2">Production HTTPS with Valid Certs</label><label for="__tabbed_2_3">Custom CA Bundle</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>CMF_TLS_VERIFY=false
+# OR omit the variable to use default
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>CMF_TLS_VERIFY=true
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>CMF_TLS_VERIFY=/etc/ssl/certs/company-ca-bundle.crt
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">HTTP vs HTTPS</p>
+<p>CMF server typically runs on HTTP (e.g., <code>http://server:8080</code>), so TLS verification is not applicable. Only configure this when using HTTPS URLs.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">Best Practice</p>
+<p>For production HTTPS deployments with properly signed certificates, set <code>CMF_TLS_VERIFY=true</code> to enable certificate validation. If using internal CAs, specify the CA bundle path.</p>
+</div>
+<h4 id="mcp_host">MCP_HOST<a class="headerlink" href="#mcp_host" title="Permanent link">¤</a></h4>
+<p>The host interface the MCP Server binds to.</p>
+<p><strong>Required</strong>: No</p>
+<p><strong>Default</strong>: <code>0.0.0.0</code></p>
+<p><strong>Examples</strong>:</p>
+<div class="highlight"><pre><span></span><code># Listen on all interfaces (default)
+MCP_HOST=0.0.0.0
+
+# Listen only on localhost
+MCP_HOST=127.0.0.1
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Security</p>
+<p>In production, consider using <code>127.0.0.1</code> and proxying through Nginx for better security control.</p>
+</div>
+<h4 id="mcp_port">MCP_PORT<a class="headerlink" href="#mcp_port" title="Permanent link">¤</a></h4>
+<p>The port the MCP Server listens on.</p>
+<p><strong>Required</strong>: No</p>
+<p><strong>Default</strong>: <code>8000</code></p>
+<p><strong>Example</strong>:</p>
+<div class="highlight"><pre><span></span><code>MCP_PORT=8000
+</code></pre></div>
+<h4 id="mcp_transport_security">MCP_TRANSPORT_SECURITY<a class="headerlink" href="#mcp_transport_security" title="Permanent link">¤</a></h4>
+<p>Controls DNS rebinding protection for the MCP server.</p>
+<p><strong>Required</strong>: No</p>
+<p><strong>Default</strong>: <code>disabled</code></p>
+<p><strong>Options</strong>:
+- <code>disabled</code> - Disable DNS rebinding protection (recommended for Docker/proxy setups)
+- <code>enabled</code> - Enable DNS rebinding protection with allowed hosts/origins</p>
+<p><strong>Example</strong>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Disabled (Docker/Proxy)</label><label for="__tabbed_3_2">Enabled (Direct Access)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>MCP_TRANSPORT_SECURITY=disabled
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>MCP_TRANSPORT_SECURITY=enabled
+MCP_ALLOWED_HOSTS=localhost:*,127.0.0.1:*,myserver.com:8000
+MCP_ALLOWED_ORIGINS=http://localhost:*,http://127.0.0.1:*
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition info">
+<p class="admonition-title">When to Enable</p>
+<p>Only enable transport security when the MCP Server is directly exposed to the internet. For Docker deployments behind Nginx, keep it disabled.</p>
+</div>
+<h4 id="mcp_allowed_hosts">MCP_ALLOWED_HOSTS<a class="headerlink" href="#mcp_allowed_hosts" title="Permanent link">¤</a></h4>
+<p>Comma-separated list of allowed hosts when transport security is enabled.</p>
+<p><strong>Required</strong>: Only if <code>MCP_TRANSPORT_SECURITY=enabled</code></p>
+<p><strong>Format</strong>: Supports wildcard ports with <code>*</code></p>
+<p><strong>Example</strong>:</p>
+<div class="highlight"><pre><span></span><code>MCP_ALLOWED_HOSTS=localhost:*,127.0.0.1:*,cmf.example.com:8000
+</code></pre></div>
+<h4 id="mcp_allowed_origins">MCP_ALLOWED_ORIGINS<a class="headerlink" href="#mcp_allowed_origins" title="Permanent link">¤</a></h4>
+<p>Comma-separated list of allowed origins when transport security is enabled.</p>
+<p><strong>Required</strong>: Only if <code>MCP_TRANSPORT_SECURITY=enabled</code></p>
+<p><strong>Format</strong>: Full origin URLs with protocol</p>
+<p><strong>Example</strong>:</p>
+<div class="highlight"><pre><span></span><code>MCP_ALLOWED_ORIGINS=http://localhost:*,https://cmf.example.com
+</code></pre></div>
+<h2 id="configuration-files">Configuration Files<a class="headerlink" href="#configuration-files" title="Permanent link">¤</a></h2>
+<h3 id="env-file">.env File<a class="headerlink" href="#env-file" title="Permanent link">¤</a></h3>
+<p>Create a <code>.env</code> file in the <code>cmf/mcp</code> directory for local development:</p>
+<div class="highlight"><pre><span></span><code>cp<span class="w"> </span>example.env<span class="w"> </span>.env
+</code></pre></div>
+<p><strong>Example <code>.env</code></strong>:</p>
+<div class="highlight"><pre><span></span><code>###
+# CMF MCP Server Configuration
+###
+
+# Primary CMF Server (required)
+CMF_BASE_URL=http://localhost:8080
+
+# Additional CMF Servers (optional)
+# CMF2_BASE_URL=http://cmf-server-2:8080
+# CMF3_BASE_URL=http://cmf-server-3:8080
+# CMF4_BASE_URL=http://cmf-server-4:8080
+
+# MCP Server Configuration
+MCP_HOST=0.0.0.0
+MCP_PORT=8000
+
+# Transport Security (disabled for Docker/proxy setups)
+MCP_TRANSPORT_SECURITY=disabled
+</code></pre></div>
+<h3 id="docker-compose-configuration">Docker Compose Configuration<a class="headerlink" href="#docker-compose-configuration" title="Permanent link">¤</a></h3>
+<p>The MCP Server configuration is integrated into <code>docker-compose-server.yml</code>.</p>
+<p><strong>Location</strong>: <code>cmf/docker-compose-server.yml</code></p>
+<p><strong>MCP Service Configuration</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">services</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">mcp</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mcp:latest</span>
+<span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cmf-mcp-server</span>
+<span class="w">    </span><span class="nt">build</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./</span>
+<span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./mcp/Dockerfile</span>
+<span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<span class="w">      </span><span class="c1"># Primary CMF Server</span>
+<span class="w">      </span><span class="nt">CMF_BASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CMF_BASE_URL:-http://server:8080}</span>
+
+<span class="w">      </span><span class="c1"># Additional servers (if configured)</span>
+<span class="w">      </span><span class="nt">CMF2_BASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CMF2_BASE_URL:-}</span>
+<span class="w">      </span><span class="nt">CMF3_BASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CMF3_BASE_URL:-}</span>
+<span class="w">      </span><span class="nt">CMF4_BASE_URL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CMF4_BASE_URL:-}</span>
+
+<span class="w">      </span><span class="c1"># MCP Server settings</span>
+<span class="w">      </span><span class="nt">MCP_HOST</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MCP_HOST:-0.0.0.0}</span>
+<span class="w">      </span><span class="nt">MCP_PORT</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MCP_PORT:-8000}</span>
+<span class="w">      </span><span class="nt">MCP_TRANSPORT_SECURITY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MCP_TRANSPORT_SECURITY:-disabled}</span>
+
+<span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8382:8000&quot;</span>
+
+<span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD-SHELL&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">http://localhost:8000</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+<span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
+<span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">      </span><span class="nt">start_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+
+<span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">server</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
+
+<span class="w">    </span><span class="nt">networks</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cmf_network</span>
+</code></pre></div>
+<p><strong>Key Features</strong>:
+- <strong>Environment Variables</strong>: Pulled from <code>.env</code> file with defaults
+- <strong>Health Checks</strong>: Ensures MCP Server is responding before marking as healthy
+- <strong>Dependencies</strong>: Waits for CMF Server to be healthy before starting
+- <strong>Networking</strong>: Connected to CMF network for service discovery</p>
+<h2 id="multi-server-setup">Multi-Server Setup<a class="headerlink" href="#multi-server-setup" title="Permanent link">¤</a></h2>
+<p>Configure multiple CMF Servers to query across environments.</p>
+<h3 id="scenario-dev-staging-production">Scenario: Dev, Staging, Production<a class="headerlink" href="#scenario-dev-staging-production" title="Permanent link">¤</a></h3>
+<p><strong>Goal</strong>: Query metadata from development, staging, and production environments.</p>
+<p><strong>Configuration</strong> (<code>.env</code>):</p>
+<div class="highlight"><pre><span></span><code># Production (primary)
+CMF_BASE_URL=http://cmf-prod.internal:8080
+
+# Staging
+CMF2_BASE_URL=http://cmf-staging.internal:8080
+
+# Development
+CMF3_BASE_URL=http://cmf-dev.internal:8080
+</code></pre></div>
+<p><strong>Usage</strong>:</p>
+<p>When AI assistants query, they can target specific servers or query all:</p>
+<div class="highlight"><pre><span></span><code># Query all environments
+&quot;What pipelines exist across all CMF servers?&quot;
+
+# Query specific environment
+&quot;Show me models in the production CMF server&quot;
+</code></pre></div>
+<h3 id="scenario-multi-team-setup">Scenario: Multi-Team Setup<a class="headerlink" href="#scenario-multi-team-setup" title="Permanent link">¤</a></h3>
+<p><strong>Goal</strong>: Aggregate metadata from different team CMF Servers.</p>
+<p><strong>Configuration</strong>:</p>
+<div class="highlight"><pre><span></span><code>CMF_BASE_URL=http://team-ml.internal:8080
+CMF2_BASE_URL=http://team-data.internal:8080
+CMF3_BASE_URL=http://team-research.internal:8080
+</code></pre></div>
+<p><strong>Benefits</strong>:
+- Cross-team metadata discovery
+- Unified artifact search
+- Collaborative lineage analysis</p>
+<h2 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">¤</a></h2>
+<p>The MCP Server includes built-in health checks to ensure proper operation.</p>
+<h3 id="docker-health-check">Docker Health Check<a class="headerlink" href="#docker-health-check" title="Permanent link">¤</a></h3>
+<p><strong>Configuration</strong> (in <code>docker-compose-server.yml</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD-SHELL&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">http://localhost:8000</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+<span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
+<span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">  </span><span class="nt">start_period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+</code></pre></div>
+<p><strong>Health Check Process</strong>:</p>
+<ol>
+<li>Waits 30 seconds after container start (start_period)</li>
+<li>Checks every 15 seconds (interval)</li>
+<li>Times out after 5 seconds (timeout)</li>
+<li>Marks unhealthy after 5 failed attempts (retries)</li>
+</ol>
+<p><strong>Viewing Health Status</strong>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check health status</span>
+docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>ps
+
+<span class="c1"># Expected output:</span>
+<span class="c1"># NAME              STATUS</span>
+<span class="c1"># cmf-mcp-server    Up (healthy)</span>
+</code></pre></div>
+<h3 id="manual-health-check">Manual Health Check<a class="headerlink" href="#manual-health-check" title="Permanent link">¤</a></h3>
+<p>Test the health endpoint directly:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Check if MCP Server is responding</span>
+curl<span class="w"> </span>http://localhost:8382/mcp
+
+<span class="c1"># Check from inside Docker network</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>cmf-mcp-server<span class="w"> </span>curl<span class="w"> </span>-f<span class="w"> </span>http://localhost:8000
+</code></pre></div>
+<h2 id="network-configuration">Network Configuration<a class="headerlink" href="#network-configuration" title="Permanent link">¤</a></h2>
+<h3 id="docker-network-setup">Docker Network Setup<a class="headerlink" href="#docker-network-setup" title="Permanent link">¤</a></h3>
+<p>The MCP Server communicates with the CMF Server over a Docker network.</p>
+<p><strong>Network</strong>: <code>cmf_network</code> (defined in <code>docker-compose-server.yml</code>)</p>
+<p><strong>Service Discovery</strong>:
+- CMF Server: <code>http://server:8080</code>
+- MCP Server: <code>http://mcp:8000</code>
+- Database: <code>http://db:3306</code> or <code>http://db:5432</code></p>
+<h3 id="port-mapping">Port Mapping<a class="headerlink" href="#port-mapping" title="Permanent link">¤</a></h3>
+<p><strong>Internal Port</strong>: 8000 (inside container)</p>
+<p><strong>External Port</strong>: 8382 (on host)</p>
+<p><strong>Access Methods</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>URL</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Direct</td>
+<td><code>http://localhost:8382/mcp</code></td>
+<td>MCP client connections</td>
+</tr>
+<tr>
+<td>Via Nginx</td>
+<td><code>http://localhost/mcp</code></td>
+<td>Web-based access</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Custom Port Mapping</strong>:</p>
+<p>Edit <code>docker-compose-server.yml</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;9000:8000&quot;</span><span class="w">  </span><span class="c1"># Map to port 9000 instead</span>
+</code></pre></div>
+<h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">¤</a></h2>
+<h3 id="network-isolation">Network Isolation<a class="headerlink" href="#network-isolation" title="Permanent link">¤</a></h3>
+<p><strong>Production Recommendation</strong>: Use Docker networks to isolate the MCP Server.</p>
+<div class="highlight"><pre><span></span><code><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">cmf_network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">internal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">  </span><span class="c1"># No external access</span>
+
+<span class="w">  </span><span class="nt">proxy_network</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">internal</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># External access via proxy only</span>
+</code></pre></div>
+<p><strong>MCP Server</strong>:
+<div class="highlight"><pre><span></span><code><span class="nt">networks</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cmf_network</span><span class="w">      </span><span class="c1"># Access CMF Server</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">proxy_network</span><span class="w">    </span><span class="c1"># Access via Nginx</span>
+</code></pre></div></p>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">¤</a></h3>
+<p>The MCP Server currently relies on network-level security.</p>
+<p><strong>Recommended Approaches</strong>:</p>
+<ol>
+<li><strong>Reverse Proxy Authentication</strong>:</li>
+<li>Use Nginx with HTTP basic auth</li>
+<li>
+<p>Configure OAuth2 proxy</p>
+</li>
+<li>
+<p><strong>Network Security</strong>:</p>
+</li>
+<li>Deploy in private network</li>
+<li>Use VPN for remote access</li>
+<li>
+<p>Configure firewall rules</p>
+</li>
+<li>
+<p><strong>API Keys</strong> (future enhancement):</p>
+</li>
+<li>Token-based authentication</li>
+<li>Role-based access control</li>
+</ol>
+<h3 id="transport-security">Transport Security<a class="headerlink" href="#transport-security" title="Permanent link">¤</a></h3>
+<p><strong>TLS/HTTPS</strong>:</p>
+<p>For production deployments, use HTTPS:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Nginx configuration</span>
+<span class="l l-Scalar l-Scalar-Plain">server {</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">listen 443 ssl;</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">server_name cmf.example.com;</span>
+
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ssl_certificate /etc/nginx/certs/server.crt;</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">ssl_certificate_key /etc/nginx/certs/server.key;</span>
+
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">location /mcp {</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">proxy_pass http://mcp:8000;</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">proxy_set_header Host $host;</span>
+<span class="w">        </span><span class="l l-Scalar l-Scalar-Plain">proxy_set_header X-Real-IP $remote_addr;</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">}</span>
+<span class="l l-Scalar l-Scalar-Plain">}</span>
+</code></pre></div>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">¤</a></h2>
+<h3 id="common-configuration-issues">Common Configuration Issues<a class="headerlink" href="#common-configuration-issues" title="Permanent link">¤</a></h3>
+<h4 id="mcp-server-cant-connect-to-cmf-server">MCP Server Can't Connect to CMF Server<a class="headerlink" href="#mcp-server-cant-connect-to-cmf-server" title="Permanent link">¤</a></h4>
+<p><strong>Symptom</strong>: Health checks fail, logs show connection errors</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li>
+<p><strong>Verify CMF_BASE_URL</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1"># Check environment variable</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>cmf-mcp-server<span class="w"> </span>env<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>CMF_BASE_URL
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Test network connectivity</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1"># From MCP container</span>
+docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>cmf-mcp-server<span class="w"> </span>curl<span class="w"> </span>http://server:8080
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Check CMF Server status</strong>:
+   <div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>ps<span class="w"> </span>server
+</code></pre></div></p>
+</li>
+</ol>
+<h4 id="port-conflicts">Port Conflicts<a class="headerlink" href="#port-conflicts" title="Permanent link">¤</a></h4>
+<p><strong>Symptom</strong>: <code>Error: Address already in use</code></p>
+<p><strong>Solution</strong>: Change the external port mapping:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8383:8000&quot;</span><span class="w">  </span><span class="c1"># Use different external port</span>
+</code></pre></div>
+<h4 id="health-check-failures">Health Check Failures<a class="headerlink" href="#health-check-failures" title="Permanent link">¤</a></h4>
+<p><strong>Symptom</strong>: Container keeps restarting</p>
+<p><strong>Debug Steps</strong>:</p>
+<ol>
+<li>
+<p><strong>Check logs</strong>:
+   <div class="highlight"><pre><span></span><code>docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>logs<span class="w"> </span>mcp
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Disable health check temporarily</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1"># Comment out healthcheck section for debugging</span>
+<span class="c1"># healthcheck:</span>
+<span class="c1">#   test: [&quot;CMD-SHELL&quot;, &quot;curl -f http://localhost:8000 || exit 1&quot;]</span>
+</code></pre></div></p>
+</li>
+<li>
+<p><strong>Verify dependencies</strong>:
+   <div class="highlight"><pre><span></span><code><span class="c1"># Ensure CMF Server is healthy first</span>
+docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>ps<span class="w"> </span>server
+</code></pre></div></p>
+</li>
+</ol>
+<h3 id="performance-tuning">Performance Tuning<a class="headerlink" href="#performance-tuning" title="Permanent link">¤</a></h3>
+<h4 id="multiple-server-latency">Multiple Server Latency<a class="headerlink" href="#multiple-server-latency" title="Permanent link">¤</a></h4>
+<p><strong>Issue</strong>: Queries to multiple CMF Servers are slow</p>
+<p><strong>Solutions</strong>:</p>
+<ol>
+<li><strong>Limit concurrent servers</strong>:</li>
+<li>Only configure servers you actively query</li>
+<li>
+<p>Remove unused CMF2/CMF3/CMF4 URLs</p>
+</li>
+<li>
+<p><strong>Use targeted queries</strong>:</p>
+</li>
+<li>Specify <code>cmfClient_instances</code> parameter</li>
+<li>
+<p>Query specific servers instead of all</p>
+</li>
+<li>
+<p><strong>Cache frequently accessed data</strong> (future enhancement)</p>
+</li>
+</ol>
+<h4 id="resource-limits">Resource Limits<a class="headerlink" href="#resource-limits" title="Permanent link">¤</a></h4>
+<p>Set resource limits in Docker Compose:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">mcp</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># ... other configuration ...</span>
+<span class="w">  </span><span class="nt">deploy</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1.0&#39;</span>
+<span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512M</span>
+<span class="w">      </span><span class="nt">reservations</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;0.5&#39;</span>
+<span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256M</span>
+</code></pre></div>
+<h2 id="advanced-configuration">Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Permanent link">¤</a></h2>
+<h3 id="custom-dockerfile">Custom Dockerfile<a class="headerlink" href="#custom-dockerfile" title="Permanent link">¤</a></h3>
+<p>Extend the MCP Server for custom requirements:</p>
+<div class="highlight"><pre><span></span><code><span class="k">FROM</span><span class="w"> </span><span class="s">mcp:latest</span>
+
+<span class="c"># Install additional packages</span>
+<span class="k">RUN</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>custom-package
+
+<span class="c"># Add custom configuration</span>
+<span class="k">COPY</span><span class="w"> </span>custom_config.py<span class="w"> </span>/app/
+
+<span class="c"># Set custom environment</span>
+<span class="k">ENV</span><span class="w"> </span><span class="nv">CUSTOM_VAR</span><span class="o">=</span>value
+</code></pre></div>
+<h3 id="custom-tools">Custom Tools<a class="headerlink" href="#custom-tools" title="Permanent link">¤</a></h3>
+<p>Add custom MCP tools by creating new modules in <code>tools/</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># tools/custom.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">register_tools</span><span class="p">(</span><span class="n">mcp</span><span class="p">,</span> <span class="n">cmf_clients</span><span class="p">):</span>
+    <span class="nd">@mcp</span><span class="o">.</span><span class="n">tool</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;custom_query&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Custom CMF query&quot;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">custom_query</span><span class="p">(</span><span class="n">param</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">cmf_clients</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">cmf_clients</span><span class="p">[</span><span class="n">url</span><span class="p">]</span>
+            <span class="c1"># Custom implementation</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">custom_api_call</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;cmfClient&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">result</span>
+</code></pre></div>
+<p>Register in <code>main.py</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">custom</span>
+
+<span class="c1"># In main()</span>
+<span class="n">custom</span><span class="o">.</span><span class="n">register_tools</span><span class="p">(</span><span class="n">mcp</span><span class="p">,</span> <span class="n">cmf_clients</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="configuration-best-practices">Configuration Best Practices<a class="headerlink" href="#configuration-best-practices" title="Permanent link">¤</a></h2>
+<ol>
+<li><strong>Use environment-specific .env files</strong>:</li>
+<li><code>.env.dev</code> for development</li>
+<li><code>.env.staging</code> for staging</li>
+<li>
+<p><code>.env.prod</code> for production</p>
+</li>
+<li>
+<p><strong>Version control</strong>:</p>
+</li>
+<li>✅ Commit <code>example.env</code></li>
+<li>
+<p>❌ Never commit <code>.env</code> with real URLs/credentials</p>
+</li>
+<li>
+<p><strong>Document your setup</strong>:</p>
+</li>
+<li>Maintain README with environment details</li>
+<li>
+<p>Document custom configurations</p>
+</li>
+<li>
+<p><strong>Test configurations</strong>:</p>
+</li>
+<li>Verify each CMF Server URL is accessible</li>
+<li>
+<p>Test health checks before deployment</p>
+</li>
+<li>
+<p><strong>Monitor in production</strong>:</p>
+</li>
+<li>Set up log aggregation</li>
+<li>Monitor health check status</li>
+<li>Track response times</li>
+</ol>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">¤</a></h2>
+<ul>
+<li><strong><a href="../quickstart/">Quick Start</a></strong> - Deploy with these configurations</li>
+<li><strong><a href="../tools/">Tools Reference</a></strong> - Understand what the MCP Server can do</li>
+<li><strong><a href="../examples/">Examples</a></strong> - See multi-server queries in action</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/HewlettPackard/cmf" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://commonmetadata.slack.com/" target="_blank" rel="noopener" title="commonmetadata.slack.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M94.1 315.1c0 25.9-21.2 47.1-47.1 47.1S0 341 0 315.1 21.2 268 47.1 268h47.1v47.1zm23.7 0c0-25.9 21.2-47.1 47.1-47.1s47.1 21.2 47.1 47.1v117.8c0 25.9-21.2 47.1-47.1 47.1s-47.1-21.2-47.1-47.1zm47.1-189c-25.9 0-47.1-21.2-47.1-47.1s21.2-47 47.1-47S212 53.2 212 79.1v47.1h-47.1zm0 23.7c25.9 0 47.1 21.2 47.1 47.1S190.8 244 164.9 244H47.1C21.2 244 0 222.8 0 196.9s21.2-47.1 47.1-47.1zm189 47.1c0-25.9 21.2-47.1 47.1-47.1s47 21.2 47 47.1-21.2 47.1-47.1 47.1h-47.1v-47.1zm-23.7 0c0 25.9-21.2 47.1-47.1 47.1S236 222.8 236 196.9V79.1c0-25.9 21.2-47.1 47.1-47.1s47.1 21.2 47.1 47.1zm-47.1 189c25.9 0 47.1 21.2 47.1 47.1s-21.2 47-47.1 47-47.1-21.2-47.1-47.1v-47.1h47.1zm0-23.7c-25.9 0-47.1-21.2-47.1-47.1s21.2-47.1 47.1-47.1h117.8c25.9 0 47.1 21.2 47.1 47.1s-21.2 47.1-47.1 47.1z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+      
+    
+  </body>
+</html>
