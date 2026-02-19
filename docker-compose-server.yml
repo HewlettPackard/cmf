@@ -95,6 +95,39 @@ services:
         aliases:
           - ui
 
+  mcp:
+    image: mcp:latest
+    container_name: cmf-mcp-server
+    build:
+      context: ./
+      dockerfile: ./mcp/Dockerfile
+    environment:
+      CMF_BASE_URL: ${CMF_BASE_URL:-http://server:8080}
+      CMF2_BASE_URL: ${CMF2_BASE_URL:-}
+      CMF3_BASE_URL: ${CMF3_BASE_URL:-}
+      CMF4_BASE_URL: ${CMF4_BASE_URL:-}
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8000
+      MCP_TRANSPORT_SECURITY: ${MCP_TRANSPORT_SECURITY:-disabled}
+    # External port mapping: host:container
+    ports:
+      - "${MCP_EXTERNAL_PORT:-8382}:8000"
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      cmf-network:
+        aliases:
+          - mcp
+
   nginx:
     image: nginx:alpine
     container_name: cmf-nginx
@@ -108,6 +141,7 @@ services:
     depends_on:
       - ui
       - server
+      - mcp
     restart: unless-stopped
 
 networks:

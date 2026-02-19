@@ -145,6 +145,12 @@ nav:
         - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
         - OSDF: cmf_client/cmf_osdf.md
+    - 🤖 MCP Server:
+      - mcp/index.md
+      - Quick Start: mcp/quickstart.md
+      - Configuration: mcp/configuration.md
+      - Tools Reference: mcp/tools.md
+      - Examples: mcp/examples.md
     - 🖥️ GUI Reference: 
       - ui/index.md
       - Artifacts: ui/artifacts.md

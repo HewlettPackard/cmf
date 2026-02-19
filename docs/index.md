@@ -141,3 +141,15 @@ The system provides multiple interfaces for exploring metadata:
 - **Web UI**: React-based interface for browsing artifacts and executions
 - **Lineage Graphs**: D3.js visualizations showing data flow between pipeline stages
 - **TensorBoard Integration**: Training metrics visualization
+- **MCP Server**: AI assistant integration for natural language metadata queries
+
+### AI-Powered Metadata Access
+
+The [CMF MCP Server](mcp/index.md) enables AI assistants like Claude, GitHub Copilot, and Cursor to interact with your CMF metadata using natural language:
+
+- **Natural Language Queries**: Ask questions like "What pipelines are available?" or "Show me the execution lineage"
+- **Model Context Protocol**: Standards-based integration with any MCP-compatible AI assistant
+- **Multi-Server Support**: Query across development, staging, and production environments
+- **Production Ready**: Containerized deployment with health checks and monitoring
+
+See the [MCP Server documentation](mcp/index.md) to get started with AI-powered metadata exploration.
