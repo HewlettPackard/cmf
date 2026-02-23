@@ -44,13 +44,18 @@ mkdir example-folder
 CMF initialization is the first and foremost step to use CMF Client commands. This command completes the initialization process in one step, making the CMF Client user-friendly. Execute `cmf init` in the `example-folder` directory created in the above step.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 
 Check [cmf init local](./cmf_client_commands.md#cmf-init-local) for more details.
