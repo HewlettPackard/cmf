@@ -199,3 +199,45 @@ registered_servers = Table(
     Index("idx_registered_servers_host_info", "host_info"),
     Index("idx_registered_servers_server_name", "server_name")
 )
+
+# Schedules for periodic syncs
+scheduled_syncs = Table(
+    "scheduled_syncs", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+    Column("server_id", Integer, nullable=False),
+    Column("times_per_day", Integer, nullable=False),
+    Column("timezone", String(255), nullable=False),
+    Column("start_time_utc", BigInteger, nullable=False),
+    Column("next_run_time_utc", BigInteger, nullable=False),
+    Column("active", Boolean, nullable=False, default=True),
+    Column("status", String(64), nullable=False, default="new"),
+    Column("one_time", Boolean, nullable=False, default=False),
+    Column("created_at", BigInteger, nullable=False),
+    # Recurrence details for proper scheduling
+    Column("recurrence_mode", String(64), nullable=True),  # 'interval', 'daily', 'weekly'
+    Column("interval_unit", String(64), nullable=True),  # 'minutes', 'hours'
+    Column("interval_value", Integer, nullable=True),  # e.g., 6 for "every 6 hours"
+    Column("weekly_day", String(64), nullable=True),  # 'monday', 'tuesday', etc.
+    Column("weekly_time", String(16), nullable=True),  # 'HH:MM' format
+
+    Index("idx_scheduled_syncs_server_id", "server_id"),
+    Index("idx_scheduled_syncs_next_run_time_utc", "next_run_time_utc"),
+    Index("idx_scheduled_syncs_active", "active"),
+    Index("idx_scheduled_syncs_status", "status"),
+    Index("idx_scheduled_syncs_one_time", "one_time")
+)
+
+# Logs of sync executions
+sync_logs = Table(
+    "sync_logs", metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
+    Column("schedule_id", Integer, nullable=False),
+    Column("run_time_utc", BigInteger, nullable=False),
+    Column("status", String(64), nullable=False),
+    Column("message", Text, nullable=True),
+    Column("sync_type", String(64), nullable=False, default="periodic"),  # sync_now, schedule_once, periodic
+
+    Index("idx_sync_logs_schedule_id", "schedule_id"),
+    Index("idx_sync_logs_run_time_utc", "run_time_utc"),
+    Index("idx_sync_logs_sync_type", "sync_type")
+)
