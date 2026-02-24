@@ -1086,7 +1086,7 @@ class CmfQuery(object):
                     "Type": "INPUT" if event.type == mlpb.Event.Type.INPUT else "OUTPUT",   # type: ignore  # Event type not recognized by mypy, using ignore to bypass
                     "execution_id": event.execution_id,
                     "execution_name": self.store.get_executions_by_id([event.execution_id])[0].name,
-                    "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'],
+                    "execution_type_name":self.store.get_executions_by_id([event.execution_id])[0].properties['Execution_type_name'].string_value,
                     "stage": stage_ctx.name,
                     "pipeline": self.store.get_parent_contexts_by_context(stage_ctx.id)[0].name,
                 }
@@ -1124,52 +1124,4 @@ class CmfQuery(object):
             if execution_uuid in exec_uuid_list:
                 executions_with_uuid.append(execution)
         return executions_with_uuid
-
-def test_on_collision() -> None:
-    from unittest import TestCase
-
-    tc = TestCase()
-
-    tc.assertEqual(3, len(_KeyMapper.OnCollision))
-    tc.assertEqual(0, _KeyMapper.OnCollision.DO_NOTHING.value)
-    tc.assertEqual(1, _KeyMapper.OnCollision.RESOLVE.value)
-    tc.assertEqual(2, _KeyMapper.OnCollision.RAISE_ERROR.value)
-
-
-def test_dict_mapper() -> None:
-    from unittest import TestCase
-
-    tc = TestCase()
-
-    dm = _DictMapper({"src_key": "tgt_key"}, on_collision=_KeyMapper.OnCollision.RESOLVE)
-    tc.assertEqual("tgt_key", dm.get({}, "src_key"))
-    tc.assertEqual("other_key", dm.get({}, "other_key"))
-    tc.assertEqual("existing_key_1", dm.get({"existing_key": "value"}, "existing_key"))
-    tc.assertEqual("existing_key_2", dm.get({"existing_key": "value", "existing_key_1": "value_1"}, "existing_key"))
-
-    dm = _DictMapper({"src_key": "tgt_key"}, on_collision=_KeyMapper.OnCollision.DO_NOTHING)
-    tc.assertEqual("existing_key", dm.get({"existing_key": "value"}, "existing_key"))
-
-
-def test_prefix_mapper() -> None:
-    from unittest import TestCase
-
-    tc = TestCase()
-
-    pm = _PrefixMapper("nested_", on_collision=_KeyMapper.OnCollision.RESOLVE)
-    tc.assertEqual("nested_src_key", pm.get({}, "src_key"))
-
-    tc.assertEqual("nested_existing_key_1", pm.get({"nested_existing_key": "value"}, "existing_key"))
-    tc.assertEqual(
-        "nested_existing_key_2",
-        pm.get({"nested_existing_key": "value", "nested_existing_key_1": "value_1"}, "existing_key"),
-    )
-
-    dm = _PrefixMapper("nested_", on_collision=_KeyMapper.OnCollision.DO_NOTHING)
-    tc.assertEqual("nested_existing_key", dm.get({"nested_existing_key": "value"}, "existing_key"))
-
-
-if __name__ == "__main__":
-    test_on_collision()
-    test_dict_mapper()
-    test_prefix_mapper()
+    
