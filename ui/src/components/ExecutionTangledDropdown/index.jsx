@@ -1,37 +1,40 @@
-import React, { useState, useEffect } from "react";
+// Old code not using anymore, but keeping it here for 
+// reference in case we want to use it in the future. 
 
-const ExecutionTangledDropdown = ({ data, exec_type, handleTreeClick }) => {
-  const [selectedExecutionType, setSelectedExecutionType] = useState("");
+// import React, { useState, useEffect } from "react";
 
-  useEffect(() => {
-    if (exec_type) {
-      setSelectedExecutionType(exec_type);
-    }
-  }, [exec_type]);
+// const ExecutionTangledDropdown = ({ data, exec_type, handleTreeClick }) => {
+//   const [selectedExecutionType, setSelectedExecutionType] = useState("");
 
-  const handleCallExecutionClick = (event) => {
-    handleTreeClick(event.target.value);
-  };
+//   useEffect(() => {
+//     if (exec_type) {
+//       setSelectedExecutionType(exec_type);
+//     }
+//   }, [exec_type]);
 
-  return (
-    <div className="dropdown">
-      <select
-        className="dropdown-select"
-        value={selectedExecutionType}
-        onChange={(event) => {
-          handleCallExecutionClick(event);
-        }}
-      >
-        {data.map((type, index) => {
-          return (
-            <option key={index} value={type}>
-              {type}
-            </option>
-          );
-        })}
-      </select>
-    </div>
-  );
-};
+//   const handleCallExecutionClick = (event) => {
+//     handleTreeClick(event.target.value);
+//   };
 
-export default ExecutionTangledDropdown;
+//   return (
+//     <div className="dropdown">
+//       <select
+//         className="dropdown-select"
+//         value={selectedExecutionType}
+//         onChange={(event) => {
+//           handleCallExecutionClick(event);
+//         }}
+//       >
+//         {data.map((type, index) => {
+//           return (
+//             <option key={index} value={type}>
+//               {type}
+//             </option>
+//           );
+//         })}
+//       </select>
+//     </div>
+//   );
+// };
+
+// export default ExecutionTangledDropdown;

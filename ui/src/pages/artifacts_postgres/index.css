@@ -1,4 +1,8 @@
-*,
+/* Comment out of the entire file as it has been recently edited 
+and moved to a new file named artifacts_postgres_grid. 
+The new file has the same code with some additions for grid view implementation. */
+
+/* *,
 ::before,
 ::after {
   box-sizing: border-box;
@@ -35,9 +39,9 @@ body {
 } 
 */
 
-.bloc-tabs {
+/* .bloc-tabs {
   display: flexs;
-}
+} */
 /*
 .tabs {
   padding: 15px;
@@ -70,4 +74,4 @@ body {
   height: 5px;
   background: rgb(88, 147, 241);
 }
-*/
+*/ 

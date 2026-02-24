@@ -18,7 +18,7 @@ import React from "react";
 import "./index.css";
 
 const Loader = () => (
-  <div className="loader-container">
+  <div className="relative h-full w-full">
     <div className="loader"></div>
   </div>
 );

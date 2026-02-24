@@ -1,4 +1,7 @@
-.dropdown {
+/* Old code not using anymore, but keeping it here for  */
+/* reference in case we want to use it in the future.  */
+
+/* .dropdown {
   position: relative;
   display: inline-block;
   margin-top: 2px;
@@ -20,4 +23,4 @@
 .dropdown-select:hover,
 .dropdown-select:focus {
   border-color: #4a90e2;
-}
+} */
