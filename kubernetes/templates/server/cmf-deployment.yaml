@@ -5,7 +5,7 @@ metadata:
   labels:
     app: cmf-server
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: cmf-server
@@ -16,27 +16,29 @@ spec:
     spec:
       containers:
       - name: cmf-server
-        image: cmf-server:latest
-        imagePullPolicy: IfNotPresent   # important for Minikube local builds
+        image: "{{ .Values.cmf_service.image.repository }}:{{ .Values.cmf_service.image.tag }}"
+        imagePullPolicy: {{ .Values.pullPolicy }}   # important for Minikube local builds
         ports:
-        - containerPort: 8080
+        - containerPort: {{ .Values.cmf_service.service.port }}
         env:
-        - name: POSTGRES_HOST
-          value: "postgres"           # Kubernetes Service for Postgres
-        - name: POSTGRES_USER
-          value: "myuser"
-        - name: POSTGRES_PASSWORD
-          value: "mypassword"
-        - name: POSTGRES_DB
-          value: "mlmd"
-        - name: POSTGRES_PORT
-          value: "5432"
-        - name: REACT_APP_CMF_API_URL
-          value: "http://nginx"       # for internal reference, safe to keep
+        {{- range $key, $value := .Values.common_env }}
+          - name: {{ $key }}
+            value: "{{ $value }}"
+        {{- end }}     
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: POSTGRES_USER
+          - name: POSTGRES_PASSWORD 
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-secret
+                key: POSTGRES_PASSWORD
         readinessProbe:
           httpGet:
             path: /
-            port: 8080
+            port: {{ .Values.cmf_service.service.port }}
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
@@ -44,7 +46,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /
-            port: 8080
+            port: {{ .Values.cmf_service.service.port }}
           initialDelaySeconds: 30
           periodSeconds: 20
           timeoutSeconds: 5
@@ -80,14 +82,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: server             # 👈 matches your nginx.conf (proxy_pass http://server:8080/)
+  name: server             # matches your nginx.conf (proxy_pass http://server:8080/)
   labels:
     app: cmf-server
 spec:
-  type: ClusterIP
+  type: {{ .Values.cmf_service.service.type }}
   selector:
     app: cmf-server
   ports:
   - name: http
-    port: 8080
-    targetPort: 8080
+    port: {{ .Values.cmf_service.service.port }}
+    targetPort: {{ .Values.cmf_service.service.port }}

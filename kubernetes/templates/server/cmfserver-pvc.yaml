@@ -3,12 +3,15 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-server-data
 spec:
-  storageClassName: ""
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 40Gi
+      storage: {{ .Values.cmf_service.pvc.data.storage }}
+  selector:
+    matchLabels:
+      type: server-data
   volumeName: pv-server-data
 ---
 apiVersion: v1
@@ -16,12 +19,15 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-server-data-env
 spec:
-  storageClassName: ""
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ .Values.cmf_service.pvc.env.storage }}
+  selector:
+    matchLabels:
+      type: server-data-env
   volumeName: pv-server-data-env
 ---
 apiVersion: v1
@@ -29,12 +35,15 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-server-data-static
 spec:
-  storageClassName: ""
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.cmf_service.pvc.static.storage }}
+  selector:
+    matchLabels:
+      type: server-data-static
   volumeName: pv-server-data-static
 ---
 apiVersion: v1
@@ -42,12 +51,15 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-server-data-labels
 spec:
-  storageClassName: ""
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi
+      storage: {{ .Values.cmf_service.pvc.labels.storage }}
+  selector:
+    matchLabels:
+      type: server-data-labels
   volumeName: pv-server-data-labels
 ---
 apiVersion: v1
@@ -55,10 +67,13 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-tensorboard-logs
 spec:
-  storageClassName: ""
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
+      storage: {{ .Values.tensorboard_service.pvc.logs.storage }}
+  selector:
+    matchLabels:
+      type: tensorboard-logs
   volumeName: pv-tensorboard-logs
