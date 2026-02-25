@@ -2,50 +2,65 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-neo4j-data
+  labels:
+    type: neo4j-data
 spec:
   capacity:
-    storage: 10Gi
+    storage: {{ .Values.neo4j_service.pvc.data.storage }}
   accessModes:
     - ReadWriteOnce
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
-    path: /mnt/neo4j/data  
+    path: /mnt/neo4j/data
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-neo4j-logs
+  labels:
+    type: neo4j-logs
 spec:
   capacity:
-    storage: 5Gi  
+    storage: {{ .Values.neo4j_service.pvc.logs.storage }}
   accessModes:
     - ReadWriteOnce
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/neo4j/logs 
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-neo4j-import
+  labels:
+    type: neo4j-import
 spec:
   capacity:
-    storage: 5Gi  
+    storage: {{ .Values.neo4j_service.pvc.import.storage }}
   accessModes:
     - ReadWriteOnce
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/neo4j/import 
+    type: DirectoryOrCreate
 
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-neo4j-plugins
+  labels:
+    type: neo4j-plugins
 spec:
   capacity:
-    storage: 5Gi  
+    storage: {{ .Values.neo4j_service.pvc.plugins.storage }}
   accessModes:
     - ReadWriteOnce
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/neo4j/plugins  
-
+    type: DirectoryOrCreate

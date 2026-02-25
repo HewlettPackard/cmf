@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: postgres-deployment
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: postgres
@@ -14,29 +14,31 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:13
+        image: "{{ .Values.postgres_service.image.repository }}:{{ .Values.postgres_service.image.tag }}"
         ports:
-        - containerPort: 5432
+        - containerPort: {{ .Values.postgres_service.service.port }}
         env:
         - name: POSTGRES_USER
-          value: "myuser"
+          valueFrom: 
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: POSTGRES_USER
         - name: POSTGRES_PASSWORD
-          value: "mypassword"
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: POSTGRES_PASSWORD
         - name: POSTGRES_DB
-          value: "mlmd"
+          value: "{{ .Values.common_env.POSTGRES_DB }}"
         volumeMounts:
         - mountPath: /var/lib/postgresql/data
           name: postgres-data
         livenessProbe:
           exec:
-            command:
-            - pg_isready
-            - -p
-            - "5432"
-            - -d
-            - mlmd
-            - -U
-            - myuser
+              command:
+              - /bin/sh
+              - -c
+              - 'pg_isready -p {{ .Values.postgres_service.service.port }} -d {{ .Values.common_env.POSTGRES_DB }} -U "$POSTGRES_USER"'
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -44,13 +46,9 @@ spec:
         readinessProbe:
           exec:
             command:
-            - pg_isready
-            - -p
-            - "5432"
-            - -d
-            - mlmd
-            - -U
-            - myuser
+                - /bin/sh
+                - -c
+                - 'pg_isready -p {{ .Values.postgres_service.service.port }} -d {{ .Values.common_env.POSTGRES_DB }} -U "$POSTGRES_USER"'
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
@@ -65,9 +63,9 @@ kind: Service
 metadata:
   name: postgres
 spec:
-  type: ClusterIP
+  type: {{ .Values.postgres_service.service.type }}
   ports:
-  - port: 5432
-    targetPort: 5432
+  - port: {{ .Values.postgres_service.service.port }}
+    targetPort: {{ .Values.postgres_service.service.port }}
   selector:
     app: postgres

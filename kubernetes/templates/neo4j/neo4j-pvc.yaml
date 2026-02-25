@@ -3,11 +3,16 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-neo4j-data
 spec:
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.data.storage }}  # Should match the size of the corresponding PV
+  selector:
+    matchLabels:
+      type: neo4j-data
+  volumeName: pv-neo4j-data
 
 ---
 apiVersion: v1
@@ -15,11 +20,16 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-neo4j-logs
 spec:
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.logs.storage }}  # Should match the size of the corresponding PV
+  selector:
+    matchLabels:
+      type: neo4j-logs
+  volumeName: pv-neo4j-logs
 
 ---
 apiVersion: v1
@@ -27,11 +37,16 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-neo4j-import
 spec:
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi  # Should match the size of the corresponding PV
+      storage: {{ .Values.neo4j_service.pvc.import.storage }}  # Should match the size of the corresponding PV
+  selector:
+    matchLabels:
+      type: neo4j-import
+  volumeName: pv-neo4j-import
 
 ---
 apiVersion: v1
@@ -39,9 +54,13 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-neo4j-plugins
 spec:
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi  # Should match the size of the corresponding PV
-
+      storage: {{ .Values.neo4j_service.pvc.plugins.storage }}  # Should match the size of the corresponding PV
+  selector:
+    matchLabels:
+      type: neo4j-plugins
+  volumeName: pv-neo4j-plugins

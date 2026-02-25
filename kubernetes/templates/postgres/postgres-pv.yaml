@@ -2,10 +2,14 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-postgres-data
+  labels:
+    type: postgres-data
 spec:
   capacity:
-    storage: 50Gi
+    storage: {{ .Values.postgres_service.pvc.data.storage }}
   accessModes:
     - ReadWriteOnce
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/cmf/data/postgres_data
+    type: DirectoryOrCreate

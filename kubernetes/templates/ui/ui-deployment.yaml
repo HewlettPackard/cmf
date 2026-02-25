@@ -5,7 +5,7 @@ metadata:
   labels:
     app: ui
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: ui
@@ -16,25 +16,25 @@ spec:
     spec:
       containers:
       - name: ui
-        image: ui:latest
-        imagePullPolicy: IfNotPresent     # ✅ important for Minikube local builds
+        image: "{{ .Values.ui_service.image.repository }}:{{ .Values.ui_service.image.tag }}"
+        imagePullPolicy: {{ .Values.pullPolicy }}     # important for Minikube local builds
         ports:
-        - containerPort: 3000
+        - containerPort: {{ .Values.ui_service.service.port }}
         env:
         - name: REACT_APP_CMF_API_URL
-          value: http://x.x.x.x:30080           # ✅ same cluster DNS; backend reachable via Nginx
+          value: http://x.x.x.x:30080           # same cluster DNS; backend reachable via Nginx
         readinessProbe:
           httpGet:
             path: /
-            port: 3000
+            port: {{ .Values.ui_service.service.port }}
           initialDelaySeconds: 5
           periodSeconds: 10
           timeoutSeconds: 5
           failureThreshold: 5
-        livenessProbe:                    # ✅ added for better health management
+        livenessProbe:                    # added for better health management
           httpGet:
             path: /
-            port: 3000
+            port: {{ .Values.ui_service.service.port }}
           initialDelaySeconds: 20
           periodSeconds: 15
           timeoutSeconds: 5
@@ -43,14 +43,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ui                              # ✅ matches proxy_pass http://ui:3000/;
+  name: ui                              # matches proxy_pass http://ui:3000/;
   labels:
     app: ui
 spec:
-  type: ClusterIP                       # ✅ internal-only (access via Nginx)
+  type: {{ .Values.ui_service.service.type }}                       # internal-only (access via Nginx)
   ports:
   - name: http
-    port: 3000
-    targetPort: 3000
+    port: {{ .Values.ui_service.service.port }}
+    targetPort: {{ .Values.ui_service.service.port }}
   selector:
     app: ui

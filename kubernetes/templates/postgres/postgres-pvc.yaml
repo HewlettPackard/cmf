@@ -3,10 +3,13 @@ kind: PersistentVolumeClaim
 metadata:
   name: pvc-postgres-data
 spec:
-  storageClassName: ""
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi
+      storage: {{ .Values.postgres_service.pvc.data.storage }}
+  selector:
+    matchLabels:
+      type: postgres-data
   volumeName: pv-postgres-data
