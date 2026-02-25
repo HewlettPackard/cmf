@@ -128,6 +128,12 @@ nav:
       - Advantages: architecture/advantages.md
     - 📚 Installation & Setup: setup/index.md
     - 🎯 Getting Started Tutorial: examples/getting_started.md
+    - 📝 Use Cases:
+      - usecases/index.md
+      - Use Case 1 - Reproducible Experiment Management: usecases/usecase1.md
+      - Use Case 2 - Multi-Stage Pipeline Tracking: usecases/usecase2.md
+      - Use Case 3 - Distributed / Federated ML: usecases/usecase3.md
+      - Use Case 4 - Model Registry and Governance: usecases/usecase4.md
     - 🐍 API Reference:
       - cmflib/index.md
       - Cmf: api/public/cmf.md
