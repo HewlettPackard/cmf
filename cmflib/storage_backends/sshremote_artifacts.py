@@ -14,6 +14,7 @@
 # limitations under the License.
 ###
 
+import base64
 import os
 import logging
 import paramiko
@@ -24,7 +25,9 @@ class SSHremoteArtifacts:
 
     def __init__(self, dvc_config_op):
         self.user = dvc_config_op["remote.ssh-storage.user"]
-        self.password = dvc_config_op["remote.ssh-storage.password"]
+        # Password is stored base64-encoded; decode it before use.
+        encoded_password = dvc_config_op["remote.ssh-storage.password"]
+        self.password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
 
 
     def download_file(
