@@ -207,13 +207,15 @@ def validate_and_examine_osdf_token(token_str: str, token_source: str = None) ->
         # (We're just checking claims, not cryptographic validity)
         decoded = jwt.decode(token_str, options={"verify_signature": False})
         
-        logger.info("\n" + "="*60)
-        logger.info("OSDF Token Status")
-        logger.info("="*60)
+        # Use print() instead of logger.info() to ensure output is visible
+        # even when Rich Live spinner is active
+        print("\n" + "="*60)
+        print("OSDF Token Status")
+        print("="*60)
         
         # Print token source if provided
         if token_source:
-            logger.info(f"Source:    {token_source}")
+            print(f"Source:    {token_source}")
         
         # Extract common claims
         issuer = decoded.get("iss", "N/A")
@@ -223,55 +225,55 @@ def validate_and_examine_osdf_token(token_str: str, token_source: str = None) ->
         expires_at = decoded.get("exp", None)
         scope = decoded.get("scope", "N/A")
         
-        logger.info(f"Issuer:    {issuer}")
-        logger.info(f"Subject:   {subject}")
-        logger.info(f"Audience:  {audience}")
-        logger.info(f"Scope:     {scope}")
+        print(f"Issuer:    {issuer}")
+        print(f"Subject:   {subject}")
+        print(f"Audience:  {audience}")
+        print(f"Scope:     {scope}")
         
         # Format timestamps
         if issued_at:
             issued_dt = datetime.fromtimestamp(issued_at, tz=timezone.utc)
-            logger.info(f"Issued At: {issued_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            print(f"Issued At: {issued_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
         else:
-            logger.info("Issued At: N/A")
+            print("Issued At: N/A")
         
         if expires_at:
             expiry_dt = datetime.fromtimestamp(expires_at, tz=timezone.utc)
-            logger.info(f"Expires:   {expiry_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            print(f"Expires:   {expiry_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
             
             # Check if expired
             current_time = datetime.now(timezone.utc)
             time_until_expiry = expiry_dt - current_time
             
             if current_time >= expiry_dt:
-                logger.warning("\n[!] STATUS: TOKEN HAS EXPIRED")
-                logger.warning("="*60 + "\n")
+                print("\n[!] STATUS: TOKEN HAS EXPIRED")
+                print("="*60 + "\n")
                 return False
             else:
                 # Show time remaining
                 hours, remainder = divmod(int(time_until_expiry.total_seconds()), 3600)
                 minutes, seconds = divmod(remainder, 60)
-                logger.info(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
-                logger.info("[OK] STATUS: TOKEN IS VALID")
-                logger.info("="*60 + "\n")
+                print(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
+                print("[OK] STATUS: TOKEN IS VALID")
+                print("="*60 + "\n")
                 return True
         else:
-            logger.info("Expires:   N/A (No expiration claim found)")
-            logger.warning("\n[!] STATUS: CANNOT VERIFY EXPIRY")
-            logger.warning("="*60 + "\n")
+            print("Expires:   N/A (No expiration claim found)")
+            print("\n[!] STATUS: CANNOT VERIFY EXPIRY")
+            print("="*60 + "\n")
             return True  # Assume valid if no expiry claim
             
     except jwt.DecodeError as e:
-        logger.error("\n" + "="*60)
-        logger.error("[ERROR] Failed to decode token")
-        logger.error(f"Details: {e}")
-        logger.error("="*60 + "\n")
+        print("\n" + "="*60)
+        print("[ERROR] Failed to decode token")
+        print(f"Details: {e}")
+        print("="*60 + "\n")
         return False
     except Exception as e:
-        logger.error("\n" + "="*60)
-        logger.error("[ERROR] Unexpected error examining token")
-        logger.error(f"Details: {e}")
-        logger.error("="*60 + "\n")
+        print("\n" + "="*60)
+        print("[ERROR] Unexpected error examining token")
+        print(f"Details: {e}")
+        print("="*60 + "\n")
         return False
 
 
