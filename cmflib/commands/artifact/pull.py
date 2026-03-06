@@ -569,8 +569,15 @@ class CmdArtifactPull(CmdBase):
                 token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
             
             # Validate and examine the token before proceeding
+            # Stop the live spinner temporarily to show token status
+            if live:
+                live.stop()
             if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
+                if live:
+                    live.start()
                 raise Exception("OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
+            if live:
+                live.start()
             
             #cmf_config["password"]=dynamic_password
             #Update Password in .dvc/config for future use
