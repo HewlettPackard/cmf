@@ -158,15 +158,8 @@ class CmdRepoPush(CmdBase):
                 token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
             
             # Validate and examine the token before proceeding
-            # Stop the live spinner temporarily to show token status
-            if live:
-                live.stop()
             if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
-                if live:
-                    live.start()
                 raise MsgFailure(msg_str="OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
-            if live:
-                live.start()
             
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
