@@ -255,6 +255,9 @@ class CmdArtifactPull(CmdBase):
             get_artifacts = query.get_all_artifacts_for_execution(
                 identifier
             )  # getting all artifacts with id
+            # check if the result DataFrame is not empty
+            if get_artifacts is None or get_artifacts.empty:
+                continue
             # skipping artifacts if it is type of label
             temp_dict = {
                 name: url
