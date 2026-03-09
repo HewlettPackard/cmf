@@ -233,6 +233,8 @@ class CmdArtifactPull(CmdBase):
         
         # getting all pipeline stages[i.e Prepare, Featurize, Train and Evaluate]
         stages = query.get_pipeline_stages(pipeline_name)
+        if not stages:
+            raise ExecutionsNotFound()
         executions = []
         identifiers = []
         for stage in stages:
