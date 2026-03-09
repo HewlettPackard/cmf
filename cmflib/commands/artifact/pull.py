@@ -540,9 +540,7 @@ class CmdArtifactPull(CmdBase):
             from cmflib.dvc_wrapper import dvc_add_attribute
             from cmflib.utils.cmf_config import CmfConfig
             #Fetch Config from CMF_Config_File
-            cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
-            cmf_config={}
-            cmf_config=CmfConfig.read_config(cmf_config_file)
+            cmf_config=CmfConfig.read_config(config_file_path)
             
             # Check if access_token is provided (either as a file path or "provided" marker)
             access_token = cmf_config.get("osdf-access_token", "")
