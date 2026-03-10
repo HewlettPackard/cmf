@@ -127,6 +127,8 @@ class CmdArtifactPush(CmdBase):
             raise PipelineNotFound(pipeline_name)
 
         stages = query.get_pipeline_stages(pipeline_name)
+        if not stages:
+            raise ExecutionsNotFound()
         executions = []
         identifiers = []
 

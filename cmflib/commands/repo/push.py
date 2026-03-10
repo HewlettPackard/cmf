@@ -37,6 +37,7 @@ from cmflib.cmf_exception_handling import (
     CmfNotConfigured, 
     FileNotFound,
     ExecutionUUIDNotFound,
+    PipelineNotFound,
     MissingArgument,
     DuplicateArgumentNotAllowed,
 )
@@ -184,6 +185,10 @@ class CmdRepoPush(CmdBase):
         names = []
         isExecUuid = False
         df = query.get_all_executions_in_pipeline(self.args.pipeline_name[0])
+        
+        # check if the DataFrame is empty, indicating pipeline has no executions
+        if df is None or df.empty:
+            raise PipelineNotFound(self.args.pipeline_name[0])
 
         # checking if execution_uuid exists in the df
         for index, row in df.iterrows():
