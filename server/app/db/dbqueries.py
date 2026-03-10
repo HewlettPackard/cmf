@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from server.app.db.dbconfig import get_db
-from sqlalchemy import select, func, text, String, bindparam, case, distinct, insert, update
+from sqlalchemy import select, func, text, String, bindparam, case, distinct, insert, update, or_
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from server.app.db.dbmodels import (
     artifact, 
     artifactproperty, 
@@ -13,8 +14,10 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
-    registered_servers
+    registered_servers,
+    label_content
 )
+import time
 
 
 async def register_server_details(db: AsyncSession, server_name: str, server_url: str):
@@ -77,6 +80,176 @@ async def update_sync_status(db: AsyncSession, current_utc_time: int, server_nam
     await db.commit()  # Commit the transaction
 
 
+# Original fetch_artifacts function - kept for reference
+# async def fetch_artifacts(
+#     db: AsyncSession,   # Used to interact with the database
+#     pipeline_name: str, 
+#     artifact_type: str, 
+#     filter_value: str, 
+#     active_page: int = 1, 
+#     page_size: int = 5,  # Number of records per page
+#     sort_column: str = "name", 
+#     sort_order: str = "ASC"
+# ):
+#     # Step 1: Get relevant contexts
+#     relevant_contexts_cte = select(
+#         parentcontext.c.context_id
+#     ).join(
+#         context, parentcontext.c.parent_context_id == context.c.id
+#     ).where(
+#         context.c.name == pipeline_name
+#     ).cte("relevant_contexts_cte")
+# 
+#     # Early check: are there any relevant contexts for the given pipeline?
+#     res = await db.execute(select(relevant_contexts_cte.c.context_id))
+#     context_ids = res.scalars().all()
+#     if not context_ids:
+#         # No relevant contexts found, return empty result
+#         return {"total_items": 0, "items": []}
+# 
+#     # Step 2: Fetch execution IDs based on pipeline name
+#     execution_ids_cte = (
+#         select(
+#             execution.c.id.label("execution_id")
+#         )
+#         .join(
+#             association, execution.c.id == association.c.execution_id
+#         )
+#         .where(
+#             association.c.context_id.in_(context_ids)
+#         )
+#         .cte("execution_ids_cte")
+#     )
+# 
+#     # Fetch all execution IDs for the relevant pipeline contexts
+#     res = await db.execute(select(execution_ids_cte.c.execution_id))
+#     execution_ids = res.scalars().all()
+#     if not execution_ids:
+#         # No executions found for the pipeline, return empty result
+#         return {"total_items": 0, "items": []}
+# 
+#     # Step 3: Based on execution ids list fetching equvalent artifact lists from event_path table
+#     artifact_ids_cte = (
+#         select(distinct(event.c.artifact_id).label("artifact_id"))
+#         .where(event.c.execution_id.in_(execution_ids))
+#         .cte("artifact_ids_cte")
+#     )
+# 
+#     # Fetch all artifact IDs for the relevant executions
+#     res = await db.execute(select(artifact_ids_cte.c.artifact_id))
+#     artifact_ids = res.scalars().all()
+#     if not artifact_ids:
+#         # No artifacts found for the executions, return empty result
+#         return {"total_items": 0, "items": []}
+# 
+#     # Step 4: Aggregate artifact properties into JSON
+#     artifact_properties_agg_cte = (
+#         select(
+#             artifactproperty.c.artifact_id,
+#             func.json_agg(
+#                 func.json_build_object(
+#                     "name", artifactproperty.c.name,
+#                     "value", func.coalesce(
+#                         artifactproperty.c.string_value,
+#                         func.cast(artifactproperty.c.bool_value, String),
+#                         func.cast(artifactproperty.c.double_value, String),
+#                         func.cast(artifactproperty.c.int_value, String),
+#                         func.cast(artifactproperty.c.byte_value, String),
+#                         func.cast(artifactproperty.c.proto_value, String),
+#                         text("NULL")
+#                     )
+#                 )
+#             ).label("artifact_properties")
+#         )
+#         .where(artifactproperty.c.artifact_id.in_(artifact_ids)) # Filter by artifact IDs
+#         .group_by(artifactproperty.c.artifact_id)
+#         .cte("artifact_properties_agg_cte")
+#     )
+# 
+#     # Step 5: Aggregate execution type names per artifact
+#     artifact_execution_types_agg_cte = (
+#         select(
+#             event.c.artifact_id,
+#             func.string_agg(func.distinct(context.c.name), ', ').label("execution")
+#         )
+#         .join(execution, event.c.execution_id == execution.c.id)
+#         .join(association, execution.c.id == association.c.execution_id)
+#         .join(context, association.c.context_id == context.c.id)
+#         .where(event.c.artifact_id.in_(artifact_ids))
+#         .group_by(event.c.artifact_id)
+#         .cte("artifact_execution_types_agg_cte")
+#     )
+# 
+#     # Step 6: Base artifact metadata
+#     artifact_metadata_cte = (
+#         select(
+#             artifact.c.id.label('artifact_id'),
+#             artifact.c.name,
+#             artifact.c.uri,
+#             func.to_char(
+#                 func.timezone('GMT', func.to_timestamp(artifact.c.create_time_since_epoch / 1000)),
+#                 'Dy, DD Mon YYYY HH24:MI:SS GMT'
+#             ).label('create_time_since_epoch'),
+#             artifact.c.last_update_time_since_epoch
+#         )
+#         .join(type_table, artifact.c.type_id == type_table.c.id)
+#         .join(attribution, artifact.c.id == attribution.c.artifact_id)
+#         .join(context, attribution.c.context_id == context.c.id)
+#         .where(
+#             artifact.c.id.in_(artifact_ids),
+#             type_table.c.name == artifact_type
+#         )
+#         .cte("artifact_metadata_cte")
+#     )
+# 
+#     # Step 7: Query for fetching paginated data
+#     query = (
+#         select(
+#             artifact_metadata_cte.c.artifact_id,
+#             artifact_metadata_cte.c.name,
+#             artifact_execution_types_agg_cte.c.execution,
+#             artifact_metadata_cte.c.uri,
+#             artifact_metadata_cte.c.create_time_since_epoch,
+#             artifact_metadata_cte.c.last_update_time_since_epoch,
+#             artifact_properties_agg_cte.c.artifact_properties,
+#             func.count().over().label("total_records")  # Total records for pagination
+#         )
+#         .select_from(artifact_metadata_cte)
+#         .outerjoin(artifact_properties_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id)
+#         .outerjoin(artifact_execution_types_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_execution_types_agg_cte.c.artifact_id)
+#         .where(
+#             # Apply search filter to all columns of artifact_metadata_cte
+#             (artifact_metadata_cte.c.artifact_id.cast(String).ilike(f"%{filter_value}%")) |
+#             (artifact_metadata_cte.c.name.ilike(f"%{filter_value}%")) |
+#             (artifact_execution_types_agg_cte.c.execution.ilike(f"%{filter_value}%")) |
+#             (artifact_metadata_cte.c.uri.ilike(f"%{filter_value}%")) |
+#             (artifact_metadata_cte.c.create_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
+#             (artifact_metadata_cte.c.last_update_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
+#             # Apply search filter to artifact properties aggregation
+#             (artifact_properties_agg_cte.c.artifact_properties.cast(String).ilike(f"%{filter_value}%"))
+#         )
+#         .limit(page_size)  # Limit the number of records per page
+#         .offset((active_page - 1) * page_size)  # Offset for pagination
+#     )
+# 
+#     # Step 8: Apply sorting (order by the specified column and order)
+#     if sort_order.lower() == "desc":
+#         query = query.order_by(getattr(artifact_metadata_cte.c, sort_column).desc())
+#     else:
+#         query = query.order_by(getattr(artifact_metadata_cte.c, sort_column).asc())
+# 
+#     # Step 9: Execute the query
+#     result = await db.execute(query)
+#     rows = result.mappings().all()
+# 
+#     # Step 10: Extract total records and format results
+#     total_records = rows[0]["total_records"] if rows else 0
+#     return {
+#         "total_items": total_records,
+#         "items": [dict(row) for row in rows]
+#     }
+
+
 async def fetch_artifacts(
     db: AsyncSession,   # Used to interact with the database
     pipeline_name: str, 
@@ -87,6 +260,25 @@ async def fetch_artifacts(
     sort_column: str = "name", 
     sort_order: str = "ASC"
 ):
+    """
+    Fetch artifacts with enhanced Label search capability.
+    
+    For Label artifacts: Searches both metadata AND CSV file content
+    For other artifacts: Standard metadata/properties search only
+    
+    Args:
+        db: Database session
+        pipeline_name: Name of the pipeline
+        artifact_type: Type of artifact (e.g., "Label", "Dataset", "Model")
+        filter_value: Search term
+        active_page: Current page number
+        page_size: Number of records per page
+        sort_column: Column to sort by
+        sort_order: "ASC" or "DESC"
+    
+    Returns:
+        dict: {"total_items": int, "items": list}
+    """
     # Step 1: Get relevant contexts
     relevant_contexts_cte = select(
         parentcontext.c.context_id
@@ -124,7 +316,7 @@ async def fetch_artifacts(
         # No executions found for the pipeline, return empty result
         return {"total_items": 0, "items": []}
 
-    # Step 3: Based on execution ids list fetching equvalent artifact lists from event_path table
+    # Step 3: Based on execution ids list fetch equivalent artifact lists from event_path table
     artifact_ids_cte = (
         select(distinct(event.c.artifact_id).label("artifact_id"))
         .where(event.c.execution_id.in_(execution_ids))
@@ -157,7 +349,7 @@ async def fetch_artifacts(
                 )
             ).label("artifact_properties")
         )
-        .where(artifactproperty.c.artifact_id.in_(artifact_ids)) # Filter by artifact IDs
+        .where(artifactproperty.c.artifact_id.in_(artifact_ids))
         .group_by(artifactproperty.c.artifact_id)
         .cte("artifact_properties_agg_cte")
     )
@@ -198,7 +390,53 @@ async def fetch_artifacts(
         .cte("artifact_metadata_cte")
     )
 
-    # Step 7: Query for fetching paginated data
+    # Step 7: Build WHERE clause - Enhanced for Label artifacts with CSV content search
+    where_conditions = [
+        # Standard metadata filters (apply to all artifact types) - NULL-safe
+        (artifact_metadata_cte.c.artifact_id.cast(String).ilike(f"%{filter_value}%")),
+        (artifact_metadata_cte.c.name.ilike(f"%{filter_value}%")),
+        (func.coalesce(artifact_execution_types_agg_cte.c.execution, '').ilike(f"%{filter_value}%")),
+        (artifact_metadata_cte.c.uri.ilike(f"%{filter_value}%")),
+        (artifact_metadata_cte.c.create_time_since_epoch.cast(String).ilike(f"%{filter_value}%")),
+        (func.coalesce(artifact_metadata_cte.c.last_update_time_since_epoch.cast(String), '').ilike(f"%{filter_value}%")),
+        # Handle NULL-safe search for artifact properties
+        (func.coalesce(artifact_properties_agg_cte.c.artifact_properties.cast(String), '').ilike(f"%{filter_value}%"))
+    ]
+
+    # Step 8: Determine WHERE clause based on artifact type
+    if artifact_type == "Label" and filter_value and filter_value.strip():
+        # For Label artifacts with non-empty filter, add full-text search on CSV content
+        # Subquery: Check if artifact has matching CSV content using ILIKE search
+        # Using ILIKE for case-insensitive substring matching on full text content
+        # This allows searching for partial matches like "4KB", "240", etc.
+        # TODO: Re-enable tsvector full-text search once tokenization is optimized
+        # label_content_match_subquery = (
+        #     select(label_content.c.artifact_id)
+        #     .where(
+        #         label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
+        #         label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+        #     )
+        #     .exists()
+        # )
+        label_content_match_subquery = (
+            select(label_content.c.artifact_id)
+            .where(
+                label_content.c.artifact_id == artifact_metadata_cte.c.artifact_id,
+                label_content.c.full_text_content.ilike(f"%{filter_value}%")
+            )
+            .exists()
+        )
+        
+        # Combine metadata conditions with content search
+        final_where_conditions = or_(
+            *where_conditions,
+            label_content_match_subquery
+        )
+    else:
+        # For non-Label artifacts or empty filter, use standard metadata search only
+        final_where_conditions = or_(*where_conditions)
+    
+    # Step 9: Build query with common structure
     query = (
         select(
             artifact_metadata_cte.c.artifact_id,
@@ -208,37 +446,27 @@ async def fetch_artifacts(
             artifact_metadata_cte.c.create_time_since_epoch,
             artifact_metadata_cte.c.last_update_time_since_epoch,
             artifact_properties_agg_cte.c.artifact_properties,
-            func.count().over().label("total_records")  # Total records for pagination
+            func.count().over().label("total_records")
         )
         .select_from(artifact_metadata_cte)
         .outerjoin(artifact_properties_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id)
         .outerjoin(artifact_execution_types_agg_cte, artifact_metadata_cte.c.artifact_id == artifact_execution_types_agg_cte.c.artifact_id)
-        .where(
-            # Apply search filter to all columns of artifact_metadata_cte
-            (artifact_metadata_cte.c.artifact_id.cast(String).ilike(f"%{filter_value}%")) |
-            (artifact_metadata_cte.c.name.ilike(f"%{filter_value}%")) |
-            (artifact_execution_types_agg_cte.c.execution.ilike(f"%{filter_value}%")) |
-            (artifact_metadata_cte.c.uri.ilike(f"%{filter_value}%")) |
-            (artifact_metadata_cte.c.create_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
-            (artifact_metadata_cte.c.last_update_time_since_epoch.cast(String).ilike(f"%{filter_value}%")) |
-            # Apply search filter to artifact properties aggregation
-            (artifact_properties_agg_cte.c.artifact_properties.cast(String).ilike(f"%{filter_value}%"))
-        )
-        .limit(page_size)  # Limit the number of records per page
-        .offset((active_page - 1) * page_size)  # Offset for pagination
+        .where(final_where_conditions)
+        .limit(page_size)
+        .offset((active_page - 1) * page_size)
     )
-
-    # Step 8: Apply sorting (order by the specified column and order)
+    
+    # Step 10: Apply sorting (order by the specified column and order)
     if sort_order.lower() == "desc":
         query = query.order_by(getattr(artifact_metadata_cte.c, sort_column).desc())
     else:
         query = query.order_by(getattr(artifact_metadata_cte.c, sort_column).asc())
 
-    # Step 9: Execute the query
+    # Step 11: Execute the query
     result = await db.execute(query)
     rows = result.mappings().all()
 
-    # Step 10: Extract total records and format results
+    # Step 12: Extract total records and format results
     total_records = rows[0]["total_records"] if rows else 0
     return {
         "total_items": total_records,
@@ -338,3 +566,96 @@ async def fetch_executions(
         "total_items": total_record,
         "items": [dict(row) for row in rows]
     }
+
+
+async def insert_label_content(
+    db: AsyncSession, 
+    artifact_id: int, 
+    file_name: str, 
+    full_text_content: str
+):
+    """
+    Insert label content into the label_content table with full-text search support.
+    
+    Args:
+        db (AsyncSession): Database session
+        artifact_id (int): The artifact ID from the artifact table
+        file_name (str): The CSV filename
+        full_text_content (str): The extracted text content from CSV
+    
+    Returns:
+        dict: Success message or error details
+    
+    Note:
+        - Uses ON CONFLICT DO NOTHING for idempotent inserts
+        - Automatically generates tsvector using PostgreSQL's to_tsvector()
+        - Stores current timestamp in milliseconds since epoch
+        - Supports multiple labels per artifact (composite unique key on artifact_id + file_name)
+    """
+    try:
+        # Get current timestamp in milliseconds since epoch
+        current_time_ms = int(time.time() * 1000)
+        
+        # Create insert query with PostgreSQL's to_tsvector for full-text search
+        # Using pg_insert for PostgreSQL-specific on_conflict_do_nothing
+        query = pg_insert(label_content).values(
+            artifact_id=artifact_id,
+            file_name=file_name,
+            full_text_content=full_text_content,
+            content_tsvector=func.to_tsvector('english', full_text_content),
+            created_at=current_time_ms
+        ).on_conflict_do_nothing(
+            index_elements=['artifact_id', 'file_name']  # Composite unique key
+        )
+        
+        # Execute the insert
+        await db.execute(query)
+        await db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Label content inserted for artifact_id: {artifact_id}, file: {file_name}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        return {
+            "status": "error",
+            "message": f"Failed to insert label content: {str(e)}"
+        }
+
+
+async def get_artifact_id_by_filename(db: AsyncSession, file_name: str):
+    """
+    Get artifact_id for a Label artifact by matching the filename in the URI.
+    
+    Args:
+        db (AsyncSession): Database session
+        file_name (str): The CSV filename to search for
+    
+    Returns:
+        int or None: The artifact_id if found, None otherwise
+    
+    Note:
+        Searches for Label artifacts where URI contains the filename
+    """
+    try:
+        # Query to find Label artifact with matching filename in URI
+        query = (
+            select(artifact.c.id)
+            .join(type_table, artifact.c.type_id == type_table.c.id)
+            .where(
+                type_table.c.name == "Label",
+                artifact.c.uri.ilike(f"%{file_name}%")
+            )
+        )
+        
+        result = await db.execute(query)
+        artifact_id = result.scalar()
+        
+        return artifact_id
+    
+    except Exception as e:
+        print(f"Error finding artifact_id for file {file_name}: {str(e)}")
+        return None
+
