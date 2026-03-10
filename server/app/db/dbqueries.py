@@ -13,7 +13,8 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
-    registered_servers
+    registered_servers,
+    login_users,
 )
 
 
@@ -338,3 +339,19 @@ async def fetch_executions(
         "total_items": total_record,
         "items": [dict(row) for row in rows]
     }
+
+
+async def record_user_login(
+    db: AsyncSession,
+    email: str
+):
+    """
+    Log user login details into the database.
+    """
+    query = insert(login_users).values(
+        email=email,
+    )
+    await db.execute(query)
+    await db.commit()
+
+    return {"message": "User login successfully"}
