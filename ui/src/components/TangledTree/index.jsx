@@ -201,9 +201,6 @@ const renderChart = (data, options = {}) => {
           .node {
             stroke-linecap: round;
           }
-          .link {
-            fill: none;
-          }
         `}
       </style>
       <svg width={svg_width} height={tangled_height + textPadding * 10}>
@@ -222,13 +219,13 @@ const renderChart = (data, options = {}) => {
           return (
             <React.Fragment key={b.id}>
               <path
-                className="link"
+                className="fill-none"
                 d={d}
                 stroke={options.background_color}
                 strokeWidth="5"
               />
               <path
-                className="link"
+                className="fill-none"
                 d={d}
                 stroke={options.color(b, i)}
                 strokeWidth="2"
@@ -265,7 +262,7 @@ const renderChart = (data, options = {}) => {
             <text
               x={n.x + labelOffset + textPadding}
               y={n.y - n.height / 2 - labelOffset + textPadding}
-              style={{ pointerEvents: "none" }}
+              className="pointer-events-none"
             >
               {n.id}
             </text>
@@ -295,12 +292,7 @@ const TangledTree = ({ data }) => {
   return (
     <div
       ref={chartContainerRef}
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        overflow: "auto",
-      }}
-    >
+      className="justify-center items-center overflow-auto">
       {chart}
     </div>
   );

@@ -16,7 +16,6 @@
 
 // ArtifactTable.jsx
 import React, { useState, useEffect } from "react";
-import "./index.css";
 import ModelCardPopup from "../../components/ModelCardPopup";
 import FastAPIClient from "../../client";
 import config from "../../config";
@@ -81,25 +80,25 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
   const renderArrow = () => {
     if (sortOrder === "desc") {
       return (
-        <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1"/>
+        <span className="text-2xl cursor-pointer display-inline ml-1 inline-flex">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-down" viewBox="0 0 16 16">
+            <path fillerule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1" />
           </svg>
         </span>
       ); //data is in desc order ---> ↓
     } else if (sortOrder === "asc") {
       return (
-        <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-up" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5"/>
+        <span className="text-2xl cursor-pointer ml-1 inline-flex">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-up" viewBox="0 0 16 16">
+            <path fillerule="evenodd" d="M8 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L7.5 2.707V14.5a.5.5 0 0 0 .5.5" />
           </svg>
         </span>
       ); //data is in asc order ----> ↑
     } else {
       return (
-        <span className="text-2xl cursor-pointer" style={{ marginLeft: '4px', display: 'inline-flex' }}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-down-up" viewBox="0 0 16 16">
-            <path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5m-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5"/>
+        <span className="text-2xl cursor-pointer ml-1 inline-flex">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-arrow-down-up" viewBox="0 0 16 16">
+            <path fillerule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5m-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5" />
           </svg>
         </span>
       ); //data is in initial order -----------> ↓↑
@@ -127,14 +126,14 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
       <div className="overflow-x-auto w-full">
         <div className="p-1.5 inline-block align-middle w-full">
           <table className="divide-y divide-gray-200 border-4 w-full">
-            <thead>
+            <thead className="bg-custom-white">
               <tr className="text-xs font-bold font-sans text-left text-black uppercase">
                 <th scope="col" className="id px-6 py-3"></th>
                 <th scope="col" className="id px-6 py-3">
                   id
                 </th>
                 <th scope="col" onClick={handleSort} className="name px-6 py-3">
-                  <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  <span className="inline-flex items-center">
                     name {renderArrow()}
                   </span>
                 </th>
@@ -179,24 +178,22 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                       className="text-sm font-medium text-gray-800"
                     >
                       <td
-                        className="px-6 py-4 cursor-pointer"
+                        className="px-6 py-4 cursor-pointer text-left"
                         onClick={() => toggleRow(index)}
                       >
                         {expandedRow === index ? "-" : "+"}
                       </td>
-                      <td className="px-6 py-4">{data.id}</td>
-                      <td className="px-6 py-4">{data.name}</td>
+                      <td className="px-6 py-4 text-left">{data.id}</td>
+                      <td className="px-6 py-4 text-left">{data.name}</td>
                       {ArtifactType === "Model" && (
-                        <td className="px-6 py-4">
-                          <a
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleLinkClick(data.id);
-                            }}
+                        <td className="px-6 py-4 text-left">
+                          <button
+                            type="button"
+                            onClick={() => handleLinkClick(data.id)}
+                            className="text-blue-600 underline cursor-pointer bg-transparent border-none p-0 background-none"
                           >
                             Open Model Card
-                          </a>
+                          </button>
                           <ModelCardPopup
                             show={showPopup}
                             model_data={popupData}
@@ -204,14 +201,14 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                           />
                         </td>
                       )}
-                      <td className="px-6 py-4">{data.execution_type_name}</td>
+                      <td className="px-6 py-4 text-left">{data.execution_type_name}</td>
                       {ArtifactType !== "Metrics" &&
-                        (<td className="px-6 py-4">{data.url}</td>)
+                        (<td className="px-6 py-4 text-left">{data.url}</td>)
                       }
-                      <td className="px-6 py-4">{data.uri}</td>
-                      <td className="px-6 py-4">{data.git_repo}</td>
-                      <td className="px-6 py-4">{data.Commit}</td>
-                      <td className="px-6 py-4">{createDateTime(data.create_time_since_epoch)}</td>
+                      <td className="px-6 py-4 text-left">{data.uri}</td>
+                      <td className="px-6 py-4 text-left">{data.git_repo}</td>
+                      <td className="px-6 py-4 text-left">{data.Commit}</td>
+                      <td className="px-6 py-4 text-left">{createDateTime(data.create_time_since_epoch)}</td>
                       {ArtifactType === "Dataset" && (
                         <td className="px-6 py-4">
                           {label_list.map((label_name, index) => (
@@ -240,8 +237,8 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                     </tr>
                     {expandedRow === index && (
                       <tr>
-                        <td colSpan="4">
-                          <table className="expanded-table">
+                        <td colSpan="4" className="text-left">
+                          <table className="w-full border-collapse border border-gray-300">
                             <tbody>
                               {Object.entries(data).map(([key, value]) => {
                                 if (
@@ -250,11 +247,9 @@ const ArtifactTable = ({ artifacts, ArtifactType, onSort }) => {
                                 ) {
                                   return (
                                     <React.Fragment key={key}>
-                                      <tr>
-                                        <td key={key}>{key}</td>
-                                        <td key={value}>
-                                          {value ? value : "Null"}
-                                        </td>
+                                      <tr className="even:bg-gray-100">
+                                        <td className="p-1 border-b border-r border-gray-300 text-left">{key}</td>
+                                        <td className="p-1 border-b border-r border-gray-300 text-left">{value ? value : "Null"}</td>
                                       </tr>
                                     </React.Fragment>
                                   );
