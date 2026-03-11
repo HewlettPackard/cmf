@@ -110,13 +110,11 @@ class SSHremoteArtifacts:
         self._sftp = None
         self._ssh = None
         self._host = None
-
-    def close(self):
-        """
-        Public method to close the SSH/SFTP connection after all downloads are done.
-
-        Call this once all artifact transfers for a given pipeline run are
-        complete.  Internally delegates to _close_connection().
+        
+    def __del__(self):
+        """Called automatically by Python when this object is destroyed.
+        Ensures SSH/SFTP connection is always closed even if close() is never called explicitly.
+        e.g. when sshremote_class_obj goes out of scope in pull.py after return/raise.
         """
         self._close_connection()
 

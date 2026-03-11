@@ -476,7 +476,6 @@ class CmdArtifactPull(CmdBase):
                         args[1], # remote_loc of the artifact
                         args[2]  # name
                     )
-                    sshremote_class_obj.close()
                     if download_flag:
                         # Return success if the file is downloaded successfully.
                         return ObjectDownloadSuccess(object_name, download_loc)
@@ -491,7 +490,6 @@ class CmdArtifactPull(CmdBase):
                         args[1], # remote_loc of the artifact
                         args[2]  # name
                         )
-                    sshremote_class_obj.close()
                     if download_flag:
                         # Return success if all files in the directory are downloaded.
                         return BatchDownloadSuccess(dir_files_downloaded)
@@ -536,7 +534,6 @@ class CmdArtifactPull(CmdBase):
                         else:
                             files_downloaded += dir_files_downloaded
                             files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
-                sshremote_class_obj.close()
                 # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)
