@@ -18,7 +18,7 @@ import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 
 const TensorBoard = () => {
-  const TB_PATH = "/tensorboard/"; // same-origin path exposed by NGINX
+  const TB_PATH = "/tensor_board/"; // internal path proxied by NGINX to TensorBoard service
 
   return (
     <>
