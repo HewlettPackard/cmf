@@ -35,7 +35,7 @@ class FastAPIClient {
       baseURL: `${config.apiBasePath}/`,
     };
     const client = axios.create(initialConfig);
-    
+
     // Simple error interceptor
     client.interceptors.response.use(
       (response) => response,
@@ -50,7 +50,7 @@ class FastAPIClient {
         return Promise.reject(error);
       }
     );
-    
+
     return client;
   }
 
@@ -116,24 +116,25 @@ class FastAPIClient {
   }
 
   async getArtiExeTreeLineage(pipeline) {
-    return this.apiClient.get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
-    .then(({ data }) => {
-      return data;
-    }); 
+    return this.apiClient
+      .get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
+      .then(({ data }) => {
+        return data;
+      });
   }
 
-  async getExecutions(pipeline_name, active_page, filter_value, sort_order){
+  async getExecutions(pipeline_name, active_page, filter_value, sort_order) {
     return this.apiClient
-    .get(`/executions/${pipeline_name}`,{
-      params: {
-        active_page: active_page,
-        filter_value: filter_value,
-        sort_order: sort_order,
-      },
-    }).
-    then(({data}) => {
-      return data;
-    }); 
+      .get(`/executions/${pipeline_name}`, {
+        params: {
+          active_page: active_page,
+          filter_value: filter_value,
+          sort_order: sort_order,
+        },
+      }).
+      then(({ data }) => {
+        return data;
+      });
   }
 
   async getPipelines(value) {
@@ -166,36 +167,36 @@ class FastAPIClient {
         },
         responseType: "text", // Explicitly specify response type as text
       })
-      .then(( response ) => {
+      .then((response) => {
         return response.data;
       });
   }
 
   async getLabelData(file_name) {
     return this.apiClient
-    .get(`/label-data`,{
-      params: {
-        file_name: file_name
-      },
-      responseType: "text",
-    })
-    .then(( response ) => {
-      return response.data;
-    });
+      .get(`/label-data`, {
+        params: {
+          file_name: file_name
+        },
+        responseType: "text",
+      })
+      .then((response) => {
+        return response.data;
+      });
   }
 
-  async getServerRegistration(server_name, server_url){
+  async getServerRegistration(server_name, server_url) {
     return this.apiClient
       .post(`/register-server`, {
-          server_name: server_name,
-          server_url: server_url,
+        server_name: server_name,
+        server_url: server_url,
       })
       .then(({ data }) => {
         return data;
       });
   }
 
-  async getRegistredServerList(){
+  async getRegistredServerList() {
     return this.apiClient
       .get(`/server-list`)
       .then(({ data }) => {
@@ -208,6 +209,68 @@ class FastAPIClient {
       .post(`/sync`, {
         server_name: serverName,
         server_url: serverUrl,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getExecutionStages(pipelineName) {
+    return this.apiClient
+      .get(`/execution-stages/${pipelineName}`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getExecutionsByStage(pipelineName, stageName, activePage = 1, recordPerPage = 5, sortOrder = "desc", filterValue = "") {
+    return this.apiClient
+      .get(`/executions-by-stage/${pipelineName}`, {
+        params: {
+          stage_name: stageName,
+          active_page: activePage,
+          record_per_page: recordPerPage,
+          sort_order: sortOrder,
+          filter_value: filterValue,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactStages(pipelineName) {
+    return this.apiClient
+      .get(`/artifact-stages/${pipelineName}`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactTypesByStage(pipelineName, stageName) {
+    return this.apiClient
+      .get(`/artifact-types-by-stage/${pipelineName}`, {
+        params: {
+          stage_name: stageName,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactsByStage(pipelineName, stageName, artifactType, sortOrder, activePage = 1, recordPerPage = 5, filter = "", sortField = "name") {
+    return this.apiClient
+      .get(`/artifacts-by-stage/${pipelineName}`, {
+        params: {
+          stage_name: stageName,
+          artifact_type: artifactType,
+          sort_order: sortOrder,
+          active_page: activePage,
+          record_per_page: recordPerPage,
+          filter_value: filter,
+          sort_field: sortField,
+        },
       })
       .then(({ data }) => {
         return data;

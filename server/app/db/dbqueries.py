@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from server.app.db.dbconfig import get_db
-from sqlalchemy import select, func, text, String, bindparam, case, distinct, insert, update
+from sqlalchemy import select, func, text, String, Double, bindparam, case, distinct, insert, update
 from server.app.db.dbmodels import (
     artifact, 
     artifactproperty, 
@@ -338,3 +338,542 @@ async def fetch_executions(
         "total_items": total_record,
         "items": [dict(row) for row in rows]
     }
+
+
+def _get_pipeline_execution_ids_subquery(pipeline_name: str):
+    """
+    Helper function to build the common subqueries for getting execution IDs by pipeline.
+    
+    Args:
+        pipeline_name: Name of the pipeline
+        
+    Returns:
+        Tuple of (relevant_contexts subquery, execution_ids subquery)
+    """
+    # Get relevant contexts for the pipeline
+    relevant_contexts = select(
+        parentcontext.c.context_id
+    ).join(
+        context, parentcontext.c.parent_context_id == context.c.id
+    ).where(
+        context.c.name == pipeline_name
+    ).subquery("relevant_contexts")
+
+    # Get execution IDs associated with the pipeline contexts
+    execution_ids_query = (
+        select(
+            distinct(execution.c.id).label("execution_id")
+        )
+        .join(
+            association, execution.c.id == association.c.execution_id
+        )
+        .where(
+            association.c.context_id.in_(select(relevant_contexts.c.context_id))
+        )
+        .subquery("execution_ids")
+    )
+    
+    return relevant_contexts, execution_ids_query
+
+
+async def fetch_unique_execution_stages(
+    db: AsyncSession,
+    pipeline_name: str
+):
+    """
+    Fetch unique execution stages (Context_Type values) for a given pipeline.
+    
+    Args:
+        db: Database session
+        pipeline_name: Name of the pipeline to filter by
+        
+    Returns:
+        List of unique stage names
+    """
+    # Use helper function to get common subqueries
+    relevant_contexts, execution_ids_query = _get_pipeline_execution_ids_subquery(pipeline_name)
+
+    # Fetch unique Context_Type values from execution properties
+    stages_query = (
+        select(
+            distinct(executionproperty.c.string_value).label("stage_name")
+        )
+        .where(
+            executionproperty.c.execution_id.in_(select(execution_ids_query.c.execution_id))
+        )
+        .where(
+            executionproperty.c.name == "Context_Type"
+        )
+        .where(
+            executionproperty.c.string_value.isnot(None)
+        )
+        .order_by("stage_name")
+    )
+
+    # Execute the query
+    result = await db.execute(stages_query)
+    stages = result.scalars().all()
+
+    print(stages)
+    # Return the list of unique stages
+    return {
+        "stages": list(stages),
+        "total_stages": len(stages)
+    }
+
+
+async def fetch_executions_by_stage(
+    db: AsyncSession,
+    pipeline_name: str,
+    stage_name: str,
+    active_page: int = 1,
+    record_per_page: int = 6,
+    sort_order: str = "DESC",
+    filter_value: str = ""
+):
+    """
+    Fetch executions filtered by pipeline and stage name (Context_Type).
+    
+    Args:
+        db: Database session
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter by
+        active_page: Page number for pagination
+        record_per_page: Number of records per page
+        
+    Returns:
+        Dictionary with total_items and items (list of executions with properties)
+    """
+    # Use helper function to get common subqueries
+    relevant_contexts, pipeline_execution_ids = _get_pipeline_execution_ids_subquery(pipeline_name)
+
+    # Get execution IDs for the specified stage
+    execution_ids_with_stage = (
+        select(
+            distinct(executionproperty.c.execution_id).label("execution_id")
+        )
+        .where(
+            executionproperty.c.name == "Context_Type"
+        )
+        .where(
+            executionproperty.c.string_value == stage_name
+        )
+        .where(
+            # Only get executions that belong to this pipeline
+            executionproperty.c.execution_id.in_(select(pipeline_execution_ids.c.execution_id))
+        )
+        .subquery("execution_ids_with_stage")
+    )
+
+    # Aggregate execution properties into JSON
+    execution_properties_agg = (
+        select(
+            executionproperty.c.execution_id,
+            func.json_agg(
+                func.json_build_object(
+                    "name", executionproperty.c.name,
+                    "value", func.coalesce(
+                        executionproperty.c.string_value,
+                        func.cast(executionproperty.c.bool_value, String),
+                        func.cast(executionproperty.c.double_value, String),
+                        func.cast(executionproperty.c.int_value, String),
+                        func.cast(executionproperty.c.byte_value, String),
+                        func.cast(executionproperty.c.proto_value, String),
+                        text("NULL")
+                    )
+                )
+            ).label("execution_properties")
+        )
+        .group_by(executionproperty.c.execution_id)
+        .subquery()
+    )
+
+    # Subquery to get original_create_time_since_epoch for sorting
+    # Note: The value is stored as string_value, so we need to cast it to numeric
+    create_time_subquery = (
+        select(
+            executionproperty.c.execution_id,
+            func.cast(executionproperty.c.string_value, Double).label("create_time")
+        )
+        .where(executionproperty.c.name == "original_create_time_since_epoch")
+        .where(
+            executionproperty.c.execution_id.in_(select(execution_ids_with_stage.c.execution_id))
+        )
+        .subquery("create_time_subquery")
+    )
+
+    # Count total records (with optional filter)
+    base_join = (
+        select(execution_ids_with_stage.c.execution_id)
+        .select_from(execution_ids_with_stage)
+        .outerjoin(
+            execution_properties_agg,
+            execution_ids_with_stage.c.execution_id == execution_properties_agg.c.execution_id
+        )
+    )
+    if filter_value:
+        base_join = base_join.where(
+            func.concat(
+                func.cast(execution_ids_with_stage.c.execution_id, String),
+                func.coalesce(
+                    func.cast(execution_properties_agg.c.execution_properties, String),
+                    ""
+                )
+            ).ilike(f"%{filter_value}%")
+        )
+    count_query = select(func.count(distinct(base_join.subquery().c.execution_id)))
+    count_result = await db.execute(count_query)
+    total_records = count_result.scalar() or 0
+
+    # Fetch paginated executions with properties, sorted by create_time
+    final_query = (
+        select(
+            execution_ids_with_stage.c.execution_id,
+            execution_properties_agg.c.execution_properties
+        )
+        .select_from(execution_ids_with_stage)
+        .outerjoin(
+            execution_properties_agg,
+            execution_ids_with_stage.c.execution_id == execution_properties_agg.c.execution_id
+        )
+        .outerjoin(
+            create_time_subquery,
+            execution_ids_with_stage.c.execution_id == create_time_subquery.c.execution_id
+        )
+    )
+    if filter_value:
+        final_query = final_query.where(
+            func.concat(
+                func.cast(execution_ids_with_stage.c.execution_id, String),
+                func.coalesce(
+                    func.cast(execution_properties_agg.c.execution_properties, String),
+                    ""
+                )
+            ).ilike(f"%{filter_value}%")
+        )
+    final_query = (
+        final_query
+        .order_by(
+            create_time_subquery.c.create_time.asc().nullslast()
+            if sort_order.upper() == "ASC"
+            else create_time_subquery.c.create_time.desc().nullslast()
+        )
+        .limit(record_per_page)
+        .offset((active_page - 1) * record_per_page)
+    )
+
+    result = await db.execute(final_query)
+    rows = result.mappings().all()
+    print(rows)
+
+    return {
+        "total_items": total_records,
+        "items": [dict(row) for row in rows]
+    }
+
+
+async def fetch_artifacts_by_stage(
+    db: AsyncSession,
+    pipeline_name: str,
+    stage_name: str,
+    artifact_type: str,
+    filter_value: str = "",
+    active_page: int = 1,
+    page_size: int = 5,
+    sort_column: str = "name",
+    sort_order: str = "ASC"
+):
+    """
+    Fetch artifacts filtered by pipeline, stage (Context_Type), and artifact type.
+    
+    Args:
+        db: Database session
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter by
+        artifact_type: Type of artifacts to fetch
+        filter_value: Search filter value
+        active_page: Page number for pagination
+        page_size: Number of records per page
+        sort_column: Column to sort by
+        sort_order: Sort order (ASC or DESC)
+        
+    Returns:
+        Dictionary with total_items and items list
+    """
+    # Step 1: Get relevant contexts
+    relevant_contexts_cte = select(
+        parentcontext.c.context_id
+    ).join(
+        context, parentcontext.c.parent_context_id == context.c.id
+    ).where(
+        context.c.name == pipeline_name
+    ).cte("relevant_contexts_cte")
+
+    # Early check: are there any relevant contexts for the given pipeline?
+    res = await db.execute(select(relevant_contexts_cte.c.context_id))
+    context_ids = res.scalars().all()
+    if not context_ids:
+        return {"total_items": 0, "items": []}
+
+    # Step 2: Fetch execution IDs for the pipeline with the specified stage
+    execution_ids_with_stage_cte = (
+        select(
+            execution.c.id.label("execution_id")
+        )
+        .join(
+            association, execution.c.id == association.c.execution_id
+        )
+        .join(
+            executionproperty, execution.c.id == executionproperty.c.execution_id
+        )
+        .where(
+            association.c.context_id.in_(context_ids)
+        )
+        .where(
+            executionproperty.c.name == "Context_Type"
+        )
+        .where(
+            executionproperty.c.string_value == stage_name
+        )
+        .group_by(execution.c.id)
+        .cte("execution_ids_with_stage_cte")
+    )
+
+    # Fetch execution IDs
+    res = await db.execute(select(execution_ids_with_stage_cte.c.execution_id))
+    execution_ids = res.scalars().all()
+    if not execution_ids:
+        return {"total_items": 0, "items": []}
+
+    # Step 3: Based on execution ids list, fetch artifact lists from event table
+    artifact_ids_cte = (
+        select(distinct(event.c.artifact_id).label("artifact_id"))
+        .where(event.c.execution_id.in_(execution_ids))
+        .cte("artifact_ids_cte")
+    )
+
+    # Fetch all artifact IDs for the relevant executions
+    res = await db.execute(select(artifact_ids_cte.c.artifact_id))
+    artifact_ids = res.scalars().all()
+    if not artifact_ids:
+        return {"total_items": 0, "items": []}
+
+    # Step 4: Aggregate artifact properties into JSON
+    artifact_properties_agg_cte = (
+        select(
+            artifactproperty.c.artifact_id,
+            func.json_agg(
+                func.json_build_object(
+                    "name", artifactproperty.c.name,
+                    "value", func.coalesce(
+                        artifactproperty.c.string_value,
+                        func.cast(artifactproperty.c.bool_value, String),
+                        func.cast(artifactproperty.c.double_value, String),
+                        func.cast(artifactproperty.c.int_value, String),
+                        func.cast(artifactproperty.c.byte_value, String),
+                        func.cast(artifactproperty.c.proto_value, String),
+                        text("NULL")
+                    )
+                )
+            ).label("artifact_properties")
+        )
+        .where(artifactproperty.c.artifact_id.in_(artifact_ids))
+        .group_by(artifactproperty.c.artifact_id)
+        .subquery()
+    )
+
+    # Step 5: Filter by artifact type and apply search filter
+    artifact_type_cte = (
+        select(
+            artifact.c.id.label("artifact_id"),
+            artifact.c.name,
+            artifact.c.create_time_since_epoch
+        )
+        .join(
+            type_table, artifact.c.type_id == type_table.c.id
+        )
+        .where(
+            artifact.c.id.in_(artifact_ids)
+        )
+        .where(
+            type_table.c.name == artifact_type
+        )
+        .cte("artifact_type_cte")
+    )
+
+    # Count total records
+    count_query = select(func.count(distinct(artifact_type_cte.c.artifact_id)))
+    if filter_value:
+        # Apply filter if provided
+        artifact_with_filter = (
+            select(artifact_type_cte.c.artifact_id)
+            .outerjoin(
+                artifact_properties_agg_cte,
+                artifact_type_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id
+            )
+            .where(
+                func.concat(
+                    func.cast(artifact_type_cte.c.artifact_id, String),
+                    func.cast(artifact_type_cte.c.name, String),
+                    func.coalesce(
+                        func.cast(artifact_properties_agg_cte.c.artifact_properties, String),
+                        ""
+                    )
+                ).ilike(f"%{filter_value}%")
+            )
+        )
+        count_query = select(func.count(distinct(artifact_with_filter.c.artifact_id)))
+        count_result = await db.execute(count_query)
+    else:
+        count_result = await db.execute(count_query)
+    
+    total_records = count_result.scalar() or 0
+
+    # Step 6: Build final query with pagination and sorting
+    if sort_column == "name":
+        sort_col = artifact_type_cte.c.name
+        sort_direction = func.lower(sort_col).asc() if sort_order.upper() == "ASC" else func.lower(sort_col).desc()
+    else:
+        # create_time_since_epoch is a bigint — lower() cannot be applied to numeric types
+        sort_col = artifact_type_cte.c.create_time_since_epoch
+        sort_direction = sort_col.asc() if sort_order.upper() == "ASC" else sort_col.desc()
+
+    final_query = (
+        select(
+            artifact_type_cte.c.artifact_id,
+            artifact_type_cte.c.name,
+            artifact_type_cte.c.create_time_since_epoch,
+            artifact_properties_agg_cte.c.artifact_properties
+        )
+        .select_from(artifact_type_cte)
+        .outerjoin(
+            artifact_properties_agg_cte,
+            artifact_type_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id
+        )
+    )
+
+    # Apply filter if provided
+    if filter_value:
+        final_query = final_query.where(
+            func.concat(
+                func.cast(artifact_type_cte.c.artifact_id, String),
+                func.cast(artifact_type_cte.c.name, String),
+                func.coalesce(
+                    func.cast(artifact_properties_agg_cte.c.artifact_properties, String),
+                    ""
+                )
+            ).ilike(f"%{filter_value}%")
+        )
+
+    final_query = (
+        final_query
+        .order_by(sort_direction)
+        .limit(page_size)
+        .offset((active_page - 1) * page_size)
+    )
+
+    result = await db.execute(final_query)
+    rows = result.mappings().all()
+    print(f"Artifacts by stage - Pipeline: {pipeline_name}, Stage: {stage_name}, Count: {total_records}")
+
+    return {
+        "total_items": total_records,
+        "items": [dict(row) for row in rows]
+    }
+
+async def fetch_artifact_types_by_stage(
+    db: AsyncSession,
+    pipeline_name: str,
+    stage_name: str
+):
+    """
+    Fetch unique artifact types available in a specific stage of a pipeline.
+    
+    Args:
+        db: Database session
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter by
+        
+    Returns:
+        List of unique artifact type names
+    """
+    # Step 1: Get relevant contexts for the pipeline
+    relevant_contexts_cte = select(
+        parentcontext.c.context_id
+    ).join(
+        context, parentcontext.c.parent_context_id == context.c.id
+    ).where(
+        context.c.name == pipeline_name
+    ).cte("relevant_contexts_cte")
+
+    # Check if there are any relevant contexts
+    res = await db.execute(select(relevant_contexts_cte.c.context_id))
+    context_ids = res.scalars().all()
+    if not context_ids:
+        return []
+
+    # Step 2: Fetch execution IDs for the pipeline with the specified stage
+    execution_ids_with_stage_cte = (
+        select(
+            execution.c.id.label("execution_id")
+        )
+        .join(
+            association, execution.c.id == association.c.execution_id
+        )
+        .join(
+            executionproperty, execution.c.id == executionproperty.c.execution_id
+        )
+        .where(
+            association.c.context_id.in_(context_ids)
+        )
+        .where(
+            executionproperty.c.name == "Context_Type"
+        )
+        .where(
+            executionproperty.c.string_value == stage_name
+        )
+        .group_by(execution.c.id)
+        .cte("execution_ids_with_stage_cte")
+    )
+
+    # Fetch execution IDs
+    res = await db.execute(select(execution_ids_with_stage_cte.c.execution_id))
+    execution_ids = res.scalars().all()
+    if not execution_ids:
+        return []
+
+    # Step 3: Get artifact IDs associated with these executions
+    artifact_ids_cte = (
+        select(distinct(event.c.artifact_id).label("artifact_id"))
+        .where(event.c.execution_id.in_(execution_ids))
+        .cte("artifact_ids_cte")
+    )
+
+    # Fetch artifact IDs
+    res = await db.execute(select(artifact_ids_cte.c.artifact_id))
+    artifact_ids = res.scalars().all()
+    if not artifact_ids:
+        return []
+
+    # Step 4: Get unique artifact types
+    artifact_types_query = (
+        select(distinct(type_table.c.name).label("artifact_type"))
+        .join(
+            artifact, type_table.c.id == artifact.c.type_id
+        )
+        .where(
+            artifact.c.id.in_(artifact_ids)
+        )
+        .where(
+            type_table.c.name != "Environment"  # Exclude Environment type
+        )
+        .order_by("artifact_type")
+    )
+
+    # Execute the query
+    result = await db.execute(artifact_types_query)
+    artifact_types = result.scalars().all()
+
+    print(f"Artifact types for stage - Pipeline: {pipeline_name}, Stage: {stage_name}, Types: {artifact_types}")
+    
+    return list(artifact_types)

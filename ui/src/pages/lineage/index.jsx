@@ -20,7 +20,6 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Sidebar";
-import LineageTypeSidebar from "./LineageTypeSidebar";
 import LineageArtifacts from "../../components/LineageArtifacts";
 import TangledTree from "../../components/TangledTree";
 import ExecutionDropdown from "../../components/ExecutionDropdown";
@@ -156,20 +155,21 @@ const Lineage = () => {
   const fetchExecutionTypes = (pipelineName, lineageType) => {
     setLoading(true);
     client.getExecutionTypes(pipelineName).then((data) => {
-      if (data === null) {
+      if (data === null || data.length === 0) {
         setExecDropdownData(null);
+        setLoading(false);
       } else {
         setExecDropdownData(data);
         setSelectedExecutionType(data[0]); // data[0] = "Prepare_3f45"
         // method used such that even with multiple "_" it will get right execution_name and uuid
-        const uuid= extractUuid(data[0]);     // 3f45
+        const uuid = extractUuid(data[0]);     // 3f45
         if (lineageType === "Execution") {
           fetchExecutionLineage(pipelineName, uuid);
         } else {
           fetchExecTree(pipelineName, uuid);
         }
+        setLoading(false);
       }
-      setLoading(false);
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
@@ -184,7 +184,7 @@ const Lineage = () => {
     setExecutionData(null);
 
     setSelectedExecutionType(executionType);
-    const uuid= extractUuid(executionType);
+    const uuid = extractUuid(executionType);
     fetchExecutionLineage(selectedPipeline, uuid);
   };
 
@@ -192,7 +192,7 @@ const Lineage = () => {
   const handleTreeClick = (executionType) => {
     setExecutionData(null);
     setSelectedExecutionType(executionType);
-    const uuid= extractUuid(executionType);
+    const uuid = extractUuid(executionType);
     fetchExecTree(selectedPipeline, uuid);
   };
 
@@ -224,24 +224,20 @@ const Lineage = () => {
         <DashboardHeader />
 
         <div className="flex flex-grow" style={{ padding: "1px" }}>
-          <div className="sidebar-container min-h-140 bg-gray-100 pt-2 pr-2 pb-4 w-1/6 flex-grow-0">
+          <div className="sidebar-container min-h-screen bg-gray-50 w-1/5 flex-grow-0 shadow-sm border-r border-gray-200">
             <Sidebar
               pipelines={pipelines}
+              selectedPipeline={selectedPipeline}
+              lineageTypes={LineageTypes}
+              selectedLineageType={selectedLineageType}
+              handleLineageTypeClick={handleLineageTypeClick}
               handlePipelineClick={handlePipelineClick}
               className="flex-grow"
             />
           </div>
-          <div className="w-5/6 justify-center items-center mx-auto px-4 flex-grow">
-            <div className="flex flex-col">
-              {selectedPipeline !== null && (
-                <LineageTypeSidebar
-                  LineageTypes={LineageTypes}
-                  handleLineageTypeClick={handleLineageTypeClick}
-                />
-              )}
-            </div>
+          <div className="w-4/5 justify-center items-center mx-auto px-4 flex-grow">
             {loading && (
-              <div className="flex-grow flex justify-center items-center">
+              <div className="flex justify-center items-center w-full min-h-[400px]">
                 <Loader />
               </div>
             )}
