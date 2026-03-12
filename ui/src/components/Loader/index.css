@@ -1,9 +1,3 @@
-.loader-container {
-  position: relative; /* Relative positioning for the loader to be placed absolutely inside */
-  width: 100%;
-  height: 100%; /* Ensure it takes the full height of its parent */
-}
-
 /* Loader is absolutely positioned within the loader-container */
 .loader {
   position: absolute;

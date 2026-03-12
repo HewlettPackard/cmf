@@ -16,9 +16,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 
-const ResizableSplitPane = ({ 
-  leftContent, 
-  rightContent, 
+const ResizableSplitPane = ({
+  leftContent,
+  rightContent,
   initialSplitPercentage = 50,
   minPercentage = 20,
   maxPercentage = 80,
@@ -32,7 +32,7 @@ const ResizableSplitPane = ({
   // Helper to calculate percentage from client position
   const calculatePercentage = useCallback((clientX) => {
     if (!containerRef.current) return splitPercentage;
-    
+
     const containerRect = containerRef.current.getBoundingClientRect();
     const newPercentage = ((clientX - containerRect.left) / containerRect.width) * 100;
     return Math.max(minPercentage, Math.min(maxPercentage, newPercentage));
@@ -43,7 +43,7 @@ const ResizableSplitPane = ({
     if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
     }
-    
+
     rafRef.current = requestAnimationFrame(() => {
       setSplitPercentage(newPercentage);
       if (onResize) {
@@ -81,7 +81,7 @@ const ResizableSplitPane = ({
 
   const handleKeyDown = (e) => {
     const step = e.shiftKey ? 5 : 1; // Hold shift for larger steps
-    
+
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
       const newPercentage = Math.max(minPercentage, splitPercentage - step);
@@ -118,13 +118,13 @@ const ResizableSplitPane = ({
     document.addEventListener('mouseup', handleMouseUp);
     document.addEventListener('touchmove', handleTouchMove, { passive: false });
     document.addEventListener('touchend', handleMouseUp);
-    
+
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('touchend', handleMouseUp);
-      
+
       // Cancel any pending animation frames
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
@@ -133,11 +133,11 @@ const ResizableSplitPane = ({
   }, [isDragging, handleMouseMove, handleTouchMove, handleMouseUp]);
 
   return (
-    <div ref={containerRef} className="flex h-full w-full">
+    <div ref={containerRef} className="flex w-full items-stretch overflow-hidden">
       {/* Left Pane */}
-      <div 
-        style={{ width: `${splitPercentage}%` }} 
-        className="overflow-auto"
+      <div
+        style={{ width: `${splitPercentage}%` }}
+        className="min-w-0 overflow-auto"
         aria-label="Left panel"
       >
         {leftContent}
@@ -152,9 +152,8 @@ const ResizableSplitPane = ({
         aria-valuemax={maxPercentage}
         aria-label="Resize panels. Use arrow keys to adjust, Shift+Arrow for larger steps, Home/End for min/max"
         tabIndex={0}
-        className={`w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize flex-shrink-0 transition-colors ${
-          isDragging ? 'bg-gray-400' : ''
-        }`}
+        className={`w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize flex-shrink-0 self-stretch transition-colors ${isDragging ? 'bg-gray-400' : ''
+          }`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
         onKeyDown={handleKeyDown}
@@ -165,9 +164,9 @@ const ResizableSplitPane = ({
       </div>
 
       {/* Right Pane */}
-      <div 
-        style={{ width: `${100 - splitPercentage}%` }} 
-        className="overflow-auto"
+      <div
+        style={{ width: `${100 - splitPercentage}%` }}
+        className="min-w-0 overflow-auto"
         aria-label="Right panel"
       >
         {rightContent}

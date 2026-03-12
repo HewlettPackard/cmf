@@ -31,6 +31,10 @@ from server.app.db.dbconfig import get_db, init_db
 from server.app.db.dbqueries import (
     fetch_artifacts,
     fetch_executions,
+    fetch_unique_execution_stages,
+    fetch_executions_by_stage,
+    fetch_artifacts_by_stage,
+    fetch_artifact_types_by_stage,
     register_server_details,
     get_registered_server_details,
     get_sync_status,
@@ -216,6 +220,165 @@ async def execution(request: Request,
     """Retrieve paginated executions with filtering, sorting, and full-text search."""
     return await fetch_executions(db, pipeline_name, filter_value, active_page, 5, sort_order)
     
+
+@app.get("/execution-stages/{pipeline_name}")
+async def get_execution_stages(
+    pipeline_name: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve unique execution stages (Context_Type values) for a given pipeline.
+    
+    Args:
+        pipeline_name: Name of the pipeline to get stages from
+        
+    Returns:
+        Dictionary with pipeline_name, list of unique stages, and total count
+        
+    Example response:
+    {
+        "stages": ["Test-env/Prepare", "Test-env/Train", "Test-env/Evaluate"],
+        "total_stages": 3
+    }
+    """
+    return await fetch_unique_execution_stages(db, pipeline_name)
+
+
+@app.get("/executions-by-stage/{pipeline_name}")
+async def get_executions_by_stage(
+    pipeline_name: str,
+    stage_name: str = Query(..., description="Stage name (Context_Type value)"),
+    active_page: int = Query(1, description="Page number", gt=0),
+    record_per_page: int = Query(5, description="Records per page", gt=0),
+    sort_order: str = Query("DESC", description="Sort order: ASC or DESC"),
+    filter_value: str = Query("", description="Filter string to search across execution properties"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve executions filtered by pipeline and stage name (Context_Type).
+    
+    Args:
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter executions
+        active_page: Page number for pagination
+        record_per_page: Number of records per page
+        
+    Returns:
+        Dictionary with total_items and list of executions with their properties
+        
+    Example response:
+    {
+        "total_items": 10,
+        "items": [
+            {
+                "execution_id": 2,
+                "execution_properties": [...]
+            }
+        ]
+    }
+    """
+    return await fetch_executions_by_stage(db, pipeline_name, stage_name, active_page, record_per_page, sort_order, filter_value)
+
+
+@app.get("/artifact-stages/{pipeline_name}")
+async def get_artifact_stages(
+    pipeline_name: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve unique artifact stages (Context_Type values) for a given pipeline.
+    Since artifacts inherit stages from executions, this uses the same query as execution stages.
+    
+    Args:
+        pipeline_name: Name of the pipeline to get stages from
+        
+    Returns:
+        Dictionary with pipeline_name, list of unique stages, and total count
+        
+    Example response:
+    {
+        "stages": ["Test-env/Prepare", "Test-env/Train", "Test-env/Evaluate"],
+        "total_stages": 3
+    }
+    """
+    return await fetch_unique_execution_stages(db, pipeline_name)
+
+
+@app.get("/artifact-types-by-stage/{pipeline_name}")
+async def get_artifact_types_by_stage(
+    pipeline_name: str,
+    stage_name: str = Query(..., description="Stage name (Context_Type value)"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve unique artifact types available in a specific stage of a pipeline.
+    
+    Args:
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter by
+        
+    Returns:
+        List of unique artifact type names
+        
+    Example response:
+    ["Dataset", "Metrics", "Model"]
+    """
+    return await fetch_artifact_types_by_stage(db, pipeline_name, stage_name)
+
+
+@app.get("/artifacts-by-stage/{pipeline_name}")
+async def get_artifacts_by_stage(
+    pipeline_name: str,
+    stage_name: str = Query(..., description="Stage name (Context_Type value)"),
+    artifact_type: str = Query(..., description="Artifact type to filter"),
+    sort_order: str = Query("asc", description="Sort order (asc or desc)"),
+    active_page: int = Query(1, description="Page number", gt=0),
+    record_per_page: int = Query(5, description="Records per page", gt=0),
+    filter_value: str = Query("", description="Search filter value"),
+    sort_field: str = Query("name", description="Field to sort by (name or create_time_since_epoch)"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve artifacts filtered by pipeline, stage, and artifact type.
+    
+    Args:
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter artifacts
+        artifact_type: Type of artifacts to retrieve
+        sort_order: Sort order (asc or desc)
+        active_page: Page number for pagination
+        record_per_page: Number of records per page
+        filter_value: Search filter value
+        sort_field: Field to sort by
+        
+    Returns:
+        Dictionary with total_items and list of artifacts with their properties
+        
+    Example response:
+    {
+        "total_items": 10,
+        "items": [
+            {
+                "artifact_id": 5,
+                "name": "dataset.csv",
+                "create_time_since_epoch": 1234567890,
+                "artifact_properties": [...]
+            }
+        ]
+    }
+    """
+    return await fetch_artifacts_by_stage(
+        db=db,
+        pipeline_name=pipeline_name,
+        stage_name=stage_name,
+        artifact_type=artifact_type,
+        filter_value=filter_value,
+        active_page=active_page,
+        page_size=record_per_page,
+        sort_column=sort_field,
+        sort_order=sort_order
+    )
+
 
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
 async def execution_lineage(request: Request, uuid: str, pipeline_name: str):

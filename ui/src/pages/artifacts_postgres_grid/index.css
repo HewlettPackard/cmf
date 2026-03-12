@@ -16,7 +16,7 @@ body {
   font-weight: bold;
   border-color: #2c5282;
 }
-
+/* 
 .pagination-button {
   transition:
     background-color 0.3s,
@@ -25,14 +25,15 @@ body {
 
 .pagination-button:hover {
   background-color: #1a365d; /* Darker blue */
-  color: #fff;
+  /* color: #fff;
   border-color: #1a365d;
 }
 
 .pagination-button.active-page:hover {
   background-color: #1a365d;
-  border-color: #1a365d;
-}
+  border-color: #1a365d; 
+} 
+*/
 
 .bloc-tabs {
   display: flexs;

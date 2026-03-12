@@ -1,4 +1,7 @@
-*,
+/* Old Code not using anymore, but keeping it here for */
+/* reference in case we want to use it in the future. */
+
+/* *,
 ::before,
 ::after {
   box-sizing: border-box;
@@ -84,4 +87,4 @@ button {
 }
 .active-content {
   display: block;
-}
+} */

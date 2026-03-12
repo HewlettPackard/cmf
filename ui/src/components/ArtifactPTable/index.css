@@ -1,4 +1,6 @@
-/* Define styles for the expanded table */
+/* Comment out of the entire file as it has been recently edited */
+
+/* Define styles for the expanded table
 .expanded-table {
     width: 100%;
     border-collapse: collapse;
@@ -36,7 +38,7 @@
   
   .arrow {
     font-weight: bold;
-    font-size: 1.2em; /* Adjust the size as needed */
+    font-size: 1.2em; 
   }
   
   .sort-header-content {
@@ -50,4 +52,4 @@
   
   thead {
     background-color: #f4f4f4f4;
-  }
+  } */

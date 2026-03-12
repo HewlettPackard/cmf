@@ -293,11 +293,7 @@ const ExecutionTree = ({ data }) => {
   return (
     <div
       ref={chartContainerRef}
-      style={{
-        justifyContent: "center",
-        alignItems: "center",
-        overflow: "auto",
-      }}
+      className="justify-center items-center overflow-auto"
     >
       {chart}
     </div>
