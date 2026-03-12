@@ -29,8 +29,10 @@ class DvcConfig:
             config_list = result.split("\n")
             config_dict = {}
             for item in config_list:
-                # seprating every dvc property and its value using split on '='
-                item_list = item.split("=") 
+                # Split only on the first '=' to preserve base64-encoded values
+                # that may contain '=' padding characters.
+                # for eg: remote.ssh-storage.password = cGFzc3dvcmQ= (which is base64-encoded 'password')
+                item_list = item.split("=", 1)
                 config_dict[item_list[0]] = item_list[1]
             return config_dict
 

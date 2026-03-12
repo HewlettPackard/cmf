@@ -9,26 +9,25 @@ Lineage tracking captures the relationships between:
 - **Data Flow**: How data moves through pipeline stages
 - **Dependencies**: Which artifacts depend on which executions
 
----
 
 ## Visualization Types
 
-The Lineage page offers four different visualization modes:
+The Lineage page offers three different visualization modes:
 
 ### 1. Artifact Tree
 
 **Purpose**: Hierarchical view of artifact dependencies
 
 **Use Cases**:
+
 - Understand data transformation pipeline
 - Trace dataset lineage from raw to final
 - Identify reused artifacts across stages
 
 **Features**:
+
 - Tree layout showing parent-child relationships
 - Color-coded by artifact type (Dataset/Model/Metrics)
-- Expandable/collapsible nodes
-- Hover for artifact details
 
 ![Artifact Tree Lineage](../assets/artifact_tree_lineage.png)
 
@@ -69,7 +68,6 @@ The Lineage page offers four different visualization modes:
 - Filtered by pipeline
 
 ![Artifact Execution Tree Lineage](../assets/artifact_exec_tree_lineage.png)
-
 
 
 ## Using the Lineage Page
@@ -122,7 +120,6 @@ The Lineage page offers four different visualization modes:
 4. Useful for understanding data sharing patterns
 5. Can help identify opportunities for caching
 
----
 
 ## Related Pages
 
@@ -131,7 +128,6 @@ The Lineage page offers four different visualization modes:
 - [CMF Client Commands](../cmf_client/cmf_client_commands.md) - CLI for metadata management
 - [Installation & Setup](../setup/index.md) - Set up CMF Server
 
----
 
 ## Additional Resources
 

@@ -17,6 +17,7 @@
 
 #!/usr/bin/env python3
 import argparse
+import base64
 import os
 
 from cmflib.cli.command import CmdBase
@@ -96,7 +97,9 @@ class CmdInitSSHRemote(CmdBase):
             raise CmfInitFailed
         print(output)
         dvc_add_attribute(repo_type, "user", self.args.user[0])
-        dvc_add_attribute(repo_type, "password", self.args.password[0])
+        # Encode the password in base64 before storing so it is not saved as plaintext.
+        encrypted_password = base64.b64encode(self.args.password[0].encode("utf-8")).decode("utf-8")
+        dvc_add_attribute(repo_type, "password", encrypted_password)
         dvc_add_attribute(repo_type, "port", self.args.port[0])
         status = CmfInitComplete()
         return status

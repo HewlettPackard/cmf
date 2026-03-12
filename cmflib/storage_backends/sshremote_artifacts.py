@@ -14,6 +14,7 @@
 # limitations under the License.
 ###
 
+import base64
 import os
 import logging
 import paramiko
