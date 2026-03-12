@@ -46,13 +46,18 @@ mkdir example-folder && cd example-folder
 CMF must be initialized to use CMF Client commands. The following command configures a local artifact repository and specifies the connection to a CMF server.
 
 **Basic Usage (Required Parameters Only):**
-```
-cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git
 ```
 
 **With Optional Parameters:**
-```
-cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
 ```
 Check [here](./cmf_client_commands.md) for more details.
 
