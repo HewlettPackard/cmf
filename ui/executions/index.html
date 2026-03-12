@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -498,7 +498,7 @@
   <span class="md-ellipsis">
     
   
-    🐍 API Reference
+    🔗 API Reference
   
 
     
@@ -520,7 +520,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    🐍 API Reference
+    🔗 API Reference
   
 
           </label>
@@ -1324,10 +1324,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-execution-filters" class="md-nav__link">
+  <a href="#1-filter-box" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Execution Filters
+        1. Filter Box
       
     </span>
   </a>
@@ -1339,6 +1339,84 @@
     <span class="md-ellipsis">
       
         2. Executions Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-executions-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Executions Page
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the Executions Page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-find-executions-from-a-specific-pipeline-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Find Executions from a Specific Pipeline Stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-compare-git-commits-across-executions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Compare Git Commits Across Executions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-inspect-python-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Inspect Python Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Snapshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Snapshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-python-env-popup-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Python Env Popup Card
       
     </span>
   </a>
@@ -1536,10 +1614,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-execution-filters" class="md-nav__link">
+  <a href="#1-filter-box" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Execution Filters
+        1. Filter Box
       
     </span>
   </a>
@@ -1551,6 +1629,84 @@
     <span class="md-ellipsis">
       
         2. Executions Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-executions-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the Executions Page
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the Executions Page">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-1-find-executions-from-a-specific-pipeline-stage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 1: Find Executions from a Specific Pipeline Stage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-2-compare-git-commits-across-executions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 2: Compare Git Commits Across Executions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-inspect-python-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Inspect Python Environment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Snapshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Snapshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-python-env-popup-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Python Env Popup Card
       
     </span>
   </a>
@@ -1596,93 +1752,97 @@
 <ul>
 <li><strong>Configuration</strong>: Parameters and environment settings</li>
 <li><strong>Code Version</strong>: Git commit that was executed</li>
-<li><strong>Artifacts</strong>: Input and output artifacts</li>
+<li><strong>Artifacts</strong>: Input and output artifacts used in the execution</li>
 <li><strong>Metadata</strong>: Runtime information and custom properties</li>
 </ul>
-<p><img alt="CMF Executions Page" src="../../assets/executions.png" /></p>
-<hr />
+<p><img alt="Execution page" src="../../assets/ExecutionPage.png" /></p>
 <h2 id="page-features">Page Features<a class="headerlink" href="#page-features" title="Permanent link">¤</a></h2>
-<h3 id="1-execution-filters">1. Execution Filters<a class="headerlink" href="#1-execution-filters" title="Permanent link">¤</a></h3>
-<p>Filter executions to find specific runs:</p>
+<h3 id="1-filter-box">1. Filter Box<a class="headerlink" href="#1-filter-box" title="Permanent link">¤</a></h3>
+<p>Search and filter executions based on context type or properties:</p>
 <table>
 <thead>
 <tr>
 <th>Filter</th>
 <th>Description</th>
-<th>Usage</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Pipeline Name</strong></td>
-<td>Select specific pipeline</td>
-<td>Dropdown with all pipelines</td>
-</tr>
-<tr>
-<td><strong>Execution Type</strong></td>
-<td>Filter by stage name</td>
-<td>e.g., "train", "test", "prepare"</td>
-</tr>
-<tr>
-<td><strong>Git Branch</strong></td>
-<td>Filter by code branch</td>
-<td>Dropdown of tracked branches</td>
+<td><strong>Filter by Context Type/Properties</strong></td>
+<td>Enter any text to search across execution context types (pipeline stages), execution artifacts, Git commits, or any execution metadata. Matching executions will be displayed in the table.</td>
 </tr>
 </tbody>
 </table>
 <h3 id="2-executions-table">2. Executions Table<a class="headerlink" href="#2-executions-table" title="Permanent link">¤</a></h3>
-<p>The main table displays execution runs with these columns:</p>
+<p>The main table displays execution runs with the following columns:</p>
 <table>
 <thead>
 <tr>
 <th>Column</th>
 <th>Description</th>
-<th>Information</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Execution ID</strong></td>
-<td>Unique identifier</td>
-<td>Numeric ID from MLMD</td>
+<td><strong>+</strong></td>
+<td>Expandable icon to view detailed execution information</td>
 </tr>
 <tr>
-<td><strong>Name</strong></td>
-<td>Execution name</td>
-<td>Stage name + unique suffix</td>
+<td><strong>Context Type</strong></td>
+<td>Pipeline stage name in format <code>Pipeline/Stage</code> (e.g., "Test-env/Train", "Test-env/Evaluate")</td>
 </tr>
 <tr>
-<td><strong>Pipeline</strong></td>
-<td>Parent pipeline</td>
-<td>Pipeline name</td>
+<td><strong>Execution</strong></td>
+<td>Array of execution artifacts including scripts, input datasets, and output artifacts (e.g., ['src/train.py', 'artifacts/features', 'artifacts/model'])</td>
 </tr>
 <tr>
-<td><strong>Context/Stage</strong></td>
-<td>Pipeline stage</td>
-<td>e.g., "train", "evaluate"</td>
+<td><strong>Python Env</strong></td>
+<td>View Python environment details used during execution</td>
 </tr>
 <tr>
-<td><strong>Original Epoch Time</strong></td>
-<td>Start timestamp</td>
-<td>When execution began</td>
+<td><strong>Git Repo</strong></td>
+<td>GitHub repository URL where the code is hosted</td>
 </tr>
 <tr>
-<td><strong>Duration</strong></td>
-<td>Execution time</td>
-<td>Time taken to complete</td>
+<td><strong>Git Start Commit</strong></td>
+<td>Full Git commit hash identifying the exact code version that was executed</td>
 </tr>
 <tr>
-<td><strong>Git Commit</strong></td>
-<td>Code version</td>
-<td>Short commit hash</td>
+<td><strong>Pipeline Type</strong></td>
+<td>Name of the parent pipeline (e.g., "Test-env")</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Table Interactions:</strong></p>
 <ul>
-<li><strong>Click execution name</strong>: Opens detailed execution view</li>
-<li><strong>Sort columns</strong>: Click headers to sort by that field</li>
+<li><strong>Click + icon</strong>: Expands row to show detailed execution metadata, custom properties, and additional information</li>
+<li><strong>View Env Details</strong>: Opens Python environment details showing packages and versions used</li>
+<li><strong>Pagination controls</strong>: Navigate through execution history using Previous/Next buttons and page numbers</li>
 </ul>
+<h2 id="using-the-executions-page">Using the Executions Page<a class="headerlink" href="#using-the-executions-page" title="Permanent link">¤</a></h2>
+<h3 id="example-1-find-executions-from-a-specific-pipeline-stage">Example 1: Find Executions from a Specific Pipeline Stage<a class="headerlink" href="#example-1-find-executions-from-a-specific-pipeline-stage" title="Permanent link">¤</a></h3>
+<ol>
+<li>Select a pipeline from the <strong>LIST OF PIPELINES</strong> sidebar</li>
+<li>Use the filter box to search for a stage name (e.g., "Train" or "Evaluate")</li>
+<li>Review the filtered executions in the table</li>
+<li>Click the <strong>+</strong> icon to view detailed execution information</li>
+</ol>
+<h3 id="example-2-compare-git-commits-across-executions">Example 2: Compare Git Commits Across Executions<a class="headerlink" href="#example-2-compare-git-commits-across-executions" title="Permanent link">¤</a></h3>
+<ol>
+<li>Navigate to the <strong>Executions</strong> page</li>
+<li>Locate the <strong>Git Start Commit</strong> column</li>
+<li>Compare commit hashes across different execution runs</li>
+<li>Click the <strong>Git Repo</strong> link to view the code on GitHub</li>
+</ol>
+<h3 id="example-3-inspect-python-environment">Example 3: Inspect Python Environment<a class="headerlink" href="#example-3-inspect-python-environment" title="Permanent link">¤</a></h3>
+<ol>
+<li>Find the execution you want to inspect</li>
+<li>Click <strong>View Env Details</strong> in the <strong>Python Env</strong> column</li>
+<li>Review the packages and versions used in that execution</li>
+</ol>
+<h2 id="additional-snapshots">Additional Snapshots<a class="headerlink" href="#additional-snapshots" title="Permanent link">¤</a></h2>
+<h4 id="1-python-env-popup-card">1. Python Env Popup Card<a class="headerlink" href="#1-python-env-popup-card" title="Permanent link">¤</a></h4>
+<p><img alt="Python Env Popup" src="../../assets/PythonEnv.png" /></p>
 <h2 id="related-pages">Related Pages<a class="headerlink" href="#related-pages" title="Permanent link">¤</a></h2>
 <ul>
 <li><a href="../artifacts/">Artifacts Page</a> - View artifacts produced by executions</li>

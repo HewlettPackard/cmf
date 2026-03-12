@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -498,7 +498,7 @@
   <span class="md-ellipsis">
     
   
-    🐍 API Reference
+    🔗 API Reference
   
 
     
@@ -520,7 +520,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    🐍 API Reference
+    🔗 API Reference
   
 
           </label>
@@ -1335,10 +1335,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-1-find-all-models-from-a-pipeline" class="md-nav__link">
+  <a href="#example-1-find-all-datasets-from-a-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example 1: Find All Models from a Pipeline
+        Example 1: Find All Datasets from a Pipeline
       
     </span>
   </a>
@@ -1346,10 +1346,71 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-2-track-metrics-over-time" class="md-nav__link">
+  <a href="#example-2-view-models-and-their-execution-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example 2: Track Metrics Over Time
+        Example 2: View Models and Their Execution Context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-track-metrics-over-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Track Metrics Over Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-find-artifacts-with-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: Find Artifacts with Labels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Snapshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Snapshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-model-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Model Card
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-label-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Label Content
       
     </span>
   </a>
@@ -1614,10 +1675,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-1-find-all-models-from-a-pipeline" class="md-nav__link">
+  <a href="#example-1-find-all-datasets-from-a-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example 1: Find All Models from a Pipeline
+        Example 1: Find All Datasets from a Pipeline
       
     </span>
   </a>
@@ -1625,10 +1686,71 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#example-2-track-metrics-over-time" class="md-nav__link">
+  <a href="#example-2-view-models-and-their-execution-context" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example 2: Track Metrics Over Time
+        Example 2: View Models and Their Execution Context
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-3-track-metrics-over-time" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 3: Track Metrics Over Time
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-4-find-artifacts-with-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example 4: Find Artifacts with Labels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#additional-snapshots" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional Snapshots
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Additional Snapshots">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-model-card" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Model Card
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-label-content" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Label Content
       
     </span>
   </a>
@@ -1669,15 +1791,16 @@
 
 
 <h1 id="artifacts">Artifacts<a class="headerlink" href="#artifacts" title="Permanent link">¤</a></h1>
-<p>The Artifacts page provides a comprehensive interface for exploring all types of artifacts (datasets, models, metrics, step metrics) tracked by CMF across your ML pipelines. This page enables users to search, filter, and analyze artifacts with detailed metadata and version history.</p>
+<p>The Artifacts page provides a comprehensive interface for exploring all types of artifacts (datasets, models, metrics, step metrics, labels) tracked by CMF across your ML pipelines. This page enables users to search, filter, and analyze artifacts with detailed metadata and version history.</p>
 <p>Artifacts represent the data entities in your ML pipeline:</p>
 <ul>
-<li><strong>Datasets</strong>: Training data, test data, validation sets, feature matrices</li>
-<li><strong>Models</strong>: Trained ML models, model checkpoints, exported models</li>
-<li><strong>Metrics</strong>: Performance metrics, evaluation results, quality measures</li>
+<li><strong>Datasets</strong>: Training data, test data, validation sets, feature matrices. Tracked with version control and DVC metadata.</li>
+<li><strong>Models</strong>: Trained ML models, model checkpoints, exported models with versioning information.</li>
+<li><strong>Metrics</strong>: Execution-level metrics (coarse-grained tracking) without backing physical files. Used to log metadata associated with the entire execution.</li>
+<li><strong>Step_Metrics</strong>: Fine-grained metrics stored in Parquet files. Captures per-step or per-epoch metrics during training/execution, committed to version control.</li>
+<li><strong>Labels</strong>: Data labels and annotations, usually CSV files containing information about datasets. Connected to datasets via "has_label" relationship.</li>
 </ul>
 <p><img alt="CMF Artifacts Page" src="../../assets/artifacts.jpeg" /></p>
-<hr />
 <h2 id="page-features">Page Features<a class="headerlink" href="#page-features" title="Permanent link">¤</a></h2>
 <h3 id="1-filter-panel">1. Filter Panel<a class="headerlink" href="#1-filter-panel" title="Permanent link">¤</a></h3>
 <p>The filter panel allows you to narrow down artifacts based on multiple criteria:</p>
@@ -1693,20 +1816,20 @@
 <tr>
 <td><strong>Artifact Type</strong></td>
 <td>Filter by artifact category</td>
-<td>Dataset, Model, Metrics</td>
+<td>Dataset, Label, Step_Metrics, Model, Metrics</td>
 </tr>
 <tr>
-<td><strong>Custom Properties</strong></td>
-<td>Filter by user-defined metadata</td>
-<td>Based on tracked properties</td>
+<td><strong>Search Filter</strong></td>
+<td>Search across all artifact properties</td>
+<td>Enter any text to search execution names, stages, Git commits, or any execution metadata. Matching executions will be displayed in the table.</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Usage:</strong></p>
 <ol>
-<li>Select a pipeline from the dropdown to view its artifacts</li>
-<li>Choose artifact type (Dataset/Model/Metrics) from tabs</li>
-<li>Use search box for full-text search across artifact names and properties</li>
+<li>Select a pipeline from the sidebar to view its artifacts</li>
+<li>Choose artifact type (Dataset/Label/Step_Metrics/Model/Metrics) from tabs</li>
+<li>Use filter box to search by artifact name or properties</li>
 </ol>
 <h3 id="2-artifacts-table">2. Artifacts Table<a class="headerlink" href="#2-artifacts-table" title="Permanent link">¤</a></h3>
 <p>The main table displays artifacts with the following columns:</p>
@@ -1719,54 +1842,84 @@
 </thead>
 <tbody>
 <tr>
-<td>Name</td>
+<td><strong>+</strong></td>
+<td>Expandable icon to view detailed artifact information</td>
+</tr>
+<tr>
+<td><strong>ID</strong></td>
+<td>Unique artifact identifier</td>
+</tr>
+<tr>
+<td><strong>Name</strong></td>
 <td>Artifact name and identifier</td>
 </tr>
 <tr>
-<td>Type</td>
-<td>Artifact type (Dataset/Model/Metrics)</td>
+<td><strong>Execution Type</strong></td>
+<td>Execution name where artifact was created</td>
 </tr>
 <tr>
-<td>URI</td>
-<td>Artifact location/path</td>
-</tr>
-<tr>
-<td>Pipeline</td>
-<td>Associated pipeline name</td>
-</tr>
-<tr>
-<td>Created At</td>
+<td><strong>Date</strong></td>
 <td>Timestamp of creation</td>
 </tr>
 <tr>
-<td>Custom Properties</td>
-<td>User-defined metadata</td>
+<td><strong>URI</strong></td>
+<td>Artifact location/path</td>
+</tr>
+<tr>
+<td><strong>URL</strong></td>
+<td>Associated URL reference</td>
+</tr>
+<tr>
+<td><strong>Git Repo</strong></td>
+<td>GitHub Repository URL</td>
+</tr>
+<tr>
+<td><strong>Commit</strong></td>
+<td>Git commit hash</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Interactions:</strong></p>
 <ul>
-<li><strong>Click on artifact name</strong>: Opens detailed view with full metadata</li>
-<li><strong>Click column headers</strong>: Sort by that column (ascending/descending)</li>
-<li><strong>Pagination controls</strong>: Navigate through large artifact lists</li>
+<li><strong>Click + icon</strong>: Expands row to show detailed artifact metadata, custom properties, and version information</li>
+<li><strong>Click column headers</strong>: Sort by NAME or DATE column (ascending/descending)</li>
+<li><strong>Pagination controls</strong>: Navigate through large artifact lists using Previous/Next buttons and page numbers</li>
 </ul>
 <h2 id="using-the-artifacts-page">Using the Artifacts Page<a class="headerlink" href="#using-the-artifacts-page" title="Permanent link">¤</a></h2>
-<h3 id="example-1-find-all-models-from-a-pipeline">Example 1: Find All Models from a Pipeline<a class="headerlink" href="#example-1-find-all-models-from-a-pipeline" title="Permanent link">¤</a></h3>
+<h3 id="example-1-find-all-datasets-from-a-pipeline">Example 1: Find All Datasets from a Pipeline<a class="headerlink" href="#example-1-find-all-datasets-from-a-pipeline" title="Permanent link">¤</a></h3>
 <ol>
-<li>Navigate to <strong>Artifacts</strong> page from the sidebar</li>
-<li>Select your pipeline from the <strong>Pipeline</strong> dropdown</li>
+<li>Navigate to <strong>Artifacts</strong> page by clicking on the header tab</li>
+<li>Select a pipeline from the <strong>LIST OF PIPELINES</strong> sidebar</li>
+<li>The <strong>Dataset</strong> tab is selected by default</li>
+<li>Review the list of all datasets used in that pipeline</li>
+<li>Click the <strong>+</strong> icon to view detailed artifact metadata</li>
+</ol>
+<h3 id="example-2-view-models-and-their-execution-context">Example 2: View Models and Their Execution Context<a class="headerlink" href="#example-2-view-models-and-their-execution-context" title="Permanent link">¤</a></h3>
+<ol>
+<li>Select a pipeline from the sidebar</li>
 <li>Click on the <strong>Model</strong> tab to filter by model artifacts</li>
-<li>Review the list of all models created by that pipeline</li>
-<li>Click on a model name to view training parameters and metrics</li>
+<li>Review the <strong>EXECUTION TYPE</strong> column to see which pipeline stage created each model</li>
+<li>Click the <strong>+</strong> icon to view training parameters, version information, and metrics</li>
 </ol>
-<h3 id="example-2-track-metrics-over-time">Example 2: Track Metrics Over Time<a class="headerlink" href="#example-2-track-metrics-over-time" title="Permanent link">¤</a></h3>
+<h3 id="example-3-track-metrics-over-time">Example 3: Track Metrics Over Time<a class="headerlink" href="#example-3-track-metrics-over-time" title="Permanent link">¤</a></h3>
 <ol>
-<li>Select <strong>Metrics</strong> artifact type tab</li>
-<li>Sort by <strong>Created</strong> column to view chronologically</li>
-<li>Click on metrics artifacts to view values</li>
-<li>Compare metrics across different model versions</li>
+<li>Select the <strong>Metrics</strong> or <strong>Step_Metrics</strong> artifact type tab</li>
+<li>Click the <strong>DATE</strong> column header to sort chronologically</li>
+<li>Click the <strong>+</strong> icon on any metric to view its values</li>
+<li>Compare metrics across different execution runs</li>
 </ol>
-<hr />
+<h3 id="example-4-find-artifacts-with-labels">Example 4: Find Artifacts with Labels<a class="headerlink" href="#example-4-find-artifacts-with-labels" title="Permanent link">¤</a></h3>
+<ol>
+<li>Navigate to any artifact type tab (typically Dataset)</li>
+<li>Check the <strong>LABEL</strong> column to identify artifacts with associated labels</li>
+<li>Click the <strong>Label</strong> tab to view all label artifacts</li>
+<li>Use the filter box to search for specific label files</li>
+</ol>
+<h2 id="additional-snapshots">Additional Snapshots<a class="headerlink" href="#additional-snapshots" title="Permanent link">¤</a></h2>
+<h4 id="1-model-card">1. Model Card<a class="headerlink" href="#1-model-card" title="Permanent link">¤</a></h4>
+<p><img alt="Model Card" src="../../assets/ModelCard.png" /></p>
+<h4 id="2-label-content">2. Label Content<a class="headerlink" href="#2-label-content" title="Permanent link">¤</a></h4>
+<p><img alt="Label Content" src="../../assets/LabelContent.png" /> </p>
 <h2 id="related-pages">Related Pages<a class="headerlink" href="#related-pages" title="Permanent link">¤</a></h2>
 <ul>
 <li><a href="../executions/">Executions Page</a> - View pipeline runs that created these artifacts</li>

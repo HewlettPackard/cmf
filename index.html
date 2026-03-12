@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -358,10 +358,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#system-interaction-flow" class="md-nav__link">
+  <a href="#user-interaction-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        System Interaction Flow
+        User Interaction Flow
       
     </span>
   </a>
@@ -654,7 +654,7 @@
   <span class="md-ellipsis">
     
   
-    🐍 API Reference
+    🔗 API Reference
   
 
     
@@ -676,7 +676,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    🐍 API Reference
+    🔗 API Reference
   
 
           </label>
@@ -1604,10 +1604,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#system-interaction-flow" class="md-nav__link">
+  <a href="#user-interaction-flow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        System Interaction Flow
+        User Interaction Flow
       
     </span>
   </a>
@@ -1727,37 +1727,71 @@
 <li><strong>CMF Server with GUI</strong>: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.</li>
 <li><strong>Central Artifact Repositories</strong>: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.</li>
 </ul>
-<h3 id="system-interaction-flow">System Interaction Flow<a class="headerlink" href="#system-interaction-flow" title="Permanent link">¤</a></h3>
-<pre class="mermaid"><code>%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'14px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
+<h3 id="user-interaction-flow">User Interaction Flow<a class="headerlink" href="#user-interaction-flow" title="Permanent link">¤</a></h3>
+<pre class="mermaid"><code>%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#f5f5f5','primaryTextColor':'#37474f','primaryBorderColor':'#90a4ae','lineColor':'#78909c','fontSize':'15px','fontFamily':'system-ui, -apple-system, sans-serif'}}}%%
 flowchart TB
-    WEBUSER([Web Users &amp; ML Teams])
-    CMFCLIENT([CMF Client CLI])
+    subgraph CLIUSER["👩‍💻 ML Engineer / Data Scientist Workflow"]
+        direction TB
+        CLI1([1. Write ML Pipeline Code])
+        CLI2([2. Log Metadata with cmflib])
+        CLI3([3. Run Pipeline Locally])
+        CLI4([4. Push Metadata to Server])
+        CLI5([5. Push Artifacts to Storage])
+        CLI6([6. Pull Metadata from Server])
+        CLI7([7. Pull Artifacts from Server])
 
-    UI[Web Interface]
-    SERVERBOX[CMF Server]
+        CLI1 --&gt; CLI2 --&gt; CLI3 --&gt; CLI4 --&gt; CLI5
+        CLI6 -.-&gt;|Collaborate| CLI2
+        CLI6 -.-&gt;|Collaborate| CLI2
+    end
 
-    DB[(Metadata Store)]
-    ARTIFACTS[Artifact Repositories&lt;br/&gt;&lt;i&gt;local/ S3 / MinIO / SSH&lt;/i&gt;]
+    subgraph WEBUSER["👥 Team Members / Stakeholders Workflow"]
+        direction TB
+        WEB1([1. Access Web Interface])
+        WEB2([2. Browse Pipelines &amp; Executions])
+        WEB3([3. View Lineage Graphs])
+        WEB4([4. Analyze Metrics &amp; Models])
+        WEB5([5. Compare Experiments])
 
-    WEBUSER --&gt;|Access| UI
-    CMFCLIENT --&gt;|Push Metadata| SERVERBOX
-    SERVERBOX --&gt;|Pull Metadata| CMFCLIENT
+        WEB1 --&gt; WEB2 --&gt; WEB3 --&gt; WEB4 --&gt; WEB5
+    end
 
-    UI --&gt;|Request Data| SERVERBOX
-    SERVERBOX --&gt;|Response| UI
+    subgraph INFRA["🔧 CMF Infrastructure"]
+        direction LR
+        SERVER[CMF Server]
+        DB[(Metadata Store)]
+        STORAGE[Artifact Storage&lt;br/&gt;&lt;i&gt;S3/MinIO/SSH&lt;/i&gt;]
 
-    SERVERBOX --&gt;|Query &amp; Store| DB
-    DB --&gt;|Query &amp; Store| SERVERBOX
+        SERVER &lt;--&gt; DB
+    end
 
-    CMFCLIENT --&gt;|Push Artifacts| ARTIFACTS
-    ARTIFACTS --&gt;|Pull Artifacts| CMFCLIENT
+    CLI4 -.-&gt;|cmf metadata push| SERVER
+    CLI5 -.-&gt;|cmf artifact push| STORAGE
+    CLI6 -.-&gt;|cmf metadata pull| SERVER
 
-    style WEBUSER fill:#e8eaf6,stroke:#5c6bc0,stroke-width:2px,color:#37474f
-    style CMFCLIENT fill:#e0f2f1,stroke:#26a69a,stroke-width:2px,color:#37474f
-    style UI fill:#f3e5f5,stroke:#ab47bc,stroke-width:2px,color:#37474f
-    style SERVERBOX fill:#e8f5e9,stroke:#66bb6a,stroke-width:2.5px,color:#37474f
-    style DB fill:#fce4ec,stroke:#ec407a,stroke-width:2px,color:#37474f
-    style ARTIFACTS fill:#fff9c4,stroke:#ffca28,stroke-width:2px,color:#37474f
+    WEB1 -.-&gt;|HTTPS| SERVER
+    SERVER -.-&gt;|Query| DB
+
+    style CLI1 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI2 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI3 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI4 fill:#b3e5fc,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI5 fill:#b3e5fc,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style CLI6 fill:#b3e5fc,stroke:#0288d1,stroke-width:2px,color:#01579b
+
+    style WEB1 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB2 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB3 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB4 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+    style WEB5 fill:#f3e5f5,stroke:#8e24aa,stroke-width:2px,color:#4a148c
+
+    style SERVER fill:#e8f5e9,stroke:#43a047,stroke-width:2.5px,color:#1b5e20
+    style DB fill:#fff3e0,stroke:#fb8c00,stroke-width:2px,color:#e65100
+    style STORAGE fill:#fce4ec,stroke:#d81b60,stroke-width:2px,color:#880e4f
+
+    style CLIUSER fill:#f1f8ff,stroke:#0366d6,stroke-width:3px,color:#0366d6
+    style WEBUSER fill:#fef3ff,stroke:#8e24aa,stroke-width:3px,color:#8e24aa
+    style INFRA fill:#f6f8fa,stroke:#586069,stroke-width:2px,color:#586069
 
     linkStyle default stroke:#78909c,stroke-width:2px</code></pre>
 <h2 id="core-abstractions">Core Abstractions<a class="headerlink" href="#core-abstractions" title="Permanent link">¤</a></h2>
