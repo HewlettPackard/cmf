@@ -1536,16 +1536,17 @@ Execute the &#39;cmf init&#39; command.
 <li>
 <p>Execute the following command to initialize the MinIO S3 bucket as a CMF artifact repository:</p>
 <p><strong>Basic Usage (Required Parameters Only):</strong>
-<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
-  --access-key-id minioadmin --secret-key minioadmin \
-  --git-remote-url https://github.com/user/experiment-repo.git
+<div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span>minioS3<span class="w"> </span>--url<span class="w"> </span>s3://dvc-art<span class="w"> </span>--endpoint-url<span class="w"> </span>http://x.x.x.x:9000<span class="w"> </span><span class="se">\</span>
+--access-key-id<span class="w"> </span>minioadmin<span class="w"> </span>--secret-key<span class="w"> </span>minioadmin<span class="w"> </span><span class="se">\</span>
+--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git
 </code></pre></div></p>
 <p><strong>With Optional Parameters:</strong>
-<div class="highlight"><pre><span></span><code>cmf init minioS3 --url s3://dvc-art --endpoint-url http://x.x.x.x:9000 \
-  --access-key-id minioadmin --secret-key minioadmin \
-  --git-remote-url https://github.com/user/experiment-repo.git \
-  --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j \
-  --neo4j-password password --neo4j-uri bolt://localhost:7687
+<div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span>minioS3<span class="w"> </span>--url<span class="w"> </span>s3://dvc-art<span class="w"> </span>--endpoint-url<span class="w"> </span>http://x.x.x.x:9000<span class="w"> </span><span class="se">\</span>
+--access-key-id<span class="w"> </span>minioadmin<span class="w"> </span>--secret-key<span class="w"> </span>minioadmin<span class="w"> </span><span class="se">\</span>
+--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git<span class="w"> </span><span class="se">\</span>
+--cmf-server-url<span class="w"> </span>http://x.x.x.x:80<span class="w"> </span><span class="se">\</span>
+--neo4j-user<span class="w"> </span>neo4j<span class="w"> </span>--neo4j-password<span class="w"> </span>password<span class="w"> </span><span class="se">\</span>
+--neo4j-uri<span class="w"> </span>bolt://localhost:7687
 </code></pre></div></p>
 </li>
 </ol>
@@ -1589,7 +1590,7 @@ core.remote=minio
 <p>The following image is a snapshot of this example using a MinIO server and a bucket named 'dvc-art'.</p>
 </li>
 </ol>
-<p><img alt="image" src="https://miro.medium.com/max/1100/1*sIOUllU2O6YGdT7ARoY-xw.webp" /></p>
+<p><img alt="MinioS3 image" src="../../assets/MinioS3.png" /></p>
 
 
 

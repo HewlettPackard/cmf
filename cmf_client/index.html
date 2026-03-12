@@ -1561,10 +1561,15 @@
 <h3 id="initialize-cmf">Initialize cmf<a class="headerlink" href="#initialize-cmf" title="Permanent link">¤</a></h3>
 <p>CMF initialization is the first and foremost step to use CMF Client commands. This command completes the initialization process in one step, making the CMF Client user-friendly. Execute <code>cmf init</code> in the <code>example-folder</code> directory created in the above step.</p>
 <p><strong>Basic Usage (Required Parameters Only):</strong>
-<div class="highlight"><pre><span></span><code>cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git
+<div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--path<span class="w"> </span>/path/to/local-storage<span class="w"> </span><span class="se">\</span>
+--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git
 </code></pre></div></p>
 <p><strong>With Optional Parameters:</strong>
-<div class="highlight"><pre><span></span><code>cmf init local --path /path/to/local-storage --git-remote-url https://github.com/user/experiment-repo.git --cmf-server-url http://x.x.x.x:80 --neo4j-user neo4j --neo4j-password password --neo4j-uri bolt://localhost:7687
+<div class="highlight"><pre><span></span><code>cmf<span class="w"> </span>init<span class="w"> </span><span class="nb">local</span><span class="w"> </span>--path<span class="w"> </span>/path/to/local-storage<span class="w"> </span><span class="se">\</span>
+--git-remote-url<span class="w"> </span>https://github.com/user/experiment-repo.git<span class="w"> </span><span class="se">\</span>
+--cmf-server-url<span class="w"> </span>http://x.x.x.x:80<span class="w"> </span><span class="se">\</span>
+--neo4j-user<span class="w"> </span>neo4j<span class="w"> </span>--neo4j-password<span class="w"> </span>password<span class="w"> </span><span class="se">\</span>
+--neo4j-uri<span class="w"> </span>bolt://localhost:7687
 </code></pre></div></p>
 <p>Check <a href="cmf_client_commands/#cmf-init-local">cmf init local</a> for more details.</p>
 <p><strong>Check status of CMF initialization (Optional)</strong>
