@@ -1,12 +1,18 @@
-from cmflib.cmfquery import CmfQuery
+import io
+import os
+import zipfile
+import httpx
 import pandas as pd
 import typing as t
+from fastapi import HTTPException
+from jsonpath_ng.ext import parse
+from cmflib.cmfquery import CmfQuery
 from fastapi.concurrency import run_in_threadpool
-
 
 #Converts sync functions to async
 async def async_api(function_to_async, query: CmfQuery, *argv):
     return await run_in_threadpool(function_to_async, query, *argv)
+
 
 def get_model_data(query: CmfQuery, modelId: int):
     '''
@@ -43,7 +49,6 @@ def get_model_data(query: CmfQuery, modelId: int):
         model_data_df = pd.DataFrame()
         return model_data_df, model_exe_df, model_input_df, model_output_df
 
-
     # extracting modelName
     modelName = model_data_df['name'].tolist()[0]
 
@@ -53,7 +58,6 @@ def get_model_data(query: CmfQuery, modelId: int):
     if not exe_df.empty:
         exe_df.drop(columns=['execution_type_name', 'execution_name'], inplace=True)
         exe_ids = exe_df['execution_id'].tolist()
-
 
     if not exe_ids:
          return model_data_df, model_exe_df, model_input_df, model_output_df
@@ -105,6 +109,7 @@ def get_all_exe_ids(query: CmfQuery, pipeline_name: t.Optional[str] = None) -> t
                 execution_ids[name] = pd.DataFrame()
     return execution_ids
 
+
 def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Optional[str] = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
     # following is a dictionary of dictionaries
 
@@ -149,6 +154,7 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Option
             else:
                 artifact_ids[name] = {}
     return artifact_ids
+
 
 def get_artifact_types(query: CmfQuery) -> t.List[str]:
     artifact_types = query.get_all_artifact_types()
@@ -205,6 +211,88 @@ def executions_list(query: CmfQuery, pipeline_name, dict_of_exe_ids):
         list_of_exec_uuid.append(exec_type.split("/",1)[1] + "_" + uuid.split("-")[0][:4])
     print(type(list_of_exec_uuid))
     return list_of_exec_uuid
+
+
+async def server_mlmd_pull(server_url, last_sync_time):
+    """
+    Fetch mlmd data from a specified server.
+
+    Args:
+        server_url (str): The full URL of the target server.
+        last_sync_time (int): The last sync time in milliseconds since epoch.
+
+    Returns:
+        dict: The mlmd data fetched from the specified server.
+
+    Raises:
+        HTTPException: If the server is not reachable or an error occurs during the request.
+    """
+    try:
+        # Step 1: Send a request to the target server to fetch mlmd data
+        async with httpx.AsyncClient(timeout=300.0) as client:
+            try:
+                response = await client.post(f"{server_url}/api/mlmd_pull", json={'last_sync_time': last_sync_time})
+
+                if response.status_code != 200:
+                    raise HTTPException(status_code=500, detail="Target server did not respond successfully")
+
+                json_payload = response.json()
+                python_env_store_path = "/cmf-server/data/env"
+
+                if last_sync_time:
+                    # Extract the Environment file names from the JSON payload
+                    data = json_payload
+                    jsonpath_expr = parse('$..events[?(@.artifact.type == "Environment")].artifact.name')
+                    environment_names = {match.value.split(":")[0].split("/")[-1] for match in jsonpath_expr.find(data)}
+
+                    # Check if the list is empty or not
+                    if len(environment_names) == 0: 
+                        print("No Environment files are found inside json payload.")
+                        return json_payload
+
+                    list_of_files = list(environment_names)
+                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=list_of_files)
+                else:
+                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=None)
+
+                if python_env_zip.status_code == 200:
+                    try:
+                        # Create the directory if it doesn't exist
+                        os.makedirs(python_env_store_path, exist_ok=True)
+
+                        # Unzip the zip file content
+                        with zipfile.ZipFile(io.BytesIO(python_env_zip.content)) as zf:
+                            # Extract all files to a temporary directory
+                            temp_dir = os.path.join(python_env_store_path, "temp_extracted")
+                            os.makedirs(temp_dir, exist_ok=True)
+                            zf.extractall(temp_dir)
+
+                            # Move all extracted files to the target directory
+                            for root, dirs, files in os.walk(temp_dir):
+                                for file in files:
+                                    src_file = os.path.join(root, file)
+                                    dest_file = os.path.join(python_env_store_path, file)
+                                    try:
+                                        os.rename(src_file, dest_file)
+                                        print(f"Moved {src_file} to {dest_file}")
+                                    except Exception as e:
+                                        print(f"Failed to move {src_file} to {dest_file}: {e}")
+
+                            # Clean up the temporary directory
+                            os.rmdir(temp_dir)
+                        # print("Storing at:", os.path.abspath(python_env_store_path))
+                        # print("Files in target directory:", os.listdir(python_env_store_path))
+                        print("All files stored successfully.")
+                    except Exception as e:
+                        print(f"Error during file extraction or storage: {e}")
+                else:
+                    print(f"Failed to download ZIP file. Status code: {python_env_zip.status_code}")
+            except httpx.RequestError:
+                raise HTTPException(status_code=500, detail="Target server is not reachable")
+        return json_payload
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch mlmd data: {e}")
 
 
 """ Old implemenation of fetching executions """
