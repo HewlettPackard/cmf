@@ -611,6 +611,8 @@ class CmdArtifactPull(CmdBase):
                     )
                     if download_flag:
                         print(f"[FILE] {object_name}")
+                        if getattr(self.args, 'debug', False):
+                            print("------------------------------------------------\n")
                         # Return success if the file is downloaded successfully.
                         return ObjectDownloadSuccess(object_name, download_loc)
                     raise ObjectDownloadFailure(object_name)
@@ -666,6 +668,8 @@ class CmdArtifactPull(CmdBase):
                         if download_flag:
                             #print(f"[FILE] {object_name} -> {download_loc}")
                             print(f"[FILE] {object_name}")
+                            if getattr(self.args, 'debug', False):
+                                print("------------------------------------------------\n")
                             files_downloaded += 1
                         else:
                             print(f"[FAILED] {object_name}")
