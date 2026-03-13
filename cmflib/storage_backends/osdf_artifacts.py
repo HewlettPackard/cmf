@@ -76,8 +76,11 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
     #logger.info(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
     try:
         response = requests.get(host, headers=headers, timeout=timeout, verify=True, stream=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
+        resolved_url = response.url  # final URL after any redirects
         if response.status_code != 200:
             #logger.error(f"Inside download_and_verify_file: Failed to download file. HTTP Status Code: {response.status_code}. Response content: {response.content}")
+            if debug and resolved_url != host:
+                print(f"  [DEBUG] Resolved to {resolved_url}")
             return False, f"HTTP {response.status_code}: No data received from the server."
     except requests.exceptions.Timeout:
         return False, "The request timed out."
@@ -119,7 +122,8 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
         size_str = f"{size_kb/1024:.1f} MB" if size_kb >= 1024 else f"{size_kb:.1f} KB"
         rate_kbs = total_bytes / elapsed / 1024 if elapsed > 0 else 0
         rate_str = f"{rate_kbs/1024:.1f} MB/s" if rate_kbs >= 1024 else f"{rate_kbs:.1f} KB/s"
-        print(f"  [DEBUG] size={size_str}  time={elapsed:.2f}s  rate={rate_str}  url={host}")
+        resolved_info = f"  resolved={resolved_url}" if resolved_url != host else ""
+        print(f"  [DEBUG] size={size_str}  time={elapsed:.2f}s  rate={rate_str}  url={host}{resolved_info}")
 
     return success, stmt
 
@@ -166,33 +170,55 @@ class OSDFremoteArtifacts:
         """
         #Cache can be Blank. If so, fetch from Origin
         if cache == "":
-            #Fetch from Origin
-            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10, debug=self.debug)
-            if success:
-                #logger.info(result)
-                return success, result
-            #logger.error(f"Failed to download and verify file: {result}")
+            #Fetch from Origin, retry up to 3 times
+            success, result = False, "Not attempted"
+            for attempt in range(1, 4):
+                success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10, debug=self.debug)
+                if success:
+                    #logger.info(result)
+                    return success, result
+                logger.error(f"Failed to download and verify file from origin (attempt {attempt}/3): {result}")
+                if self.debug:
+                    print(f"  [DEBUG] Origin attempt {attempt}/3 failed: {result}")
             return success, result
         else:
             #Generate Cached path for artifact
             cached_s_url = generate_cached_url(host, cache)
+            # Follow redirects via HEAD to find the actual cache server (mirrors: curl -L --head -w "%{url_effective}")
+            resolved_cache_url = cached_s_url
+            try:
+                head_resp = requests.head(cached_s_url, headers=self.headers, timeout=5, verify=True, allow_redirects=True)
+                resolved_cache_url = head_resp.url
+            except Exception:
+                pass  # If HEAD fails, fall back to original URL for the GET
             if self.debug:
                 print(f"  [DEBUG] Trying cache at {cached_s_url}")
-            #Try to fetch from cache first
-            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=5, debug=self.debug)
-            if success:
-                #logger.info(cached_result)
-                return success, cached_result
-            else:
-                logger.error(f"Failed to download and verify file from cache: {cached_result}")
-                logger.info(f"Trying Origin at {host}")
-                #Fetch from Origin
+                if resolved_cache_url != cached_s_url:
+                    print(f"  [DEBUG] Resolved cache to {resolved_cache_url}")
+            #Try to fetch from cache first (using resolved URL to skip redirect in the download)
+            #Retry up to 3 times on the resolved URL before falling back to origin
+            success, cached_result = False, "Not attempted"
+            for attempt in range(1, 4):
+                success, cached_result = download_and_verify_file(resolved_cache_url, self.headers, download_path, local_path, artifact_hash, timeout=5, debug=self.debug)
+                if success:
+                    #logger.info(cached_result)
+                    return success, cached_result
+                logger.error(f"Failed to download and verify file from cache (attempt {attempt}/3): {cached_result}")
+                if self.debug:
+                    print(f"  [DEBUG] Cache attempt {attempt}/3 failed: {cached_result}")
+            logger.error(f"All 3 cache attempts failed, falling back to origin.")
+            logger.info(f"Trying Origin at {host}")
+            #Fetch from Origin, retry up to 3 times
+            success, origin_result = False, "Not attempted"
+            for attempt in range(1, 4):
                 success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10, debug=self.debug)
                 if success:
                     #logger.info(origin_result)
                     return success, origin_result
-                #logger.error(f"Failed to download and verify file: {origin_result}")
-                return success, origin_result
+                logger.error(f"Failed to download and verify file from origin (attempt {attempt}/3): {origin_result}")
+                if self.debug:
+                    print(f"  [DEBUG] Origin attempt {attempt}/3 failed: {origin_result}")
+            return success, origin_result
 
     def download_file(
         self,
