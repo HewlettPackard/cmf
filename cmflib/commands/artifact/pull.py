@@ -585,7 +585,7 @@ class CmdArtifactPull(CmdBase):
             #Now Ready to do dvc pull 
             cache_path=cmf_config["osdf-cache"]
 
-            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op)
+            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op, debug=getattr(self.args, 'debug', False))
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
@@ -611,6 +611,8 @@ class CmdArtifactPull(CmdBase):
                     )
                     if download_flag:
                         print(f"[FILE] {object_name}")
+                        if getattr(self.args, 'debug', False):
+                            print("------------------------------------------------\n")
                         # Return success if the file is downloaded successfully.
                         return ObjectDownloadSuccess(object_name, download_loc)
                     raise ObjectDownloadFailure(object_name)
@@ -666,6 +668,8 @@ class CmdArtifactPull(CmdBase):
                         if download_flag:
                             #print(f"[FILE] {object_name} -> {download_loc}")
                             print(f"[FILE] {object_name}")
+                            if getattr(self.args, 'debug', False):
+                                print("------------------------------------------------\n")
                             files_downloaded += 1
                         else:
                             print(f"[FAILED] {object_name}")
@@ -804,6 +808,13 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-a", "--artifact_name", action="append", help="Specify artifact name.", metavar="<artifact_name>"
+    )
+
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Show debug info per file: cache URL attempted, file size, download rate, and timing.",
     )
 
     parser.set_defaults(func=CmdArtifactPull)
