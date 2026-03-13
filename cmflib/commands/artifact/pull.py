@@ -585,7 +585,7 @@ class CmdArtifactPull(CmdBase):
             #Now Ready to do dvc pull 
             cache_path=cmf_config["osdf-cache"]
 
-            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op)
+            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op, debug=getattr(self.args, 'debug', False))
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.
@@ -804,6 +804,13 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-a", "--artifact_name", action="append", help="Specify artifact name.", metavar="<artifact_name>"
+    )
+
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        default=False,
+        help="Show debug info per file: cache URL attempted, file size, download rate, and timing.",
     )
 
     parser.set_defaults(func=CmdArtifactPull)
