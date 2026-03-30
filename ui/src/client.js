@@ -214,6 +214,26 @@ class FastAPIClient {
       });
   }
 
+  async sendOTP(recipient_email) {
+    return this.apiClient
+      .post(`/send-otp`, {
+        recipient_email: recipient_email,
+      })
+      .then(({ data }) => {
+        return data;
+      }); 
+  }
+
+  async verifyOTP(recipient_email, otp) {
+    return this.apiClient
+      .post(`/verify-otp`, {
+        recipient_email: recipient_email,
+        otp: otp,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
 }
 
 

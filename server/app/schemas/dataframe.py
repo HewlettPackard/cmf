@@ -59,4 +59,9 @@ class MLMDPullRequest(BaseModel):
     last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
     
 
-    
+class EmailRequest(BaseModel):
+    recipient_email: str
+
+class OTPRequest(BaseModel):
+    recipient_email: str
+    otp: str
