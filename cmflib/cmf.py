@@ -760,7 +760,7 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-        custom_props = {} if custom_properties is None else custom_properties
+        custom_props = {} if custom_properties is None else dict(custom_properties)
 
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -780,7 +780,7 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
-        if c_hash and c_hash.strip:
+        if c_hash and c_hash.strip():
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
         uri = c_hash
@@ -830,9 +830,8 @@ class Cmf:
 
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        custom_properties = custom_props
-        custom_props["git_repo"] = git_repo
-        custom_props["Commit"] = dataset_commit
+        system_props = {"git_repo": git_repo, "Commit": dataset_commit}
+        graph_custom_props = {**custom_props, **system_props}
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
@@ -844,7 +843,7 @@ class Cmf:
                 event,
                 self.execution.id,
                 self.parent_context,
-                custom_props,
+                graph_custom_props,
             )
             if event.lower() == "input":
                 self.input_artifacts.append(
@@ -891,7 +890,7 @@ class Cmf:
                         "git_repo": git_repo,
                         "url": dvc_url_with_pipeline,
                     },
-                    "custom_properties": custom_properties,
+                    "custom_properties": custom_props,
                 }
                 # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
                 if artifact_uri:
@@ -1520,7 +1519,7 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-        custom_props = {} if custom_properties is None else custom_properties
+        custom_props = {} if custom_properties is None else dict(custom_properties)
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
 
@@ -1548,13 +1547,13 @@ class Cmf:
             self.update_existing_artifact(dataset_artifact, dataset_custom_properties)
 
             # Prepare label custom properties
-            custom_props = {} if custom_properties is None else custom_properties
+            custom_props = {} if custom_properties is None else dict(custom_properties)
             custom_props["dataset_uri"] = dataset_uri
             git_repo = git_get_repo()
 
             # Check if label artifact already exists
             existing_artifact = []
-            if label_hash and label_hash.strip:
+            if label_hash and label_hash.strip():
                 existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
             
             url = url + ":" + label_hash
@@ -1601,9 +1600,8 @@ class Cmf:
                     custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
-            custom_properties = custom_props
-            custom_props["git_repo"] = git_repo
-            custom_props["Commit"] = label_hash
+            system_props = {"git_repo": git_repo, "Commit": label_hash}
+            graph_custom_props = {**custom_props, **system_props}
 
             execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
             if self.custom_store and execution_uuid and artifact:
@@ -1616,7 +1614,7 @@ class Cmf:
                             "git_repo": git_repo,
                             "url": url,
                         },
-                        "custom_properties": custom_properties,
+                        "custom_properties": custom_props,
                     }
                     # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
                     if artifact_uri:
@@ -1638,7 +1636,7 @@ class Cmf:
                     self.execution.id,
                     self.parent_context,
                     dataset_uri,  # Pass dataset_uri to link label to dataset
-                    custom_props,
+                    graph_custom_props,
                 )
                 # NOTE: Labels are NOT added to self.input_artifacts to prevent them from being
                 # linked to other artifacts via create_artifact_relationships(). Labels are 
