@@ -17,7 +17,6 @@
 
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
-import "./index.css";
 
 function DashboardHeader() {
   const [toggleMenu, setToggleMenu] = useState(false);
@@ -40,6 +39,7 @@ function DashboardHeader() {
               to="/"
               className="font-bold text-2xl font-sans tracking-tight bg-teal-600 text-white px-4 py-2 rounded-lg shadow"
               style={{ textAlign: 'left' }}
+              onClick={() => { window.location.href = "/" }}
             >
               CMF SERVER
             </NavLink>
@@ -51,8 +51,12 @@ function DashboardHeader() {
                 <NavLink
                   key={link.to}
                   to={link.to}
-                  className="text-xl text-gray-700 hover:text-teal-600 font-semibold font-sans transition-colors"
-                  activeClassName="active"
+                  className={({ isActive }) =>
+                    `text-xl font-semibold font-sans transition-colors pb-1 ${isActive
+                      ? "text-teal-600 border-b-2 border-teal-600"
+                      : "text-gray-700 hover:text-teal-600 border-b-2 border-transparent"
+                    }`
+                  }
                 >
                   {link.label}
                 </NavLink>
@@ -92,8 +96,12 @@ function DashboardHeader() {
             <NavLink
               key={link.to}
               to={link.to}
-              className="block px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors"
-              activeClassName="active"
+              className={({ isActive }) =>
+                `block px-3 py-2 rounded-md text-xl font-medium font-sans transition-colors ${isActive
+                  ? "bg-teal-600 text-white"
+                  : "text-gray-700 hover:bg-teal-600 hover:text-white"
+                }`
+              }
               onClick={() => setToggleMenu(false)}
             >
               {link.label}
