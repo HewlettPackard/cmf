@@ -273,6 +273,31 @@ class FastAPIClient {
       });
   }
 
+  async getArtifactExecutions(pipelineName, artifactUri) {
+    return this.apiClient
+      .get(`/artifact-executions/${pipelineName}`, {
+        params: {
+          artifact_uri: artifactUri,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactExecutionMetadata(pipelineName, executionUuid, artifactUri) {
+    return this.apiClient
+      .get(`/artifact-execution-metadata/${pipelineName}`, {
+        params: {
+          execution_uuid: executionUuid,
+          artifact_uri: artifactUri,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
 }
 
 

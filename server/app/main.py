@@ -33,6 +33,8 @@ from server.app.db.dbqueries import (
     fetch_executions_by_stage,
     fetch_artifacts_by_stage,
     fetch_artifact_types_by_stage,
+    fetch_execution_uuids_by_artifact_uri,
+    fetch_execution_log_metadata,
     register_server_details,
     get_registered_server_details,
     get_sync_status,
@@ -347,6 +349,46 @@ async def get_artifacts_by_stage(
         sort_column=sort_field,
         sort_order=sort_order
     )
+
+
+@app.get("/artifact-executions/{pipeline_name}")
+async def get_artifact_execution_uuids(
+    pipeline_name: str,
+    artifact_uri: str = Query(..., description="Artifact URI"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Return execution UUIDs for a selected artifact URI from ExecutionLogs."""
+    execution_uuids = await fetch_execution_uuids_by_artifact_uri(
+        db=db,
+        pipeline_name=pipeline_name,
+        artifact_uri=artifact_uri,
+    )
+    return {
+        "artifact_uri": artifact_uri,
+        "execution_uuids": execution_uuids,
+    }
+
+
+@app.get("/artifact-execution-metadata/{pipeline_name}")
+async def get_artifact_execution_metadata(
+    pipeline_name: str,
+    execution_uuid: str = Query(..., description="Execution UUID"),
+    artifact_uri: str = Query(..., description="Artifact URI"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Return metadata_json for a selected (execution_uuid, artifact_uri) from ExecutionLogs."""
+    metadata = await fetch_execution_log_metadata(
+        db=db,
+        pipeline_name=pipeline_name,
+        execution_uuid=execution_uuid,
+        artifact_uri=artifact_uri,
+    )
+
+    return {
+        "execution_uuid": execution_uuid,
+        "artifact_uri": artifact_uri,
+        "metadata": metadata or {},
+    }
 
 
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")

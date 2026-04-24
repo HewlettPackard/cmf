@@ -25,8 +25,18 @@ import React from "react";
  *  - summaryFields  {Array}       — [{ label, value, color }] key-info chips
  *  - allProperties  {Array}       — [{ name, value }] full property list
  *  - onClose        {function}    — Called when overlay or ✕ is clicked
+ *  - children       {node}        — Optional custom content rendered below properties
+ *  - showAllProperties {boolean}  — Toggle All Properties section visibility
  */
-const DetailDrawer = ({ title, subtitle, summaryFields = [], allProperties = [], onClose }) => {
+const DetailDrawer = ({
+    title,
+    subtitle,
+    summaryFields = [],
+    allProperties = [],
+    onClose,
+    children,
+    showAllProperties = true,
+}) => {
     if (!onClose) return null;
 
     return (
@@ -38,7 +48,7 @@ const DetailDrawer = ({ title, subtitle, summaryFields = [], allProperties = [],
             />
 
             {/* Drawer panel */}
-            <div className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-2xl z-50 flex flex-col">
+            <div className="fixed top-0 right-0 h-full w-full max-w-2xl bg-white shadow-2xl z-50 flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-teal-50 to-white">
                     <div>
@@ -77,23 +87,33 @@ const DetailDrawer = ({ title, subtitle, summaryFields = [], allProperties = [],
                         </div>
                     )}
 
-                    {/* Divider + section title */}
-                    <div className="border-t border-gray-200 mb-4">
-                        <p className="text-xs font-semibold text-gray-400 uppercase mt-4 mb-3">All Properties</p>
-                    </div>
-
-                    {/* All properties */}
-                    <div className="space-y-2">
-                        {allProperties.map((prop, idx) => (
-                            <div key={idx} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                <div className="text-xs font-semibold text-gray-500 uppercase mb-1">{prop.name}</div>
-                                <div className="text-sm text-gray-900 break-all">{prop.value}</div>
+                    {showAllProperties && (
+                        <>
+                            {/* Divider + section title */}
+                            <div className="border-t border-gray-200 mb-4">
+                                <p className="text-xs font-semibold text-gray-400 uppercase mt-4 mb-3">All Properties</p>
                             </div>
-                        ))}
-                        {allProperties.length === 0 && (
-                            <p className="text-gray-400 text-sm text-center py-8">No properties available</p>
-                        )}
-                    </div>
+
+                            {/* All properties */}
+                            <div className="space-y-2">
+                                {allProperties.map((prop, idx) => (
+                                    <div key={idx} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">{prop.name}</div>
+                                        <div className="text-sm text-gray-900 break-all">{prop.value}</div>
+                                    </div>
+                                ))}
+                                {allProperties.length === 0 && (
+                                    <p className="text-gray-400 text-sm text-center py-8">No properties available</p>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    {children && (
+                        <div className="mt-6 border-t border-gray-200 pt-4">
+                            {children}
+                        </div>
+                    )}
                 </div>
             </div>
         </>

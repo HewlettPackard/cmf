@@ -146,8 +146,8 @@ const ArtifactCardGrid = ({
                     <div
                         key={index}
                         className={`bg-white rounded-lg border-2 ${selectedItems.some(a => a.artifact_id === artifact.artifact_id)
-                                ? 'border-teal-500 shadow-lg'
-                                : 'border-gray-300 hover:border-teal-500 hover:shadow-lg'
+                            ? 'border-teal-500 shadow-lg'
+                            : 'border-gray-300 hover:border-teal-500 hover:shadow-lg'
                             } transition-all duration-200 overflow-hidden ${onArtifactClick ? 'cursor-pointer' : ''}`}
                         onClick={() => onArtifactClick && onArtifactClick(artifact)}
                     >
@@ -167,7 +167,7 @@ const ArtifactCardGrid = ({
                                                 {artifactType}
                                             </span>
                                         </div>
-                                        <h3 className="text-sm font-bold text-gray-900 break-all line-clamp-2" title={artifact.name}>
+                                        <h3 className="text-sm font-bold text-gray-900 break-all line-clamp-2" title={artifact.uri || artifact.name}>
                                             {artifactType === "Label" && onLabelClick ? (
                                                 <a
                                                     href="#"
@@ -178,10 +178,10 @@ const ArtifactCardGrid = ({
                                                     }}
                                                     className="text-teal-600 hover:text-teal-800 hover:underline"
                                                 >
-                                                    <Highlight text={String(artifact.name)} highlight={filterValue} />
+                                                    <Highlight text={String(artifact.uri || artifact.name)} highlight={filterValue} />
                                                 </a>
                                             ) : (
-                                                <Highlight text={String(artifact.name)} highlight={filterValue} />
+                                                <Highlight text={String(artifact.uri || artifact.name)} highlight={filterValue} />
                                             )}
                                         </h3>
                                     </div>
@@ -225,53 +225,51 @@ const ArtifactCardGrid = ({
                                 </span>
                             </div>
 
-                            {/* URI */}
-                            {artifact.uri && artifact.uri !== "N/A" && (
-                                <div className="flex items-start gap-2">
-                                    <svg className="w-4 h-4 text-gray-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
-                                    </svg>
-                                    <div className="flex-1 min-w-0">
-                                        <span className="text-xs text-gray-500 block">URI:</span>
-                                        <span className="text-sm text-gray-900 break-all">
-                                            <Highlight text={String(artifact.uri)} highlight={filterValue} />
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Git Info */}
-                            {(getPropertyValue(artifact.artifact_properties, "git_repo") !== "N/A" ||
-                                getPropertyValue(artifact.artifact_properties, "Commit") !== "N/A") && (
-                                    <div className="flex flex-wrap gap-2">
-                                        {getPropertyValue(artifact.artifact_properties, "git_repo") !== "N/A" && (
-                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-purple-50 border border-purple-200 rounded-md max-w-full">
-                                                <svg className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="text-xs text-purple-700 truncate" title={getPropertyValue(artifact.artifact_properties, "git_repo")}>
-                                                    <Highlight text={getPropertyValue(artifact.artifact_properties, "git_repo")} highlight={filterValue} />
+                            {/* Artifact Names from ExecutionLogs */}
+                            {(() => {
+                                const rawNames = artifact.execution_names;
+                                const stripQuotes = n => typeof n === 'string' ? n.replace(/^"|"$/g, '') : n;
+                                const names = Array.isArray(rawNames)
+                                    ? rawNames.map(stripQuotes).filter(n => n && n !== 'null')
+                                    : (typeof rawNames === 'string'
+                                        ? (() => { try { const p = JSON.parse(rawNames); return Array.isArray(p) ? p.map(stripQuotes).filter(n => n && n !== 'null') : []; } catch { return []; } })()
+                                        : []);
+                                if (names.length === 0) return null;
+                                return (
+                                    <div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {names.map((n, i) => (
+                                                <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                                    <Highlight text={String(n)} highlight={filterValue} />
                                                 </span>
-                                            </div>
-                                        )}
-                                        {getPropertyValue(artifact.artifact_properties, "Commit") !== "N/A" && (
-                                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-green-50 border border-green-200 rounded-md">
-                                                <svg className="w-3.5 h-3.5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fillRule="evenodd" d="M10 6a4 4 0 100 8 4 4 0 000-8zM2 9a1 1 0 000 2h4.126a6 6 0 000-2H2zm11.874 0a6 6 0 000 2H18a1 1 0 100-2h-4.126z" clipRule="evenodd" />
-                                                </svg>
-                                                <span className="text-xs text-green-700 font-mono truncate" title={getPropertyValue(artifact.artifact_properties, "Commit")}>
-                                                    <Highlight text={getPropertyValue(artifact.artifact_properties, "Commit")} highlight={filterValue} />
-                                                </span>
-                                            </div>
-                                        )}
+                                            ))}
+                                        </div>
                                     </div>
-                                )}
+                                );
+                            })()}
 
                             {/* Labels for Dataset */}
                             {artifactType === "Dataset" && (
                                 <div>
                                     <span className="text-xs text-gray-500 block mb-1">Labels:</span>
                                     {renderLabels(artifact)}
+                                </div>
+                            )}
+
+                            {/* Execution count badge */}
+                            {artifact.execution_count != null && Number(artifact.execution_count) > 0 && (
+                                <div className="flex items-center gap-2 pt-1">
+                                    <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                                    </svg>
+                                    <span className="text-xs text-gray-600">
+                                        ls
+                                        Present in{" "}
+                                        <span className="font-semibold text-emerald-700">
+                                            {artifact.execution_count}
+                                        </span>{" "}
+                                        {Number(artifact.execution_count) === 1 ? "execution" : "executions"}
+                                    </span>
                                 </div>
                             )}
 
@@ -292,7 +290,7 @@ const ArtifactCardGrid = ({
                             )}
                         </div>
 
-                        {/* Card Footer - Expandable Properties */}
+                        {/* Card Footer - Expandable Properties (commented out by request)
                         <div className="border-t border-gray-200">
                             <button
                                 onClick={(e) => { e.stopPropagation(); toggleCard(index); }}
@@ -335,6 +333,7 @@ const ArtifactCardGrid = ({
                                 </div>
                             )}
                         </div>
+                        */}
                     </div>
                 ))}
             </div>

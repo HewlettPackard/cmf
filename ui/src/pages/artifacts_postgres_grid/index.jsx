@@ -31,6 +31,38 @@ import Papa from "papaparse";
 
 const client = new FastAPIClient(config);
 
+const getArtifactPropertiesArray = (artifact) => {
+    if (!artifact) return [];
+
+    if (Array.isArray(artifact.artifact_properties)) {
+        return artifact.artifact_properties;
+    }
+
+    try {
+        return JSON.parse(artifact.artifact_properties || "[]");
+    } catch {
+        return [];
+    }
+};
+
+const getArtifactPropertyValue = (properties, propertyName, fallback = "N/A") => {
+    const matchedValues = properties
+        .filter((property) => property.name === propertyName)
+        .map((property) => property.value)
+        .filter(Boolean);
+
+    return matchedValues.length > 0 ? matchedValues.join(", ") : fallback;
+};
+
+const formatDrawerDate = (timestamp) => {
+    if (!timestamp || timestamp === "N/A") return "N/A";
+    try {
+        return new Date(parseInt(timestamp)).toLocaleString();
+    } catch {
+        return timestamp;
+    }
+};
+
 const ArtifactsPostgres = () => {
     const [searchParams] = useSearchParams();
     const [selectedPipeline, setSelectedPipeline] = useState(null);
@@ -49,6 +81,11 @@ const ArtifactsPostgres = () => {
 
     // Artifact detail drawer state
     const [selectedArtifact, setSelectedArtifact] = useState(null);
+    const [artifactExecutionUuids, setArtifactExecutionUuids] = useState([]);
+    const [selectedExecutionUuid, setSelectedExecutionUuid] = useState(null);
+    const [selectedExecutionMetadata, setSelectedExecutionMetadata] = useState(null);
+    const [executionListLoading, setExecutionListLoading] = useState(false);
+    const [executionMetadataLoading, setExecutionMetadataLoading] = useState(false);
 
     // Label content panel states
     const [selectedTableLabel, setSelectedTableLabel] = useState(null);
@@ -180,9 +217,54 @@ const ArtifactsPostgres = () => {
         setSelectedArtifacts([]);
     };
 
-    const handleArtifactCardClick = (artifact) => {
+    const handleArtifactCardClick = async (artifact) => {
         setSelectedArtifact(artifact);
+        setArtifactExecutionUuids([]);
+        setSelectedExecutionUuid(null);
+        setSelectedExecutionMetadata(null);
+
+        if (!artifact?.uri || !selectedPipeline) return;
+
+        setExecutionListLoading(true);
+        try {
+            const response = await client.getArtifactExecutions(selectedPipeline, artifact.uri);
+            const executionUuids = response?.execution_uuids || [];
+            setArtifactExecutionUuids(executionUuids);
+            setSelectedExecutionUuid(executionUuids.length > 0 ? executionUuids[0] : null);
+        } catch (error) {
+            console.error("Error fetching execution UUIDs for artifact:", error);
+            setArtifactExecutionUuids([]);
+            setSelectedExecutionUuid(null);
+        } finally {
+            setExecutionListLoading(false);
+        }
     };
+
+    useEffect(() => {
+        const fetchExecutionMetadata = async () => {
+            if (!selectedPipeline || !selectedArtifact?.uri || !selectedExecutionUuid) {
+                setSelectedExecutionMetadata(null);
+                return;
+            }
+
+            setExecutionMetadataLoading(true);
+            try {
+                const response = await client.getArtifactExecutionMetadata(
+                    selectedPipeline,
+                    selectedExecutionUuid,
+                    selectedArtifact.uri,
+                );
+                setSelectedExecutionMetadata(response?.metadata || {});
+            } catch (error) {
+                console.error("Error fetching execution metadata:", error);
+                setSelectedExecutionMetadata(null);
+            } finally {
+                setExecutionMetadataLoading(false);
+            }
+        };
+
+        fetchExecutionMetadata();
+    }, [selectedPipeline, selectedArtifact, selectedExecutionUuid]);
 
     const handleFilter = (value) => {
         setFilter(value);
@@ -250,39 +332,17 @@ const ArtifactsPostgres = () => {
     };
 
     const artifactDetailProperties = selectedArtifact
-        ? (Array.isArray(selectedArtifact.artifact_properties)
-            ? selectedArtifact.artifact_properties
-            : (() => {
-                try {
-                    return JSON.parse(selectedArtifact.artifact_properties || "[]");
-                } catch {
-                    return [];
-                }
-            })())
+        ? getArtifactPropertiesArray(selectedArtifact)
         : [];
 
-    const getArtifactDetailProperty = (name) => {
-        const matchedValues = artifactDetailProperties
-            .filter((property) => property.name === name)
-            .map((property) => property.value);
-        return matchedValues.length > 0 ? matchedValues.join(", ") : "N/A";
-    };
+    const artifactCommitValue = getArtifactPropertyValue(artifactDetailProperties, "Commit");
 
-    const formatArtifactDetailDate = (timestamp) => {
-        if (!timestamp || timestamp === "N/A") return "N/A";
-        try {
-            return new Date(parseInt(timestamp)).toLocaleString();
-        } catch {
-            return timestamp;
-        }
-    };
-
+    // Summary fields: immutable artifact metadata (Type, Created At, URI as unique identifier)
     const artifactDetailSummaryFields = selectedArtifact ? [
         { label: "Type", value: selectedArtifactType, color: "teal" },
-        { label: "URI", value: selectedArtifact.uri, color: "blue" },
-        { label: "Created", value: formatArtifactDetailDate(selectedArtifact.create_time_since_epoch), color: "indigo" },
-        { label: "Git Repo", value: getArtifactDetailProperty("git_repo"), color: "purple" },
-        { label: "Commit", value: getArtifactDetailProperty("Commit"), color: "green" },
+        { label: "Created", value: formatDrawerDate(selectedArtifact.create_time_since_epoch), color: "indigo" },
+        { label: "URI (Unique ID)", value: selectedArtifact.uri, color: "blue" },
+        { label: "Commit", value: artifactCommitValue, color: "violet" },
     ] : [];
 
     return (
@@ -530,8 +590,141 @@ const ArtifactsPostgres = () => {
                     subtitle={<>ID: <span className="font-mono font-semibold">{selectedArtifact.artifact_id || "—"}</span></>}
                     summaryFields={artifactDetailSummaryFields}
                     allProperties={artifactDetailProperties}
-                    onClose={() => setSelectedArtifact(null)}
-                />
+                    showAllProperties={false}
+                    onClose={() => {
+                        setSelectedArtifact(null);
+                        setArtifactExecutionUuids([]);
+                        setSelectedExecutionUuid(null);
+                        setSelectedExecutionMetadata(null);
+                    }}
+                >
+                    <div className="space-y-5">
+                        <div className="flex items-center justify-between bg-gradient-to-r from-cyan-50 to-white border border-cyan-100 rounded-xl px-4 py-3">
+                            <div>
+                                <p className="text-[11px] font-semibold text-cyan-700 uppercase tracking-wide">Execution Versions & Metadata</p>
+                                <h4 className="text-base font-semibold text-gray-900 mt-1">Select an execution UUID to inspect metadata</h4>
+                            </div>
+                            <span className="text-xs font-semibold text-cyan-800 bg-cyan-100 border border-cyan-200 rounded-full px-3 py-1">
+                                ExecutionLogs
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] gap-5">
+                            {/* Execution UUID List */}
+                            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
+                                <div className="flex items-center justify-between mb-2 px-1">
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Execution UUIDs</p>
+                                    <span className="text-xs font-medium text-gray-500">{artifactExecutionUuids.length}</span>
+                                </div>
+                                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                                    {executionListLoading ? (
+                                        <p className="text-xs text-gray-500 text-center py-4">Loading execution UUIDs...</p>
+                                    ) : artifactExecutionUuids.length > 0 ? (
+                                        artifactExecutionUuids.map((executionUuid, idx) => {
+                                            const isActive = selectedExecutionUuid === executionUuid;
+                                            return (
+                                                <button
+                                                    key={executionUuid}
+                                                    type="button"
+                                                    onClick={() => setSelectedExecutionUuid(executionUuid)}
+                                                    className={`w-full text-left rounded-xl border px-3 py-2.5 transition text-xs font-mono ${isActive
+                                                        ? "border-cyan-500 bg-cyan-50 shadow-sm ring-1 ring-cyan-200"
+                                                        : "border-gray-200 bg-white hover:border-cyan-300 hover:bg-cyan-50/40"
+                                                        }`}
+                                                    title={executionUuid}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <span className={`truncate ${isActive ? "text-cyan-900" : "text-gray-700"}`}>{idx + 1}. {executionUuid.slice(0, 12)}...</span>
+                                                        {isActive && (
+                                                            <svg className="w-4 h-4 text-cyan-700 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                            </svg>
+                                                        )}
+                                                    </div>
+                                                    <div className={`mt-1 text-[11px] ${isActive ? "text-cyan-700" : "text-gray-400"}`}>
+                                                        {executionUuid.slice(-10)}
+                                                    </div>
+                                                </button>
+                                            );
+                                        })
+                                    ) : (
+                                        <p className="text-xs text-gray-500 text-center py-4">No execution versions found</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Metadata Snapshot Panel */}
+                            <div className="rounded-xl border border-gray-200 bg-white p-4 max-h-96 overflow-y-auto shadow-sm">
+                                {executionMetadataLoading ? (
+                                    <div className="flex items-center justify-center h-48 text-gray-500">
+                                        <p className="text-sm">Loading metadata...</p>
+                                    </div>
+                                ) : selectedExecutionUuid ? (
+                                    <div className="space-y-4">
+                                        <div className="pb-3 border-b border-gray-200 flex items-start justify-between gap-3">
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900">Metadata Snapshot</p>
+                                                <p className="text-xs text-gray-500 mt-1">Execution UUID</p>
+                                            </div>
+                                            <p className="text-xs text-gray-600 mt-1 font-mono break-all text-right max-w-[65%]">
+                                                {selectedExecutionUuid}
+                                            </p>
+                                        </div>
+
+                                        {/* Name Field */}
+                                        {selectedExecutionMetadata?.name && (
+                                            <div>
+                                                <p className="text-xs font-semibold text-blue-700 uppercase mb-2 tracking-wide">Name</p>
+                                                <div className="rounded-lg border border-blue-200 bg-blue-50 p-2.5">
+                                                    <div className="text-sm text-gray-900 break-all font-mono">{selectedExecutionMetadata.name}</div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Properties Section */}
+                                        {selectedExecutionMetadata?.properties && Object.keys(selectedExecutionMetadata.properties).length > 0 && (
+                                            <div>
+                                                <p className="text-xs font-semibold text-emerald-700 uppercase mb-2 tracking-wide">Properties</p>
+                                                <div className="space-y-2">
+                                                    {Object.entries(selectedExecutionMetadata.properties).map(([key, value]) => (
+                                                        <div key={`prop-${key}`} className="rounded-lg border border-emerald-200 bg-emerald-50 p-2.5">
+                                                            <div className="text-[11px] font-mono font-semibold tracking-wide text-emerald-700 mb-0.5">{key}</div>
+                                                            <div className="text-sm text-gray-900 break-all font-sans font-medium leading-5">{String(value)}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                        )}
+
+                                        {/* Custom Properties Section */}
+                                        {selectedExecutionMetadata?.custom_properties && Object.keys(selectedExecutionMetadata.custom_properties).length > 0 && (
+                                            <div>
+                                                <p className="text-xs font-semibold text-slate-700 uppercase mb-2 tracking-wide">Custom Properties</p>
+                                                <div className="space-y-2">
+                                                    {Object.entries(selectedExecutionMetadata.custom_properties).map(([key, value]) => (
+                                                        <div key={`custom-${key}`} className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
+                                                            <div className="text-[11px] font-mono font-semibold tracking-wide text-slate-700 mb-0.5">{key}</div>
+                                                            <div className="text-sm text-gray-900 break-all font-sans font-medium leading-5">{String(value)}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {!selectedExecutionMetadata && (
+                                            <div className="text-xs text-gray-500">No metadata found for selected execution.</div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center h-48 text-gray-500">
+                                        <p className="text-sm">Select an execution version to view its metadata</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </DetailDrawer>
             )}
 
             {/* Compare Modal */}
