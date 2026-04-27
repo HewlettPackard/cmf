@@ -1142,6 +1142,32 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and artifact:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(artifact, "uri", "")).strip()
+                model_log_payload = {
+                    "name": model_name,
+                    "properties": {
+                        "model_framework": model_framework,
+                        "model_type": model_type,
+                        "model_name": model_name,
+                        "Commit": model_commit,
+                        "url": url_with_pipeline,
+                    },
+                    "custom_properties": custom_props,
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=model_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write model metadata into execution_log: %s", exc)
+        
         os.chdir(logging_dir)
         return artifact
 
@@ -1182,7 +1208,8 @@ class Cmf:
             self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-        custom_props = {} if custom_properties is None else custom_properties
+        custom_props = {} if custom_properties is None else dict(custom_properties)
+        coarse_metrics_name = metrics_name
         uri = str(uuid.uuid1())
         metrics_name = metrics_name + ":" + uri + ":" + str(self.execution.id)
         metrics = create_new_artifact_event_and_attribution(
@@ -1221,6 +1248,29 @@ class Cmf:
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and metrics:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(metrics, "uri", "")).strip()
+                metrics_log_payload = {
+                    "name": coarse_metrics_name,
+                    "properties": {
+                        "metrics_name": metrics_name,
+                    },
+                    "custom_properties": custom_props,
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=metrics_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write execution metrics metadata into execution_log: %s", exc)
+
         os.chdir(logging_dir)
         return metrics
 
@@ -1359,6 +1409,30 @@ class Cmf:
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and metrics:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(metrics, "uri", "")).strip()
+                step_metrics_log_payload = {
+                    "name": metrics_name,
+                    "properties": {
+                        "Commit": metrics_commit,
+                        "url": dvc_url_with_pipeline,
+                        "metrics_path": metrics_path,
+                    },
+                    "custom_properties": {},
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=step_metrics_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write step metrics metadata into execution_log: %s", exc)
 
         os.chdir(logging_dir)
         return metrics
