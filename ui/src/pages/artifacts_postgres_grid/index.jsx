@@ -46,12 +46,19 @@ const getArtifactPropertiesArray = (artifact) => {
 };
 
 const getArtifactPropertyValue = (properties, propertyName, fallback = "N/A") => {
+    console.log("Getting property value for", propertyName, "from properties:", properties);
     const matchedValues = properties
         .filter((property) => property.name === propertyName)
         .map((property) => property.value)
         .filter(Boolean);
 
-    return matchedValues.length > 0 ? matchedValues.join(", ") : fallback;
+    const uniqueValues = [...new Set(matchedValues)];
+    return uniqueValues.length > 0 ? uniqueValues.join(", ") : fallback;
+};
+
+const truncateCommit = (commit) => {
+    if (!commit || commit === "N/A") return commit;
+    return commit.length > 12 ? commit.slice(0, 12) + "…" : commit;
 };
 
 const formatDrawerDate = (timestamp) => {
@@ -61,6 +68,33 @@ const formatDrawerDate = (timestamp) => {
     } catch {
         return timestamp;
     }
+};
+
+const normalizeStepMetricsName = (value) => {
+    const text = String(value || "");
+    return text.toLowerCase().includes("training_metrics") ? "training_metrics" : text;
+};
+
+const sanitizeExecutionName = (value) => {
+    if (value == null) return null;
+    return String(value).replace(/^"+|"+$/g, "");
+};
+
+const normalizeExecutionRecords = (response) => {
+    const executions = response?.executions;
+    if (Array.isArray(executions) && executions.length > 0) {
+        return executions
+            .map((entry) => ({
+                execution_uuid: entry?.execution_uuid || null,
+                name: sanitizeExecutionName(entry?.name),
+            }))
+            .filter((entry) => Boolean(entry.execution_uuid));
+    }
+
+    const executionUuids = response?.execution_uuids || [];
+    return executionUuids
+        .map((uuid) => ({ execution_uuid: uuid, name: null }))
+        .filter((entry) => Boolean(entry.execution_uuid));
 };
 
 const ArtifactsPostgres = () => {
@@ -228,9 +262,9 @@ const ArtifactsPostgres = () => {
         setExecutionListLoading(true);
         try {
             const response = await client.getArtifactExecutions(selectedPipeline, artifact.uri);
-            const executionUuids = response?.execution_uuids || [];
-            setArtifactExecutionUuids(executionUuids);
-            setSelectedExecutionUuid(executionUuids.length > 0 ? executionUuids[0] : null);
+            const executionRecords = normalizeExecutionRecords(response);
+            setArtifactExecutionUuids(executionRecords);
+            setSelectedExecutionUuid(executionRecords.length > 0 ? executionRecords[0].execution_uuid : null);
         } catch (error) {
             console.error("Error fetching execution UUIDs for artifact:", error);
             setArtifactExecutionUuids([]);
@@ -335,7 +369,11 @@ const ArtifactsPostgres = () => {
         ? getArtifactPropertiesArray(selectedArtifact)
         : [];
 
-    const artifactCommitValue = getArtifactPropertyValue(artifactDetailProperties, "Commit");
+    const artifactCommitValue = selectedArtifact?.uri || getArtifactPropertyValue(artifactDetailProperties, "Commit");
+    const selectedExecutionRecord = artifactExecutionUuids.find((entry) => entry.execution_uuid === selectedExecutionUuid);
+    const selectedExecutionDisplayName = normalizeStepMetricsName(
+        sanitizeExecutionName(selectedExecutionRecord?.name || selectedExecutionMetadata?.name) || "N/A",
+    );
 
     // Summary fields: immutable artifact metadata (Type, Created At, URI as unique identifier)
     const artifactDetailSummaryFields = selectedArtifact ? [
@@ -493,6 +531,7 @@ const ArtifactsPostgres = () => {
                                                                 onLabelClick={handleLabelClick}
                                                                 onArtifactClick={handleArtifactCardClick}
                                                                 isSplitView={true} selectedItems={selectedArtifacts}
+                                                                selectedArtifactId={selectedArtifact?.artifact_id}
                                                                 onToggleItem={handleToggleArtifact} />
                                                             <PaginationControls
                                                                 totalItems={totalItems}
@@ -540,6 +579,7 @@ const ArtifactsPostgres = () => {
                                                         filterValue={filter}
                                                         onArtifactClick={handleArtifactCardClick}
                                                         selectedItems={selectedArtifacts}
+                                                        selectedArtifactId={selectedArtifact?.artifact_id}
                                                         onToggleItem={handleToggleArtifact}
                                                     />
                                                     <PaginationControls
@@ -587,8 +627,14 @@ const ArtifactsPostgres = () => {
             {selectedArtifact && (
                 <DetailDrawer
                     title="Artifact Details"
-                    subtitle={<>ID: <span className="font-mono font-semibold">{selectedArtifact.artifact_id || "—"}</span></>}
-                    summaryFields={artifactDetailSummaryFields}
+                    subtitle={
+                        <div className="grid grid-cols-[56px_minmax(0,1fr)] gap-x-2 gap-y-1 items-start w-full max-w-full">
+                            <span className="text-gray-500">ID:</span>
+                            <span className="font-mono font-semibold text-gray-700">{selectedArtifact.artifact_id || "—"}</span>
+                            <span className="text-gray-500">Commit:</span>
+                            <span className="font-mono font-semibold text-gray-700 break-all" title={artifactCommitValue !== "N/A" ? artifactCommitValue : undefined}>{artifactCommitValue}</span>
+                        </div>
+                    }
                     allProperties={artifactDetailProperties}
                     showAllProperties={false}
                     onClose={() => {
@@ -599,28 +645,22 @@ const ArtifactsPostgres = () => {
                     }}
                 >
                     <div className="space-y-5">
-                        <div className="flex items-center justify-between bg-gradient-to-r from-cyan-50 to-white border border-cyan-100 rounded-xl px-4 py-3">
-                            <div>
-                                <p className="text-[11px] font-semibold text-cyan-700 uppercase tracking-wide">Execution Versions & Metadata</p>
-                                <h4 className="text-base font-semibold text-gray-900 mt-1">Select an execution UUID to inspect metadata</h4>
-                            </div>
-                            <span className="text-xs font-semibold text-cyan-800 bg-cyan-100 border border-cyan-200 rounded-full px-3 py-1">
-                                ExecutionLogs
-                            </span>
-                        </div>
-
                         <div className="grid grid-cols-1 lg:grid-cols-[300px_minmax(0,1fr)] gap-5">
                             {/* Execution UUID List */}
-                            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3">
+                            <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3 h-96 flex flex-col">
                                 <div className="flex items-center justify-between mb-2 px-1">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Execution UUIDs</p>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Executions (Name + UUID)</p>
                                     <span className="text-xs font-medium text-gray-500">{artifactExecutionUuids.length}</span>
                                 </div>
-                                <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                                <div className="space-y-2 flex-1 overflow-y-auto pr-1">
                                     {executionListLoading ? (
                                         <p className="text-xs text-gray-500 text-center py-4">Loading execution UUIDs...</p>
                                     ) : artifactExecutionUuids.length > 0 ? (
-                                        artifactExecutionUuids.map((executionUuid, idx) => {
+                                        artifactExecutionUuids.map((execution, idx) => {
+                                            const executionUuid = execution.execution_uuid;
+                                            const executionName = normalizeStepMetricsName(
+                                                sanitizeExecutionName(execution.name) || "N/A",
+                                            );
                                             const isActive = selectedExecutionUuid === executionUuid;
                                             return (
                                                 <button
@@ -634,15 +674,17 @@ const ArtifactsPostgres = () => {
                                                     title={executionUuid}
                                                 >
                                                     <div className="flex items-start justify-between gap-2">
-                                                        <span className={`truncate ${isActive ? "text-cyan-900" : "text-gray-700"}`}>{idx + 1}. {executionUuid.slice(0, 12)}...</span>
+                                                        <span className={`truncate ${isActive ? "text-cyan-900" : "text-gray-700"}`}>
+                                                            {idx + 1}. {executionName !== "N/A" ? executionName : `${executionUuid.slice(0, 12)}...`}
+                                                        </span>
                                                         {isActive && (
                                                             <svg className="w-4 h-4 text-cyan-700 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                                             </svg>
                                                         )}
                                                     </div>
-                                                    <div className={`mt-1 text-[11px] ${isActive ? "text-cyan-700" : "text-gray-400"}`}>
-                                                        {executionUuid.slice(-10)}
+                                                    <div className={`mt-1 text-[11px] font-mono ${isActive ? "text-cyan-700" : "text-gray-400"}`}>
+                                                        {executionUuid}
                                                     </div>
                                                 </button>
                                             );
@@ -654,19 +696,16 @@ const ArtifactsPostgres = () => {
                             </div>
 
                             {/* Metadata Snapshot Panel */}
-                            <div className="rounded-xl border border-gray-200 bg-white p-4 max-h-96 overflow-y-auto shadow-sm">
+                            <div className="rounded-xl border border-gray-200 bg-white p-4 h-96 overflow-y-auto shadow-sm">
                                 {executionMetadataLoading ? (
                                     <div className="flex items-center justify-center h-48 text-gray-500">
                                         <p className="text-sm">Loading metadata...</p>
                                     </div>
                                 ) : selectedExecutionUuid ? (
                                     <div className="space-y-4">
-                                        <div className="pb-3 border-b border-gray-200 flex items-start justify-between gap-3">
-                                            <div>
-                                                <p className="text-sm font-semibold text-gray-900">Metadata Snapshot</p>
-                                                <p className="text-xs text-gray-500 mt-1">Execution UUID</p>
-                                            </div>
-                                            <p className="text-xs text-gray-600 mt-1 font-mono break-all text-right max-w-[65%]">
+                                        <div className="pb-3 border-b border-gray-200 grid grid-cols-[110px_minmax(0,1fr)] gap-x-3 gap-y-1 items-start">
+                                            <p className="text-xs text-gray-500 mt-1">Execution UUID</p>
+                                            <p className="text-xs text-gray-600 mt-1 font-mono break-all text-right">
                                                 {selectedExecutionUuid}
                                             </p>
                                         </div>
@@ -676,7 +715,7 @@ const ArtifactsPostgres = () => {
                                             <div>
                                                 <p className="text-xs font-semibold text-blue-700 uppercase mb-2 tracking-wide">Name</p>
                                                 <div className="rounded-lg border border-blue-200 bg-blue-50 p-2.5">
-                                                    <div className="text-sm text-gray-900 break-all font-mono">{selectedExecutionMetadata.name}</div>
+                                                    <div className="text-sm text-gray-900 break-all font-mono">{selectedExecutionDisplayName}</div>
                                                 </div>
                                             </div>
                                         )}

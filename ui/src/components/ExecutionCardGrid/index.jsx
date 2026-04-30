@@ -22,7 +22,7 @@ import PythonEnvPopup from "../PythonEnvPopup";
 
 const client = new FastAPIClient(config);
 
-const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false, onToggle }) => {
+const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false, isActive = false, onToggle }) => {
     const [showPythonPopup, setShowPythonPopup] = useState(false);
     const [pythonEnvData, setPythonEnvData] = useState("");
     const [expandedProperties, setExpandedProperties] = useState(false);
@@ -83,23 +83,21 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
     return (
         <>
             <div
-                className={`bg-white rounded-lg border-2 ${isSelected
-                    ? 'border-teal-500 shadow-lg'
-                    : 'border-gray-300 hover:border-teal-500 hover:shadow-lg'
+                className={`rounded-lg border-2 ${isActive
+                    ? 'bg-cyan-50 border-cyan-500 shadow-lg'
+                    : isSelected
+                        ? 'bg-teal-50 border-teal-500 shadow-lg'
+                        : 'bg-white border-gray-300 hover:bg-teal-50 hover:border-teal-500 hover:shadow-lg'
                     } transition-all duration-200 overflow-hidden cursor-pointer`}
                 onClick={() => onCardClick && onCardClick(execution)}
             >
                 {/* Card Header */}
-                <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                <div className="p-4 border-b border-gray-200">
                     <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="text-teal-600 flex-shrink-0">
-                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                                    <path
-                                        fillRule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                                        clipRule="evenodd"
-                                    />
+                                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                                 </svg>
                             </div>
                             <div className="flex-1 min-w-0">
@@ -190,48 +188,6 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
                         >
                             View Python Env
                         </button>
-                    )}
-                </div>
-
-                {/* Card Footer - Expandable all properties */}
-                <div className="border-t border-gray-200">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedProperties(!expandedProperties);
-                        }}
-                        className="w-full px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between"
-                    >
-                        <span className="flex items-center gap-2">
-                            <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                            </svg>
-                            View All Properties ({allProps.length})
-                        </span>
-                        <svg
-                            className={`w-5 h-5 text-gray-400 transition-transform ${expandedProperties ? "transform rotate-180" : ""}`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                        >
-                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
-                    </button>
-                    {expandedProperties && (
-                        <div className="px-4 pb-4 max-h-64 overflow-y-auto bg-gray-50">
-                            <div className="space-y-2">
-                                {allProps.map((prop, idx) => (
-                                    <div key={idx} className="bg-white rounded p-2 border border-gray-200">
-                                        <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                                            <Highlight text={String(prop.name)} highlight={filterValue} />
-                                        </div>
-                                        <div className="text-sm text-gray-900 break-all">
-                                            <Highlight text={String(prop.value)} highlight={filterValue} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
                     )}
                 </div>
             </div>

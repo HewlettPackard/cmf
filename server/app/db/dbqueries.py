@@ -788,7 +788,7 @@ async def fetch_execution_uuids_by_artifact_uri(
     pipeline_name: str,
     artifact_uri: str,
 ):
-    """Return execution UUIDs from ExecutionLogs for a given artifact URI scoped to pipeline."""
+    """Return execution UUIDs and names from ExecutionLogs for a given artifact URI scoped to pipeline."""
     if not artifact_uri:
         return []
 
@@ -803,14 +803,25 @@ async def fetch_execution_uuids_by_artifact_uri(
     )
 
     query = (
-        select(distinct(executionlogs.c.execution_uuid).label("execution_uuid"))
+        select(
+            executionlogs.c.execution_uuid.label("execution_uuid"),
+            func.max(func.cast(executionlogs.c.metadata_json[text("'name'")], String)).label("name"),
+        )
         .where(executionlogs.c.artifact_uri == artifact_uri)
         .where(executionlogs.c.execution_uuid.in_(select(pipeline_execution_uuids.c.execution_uuid)))
+        .group_by(executionlogs.c.execution_uuid)
         .order_by(executionlogs.c.execution_uuid.desc())
     )
 
     result = await db.execute(query)
-    return list(result.scalars().all())
+    rows = result.mappings().all()
+    return [
+        {
+            "execution_uuid": row["execution_uuid"],
+            "name": row.get("name"),
+        }
+        for row in rows
+    ]
 
 
 async def fetch_execution_log_metadata(

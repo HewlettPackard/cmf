@@ -32,6 +32,7 @@ const ArtifactCardGrid = ({
     isSplitView = false,
     selectedItems = [],
     onToggleItem,
+    selectedArtifactId = null,
 }) => {
     const [expandedCard, setExpandedCard] = useState(null);
     const [showModelPopup, setShowModelPopup] = useState(false);
@@ -72,6 +73,16 @@ const ArtifactCardGrid = ({
         }
     };
 
+    const normalizeStepMetricsName = (value) => {
+        const text = String(value || "");
+        return text.toLowerCase().includes("training_metrics") ? "training_metrics" : text;
+    };
+
+    const getCardDisplayName = (artifact) => {
+        const baseValue = artifact?.uri || artifact?.name || "N/A";
+        return normalizeStepMetricsName(baseValue);
+    };
+
     const renderLabels = (artifact) => {
         const labelsUri = getPropertyValue(artifact.artifact_properties, "labels_uri");
 
@@ -80,7 +91,7 @@ const ArtifactCardGrid = ({
         }
 
         return (
-            <div className="flex flex-wrap gap-1 mt-1">
+            <div className="flex flex-wrap gap-1">
                 {labelsUri
                     .split(",")
                     .map((label_name) => label_name.trim())
@@ -145,14 +156,16 @@ const ArtifactCardGrid = ({
                 {artifacts.map((artifact, index) => (
                     <div
                         key={index}
-                        className={`bg-white rounded-lg border-2 ${selectedItems.some(a => a.artifact_id === artifact.artifact_id)
-                            ? 'border-teal-500 shadow-lg'
-                            : 'border-gray-300 hover:border-teal-500 hover:shadow-lg'
+                        className={`rounded-lg border-2 ${selectedArtifactId === artifact.artifact_id
+                            ? 'bg-cyan-50 border-cyan-500 shadow-lg'
+                            : selectedItems.some(a => a.artifact_id === artifact.artifact_id)
+                                ? 'bg-teal-50 border-teal-500 shadow-lg'
+                                : 'bg-white border-gray-300 hover:bg-teal-50 hover:border-teal-500 hover:shadow-lg'
                             } transition-all duration-200 overflow-hidden ${onArtifactClick ? 'cursor-pointer' : ''}`}
                         onClick={() => onArtifactClick && onArtifactClick(artifact)}
                     >
                         {/* Card Header */}
-                        <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                        <div className="p-4 border-b border-gray-200">
                             <div className="flex items-start justify-between gap-2">
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <div className="text-teal-600">
@@ -167,7 +180,8 @@ const ArtifactCardGrid = ({
                                                 {artifactType}
                                             </span>
                                         </div>
-                                        <h3 className="text-sm font-bold text-gray-900 break-all line-clamp-2" title={artifact.uri || artifact.name}>
+                                        <h3 className="text-sm font-bold text-gray-900 break-all line-clamp-2" title={getCardDisplayName(artifact)}>
+                                            <span className="text-gray-500 font-semibold">URI: </span>
                                             {artifactType === "Label" && onLabelClick ? (
                                                 <a
                                                     href="#"
@@ -178,10 +192,10 @@ const ArtifactCardGrid = ({
                                                     }}
                                                     className="text-teal-600 hover:text-teal-800 hover:underline"
                                                 >
-                                                    <Highlight text={String(artifact.uri || artifact.name)} highlight={filterValue} />
+                                                    <Highlight text={getCardDisplayName(artifact)} highlight={filterValue} />
                                                 </a>
                                             ) : (
-                                                <Highlight text={String(artifact.uri || artifact.name)} highlight={filterValue} />
+                                                <Highlight text={getCardDisplayName(artifact)} highlight={filterValue} />
                                             )}
                                         </h3>
                                     </div>
@@ -234,13 +248,14 @@ const ArtifactCardGrid = ({
                                     : (typeof rawNames === 'string'
                                         ? (() => { try { const p = JSON.parse(rawNames); return Array.isArray(p) ? p.map(stripQuotes).filter(n => n && n !== 'null') : []; } catch { return []; } })()
                                         : []);
-                                if (names.length === 0) return null;
+                                const uniqueDisplayNames = [...new Set(names.map((n) => normalizeStepMetricsName(n)))];
+                                if (uniqueDisplayNames.length === 0) return null;
                                 return (
                                     <div>
                                         <div className="flex flex-wrap gap-1.5">
-                                            {names.map((n, i) => (
+                                            {uniqueDisplayNames.map((n, i) => (
                                                 <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                                    <Highlight text={String(n)} highlight={filterValue} />
+                                                    <Highlight text={n} highlight={filterValue} />
                                                 </span>
                                             ))}
                                         </div>
@@ -250,8 +265,8 @@ const ArtifactCardGrid = ({
 
                             {/* Labels for Dataset */}
                             {artifactType === "Dataset" && (
-                                <div>
-                                    <span className="text-xs text-gray-500 block mb-1">Labels:</span>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-xs text-gray-500">Labels:</span>
                                     {renderLabels(artifact)}
                                 </div>
                             )}
@@ -259,12 +274,13 @@ const ArtifactCardGrid = ({
                             {/* Execution count badge */}
                             {artifact.execution_count != null && Number(artifact.execution_count) > 0 && (
                                 <div className="flex items-center gap-2 pt-1">
-                                    <svg className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                                    </svg>
+                                    <div className="text-teal-600 flex-shrink-0">
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                                        </svg>
+                                    </div>
                                     <span className="text-xs text-gray-600">
-                                        ls
-                                        Present in{" "}
+                                        Linked in {" "}
                                         <span className="font-semibold text-emerald-700">
                                             {artifact.execution_count}
                                         </span>{" "}
@@ -289,51 +305,6 @@ const ArtifactCardGrid = ({
                                 </button>
                             )}
                         </div>
-
-                        {/* Card Footer - Expandable Properties (commented out by request)
-                        <div className="border-t border-gray-200">
-                            <button
-                                onClick={(e) => { e.stopPropagation(); toggleCard(index); }}
-                                className="w-full px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between"
-                            >
-                                <span className="flex items-center gap-2">
-                                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                        <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                                    </svg>
-                                    View All Properties ({artifact.artifact_properties?.length || 0})
-                                </span>
-                                <svg
-                                    className={`w-5 h-5 text-gray-400 transition-transform ${expandedCard === index ? 'transform rotate-180' : ''
-                                        }`}
-                                    fill="currentColor"
-                                    viewBox="0 0 20 20"
-                                >
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                            </button>
-
-                            {expandedCard === index && (
-                                <div className="px-4 pb-4 max-h-64 overflow-y-auto bg-gray-50">
-                                    <div className="space-y-2">
-                                        {artifact.artifact_properties?.map((property, idx) => (
-                                            <div
-                                                key={idx}
-                                                className="bg-white rounded p-2 border border-gray-200"
-                                            >
-                                                <div className="text-xs font-semibold text-gray-500 uppercase mb-1">
-                                                    <Highlight text={String(property.name)} highlight={filterValue} />
-                                                </div>
-                                                <div className="text-sm text-gray-900 break-all">
-                                                    <Highlight text={String(property.value)} highlight={filterValue} />
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        */}
                     </div>
                 ))}
             </div>

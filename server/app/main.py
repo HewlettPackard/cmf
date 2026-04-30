@@ -357,15 +357,16 @@ async def get_artifact_execution_uuids(
     artifact_uri: str = Query(..., description="Artifact URI"),
     db: AsyncSession = Depends(get_db)
 ):
-    """Return execution UUIDs for a selected artifact URI from ExecutionLogs."""
-    execution_uuids = await fetch_execution_uuids_by_artifact_uri(
+    """Return execution UUIDs and names for a selected artifact URI from ExecutionLogs."""
+    executions = await fetch_execution_uuids_by_artifact_uri(
         db=db,
         pipeline_name=pipeline_name,
         artifact_uri=artifact_uri,
     )
     return {
         "artifact_uri": artifact_uri,
-        "execution_uuids": execution_uuids,
+        "executions": executions,
+        "execution_uuids": [item.get("execution_uuid") for item in executions if item.get("execution_uuid")],
     }
 
 
