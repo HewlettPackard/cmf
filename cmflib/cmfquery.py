@@ -1135,6 +1135,11 @@ class CmfQuery(object):
             # Step 4: Filter by last_sync_time if provided.
             # If last_sync_time given, only include execution if it was updated after that timestamp.
             # If no last_sync_time, include all executions.
+            # what is usual situtaion - 
+            #it does not matter if last sync time is given or not we have to add exec_attrs 
+            #however if last sync timr is given then we have to check if last_update_time_since_epoch > last_sync_time
+            # last_update_time_since epoch
+            
             if last_sync_time:
                 if exec_attrs["last_update_time_since_epoch"] > last_sync_time:
                     executions.append(exec_attrs)
