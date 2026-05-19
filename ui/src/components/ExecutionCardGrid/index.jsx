@@ -49,10 +49,15 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
     const pipelineType = getProp("Pipeline_Type");
     const pythonEnv = getProp("Python_Env");
 
+    // Format date as 'YYYY-MM-DD HH:mm:ss' in UTC for display and search consistency
     const formatDate = (timestamp) => {
         if (!timestamp || timestamp === "N/A") return null;
         try {
-            return new Date(parseFloat(timestamp)).toLocaleString();
+            const date = new Date(parseFloat(timestamp));
+            // Pad single digit numbers with leading zeros for consistent formatting
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
+                   `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
         } catch {
             return null;
         }
@@ -118,7 +123,7 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
                                         <svg className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
                                         </svg>
-                                        <span className="text-xs text-gray-500">{createdAt}</span>
+                                        <span className="text-xs text-gray-500"><Highlight text={createdAt} highlight={filterValue} /></span>
                                     </div>
                                 )}
                                 <h3 className="text-sm font-bold text-gray-900 break-all line-clamp-2" title={contextType}>
