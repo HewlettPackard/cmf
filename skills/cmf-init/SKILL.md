@@ -83,10 +83,12 @@ The `mlmd` file is created automatically on the first pipeline run, not by `cmf 
 
 ## Troubleshooting
 
-- **`cmf: command not found`** — run `pip install cmflib`; ensure Python `bin/` is on `PATH`
-- **Git remote error** — add a remote first: `git remote add origin <url>`
-- **OSDF token expired** — regenerate token or switch to key-based auth
-- **MinIO connection refused** — verify the MinIO server is up and `--url` matches
+- **`cmf: command not found`** — run `pip install cmflib`; ensure Python `bin/` is on `PATH`; verify with `cmf --version`
+- **Git remote error** — CMF requires a configured Git remote; run `git remote add origin <url>` first
+- **DVC errors** — CMF uses DVC internally; verify with `dvc --version`; reinstall with `pip install cmflib`
+- **MinIO connection refused** — verify the MinIO server is up and `--url` matches the server address and port
+- **OSDF token expired or invalid** — CMF validates the token on init and shows issuer, scope, and expiry; regenerate or switch to key-based auth
+- **OSDF push fails with permission error** — token may lack write scope for `--path`; contact your OSDF origin administrator
 
 ---
 

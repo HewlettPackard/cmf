@@ -87,3 +87,42 @@ cmf init osdfremote \
 ```bash
 cmf init show
 ```
+
+## Guided walkthrough (new projects)
+
+Full end-to-end setup from scratch with local storage:
+
+```bash
+# 1. Create a working directory and initialize Git
+mkdir my-ml-project && cd my-ml-project
+git init
+git remote add origin https://github.com/your-org/your-repo.git
+
+# 2. Install CMF
+pip install cmflib
+
+# 3. Create a local artifact directory (outside the repo is fine)
+mkdir -p ~/cmf-artifacts
+
+# 4. Initialize CMF
+cmf init local \
+  --path ~/cmf-artifacts \
+  --git-remote-url https://github.com/your-org/your-repo.git
+
+# 5. Confirm
+cmf init show
+```
+
+The `mlmd` file appears only after the first instrumented pipeline run — not after `cmf init`.
+
+## Python 3.9 on Ubuntu — known issue
+
+If you encounter `ModuleNotFoundError: No module named 'distutils.cmd'`:
+
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt-get update
+sudo apt install python3.9 python3.9-dev python3.9-distutils python3.9-venv
+```
+
+Python 3.10 is recommended to avoid this.

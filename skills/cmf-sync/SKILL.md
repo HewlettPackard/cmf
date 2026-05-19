@@ -72,6 +72,7 @@ See [references/cli-commands.md](references/cli-commands.md) for the full comman
 ## Troubleshooting
 
 - **`Connection refused` on push** — CMF Server is not running or the URL in `cmf init show` is wrong
+- **`DVC remote not configured`** — run `cmf init` again with the correct storage backend arguments
 - **`Pipeline not found`** — the `-p` value must match `pipeline_name` used in `Cmf(...)`. Check with `cmf pipeline list`
 - **Partial push** — re-run the same command; CMF only uploads missing artifacts
 - **`mlmd file not found`** — run at least one instrumented pipeline stage before pushing

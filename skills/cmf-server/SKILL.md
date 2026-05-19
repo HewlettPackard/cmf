@@ -95,6 +95,9 @@ The CMF Server uses network-level access control (no built-in username/password 
 docker compose -f docker-compose-server.yml stop    # stop (data preserved)
 docker compose -f docker-compose-server.yml start   # restart
 docker compose -f docker-compose-server.yml down    # remove containers (data preserved in CMF_DATA_DIR)
+
+# Destructive — backup CMF_DATA_DIR first!
+docker compose -f docker-compose-server.yml down -v && rm -rf ./data
 ```
 
 ## Upgrade
@@ -109,8 +112,10 @@ docker compose -f docker-compose-server.yml up -d
 
 - **`REACT_APP_CMF_API_URL` not set** — required; set to the host's IP/hostname
 - **Port 80 in use** — change `NGINX_HTTP_PORT` and update `REACT_APP_CMF_API_URL` to match
-- **`postgres` not healthy** — check `docker compose ... logs postgres`; often a `CMF_DATA_DIR` permissions issue
-- **UI loads but API calls fail** — use the host IP, not `localhost`, in `REACT_APP_CMF_API_URL`
+- **`postgres` not healthy** — check `docker compose -f docker-compose-server.yml logs postgres`; usually a `CMF_DATA_DIR` permissions issue
+- **UI loads but API calls fail** — use the host IP, not `localhost`, in `REACT_APP_CMF_API_URL`; must be reachable from the browser
+- **MCP server not reachable** — check `MCP_EXTERNAL_PORT` in `.env` and confirm it is not blocked by a firewall; test with `curl http://<server-ip>:<MCP_EXTERNAL_PORT>/health`
+- **Clients cannot push metadata** — confirm `cmf init show` shows the correct server URL; verify with `curl http://<server-ip>:80/apiv1.0/pipelines`
 
 ---
 
