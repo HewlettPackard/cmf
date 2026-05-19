@@ -37,10 +37,6 @@ If the user wants to add CMF to their project for the first time, or the request
 - **Artifact** — dataset, model, or metrics file logged as input or output of an execution
 - **mlmd** — the local SQLite file that stores all metadata; pushed to CMF Server for collaboration
 
-## CMF Documentation
+---
 
-Full documentation is available at the project's `docs/` directory:
-- `docs/index.md` — Getting started and system architecture
-- `docs/cmflib/index.md` — Python API reference
-- `docs/cmf_client/index.md` — CLI command reference
-- `docs/mcp/index.md` — MCP server documentation
+**Docs:** [Getting Started](https://hewlettpackard.github.io/cmf/) · [cmflib API](https://hewlettpackard.github.io/cmf/cmflib/) · [CLI Reference](https://hewlettpackard.github.io/cmf/cmf_client/) · [MCP Server](https://hewlettpackard.github.io/cmf/mcp/)
