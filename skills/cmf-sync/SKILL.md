@@ -22,7 +22,7 @@ Help the user sync their CMF metadata and artifacts with the central CMF Server 
 Local environment                CMF Server / Artifact Storage
 ─────────────────                ─────────────────────────────
 mlmd (metadata)      ──push──►   CMF Server database
-artifacts (data/models) ──push──►  S3 / MinIO / SSH / local storage
+artifacts (data/models) ──push──►  S3 / MinIO / SSH / OSDF / local storage
                      ◄──pull──   (teammates pull metadata + artifacts)
 ```
 
@@ -56,7 +56,7 @@ Example:
 cmf artifact push -p "my_pipeline"
 ```
 
-This uploads all artifacts tracked in the pipeline (datasets, models, metrics files) to the configured storage backend (S3, MinIO, SSH, local).
+This uploads all artifacts tracked in the pipeline (datasets, models, metrics files) to the configured storage backend (S3, MinIO, SSH, OSDF, local).
 
 ### 3. Push code to Git (optional, if not done automatically)
 

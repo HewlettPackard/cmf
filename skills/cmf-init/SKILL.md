@@ -2,7 +2,7 @@
 name: cmf-init
 description: >
   Use when setting up CMF in a new or existing project. Covers installing cmflib,
-  running `cmf init` to configure a storage backend (local, S3, MinIO, or SSH),
+  running `cmf init` to configure a storage backend (local, S3, MinIO, SSH, or OSDF),
   creating the mlmd metadata store, and verifying the setup. Works for both first-time
   users and engineers setting up a new environment.
 version: 1.0.0

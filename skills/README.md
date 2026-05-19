@@ -130,6 +130,7 @@ Guides you through installing `cmflib` and running `cmf init` with your chosen s
 - **Local** — artifacts stored on the local filesystem
 - **MinIO / Amazon S3** — object storage for teams
 - **SSH remote** — artifacts on a remote machine
+- **OSDF** — distributed data federation across institutions (Pelican Platform)
 
 After this skill completes, you will have a working `cmf init show` output and be ready to instrument your pipeline.
 
