@@ -88,9 +88,77 @@ cmf init osdfremote \
 cmf init show
 ```
 
+## Python version compatibility
+
+| Python | Status |
+|--------|--------|
+| 3.10 | **Recommended** |
+| 3.11 | Supported |
+| 3.9 | Supported (see Ubuntu note below) |
+| ≤ 3.8 or ≥ 3.12 | Not supported |
+
+## Environment setup — detailed options
+
+### uv (recommended for speed)
+
+```bash
+# Install uv (once per machine)
+curl -LsSf https://astral.sh/uv/install.sh | sh   # macOS / Linux
+# or: pip install uv
+
+# Create environment with exact Python version
+uv venv .cmf --python 3.10
+
+# Activate
+source .cmf/bin/activate          # macOS / Linux
+.cmf\Scripts\activate             # Windows
+
+# Install CMF
+pip install cmflib
+```
+
+uv downloads the requested Python version automatically if it is not installed locally — no separate Python installation needed.
+
+### conda
+
+```bash
+conda create -n cmf python=3.10
+conda activate cmf
+pip install cmflib
+```
+
+If conda is not installed, download [Miniconda](https://docs.conda.io/en/latest/miniconda.html) (minimal) or [Anaconda](https://www.anaconda.com/download) (full). Alternatively use uv or venv.
+
+### venv (built-in, no extras needed)
+
+```bash
+# Linux / macOS — use the specific Python binary
+python3.10 -m venv .cmf
+source .cmf/bin/activate
+
+# Windows
+py -3.10 -m venv .cmf
+.cmf\Scripts\activate
+
+pip install cmflib
+```
+
+If `python3.10` is not available, install it via your system package manager:
+```bash
+# Ubuntu / Debian
+sudo apt install python3.10 python3.10-venv
+
+# macOS (Homebrew)
+brew install python@3.10
+
+# Windows — download from python.org
+```
+
+Or switch to uv/conda, which manage Python versions for you.
+
 ## Guided walkthrough (new projects)
 
-Full end-to-end setup from scratch with local storage:
+Full end-to-end setup from scratch with local storage, using uv:
 
 ```bash
 # 1. Create a working directory and initialize Git
@@ -98,18 +166,22 @@ mkdir my-ml-project && cd my-ml-project
 git init
 git remote add origin https://github.com/your-org/your-repo.git
 
-# 2. Install CMF
+# 2. Set up Python environment
+uv venv .cmf --python 3.10
+source .cmf/bin/activate    # Windows: .cmf\Scripts\activate
+
+# 3. Install CMF
 pip install cmflib
 
-# 3. Create a local artifact directory (outside the repo is fine)
+# 4. Create a local artifact directory (outside the repo is fine)
 mkdir -p ~/cmf-artifacts
 
-# 4. Initialize CMF
+# 5. Initialize CMF
 cmf init local \
   --path ~/cmf-artifacts \
   --git-remote-url https://github.com/your-org/your-repo.git
 
-# 5. Confirm
+# 6. Confirm
 cmf init show
 ```
 
@@ -125,4 +197,4 @@ sudo apt-get update
 sudo apt install python3.9 python3.9-dev python3.9-distutils python3.9-venv
 ```
 
-Python 3.10 is recommended to avoid this.
+Use Python 3.10 to avoid this entirely.
