@@ -1,171 +1,126 @@
 # CMF Installation & Setup Guide
 
-
 This guide provides step-by-step instructions for installing, configuring, and using CMF (Common Metadata Framework) for ML pipeline metadata tracking.
 
-## Overview
 
-The installation process consists of the following components:
+# CMF Installation
 
-1. **[cmflib with CMF Client Installation](#install-cmf-library-ie-cmflib)**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.
-2. **[CMF Server with GUI Installation](#install-cmf-server-with-gui)**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships.
+This hub connects you to the deployment procedures for the Common Metadata Framework (CMF). CMF separates metadata collection from visualization, requiring two distinct installation tracks depending on your user role.
 
-> **Note:** Every CMF setup requires a CMF Server instance. In collaborative environments, multiple users working on the same project can share a single CMF Server to centralize metadata and facilitate team coordination.
+## Component Overview
+
+* **[CMF Server & GUI](./server_side_installation.md)**: A centralized backend infrastructure that aggregates metadata from clients and hosts the web dashboard.
+* **[CMF Client (cmflib)](./client_side_installation.md)**: A lightweight Python library integrated into ML scripts to capture pipeline, dataset, and model metadata.
+
+!!! info "Deployment Topology"
+    Every operational CMF environment requires exactly one active CMF Server instance. In collaborative environments, multiple data scientists share a single centralized server to collaborate on pipeline lineages.
 
 ---
 
-## Common Prerequisites
+## Shared Baseline Prerequisites
 
-Before installing `cmflib` and its components, ensure you have the following:
+Ensure your target deployment nodes meet these foundational system constraints before selecting an installation track:
 
-- **Linux/Ubuntu/Debian**
+* **Operating System**: Linux (Ubuntu/Debian distributions strictly validated).
+* **Python Engine**: Runtime versions 3.9 to 3.11 are supported (* **Recommended Runtime**: Python 3.10).
 
-- **Python**: Version 3.9 to 3.11 (3.10 recommended)
+---
+
+# CLI Execution Reference
+Before initiating the environment setup, review the foundational commands required to deploy the client.
+
+!!! warning "Important Note"
+    * The following initial steps are basic and mandatory prerequisites for both server-side and client-side installations. You must execute these core commands sequentially to prepare your environment.
+<br />
+
+**Note:** First, at the root directory, execute the ls command to check the existing workspace folder structure.<br />
+
+**Step 1: List Directory Contents**<br/><br/>
+**Description:** ls command to check the existing workspace folder structure<br/>
+```bash
+ $ ls
+```
+**Output:** Demo,  cmf_env,  cmf_workspace 
+<br>
+
+---
+
+**Step 2: Check Installed Python Version**<br/><br/>
+**Description**: Next, check the Python version at the root directory to confirm the environment meets CMF runtime constraints.<br/>
+
+```bash
+$ python --version
+```
+**Output:** Python 3.10.20 <br/>
+If you have python version greater then 3.10 use below commands:
+    <br>
+    ```bash
+    sudo apt update
+    sudo apt install -y python3.10 python3.10-venv python3-pip
+    ```
+
+- **Python:** Version 3.9 to 3.11 (3.10 recommended)
 
     > **Note:** If you encounter issues with Python 3.9 on Ubuntu, refer to the [Troubleshooting](#troubleshooting) section at the end of this guide.
 
 ---
 
-## `cmflib` with CMF Client Installation {#install-cmf-library-ie-cmflib}
+**Step 3: Create the Workspace Directory And Navigate into the Workspace Directory**<br/><br/>
+**Description:** Creates a new folder named cmf_workspace to store all project assets and : Moves your terminal session into the newly created folder to execute subsequent commands.<br/>
 
-### Prerequisites
-
-- **Git**: Latest version for code versioning
-
-    > Make sure Git is properly configured using `git config`, as it's required for the product.
-    > At minimum, set your user identity:
-    > 
-    > ```bash
-    > git config --global user.name "Your Name"
-    > git config --global user.email "you@example.com"
-    > ```
-
-- **Storage Backend**: local, S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
-
-### Installation Steps
-
-#### Step 1: Set up Python Virtual Environment
-
-=== "Using Conda"
-    ```shell
-    conda create -n cmf python=3.10
-    conda activate cmf
-    ```
-
-=== "Using VirtualEnv"
-    ```shell
-    virtualenv --python=3.10 .cmf
-    source .cmf/bin/activate
-    ```
-
-#### Step 2: Install cmflib
-
-=== "Stable version from PyPI"
-    ```shell
-    pip install cmflib
-    ```
-
-=== "Latest version from GitHub"
-    ```shell
-    pip install git+https://github.com/HewlettPackard/cmf
-    ```
+```bash
+$  mkdir cmf_workspace
+cd cmf_workspace
+```
+**Output:** ~/cmf_workspace$
 
 ---
 
-## CMF Server with GUI Installation {#install-cmf-server-with-gui}
+**Step 4: Create a Virtual Environment**<br/><br/>
+**Description:** Create an isolated, self-contained Python virtual environment named cmf_env dedicated exclusively to CMF dependencies to prevent dependency pollution.<br/>
 
-Every CMF setup requires a CMF Server instance. In collaborative environments, multiple users working on the same project can share a single CMF Server to centralize metadata and facilitate team coordination.
+=== "WSL"
+    ```shell
+    python3.10 -m venv cmf_env
+    ```
 
-### Prerequisites
+=== "Conda Environment"
+    ```WSL
+    conda create -n cmf_env python=3.10 -y
+    ```
 
-- **Docker**: For containerized deployment of `CMF Server` and `CMF UI`
+**Output:** The command will run silently and output absolutely nothing to the terminal. It simply creates the cmf_env folder.
 
-    > 1. Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/linux-postinstall/) privileges.
-    > 2. Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/).
-    > 
-    > In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
+---
 
-- **Docker Proxy Settings**: Needed for some of the server packages
+**Step 5: Activate the Virtual Environment**<br/><br/>
+**Description:** Activate the virtual environment to configure your path variables so all subsequent python and pip binaries resolve strictly inside this sandbox.<br/>
 
-    > Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
+=== "WSL"
+    ```shell
+    $  source cmf_env/bin/activate
+    ```
 
-### Installation Steps
+=== "Conda Environment"
+    ```WSL
+    conda activate cmf_env
+    ```
 
-**Step 1: Clone the GitHub Repository**
+**Output:** (cmf_env)$
+<br>
+Activate the virtual environment
 
-```bash
-git clone https://github.com/HewlettPackard/cmf
-```
+---
 
-**Step 2: Navigate to the CMF Directory**
-
-```bash
-cd cmf
-```
-
-**Step 3: Create Environment Configuration**
-
-Create a `.env` file in the same directory as `docker-compose-server.yml` with the following environment variables:
-
-```env
-CMF_DATA_DIR=./data                    
-NGINX_HTTP_PORT=80                  
-NGINX_HTTPS_PORT=443
-REACT_APP_CMF_API_URL=http://your-server-ip:80
-```
-
-> 📝 **Note:** 
-> - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
-> - `REACT_APP_CMF_API_URL` should point to your server's accessible address.
-
-**Step 4: Start the Containers**
-
-> 💡 **Recommended Approach:** Using `docker compose` starts the `CMF Server`, PostgreSQL database, and `CMF UI` together.
-> 
-> **Note:** It's essential to start the PostgreSQL database before the `CMF Server`.
+**Step 6: Install the CMF Library**<br/><br/>
+**Description:** Install the core cmflib client package to expose the framework APIs required to track ML workflows and push metadata streams.<br/>
 
 ```bash
-docker compose -f docker-compose-server.yml up
+$  pip install cmflib
 ```
-
-> 📝 **Note:** Replace `docker compose` with `docker-compose` if you're using an older version of Docker.
-
-This command starts all services:
-
-- **PostgreSQL**: Database backend for metadata storage
-- **CMF Server**: API server for metadata management
-- **UI**: Web interface for visualization
-- **TensorBoard**: For viewing ML training metrics
-- **Nginx**: Reverse proxy serving all components
-
-#### Accessing the CMF UI
-
-Once the containers are successfully started, the CMF UI will be available at the URL specified in your `.env` file:
-
-```
-http://your-server-ip:80
-```
-
-Replace `your-server-ip` with the actual IP address or hostname configured in the `REACT_APP_CMF_API_URL` environment variable.
-
-> 📝 **Note:** Ensure that port 80 (or your configured `NGINX_HTTP_PORT`) is accessible and not blocked by firewall rules.
-
-**Step 5: Stop the Containers**
-
-```bash
-docker compose -f docker-compose-server.yml stop
-```
-
-#### Important Notes
-
-> 💡 **Rebuild Required:** 
-> Rebuild the images for `CMF Server` and `CMF UI` after a CMF version update or pulling the latest changes from Git to ensure compatibility.
->
-> ```bash
-> docker compose -f docker-compose-server.yml build --no-cache
-> docker compose -f docker-compose-server.yml up
-> ```
-
+**Output:**
+    new release of pip is available: 23.0.1<br />
+    26.1.1 To update, run: pip install --upgrade pip
 ---
 
 ## Troubleshooting
