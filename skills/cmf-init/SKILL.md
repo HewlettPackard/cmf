@@ -17,14 +17,31 @@ Install cmflib into a Python environment, initialize a storage backend, and veri
 
 ## Step 1 — Set up a Python environment
 
-CMF requires **Python 3.9–3.11** (3.10 recommended). Use whichever tool is available:
+CMF requires **Python 3.9–3.11** (3.10 recommended).
 
-- **conda** (if installed) — `conda create -n cmf python=3.10 && conda activate cmf`
-- **venv** (built-in) — `python3.10 -m venv .cmf && source .cmf/bin/activate`
-- **uv** (fastest, auto-installs Python) — `uv venv .cmf --python 3.10 && source .cmf/bin/activate`
-- **none of the above** — skip environment creation and run `pip install cmflib` directly into your system Python (3.9–3.11 only)
+Detect available tools and ask the user which they prefer:
 
-See [references/init-commands.md](references/init-commands.md#environment-setup--detailed-options) for full install commands, OS-specific instructions, and a guided walkthrough.
+```bash
+which uv && echo "uv available" || echo "uv not found"
+which conda && echo "conda available" || echo "conda not found"
+# venv is always available via Python's standard library
+```
+
+| Tool | Priority | Command |
+|------|----------|---------|
+| **uv** | Preferred — offer to install if missing | `uv venv .cmf --python 3.10 && source .cmf/bin/activate` |
+| **conda** | Next — use if uv unavailable | `conda create -n cmf python=3.10 && conda activate cmf` |
+| **venv** | Always available fallback | `python3.10 -m venv .cmf && source .cmf/bin/activate` |
+
+If **uv is not installed**, offer to install it (manages Python versions automatically):
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh   # Linux
+# or: pip install uv
+```
+
+If **none of the above** apply, skip environment creation and install directly with `pip install cmflib` (requires system Python 3.9–3.11).
+
+See [references/init-commands.md](references/init-commands.md#environment-setup--detailed-options) for full OS-specific setup and a guided walkthrough.
 
 ## Step 2 — Install cmflib
 

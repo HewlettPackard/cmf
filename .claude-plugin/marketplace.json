@@ -2,7 +2,7 @@
   "name": "cmf-plugins",
   "owner": {
     "name": "HewlettPackard",
-    "email": "cmf@hpe.com"
+    "email": "aalap.tripathy@hpe.com"
   },
   "metadata": {
     "description": "Agent skills for the Common Metadata Framework (CMF) — instrument ML pipelines, track artifacts, sync metadata, and query lineage",

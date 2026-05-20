@@ -9,7 +9,7 @@ cmf init local \
   [--neo4j-user <user> --neo4j-password <pw> --neo4j-uri bolt://localhost:7687]
 ```
 
-## MinIO (minios3)
+## MinIO (minios3) · [Docs](https://hewlettpackard.github.io/cmf/cmf_client/minio-server/)
 ```bash
 cmf init minios3 \
   --url http://<host>:9000 \
@@ -30,7 +30,7 @@ cmf init amazons3 \
   [--cmf-server-url <url>]
 ```
 
-## SSH remote (sshremote)
+## SSH remote (sshremote) · [Docs](https://hewlettpackard.github.io/cmf/cmf_client/ssh-setup/)
 ```bash
 cmf init sshremote \
   --path ssh://user@host:/path/to/storage \
@@ -38,7 +38,7 @@ cmf init sshremote \
   [--cmf-server-url <url>]
 ```
 
-## OSDF remote (osdfremote)
+## OSDF remote (osdfremote) · [Docs](https://hewlettpackard.github.io/cmf/cmf_client/cmf_osdf/)
 
 ### Option 1 — Pre-generated token
 ```bash
@@ -97,7 +97,7 @@ cmf init show
 | 3.9 | Supported (see Ubuntu note below) |
 | ≤ 3.8 or ≥ 3.12 | Not supported |
 
-## Environment setup — detailed options
+## Environment setup — detailed options · [Docs](https://hewlettpackard.github.io/cmf/setup/#install-cmf-library-ie-cmflib)
 
 ### uv (recommended for speed)
 
@@ -198,3 +198,10 @@ sudo apt install python3.9 python3.9-dev python3.9-distutils python3.9-venv
 ```
 
 Use Python 3.10 to avoid this entirely.
+
+## References
+
+- [Installing cmflib](https://hewlettpackard.github.io/cmf/setup/#install-cmf-library-ie-cmflib)
+- [MinIO server setup](https://hewlettpackard.github.io/cmf/cmf_client/minio-server/)
+- [SSH remote setup](https://hewlettpackard.github.io/cmf/cmf_client/ssh-setup/)
+- [OSDF remote setup](https://hewlettpackard.github.io/cmf/cmf_client/cmf_osdf/)
