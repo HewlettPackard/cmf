@@ -139,6 +139,7 @@ def merge_created_execution(
     # logger.info(custom_props)
     git_repo = properties.get("Git_Repo", "")
     git_start_commit = properties.get("Git_Start_Commit", "")
+    git_end_commit = properties.get("Git_End_Commit", properties.get("git_end_commit", ""))
     #name = properties.get("Name", "")
     create_new_execution = True
     execution_name = execution_type
@@ -159,6 +160,7 @@ def merge_created_execution(
         pipeline_type=self.parent_context.name,
         git_repo=git_repo,
         git_start_commit=git_start_commit,
+        git_end_commit=git_end_commit,
         custom_properties=custom_props,
         create_new_execution=create_new_execution
     )
@@ -175,6 +177,8 @@ def merge_created_execution(
         self.execution.properties["Execution_uuid"].string_value =\
             properties["Execution_uuid"]
 
+    # Keep end commit synchronized on server, especially for reused executions.
+    self.execution.properties["Git_End_Commit"].string_value = git_end_commit
     
     self.store.put_executions([self.execution])
     self.execution_name = str(self.execution.id) + "," + execution_type

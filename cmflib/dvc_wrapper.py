@@ -231,7 +231,8 @@ def git_commit(execution_id: str) -> str:
                                    universal_newlines=True)
         # To-Do : Parse the output and report if error
         output, errs = process.communicate(timeout=60)
-        commit = output.splitlines()[0].strip()
+        # this output.splitlines()[0].strip() returns "commit <hash_value>"
+        commit = output.splitlines()[0].split(" ")[1].strip()
     except Exception as err:
         logger.error(f"[git_commit] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
