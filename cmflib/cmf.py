@@ -1811,7 +1811,7 @@ def metadata_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid:
     return output
 
 
-def metadata_export(pipeline_name: str, json_ filename: t.Optional[str] = None,  filename: str = "./mlmd") -> str:
+def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None,  filename: str = "./mlmd") -> str:
     """ Export local mlmd's metadata in json format to a json file. 
     
     ```python 
@@ -1820,16 +1820,16 @@ def metadata_export(pipeline_name: str, json_ filename: t.Optional[str] = None, 
     
     Args: 
         pipeline_name: Name of the pipeline. 
-        json_ filename: File path of json file. 
-         filename: Specify input metadata file name. 
+        json_file_name: File path of json file. 
+        filename: Specify input metadata file name. 
     
     Returns: 
         Message from the _metadata_export function. 
      """
     # Required arguments: pipeline_name
-    # Optional arguments: json_ filename
+    # Optional arguments: json_file_name
     # Default arguments:  filename
-    output = _metadata_export(pipeline_name, json_ filename,  filename)
+    output = _metadata_export(pipeline_name, json_file_name, filename)
     return output
 
 
@@ -1842,7 +1842,7 @@ def artifact_pull(pipeline_name: str,  filename: str = "./mlmd", artifact_name: 
     
     Args:
         pipeline_name: Name of the pipeline.
-         filename: Specify input metadata file name.
+        filename: Specify input metadata file name.
         artifact_name: Name of the artifact
     
     Returns:
