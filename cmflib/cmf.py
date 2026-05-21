@@ -61,7 +61,7 @@ from cmflib.metadata_helper import (
     link_execution_to_input_artifact,
 )
 from cmflib.utils.cmf_config import CmfConfig
-from cmflib.utils.helper_functions import get_python_env, change_dir, get_md5_hash, get_postgres_config, calculate_md5
+from cmflib.utils.helper_functions import get_python_env, get_md5_hash, get_postgres_config, calculate_md5
 from cmflib.cmf_server import (
     merge_created_context, 
     merge_created_execution, 
@@ -103,7 +103,7 @@ class Cmf:
     ```python
     from cmflib.cmf import Cmf
     metawriter = Cmf(
-        filepath="mlmd",
+        filename="mlmd",
         pipeline_name="test_pipeline",
         custom_properties={"owner": "user_a"},
         graph=False
@@ -111,7 +111,7 @@ class Cmf:
     ```
     
     Args:
-        filepath: Path  to the sqlite file to store the metadata
+        filename: Path  to the sqlite file to store the metadata
         pipeline_name: Name to uniquely identify the pipeline.
             Note that name is the unique identifier for a pipeline.
             If a pipeline already exist with the same name, the existing pipeline object is reused.
@@ -141,22 +141,16 @@ class Cmf:
 
     def __init__(
         self,
-        filepath: str = "mlmd",
+        filename: str = "mlmd",
         pipeline_name: str = "",
         custom_properties: t.Optional[t.Dict] = None,
         graph: bool = False,
         is_server: bool = False,
     ):
-        #path to directory
-        self.cmf_init_path = filepath.rsplit("/",1)[0] \
-				 if len(filepath.rsplit("/",1)) > 1 \
-					else  os.getcwd()
-
-        logging_dir = change_dir(self.cmf_init_path)
         temp_store: t.Optional[t.Union[SqlliteStore, PostgresStore]] = None
         if is_server is False:
             Cmf.__prechecks()
-            temp_store = SqlliteStore({"filename": filepath})
+            temp_store = SqlliteStore({"filename": filename})
         else:
             config_dict = get_postgres_config()
             temp_store = PostgresStore(config_dict)
@@ -170,7 +164,7 @@ class Cmf:
             pipeline_name = cur_folder
         self.pipeline_name = pipeline_name
         self.store = temp_store.connect()
-        self.filepath = filepath
+        self.filename = filename
         self.child_context = None
         self.execution = None
         self.execution_name = ""
@@ -179,8 +173,7 @@ class Cmf:
         self.input_artifacts: list[str] = []
         self.execution_label_props: dict[str, str] = {}
         self.graph = graph
-        #last token in filepath
-        self.branch_name = filepath.rsplit("/", 1)[-1]
+        self.branch_name = filename.rsplit("/", 1)[-1]
 
         if is_server is False:
             git_checkout_new_branch(self.branch_name)
@@ -199,7 +192,6 @@ class Cmf:
             self.driver.create_pipeline_node(
                 self.pipeline_name, self.parent_context.id, custom_properties
             )
-        os.chdir(logging_dir)
 
     # Declare methods as class-level callables
     merge_created_context: t.Callable[..., t.Any]
@@ -292,7 +284,7 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filename="mlmd", pipeline_name="test_pipeline")
         # Create context
         context: mlmd.proto.Context = metawriter.create_context(
             pipeline_stage="prepare",
@@ -374,7 +366,7 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filename="mlmd", pipeline_name="test_pipeline")
         # Create or reuse context for this stage
         context: mlmd.proto.Context = metawriter.create_context(
             pipeline_stage="prepare",
@@ -402,11 +394,10 @@ class Cmf:
         Returns:
             Execution object from ML Metadata library associated with the new execution for this stage.
         """
-        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        file_name = os.path.basename(current_script)
-        assigned_stage_name = os.path.splitext(file_name)[0]
+        filename = os.path.basename(current_script)
+        assigned_stage_name = os.path.splitext( filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_stage_name)
@@ -499,7 +490,6 @@ class Cmf:
         self.update_execution(self.execution.id, custom_props)
         # link the artifact to execution if it exists and creates artifact if it doesn't
         self.log_python_env(python_env_file_path)
-        os.chdir(logging_dir)
         return self.execution
 
     def update_execution(
@@ -514,7 +504,7 @@ class Cmf:
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        metawriter = Cmf(filename="mlmd", pipeline_name="test_pipeline")
         # Update a execution
         execution: mlmd.proto.Execution = metawriter.update_execution(
             execution_id=8,
@@ -737,11 +727,10 @@ class Cmf:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
         artifact_path = url
-        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        file_name = os.path.basename(current_script)
-        assigned_name = os.path.splitext(file_name)[0]
+        filename = os.path.basename(current_script)
+        assigned_name = os.path.splitext( filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -874,8 +863,6 @@ class Cmf:
                 
         if label:
             self.log_label(label, artifact_path, label_properties)
-
-        os.chdir(logging_dir)
         return artifact
 
     def update_dataset_url(self, artifact: mlpb.Artifact, updated_url: str):    # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
@@ -980,12 +967,10 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new model artifact.
         """
-
-        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        file_name = os.path.basename(current_script)
-        assigned_name = os.path.splitext(file_name)[0]
+        filename = os.path.basename(current_script)
+        assigned_name = os.path.splitext( filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1115,7 +1100,7 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
-        os.chdir(logging_dir)
+ 
         return artifact
 
 
@@ -1140,11 +1125,10 @@ class Cmf:
         Returns:
               Artifact object from ML Metadata library associated with the new coarse-grained metrics artifact.
         """
-        logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        file_name = os.path.basename(current_script)
-        assigned_name = os.path.splitext(file_name)[0]
+        filename = os.path.basename(current_script)
+        assigned_name = os.path.splitext( filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1194,7 +1178,7 @@ class Cmf:
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
-        os.chdir(logging_dir)
+ 
         return metrics
 
     def log_metric(
@@ -1239,14 +1223,12 @@ class Cmf:
 
         Returns:
            Artifact object from the ML Protocol Buffers library associated with the new metrics artifact.
-        """
-
-        logging_dir = change_dir(self.cmf_init_path)
+        """ 
         # code for nano cmf
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        file_name = os.path.basename(current_script)
-        assigned_name = os.path.splitext(file_name)[0]
+        filename = os.path.basename(current_script)
+        assigned_name = os.path.splitext( filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1333,7 +1315,6 @@ class Cmf:
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
 
-        os.chdir(logging_dir)
         return metrics
 
 
@@ -1680,13 +1661,11 @@ class Cmf:
                 
             Example {"mean":2.5, "median":2.6}
             """
-
-            logging_dir = change_dir(self.writer.cmf_init_path)
             # code for nano cmf
             # Assigning current file name as stage and execution name
             current_script = sys.argv[0]
-            file_name = os.path.basename(current_script)
-            assigned_name = os.path.splitext(file_name)[0]
+            filename = os.path.basename(current_script)
+            assigned_name = os.path.splitext( filename)[0]
             # create context if not already created
             if not self.writer.child_context:
                 self.writer.create_context(pipeline_stage=assigned_name)
@@ -1760,7 +1739,7 @@ class Cmf:
                 self.writer.driver.create_dataslice_node(
                     self.name, dataslice_path + ":" + c_hash, c_hash, self.data_parent, custom_props
                 )
-            os.chdir(logging_dir)
+     
             return slice
 
 
@@ -1787,7 +1766,7 @@ Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 Cmf.log_label_with_version = log_label_with_version
 
-def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None) -> str:
+def metadata_push(pipeline_name: str,  filename: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None) -> str:
     """ Pushes metadata file to CMF-server.
     
     ```python
@@ -1796,7 +1775,7 @@ def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_pat
     
     Args:
         pipeline_name: Name of the pipeline.
-        file_name: Specify input metadata file name.
+         filename: Specify input metadata file name.
         execution_uuid: Optional execution UUID.
         tensorboard_path: Path to tensorboard logs.
 
@@ -1805,12 +1784,12 @@ def metadata_push(pipeline_name: str, file_name: str = "./mlmd", tensorboard_pat
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_UUID, tensorboard_path
-    # Default arguments: file_name
-    output = _metadata_push(pipeline_name, file_name, execution_uuid, tensorboard_path)
+    # Default arguments:  filename
+    output = _metadata_push(pipeline_name,  filename, execution_uuid, tensorboard_path)
     return output
 
 
-def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def metadata_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """ Pulls metadata file from CMF-server. 
     
     ```python 
@@ -1819,7 +1798,7 @@ def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid:
     
     Args: 
         pipeline_name: Name of the pipeline. 
-        file_name: Specify output metadata file name.
+         filename: Specify output metadata file name.
         execution_uuid: Optional execution UUID. 
     
     Returns: 
@@ -1827,12 +1806,12 @@ def metadata_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid:
      """
     # Required arguments: pipeline_name 
     # Optional arguments: execution_uuid
-    # Default arguments: file_name 
-    output = _metadata_pull(pipeline_name, file_name, execution_uuid)
+    # Default arguments:  filename 
+    output = _metadata_pull(pipeline_name,  filename, execution_uuid)
     return output
 
 
-def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, file_name: str = "./mlmd") -> str:
+def metadata_export(pipeline_name: str, json_ filename: t.Optional[str] = None,  filename: str = "./mlmd") -> str:
     """ Export local mlmd's metadata in json format to a json file. 
     
     ```python 
@@ -1841,20 +1820,20 @@ def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, 
     
     Args: 
         pipeline_name: Name of the pipeline. 
-        json_file_name: File path of json file. 
-        file_name: Specify input metadata file name. 
+        json_ filename: File path of json file. 
+         filename: Specify input metadata file name. 
     
     Returns: 
         Message from the _metadata_export function. 
      """
     # Required arguments: pipeline_name
-    # Optional arguments: json_file_name
-    # Default arguments: file_name
-    output = _metadata_export(pipeline_name, json_file_name, file_name)
+    # Optional arguments: json_ filename
+    # Default arguments:  filename
+    output = _metadata_export(pipeline_name, json_ filename,  filename)
     return output
 
 
-def artifact_pull(pipeline_name: str, file_name: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
+def artifact_pull(pipeline_name: str,  filename: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
     """ Pulls artifacts from the initialized repository.
     
     ```python
@@ -1863,7 +1842,7 @@ def artifact_pull(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
     
     Args:
         pipeline_name: Name of the pipeline.
-        file_name: Specify input metadata file name.
+         filename: Specify input metadata file name.
         artifact_name: Name of the artifact
     
     Returns:
@@ -1871,13 +1850,13 @@ def artifact_pull(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
     """
     # Required arguments: pipeline_name
     # Optional arguments: artifact_name
-    # Default arguments: file_name
-    output = _artifact_pull(pipeline_name, file_name, artifact_name)
+    # Default arguments:  filename
+    output = _artifact_pull(pipeline_name,  filename, artifact_name)
     return output
 
 
 # Prevent multiplying str with NoneType; added default value to jobs.
-def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: int = 32) -> str:
+def artifact_push(pipeline_name: str, filename: str = "./mlmd", jobs: int = 32) -> str:
     """ Pushes artifacts to the initialized repository.
     
     ```python
@@ -1886,15 +1865,15 @@ def artifact_push(pipeline_name: str, filepath: str = "./mlmd", jobs: int = 32) 
     
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the artifact. 
+       filename: Path to store the artifact. 
        jobs: Number of jobs to use for pushing artifacts.
     
     Returns:
         Output from the _artifact_push function.
     """
     # Required arguments: pipeline_name
-    # Default arguments: filepath, jobs
-    output = _artifact_push(pipeline_name, filepath, f"{jobs}")
+    # Default arguments: filename, jobs
+    output = _artifact_push(pipeline_name, filename, f"{jobs}")
     return output
 
 
@@ -2128,7 +2107,7 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list(file_name: str = "./mlmd")-> str:
+def pipeline_list( filename: str = "./mlmd")-> str:
     """ Display a list of pipeline name(s) from the available input metadata file.
 
     ```python
@@ -2136,17 +2115,17 @@ def pipeline_list(file_name: str = "./mlmd")-> str:
     ```
 
     Args:
-        file_name: Specify input metadata file name.
+         filename: Specify input metadata file name.
 
     Returns:
         Output from the _pipeline_list function.
     """
-    # Default arguments: file_name
-    output = _pipeline_list(file_name)
+    # Default arguments:  filename
+    output = _pipeline_list( filename)
     return output
 
 
-def execution_list(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def execution_list(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
 
     ```python 
@@ -2155,7 +2134,7 @@ def execution_list(pipeline_name: str, file_name: str = "./mlmd", execution_uuid
     
     Args: 
        pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name.
+        filename: Specify input metadata file name.
        execution_uuid: Specify the execution uuid to retrieve execution.
     
     Returns:
@@ -2163,12 +2142,12 @@ def execution_list(pipeline_name: str, file_name: str = "./mlmd", execution_uuid
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_uuid
-    # Default arguments: file_name
-    output = _execution_list(pipeline_name, file_name, execution_uuid)
+    # Default arguments:  filename
+    output = _execution_list(pipeline_name,  filename, execution_uuid)
     return output
 
 
-def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
+def artifact_list(pipeline_name: str,  filename: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     
     ```python 
@@ -2177,7 +2156,7 @@ def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
     
     Args: 
        pipeline_name: Name of the pipeline. 
-       file_name: Specify input metadata file name. 
+        filename: Specify input metadata file name. 
        artifact_name: Artifacts for particular artifact name.
     
     Returns:
@@ -2185,12 +2164,12 @@ def artifact_list(pipeline_name: str, file_name: str = "./mlmd", artifact_name: 
     """
     # Required arguments: pipeline_name
     # Optional arguments: artifact_name
-    # Default arguments: file_name
-    output = _artifact_list(pipeline_name, file_name, artifact_name)
+    # Default arguments:  filename
+    output = _artifact_list(pipeline_name, filename, artifact_name)
     return output
 
 # Prevent multiplying int with NoneType; added default value to jobs.
-def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None, jobs: int = 32) -> str:
+def repo_push(pipeline_name: str, filename: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None, jobs: int = 32) -> str:
     """ Push artifacts, metadata files, and source code to the user's artifact repository, cmf-server, and git respectively.
     
     ```python 
@@ -2199,7 +2178,7 @@ def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: t.
     
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Specify input metadata file path.
+       filename: Specify input metadata file path.
        execution_uuid: Specify execution uuid.
        tensorboard_path: Path to tensorboard logs.
        jobs: Number of jobs to use for pushing artifacts.
@@ -2208,12 +2187,12 @@ def repo_push(pipeline_name: str, filepath: str = "./mlmd", tensorboard_path: t.
        Output from the _repo_push function. 
     """
     # Required arguments: pipeline_name
-    # Optional arguments: filepath, execution_uuid, tensorboard_path, jobs
-    output = _repo_push(pipeline_name, filepath, tensorboard_path, execution_uuid, f"{jobs}")
+    # Optional arguments: filename, execution_uuid, tensorboard_path, jobs
+    output = _repo_push(pipeline_name, filename, tensorboard_path, execution_uuid, f"{jobs}")
     return output
 
 
-def repo_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def repo_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     
     Example:
@@ -2223,7 +2202,7 @@ def repo_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.O
     
     Args:
         pipeline_name: Name of the pipeline.
-        file_name: Specify output metadata file name (default: "./mlmd").
+         filename: Specify output metadata file name (default: "./mlmd").
         execution_uuid: Specify execution uuid (optional).
     
     Returns:
@@ -2231,12 +2210,12 @@ def repo_pull(pipeline_name: str, file_name: str = "./mlmd", execution_uuid: t.O
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_uuid
-    # Default arguments: file_name
-    output = _repo_pull(pipeline_name, file_name, execution_uuid)
+    # Default arguments:  filename
+    output = _repo_pull(pipeline_name,  filename, execution_uuid)
     return output
 
 
-def dvc_ingest(file_name: str = "./mlmd") -> str:
+def dvc_ingest( filename: str = "./mlmd") -> str:
     """ Ingests metadata from the dvc.lock file into the CMF. 
         If an existing MLMD file is provided, it merges and updates execution metadata 
         based on matching commands, or creates new executions if none exist.
@@ -2246,12 +2225,12 @@ def dvc_ingest(file_name: str = "./mlmd") -> str:
     ```
     
     Args: 
-       file_name: Specify input metadata file name.
+        filename: Specify input metadata file name.
     
     Returns:
        Output from the _dvc_ingest function. 
     """
-    # Default arguments: file_name
-    output = _dvc_ingest(file_name)
+    # Default arguments:  filename
+    output = _dvc_ingest(filename)
     return output
 
