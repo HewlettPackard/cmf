@@ -18,13 +18,12 @@ import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 
 const TensorBoard = () => {
-  const TB_PATH = "/tensorboard/"; // same-origin path exposed by NGINX
+  const TB_PATH = "/tensor_board/"; // internal path proxied by NGINX to TensorBoard service
 
   return (
     <>
       <section
-        className="flex flex-col bg-white"
-        style={{ minHeight: "100vh" }}
+        className="flex flex-col bg-white min-h-screen"
       >
         <DashboardHeader />
         <div className="flex flex-row">
