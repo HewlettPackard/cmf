@@ -29,8 +29,10 @@ from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tr
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
 from server.app.db.dbconfig import get_db, init_db
 from server.app.db.dbqueries import (
-    fetch_artifacts,
-    fetch_executions,
+    fetch_unique_execution_stages,
+    fetch_executions_by_stage,
+    fetch_artifacts_by_stage,
+    fetch_artifact_types_by_stage,
     register_server_details,
     get_registered_server_details,
     get_sync_status,
@@ -45,8 +47,8 @@ from server.app.schemas.dataframe import (
     ServerRegistrationRequest, 
     AcknowledgeRequest,
     MLMDPullRequest,
-    ArtifactRequest,
-    ExecutionRequest,
+    ArtifactByStageRequest,
+    ExecutionByStageRequest,
 )
 import httpx
 import socket
@@ -169,40 +171,183 @@ async def mlmd_pull(info: MLMDPullRequest):
     return json_payload
 
 
-@app.get("/artifacts/{pipeline_name}/{artifact_type}")
-async def get_artifacts(
-    pipeline_name: str, 
-    artifact_type: str, 
-    query_params: ArtifactRequest = Depends(),
+# Deprecated legacy endpoint (unused by current grid UI).
+# Stage-based endpoint replacement: /artifacts-by-stage/{pipeline_name}
+# @app.get("/artifacts/{pipeline_name}/{artifact_type}")
+# async def get_artifacts(
+#     pipeline_name: str,
+#     artifact_type: str,
+#     query_params: ArtifactRequest = Depends(),
+#     db: AsyncSession = Depends(get_db)
+# ):
+#
+#     filter_value = query_params.filter_value
+#     active_page = query_params.active_page
+#     sort_field = query_params.sort_field
+#     sort_order = query_params.sort_order
+#     record_per_page = query_params.record_per_page
+#
+#     """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
+#     return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
+
+
+# Deprecated legacy endpoint (unused by current grid UI).
+# Stage-based endpoint replacement: /executions-by-stage/{pipeline_name}
+# @app.get("/executions/{pipeline_name}")
+# async def execution(request: Request,
+#                    pipeline_name: str,
+#                    query_params: ExecutionRequest = Depends(),
+#                    db: AsyncSession = Depends(get_db)
+#                    ):
+#     filter_value = query_params.filter_value
+#     active_page = query_params.active_page
+#     sort_order = query_params.sort_order
+#     sort_field = query_params.sort_field
+#     record_per_page = query_params.record_per_page
+#
+#     """Retrieve paginated executions with filtering, sorting, and full-text search."""
+#     return await fetch_executions(db, pipeline_name, filter_value, active_page, record_per_page, sort_field, sort_order)
+    
+
+@app.get("/executions-by-stage/{pipeline_name}")
+async def get_executions_by_stage(
+    pipeline_name: str,
+    query_params: ExecutionByStageRequest = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-
-    filter_value = query_params.filter_value
-    active_page = query_params.active_page
-    sort_field = query_params.sort_field
-    sort_order = query_params.sort_order
-    record_per_page = query_params.record_per_page
-
-    """Retrieve paginated artifacts with filtering, sorting, and full-text search."""
-    return await fetch_artifacts(db, pipeline_name, artifact_type, filter_value, active_page, record_per_page, sort_field, sort_order)
-
-
-# api to display executions available in mlmd file[from postgres]
-@app.get("/executions/{pipeline_name}")
-async def execution(request: Request,
-                   pipeline_name: str,
-                   query_params: ExecutionRequest = Depends(),
-                   db: AsyncSession = Depends(get_db)
-                   ):
-    filter_value = query_params.filter_value
-    active_page = query_params.active_page
-    sort_order = query_params.sort_order
-    sort_field = query_params.sort_field
-    record_per_page = query_params.record_per_page
-
-    """Retrieve paginated executions with filtering, sorting, and full-text search."""
-    return await fetch_executions(db, pipeline_name, filter_value, active_page, record_per_page, sort_field, sort_order)
+    """
+    Retrieve executions filtered by pipeline and stage name (Context_Type).
     
+    Args:
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter executions
+        active_page: Page number for pagination
+        record_per_page: Number of records per page
+        
+    Returns:
+        Dictionary with total_items and list of executions with their properties
+        
+    Example response:
+    {
+        "total_items": 10,
+        "items": [
+            {
+                "execution_id": 2,
+                "execution_properties": [...]
+            }
+        ]
+    }
+    """
+    stage_name = query_params.stage_name
+    active_page = query_params.active_page
+    record_per_page = query_params.record_per_page
+    sort_order = query_params.sort_order
+    filter_value = query_params.filter_value
+
+    return await fetch_executions_by_stage(db, pipeline_name, stage_name, active_page, record_per_page, sort_order, filter_value)
+
+
+@app.get("/pipeline-stages/{pipeline_name}")
+async def get_pipeline_stages(
+    pipeline_name: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve unique artifact stages (Context_Type values) for a given pipeline.
+    Since artifacts inherit stages from executions, this uses the same query as execution stages.
+    
+    Args:
+        pipeline_name: Name of the pipeline to get stages from
+        
+    Returns:
+        Dictionary with pipeline_name, list of unique stages, and total count
+        
+    Example response:
+    {
+        "stages": ["Test-env/Prepare", "Test-env/Train", "Test-env/Evaluate"],
+        "total_stages": 3
+    }
+    """
+    return await fetch_unique_execution_stages(db, pipeline_name)
+
+
+@app.get("/artifact-types-by-stage/{pipeline_name}")
+async def get_artifact_types_by_stage(
+    pipeline_name: str,
+    stage_name: str = Query(..., description="Stage name (Context_Type value)"),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve unique artifact types available in a specific stage of a pipeline.
+    
+    Args:
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter by
+        
+    Returns:
+        List of unique artifact type names
+        
+    Example response:
+    ["Dataset", "Metrics", "Model"]
+    """
+    return await fetch_artifact_types_by_stage(db, pipeline_name, stage_name)
+
+
+@app.get("/artifacts-by-stage/{pipeline_name}")
+async def get_artifacts_by_stage(
+    pipeline_name: str,
+    query_params: ArtifactByStageRequest = Depends(),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Retrieve artifacts filtered by pipeline, stage, and artifact type.
+    
+    Args:
+        pipeline_name: Name of the pipeline
+        stage_name: Stage name (Context_Type value) to filter artifacts
+        artifact_type: Type of artifacts to retrieve
+        sort_order: Sort order (asc or desc)
+        active_page: Page number for pagination
+        record_per_page: Number of records per page
+        filter_value: Search filter value
+        sort_field: Field to sort by
+        
+    Returns:
+        Dictionary with total_items and list of artifacts with their properties
+        
+    Example response:
+    {
+        "total_items": 10,
+        "items": [
+            {
+                "artifact_id": 5,
+                "name": "dataset.csv",
+                "create_time_since_epoch": 1234567890,
+                "artifact_properties": [...]
+            }
+        ]
+    }
+    """
+    stage_name = query_params.stage_name
+    artifact_type = query_params.artifact_type
+    filter_value = query_params.filter_value
+    active_page = query_params.active_page
+    record_per_page = query_params.record_per_page
+    sort_field = query_params.sort_field
+    sort_order = query_params.sort_order
+
+    return await fetch_artifacts_by_stage(
+        db=db,
+        pipeline_name=pipeline_name,
+        stage_name=stage_name,
+        artifact_type=artifact_type,
+        filter_value=filter_value,
+        active_page=active_page,
+        record_per_page=record_per_page,
+        sort_column=sort_field,
+        sort_order=sort_order
+    )
+
 
 @app.get("/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
 async def execution_lineage(request: Request, uuid: str, pipeline_name: str):
