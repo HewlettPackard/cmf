@@ -14,7 +14,7 @@ git config --global user.email "you@example.com"
 
 ### 2. Storage Backend Architecture
 Ensure you have access credentials and network pathways ready for your chosen artifact repository:
-- **Storage Backend**: local, S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
+- **Storage Backend**: [local](./../cmf_client/local-storage-setup.md), S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
 
 ---
 
@@ -55,7 +55,7 @@ Before initiating the environment setup, review the foundational commands requir
 **Step 1: Activate the Virtual Environment**<br/><br/>
 **Description:** Activates an isolated Python environment to keep project packages separated from global system files.
 
-=== "WSL"
+=== "Virtual Environment"
     ```shell
     $ source cmf_env/bin/activate
     ```
@@ -71,7 +71,8 @@ Prefixes your terminal shell prompt with (cmf_env) to signal that isolation is a
 
 ---   
 **Step 2: Verify the CMF Package Installation**<br/><br/>
-**Description:** Queries the Python package manager to extract technical information regarding the installed cmflib library.
+**Description:** Queries the Python package manager to extract technical information regarding the installed cmflib library.<br />
+you have python version 3.10 and gitHub 1.9.1
 
 ```bash
 $ pip show cmflib
@@ -134,7 +135,7 @@ Prints a single success message confirming that configuration is complete and lo
 **Description:** Launches a custom shell script workflow to execute pre-written testing or processing steps.
 
 ```bash
-$  . sh ./test_script.sh
+$ sh ./test_script.sh
 ```
 **Output:** [5/5] [RUNNING PARSE STEP]
 <br>
@@ -146,9 +147,9 @@ Streams real-time pipeline status updates directly to the console window, showin
 **Description:** Retrieves a detailed list of all recorded pipelines or components from your CMF server and saves the output directly into a specified file.
 
 ```bash
-$  CMF pipeline list -f name of file
+$  CMF pipeline list -f name_of_file
 ```
-**Output:** 
+**Output:** ['Test-env']
 <br>
 
 ---

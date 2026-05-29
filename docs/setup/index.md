@@ -79,7 +79,7 @@ cd cmf_workspace
 **Step 4: Create a Virtual Environment**<br/><br/>
 **Description:** Create an isolated, self-contained Python virtual environment named cmf_env dedicated exclusively to CMF dependencies to prevent dependency pollution.<br/>
 
-=== "WSL"
+=== "Virtual Environment"
     ```shell
     python3.10 -m venv cmf_env
     ```
@@ -96,7 +96,7 @@ cd cmf_workspace
 **Step 5: Activate the Virtual Environment**<br/><br/>
 **Description:** Activate the virtual environment to configure your path variables so all subsequent python and pip binaries resolve strictly inside this sandbox.<br/>
 
-=== "WSL"
+=== "Virtual Environment"
     ```shell
     $  source cmf_env/bin/activate
     ```

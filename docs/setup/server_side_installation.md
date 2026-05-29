@@ -70,7 +70,7 @@ $ nano .env
 ```bash
 $ docker compose -f docker-compose-server.yml up
 ```
-**Output:** It start your server, Visit to browser at `localshot / 127.0.0.1`
+**Output:** It start your server, Visit to browser at ` localhost / 127.0.0.1`
 
 > 📝 **Note:** Replace `docker compose` with `docker-compose` if you're using an older version of Docker.
 
