@@ -26,6 +26,7 @@ class MLMDPushRequest(BaseModel):
 
         return values
 
+
 # Base query parameters for pagination, sorting, and filtering.
 class BaseRequest(BaseModel):
     active_page: int = Field(1, gt=0, description="Page number")  # Page must be > 0
@@ -33,13 +34,27 @@ class BaseRequest(BaseModel):
     record_per_page: int = Field(5, gt=0, description="Number of records per page")  # Records per page must be > 0
     filter_value: str = Field("", description="Search based on value")
 
-# Query parameters for execution.
-class ExecutionRequest(BaseRequest):
-    sort_field: str = Field("Context_Type", description="Column to sort by (default: Context_Type)")
 
-# Query parameters for artifact.
-class ArtifactRequest(BaseRequest):
+# Query parameters for execution.
+# class ExecutionRequest(BaseRequest):
+#     sort_field: str = Field("Context_Type", description="Column to sort by (default: Context_Type)")
+
+
+class ExecutionByStageRequest(BaseRequest):
+    stage_name: str = Field(..., description="Stage name (Context_Type value)")
+    sort_order: str = Field("DESC", description="Sort order: ASC or DESC")
+
+
+# Query parameters for artifact (legacy, non-stage).
+# Deprecated: kept for reference during rollback.
+# class ArtifactRequest(BaseRequest):
+#     sort_field: str = Field("name", description="Column to sort by (default: name)")
+
+
+class ArtifactByStageRequest(BaseRequest):
     sort_field: str = Field("name", description="Column to sort by (default: name)")
+    stage_name: str = Field(..., description="Stage name (Context_Type value)")
+    artifact_type: str = Field(..., description="Artifact type to filter")
 
 
 # Define a Pydantic model for the request body
@@ -53,10 +68,11 @@ class AcknowledgeRequest(BaseModel):
     server_name: str
     server_url: str
 
+
 # Don't forget description
 class MLMDPullRequest(BaseModel):
-    pipeline_name:Optional[str] = Field(None, description="")
-    exec_uuid: Optional[str] = Field(None, description="")
+    pipeline_name:Optional[str] = Field(None, description="Name of the pipeline")
+    exec_uuid: Optional[str] = Field(None, description="Execution UUID")
     last_sync_time: Optional[int] = Field(None, description="Epoch time in seconds")
     
 
