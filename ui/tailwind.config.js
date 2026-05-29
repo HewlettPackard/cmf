@@ -32,6 +32,16 @@ module.exports = {
       animation: {
         "fade-in-down": "fade-in-down 0.5s ease-out",
       },
+      colors: {
+        "custom-white": "#f4f4f4f4",
+        "custom-green": "#01a982",
+        "custom-blue": "#1a365d",
+        "custom-active-page": "#2c5282",
+        "custom-light-blue": "#e0f7fa",
+      },
+      fontFamily: {
+        "custom-fam": ["Arial", "sans-serif"],
+      },
     },
   },
   plugins: [],
