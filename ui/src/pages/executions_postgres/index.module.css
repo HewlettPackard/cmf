@@ -1,4 +1,7 @@
-*,
+/* Comment out the entire code as it is recently edited */
+/* Created new files for executions_postgres_grid  */
+
+/* *,
 ::before,
 ::after {
   box-sizing: border-box;
@@ -70,12 +73,12 @@ button {
 }
 
 .pagination-button:hover {
-  background-color: #1a365d; /* Darker blue */
+  background-color: #1a365d; 
   color: #fff;
   border-color: #1a365d;
-}
+} 
 
 .pagination-button.active-page:hover {
   background-color: #1a365d;
   border-color: #1a365d;
-}
+} */
