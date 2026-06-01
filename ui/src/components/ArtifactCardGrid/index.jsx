@@ -103,7 +103,7 @@ const ArtifactCardGrid = ({
                     .map((label_name, idx) => (
                         <span
                             key={idx}
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer max-w-full"
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer max-w-[14rem] min-w-0 overflow-hidden"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -113,7 +113,7 @@ const ArtifactCardGrid = ({
                             }}
                             title={label_name}
                         >
-                            <span className="truncate block max-w-full">
+                            <span className="block w-full truncate">
                                 <Highlight text={label_name} highlight={filterValue} />
                             </span>
                         </span>
