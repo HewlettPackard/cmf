@@ -556,15 +556,22 @@ async def fetch_executions_by_stage(
         .subquery("create_time_subquery")
     )
 
-    # Apply search filter across execution_id and aggregated properties if filter_value is provided
+    # Apply search filter across execution_id, aggregated properties, and UTC date tokens.
     search_predicate = None
     if filter_value:
+        created_at_utc = func.timezone("UTC", func.to_timestamp(create_time_subquery.c.create_time / 1000.0))
         search_predicate = func.concat(
             func.cast(execution_ids_with_stage.c.execution_id, String),
             func.coalesce(
                 func.cast(execution_properties_agg.c.execution_properties, String),
                 ""
-            )
+            ),
+            # Canonical and alias formats to support inputs like 2026-09-12 8:49:11, 2026, 19, 5/19, and 5/19/2026.
+            func.coalesce(func.to_char(created_at_utc, "YYYY-MM-DD HH24:MI:SS"), ""),
+            func.coalesce(func.to_char(created_at_utc, "FMMM/FMDD/YYYY"), ""),
+            func.coalesce(func.to_char(created_at_utc, "YYYY"), ""),
+            func.coalesce(func.to_char(created_at_utc, "FMMM"), ""),
+            func.coalesce(func.to_char(created_at_utc, "FMDD"), "")
         ).ilike(f"%{filter_value}%")
 
     # Step 3: Fetch paginated executions with properties and total count, sorted by create_time.
@@ -710,12 +717,23 @@ async def fetch_artifacts_by_stage(
         .cte("artifact_type_cte")
     )
 
-    # Apply search filter across all relevant columns (artifact_id, name, and aggregated properties).
+    # Apply search filter across artifact_id, name, UTC date tokens, and aggregated properties.
     search_predicate = None
     if filter_value:
+        created_at_utc = func.timezone("UTC", func.to_timestamp(artifact_type_cte.c.create_time_since_epoch / 1000.0))
         search_predicate = func.concat(
             func.cast(artifact_type_cte.c.artifact_id, String),
             func.cast(artifact_type_cte.c.name, String),
+            # Canonical format: '2026-09-12 08:49:11' (matches partial or full timestamp search)
+            func.coalesce(func.to_char(created_at_utc, "YYYY-MM-DD HH24:MI:SS"), ""),
+            # Month/Day/Year, e.g. '5/19/2026' (matches partial or US-style date search)
+            func.coalesce(func.to_char(created_at_utc, "FMMM/FMDD/YYYY"), ""),
+            # Year only, e.g. '2026' (matches year search)
+            func.coalesce(func.to_char(created_at_utc, "YYYY"), ""),
+            # Month only, e.g. '5' (matches month search)
+            func.coalesce(func.to_char(created_at_utc, "FMMM"), ""),
+            # Day only, e.g. '19' (matches day search)
+            func.coalesce(func.to_char(created_at_utc, "FMDD"), ""),
             func.coalesce(
                 func.cast(artifact_properties_agg_cte.c.artifact_properties, String),
                 ""

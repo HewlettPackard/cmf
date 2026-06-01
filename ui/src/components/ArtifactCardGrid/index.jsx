@@ -63,11 +63,15 @@ const ArtifactCardGrid = ({
         setExpandedCard(expandedCard === index ? null : index);
     };
 
+    // Format date as 'YYYY-MM-DD HH:mm:ss' in UTC for display and search consistency
     const formatDate = (timestamp) => {
         if (!timestamp || timestamp === "N/A") return "N/A";
         try {
-            const date = new Date(parseInt(timestamp));
-            return date.toLocaleString();
+            const date = new Date(parseInt(timestamp, 10));
+            // Pad single digit numbers with leading zeros for consistent formatting
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
+                   `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
         } catch {
             return timestamp;
         }
@@ -91,7 +95,7 @@ const ArtifactCardGrid = ({
         }
 
         return (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1 mt-1">
                 {labelsUri
                     .split(",")
                     .map((label_name) => label_name.trim())

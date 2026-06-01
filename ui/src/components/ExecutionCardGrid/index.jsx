@@ -49,10 +49,15 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
     const pipelineType = getProp("Pipeline_Type");
     const pythonEnv = getProp("Python_Env");
 
+    // Format date as 'YYYY-MM-DD HH:mm:ss' in UTC for display and search consistency
     const formatDate = (timestamp) => {
         if (!timestamp || timestamp === "N/A") return null;
         try {
-            return new Date(parseFloat(timestamp)).toLocaleString();
+            const date = new Date(parseFloat(timestamp));
+            // Pad single digit numbers with leading zeros for consistent formatting
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
+                   `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
         } catch {
             return null;
         }
