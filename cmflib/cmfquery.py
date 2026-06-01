@@ -303,6 +303,15 @@ class CmfQuery(object):
             
             log_value = execution_log_metadata[field]
             artifact_value = artifact_dict.get(field)
+
+            # Merge map-like fields so sparse execution_log payloads do not erase
+            # richer artifact metadata such as labels_uri/custom properties.
+            if field in {"properties", "custom_properties"} and isinstance(artifact_value, dict) and isinstance(log_value, dict):
+                merged_value = dict(artifact_value)
+                merged_value.update(log_value)
+                if merged_value != artifact_value:
+                    artifact_dict[field] = merged_value
+                continue
             
             # Step 3: Compare values to decide if patch is needed.
             # Handle case where artifact field might not exist (use None as default).
