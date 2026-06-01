@@ -11,7 +11,8 @@ from sqlalchemy import(
     Index,
     UniqueConstraint,
     MetaData,
-    SmallInteger
+    SmallInteger,
+    text
 )
 from sqlalchemy.dialects.postgresql import JSONB
 
