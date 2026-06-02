@@ -19,12 +19,26 @@ class CustomSqliteStore:
 
     @staticmethod
     def _resolve_db_path(path_hint: str) -> str:
-        # If a directory is provided, store metadata in an mlmd file in that directory.
-        if os.path.isdir(path_hint):
-            return os.path.join(path_hint, "mlmd")
+        # Function Name: _resolve_db_path
+        # Input: path_hint (str)
+        # Output: str (resolved DB path)
+        # Description: Determine final DB path based on input hint or defaults.
+        # Step 1: Trim whitespace from input path hint.
+        raw_path = (path_hint or "").strip()
 
-        # Use the exact filepath provided by caller.
-        return path_hint
+        # Step 2: If no path provided, default to current working directory.
+        if not raw_path:
+            raw_path = os.getcwd()
+
+        # Step 3: Normalize path to remove redundant separators and up-level references.
+        normalized_path = os.path.normpath(raw_path)
+
+        # Step 4: If the path ends with "mlmd", treat it as the final DB path.
+        if os.path.basename(normalized_path) == "mlmd":
+            return normalized_path
+
+        # Step 5: Otherwise, treat input as a directory path and place DB at <dir>/mlmd.
+        return os.path.join(normalized_path, "mlmd")
 
     def _connect(self) -> sqlite3.Connection:
         # Function Name: _connect
