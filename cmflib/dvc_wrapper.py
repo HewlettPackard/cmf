@@ -468,11 +468,11 @@ def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
               logger.error(f"[dvc_push] Unexpected {errs}")
 
     else:
+        file_list.insert(0, 'dvc')
+        file_list.insert(1, 'push')
+        file_list.insert(2, '-j')
+        file_list.insert(3, str(num_jobs))
         try:
-            file_list.insert(0, 'dvc')
-            file_list.insert(1, 'push')
-            file_list.insert(2, '-j')
-            file_list.insert(3, str(num_jobs))
             process = subprocess.Popen(file_list,
                                    stdout=subprocess.PIPE,
                                    universal_newlines=True)
