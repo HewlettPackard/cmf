@@ -32,7 +32,7 @@ class DvcConfig:
                 # Split only on the first '=' to preserve base64-encoded values
                 # that may contain '=' padding characters.
                 # for eg: remote.ssh-storage.password = cGFzc3dvcmQ= (which is base64-encoded 'password')
-                item_list = item.split("=", 1)
+                item_list = item.split("=")
                 config_dict[item_list[0]] = item_list[1]
             return config_dict
 

@@ -450,7 +450,10 @@ def dvc_get_config() -> str:
 # dvc push
 def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
     commit = ""
+    print("inside dvc push command")
+    print("file_list is: ", file_list)
     if file_list is None:
+        print("inside if condition where file_list is None")
         try:
             # num_jobs must be passed as a string (`str(num_jobs)`) when constructing the command.
             process = subprocess.Popen(['dvc', 'push', '-j', str(num_jobs)],
@@ -468,6 +471,7 @@ def dvc_push(num_jobs: int, file_list: t.Optional[t.List[str]] = None) -> str:
               logger.error(f"[dvc_push] Unexpected {errs}")
 
     else:
+        print("inside else condition where file_list is not None")
         file_list.insert(0, 'dvc')
         file_list.insert(1, 'push')
         file_list.insert(2, '-j')
