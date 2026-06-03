@@ -158,27 +158,21 @@ class CmdArtifactPush(CmdBase):
                 # adding .dvc at the end of every file as it is needed for pull
                 artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
                 names.extend(artifacts['name'].tolist())
-        print("Artifacts to be pushed: ", set(names))
         final_list = set()
         for file in set(names):
-            print("file_name", file)
             # checking if the .dvc exists
             if os.path.exists(file):
                 final_list.add(file)
-                print("inside if")
             # checking if the .dvc exists in user's project working directory
             elif os.path.isabs(file):
                 file = re.split("/",file)[-1]
                 file = os.path.join(os.getcwd(), file)
                 if os.path.exists(file):
                     final_list.add(file)
-                print("inside elif")
             else:
                 # in case of dvc_ingest_command
                 # fetching remaining artifacts from dvc.lock file
-                print("inside else")
                 if os.path.exists("dvc.lock"):
-                    print("dvc.lock file exists, fetching artifacts from dvc.lock")
                     with open("dvc.lock", "r") as f:
                         str_data = f.read()
                     data = yaml.safe_load(str_data)
@@ -188,7 +182,6 @@ class CmdArtifactPush(CmdBase):
                             for item in stage.get(section, []):
                                 if isinstance(item, dict) and 'path' in item:
                                     final_list.add(item['path'])
-                print("outside if-elif, final_list is: ", final_list)
 
         # DVC reads the password directly from .dvc/config when pushing over SSH.
         # The password is stored Base64-encoded, but DVC has no knowledge of that
