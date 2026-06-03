@@ -29,8 +29,6 @@ services:
     #   - ${POSTGRES_PORT}:${POSTGRES_PORT}
     # expose:
     #   - ${POSTGRES_PORT}
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -p 5432 -d ${POSTGRES_DB:-mlmd} -U ${POSTGRES_USER:-myuser}"]
       interval: 10s
