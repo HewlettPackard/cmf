@@ -18,6 +18,7 @@
 import os
 import re
 import yaml
+import base64
 import argparse
 
 from cmflib import cmfquery
@@ -188,7 +189,24 @@ class CmdArtifactPush(CmdBase):
                                 if isinstance(item, dict) and 'path' in item:
                                     final_list.add(item['path'])
                 print("outside if-elif, final_list is: ", final_list)
-        result = dvc_push(num_jobs, list(final_list))
+
+        # DVC reads the password directly from .dvc/config when pushing over SSH.
+        # The password is stored Base64-encoded, but DVC has no knowledge of that
+        # encoding and would pass the encoded string as-is to the SSH server,
+        # causing authentication to fail. Decode it to plaintext before the push
+        # and restore the encoded value immediately afterward.
+        is_ssh_remote = dvc_config_op.get("core.remote") == "ssh-storage"
+        if is_ssh_remote:
+            encoded_password = dvc_config_op.get("remote.ssh-storage.password", "")
+            plain_password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
+            dvc_add_attribute("ssh-storage", "password", plain_password)
+        try:
+            result = dvc_push(num_jobs, list(final_list))
+        finally:
+            # Always restore the encoded password, even if dvc_push raises.
+            if is_ssh_remote:
+                dvc_add_attribute("ssh-storage", "password", encoded_password)
+
         return ArtifactPushSuccess(result)
     
 def add_parser(subparsers, parent_parser):
