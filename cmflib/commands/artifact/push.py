@@ -189,11 +189,14 @@ class CmdArtifactPush(CmdBase):
         # causing authentication to fail. Decode it to plaintext before the push
         # and restore the encoded value immediately afterward.
         is_ssh_remote = dvc_config_op.get("core.remote") == "ssh-storage"
+        encoded_password = ""  # Initialize so finally block always has a valid reference.
         if is_ssh_remote:
-            encoded_password = dvc_config_op.get("remote.ssh-storage.password", "")
+            # .strip() guards against leading/trailing whitespace from config parsing.
+            encoded_password = dvc_config_op.get("remote.ssh-storage.password", "").strip()
             plain_password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
-            dvc_add_attribute("ssh-storage", "password", plain_password)
         try:
+            if is_ssh_remote:
+                dvc_add_attribute("ssh-storage", "password", plain_password)
             result = dvc_push(num_jobs, list(final_list))
         finally:
             # Always restore the encoded password, even if dvc_push raises.
