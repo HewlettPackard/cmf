@@ -9,20 +9,21 @@ This hub connects you to the deployment procedures for the Common Metadata Frame
 
 ## Component Overview
 
-* **[CMF Server & GUI](./server_side_installation.md)**: A centralized backend infrastructure that aggregates metadata from clients and hosts the web dashboard.
-* **[CMF Client (cmflib)](./client_side_installation.md)**: A lightweight Python library integrated into ML scripts to capture pipeline, dataset, and model metadata.
+* **[cmflib with CMF Client Installation](./server_side_installation.md)**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics.
+* **[CMF Server with GUI Installation](./client_side_installation.md)**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships.
 
-!!! info "Deployment Topology"
-    Every operational CMF environment requires exactly one active CMF Server instance. In collaborative environments, multiple data scientists share a single centralized server to collaborate on pipeline lineages.
+> **Note:** Every CMF setup requires a CMF Server instance. In collaborative environments, multiple users working on the same project can share a single CMF Server to centralize metadata and facilitate team coordination.
+
 
 ---
 
-## Shared Baseline Prerequisites
+## Common Prerequisites
 
 Ensure your target deployment nodes meet these foundational system constraints before selecting an installation track:
 
 * **Operating System**: Linux (Ubuntu/Debian distributions strictly validated).
-* **Python Engine**: Runtime versions 3.9 to 3.11 are supported (* **Recommended Runtime**: Python 3.10).
+* **Python Engine**: Runtime versions 3.9 to 3.11 are supported (* **Recommended Runtime**: Python 3.10).<br />
+> **Note:** If you encounter issues with Python 3.9 on Ubuntu, refer to the Troubleshooting section at the end of this guide..
 
 ---
 
@@ -115,12 +116,29 @@ Activate the virtual environment
 **Step 6: Install the CMF Library**<br/><br/>
 **Description:** Install the core cmflib client package to expose the framework APIs required to track ML workflows and push metadata streams.<br/>
 
-```bash
-$  pip install cmflib
-```
+=== "Virtual Environment"
+    ```shell
+    $  pip install cmflib
+    ```
+
+=== "Latest version from GitHub"
+    ``` WSL
+    pip install git+https://github.com/HewlettPackard/cmf
+    ```
+
 **Output:**
     new release of pip is available: 23.0.1<br />
-    26.1.1 To update, run: pip install --upgrade pip
+    Processing /home/sanadiay/docs/cmf
+    Installing build dependencies ... done
+    Getting requirements to build wheel ... done
+    Preparing metadata (pyproject.toml) ... done<br />
+    Successfully built cmflib
+    Installing collected packages: cmflib
+    Attempting uninstall: cmflib
+    Found existing installation: cmflib 0.0.99
+    Uninstalling cmflib-0.0.99:<br />
+    Successfully uninstalled cmflib-0.0.99
+    Successfully installed cmflib-0.1.0
 ---
 
 ## Troubleshooting

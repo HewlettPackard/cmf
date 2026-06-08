@@ -20,36 +20,9 @@ Ensure you have access credentials and network pathways ready for your chosen ar
 
 # CLI Execution Reference
 Before initiating the environment setup, review the foundational commands required to deploy the client.
+Please follow the mandatory installation and setup guide before proceeding. [Installation and Setup](../../setup/#cli-execution-reference).
 
 ## Installation Steps
-
-### Step 1: Initialize isolated Python Environment
-
-=== "Conda Environment"
-    ```shell
-    conda create -n cmf python=3.10 -y
-    conda activate cmf
-    ```
-
-=== "VirtualEnv"
-    ```shell
-    virtualenv --python=3.10 .cmf
-    source .cmf/bin/activate
-    ```
-
-### Step 2: Install the cmflib Library
-
-=== "Stable Release (PyPI)"
-    ```shell
-    pip install cmflib
-    ```
-
-=== "Bleeding Edge (GitHub)"
-    ```shell
-    pip install git+https://github.com/HewlettPackard/cmf
-    ```
-
----
 
 **Open new terminal and start the execution of commands:**<br/><br/>
 **Step 1: Activate the Virtual Environment**<br/><br/>
@@ -113,7 +86,7 @@ Updates the visible current path inside your terminal shell prompt to reflect th
 **Description:** Copies the entire starter template folder recursively, matching all nested sub-directories and individual files.
 
 ```bash
-$  cp -r ./cmf/examples/example-get-started ./example-get-started
+$  cp -r ../cmf/examples/example-get-started ./example-get-started
 ```
 **Output :**(cmf_env) /cmf_workspace$ 
     <br>
@@ -143,11 +116,11 @@ Streams real-time pipeline status updates directly to the console window, showin
 
 ---
 
-**Step 8: Retrieves a detailed list of all recorded pipelines**<br/><br/>
+**Step 8: Retrieves name of  pipeline**<br/><br/>
 **Description:** Retrieves a detailed list of all recorded pipelines or components from your CMF server and saves the output directly into a specified file.
 
 ```bash
-$  CMF pipeline list -f name_of_file
+$  cmf pipeline list
 ```
 **Output:** ['Test-env']
 <br>
@@ -157,9 +130,11 @@ $  CMF pipeline list -f name_of_file
 **Description:**  Bundles and uploads the locally recorded tracking data for your specified pipeline run directly to your configured dashboard.
 
 ```bash
-$  cmf metadata push --pipeline_name Test-env
+$  cmf metadata push --pipeline_name name_of_pipeline
 ```
-**Output:** metadata push started 
+**Output:** metadata push started<br />
+['Test-env/Prepare', 'Test-env/Featurize', 'Test-env/Train', 'Test-env/Evaluate']
+
 <br>
 Returns an explicit confirmation string stating that the metadata transfer process has successfully initialized.
 

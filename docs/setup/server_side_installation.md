@@ -1,17 +1,6 @@
 # CMF Server & GUI Installation Guide
 
-This document describes the process of launching the centralized CMF tracking backend using Docker Compose infrastructure.
-
-## Infrastructure Prerequisites
-
-### 1. Modern Docker Container Engine
-* Install [Docker Engine](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository) with [non-root user](https://docs.docker.com/engine/install/linux-postinstall/) privileges.
-* Install [Docker Compose Plugin](https://docs.docker.com/compose/install/linux/)
-
-In earlier versions of Docker Compose, `docker compose` was independent of Docker. Hence, `docker-compose` was the command. However, after the introduction of Docker Compose Desktop V2, the compose command became part of Docker Engine. The recommended way to install Docker Compose is by installing a Docker Compose plugin on Docker Engine. For more information - [Docker Compose Reference](https://docs.docker.com/compose/reference/).
-
-### 2. Enterprise Proxy Configuration
-If your enterprise routes egress server traffic through a proxy network, you must inject these routing rules into your container runtime engine. Follow the official guide: Refer to the official Docker documentation for comprehensive instructions: [Configure the Docker Client for Proxy](https://docs.docker.com/network/proxy/#configure-the-docker-client).
+Please follow the mandatory installation and setup guide before proceeding. [Installation and Setup](../../setup/#cli-execution-reference).
 
 ---
 
