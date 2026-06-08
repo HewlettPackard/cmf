@@ -43,7 +43,9 @@ class SSHremoteArtifacts:
         self._host    : Hostname/IP of the currently open connection, or None.
         """
         self.user = dvc_config_op["remote.ssh-storage.user"]
-        self.password = dvc_config_op["remote.ssh-storage.password"]
+        # Password is stored base64-encoded; decode it before use.
+        encoded_password = dvc_config_op["remote.ssh-storage.password"]
+        self.password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
         # Connection state variables initialized to None; populated on demand by _get_connection()
         self._ssh = None
         self._sftp = None
