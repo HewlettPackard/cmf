@@ -10,7 +10,14 @@ Artifacts represent the data entities in your ML pipeline:
 - **Step_Metrics**: Fine-grained metrics stored in Parquet files. Captures per-step or per-epoch metrics during training/execution, committed to version control.
 - **Labels**: Data labels and annotations, usually CSV files containing information about datasets. Connected to datasets via "has_label" relationship.
 
+Below is Artifact Tab Page View on GUI :
 ![CMF Artifacts Page](../assets/artifacts.jpeg)
+
+Here when we click on "View all properties" we can see expanded card view showing artifacts details :
+![CMF Artifacts Page](../assets/artifacts_properties.jpeg)
+
+Below image displayed all artifacts details after we click on artifact card :
+![CMF Artifacts Page](../assets/artifacts_stages.jpeg)
 
 
 
@@ -32,28 +39,49 @@ The filter panel allows you to narrow down artifacts based on multiple criteria:
 2. Choose artifact type (Dataset/Label/Step_Metrics/Model/Metrics) from tabs
 3. Use filter box to search by artifact name or properties
 
-### 2. Artifacts Table
+### 2. Artifacts Card
+Artifacts are displayed as interactive cards containing summary metadata.
+The main card displays artifacts with the following :
 
-The main table displays artifacts with the following columns:
-
-| Column | Description |
+| Card Data | Description |
 |--------|-------------|
-| **+** | Expandable icon to view detailed artifact information |
+| **Card Click** | Select any artifact card to view detailed artifact information |
 | **ID** | Unique artifact identifier |
 | **Name** | Artifact name and identifier |
 | **Execution Type** | Execution name where artifact was created |
-| **Date** | Timestamp of creation |
+| **Created** | Timestamp of creation |
 | **URI** | Artifact location/path |
 | **URL** | Associated URL reference |
 | **Git Repo** | GitHub Repository URL |
 | **Commit** | Git commit hash |
 
+The card-based layout provides a concise overview while allowing quick access to detailed information.
+
+### 3.  Enhanced Artifact Navigation
+The Artifacts page provides a stage-oriented view of artifacts generated throughout the machine learning lifecycle.
+ 
+### 4.  Pipeline Selection
+Users can select a pipeline from the left navigation panel. Once a pipeline is selected, all stages associated with that pipeline become available for exploration.
+
+### 5. Stage-Based Organization
+Artifacts are grouped according to the pipeline stage that generated them.
+
+Common stages include:
+	•	Prepare
+	•	Featurize
+	•	Train
+	•	Evaluate
+
+Selecting a stage automatically filters the displayed artifacts to those generated during that stage.
+This organization helps users understand where artifacts were produced and how they fit into the overall workflow.
+
 
 **Interactions:**
 
-- **Click + icon**: Expands row to show detailed artifact metadata, custom properties, and version information
-- **Click column headers**: Sort by NAME or DATE column (ascending/descending)
+- Click the **artiact card** or **View All Properties**: Expands row to show detailed artifact metadata, custom properties, and version information
+- Click **Sort by**: Sort by NAME or Time (ascending/descending)
 - **Pagination controls**: Navigate through large artifact lists using Previous/Next buttons and page numbers
+
 
 
 ## Using the Artifacts Page
@@ -64,20 +92,20 @@ The main table displays artifacts with the following columns:
 2. Select a pipeline from the **LIST OF PIPELINES** sidebar
 3. The **Dataset** tab is selected by default
 4. Review the list of all datasets used in that pipeline
-5. Click the **+** icon to view detailed artifact metadata
+5. Click the **artiact card** or **View All Properties** to view detailed artifact metadata for selected artifact
 
 ### Example 2: View Models and Their Execution Context
 
 1. Select a pipeline from the sidebar
 2. Click on the **Model** tab to filter by model artifacts
 3. Review the **EXECUTION TYPE** column to see which pipeline stage created each model
-4. Click the **+** icon to view training parameters, version information, and metrics
+4. Click the **artiact card** or **View All Properties** to view training parameters, version information, and metrics
 
 ### Example 3: Track Metrics Over Time
 
 1. Select the **Metrics** or **Step_Metrics** artifact type tab
-2. Click the **DATE** column header to sort chronologically
-3. Click the **+** icon on any metric to view its values
+2. Click the **Sort by** dropdown to sort chronologically by NAME or Time column (ascending/descending)
+3. Click the **artiact card** or **View All Properties** on any metric to view its values
 4. Compare metrics across different execution runs
 
 ### Example 4: Find Artifacts with Labels
