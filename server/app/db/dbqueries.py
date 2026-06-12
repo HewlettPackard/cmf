@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 from server.app.db.dbconfig import get_db
-from sqlalchemy import select, func, text, String, Double, bindparam, case, distinct, insert, update
+from sqlalchemy import select, func, text, String, Double, bindparam, case, distinct, insert, update, or_
 from server.app.db.dbmodels import (
     artifact, 
     artifactproperty, 
@@ -13,8 +13,11 @@ from server.app.db.dbmodels import (
     execution,
     executionproperty,
     event,
-    registered_servers
+    registered_servers,
+    label_content
 )
+import time
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 
 async def register_server_details(db: AsyncSession, server_name: str, server_url: str):
@@ -659,7 +662,36 @@ async def fetch_artifacts_by_stage(
 
     effective_page_size = record_per_page if record_per_page is not None else page_size
 
-    # Step 1: Aggregate artifact properties into JSON based on artifact id.
+    # Step 1a: Aggregate artifact property VALUES only (no JSON keys) — used for search.
+    # This prevents false matches on the literal JSON key "name" that appears in every
+    # property object when the full JSON is cast to string for ilike filtering.
+    # Properties are stored as key-value pairs, e.g.:
+    # [{"name": "git_repo", "value": "..."}, {"name": "Commit", "value": "..."}]
+    # Searching the full JSON for "name" would match every artifact since "name" is
+    # a structural key present in every entry. By aggregating values only, we ensure
+    # the filter matches actual property data, not the JSON structure.
+    artifact_property_values_subquery = (
+        select(
+            artifactproperty.c.artifact_id,
+            func.string_agg(
+                func.coalesce(
+                    artifactproperty.c.string_value,
+                    func.cast(artifactproperty.c.bool_value, String),
+                    func.cast(artifactproperty.c.double_value, String),
+                    func.cast(artifactproperty.c.int_value, String),
+                    func.cast(artifactproperty.c.byte_value, String),
+                    func.cast(artifactproperty.c.proto_value, String),
+                    text("''")
+                ),
+                ' '
+            ).label("property_values")
+        )
+        .where(artifactproperty.c.artifact_id.in_(artifact_ids))
+        .group_by(artifactproperty.c.artifact_id)
+        .subquery()
+    )
+
+    # Step 1b: Aggregate artifact properties into JSON based on artifact id (used for display).
     artifact_properties_agg_cte = (
         select(
             artifactproperty.c.artifact_id,
@@ -719,11 +751,33 @@ async def fetch_artifacts_by_stage(
             func.coalesce(func.to_char(created_at_utc, "FMMM"), ""),
             # Day only, e.g. '19' (matches day search)
             func.coalesce(func.to_char(created_at_utc, "FMDD"), ""),
-            func.coalesce(
-                func.cast(artifact_properties_agg_cte.c.artifact_properties, String),
-                ""
-            )
+            # Search only property VALUES, not the full JSON (which contains the
+            # structural key "name" in every entry and would cause false positives).
+            func.coalesce(artifact_property_values_subquery.c.property_values, "")
         ).ilike(f"%{filter_value}%")
+
+        # For Label artifacts with a non-empty filter, also search CSV file content
+        # stored in the label_content table (ILIKE substring match on full_text_content).
+        # TODO: Re-enable tsvector full-text search once tokenization is optimized
+        # label_content_match_subquery = (
+        #     select(label_content.c.artifact_id)
+        #     .where(
+        #         label_content.c.artifact_id == artifact_type_cte.c.artifact_id,
+        #         label_content.c.content_tsvector.op('@@')(func.plainto_tsquery('english', filter_value))
+        #     )
+        #     .exists()
+        # )
+        if artifact_type == "Label" and filter_value.strip():
+            label_content_match_subquery = (
+                select(label_content.c.artifact_id)
+                .where(
+                    label_content.c.artifact_id == artifact_type_cte.c.artifact_id,
+                    label_content.c.full_text_content.ilike(f"%{filter_value}%")
+                )
+                .exists()
+            )
+            # Combine metadata search with CSV content search using OR
+            search_predicate = or_(search_predicate, label_content_match_subquery)
 
     # Step 3: Build final query with pagination, sorting, and total count.
     if sort_column == "name":
@@ -746,6 +800,10 @@ async def fetch_artifacts_by_stage(
         .outerjoin(
             artifact_properties_agg_cte,
             artifact_type_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id
+        )
+        .outerjoin(
+            artifact_property_values_subquery,
+            artifact_type_cte.c.artifact_id == artifact_property_values_subquery.c.artifact_id
         )
     )
 
@@ -820,3 +878,95 @@ async def fetch_artifact_types_by_stage(
     #print(f"Artifact types for stage - Pipeline: {pipeline_name}, Stage: {stage_name}, Types: {artifact_types}")
     
     return list(artifact_types)
+
+
+async def insert_label_content(
+    db: AsyncSession, 
+    artifact_id: int, 
+    file_name: str, 
+    full_text_content: str
+):
+    """
+    Insert label content into the label_content table with full-text search support.
+    
+    Args:
+        db (AsyncSession): Database session
+        artifact_id (int): The artifact ID from the artifact table
+        file_name (str): The CSV filename
+        full_text_content (str): The extracted text content from CSV
+    
+    Returns:
+        dict: Success message or error details
+    
+    Note:
+        - Uses ON CONFLICT DO NOTHING for idempotent inserts
+        - Automatically generates tsvector using PostgreSQL's to_tsvector()
+        - Stores current timestamp in milliseconds since epoch
+        - Supports multiple labels per artifact (composite unique key on artifact_id + file_name)
+    """
+    try:
+        # Get current timestamp in milliseconds since epoch
+        current_time_ms = int(time.time() * 1000)
+        
+        # Create insert query with PostgreSQL's to_tsvector for full-text search
+        # Using pg_insert for PostgreSQL-specific on_conflict_do_nothing
+        query = pg_insert(label_content).values(
+            artifact_id=artifact_id,
+            file_name=file_name,
+            full_text_content=full_text_content,
+            content_tsvector=func.to_tsvector('english', full_text_content),
+            created_at=current_time_ms
+        ).on_conflict_do_nothing(
+            index_elements=['artifact_id', 'file_name']  # Composite unique key
+        )
+        
+        # Execute the insert
+        await db.execute(query)
+        await db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Label content inserted for artifact_id: {artifact_id}, file: {file_name}"
+        }
+    
+    except Exception as e:
+        await db.rollback()
+        return {
+            "status": "error",
+            "message": f"Failed to insert label content: {str(e)}"
+        }
+
+
+async def get_artifact_id_by_filename(db: AsyncSession, file_name: str):
+    """
+    Get artifact_id for a Label artifact by matching the filename in the URI.
+    
+    Args:
+        db (AsyncSession): Database session
+        file_name (str): The CSV filename to search for
+    
+    Returns:
+        int or None: The artifact_id if found, None otherwise
+    
+    Note:
+        Searches for Label artifacts where URI contains the filename
+    """
+    try:
+        # Query to find Label artifact with matching filename in URI
+        query = (
+            select(artifact.c.id)
+            .join(type_table, artifact.c.type_id == type_table.c.id)
+            .where(
+                type_table.c.name == "Label",
+                artifact.c.uri.ilike(f"%{file_name}%")
+            )
+        )
+        
+        result = await db.execute(query)
+        artifact_id = result.scalar()
+        
+        return artifact_id
+    
+    except Exception as e:
+        print(f"Error finding artifact_id for file {file_name}: {str(e)}")
+        return None
