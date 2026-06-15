@@ -22,7 +22,7 @@ The GUI organizes metadata by pipelines and stages, enabling users to easily nav
 
 1. Ensure the [CMF Server is running](../setup/index.md#install-cmf-server-with-gui)
 2. Open your browser and navigate to the server URL (default: `http://your-server-ip:80`)
-3. The GUI will display the available pipelines in the sidebar
+3. The GUI will display the available pipelines on home page of CMF GUI
 
 ---
 
@@ -79,11 +79,15 @@ The Lineage page offers interactive visualizations of data flow and dependencies
 
 The [Metahub](../cmf_server/metahub-tab-usage.md) feature enables synchronization of metadata between two CMF servers, allowing distributed teams to collaborate and share ML pipeline metadata.
 
+![CMF Metahub Page](../assets/metahub_ui_overview.png)
+
 ---
 
 ## TensorBoard Integration
 
 CMF integrates with [TensorBoard](../cmf_client/tensorflow_guide.md) to visualize training metrics, model graphs, and other ML-specific visualizations alongside CMF metadata.
+
+![CMF TensorBoard Page](../assets/Tensorboard.png)
 
 ---
 
