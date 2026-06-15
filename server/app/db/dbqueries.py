@@ -662,14 +662,10 @@ async def fetch_artifacts_by_stage(
 
     effective_page_size = record_per_page if record_per_page is not None else page_size
 
-    # Step 1a: Aggregate artifact property VALUES only (no JSON keys) — used for search.
-    # This prevents false matches on the literal JSON key "name" that appears in every
-    # property object when the full JSON is cast to string for ilike filtering.
-    # Properties are stored as key-value pairs, e.g.:
-    # [{"name": "git_repo", "value": "..."}, {"name": "Commit", "value": "..."}]
-    # Searching the full JSON for "name" would match every artifact since "name" is
-    # a structural key present in every entry. By aggregating values only, we ensure
-    # the filter matches actual property data, not the JSON structure.
+    # Step 1a: Aggregate property VALUES only into a space-separated string - used for search.
+    # Searches values only (not full JSON keys) to avoid false matches on the structural
+    # key "name" that appears in every property object.
+    # e.g. artifact_id=5 - property_values = "https://github.com/org/repo abc123 4KB"
     artifact_property_values_subquery = (
         select(
             artifactproperty.c.artifact_id,
@@ -681,7 +677,7 @@ async def fetch_artifacts_by_stage(
                     func.cast(artifactproperty.c.int_value, String),
                     func.cast(artifactproperty.c.byte_value, String),
                     func.cast(artifactproperty.c.proto_value, String),
-                    text("''")
+                    text("''")  # Fallback empty string so string_agg never receives NULL
                 ),
                 ' '
             ).label("property_values")
@@ -691,7 +687,8 @@ async def fetch_artifacts_by_stage(
         .subquery()
     )
 
-    # Step 1b: Aggregate artifact properties into JSON based on artifact id (used for display).
+    # Step 1b: Aggregate properties into a JSON array - used for display in the UI.
+    # e.g. [{"name": "git_repo", "value": "https://..."}, {"name": "Commit", "value": "abc123"}]
     artifact_properties_agg_cte = (
         select(
             artifactproperty.c.artifact_id,
@@ -715,7 +712,8 @@ async def fetch_artifacts_by_stage(
         .subquery()
     )
 
-    # Step 2: Filter by artifact type and prepare the base artifact set.
+    # Step 2: Filter by artifact type via JOIN on type_table.
+    # e.g. artifact_type="Dataset" - only Dataset rows are kept.
     artifact_type_cte = (
         select(
             artifact.c.id.label("artifact_id"),
@@ -734,7 +732,12 @@ async def fetch_artifacts_by_stage(
         .cte("artifact_type_cte")
     )
 
-    # Apply search filter across artifact_id, name, UTC date tokens, and aggregated properties.
+    # Build search predicate: concatenates artifact_id, name, date in multiple formats,
+    # and property values into one string, then applies a single ILIKE check.
+    # e.g. filter_value="data.xml" - matches artifacts whose name contains "data.xml"
+    #      filter_value="2026"     - matches artifacts created in year 2026
+    # For Label type: also searches the indexed CSV file content via an EXISTS subquery.
+    # e.g. filter_value="cat", artifact_type="Label" - matches metadata OR CSV content.
     search_predicate = None
     if filter_value:
         created_at_utc = func.timezone("UTC", func.to_timestamp(artifact_type_cte.c.create_time_since_epoch / 1000.0))
@@ -768,6 +771,8 @@ async def fetch_artifacts_by_stage(
         #     .exists()
         # )
         if artifact_type == "Label" and filter_value.strip():
+            # EXISTS subquery: checks if any label_content row for this artifact
+            # contains the filter value in its CSV text.
             label_content_match_subquery = (
                 select(label_content.c.artifact_id)
                 .where(
@@ -776,18 +781,22 @@ async def fetch_artifacts_by_stage(
                 )
                 .exists()
             )
-            # Combine metadata search with CSV content search using OR
+            # Match if metadata OR CSV file content contains the filter.
             search_predicate = or_(search_predicate, label_content_match_subquery)
 
-    # Step 3: Build final query with pagination, sorting, and total count.
+    # Step 3: Sort - "name" uses case-insensitive lower(); other columns sort numerically.
+    # lower() cannot be applied to BIGINT (create_time_since_epoch), so it is skipped there.
     if sort_column == "name":
         sort_col = artifact_type_cte.c.name
         sort_direction = func.lower(sort_col).asc() if sort_order.upper() == "ASC" else func.lower(sort_col).desc()
     else:
-        # create_time_since_epoch is a bigint — lower() cannot be applied to numeric types
+        # create_time_since_epoch is a bigint - lower() cannot be applied to numeric types
         sort_col = artifact_type_cte.c.create_time_since_epoch
         sort_direction = sort_col.asc() if sort_order.upper() == "ASC" else sort_col.desc()
 
+    # Final query: LEFT JOINs keep artifacts even when they have no properties.
+    # count().over() is a window function - returns total matching rows without a
+    # separate COUNT query. e.g. 42 total matches - every row carries total_records=42.
     final_query = (
         select(
             artifact_type_cte.c.artifact_id,
@@ -811,7 +820,7 @@ async def fetch_artifacts_by_stage(
     if search_predicate is not None:
         final_query = final_query.where(search_predicate)
 
-    # Apply sorting, pagination, and execute the query
+    # Apply sorting and pagination. e.g. active_page=3, page_size=5 - OFFSET 10
     final_query = (
         final_query
         .order_by(sort_direction)
@@ -823,7 +832,7 @@ async def fetch_artifacts_by_stage(
     rows = result.mappings().all()
     total_records = rows[0]["total_records"] if rows else 0
     items = []
-    # Remove total_records from each row before returning results, as it's redundant to include it in every item.
+    # Strip total_records from each row - it's already returned at the top level.
     for row in rows:
         row_dict = dict(row)
         row_dict.pop("total_records", None)

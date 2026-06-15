@@ -57,10 +57,6 @@ import socket
 import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
-import logging
-
-# Configure SQLAlchemy logging to WARNING level to reduce INFO messages
-logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
 dotenv.load_dotenv()
 
@@ -529,9 +525,29 @@ async def get_python_env(file_name: str) -> str:
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading file: {str(e)}")
 
-# Rest api to push the label to /cmf-server/data/labels dir.
+# POST /label - save a CSV label file and index its content for search.
 @app.post("/label")
 async def upload_label(request:Request, file: UploadFile = File(..., description="The file to upload"), db: AsyncSession = Depends(get_db)):
+    """
+    Upload a CSV label file to /cmf-server/data/labels and index its text content
+    in the database so it is searchable via the artifacts filter.
+
+    Steps:
+      1. Save file to disk. Skip if already exists.
+      2. Extract CSV text content for search indexing.
+      3. Look up the matching artifact_id by filename in the DB.
+      4. Insert extracted text into label_content table (idempotent).
+
+    Returns:
+      - {"message": ..., "indexed": True, "artifact_id": ..., "truncated": bool}  on success
+      - {"message": ..., "warning": ...}  if file uploaded but indexing was skipped or failed
+      - {"error": ...}  on unexpected failure
+
+    Example: POST /label with file="labels.csv"
+      - saved to /cmf-server/data/labels/labels.csv
+      - text indexed for artifact_id=5
+      - {"message": "File 'labels.csv' uploaded successfully ...", "indexed": True, "artifact_id": 5, "truncated": False}
+    """
     try:
         if not file.filename:
             raise HTTPException(status_code=400, detail="No file provided.")
@@ -551,7 +567,8 @@ async def upload_label(request:Request, file: UploadFile = File(..., description
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
 
-        # Step 1: Extract text content from CSV
+        # Step 1: Extract searchable text from the CSV file.
+        # is_truncated=True if file exceeded size/row limits (see extract_csv_text_content).
         full_text_content = None
         is_truncated = False
         try:
@@ -566,7 +583,8 @@ async def upload_label(request:Request, file: UploadFile = File(..., description
                 "warning": f"Could not extract searchable content: {str(e)}"
             }
 
-        # Step 2: Find the artifact_id for this label file
+        # Step 2: Find the artifact_id by matching filename in the artifact URI.
+        # e.g. filename="labels.csv" - artifact_id=5 (Label artifact whose URI contains "labels.csv")
         artifact_id = await get_artifact_id_by_filename(db, file.filename)
 
         if artifact_id is None:
@@ -576,7 +594,8 @@ async def upload_label(request:Request, file: UploadFile = File(..., description
                 "warning": "Artifact not found in database. Content not indexed for search."
             }
 
-        # Step 3: Insert label content into database for searchability
+        # Step 3: Insert text content into label_content table for search indexing.
+        # Uses ON CONFLICT DO NOTHING - safe to call multiple times for the same file.
         result = await insert_label_content(db, artifact_id, file.filename, full_text_content)
         if result["status"] == "success":
             return {
@@ -591,7 +610,6 @@ async def upload_label(request:Request, file: UploadFile = File(..., description
                 "warning": f"Content indexing failed: {result['message']}"
             }
 
-    
     except Exception as e:
         return {"error": f"Failed to upload file: {e}"}
     
