@@ -1604,7 +1604,7 @@ class Cmf:
             # Calculate label_hash
             label_hash = calculate_md5(url)
 
-            # Get dataset_uri from DVC
+            # Get dataset_uri from DVC for the base artifact
             dataset_uri = dvc_get_hash(dataset_name)
             if dataset_uri == "":
                 logger.error(f"[log_label] Error in getting the dvc hash for {dataset_name}, return without logging")
