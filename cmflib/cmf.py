@@ -397,7 +397,7 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         filename = os.path.basename(current_script)
-        assigned_stage_name = os.path.splitext( filename)[0]
+        assigned_stage_name = os.path.splitext(filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_stage_name)
@@ -730,7 +730,7 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext( filename)[0]
+        assigned_name = os.path.splitext(filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -970,7 +970,7 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext( filename)[0]
+        assigned_name = os.path.splitext(filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1128,7 +1128,7 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext( filename)[0]
+        assigned_name = os.path.splitext(filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1228,7 +1228,7 @@ class Cmf:
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
         filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext( filename)[0]
+        assigned_name = os.path.splitext(filename)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1665,7 +1665,7 @@ class Cmf:
             # Assigning current file name as stage and execution name
             current_script = sys.argv[0]
             filename = os.path.basename(current_script)
-            assigned_name = os.path.splitext( filename)[0]
+            assigned_name = os.path.splitext(filename)[0]
             # create context if not already created
             if not self.writer.child_context:
                 self.writer.create_context(pipeline_stage=assigned_name)
@@ -1766,7 +1766,7 @@ Cmf.log_step_metrics_from_client = log_step_metrics_from_client
 Cmf.DataSlice.log_dataslice_from_client = log_dataslice_from_client
 Cmf.log_label_with_version = log_label_with_version
 
-def metadata_push(pipeline_name: str,  filename: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None) -> str:
+def metadata_push(pipeline_name: str, filename: str = "./mlmd", tensorboard_path: t.Optional[str] = None, execution_uuid: t.Optional[str] = None) -> str:
     """ Pushes metadata file to CMF-server.
     
     ```python
@@ -1775,7 +1775,7 @@ def metadata_push(pipeline_name: str,  filename: str = "./mlmd", tensorboard_pat
     
     Args:
         pipeline_name: Name of the pipeline.
-         filename: Specify input metadata file name.
+        filename: Specify input metadata file name.
         execution_uuid: Optional execution UUID.
         tensorboard_path: Path to tensorboard logs.
 
@@ -1784,12 +1784,12 @@ def metadata_push(pipeline_name: str,  filename: str = "./mlmd", tensorboard_pat
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_UUID, tensorboard_path
-    # Default arguments:  filename
-    output = _metadata_push(pipeline_name,  filename, execution_uuid, tensorboard_path)
+    # Default arguments: filename
+    output = _metadata_push(pipeline_name, filename, execution_uuid, tensorboard_path)
     return output
 
 
-def metadata_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def metadata_pull(pipeline_name: str, filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """ Pulls metadata file from CMF-server. 
     
     ```python 
@@ -1798,7 +1798,7 @@ def metadata_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid:
     
     Args: 
         pipeline_name: Name of the pipeline. 
-         filename: Specify output metadata file name.
+        filename: Specify output metadata file name.
         execution_uuid: Optional execution UUID. 
     
     Returns: 
@@ -1806,12 +1806,12 @@ def metadata_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid:
      """
     # Required arguments: pipeline_name 
     # Optional arguments: execution_uuid
-    # Default arguments:  filename 
-    output = _metadata_pull(pipeline_name,  filename, execution_uuid)
+    # Default arguments: filename 
+    output = _metadata_pull(pipeline_name, filename, execution_uuid)
     return output
 
 
-def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None,  filename: str = "./mlmd") -> str:
+def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, filename: str = "./mlmd") -> str:
     """ Export local mlmd's metadata in json format to a json file. 
     
     ```python 
@@ -1828,12 +1828,12 @@ def metadata_export(pipeline_name: str, json_file_name: t.Optional[str] = None, 
      """
     # Required arguments: pipeline_name
     # Optional arguments: json_file_name
-    # Default arguments:  filename
+    # Default arguments: filename
     output = _metadata_export(pipeline_name, json_file_name, filename)
     return output
 
 
-def artifact_pull(pipeline_name: str,  filename: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
+def artifact_pull(pipeline_name: str, filename: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
     """ Pulls artifacts from the initialized repository.
     
     ```python
@@ -1850,8 +1850,8 @@ def artifact_pull(pipeline_name: str,  filename: str = "./mlmd", artifact_name: 
     """
     # Required arguments: pipeline_name
     # Optional arguments: artifact_name
-    # Default arguments:  filename
-    output = _artifact_pull(pipeline_name,  filename, artifact_name)
+    # Default arguments: filename
+    output = _artifact_pull(pipeline_name, filename, artifact_name)
     return output
 
 
@@ -2107,7 +2107,7 @@ def non_related_args(type : str, args : dict):
     return non_related_args
 
 
-def pipeline_list( filename: str = "./mlmd")-> str:
+def pipeline_list(filename: str = "./mlmd")-> str:
     """ Display a list of pipeline name(s) from the available input metadata file.
 
     ```python
@@ -2115,17 +2115,17 @@ def pipeline_list( filename: str = "./mlmd")-> str:
     ```
 
     Args:
-         filename: Specify input metadata file name.
+        filename: Specify input metadata file name.
 
     Returns:
         Output from the _pipeline_list function.
     """
-    # Default arguments:  filename
-    output = _pipeline_list( filename)
+    # Default arguments: filename
+    output = _pipeline_list(filename)
     return output
 
 
-def execution_list(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def execution_list(pipeline_name: str, filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """Displays executions from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
 
     ```python 
@@ -2134,7 +2134,7 @@ def execution_list(pipeline_name: str,  filename: str = "./mlmd", execution_uuid
     
     Args: 
        pipeline_name: Name of the pipeline. 
-        filename: Specify input metadata file name.
+       filename: Specify input metadata file name.
        execution_uuid: Specify the execution uuid to retrieve execution.
     
     Returns:
@@ -2142,12 +2142,12 @@ def execution_list(pipeline_name: str,  filename: str = "./mlmd", execution_uuid
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_uuid
-    # Default arguments:  filename
-    output = _execution_list(pipeline_name,  filename, execution_uuid)
+    # Default arguments: filename
+    output = _execution_list(pipeline_name, filename, execution_uuid)
     return output
 
 
-def artifact_list(pipeline_name: str,  filename: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
+def artifact_list(pipeline_name: str, filename: str = "./mlmd", artifact_name: t.Optional[str] = None) -> str:
     """ Displays artifacts from the input metadata file with a few properties in a 7-column table, limited to 20 records per page.
     
     ```python 
@@ -2156,7 +2156,7 @@ def artifact_list(pipeline_name: str,  filename: str = "./mlmd", artifact_name: 
     
     Args: 
        pipeline_name: Name of the pipeline. 
-        filename: Specify input metadata file name. 
+       filename: Specify input metadata file name. 
        artifact_name: Artifacts for particular artifact name.
     
     Returns:
@@ -2164,7 +2164,7 @@ def artifact_list(pipeline_name: str,  filename: str = "./mlmd", artifact_name: 
     """
     # Required arguments: pipeline_name
     # Optional arguments: artifact_name
-    # Default arguments:  filename
+    # Default arguments: filename
     output = _artifact_list(pipeline_name, filename, artifact_name)
     return output
 
@@ -2192,7 +2192,7 @@ def repo_push(pipeline_name: str, filename: str = "./mlmd", tensorboard_path: t.
     return output
 
 
-def repo_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
+def repo_pull(pipeline_name: str, filename: str = "./mlmd", execution_uuid: t.Optional[str] = None) -> str:
     """ Pull artifacts, metadata files, and source code from the user's artifact repository, cmf-server, and git respectively.
     
     Example:
@@ -2202,7 +2202,7 @@ def repo_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.O
     
     Args:
         pipeline_name: Name of the pipeline.
-         filename: Specify output metadata file name (default: "./mlmd").
+        filename: Specify output metadata file name (default: "./mlmd").
         execution_uuid: Specify execution uuid (optional).
     
     Returns:
@@ -2210,12 +2210,12 @@ def repo_pull(pipeline_name: str,  filename: str = "./mlmd", execution_uuid: t.O
     """
     # Required arguments: pipeline_name
     # Optional arguments: execution_uuid
-    # Default arguments:  filename
-    output = _repo_pull(pipeline_name,  filename, execution_uuid)
+    # Default arguments: filename
+    output = _repo_pull(pipeline_name, filename, execution_uuid)
     return output
 
 
-def dvc_ingest( filename: str = "./mlmd") -> str:
+def dvc_ingest(filename: str = "./mlmd") -> str:
     """ Ingests metadata from the dvc.lock file into the CMF. 
         If an existing MLMD file is provided, it merges and updates execution metadata 
         based on matching commands, or creates new executions if none exist.
@@ -2225,12 +2225,12 @@ def dvc_ingest( filename: str = "./mlmd") -> str:
     ```
     
     Args: 
-        filename: Specify input metadata file name.
+       filename: Specify input metadata file name.
     
     Returns:
        Output from the _dvc_ingest function. 
     """
-    # Default arguments:  filename
+    # Default arguments: filename
     output = _dvc_ingest(filename)
     return output
 
