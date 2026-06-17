@@ -137,7 +137,7 @@ def _artifact_push(pipeline_name: str, file_name: str, jobs: str) -> str:
     """ Pushes artifacts to the initialized repository.
     Args: 
        pipeline_name: Name of the pipeline. 
-       filepath: Path to store the artifact. 
+       file_name: Path to store the artifact. 
        jobs: Number of jobs to use for pushing artifacts.
     Returns:
         Output from the artifact push command.

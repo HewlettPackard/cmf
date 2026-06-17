@@ -33,7 +33,7 @@ The `Cmf` class is the primary interface for metadata tracking in CMF. It provid
 
 | Method | Purpose | Usage |
 |--------|---------|-------|
-| `__init__(filepath, pipeline_name)` | Initialize CMF instance | `metawriter = Cmf(filepath="mlmd", pipeline_name="my_pipeline")` |
+| `__init__(filename, pipeline_name)` | Initialize CMF instance | `metawriter = Cmf(filename="mlmd", pipeline_name="my_pipeline")` |
 | `create_context(pipeline_stage)` | Create a pipeline stage context | `context = metawriter.create_context(pipeline_stage="train")` |
 | `create_execution(execution_type)` | Create an execution within a context | `execution = metawriter.create_execution(execution_type="training_run")` |
 | `log_dataset(url, event, custom_properties)` | Log dataset artifacts | `metawriter.log_dataset(url="data.csv", event="input")` |
@@ -53,7 +53,7 @@ The `Cmf` class is the primary interface for metadata tracking in CMF. It provid
     from ml_metadata.proto import metadata_store_pb2 as mlpb
 
     metawriter = Cmf(
-        filepath="mlmd",
+        filename="mlmd",
         pipeline_name="test_pipeline",
     )
     ```
@@ -114,7 +114,7 @@ the pipeline metadata. Internally, it creates a pipeline abstraction that groups
 All stages, their executions, and produced artifacts will be associated with a pipeline with the given name.
 ```python
 metawriter = Cmf(
-   filepath="mlmd",                # Path to ML Metadata file.
+   filename="mlmd",                # Path to ML Metadata file.
    pipeline_name="mnist"           # Name of an ML pipeline.
 )
 ```
@@ -228,7 +228,7 @@ To use the graph layer, instantiate the CMF with the `graph=True` parameter:
 from cmflib.cmf import Cmf
 
 metawriter =  Cmf(
-   filepath="mlmd",
+   filename="mlmd",
    pipeline_name="anomaly_detection_pipeline",
    graph=True
 )
