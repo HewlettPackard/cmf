@@ -22,12 +22,15 @@ from server.app.get_data import (
     async_api,
     get_model_data,
     executions_list,
-    server_mlmd_pull
+    server_mlmd_pull,
+    log_sync_attempt,
+    compute_next_run_from_recurrence,
+    compute_initial_next_run_utc,
 )
 from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
 from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
 from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
-from server.app.db.dbconfig import get_db, init_db
+from server.app.db.dbconfig import get_db, init_db, async_session
 from server.app.db.dbqueries import (
     fetch_unique_execution_stages,
     fetch_executions_by_stage,
@@ -38,7 +41,17 @@ from server.app.db.dbqueries import (
     register_server_details,
     get_registered_server_details,
     get_sync_status,
-    update_sync_status
+    update_sync_status,
+    create_schedule,
+    list_schedules,
+    due_schedules,
+    update_next_run,
+    log_sync_run,
+    list_sync_logs,
+    get_completed_logs_by_server,
+    get_registered_server_by_id,
+    update_schedule_fields,
+    delete_schedule,
 )
 from pathlib import Path
 import os
@@ -49,6 +62,7 @@ from server.app.schemas.dataframe import (
     ServerRegistrationRequest, 
     AcknowledgeRequest,
     MLMDPullRequest,
+    ScheduleCreateRequest,
     ArtifactByStageRequest,
     ExecutionByStageRequest,
 )
@@ -57,6 +71,8 @@ import socket
 import dotenv
 from jsonpath_ng.ext import parse
 from cmflib.cmf_federation import update_mlmd
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 dotenv.load_dotenv()
 
@@ -82,7 +98,19 @@ async def lifespan(app: FastAPI):
         dict_of_exe_ids = await async_api(get_all_exe_ids, query)
         # loaded artifact ids into memory
         dict_of_art_ids = await async_api(get_all_artifact_ids, query, dict_of_exe_ids)
+    # Start background scheduler task
+    app.state.scheduler_task = asyncio.create_task(schedule_runner())
     yield
+    # Cancel scheduler on shutdown
+    # If FastAPI is down, no scheduled sync runs.
+    # On restart, the scheduler resumes from DB state.
+    # Missed schedules are not deleted or skipped automatically.
+    # One-time schedules run once after restart if overdue.
+    # Periodic schedules keep running and may attempt backlog catch-up.
+    # There is no explicit restart cleanup/update pass for scheduled_syncs.
+    task = getattr(app.state, "scheduler_task", None)
+    if task:
+        task.cancel()
     dict_of_art_ids.clear()
     dict_of_exe_ids.clear()
 
@@ -112,6 +140,129 @@ LOCAL_ADDRESSES.add(get_fqdn(hostname))
 print("Local addresses= ", LOCAL_ADDRESSES)
 
 
+async def schedule_runner():
+    """Input: none
+    Output: none (runs continuously)
+    Description: Background loop that executes due schedules using 3-stage server validation.
+    Step 1: Query all due schedules using current UTC epoch milliseconds.
+    Step 2: Check if server record exists in DB (registration check).
+            - If NOT registered: permanent config issue -> deactivate ALL schedule types.
+    Step 3: Check if the registered server is currently reachable (liveness check).
+            - If NOT alive: transient outage:
+                one-time  -> deactivate (missed its window, cannot retry)
+                periodic  -> log failure, compute next run, keep active for retry
+    Step 4: Server is registered AND alive -> perform sync, log result, advance schedule.
+    Step 5: Sleep 30 seconds and repeat.
+    Example: periodic schedule with unreachable server logs failure and reschedules."""
+    while True:
+        try:
+            async with async_session() as db:
+                now_ms = int(time.time() * 1000)
+                schedules = await due_schedules(db, now_ms)
+                for sch in schedules:
+                    sync_type = "schedule_once" if sch.get("one_time") else "periodic"
+
+                    # Stage 1: Registration check
+                    # Checks whether the server record still exists in the registered_servers
+                    # table. A missing record is a permanent configuration issue (server was
+                    # deleted/deregistered), not a temporary outage. Deactivate all schedule
+                    # types so we do not keep polling a server that no longer exists.
+                    server = await get_registered_server_by_id(db, sch["server_id"])
+                    if not server:
+                        await log_sync_run(
+                            db, sch["id"], now_ms, "failed",
+                            "Server record not found in registered servers. Schedule deactivated.",
+                            sync_type,
+                        )
+                        await update_schedule_fields(db, schedule_id=sch["id"], active=False, status="failed")
+                        continue
+
+                    # Stage 2: Liveness check
+                    # Server is registered. Now check if it is currently reachable by sending
+                    # a lightweight ping to /api/acknowledge (5-second timeout).
+                    # This distinguishes transient network/outage failures from config errors.
+                    try:
+                        async with httpx.AsyncClient(timeout=5.0) as client:
+                            response = await client.post(
+                                f"{server['host_info']}/api/acknowledge",
+                                json={"server_name": server["server_name"], "server_url": server["host_info"]}
+                            )
+                        server_alive = response.status_code == 200
+                    except Exception:
+                        server_alive = False
+                    if not server_alive:
+                        if sch.get("one_time"):
+                            # One-time sync missed its scheduled window during outage.
+                            # It will not retry automatically -> deactivate.
+                            await log_sync_run(
+                                db, sch["id"], now_ms, "failed",
+                                "Server is not reachable. One-time sync deactivated.",
+                                sync_type,
+                            )
+                            await update_schedule_fields(db, schedule_id=sch["id"], active=False, status="failed")
+                        else:
+                            # Periodic sync: transient outage, keep schedule alive and
+                            # advance next_run_time_utc so it retries at the next interval.
+                            await log_sync_run(
+                                db, sch["id"], now_ms, "failed",
+                                "Server is not reachable. Will retry at next scheduled run.",
+                                sync_type,
+                            )
+                            next_ms = await compute_next_run_from_recurrence(
+                                sch["next_run_time_utc"],
+                                sch["timezone"],
+                                sch["recurrence_mode"],
+                                interval_unit=sch.get("interval_unit"),
+                                interval_value=sch.get("interval_value"),
+                                daily_time=sch.get("daily_time"),
+                                weekly_day=sch.get("weekly_day"),
+                                weekly_time=sch.get("weekly_time"),
+                            )
+                            await update_next_run(db, sch["id"], next_ms)
+                            await update_schedule_fields(db, schedule_id=sch["id"], status="active")
+                        continue
+
+                    # Stage 3: Server is registered and alive -> perform sync
+                    req = ServerRegistrationRequest(server_name=server["server_name"], server_url=server["host_info"])
+                    status_msg = ""
+                    status = "failed"
+                    await update_schedule_fields(db, schedule_id=sch["id"], status="running")
+                    try:
+                        result = await sync_metadata(request=req, db=db, skip_logging=True)
+                        status = result.get("status", "unknown")
+                        status_msg = result.get("message", "")
+                    except HTTPException as he:
+                        status = "failed"
+                        status_msg = he.detail if isinstance(he.detail, str) else str(he.detail)
+                    except Exception as e:
+                        status = "failed"
+                        status_msg = f"Unexpected error: {e}"
+
+                    await log_sync_run(db, sch["id"], now_ms, status, status_msg, sync_type)
+                    if sch.get("one_time"):
+                        # One-time schedules always deactivate after their single attempt.
+                        await update_schedule_fields(db, schedule_id=sch["id"], active=False, status="completed")
+                    else:
+                        # Periodic: advance to next run time and keep active.
+                        next_ms = await compute_next_run_from_recurrence(
+                            sch["next_run_time_utc"],
+                            sch["timezone"],
+                            sch["recurrence_mode"],
+                            interval_unit=sch.get("interval_unit"),
+                            interval_value=sch.get("interval_value"),
+                            daily_time=sch.get("daily_time"),
+                            weekly_day=sch.get("weekly_day"),
+                            weekly_time=sch.get("weekly_time"),
+                        )
+                        await update_next_run(db, sch["id"], next_ms)
+                        await update_schedule_fields(db, schedule_id=sch["id"], status="active")
+        except Exception as e:
+            # Prevent scheduler from crashing; log to stdout
+            print(f"Scheduler error: {e}")
+
+        await asyncio.sleep(30)
+
+
 @app.get("/")
 async def read_root(request: Request):
     return {"cmf-server"}
@@ -139,7 +290,7 @@ async def mlmd_push(info: MLMDPushRequest):
                 # Raise an HTTPException with status code 422
                 raise HTTPException(status_code=422, detail="version_update")
             if status != "exists":
-            # async function
+                # async function
                 await update_global_exe_dict(pipeline_name)
                 await update_global_art_dict(pipeline_name)
         finally:
@@ -668,12 +819,16 @@ async def acknowledge(request: AcknowledgeRequest):
 
 
 @app.post("/sync")
-async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
+async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = Depends(get_db), skip_logging: bool = False):
     """
     Synchronize metadata for a registered server.
 
     Args:
         request (ServerRegistrationRequest): The request containing server details.
+        skip_logging (bool): If True, prevents duplicate log entries in the database.
+            When the background scheduler calls this function, it creates its own 
+            schedule and log entries, so we skip the immediate sync logging to avoid 
+            duplicate records. Set to False for manual/API-triggered syncs.
 
     Returns:
         dict: A response containing the sync status and last sync time.
@@ -681,18 +836,22 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
     Raises:
         HTTPException: If the server is not found or an error occurs during synchronization.
     """
+    server_name = request.server_name
+    server_url = request.server_url
+    current_utc_epoch_time = int(time.time() * 1000)
+    
     try:
-        server_name = request.server_name
-        server_url = request.server_url
-
+        # Verify the server exists in the registered servers list and get last sync time
         row = await get_sync_status(db, server_name, server_url)
 
         if not row:
+            # Log the failed sync attempt before raising the exception
+            await log_sync_attempt("failed", "Server not found in the registered servers list", db, server_name, server_url, current_utc_epoch_time, skip_logging)
             raise HTTPException(status_code=404, detail="Server not found in the registered servers list")
 
         last_sync_time = row[0]['last_sync_time']
-        current_utc_epoch_time = int(time.time() * 1000)
 
+        # Pull MLMD data from the target server using the /mlmd_pull endpoint
         json_payload = await server_mlmd_pull(server_url, last_sync_time)
 
         json_data = {
@@ -708,6 +867,7 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         pipeline_names = []
 
         if not pipelines:
+            await log_sync_attempt("success", "Nothing to sync", db, server_name, server_url, current_utc_epoch_time, skip_logging)
             return {
                 "message": "Nothing to sync",
                 "status": "success",
@@ -721,36 +881,42 @@ async def sync_metadata(request: ServerRegistrationRequest, db: AsyncSession = D
         status = await async_api(update_mlmd, query, json_data["json_payload"], None, "push", None)
         if status == "invalid_json_payload":
             # Invalid JSON payload, return 400 Bad Request
+            await log_sync_attempt("failed", "Invalid JSON payload. The pipeline name is missing.", db, server_name, server_url, current_utc_epoch_time, skip_logging)
             raise HTTPException(status_code=400, detail="Invalid JSON payload. The pipeline name is missing.")           
         if status == "version_update":
             # Raise an HTTPException with status code 422
+            await log_sync_attempt("failed", "Version update required", db, server_name, server_url, current_utc_epoch_time, skip_logging)
             raise HTTPException(status_code=422, detail="version_update")
-        global dict_of_art_ids
-        global dict_of_exe_ids
         message = "Nothing to sync."
         if status != "exists":
             if not last_sync_time:
                 message = f"Host server is syncing with the selected server '{server_name}' at address '{server_url}' for the first time."
-                for pipeline_name in pipeline_names:
-                    dict_of_exe_ids = get_all_exe_ids(query)
-                    dict_of_art_ids = get_all_artifact_ids(query, dict_of_exe_ids)
             else:
                 message = f"Host server is being synced with the selected server '{server_name}' at address '{server_url}'."
-                for pipeline_name in pipeline_names:
-                    update_global_exe_dict(pipeline_name)
-                    update_global_art_dict(pipeline_name)
+            for pipeline_name in pipeline_names:
+                await update_global_exe_dict(pipeline_name)
+                await update_global_art_dict(pipeline_name)
 
         # Update the last_sync_time in the database only if sync status is successful
         if status == "success":
             await update_sync_status(db, current_utc_epoch_time, server_name, server_url)
+
+        # Log this immediate sync
+        await log_sync_attempt(status, message, db, server_name, server_url, current_utc_epoch_time, skip_logging)
+
         return {
             "message": message,
             "status": status,
             "last_sync_time": current_utc_epoch_time
         }
 
+    except HTTPException:
+        # Re-raise HTTPExceptions (already logged above)
+        raise
     except Exception as e:
         print(e)
+        # Log unexpected errors
+        await log_sync_attempt("failed", f"Failed to sync metadata: {str(e)}", db, server_name, server_url, current_utc_epoch_time, skip_logging)
         raise HTTPException(status_code=500, detail=f"Failed to sync metadata: {e}")
 
 
@@ -808,6 +974,156 @@ def download_python_env(request: Request, list_of_files: Optional[list[str]] = Q
         )
     except Exception as e:
         return {"error": str(e)}
+
+
+# ---- Scheduling APIs ----
+@app.post("/schedule-sync")
+async def schedule_sync(request: ScheduleCreateRequest, db: AsyncSession = Depends(get_db)):
+    """
+    Create a one-time or periodic sync schedule for a registered server.
+
+    Args:
+        request (ScheduleCreateRequest): Schedule configuration payload.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        dict: Created schedule id and computed next run time.
+    """
+    try:
+        # Validate that target server exists before creating a schedule.
+        server = await get_registered_server_by_id(db, request.server_id)
+        if not server:
+            raise HTTPException(status_code=404, detail="Registered server not found")
+
+        # Parse local ISO datetime and convert to UTC epoch ms
+        try:
+            tz = ZoneInfo(request.timezone)
+        except Exception:
+            raise HTTPException(status_code=400, detail="Invalid timezone")
+
+        try:
+            # Accepts e.g. 2026-01-04T15:00
+            local_dt = datetime.strptime(request.start_time_local_iso, "%Y-%m-%dT%H:%M")
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid datetime format. Use YYYY-MM-DDTHH:MM")
+
+        # Convert local datetime with timezone info to UTC epoch milliseconds
+        local_dt = local_dt.replace(tzinfo=tz)
+        start_utc_ms = int(local_dt.astimezone(ZoneInfo("UTC")).timestamp() * 1000)
+
+        # Derive recurrence fields from the selected start datetime.
+        derived_time = local_dt.strftime("%H:%M")
+        recurrence_mode = None if request.one_time else request.recurrence_mode
+        daily_time = derived_time if recurrence_mode == "daily" else None
+        weekly_day = request.weekly_day if recurrence_mode == "weekly" else None
+        weekly_time = derived_time if recurrence_mode == "weekly" else None
+
+        now_ms = int(time.time() * 1000)
+        if request.one_time:
+            # One-time schedules must be strictly in the future.
+            if start_utc_ms <= now_ms:
+                raise HTTPException(status_code=400, detail="Start time must be in the future for one-time schedules")
+            next_ms = start_utc_ms
+        else:
+            # Compute first due run for periodic schedules based on recurrence settings.
+            next_ms = await compute_initial_next_run_utc(
+                start_utc_ms,
+                now_ms,
+                request.timezone,
+                recurrence_mode,
+                interval_unit=request.interval_unit,
+                interval_value=request.interval_value,
+                daily_time=daily_time,
+                weekly_day=weekly_day,
+                weekly_time=weekly_time,
+            )
+
+        # Persist schedule details and return created id plus first next-run timestamp.
+        created = await create_schedule(
+            db,
+            server_id=request.server_id,
+            timezone=request.timezone,
+            start_time_utc=start_utc_ms,
+            next_run_time_utc=next_ms,
+            created_at=now_ms,
+            one_time=request.one_time,
+            recurrence_mode=recurrence_mode,
+            interval_unit=request.interval_unit,
+            interval_value=request.interval_value,
+            daily_time=daily_time,
+            weekly_day=weekly_day,
+            weekly_time=weekly_time,
+        )
+        return {"message": "Schedule created", "schedule_id": created["id"], "next_run_time_utc": next_ms}
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create schedule: {e}")
+
+
+@app.get("/schedules")
+async def get_schedules(server_id: Optional[int] = Query(None), db: AsyncSession = Depends(get_db)):
+    """
+    Retrieve active schedules, optionally filtered by server id.
+
+    Args:
+        server_id (Optional[int]): Optional server id filter.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        list: Active schedule rows.
+    """
+    rows = await list_schedules(db, server_id)
+    return rows
+
+
+@app.get("/schedule-sync/logs/{schedule_id}")
+async def get_schedule_logs(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Retrieve run history logs for a schedule id.
+
+    Args:
+        schedule_id (int): Schedule id.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        list: Sync log rows ordered by latest first.
+    """
+    rows = await list_sync_logs(db, schedule_id)
+    return rows
+
+
+@app.get("/server/{server_id}/completed-logs")
+async def get_server_completed_logs(server_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Get all completed sync logs for a specific server.
+    
+    Args:
+        server_id (int): The ID of the server to get logs for.
+    
+    Returns:
+        list: A list of completed sync logs with sync_type, status, message, and timestamp.
+    """
+    try:
+        logs = await get_completed_logs_by_server(db, server_id)
+        return logs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch completed logs: {e}")
+
+
+@app.delete("/schedule-sync/{schedule_id}")
+async def delete_schedule_route(schedule_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Deactivate a schedule so future runs stop.
+
+    Args:
+        schedule_id (int): Schedule id to deactivate.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        dict: Deactivation status message.
+    """
+    return await delete_schedule(db, schedule_id)
 
 
 async def update_global_art_dict(pipeline_name):
