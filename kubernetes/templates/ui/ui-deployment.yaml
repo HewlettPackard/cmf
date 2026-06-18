@@ -22,7 +22,7 @@ spec:
         - containerPort: {{ .Values.ui_service.service.port }}
         env:
         - name: REACT_APP_CMF_API_URL
-          value: http://x.x.x.x:30080           # same cluster DNS; backend reachable via Nginx
+          value: {{ .Values.common_env.REACT_APP_CMF_API_URL }}
         readinessProbe:
           httpGet:
             path: /
