@@ -110,10 +110,10 @@ The following images are pulled from public registries automatically:
 
 ### 1. Update values.yaml
 
-Edit `k8s-deployment/values.yaml` to configure your deployment:
+Edit `kubernetes/values.yaml` to configure your deployment:
 
 ```bash
-vi k8s-deployment/values.yaml
+vi kubernetes/values.yaml
 ```
 
 **Key configurations to update:**
@@ -146,10 +146,10 @@ common_env:
 
 ### 2. Configure Secrets
 
-Edit `k8s-deployment/secrets.yaml` with your database credentials:
+Edit `kubernetes/secrets.yaml` with your database credentials:
 
 ```bash
-vi k8s-deployment/secrets.yaml
+vi kubernetes/secrets.yaml
 ```
 
 **Update the following:**
@@ -211,10 +211,10 @@ chmod +x helm-deployment.sh
 **Manual Deployment (Alternative):**
 
 ```bash
-helm upgrade --install cmf-deployment ./k8s-deployment \
+helm upgrade --install cmf-deployment ./kubernetes \
   --namespace $NAMESPACE \
-  -f ./k8s-deployment/values.yaml \
-  -f ./k8s-deployment/secrets.yaml \
+  -f ./kubernetes/values.yaml \
+  -f ./kubernetes/secrets.yaml \
   --create-namespace
 ```
 
@@ -346,6 +346,9 @@ kubectl port-forward -n $NAMESPACE svc/neo4j 7474:7474 7687:7687
 # Forward PostgreSQL
 kubectl port-forward -n $NAMESPACE svc/postgres 5432:5432
 ```
+
+need to perform kubectl port forwarding f$ kubectl port-forward -n k8s-namespace svc/nginx 30080:80 --address 0.0.0.0
+
 
 Access services at:
 - UI: http://localhost:3000

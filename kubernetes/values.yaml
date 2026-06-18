@@ -11,7 +11,7 @@ common_env:
   POSTGRES_HOST: "postgres"           # Kubernetes Service for Postgres
   POSTGRES_DB: "mlmd"
   POSTGRES_PORT: "5432"
-  REACT_APP_CMF_API_URL: "http://nginx"  # for internal reference, safe to keep
+  REACT_APP_CMF_API_URL: "http://x.x.x.x:30080"  # VM IP - accessible from laptop/remote machine
 
 service:
   type: NodePort
