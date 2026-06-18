@@ -1,7 +1,7 @@
 set -e
 
 NAMESPACE="k8s-namespace"
-CHART_DIR="./k8s-deployment"
+CHART_DIR="./kubernetes"
 
 echo "Checking Kubernetes connection..."
 kubectl cluster-info > /dev/null
