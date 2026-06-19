@@ -45,7 +45,7 @@ The main card displays execution runs with the following :
 **Card Interactions:**
 
 - Click the **execution card** or **View All Properties**:: Expands row to show detailed execution metadata, custom properties, and additional information
-- Click the**View Python Env**: Opens Python environment details showing packages and versions used
+- Click the **View Python Env**: Opens Python environment details showing packages and versions used
 - Click **Sort by**: Sort by Time (ascending/descending)
 - **Pagination controls**: Navigate through execution history using Previous/Next buttons and page numbers
 
