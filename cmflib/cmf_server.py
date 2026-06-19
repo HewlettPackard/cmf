@@ -139,7 +139,7 @@ def merge_created_execution(
     # logger.info(custom_props)
     git_repo = properties.get("Git_Repo", "")
     git_start_commit = properties.get("Git_Start_Commit", "")
-    git_end_commit = properties.get("Git_End_Commit", properties.get("git_end_commit", ""))
+    git_end_commit = properties.get("Git_End_Commit", "")
     #name = properties.get("Name", "")
     create_new_execution = True
     execution_name = execution_type
