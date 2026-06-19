@@ -94,6 +94,9 @@ from cmflib.cmf_commands_wrapper import (
     _dvc_ingest,
 )
 
+# Import async proxy for factory pattern
+from cmflib.cmf_async_proxy import CmfAsyncProxy
+
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
     The class instance creates an ML metadata store to store the metadata.
@@ -139,6 +142,41 @@ class Cmf:
         __neo4j_password = attr_dict.get("neo4j-password", "")
         __neo4j_user = attr_dict.get("neo4j-user", "")
 
+    def __new__(
+        cls,
+        filename: str = "mlmd",
+        pipeline_name: str = "",
+        custom_properties: t.Optional[t.Dict] = None,
+        graph: bool = False,
+        is_server: bool = False,
+        async_logging: bool = True,
+        finalize_timeout: int = 300,
+    ):
+        """
+        Factory method that returns appropriate CMF implementation.
+        
+        By default (async_logging=True), returns CmfAsyncProxy (lightweight proxy).
+        If async_logging=False, returns standard Cmf instance (full implementation).
+        
+        This provides day-one design benefits: async mode doesn't waste 
+        resources on database connections and initialization in main process.
+        """
+        if async_logging and not is_server:
+            # Return lightweight async proxy
+            logger.info("[Cmf Factory] Creating CmfAsyncProxy for async logging")
+            return CmfAsyncProxy(
+                filename=filename,
+                pipeline_name=pipeline_name,
+                custom_properties=custom_properties,
+                graph=graph,
+                finalize_timeout=finalize_timeout
+            )
+        else:
+            # Return standard implementation
+            # Create instance normally (calls __init__)
+            instance = super(Cmf, cls).__new__(cls)
+            return instance
+
     def __init__(
         self,
         filename: str = "mlmd",
@@ -146,6 +184,8 @@ class Cmf:
         custom_properties: t.Optional[t.Dict] = None,
         graph: bool = False,
         is_server: bool = False,
+        async_logging: bool = True,
+        finalize_timeout: int = 300,
     ):
         temp_store: t.Optional[t.Union[SqlliteStore, PostgresStore]] = None
         if is_server is False:
@@ -265,8 +305,13 @@ class Cmf:
                 f"Current Directory: {os.getcwd()}"
             )
             sys.exit(1)
-
+    
     def finalize(self):
+        """
+        Finalize the CMF logging session.
+        Performs git commits.
+        """
+        # Perform git commit
         git_commit(self.execution_name)
         if self.graph:
             self.driver.close()
