@@ -9,7 +9,14 @@ An **Execution** represents a single run of a pipeline stage. Each execution cap
 - **Artifacts**: Input and output artifacts used in the execution
 - **Metadata**: Runtime information and custom properties
 
+Below is Execution Tab Page View on GUI :
 ![Execution page](../assets/ExecutionPage.png)
+
+Here when we click on "View all properties" we can see expanded card view showing execution details :
+![Execution page](../assets/execution_view_all.png)
+
+Below image displayed all execution details after we click on execution card :
+![Execution page](../assets/execution_details.png)
 
 ## Page Features
 
@@ -21,7 +28,7 @@ Search and filter executions based on context type or properties:
 |--------|-------------|
 | **Filter by Context Type/Properties** | Enter any text to search across execution context types (pipeline stages), execution artifacts, Git commits, or any execution metadata. Matching executions will be displayed in the table. |
 
-### 2. Execution Card
+### 2. Execution card grid
 
 The main card displays execution runs with the following :
 
@@ -42,34 +49,20 @@ The main card displays execution runs with the following :
 - Click **Sort by**: Sort by Time (ascending/descending)
 - **Pagination controls**: Navigate through execution history using Previous/Next buttons and page numbers
 
-### 3. Enhanced Execution Navigation
+### 3.  Pipeline-Driven Navigation
+Select a pipeline from the home page of UI to access its specific operational stages.
 
-The Executions page provides a stage-oriented view of pipeline execution history, enabling users to inspect how artifacts were generated and how pipeline stages were executed over time.
-
-
-### 4. Pipeline Selection
-
-Users can select a pipeline from the left navigation panel to view all executions associated with that pipeline.
-
-### 5. Stage-Based Organization
-
-Executions are grouped according to the stage in which they occurred.
-Common stages include:
-	•	Prepare
-	•	Featurize
-	•	Train
-	•	Evaluate
-
-Selecting a stage filters the execution list to display only executions associated with that stage.This organization helps users understand the progression of data and models throughout the machine learning lifecycle.
+### 4. Stage-Filtered Artifacts
+Click a stage (Prepare, Featurize, Train, Evaluate) to instantly view its input and output executions.
 
 
 ## Using the Executions Page
 
 ### Example 1: Find Executions from a Specific Pipeline Stage
 
-1. Select a pipeline from the **LIST OF PIPELINES** sidebar
+1. Select a pipeline from the **Listed PIPELINES** on home page of UI.
 2. Use the filter box to search for a stage name (e.g., "Train" or "Evaluate")
-3. Review the filtered executions in the table
+3. Review the filtered executions
 4. Click the **execution card** or **View All Properties** to view detailed execution information
 
 ### Example 2: Inspect Python Environment

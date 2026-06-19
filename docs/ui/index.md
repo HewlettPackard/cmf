@@ -22,18 +22,18 @@ The GUI organizes metadata by pipelines and stages, enabling users to easily nav
 
 1. Ensure the [CMF Server is running](../setup/index.md#install-cmf-server-with-gui)
 2. Open your browser and navigate to the server URL (default: `http://your-server-ip:80`)
-3. The GUI will display the available pipelines on home page of CMF GUI
+3. The GUI will display the available pipelines on the home page.
 
 ---
 
 ## Artifacts View
 
-The Artifacts page displays all datasets, models, metrics, labels, and other tracked artifacts managed by CMF. Artifacts are organized by pipeline and stage, allowing users to quickly locate outputs generated during different phases of the machine learning workflow.
+The Artifacts page displays all datasets, models, metrics, labels, and other tracked artifacts managed by CMF. Artifacts are organized by pipeline and stage, allowing users to quickly locate inputs used and outputs generated during different phases of the machine learning workflow.
 
 ### Key Features
 
-- **Pipeline Navigation**: Browse artifacts for individual pipelines.
-- **Stage-Based Organization**: View artifacts grouped by stages such as Prepare, Featurize, Train, and Evaluate.
+- **Pipeline Navigation**: Select a pipeline to view its associated stages.
+- **Stage-Based Filtering**: Click on a stage (such as Prepare, Featurize, Train, or Evaluate) to display the artifacts generated or used within that stage.
 - **Artifact Type Filtering**: Filter artifacts by type, including Dataset, Model, Metrics, Label, and Step Metrics.
 - **Search & Filter**: Find artifacts using names, metadata, labels, or properties.
 - **Artifact Comparison**: Compare multiple artifacts to identify metadata and version differences.
@@ -47,15 +47,15 @@ The Artifacts page displays all datasets, models, metrics, labels, and other tra
 
 ## Executions View
 
-The Executions page displays all pipeline runs and execution history. Users can inspect execution details and understand how artifacts were generated throughout the ML lifecycle.
+The Executions page displays all pipeline runs and execution history. You can view execution details, parameters, and associated artifacts for each run to understand how outputs were generated throughout the ML lifecycle.
 
 ### Key Features
 
+- **Pipeline Navigation**: Select a pipeline to view its associated stages.
+- **Stage-Based Filtering**: Click on a stage (such as Prepare, Featurize, Train, or Evaluate) to display the executions generated or used within that stage.
 - **Execution History**: View execution timelines and timestamps.
 - **Execution Details**:Inspect execution parameters, metadata, and associated artifacts.
 - **Filtering & Search**: Find specific executions using metadata, execution names, or properties.
-- **Pipeline Context**: Understand how executions relate to specific pipeline stages.
-
 
 ![CMF Executions Page](../assets/ExecutionPage.png)
 
@@ -99,15 +99,6 @@ Before using the CMF GUI, ensure you have:
 2. **Metadata Pushed**: Use `cmf metadata push` to send metadata to server
 3. **Browser Compatibility**: Modern browser (Chrome, Firefox, Safari, Edge)
 
----
-## Interactive Exploration
-
-The **CMF GUI** provides interactive metadata exploration capabilities that help users.
-
-	•	Trace artifacts to the executions that generated them.
-	•	Understand relationships between datasets, models, and metrics.
-	•	Inspect metadata and provenance information without using CLI commands.
-	•	Navigate machine learning workflows through visual interfaces.
 ---
 
 ## Getting Help

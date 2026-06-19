@@ -39,7 +39,7 @@ The filter panel allows you to narrow down artifacts based on multiple criteria:
 2. Choose artifact type (Dataset/Label/Step_Metrics/Model/Metrics) from tabs
 3. Use filter box to search by artifact name or properties
 
-### 2. Artifacts Card
+### 2. Artifacts card grid
 Artifacts are displayed as interactive cards containing summary metadata.
 The main card displays artifacts with the following :
 
@@ -47,34 +47,19 @@ The main card displays artifacts with the following :
 |--------|-------------|
 | **Card Click** | Select any artifact card to view detailed artifact information |
 | **ID** | Unique artifact identifier |
-| **Name** | Artifact name and identifier |
-| **Execution Type** | Execution name where artifact was created |
+| **Type** | Artifact type |
 | **Created** | Timestamp of creation |
-| **URI** | Artifact location/path |
 | **URL** | Associated URL reference |
 | **Git Repo** | GitHub Repository URL |
 | **Commit** | Git commit hash |
 
 The card-based layout provides a concise overview while allowing quick access to detailed information.
-
-### 3.  Enhanced Artifact Navigation
-The Artifacts page provides a stage-oriented view of artifacts generated throughout the machine learning lifecycle.
  
-### 4.  Pipeline Selection
-Users can select a pipeline from the left navigation panel. Once a pipeline is selected, all stages associated with that pipeline become available for exploration.
+### 3.  Pipeline-Driven Navigation
+Select a pipeline from the home page of UI to access its specific operational stages.
 
-### 5. Stage-Based Organization
-Artifacts are grouped according to the pipeline stage that generated them.
-
-Common stages include:
-	•	Prepare
-	•	Featurize
-	•	Train
-	•	Evaluate
-
-Selecting a stage automatically filters the displayed artifacts to those generated during that stage.
-This organization helps users understand where artifacts were produced and how they fit into the overall workflow.
-
+### 4. Stage-Filtered Artifacts
+Click a stage (Prepare, Featurize, Train, Evaluate) to instantly view its input and output artifacts.
 
 **Interactions:**
 
@@ -88,9 +73,9 @@ This organization helps users understand where artifacts were produced and how t
 
 ### Example 1: Find All Datasets from a Pipeline
 
-1. Navigate to **Artifacts** page by clicking on the header tab
-2. Select a pipeline from the **LIST OF PIPELINES** sidebar
-3. The **Dataset** tab is selected by default
+1. Navigate to the **Artifacts** page by clicking the header tab.
+2. View the **active pipeline** in the left sidebar, which loads the first pipeline by default from the homepage selection.
+3. Explore the **Dataset** tab, which is automatically selected by default to display the stage's artifacts.
 4. Review the list of all datasets used in that pipeline
 5. Click the **artiact card** or **View All Properties** to view detailed artifact metadata for selected artifact
 
