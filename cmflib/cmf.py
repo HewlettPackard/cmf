@@ -146,8 +146,6 @@ class Cmf:
         custom_properties: t.Optional[t.Dict] = None,
         graph: bool = False,
         is_server: bool = False,
-        async_logging: bool = True,
-        finalize_timeout: int = 300,
     ):
         temp_store: t.Optional[t.Union[SqlliteStore, PostgresStore]] = None
         if is_server is False:
