@@ -225,13 +225,15 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
         graph = bool(os.getenv('NEO4J_URI', ""))
 
         # Initialize the cmf class with pipeline_name and graph_status
+        # Note: async_logging=False is required for metadata pull/push operations
+        # to ensure we get a regular Cmf instance with store attribute, not CmfAsyncProxy
         if cmd == "pull":
             cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                            graph=graph)
+                            graph=graph, async_logging=False)
         else:
             # in else, we are assuming cmd="push"
             cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
-                            graph=graph, is_server=True)
+                            graph=graph, is_server=True, async_logging=False)
 
         # Process each stage sequentially
         for stage in data["stages"]:
