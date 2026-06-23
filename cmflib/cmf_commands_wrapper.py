@@ -22,8 +22,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
-
 def exception_handler_decorator(
     target_function: Callable[..., Any]
 ) -> Callable[..., Any]:
