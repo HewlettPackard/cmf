@@ -114,7 +114,7 @@ the pipeline metadata. Internally, it creates a pipeline abstraction that groups
 All stages, their executions, and produced artifacts will be associated with a pipeline with the given name.
 ```python
 metawriter = Cmf(
-   filename="mlmd",                # Path to ML Metadata file.
+   filename="mlmd",                # Name of the ML Metadata file.
    pipeline_name="mnist"           # Name of an ML pipeline.
 )
 ```

@@ -121,7 +121,7 @@ class CmfQuery(object):
 
 
     Args:
-        filename: Path to the MLMD database file.
+        filename: Name of the MLMD database file.
     """
 
     def __init__(self, filename: str = "mlmd", is_server=False) -> None:

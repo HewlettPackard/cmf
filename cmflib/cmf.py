@@ -111,7 +111,7 @@ class Cmf:
     ```
     
     Args:
-        filename: Path  to the sqlite file to store the metadata
+        filename: Name of the sqlite file to store the metadata
         pipeline_name: Name to uniquely identify the pipeline.
             Note that name is the unique identifier for a pipeline.
             If a pipeline already exist with the same name, the existing pipeline object is reused.
@@ -401,8 +401,8 @@ class Cmf:
         """
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        filename = os.path.basename(current_script)
-        assigned_stage_name = os.path.splitext(filename)[0]
+        file_name = os.path.basename(current_script)
+        assigned_stage_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_stage_name)
@@ -734,8 +734,8 @@ class Cmf:
         artifact_path = url
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext(filename)[0]
+        file_name = os.path.basename(current_script)
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -974,8 +974,8 @@ class Cmf:
         """
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext(filename)[0]
+        file_name = os.path.basename(current_script)
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1132,8 +1132,8 @@ class Cmf:
         """
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext(filename)[0]
+        file_name = os.path.basename(current_script)
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1232,8 +1232,8 @@ class Cmf:
         # code for nano cmf
         # Assigning current file name as stage and execution name
         current_script = sys.argv[0]
-        filename = os.path.basename(current_script)
-        assigned_name = os.path.splitext(filename)[0]
+        file_name = os.path.basename(current_script)
+        assigned_name = os.path.splitext(file_name)[0]
         # create context if not already created
         if not self.child_context:
             self.create_context(pipeline_stage=assigned_name)
@@ -1669,8 +1669,8 @@ class Cmf:
             # code for nano cmf
             # Assigning current file name as stage and execution name
             current_script = sys.argv[0]
-            filename = os.path.basename(current_script)
-            assigned_name = os.path.splitext(filename)[0]
+            file_name = os.path.basename(current_script)
+            assigned_name = os.path.splitext(file_name)[0]
             # create context if not already created
             if not self.writer.child_context:
                 self.writer.create_context(pipeline_stage=assigned_name)
