@@ -16,27 +16,12 @@
 
 from typing import Callable, Any
 from cmflib import cli
-from cmflib.cmf_exception_handling import CmfResponse, GitConfigNotSet
-from cmflib.dvc_wrapper import check_git_config
+from cmflib.cmf_exception_handling import CmfResponse
 
 import logging
 
 logger = logging.getLogger(__name__)
 
-
-def _validate_git_config() -> None:
-    """
-    Validates that git user.name and user.email are configured on the system.
-    Raises GitConfigNotSet exception if validation fails.
-    
-    This validation is required before running CMF init commands, as git commits
-    need both user.name and user.email to be set.
-    
-    Raises:
-        GitConfigNotSet: If git user.name or user.email is not configured
-    """
-    if not check_git_config():
-        raise GitConfigNotSet(missing_configs=["user.name", "user.email"])
 
 
 def exception_handler_decorator(
@@ -226,7 +211,6 @@ def _init_local(
     neo4j_uri: str,
 ) -> str:
     """Initialize local repository"""
-    _validate_git_config()
     args = [
             "init",
             "local",
@@ -271,7 +255,6 @@ def _init_minioS3(
     neo4j_uri: str,
 ) -> str:
     """Initialize minioS3 repository"""
-    _validate_git_config()
     args = [
             "init",
             "minioS3",
@@ -320,7 +303,6 @@ def _init_amazonS3(
     neo4j_uri: str,
 ) -> str:
     """Initialize amazonS3 repository"""
-    _validate_git_config()
     args = [
             "init",
             "amazonS3",
@@ -371,7 +353,6 @@ def _init_sshremote(
     neo4j_uri: str,
 ) -> str:
     """Initialize sshremote repository"""
-    _validate_git_config()
     args = [
             "init",
             "sshremote",
@@ -422,7 +403,6 @@ def _init_osdfremote(
     neo4j_uri: str,
 ) -> str:
     """Initialize osdfremote repository"""
-    _validate_git_config()
     args = [
             "init",
             "osdf",
