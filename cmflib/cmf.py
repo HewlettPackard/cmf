@@ -319,8 +319,10 @@ class Cmf:
         Finalize the CMF logging session.
         Performs git commits.
         """
-        # Perform git commit
-        git_commit(self.execution_name)
+        commit_value = git_commit(self.execution_name)
+        if self.execution:
+            self.execution.properties["Git_End_Commit"].string_value = commit_value
+            self.store.put_executions([self.execution])
         if self.graph:
             self.driver.close()
 
