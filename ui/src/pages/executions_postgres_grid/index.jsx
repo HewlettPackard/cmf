@@ -176,6 +176,7 @@ const ExecutionsPostgresGrid = () => {
         { label: "Pipeline Type", value: getExecutionDetailProperty("Pipeline_Type"), color: "indigo" },
         { label: "Git Repo", value: getExecutionDetailProperty("Git_Repo"), color: "purple" },
         { label: "Git Start Commit", value: getExecutionDetailProperty("Git_Start_Commit"), color: "green" },
+        { label: "Git End Commit", value: getExecutionDetailProperty("Git_End_Commit"), color: "green" },
     ] : [];
 
     // Render
