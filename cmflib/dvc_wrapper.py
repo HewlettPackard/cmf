@@ -279,12 +279,8 @@ def git_commit(execution_id: str) -> str:
         output, errs = process.communicate(timeout=60)
         commit = output.strip()
 
-        process = subprocess.Popen(['git', 'log'],
-                                   stdout=subprocess.PIPE,
-                                   universal_newlines=True)
-        # To-Do : Parse the output and report if error
-        output, errs = process.communicate(timeout=60)
-        commit = output.splitlines()[0].strip()
+        # Reuse the helper to keep HEAD resolution logic in one place.
+        commit = git_get_commit()
     except Exception as err:
         logger.error(f"[git_commit] Unexpected {err}, {type(err)}")
         if isinstance(object, subprocess.Popen):
