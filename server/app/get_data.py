@@ -212,13 +212,27 @@ def get_mlmd_from_server(query: CmfQuery, pipeline_name: t.Optional[str] = None,
 
 
 def executions_list(query: CmfQuery, pipeline_name, dict_of_exe_ids):
-    list_of_exec = []
-    list_of_exec_uuid = []
-    list_of_exec = dict_of_exe_ids[pipeline_name]["Context_Type"].tolist()
-    list_of_uuid = dict_of_exe_ids[pipeline_name]["Execution_uuid"].tolist()
-    for exec_type, uuid in zip(list_of_exec, list_of_uuid):
-        list_of_exec_uuid.append(exec_type.split("/",1)[1] + "_" + uuid.split("-")[0][:4])
-    print(type(list_of_exec_uuid))
+    """
+    Generate short execution identifiers by combining execution type and UUID prefix.
+    
+    Transforms execution data into format: "<ExecutionType>_<UUID_prefix>"
+    Example: "Test-env/Prepare" + "d09fdb26-0e9d-..." -> "Prepare_d09f"
+    
+    Args:
+        query: CmfQuery object (unused in current implementation)
+        pipeline_name: Name of the pipeline
+        dict_of_exe_ids: Dictionary containing execution dataframes
+        
+    Returns:
+        List of formatted execution identifiers
+    """
+    df = dict_of_exe_ids[pipeline_name]
+    # Extract execution type (part after first "/") and UUID prefix (first 4 chars before first "-")
+    list_of_exec_uuid = (
+        df["Context_Type"].str.split("/", n=1).str[1] + "_" + 
+        df["Execution_uuid"].str.split("-", n=1).str[0].str[:4]
+    ).tolist()
+    
     return list_of_exec_uuid
 
 
