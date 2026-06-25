@@ -45,7 +45,7 @@ class FastAPIClient {
         if (error.response?.status >= 500) {
           alert('Server error. Please try again later.');
         } else if (error.request && !error.response) {
-          alert('Unable to connect to server. Please check your connection.');
+          alert('Server connection refused. The backend service may be down. Please restart your Docker container and try again.');
         }
         return Promise.reject(error);
       }
