@@ -153,7 +153,7 @@ def check_git_config() -> bool:
         user_name = user_name.strip()
         user_name_return_code = process.returncode
         
-        logger.info(f"[check_git_config] Git user.name check - Return code: {user_name_return_code}, Value: '{user_name}', Stderr: '{stderr_name.strip()}'")
+        logger.debug(f"[check_git_config] Git user.name check - Return code: {user_name_return_code}, Value: '{user_name}', Stderr: '{stderr_name.strip()}'")
         
         # Check git user.email
         process = subprocess.Popen(['git', 'config', 'user.email'],
@@ -164,25 +164,24 @@ def check_git_config() -> bool:
         user_email = user_email.strip()
         user_email_return_code = process.returncode
         
-        logger.info(f"[check_git_config] Git user.email check - Return code: {user_email_return_code}, Value: '{user_email}', Stderr: '{stderr_email.strip()}'")
+        logger.debug(f"[check_git_config] Git user.email check - Return code: {user_email_return_code}, Value: '{user_email}', Stderr: '{stderr_email.strip()}'")
         
         # Both must be configured (non-empty strings)
         if user_name and user_email:
             git_config_valid = True
-            logger.info(f"[check_git_config] Git config VALID - user.name: {user_name}, user.email: {user_email}")
+            logger.debug(f"[check_git_config] Git config VALID - user.name: {user_name}, user.email: {user_email}")
         else:
             missing_configs = []
             if not user_name:
                 missing_configs.append("user.name")
             if not user_email:
                 missing_configs.append("user.email")
-            logger.warning(f"[check_git_config] Git configuration INCOMPLETE. Missing: {', '.join(missing_configs)}")
+            logger.debug(f"[check_git_config] Git configuration INCOMPLETE. Missing: {', '.join(missing_configs)}")
             
     except Exception as err:
         logger.error(f"[check_git_config] Exception occurred: {err}, Type: {type(err)}")
         git_config_valid = False
-    
-    logger.info(f"[check_git_config] Final result: {git_config_valid}")
+        
     return git_config_valid
 
 
