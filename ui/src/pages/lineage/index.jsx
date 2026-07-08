@@ -27,6 +27,8 @@ import ExecutionTree from "../../components/ExecutionTree";
 import ExecutionTangledDropdown from "../../components/ExecutionTangledDropdown";
 import ArtifactExecutionTangledTree from "../../components/ArtifactExecutionTangledTree";
 import Loader from "../../components/Loader";
+import Hierarchical_LineageFlow from "../../components/HeirarchicalLineageFlow/heirarchical_lineage";
+import { transformNestedStageData } from "../../components/HeirarchicalLineageFlow/trasformeddata";
 
 const client = new FastAPIClient(config);
 
@@ -37,6 +39,7 @@ const Lineage = () => {
     "Artifact_Tree",
     "Execution_Tree",
     "Artifact_Execution_Tree",
+    "Heirarchical_Lineage"
   ];
   const [selectedLineageType, setSelectedLineageType] = useState("Artifact_Tree");
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
@@ -47,6 +50,7 @@ const Lineage = () => {
   const [artitreeData, setArtiTreeData] = useState(null);
   const [artiexetreeData, setArtiExeTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hierarchicalDataImp, setHierarchicalDataImp] = useState(null);
 
   // fetching list of pipelines
   useEffect(() => {
@@ -90,6 +94,8 @@ const Lineage = () => {
         fetchExecutionTypes(pipeline, selectedLineageType);
       } else if (selectedLineageType === "Artifact_Execution_Tree") {
         fetchArtiExeTree(pipeline);
+      } else if (selectedLineageType === "Heirarchical_Lineage") {
+        fetchHierarchicalLineageImp(pipeline);
       } else {
         fetchArtifactTree(pipeline);
       }
@@ -112,6 +118,8 @@ const Lineage = () => {
         fetchExecutionTypes(selectedPipeline, lineageType);
       } else if (lineageType === "Artifact_Execution_Tree") {
         fetchArtiExeTree(selectedPipeline);
+      } else if (lineageType === "Heirarchical_Lineage") {
+        fetchHierarchicalLineageImp(selectedPipeline, "");
       } else {
         fetchArtifactTree(selectedPipeline);
       }
@@ -172,6 +180,25 @@ const Lineage = () => {
       }
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
+  };
+
+  const fetchHierarchicalLineageImp = (pipelineName) => {
+    setLoading(true);
+    client.getHierarchicalLineage(pipelineName).then((data) => {
+      if (data === null) {
+        setHierarchicalDataImp(null);
+        setLoading(false);
+        return;
+      }
+      const transformed = transformNestedStageData(data);
+      setHierarchicalDataImp(transformed);
+      setLoading(false);
+      
+    }).catch((err) => {
+      console.error("Failed to fetch hierarchical lineage:", err);
+      setHierarchicalDataImp(null);
+      setLoading(false);
+    });
   };
 
   // Extract uuid from execution_type_name "Prepare_3f45" ---> "3f45"
@@ -324,6 +351,10 @@ const Lineage = () => {
                   />
                 </div>
               )}
+              {!loading && selectedPipeline !== null &&
+              selectedLineageType === "Heirarchical_Lineage" &&
+              hierarchicalDataImp && (<Hierarchical_LineageFlow  key={lineageArtifactsKey} data={hierarchicalDataImp} />)
+            }
           </div>
         </div>
         <Footer />

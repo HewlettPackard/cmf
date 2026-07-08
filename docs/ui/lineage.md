@@ -69,6 +69,25 @@ The Lineage page offers three different visualization modes:
 
 ![Artifact Execution Tree Lineage](../assets/artifact_exec_tree_lineage.png)
 
+### 4. Heirarchical Lineage
+
+**Purpose**: High-level, multi-column tree abstraction tracking task orchestration flows branching from root configurations down through execution chains.
+
+**Use Cases**:
+
+- Tracking simultaneous execution tracks branching from a single environment or pipeline root.
+- Tracing linear execution histories sequentially across multiple stages like preparation, features, training, and evaluation.
+- Auditing full procedural histories by analyzing vertically ordered step progressions.
+
+**Features**:
+
+- Environment-centric root anchoring branching into independent functional swimlanes.
+- Color-coded stage markers distinguishing entry hooks from down-stream operational tasks.
+- Distinct step blocks capturing individual execution hashes sequentially.
+- Vertical progression layouts tracing step dependencies from top to bottom.
+
+![Heirarchical Lineage](../assets/Hierarchical_lineage.png)
+
 
 ## Using the Lineage Page
 

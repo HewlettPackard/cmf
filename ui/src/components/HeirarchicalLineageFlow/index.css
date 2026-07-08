@@ -1,0 +1,74 @@
+.lineage-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.lineage-subtitle {
+  font-size: 11px;
+  color: #666;
+}
+
+.lineage-badge {
+  color: white;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.lineage-card {
+  padding: 10px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  width: 200px;   /* MATCHES nodeWidth */
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  box-sizing: border-box; 
+  position: relative;
+}
+
+/* Ensure the react-flow minimap sub-canvas container doesn't overlap completely */
+.react-flow__minimap {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Styling for individual nodes inside the MiniMap element container */
+.react-flow__minimap-node {
+  rx: 4px !important; /* Rounded corners */
+  ry: 4px !important;
+  stroke: #ffffff !important;
+  stroke-width: 2px !important;
+}
+
+/* Color matching rules mapping exactly to your main lineage diagram */
+.minimap-node-Dataset {
+  fill: #10b981 !important; /* Emerald Green */
+}
+
+.minimap-node-Model {
+  fill: #f59e0b !important; /* Warm Amber */
+}
+
+.minimap-node-Metrics {
+  fill: #ef4444 !important; /* Rose Red */
+}
+
+.minimap-node-Execution, .minimap-node-default {
+  fill: #3b82f6 !important; /* Blue Accent */
+}
+
+/* Enhances the viewport bounding box look */
+.react-flow__minimap-mask {
+  stroke: #cbd5e1 !important;
+  stroke-width: 1px !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}

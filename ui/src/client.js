@@ -125,6 +125,13 @@ class FastAPIClient {
       });
   }
 
+  async getHierarchicalLineage(pipeline) {
+    return this.apiClient
+      .get(`/hierarchical-lineage/tangled-tree/${pipeline}`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
   // Deprecated legacy method (unused by current stage-based grid pages).
   // Replaced by: getExecutionsByStage
   // async getExecutions(pipeline_name, active_page, filter_value, sort_order) {

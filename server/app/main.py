@@ -13,7 +13,7 @@ from cmflib.cmfquery import CmfQuery
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from collections import defaultdict
-from server.app.utils import extract_hostname, get_fqdn
+from server.app.utils import extract_hostname, get_fqdn, convert_to_stage_json
 from server.app.get_data import (
     get_mlmd_from_server,
     get_artifact_types,
@@ -609,6 +609,30 @@ async def artifact_execution_lineage(request: Request, pipeline_name: str):
     await check_pipeline_exists(pipeline_name)
     response = await async_api(query_visualization_artifact_execution, query, pipeline_name, dict_of_art_ids, dict_of_exe_ids)
     return response
+
+
+@app.get("/hierarchical-lineage/tangled-tree/{pipeline_name}")
+async def hierarchical_lineage(request: Request, pipeline_name: str):
+    """
+    Return MLMD data for the given pipeline converted into the UI `stage.json` schema.
+    """
+    # checks if mlmd file exists on server
+    await check_mlmd_file_exists()
+    # checks if pipeline exists
+    await check_pipeline_exists(pipeline_name)
+
+    # Pull MLMD JSON for the pipeline
+    json_payload = await async_api(get_mlmd_from_server, query, pipeline_name, None, None, dict_of_exe_ids)
+
+    if json_payload is None:
+        raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found or has no MLMD data.")
+
+    try:
+        converted = convert_to_stage_json(json_payload)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to convert MLMD to stage JSON: {e}")
+
+    return converted
 
 
 @app.get("/list-of-executions/{pipeline_name}")
