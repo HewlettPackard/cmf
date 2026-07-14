@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import ReactFlow, { Controls, Background, MiniMap, MarkerType, useNodes } from "reactflow";
 import dagre from "dagre";
 import "reactflow/dist/style.css";
@@ -189,10 +189,9 @@ const getLayoutedElements = (nodes = [], edges = []) => {
         const siblingIndex = siblings.indexOf(node.id);
 
         node.position = {
-          // Centered directly with the parent stage block axis
           x: parentPos.x - nodeWidth / 2,
-          // Stacking cleanly downwards with 20px padding intervals
-          y: (parentPos.y + nodeHeight / 2) + 50 + (siblingIndex * (nodeHeight + 20)),
+          // Increased gap: was +20, now +40 for clearer separation between stacked nodes
+          y: (parentPos.y + nodeHeight / 2) + 60 + (siblingIndex * (nodeHeight + 40)),
         };
       }
     }
@@ -215,7 +214,6 @@ const Hierarchical_LineageFlow = ({ data }) => {
       position: { x: 0, y: 0 },
       data: { 
         ...node,
-        backgroundColor: getNodeThemeColor(node.type) // Injects colors directly to the node payload
       }, 
     }));
 

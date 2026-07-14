@@ -5,8 +5,10 @@
 }
 
 .lineage-subtitle {
-  font-size: 11px;
+  font-size: 14px;
   color: #666;
+  font-weight: 600;
+  margin-top: 2px;
 }
 
 .lineage-badge {
@@ -22,7 +24,7 @@
   border-radius: 6px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  width: 200px;   /* MATCHES nodeWidth */
+  width: 200px;
   word-break: break-word;
   overflow-wrap: break-word;
   white-space: normal;
@@ -71,4 +73,32 @@
 
 .react-flow__attribution {
   display: none !important;
+}
+
+.lineage-tooltip {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 12px;
+  z-index: 9999;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  min-width: 260px;
+  max-width: 360px;
+  pointer-events: none;
+}
+
+/* Raise the whole node above its siblings while hovered, so the tooltip escapes cleanly */
+.react-flow__node {
+  transition: z-index 0s;
+}
+
+.react-flow__node:hover {
+  z-index: 9999 !important;
 }

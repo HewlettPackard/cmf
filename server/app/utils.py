@@ -102,7 +102,7 @@ def get_fqdn(name: str) -> str:
 
 import json
 
-def convert_to_stage_json(input_json: dict) -> dict:
+def convert_to_stage_json(input_json: dict, pipeline_name: str) -> dict:
     """
     Converts MLMD JSON for a clean hierarchy map.
     - Removes trailing child nodes underneath executions.
@@ -150,7 +150,7 @@ def convert_to_stage_json(input_json: dict) -> dict:
         stages_candidate = []
 
     out = {
-        "environment": "test-env",
+        "environment": pipeline_name,
         "metadata": { "version": "4.0.0", "description": "Executions Lineage Map" },
         "stages": []
     }
@@ -199,9 +199,10 @@ def convert_to_stage_json(input_json: dict) -> dict:
             # 1. Fetch execution base name (e.g., "Prepare")
             exec_base_name = e.get("type") or "Execution"
             
-            # 2. Extract full UUID/Commit hash string
-            full_uuid = str(e_props.get("Git_End_Commit") or e_props.get("Git_Start_Commit") or e.get("id") or "")
-            truncated_uuid = full_uuid[:6] if full_uuid else f"ex_{exec_idx}"
+            # 2. Use Execution_uuid first — same field the tangled-tree lineage keys off of,
+            #    so the same execution shows the same short UUID in both views.
+            full_uuid = str(e_props.get("Execution_uuid") or e_props.get("Git_End_Commit") or e_props.get("Git_Start_Commit") or e.get("id") or "")
+            truncated_uuid = full_uuid[:4] if full_uuid else f"ex_{exec_idx}"
 
             # 3. Create the multi-line UI text block
             # Note: '\n' handles line breaks in graph frameworks configured with CSS white-space: pre-wrap

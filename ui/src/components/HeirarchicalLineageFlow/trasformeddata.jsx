@@ -6,7 +6,7 @@ export const transformNestedStageData = (rawJson) => {
     return { nodes, links };
   }
 
-  const envId = `env-${rawJson.environment || "env"}`;
+  const envId = `${rawJson.environment || "env"}`;
 
   nodes.push({
     id: envId,
@@ -25,10 +25,7 @@ export const transformNestedStageData = (rawJson) => {
 
       nodes.push({
         id: childId,
-        name:
-          child.node_name ||
-          child.execution_type ||
-          "Node",
+        name: child.node_name || child.execution_type || "Node",
         type: "Node",
       });
 
@@ -37,7 +34,6 @@ export const transformNestedStageData = (rawJson) => {
         target: childId,
       });
 
-      // Recursive support
       if (Array.isArray(child.children)) {
         addExecutionChildren(child, childId);
       }
@@ -59,13 +55,17 @@ export const transformNestedStageData = (rawJson) => {
     });
 
     if (Array.isArray(stage.executions)) {
-      stage.executions.forEach((exec) => {
+      const orderedExecutions = [...stage.executions].reverse(); // fix reversed backend order
+      orderedExecutions.forEach((exec) => {
         const execId = `exec-${exec.execution_id}`;
+        const [execName, execUuidLine] = (exec.execution_type || "Execution").split("\n");
 
         nodes.push({
           id: execId,
-          name: exec.execution_type,
+          name: execName || "Execution",
           type: "Execution",
+          uuid: execUuidLine || (exec.full_uuid ? exec.full_uuid.substring(0, 4) : ""),
+          fullUuid: exec.full_uuid || execUuidLine || "",
         });
 
         links.push({
