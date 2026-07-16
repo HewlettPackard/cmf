@@ -14,25 +14,22 @@
  * limitations under the License.
  ***/
 
-import runtimeEnv from "@mars/heroku-js-runtime-env";
+/**
+ * Runtime configuration for the application, we get the CMF Backend URL from environment variables.
+ */
 
-let url = "";
-let url_without_port = "";
-const env = runtimeEnv();
-if (
-  process.env.REACT_APP_MY_IP !== "127.0.0.1" &&
-  process.env.REACT_APP_MY_IP !== ""
-) {
-  url = "http://" + process.env.REACT_APP_MY_IP + ":8080";
-  url_without_port = "http://" + process.env.REACT_APP_MY_IP;
-} else {
-  url = " http://" + process.env.REACT_APP_MY_HOSTNAME + ":8080";
-  url_without_port = "http://" + process.env.REACT_APP_MY_HOSTNAME;
+const runtimeConfig = window.RUNTIME_CONFIG || {};
+
+let apiUrl = runtimeConfig.REACT_APP_CMF_API_URL || "http://localhost";
+// Only append /api if it's not already there
+if (apiUrl && !apiUrl.endsWith('/api')) {
+  apiUrl = `${apiUrl}/api`;
 }
+
 const config = {
-  apiBasePath: env.REACT_APP_API_BASE_PATH || url,
-  reactAppMode: process.env.REACT_APP_MODE || "dev",
-  apiBasePathWOPort: url_without_port,
+  apiBasePath: apiUrl,
+  reactAppMode: "production",
 };
+console.log("Config:", config);
 
 export default config;

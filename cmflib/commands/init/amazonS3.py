@@ -35,8 +35,9 @@ from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitCompl
 import sys
 
 class CmdInitAmazonS3(CmdBase):
-    def run(self):
-        # Reading CONFIG_FILE variable
+    def run(self, live):
+        # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
+        # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
 
         cmd_args = {
@@ -56,17 +57,12 @@ class CmdInitAmazonS3(CmdBase):
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
 
-        # checking if config file exists
-        if not os.path.exists(cmf_config):
-            # writing default value to config file
-            attr_dict = {}
-            attr_dict["server-url"] = "http://127.0.0.1:8080"
-            CmfConfig.write_config(cmf_config, "cmf", attr_dict)
-        # if user gave --cmf-server-url, override the config file
-        if self.args.cmf_server_url:  
-            attr_dict = {}
-            attr_dict["server-url"] = self.args.cmf_server_url
-            CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
+        attr_dict = {}
+        # cmf_server_url is default parameter for cmf init command 
+        # if user does not provide cmf-server-url, default value is http://127.0.0.1:80
+        attr_dict["server-url"] = self.args.cmf_server_url
+        CmfConfig.write_config(cmf_config, "cmf", attr_dict)
+
         # read --neo4j details and add to the exsting file
         if self.args.neo4j_user and self.args.neo4j_password and self.args.neo4j_uri:
             attr_dict = {}
@@ -75,6 +71,7 @@ class CmdInitAmazonS3(CmdBase):
             attr_dict["uri"] = self.args.neo4j_uri[0]
             CmfConfig.write_config(cmf_config, "neo4j", attr_dict, True)
         elif(
+            # this case is when none of the neo4j arguments are provided
             not self.args.neo4j_user
             and not self.args.neo4j_password
             and not self.args.neo4j_uri
@@ -150,12 +147,13 @@ def add_parser(subparsers, parent_parser):
         default=argparse.SUPPRESS,
     )
 
-    parser.add_argument(
+    required_arguments.add_argument(
         "--session-token",
         required=True,
         help="Specify Session Token.",
         metavar="<session_token>",
         action="append",
+        default=argparse.SUPPRESS,
     )
 
     required_arguments.add_argument(
@@ -171,8 +169,7 @@ def add_parser(subparsers, parent_parser):
         "--cmf-server-url",
         help="Specify cmf-server URL.",
         metavar="<cmf_server_url>",
-        action="append",
-        default=["http://127.0.0.1:8080"],
+        default="http://127.0.0.1:80", # Test this default value
     )
     parser.add_argument(
         "--neo4j-user",

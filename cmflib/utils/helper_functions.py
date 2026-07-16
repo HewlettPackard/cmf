@@ -16,8 +16,21 @@
 
 import os
 import json
+import readchar
 import requests
+import textwrap
 import subprocess
+import hashlib
+import sys
+import pandas as pd
+import logging
+
+from tabulate import tabulate
+from cmflib.cli.utils import find_root
+from cmflib.utils.dvc_config import DvcConfig
+from cmflib.cmf_exception_handling import CmfNotConfigured
+
+logger = logging.getLogger(__name__)
 
 def is_url(url)-> bool:
     from urllib.parse import urlparse
@@ -27,20 +40,22 @@ def is_url(url)-> bool:
     except ValueError:
         return False
 
+
 def is_git_repo():
     git_dir = os.path.join(os.getcwd(), '.git')
-    print("git_dir", git_dir)
+    logger.info("git dir: %s", git_dir)
     result = os.path.exists(git_dir) and os.path.isdir(git_dir)
     if result:
         return f"A Git repository already exists in {git_dir}."
     else:
         return
 
+
 def get_python_env(env_name='cmf'):
-    # what this is supposed to return 
+    # Determine the type of Python environment and return its details
     try:
-        # Check if the environment is conda
-        if is_conda_installed():  # If conda is installed and the command succeeds
+        # Check if the environment is a Conda environment
+        if os.getenv('CONDA_PREFIX') is not None:  # If Conda is activated
 
             # Step 1: Get the list of conda packages
             conda_packages = subprocess.check_output(['conda', 'list', '--export']).decode('utf-8').splitlines()
@@ -81,9 +96,10 @@ def get_python_env(env_name='cmf'):
             return pip_packages
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"[get_python_env] An error occurred: {e}")
 
     return
+
 
 def get_md5_hash(output):
     import hashlib
@@ -102,22 +118,12 @@ def get_md5_hash(output):
 
     return hash_for_op
         
+
 def change_dir(cmf_init_path):
     logging_dir = os.getcwd()
     if not logging_dir == cmf_init_path:
         os.chdir(cmf_init_path)
     return logging_dir
-
-
-def is_conda_installed() -> bool:
-    """Check if Conda is installed by running 'conda --version'."""
-    try:
-        # Run the 'conda --version' command and capture the output
-        subprocess.run(['conda', '--version'], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
-
 
 def list_conda_packages_json() -> list:
     """Return a list of installed Conda packages and their versions."""
@@ -141,7 +147,7 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
 
     #Read Private Key using load_pem_private_key() method 
     if not os.path.exists(key_path):
-        print(f"File {key_path} does not exist.")
+        logger.error(f"[generate_osdf_token] File {key_path} does not exist.")
         return dynamic_pass
 
     try:
@@ -157,7 +163,7 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
         if is_url(key_issuer):
             token = scitokens.SciToken(key=loaded_private_key, key_id=key_id) #Generate SciToken
             #token.update_claims({"iss": key_issuer, "scope": "write:/ read:/", "aud": "NRP", "sub": "NRP"})
-            token.update_claims({"scope": "write:/ read:/", "aud": "NRP", "sub": "NRP"}) #TODO: Figure out how to supply these as input params
+            token.update_claims({"scope": "storage.create:/ storage.modify:/ storage.read:/", "aud": "https://wlcg.cern.ch/jwt/v1/any", "sub": "anything",  "wlcg.ver": "1.0" }) #TODO: Consider supply these as input params
 
             # Serialize the token to a string
             token_ser = token.serialize(issuer=key_issuer) 
@@ -167,12 +173,107 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
             token_str=token_ser.decode()
             dynamic_pass="Bearer "+ token_str
         else:
-            print(f"{key_issuer} is not a valid URL.")
+            logger.error(f"[generate_osdf_token] {key_issuer} is not a valid URL.")
 
     except Exception as err:
-        print(f"Unexpected {err}, {type(err)}")
+        logger.error(f"[generate_osdf_token] Unexpected {err}, {type(err)}")
 
     return dynamic_pass
+
+
+def validate_and_examine_osdf_token(token_str: str, token_source: str = None) -> bool:
+    """
+    Validate and examine an OSDF token (SciToken/JWT).
+    
+    Decodes the token, prints its status (issuer, subject, expiry, etc.),
+    and checks if it has expired.
+    
+    Args:
+        token_str: The token string (with or without 'Bearer ' prefix)
+        token_source: Optional description of where the token came from (file path, "generated", etc.)
+    
+    Returns:
+        bool: True if token is valid and not expired, False otherwise
+    """
+    import jwt
+    from datetime import datetime, timezone
+    
+    # Remove 'Bearer ' prefix if present
+    if token_str.startswith("Bearer "):
+        token_str = token_str[7:]
+    
+    try:
+        # Decode without verification to examine the token
+        # (We're just checking claims, not cryptographic validity)
+        decoded = jwt.decode(token_str, options={"verify_signature": False})
+        
+        logger.info("\n" + "="*60)
+        logger.info("OSDF Token Status")
+        logger.info("="*60)
+        
+        # Print token source if provided
+        if token_source:
+            logger.info(f"Source:    {token_source}")
+        
+        # Extract common claims
+        issuer = decoded.get("iss", "N/A")
+        subject = decoded.get("sub", "N/A")
+        audience = decoded.get("aud", "N/A")
+        issued_at = decoded.get("iat", None)
+        expires_at = decoded.get("exp", None)
+        scope = decoded.get("scope", "N/A")
+        
+        logger.info(f"Issuer:    {issuer}")
+        logger.info(f"Subject:   {subject}")
+        logger.info(f"Audience:  {audience}")
+        logger.info(f"Scope:     {scope}")
+        
+        # Format timestamps
+        if issued_at:
+            issued_dt = datetime.fromtimestamp(issued_at, tz=timezone.utc)
+            logger.info(f"Issued At: {issued_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+        else:
+            logger.info("Issued At: N/A")
+        
+        if expires_at:
+            expiry_dt = datetime.fromtimestamp(expires_at, tz=timezone.utc)
+            logger.info(f"Expires:   {expiry_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
+            
+            # Check if expired
+            current_time = datetime.now(timezone.utc)
+            time_until_expiry = expiry_dt - current_time
+            
+            if current_time >= expiry_dt:
+                logger.warning("\n[!] STATUS: TOKEN HAS EXPIRED")
+                logger.warning("="*60 + "\n")
+                return False
+            else:
+                # Show time remaining
+                hours, remainder = divmod(int(time_until_expiry.total_seconds()), 3600)
+                minutes, seconds = divmod(remainder, 60)
+                logger.info(f"\nTime Remaining: {hours}h {minutes}m {seconds}s")
+                logger.info("[OK] STATUS: TOKEN IS VALID")
+                logger.info("="*60 + "\n")
+                return True
+        else:
+            logger.info("Expires:   N/A (No expiration claim found)")
+            logger.warning("\n[!] STATUS: CANNOT VERIFY EXPIRY")
+            logger.warning("="*60 + "\n")
+            return True  # Assume valid if no expiry claim
+            
+    except jwt.DecodeError as e:
+        logger.error("\n" + "="*60)
+        logger.error("[ERROR] Failed to decode token")
+        logger.error(f"Details: {e}")
+        logger.error("="*60 + "\n")
+        return False
+    except Exception as e:
+        logger.error("\n" + "="*60)
+        logger.error("[ERROR] Unexpected error examining token")
+        logger.error(f"Details: {e}")
+        logger.error("="*60 + "\n")
+        return False
+
 
 def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
     """
@@ -193,6 +294,84 @@ def branch_exists(repo_owner: str, repo_name: str, branch_name: str) -> bool:
         return True
     return False
 
+
+def display_table(df: pd.DataFrame, columns: list) -> None:
+    """
+    Display the DataFrame in a paginated table format with text wrapping for better readability.
+    Parameters:
+    - df: The DataFrame to display.
+    - columns: The columns to display in the table.
+    """
+    # Rearranging columns
+    df = df[columns]
+    df = df.copy()
+    
+    # Wrap text in object-type columns to a width of 14 characters.
+    # This ensures that long strings are displayed neatly within the table.
+    for col in df.select_dtypes(include=["object"]).columns:
+        df[col] = df[col].apply(lambda x: textwrap.fill(x, width=14) if isinstance(x, str) else x)
+
+    total_records = len(df)
+    start_index = 0  
+
+    # Display up to 20 records per page for better readability. 
+    # This avoids overwhelming the user with too much data at once, especially for larger mlmd files.
+    while True:
+        end_index = start_index + 20
+        records_per_page = df.iloc[start_index:end_index]
+        
+        # Display the table.
+        # Fix mypy warning by converting DataFrame to list of lists and columns to list of strings.
+        table = tabulate(
+            records_per_page.values.tolist(),  # Convert DataFrame to list of lists for tabulate
+            headers=[str(col) for col in df.columns],  # Ensure headers are list of strings
+            tablefmt="grid",
+            showindex=False,
+        )
+        logger.info(table)
+
+        # Check if we've reached the end of the records.
+        if end_index >= total_records:
+            logger.info("\nEnd of records.")
+            break
+
+        # Ask the user for input to navigate pages.
+        logger.info("Press any key to see more or 'q' to quit: ")
+        user_input = readchar.readchar()
+        if user_input.lower() == 'q':
+            break
+        
+        # Update start index for the next page.
+        start_index = end_index 
+
+
+def fetch_cmf_config_path() -> tuple[dict, str]: 
+    """ Fetches the CMF configuration and its file path.
+    Returns: 
+        tuple[dict, str]: A tuple containing the DVC configuration (dict) and the CMF config file path (str).
+    Raises: 
+        CmfNotConfigured: If the CMF configuration is missing or not properly set up.
+    """
+    # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
+    # If CONFIG_FILE is not provided, default file name is .cmfconfig
+    cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig") 
+    error_message = "'cmf' is not configured.\nExecute 'cmf init' command."
+    
+    # Fetch DVC configuration 
+    dvc_output = DvcConfig.get_dvc_config() 
+    if not isinstance(dvc_output, dict): 
+        raise CmfNotConfigured(error_message)
+    
+    # Find the root directory containing the CMF config file 
+    cmf_config_root = find_root(cmf_config) 
+    if "'cmf' is not configured" in cmf_config_root: 
+        raise CmfNotConfigured(error_message)
+    
+    # Construct the full path to the configuration file 
+    config_file_path = os.path.join(cmf_config_root, cmf_config)
+    return dvc_output, config_file_path
+
+
 def get_postgres_config() -> dict:
     """
     Get PostgreSQL configuration from environment variables.
@@ -200,16 +379,39 @@ def get_postgres_config() -> dict:
     Returns:
         dict: A dictionary containing PostgreSQL configuration.
     """
-    IP = os.getenv('MYIP')
-    HOSTNAME = os.getenv('HOSTNAME')
-    HOST = ""
-    if(HOSTNAME!="localhost"):
-        HOST = HOSTNAME if HOSTNAME else ""
-    else:
-        HOST = IP if IP else ""
+    POSTGRES_HOST = os.getenv('POSTGRES_HOST')
     POSTGRES_DB = os.getenv('POSTGRES_DB')
     POSTGRES_USER = os.getenv('POSTGRES_USER')
     POSTGRES_PASSWORD = os.getenv('POSTGRES_PASSWORD')
-    config_dict = {"host":HOST, "port":"5432", "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
-    #print("config_dict = ", config_dict)
+    POSTGRES_PORT = os.getenv('POSTGRES_PORT')
+    config_dict = {"host":POSTGRES_HOST, "port": POSTGRES_PORT, "user": POSTGRES_USER, "password": POSTGRES_PASSWORD, "dbname": POSTGRES_DB}
+    # print("config_dict = ", config_dict)
     return config_dict
+
+
+def calculate_md5(file_path):
+    """
+    Calculate MD5 hash for a file
+    
+    Args:
+        file_path (str): Path to the file
+        
+    Returns:
+        str: MD5 hash of the file
+    """
+    # Check if file exists
+    if not os.path.isfile(file_path):
+        logger.error(f"Error: File '{file_path}' not found.")
+        sys.exit(1)
+        
+    # Calculate MD5 hash
+    md5_hash = hashlib.md5()
+    
+    # Read file in chunks to handle large files efficiently
+    with open(file_path, 'rb') as file:
+        # Read in 4MB chunks
+        for chunk in iter(lambda: file.read(4096 * 1024), b''):
+            md5_hash.update(chunk)
+            
+    # Return the hexadecimal digest
+    return md5_hash.hexdigest()

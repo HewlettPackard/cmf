@@ -15,7 +15,6 @@
 ###
 
 import configparser
-import os
 import base64
 
 class CmfConfig:

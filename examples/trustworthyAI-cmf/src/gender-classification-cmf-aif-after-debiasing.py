@@ -55,9 +55,9 @@ import torch.backends.cudnn as cudnn
 import time
 import copy
 # importing cmf for pipeline logging 
-from cmflib import cmf
+from cmflib.cmf import Cmf
 import collections
-from cmflib import cmfquery
+from cmflib.cmfquery import CmfQuery
 
 import tensorflow as tf
 tf.compat.v1.disable_eager_execution()
@@ -74,7 +74,7 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 display(Markdown("#### cmf: creating metawriter_tf"))
 graph = True 
 pipeline_name="aifcmf-env"
-metawriter_tf = cmf.Cmf(filename="mlmd", pipeline_name, graph=graph)
+metawriter_tf = Cmf(filename="mlmd", pipeline_name, graph=graph)
 
 
 # # Step 1: Load and Process Images
@@ -424,7 +424,7 @@ _ = metawriter_tf.log_dataset('original_test_dataset.pt', "input")
 ## cmf querry to get metrics logged before debiasing transform 
 ## cmf querry for geting artifact and metrics
 
-query = cmfquery.CmfQuery("./mlmd")
+query = CmfQuery("./mlmd")
 pipelines = query.get_pipeline_names()
 stages = query.get_pipeline_stages(pipelines[0])
 executions = query.get_all_executions_in_stage('Fairness')

@@ -1,9 +1,9 @@
-from cmflib import cmf
-from cmflib import cmfquery
+from cmflib.cmf import Cmf
+from cmflib.cmfquery import CmfQuery
 
 
-metawriter = cmf.Cmf("mlmd", "test-execution-update")
-query = cmfquery.CmfQuery("mlmd")
+metawriter = Cmf("mlmd", "test-execution-update")
+query = CmfQuery("mlmd")
 ctx = metawriter.child_context = metawriter.create_context("Train")
 exes = query.get_all_exe_in_stage(ctx.name)
 if len(exes) == 0:

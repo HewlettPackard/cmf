@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tensorboard-deployment
+  labels:
+    app: tensorboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tensorboard
+  template:
+    metadata:
+      labels:
+        app: tensorboard
+    spec:
+      containers:
+      - name: tensorboard
+        image: tensorflow/tensorflow:latest
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        args:
+          - tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
+        ports:
+        - containerPort: 6006
+        volumeMounts:
+        - name: tensorboard-logs
+          mountPath: /logs
+        readinessProbe:
+          httpGet:
+            path: /tensorboard
+            port: 6006
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /tensorboard
+            port: 6006
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+      volumes:
+      - name: tensorboard-logs
+        persistentVolumeClaim:
+          claimName: pvc-tensorboard-logs
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tensorboard
+  labels:
+    app: tensorboard
+spec:
+  type: ClusterIP
+  selector:
+    app: tensorboard
+  ports:
+  - name: http
+    port: 6006
+    targetPort: 6006

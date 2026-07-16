@@ -15,8 +15,11 @@
 ###
 
 import os
+import logging
 # Error: Skipping analyzing "dvc.api": module is installed, but missing library stubs or py.typed marker
-from dvc.api import DVCFileSystem # type: ignore
+from dvc.api import DVCFileSystem    # type: ignore
+
+logger = logging.getLogger(__name__)
 
 class LocalArtifacts():
     """
@@ -40,11 +43,10 @@ class LocalArtifacts():
         download_loc: str,
     ):
         """
-        Download a single file from an S3 bucket.
+        Download a single file from an local repository.
 
         Args:
             current_directory (str): The current working directory.
-            bucket_name (str): Name of the local bucket.
             object_name (str): Key (path) of the file in the local repo.
             download_loc (str): Local path where the file should be downloaded.
 
@@ -57,6 +59,7 @@ class LocalArtifacts():
         # Create necessary directories for the download location.
         dir_path = ""
         if "/" in download_loc:
+            # extracts the directory path from download_loc
             dir_path, _ = download_loc.rsplit("/", 1)
         if dir_path != "":
             os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
@@ -68,8 +71,7 @@ class LocalArtifacts():
             # Check if the response indicates success.
             if response == None:  
                 return object_name, download_loc, True
-            else:
-                return  object_name, download_loc, False
+            return  object_name, download_loc, False
         except Exception as e:
             return  object_name, download_loc, False
 
@@ -85,8 +87,7 @@ class LocalArtifacts():
 
         Args:
             current_directory (str): The current working directory .
-            bucket_name (str): Name of the local bucket.
-            object_name (str): Key (path) of the .dir object in the local bucket.
+            object_name (str): Key (path) of the .dir object in the local repository.
             download_loc (str): Local directory path where the directory should be downloaded.
 
         Returns:
@@ -97,6 +98,7 @@ class LocalArtifacts():
         # download_loc = contains absolute path of the file with file name and extension
         dir_path = ""
         if "/" in download_loc:
+            # extracts the directory path from download_loc
             dir_path, _ = download_loc.rsplit("/", 1)
         if dir_path != "":
             os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
@@ -146,21 +148,20 @@ class LocalArtifacts():
                     obj = self.fs.get_file(temp_object_name, temp_download_loc)
                     if obj == None: 
                         files_downloaded += 1
-                        print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                        logger.info(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                     else:
-                        print(f"object {temp_object_name} is not downloaded.")
+                        logger.error(f"[download_directory] object {temp_object_name} is not downloaded.")
                 # this exception is for get_file() function for temp_object_name
                 except Exception as e:
-                    print(f"object {temp_object_name} is not downloaded.")
+                    logger.error(f"object {temp_object_name} is not downloaded.")
 
             # total_files - files_downloaded gives us the number of files which are failed to download
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False  
+            return total_files_in_directory, files_downloaded, False  
         # this exception is for get_file() function for object_name
         except Exception as e:
-            print(f"object {object_name} is not downloaded.")
+            logger.error(f"object {object_name} is not downloaded.")
             # We usually don't count .dir as a file while counting total_files_in_directory.
             # However, here we failed to download the .dir folder itself. 
             # So we need to make, total_files_in_directory = 1

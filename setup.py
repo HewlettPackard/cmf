@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.92'
+VERSION = '0.1.0'
 DESCRIPTION = 'Metadata Python Package'
 LONG_DESCRIPTION = 'Metadata framework storing AI metadata into MLMD'
 
@@ -15,8 +15,8 @@ setup(
         packages=find_packages(),
         install_requires=["ml-metadata==1.15.0",
                           "dvc[ssh,s3]==3.51.1", "pandas", "retrying", "pyarrow", "neo4j==5.26", \
-                            "tabulate", "click", "minio", "paramiko", "scikit_learn", "boto3", "scitokens", "cryptography", \
-                              "ray==2.34.0"],  # add any additional packages that
+                            "tabulate", "click", "minio", "paramiko==3.4.1", "scikit_learn", "scitokens", "cryptography", \
+                            "ray==2.34.0","readchar", "protobuf>=4.25,<5", "boto3==1.41.0" ],  # add any additional packages that
         # needs to be installed along with your package. Eg: 'caer'
 
         keywords=['python', 'first package'],

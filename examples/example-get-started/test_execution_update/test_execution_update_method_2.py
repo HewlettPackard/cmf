@@ -1,14 +1,14 @@
-from cmflib import cmf
-from cmflib import cmfquery
+from cmflib.cmf import Cmf
+from cmflib.cmfquery import CmfQuery
 
-query = cmfquery.CmfQuery("mlmd")
+query = CmfQuery("mlmd")
 if len(query.get_pipeline_names()) == 0:
     print("This script needs to be run after test_execution_update.py")
     exit()
 pipeline_name = query.get_pipeline_names()[0]
 print(pipeline_name)
 
-metawriter = cmf.Cmf("mlmd", "test-execution-update")
+metawriter = Cmf("mlmd", "test-execution-update")
 _ = metawriter.create_context("Train")
 _ = metawriter.create_execution("Train-execution",{"name":"test-1"}, create_new_execution=False)
 

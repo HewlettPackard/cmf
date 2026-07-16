@@ -17,7 +17,6 @@
 #!/usr/bin/env python3
 from typing import Optional, List
 
-
 class CmfResponse(Exception):
     """
     Response and Exceptions raised by the CMF.
@@ -33,6 +32,7 @@ class CmfResponse(Exception):
         self.return_code = return_code
         self.status = status
         super().__init__(*args)
+
 
 class CmfFailure(CmfResponse):
     def __init__(self, return_code=None, *args):
@@ -115,13 +115,12 @@ class CmfInitComplete(CmfSuccess):
 
 
 class CmfInitShow(CmfSuccess):
-    def __init__(self, result, attr_str, return_code=208):
-        self.result = result
+    def __init__(self, attr_str, return_code=208):
         self.attr_str = attr_str
         super().__init__(return_code)
 
     def handle(self):
-        return f"{self.result}\n{self.attr_str}"
+        return f"{self.attr_str}"
 
 
 class ArtifactPushSuccess(CmfSuccess):
@@ -289,10 +288,13 @@ class Neo4jArgumentNotProvided(CmfFailure):
 
 
 class CmfInitFailed(CmfFailure):
-    def __init__(self, return_code=115):
+    def __init__(self, msg_str: Optional[str] = None, return_code=115):
+        self.msg_str = msg_str
         super().__init__(return_code)
 
     def handle(self):
+        if self.msg_str:
+            return self.msg_str
         return "ERROR: cmf init failed."
 
 

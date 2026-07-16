@@ -1,6 +1,6 @@
 from ray import tune
 from ray.tune import Callback
-from cmflib import cmf
+from cmflib.cmf import Cmf
 import heapq
 
 class CmfRayLogger(Callback):
@@ -39,7 +39,7 @@ class CmfRayLogger(Callback):
         trial_id = trial.trial_id
         trial_config = trial.config
         print(f"CMF Logging Started for Trial {trial_id}")
-        self.cmf_obj[trial_id] = cmf.Cmf(filepath = self.file_path, pipeline_name = self.pipeline_name)
+        self.cmf_obj[trial_id] = Cmf(filepath = self.file_path, pipeline_name = self.pipeline_name)
         _ = self.cmf_obj[trial_id].create_context(pipeline_stage = self.pipeline_stage)
         execution_id = self.cmf_obj[trial_id].create_execution(execution_type=f"Trial_{trial_id}",
                                             create_new_execution = False,

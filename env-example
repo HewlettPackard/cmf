@@ -1,14 +1,81 @@
-USER=frist
-UID=123456789
-GROUP=users
-GID=100
-DVC_REMOTE_URL=/home/jovyan/dvc_remote
-GIT_USER_NAME=first.second
-GIT_USER_EMAIL=first.second@hpe.com
-GIT_REMOTE_URL=git@github.hpe.com:first-second/cmf-demo.git
-GIT_BRANCH=first_checkout
-NEO4J_USER_NAME=USER
-NEO4J=TRUE
-NEO4J_PASSWD=XXXXX
-HTTP_PROXY=http://proxy.houston.hpecorp.net:8080
-HTTPS_PROXY=http://proxy.houston.hpecorp.net:8080
+#nginx ports
+NGINX_HTTP_PORT=80
+NGINX_HTTPS_PORT=443
+
+# React App Configuration
+# REACT_APP_CMF_API_URL=URL:NGINX_PORT
+# If you change the NGINX port, make sure to update the same port number in the env variable REACT_APP_CMF_API_URL.
+# This ensures that the frontend correctly communicates with the backend through the updated NGINX port.
+REACT_APP_CMF_API_URL=http://localhost:80
+
+# POSTGRES Configuration only for external postgress
+POSTGRES_HOST=postgres
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=mypassword
+POSTGRES_PORT=5432
+POSTGRES_DB=mlmd
+
+# Directory for persistent data storage
+CMF_DATA_DIR=~/cmf_data
+
+# MCP Server Configuration
+# =========================================================================
+# Primary CMF Server URL (required for MCP service)
+CMF_BASE_URL=http://server:8080
+
+# Additional CMF Server URLs (optional - for connecting to multiple CMF servers)
+# CMF2_BASE_URL=http://cmf-server-2:8080
+# CMF3_BASE_URL=http://cmf-server-3:8080
+# CMF4_BASE_URL=http://cmf-server-4:8080
+
+# TLS/SSL Certificate Verification
+# =========================================================================
+# Controls TLS certificate verification for CMF API requests (HTTPS only).
+# Default is "false" since CMF server typically runs on HTTP.
+# Set to "true" when using HTTPS with valid certificates.
+#
+# CMF_TLS_VERIFY options:
+#   - "false" (default): Disable verification (for HTTP or self-signed HTTPS)
+#   - "true": Verify certificates using system CA bundle
+#   - "/path/to/ca-bundle.crt": Use custom CA bundle file
+#
+# CMF_TLS_VERIFY=false
+
+# MCP Transport Security Configuration
+# =========================================================================
+# Controls DNS rebinding protection for the MCP server.
+# 
+# MCP_TRANSPORT_SECURITY: "disabled" (default) or "enabled"
+#   - "disabled": Disable DNS rebinding protection (recommended for Docker/proxy setups)
+#   - "enabled": Enable DNS rebinding protection with allowed hosts/origins
+#
+# When enabled, configure allowed hosts and origins:
+#   MCP_ALLOWED_HOSTS - Comma-separated list of allowed hosts (supports wildcard ports)
+#                       Example: "localhost:*,127.0.0.1:*,myserver.com:8000"
+#   MCP_ALLOWED_ORIGINS - Comma-separated list of allowed origins
+#                         Example: "http://localhost:*,http://127.0.0.1:*"
+MCP_TRANSPORT_SECURITY=disabled
+# MCP_ALLOWED_HOSTS=localhost:*,127.0.0.1:*
+# MCP_ALLOWED_ORIGINS=http://localhost:*,http://127.0.0.1:*
+
+# MCP Host and Port Configuration
+# =========================================================================
+# Configure the network interface and port for the MCP server
+MCP_HOST=0.0.0.0
+MCP_PORT=8382
+
+# Environment variables for Jupyter container with CMF installed (Dockerfile)
+#USER=first
+#UID=123456789
+#GROUP=users
+#GID=100
+#DVC_REMOTE_URL=/home/jovyan/dvc_remote
+#GIT_USER_NAME=first.second
+#GIT_USER_EMAIL=first.second@hpe.com
+#GIT_REMOTE_URL=git@github.hpe.com:first-second/cmf-demo.git
+#GIT_BRANCH=first_checkout
+#NEO4J_USER_NAME=USER
+#NEO4J=TRUE
+#NEO4J_PASSWD=XXXXX
+#HTTP_PROXY=http://proxy.mycorp.net:8080
+#HTTPS_PROXY=http://proxy.mycorp.net:8080

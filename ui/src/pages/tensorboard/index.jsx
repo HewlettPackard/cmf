@@ -14,26 +14,23 @@
  * limitations under the License.
  ***/
 
-import React from "react";
-import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 
 const TensorBoard = () => {
-  const env = config.apiBasePathWOPort + ":6006";
+  const TB_PATH = "/tensor_board/"; // internal path proxied by NGINX to TensorBoard service
 
   return (
     <>
       <section
-        className="flex flex-col bg-white"
-        style={{ minHeight: "100vh" }}
+        className="flex flex-col bg-white min-h-screen"
       >
         <DashboardHeader />
         <div className="flex flex-row">
           <div className="container justify-center items-center mx-auto px-4">
             <iframe
-              title="tensorboard Iframe"
-              src={env}
+              title="Tensorboard"
+              src={TB_PATH}
               allowFullScreen
               width="100%"
               height="1200"

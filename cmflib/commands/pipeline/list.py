@@ -14,11 +14,11 @@
 # limitations under the License.
 ###
 
-import argparse
 import os
+import argparse
 
-from cmflib.cli.command import CmdBase
 from cmflib import cmfquery
+from cmflib.cli.command import CmdBase
 from cmflib.cmf_exception_handling import (
     FileNotFound, 
     DuplicateArgumentNotAllowed, 
@@ -27,7 +27,7 @@ from cmflib.cmf_exception_handling import (
 )
 
 class CmdPipelineList(CmdBase):
-    def run(self):
+    def run(self, live):        
         current_directory = os.getcwd()
         if not self.args.file_name:         # If self.args.file_name is None or an empty list ([]). 
             mlmd_file_name = "./mlmd"       # Default path for mlmd file name.
@@ -51,12 +51,12 @@ class CmdPipelineList(CmdBase):
 
 
 def add_parser(subparsers, parent_parser):
-    PIPELINE_LIST_HELP = "Display a list of pipeline name(s) from the available mlmd file."
+    PIPELINE_LIST_HELP = "Display a list of pipeline name(s) from the available input metadata file."
 
     parser = subparsers.add_parser(
         "list",
         parents=[parent_parser],
-        description="Display a list of pipeline name(s) from the available mlmd file.",
+        description="Display a list of pipeline name(s) from the available input metadata file.",
         help=PIPELINE_LIST_HELP,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -65,7 +65,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify the absolute or relative path for the input MLMD file.",
+        help="Specify input metadata file name.",
         metavar="<file_name>",
     )
 

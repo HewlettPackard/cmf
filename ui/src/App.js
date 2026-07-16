@@ -14,25 +14,25 @@
  * limitations under the License.
  ***/
 
-import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
-import Artifacts from "./pages/artifacts";
-import Executions from "./pages/executions";
 import Lineage from "./pages/lineage";
 import TensorBoard from "./pages/tensorboard";
-import "./App.css";
+import Metahub from "./pages/metahub";
+import ArtifactsPostgres from "./pages/artifacts_postgres_grid";
+import ExecutionsPostgres from "./pages/executions_postgres_grid";
 
 function App() {
   return (
-    <div className="App bg-white">
+    <div className="text-center bg-white">
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route exact path="/artifacts" element={<Artifacts />} />
-          <Route exact path="/executions" element={<Executions />} />
+          <Route exact path="/artifacts" element={<ArtifactsPostgres />} />
+          <Route exact path="/executions" element={<ExecutionsPostgres />} />
           <Route exact path="/display_lineage" element={<Lineage />} />
           <Route exact path="/tensorboard" element={<TensorBoard />} />
+          <Route exact path="/metahub" element={<Metahub />} />
         </Routes>
       </BrowserRouter>
     </div>

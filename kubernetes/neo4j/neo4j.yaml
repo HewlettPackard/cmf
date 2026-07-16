@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: neo4j
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: neo4j
+  template:
+    metadata:
+      labels:
+        app: neo4j
+    spec:
+      containers:
+      - name: neo4
+        image: neo4j:latest
+        ports:
+        - containerPort: 7474  
+        - containerPort: 7687  
+        volumeMounts:
+        - name: data-volume
+          mountPath: /data
+        - name: logs-volume
+          mountPath: /logs
+        - name: import-volume
+          mountPath: /var/lib/neo4j/import
+        - name: plugins-volume
+          mountPath: /plugins
+        env:
+        - name: NEO4J_AUTH
+          value: "neo4j/test1234"  
+        - name: NEO4J_dbms_connector_http_listen__address
+          value: "0.0.0.0:7474"  
+        - name: NEO4J_dbms_connector_bolt_listen__address
+          value: "0.0.0.0:7687" 
+        - name: NEO4J_server_config_strict__validation_enabled
+          value: "false"
+      volumes:
+      - name: data-volume
+        persistentVolumeClaim:
+          claimName: pvc-neo4j-data
+      - name: logs-volume
+        persistentVolumeClaim:
+          claimName: pvc-neo4j-logs
+      - name: import-volume
+        persistentVolumeClaim:
+          claimName: pvc-neo4j-import
+      - name: plugins-volume
+        persistentVolumeClaim:
+          claimName: pvc-neo4j-plugins
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: neo4j
+spec:
+  type: NodePort
+  ports:
+  - port: 7474    
+    targetPort: 7474
+    name: http
+  - port: 7687  
+    targetPort: 7687
+    name: bolt
+  selector:
+    app: neo4j
+

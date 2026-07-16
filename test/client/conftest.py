@@ -32,10 +32,10 @@ def start_server():
         # Load the JSON data from the file
          data = json.load(file)
 
-    url = data.get("cmf_server_url", "http://127.0.0.1:8080")
+    url = data.get("cmf_server_url", "http://127.0.0.1:80")
 
     # Ports to check
-    ports_to_check = [8080, 3000]
+    ports_to_check = [80, 3000]
 
     # Check if ports are in use
     for port in ports_to_check:
@@ -144,7 +144,7 @@ def start_minio_server():
         # Load the JSON data from the file
          data = json.load(file)
 
-    url = data.get("cmf_server_url", "http://127.0.0.1:8080")
+    url = data.get("cmf_server_url", "http://127.0.0.1")
 
     # Ports to check
     ports_to_check = [9000]

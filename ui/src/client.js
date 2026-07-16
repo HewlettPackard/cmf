@@ -35,39 +35,47 @@ class FastAPIClient {
       baseURL: `${config.apiBasePath}/`,
     };
     const client = axios.create(initialConfig);
-    /* client.interceptors.request.use(localStorageTokenInterceptor);*/
+
+    // Simple error interceptor
+    client.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        console.error('API Error:', error);
+        // Show simple error message to user
+        if (error.response?.status >= 500) {
+          alert('Server error. Please try again later.');
+        } else if (error.request && !error.response) {
+          alert('Server connection refused. The backend service may be down. Please restart your Docker container and try again.');
+        }
+        return Promise.reject(error);
+      }
+    );
+
     return client;
   }
 
-  async getArtifacts(
-    pipelineName,
-    type,
-    page,
-    sortField,
-    sortOrder,
-    filterBy,
-    filterValue,
-  ) {
-    return this.apiClient
-      .get(`/artifacts/${pipelineName}/${type}`, {
-        params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-          filter_by: filterBy,
-          filter_value: filterValue,
-        },
-      })
-      .then(({ data }) => {
-        return data;
-      });
-  }
+  // Deprecated legacy methods (unused by current stage-based grid pages).
+  // Replaced by: getArtifactsByStage / getArtifactTypesByStage
+  // async getArtifacts(pipeline_name, artifact_type, sort_order, active_page, filter_value, sort_field) {
+  //   return this.apiClient
+  //     .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
+  //       params: {
+  //         filter_value: filter_value,
+  //         sort_order: sort_order,
+  //         active_page: active_page,
+  //         sort_field: sort_field,
+  //       },
+  //     })
+  //     .then(({ data }) => {
+  //       return data;
+  //     });
+  // }
 
-  async getArtifactTypes() {
-    return this.apiClient.get(`/artifact_types`).then(({ data }) => {
-      return data;
-    });
-  }
+  // async getArtifactTypes() {
+  //   return this.apiClient.get(`/artifact_types`).then(({ data }) => {
+  //     return data;
+  //   });
+  // }
 
   async getArtifactLineage(pipeline) {
     return this.apiClient
@@ -110,34 +118,36 @@ class FastAPIClient {
   }
 
   async getArtiExeTreeLineage(pipeline) {
-    return this.apiClient.get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
-    .then(({ data }) => {
-      return data;
-    }); 
-  }
-
-  async getExecutions(pipelineName, page, sortField, sortOrder , filterBy, filterValue) {
     return this.apiClient
-      .get(`/executions/${pipelineName}`, {
-        params: {
-          page: page,
-          sort_field: sortField,
-          sort_order: sortOrder,
-          filter_by: filterBy,
-          filter_value: filterValue,
-        },
-      })
+      .get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
       .then(({ data }) => {
         return data;
       });
   }
+
+  // Deprecated legacy method (unused by current stage-based grid pages).
+  // Replaced by: getExecutionsByStage
+  // async getExecutions(pipeline_name, active_page, filter_value, sort_order) {
+  //   return this.apiClient
+  //     .get(`/executions/${pipeline_name}`, {
+  //       params: {
+  //         active_page: active_page,
+  //         filter_value: filter_value,
+  //         sort_order: sort_order,
+  //       },
+  //     }).
+  //     then(({ data }) => {
+  //       return data;
+  //     });
+  // }
 
   async getPipelines(value) {
     try {
       const { data } = await this.apiClient.get(`/pipelines`);
       return data;
     } catch (error) {
-      console.error(error);
+      // Error already handled by interceptor, just return empty array
+      return [];
     }
   }
 
@@ -161,8 +171,160 @@ class FastAPIClient {
         },
         responseType: "text", // Explicitly specify response type as text
       })
-      .then(( response ) => {
+      .then((response) => {
         return response.data;
+      });
+  }
+
+  async getLabelData(file_name) {
+    return this.apiClient
+      .get(`/label-data`, {
+        params: {
+          file_name: file_name
+        },
+        responseType: "text",
+      })
+      .then((response) => {
+        return response.data;
+      });
+  }
+
+  async getServerRegistration(server_name, server_url) {
+    return this.apiClient
+      .post(`/register-server`, {
+        server_name: server_name,
+        server_url: server_url,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getRegistredServerList() {
+    return this.apiClient
+      .get(`/server-list`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async sync(serverName, serverUrl) {
+    return this.apiClient
+      .post(`/sync`, {
+        server_name: serverName,
+        server_url: serverUrl,
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async scheduleSync(serverId, timezone, startTimeLocalIso, oneTime = false, recurrenceMode = 'interval', intervalUnit = 'hours', intervalValue = 6, dailyTime = null, weeklyDay = null, weeklyTime = null) {
+    const payload = {
+      server_id: serverId,
+      timezone: timezone,
+      start_time_local_iso: startTimeLocalIso,
+      one_time: oneTime,
+    };
+
+    // Only add recurrence mode for periodic syncs
+    if (!oneTime) {
+      payload.recurrence_mode = recurrenceMode;
+
+      // Add mode-specific fields
+      if (recurrenceMode === 'interval') {
+        payload.interval_unit = intervalUnit;
+        payload.interval_value = intervalValue;
+      } else if (recurrenceMode === 'daily') {
+        payload.daily_time = dailyTime;
+      } else if (recurrenceMode === 'weekly') {
+        payload.weekly_day = weeklyDay;
+        payload.weekly_time = weeklyTime;
+      }
+    }
+
+    return this.apiClient
+      .post(`/schedule-sync`, payload)
+      .then(({ data }) => data);
+  }
+
+  async getSchedules(serverId) {
+    return this.apiClient
+      .get(`/schedules`, {
+        params: { server_id: serverId },
+      })
+      .then(({ data }) => data);
+  }
+
+  async getScheduleLogs(scheduleId) {
+    return this.apiClient
+      .get(`/schedule-sync/logs/${scheduleId}`)
+      .then(({ data }) => data);
+  }
+
+  async getCompletedLogs(serverId) {
+    return this.apiClient
+      .get(`/server/${serverId}/completed-logs`)
+      .then(({ data }) => data);
+  }
+
+  async deleteSchedule(scheduleId) {
+    return this.apiClient
+      .delete(`/schedule-sync/${scheduleId}`)
+      .then(({ data }) => data);
+  }
+  
+  async getExecutionsByStage(pipelineName, stageName, activePage = 1, recordPerPage = 5, sortOrder = "desc", filterValue = "") {
+    return this.apiClient
+      .get(`/executions-by-stage/${pipelineName}`, {
+        params: {
+          stage_name: stageName,
+          active_page: activePage,
+          record_per_page: recordPerPage,
+          sort_order: sortOrder,
+          filter_value: filterValue,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getPipelineStages(pipelineName) {
+    return this.apiClient
+      .get(`/pipeline-stages/${pipelineName}`)
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactTypesByStage(pipelineName, stageName) {
+    return this.apiClient
+      .get(`/artifact-types-by-stage/${pipelineName}`, {
+        params: {
+          stage_name: stageName,
+        },
+      })
+      .then(({ data }) => {
+        return data;
+      });
+  }
+
+  async getArtifactsByStage(pipelineName, stageName, artifactType, sortOrder, activePage = 1, recordPerPage = 5, filter = "", sortField = "name") {
+    return this.apiClient
+      .get(`/artifacts-by-stage/${pipelineName}`, {
+        params: {
+          stage_name: stageName,
+          artifact_type: artifactType,
+          sort_order: sortOrder,
+          active_page: activePage,
+          record_per_page: recordPerPage,
+          filter_value: filter,
+          sort_field: sortField,
+        },
+      })
+      .then(({ data }) => {
+        return data;
       });
   }
 
@@ -171,3 +333,4 @@ class FastAPIClient {
 
 
 export default FastAPIClient;
+

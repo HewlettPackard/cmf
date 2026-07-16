@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from utils import get_dataset, get_net, get_strategy
 from pprint import pprint
-from cmflib import cmf
+from cmflib.cmf import Cmf
 from linear_regression import LinearPredictor
 import matplotlib.pyplot as plt
 import matplotlib

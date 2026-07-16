@@ -21,7 +21,7 @@ import pickle
 import click
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-from cmflib import cmf
+from cmflib.cmf import Cmf
 
 __all__ = ['train']
 
@@ -39,7 +39,7 @@ def train(input_dir: str, output_dir: str) -> None:
     params = yaml.safe_load(open("params.yaml"))["train"]
     graph_env = os.getenv("NEO4J", "False")
     graph = True if graph_env == "True" or graph_env == "TRUE" else False
-    metawriter = cmf.Cmf(filepath="mlmd", pipeline_name="Test-env", graph=graph)
+    metawriter = Cmf(filepath="mlmd", pipeline_name="Test-env", graph=graph)
     _ = metawriter.create_context(pipeline_stage="Train")
     _ = metawriter.create_execution(execution_type="Train-execution", custom_properties=params)
 

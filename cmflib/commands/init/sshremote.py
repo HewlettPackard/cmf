@@ -17,6 +17,7 @@
 
 #!/usr/bin/env python3
 import argparse
+import base64
 import os
 
 from cmflib.cli.command import CmdBase
@@ -34,8 +35,9 @@ from cmflib.utils.helper_functions import is_git_repo
 from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, DuplicateArgumentNotAllowed, MissingArgument
 
 class CmdInitSSHRemote(CmdBase):
-    def run(self):
-        # Reading CONFIG_FILE variable
+    def run(self, live):
+        # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
+        # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
         
         cmd_args = {
@@ -56,18 +58,11 @@ class CmdInitSSHRemote(CmdBase):
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("--"+arg_name))
         
-        # checking if config file exists
-        if not os.path.exists(cmf_config):
-            # writing default value to config file
-            attr_dict = {}
-            attr_dict["server-url"] = "http://127.0.0.1:8080"
-            CmfConfig.write_config(cmf_config, "cmf", attr_dict)
-
-        # if user gave --cmf-server-url, override the config file
-        if self.args.cmf_server_url:
-            attr_dict = {}
-            attr_dict["server-url"] = self.args.cmf_server_url
-            CmfConfig.write_config(cmf_config, "cmf", attr_dict, True)
+        attr_dict = {}
+        # cmf_server_url is default parameter for cmf init command 
+        # if user does not provide cmf-server-url, default value is http://127.0.0.1:80
+        attr_dict["server-url"] = self.args.cmf_server_url
+        CmfConfig.write_config(cmf_config, "cmf", attr_dict)
 
         # read --neo4j details and add to the exsting file
         if self.args.neo4j_user and self.args.neo4j_password and self.args.neo4j_uri:
@@ -102,7 +97,9 @@ class CmdInitSSHRemote(CmdBase):
             raise CmfInitFailed
         print(output)
         dvc_add_attribute(repo_type, "user", self.args.user[0])
-        dvc_add_attribute(repo_type, "password", self.args.password[0])
+        # Encode the password in base64 before storing so it is not saved as plaintext.
+        encrypted_password = base64.b64encode(self.args.password[0].encode("utf-8")).decode("utf-8")
+        dvc_add_attribute(repo_type, "password", encrypted_password)
         dvc_add_attribute(repo_type, "port", self.args.port[0])
         status = CmfInitComplete()
         return status
@@ -170,7 +167,7 @@ def add_parser(subparsers, parent_parser):
         "--cmf-server-url",
         help="Specify cmf-server URL.",
         metavar="<cmf_server_url>",
-        default="http://127.0.0.1:8080",
+        default="http://127.0.0.1:80",
     )
 
     parser.add_argument(

@@ -21,7 +21,7 @@ import re
 
 from cmflib import cmfquery
 from cmflib.cli.utils import check_minio_server, find_root
-from cmflib.utils.helper_functions import generate_osdf_token, branch_exists
+from cmflib.utils.helper_functions import generate_osdf_token, branch_exists, validate_and_examine_osdf_token
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
@@ -37,6 +37,7 @@ from cmflib.cmf_exception_handling import (
     CmfNotConfigured, 
     FileNotFound,
     ExecutionUUIDNotFound,
+    PipelineNotFound,
     MissingArgument,
     DuplicateArgumentNotAllowed,
 )
@@ -75,7 +76,7 @@ class CmdRepoPush(CmdBase):
         
         return MsgSuccess(msg_str="cmf repo push command executed successfully.")
     
-    def artifact_push(self):
+    def artifact_push(self, live):
         """
         Pushes artifacts to the remote storage.
 
@@ -94,9 +95,9 @@ class CmdRepoPush(CmdBase):
             "file_name": self.args.file_name,
             "pipeline_name": self.args.pipeline_name,
             "execution_uuid": self.args.execution_uuid,
-            "tensorboad": self.args.tensorboard
-        }  
-
+            "tensorboad": self.args.tensorboard_path,
+            "jobs": self.args.jobs
+        }
         # Validates the command arguments.
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
@@ -124,18 +125,48 @@ class CmdRepoPush(CmdBase):
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
         
+        # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
+        num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
+        
         # If the remote is OSDF, generate a dynamic password and update the DVC configuration.
         if dvc_config_op["core.remote"] == "osdf":
             config_file_path = os.path.join(output, cmf_config_file)
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)
-            #print("key_id="+cmf_config["osdf-key_id"])
-            dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+            
+            # Check if access_token is provided (either as a file path or "provided" marker)
+            access_token = cmf_config.get("osdf-access_token", "")
+            token_source_description = ""
+            
+            if access_token and access_token != "":
+                # Token-based authentication
+                if access_token == "provided":
+                    # Token was provided as raw text during init, but we can't retrieve it
+                    raise MsgFailure(msg_str="OSDF token was provided as raw text during init. Please re-run 'cmf init osdfremote' with --access-token pointing to a token file, or use --key-id, --key-path, --key-issuer for dynamic token generation.")
+                elif os.path.isfile(os.path.expanduser(access_token)):
+                    # Read token from file
+                    with open(os.path.expanduser(access_token), "r") as token_file:
+                        token_str = token_file.read().strip()
+                    dynamic_password = "Bearer " + token_str
+                    token_source_description = f"Token file: {access_token}"
+                else:
+                    # Assume it's a raw token string (though this shouldn't happen with new code)
+                    dynamic_password = "Bearer " + access_token
+                    token_source_description = "Provided token string"
+            else:
+                # Key-based authentication - generate token dynamically
+                dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+                token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
+            
+            # Validate and examine the token before proceeding
+            if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
+                raise MsgFailure(msg_str="OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
+            
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
-            result = dvc_push()
-            return result
+            result = dvc_push(num_jobs)
+            return ArtifactPushSuccess(result)
 
         # Determines the mlmd file name and checks its existence.
         current_directory = os.getcwd()
@@ -154,6 +185,10 @@ class CmdRepoPush(CmdBase):
         names = []
         isExecUuid = False
         df = query.get_all_executions_in_pipeline(self.args.pipeline_name[0])
+        
+        # check if the DataFrame is empty, indicating pipeline has no executions
+        if df is None or df.empty:
+            raise PipelineNotFound(self.args.pipeline_name[0])
 
         # checking if execution_uuid exists in the df
         for index, row in df.iterrows():
@@ -190,28 +225,34 @@ class CmdRepoPush(CmdBase):
             else:
                 # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
                 pass
-        result = dvc_push(list(final_list))
+        result = dvc_push(num_jobs, list(final_list))
         return ArtifactPushSuccess(result)
         
 
-    def run(self):
+    def run(self, live):
         print("Executing cmf artifact push command..")
         if(self.args.execution_uuid):
             # If an execution uuid exists, push the artifacts associated with that execution. 
-            artifact_push_result = self.artifact_push()
+            artifact_push_result = self.artifact_push(live)
         else:
             # Pushing all artifacts. 
             artifact_push_instance = CmdArtifactPush(self.args)
-            artifact_push_result = artifact_push_instance.run()
+            artifact_push_result = artifact_push_instance.run(live)
 
         if artifact_push_result.status == "success":
             print("Executing cmf metadata push command..")
             metadata_push_instance = CmdMetadataPush(self.args)
-            metadata_push_result = metadata_push_instance.run()
+            metadata_push_result = metadata_push_instance.run(live)
             if metadata_push_result.status == "success":
                 print(metadata_push_result.handle())  # Print the message returned by the handle() method of the metadata_push_result object.
                 print("Executing git push command..")
+                if live:
+                    live.stop()
                 return self.git_push()
+            else:
+                return metadata_push_result
+        else:
+            return artifact_push_result
     
 
 def add_parser(subparsers, parent_parser):
@@ -240,7 +281,7 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.", 
+        help="Specify input metadata file name.", 
         metavar="<file_name>"
     )
 
@@ -255,10 +296,18 @@ def add_parser(subparsers, parent_parser):
 
     parser.add_argument(
         "-t",
-        "--tensorboard",
+        "--tensorboard_path",
         action="append",
         help="Specify path to tensorboard logs for the pipeline.",
-        metavar="<tensorboard>"
+        metavar="<tensorboard_path>"
+    )
+
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        action="append",
+        help="Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count(). Increasing jobs may speed up uploads but will use more resources.",
+        metavar="<jobs>"
     )
 
     parser.set_defaults(func=CmdRepoPush)

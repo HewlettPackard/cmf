@@ -19,6 +19,9 @@ import time
 import uuid
 import re
 import typing as t
+import logging
+
+logger = logging.getLogger(__name__)
 
 # This import is needed for jupyterlab environment
 from ml_metadata.proto import metadata_store_pb2 as mlpb
@@ -133,9 +136,10 @@ def merge_created_execution(
     self.input_artifacts = []
     self.execution_label_props = {}
     custom_props = {} if custom_properties is None else custom_properties
-    # print(custom_props)
+    # logger.info(custom_props)
     git_repo = properties.get("Git_Repo", "")
     git_start_commit = properties.get("Git_Start_Commit", "")
+    git_end_commit = properties.get("Git_End_Commit", "")
     #name = properties.get("Name", "")
     create_new_execution = True
     execution_name = execution_type
@@ -156,6 +160,7 @@ def merge_created_execution(
         pipeline_type=self.parent_context.name,
         git_repo=git_repo,
         git_start_commit=git_start_commit,
+        git_end_commit=git_end_commit,
         custom_properties=custom_props,
         create_new_execution=create_new_execution
     )
@@ -172,6 +177,8 @@ def merge_created_execution(
         self.execution.properties["Execution_uuid"].string_value =\
             properties["Execution_uuid"]
 
+    # Keep end commit synchronized on server, especially for reused executions.
+    self.execution.properties["Git_End_Commit"].string_value = git_end_commit
     
     self.store.put_executions([self.execution])
     self.execution_name = str(self.execution.id) + "," + execution_type
@@ -216,6 +223,8 @@ def log_python_env_from_client(
 
         if existing_artifact and len(existing_artifact) != 0:
             existing_artifact = existing_artifact[0]
+            # update url for existing artifact
+            self.update_dataset_url(existing_artifact, props.get("url", ""))
             artifact = link_execution_to_artifact(
                 store=self.store,
                 execution_id=self.execution.id,
@@ -308,7 +317,6 @@ def log_dataset_with_version(
             Returns:
             Artifact object from the ML Protocol Buffers library associated with the new dataset artifact. 
     """
-
     props = {} if props is None else props
     custom_props = {} if custom_properties is None else custom_properties
     git_repo = props.get("git_repo", "")
@@ -331,9 +339,9 @@ def log_dataset_with_version(
         existing_artifact = existing_artifact[0]
 
         # Quick fix- Updating only the name
-        if custom_properties is not None:
+        if custom_props is not None:
             self.update_existing_artifact(
-                existing_artifact, custom_properties)
+                existing_artifact, custom_props)
         uri = c_hash
         # update url for existing artifact
         self.update_dataset_url(existing_artifact, props.get("url", ""))
@@ -414,6 +422,71 @@ def log_dataset_with_version(
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+    return artifact
+
+
+def log_label_with_version(self, url: str, version:str, props: t.Optional[t.Dict] = None, 
+                           custom_properties: t.Optional[t.Dict] = None
+) -> mlpb.Artifact: # type: ignore  # Artifact type not recognized by mypy, using ignore to bypass
+    """
+        needs to be added 
+    """
+    props = {} if props is None else props
+    custom_props = {} if custom_properties is None else custom_properties
+    git_repo = props.get("git_repo", "")
+    existing_artifact = []
+    c_hash = version
+
+    label_commit = version
+    url = url + ":" + c_hash
+    if c_hash and c_hash.strip():
+        existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
+
+    # To Do - What happens when uri is the same but names are different
+    if existing_artifact and len(existing_artifact) != 0:
+        existing_artifact = existing_artifact[0]
+
+        # Quick fix- Updating only the name
+        if custom_props is not None:
+            self.update_existing_artifact(
+                existing_artifact, custom_props)
+        uri = c_hash
+        # update url for existing artifact
+        self.update_dataset_url(existing_artifact, props.get("url", ""))
+        artifact = link_execution_to_artifact(
+            store=self.store,
+            execution_id=self.execution.id,
+            uri=uri,
+            input_name=url,
+            event_type=mlpb.Event.Type.INPUT,
+        )
+    else:
+        # if((existing_artifact and len(existing_artifact )!= 0) and c_hash != ""):
+        #   url = url + ":" + str(self.execution.id)
+        uri = c_hash if c_hash and c_hash.strip() else str(uuid.uuid1())
+        artifact = create_new_artifact_event_and_attribution(
+            store=self.store,
+            execution_id=self.execution.id,
+            context_id=self.child_context.id,
+            uri=uri,
+            name=url,
+            type_name="Label",
+            event_type=mlpb.Event.Type.INPUT,
+            properties={
+                "git_repo": str(git_repo),
+                "Commit": str(label_commit),
+                "url": props.get("url", " "),
+            },
+            artifact_type_properties={
+                "git_repo": mlpb.STRING,    # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                "Commit": mlpb.STRING,      # type: ignore  # String type not recognized by mypy, using ignore to bypass
+                "url": mlpb.STRING,         # type: ignore  # String type not recognized by mypy, using ignore to bypass
+            },
+            custom_properties=custom_props,
+            milliseconds_since_epoch=int(time.time() * 1000),
+        )
+    custom_props["git_repo"] = git_repo
+    custom_props["Commit"] = label_commit
     return artifact
 
 
@@ -589,7 +662,7 @@ def log_execution_metrics_from_client(self, metrics_name: str,
         uri = name_tokens[1]
         execution_id = name_tokens[2]
     else:
-        print(f"Error : metrics name {metrics_name} is not in the correct format")
+        logger.error(f"[log_execution_metrics_from_client] Error : metrics name {metrics_name} is not in the correct format")
         return 
 
     #we need to add the execution id to the metrics name
@@ -730,7 +803,7 @@ def log_dataslice_from_client(self, uri: str, props: t.Optional[t.Dict] = None, 
         existing_artifact.extend(
             self.writer.store.get_artifacts_by_uri(c_hash))
     if existing_artifact and len(existing_artifact) != 0:
-        print("Adding to existing data slice")
+        logger.info("Adding to existing data slice")
             # Haven't added event type in this if cond, is it not needed??
         slice = link_execution_to_input_artifact(
             store=self.writer.store,

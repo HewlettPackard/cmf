@@ -15,7 +15,10 @@
 ###
 
 import os
+import logging
 import boto3
+
+logger = logging.getLogger(__name__)
 
 class AmazonS3Artifacts:
 
@@ -66,6 +69,7 @@ class AmazonS3Artifacts:
             # Create necessary directories for the download location.
             dir_path = ""
             if "/" in download_loc:
+                # extracts the directory path from a full download_loc
                 dir_path, _ = download_loc.rsplit("/", 1)
             if dir_path != "":
                 os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
@@ -81,10 +85,10 @@ class AmazonS3Artifacts:
         except self.s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist
             if e.response['Error']['Code'] == '404':
-                print(f"{bucket_name}  doesn't exists!!")
+                logger.error(f"{bucket_name}  doesn't exists!!")
                 return object_name, download_loc, False   
             else:
-                print(e)
+                logger.error(e)
                 return object_name, download_loc, False
         except Exception as e:
             return object_name, download_loc, False
@@ -117,6 +121,7 @@ class AmazonS3Artifacts:
         # in case of .dir, download_loc is a absolute path for a folder
         dir_path = ""
         if "/" in download_loc:
+            # extracts the directory path from download_loc 
             dir_path, _ = download_loc.rsplit("/", 1)
         if dir_path != "":
             os.makedirs(dir_path, mode=0o777, exist_ok=True)  # creating subfolders if needed
@@ -129,7 +134,7 @@ class AmazonS3Artifacts:
         try:
             # Download the .dir file containing metadata about tracked files.
             response = self.s3.download_file(bucket_name, object_name, temp_dir)
-
+            
             # Read the .dir metadata to get file information.
             with open(temp_dir, 'r') as file:
                 tracked_files = eval(file.read())
@@ -159,27 +164,25 @@ class AmazonS3Artifacts:
                 obj = self.s3.download_file(bucket_name, temp_object_name, temp_download_loc)
                 if obj == None:
                     files_downloaded += 1
-                    print(f"object {temp_object_name} downloaded at {temp_download_loc}.")
+                    logger.info(f"object {temp_object_name} downloaded at {temp_download_loc}.")
                 else:
-                    print(f"object {temp_object_name} is not downloaded.")
+                    logger.error(f"object {temp_object_name} is not downloaded.")
 
             # Check if all files were successfully downloaded.
             if (total_files_in_directory - files_downloaded) == 0:   
                 return total_files_in_directory, files_downloaded, True
-            else:         
-                return total_files_in_directory, files_downloaded, False   
+            return total_files_in_directory, files_downloaded, False   
         except self.s3.exceptions.ClientError as e:
             # If a specific error code is returned, the bucket does not exist
             if e.response['Error']['Code'] == '404':
-                print(f"{bucket_name}  doesn't exists!!")
+                logger.error(f"{bucket_name}  doesn't exists!!")
                 total_files_in_directory = 1 
                 return total_files_in_directory, files_downloaded, False    
-            else:
-                print(e)
-                total_files_in_directory = 1 
-                return total_files_in_directory, files_downloaded, False
+            logger.error(e)
+            total_files_in_directory = 1 
+            return total_files_in_directory, files_downloaded, False
         except Exception as e:
-            print(f"object {object_name} is not downloaded.")
+            logger.error(f"object {object_name} is not downloaded.")
             # Handle failure to download the .dir metadata.
             # need to improve this  
             # We usually don't count .dir as a file while counting total_files_in_directory.

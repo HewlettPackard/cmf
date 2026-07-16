@@ -15,45 +15,35 @@
 ###
 
 #!/usr/bin/env python3
-import argparse
 import os
 import re
+import yaml
+import base64
+import argparse
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
-from cmflib.utils.helper_functions import generate_osdf_token
-from cmflib.utils.dvc_config import DvcConfig
-from cmflib.dvc_wrapper import dvc_push
-from cmflib.dvc_wrapper import dvc_add_attribute
-from cmflib.cli.utils import find_root
+from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path, validate_and_examine_osdf_token
+from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, Minios3ServerInactive, 
     FileNotFound, 
-    ExecutionsNotFound, 
-    CmfNotConfigured, 
+    ExecutionsNotFound,
     ArtifactPushSuccess, 
     MissingArgument, 
-    DuplicateArgumentNotAllowed
+    DuplicateArgumentNotAllowed,
+    MsgFailure
 )
 
 class CmdArtifactPush(CmdBase):
-    def run(self):
-        result = ""
-        dvc_config_op = DvcConfig.get_dvc_config()
-        cmf_config_file = os.environ.get("CONFIG_FILE", ".cmfconfig")
-
-        # find root_dir of .cmfconfig
-        output = find_root(cmf_config_file)
-
-        # in case, there is no .cmfconfig file
-        if output.find("'cmf' is not configured.") != -1:
-            raise CmfNotConfigured(output)
-        
+    def run(self, live):
+        dvc_config_op, config_file_path = fetch_cmf_config_path()
         cmd_args = {
             "file_name": self.args.file_name,
-            "pipeline_name": self.args.pipeline_name
+            "pipeline_name": self.args.pipeline_name, 
+            "jobs": self.args.jobs,
         }
         for arg_name, arg_value in cmd_args.items():
             if arg_value:
@@ -65,18 +55,57 @@ class CmdArtifactPush(CmdBase):
         out_msg = check_minio_server(dvc_config_op)
         if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
             raise Minios3ServerInactive()
+        
+        # Determine the number of jobs.
+        # - If 'jobs' is provided and is a digit → use its integer value.
+        # - If 'jobs' is missing or empty → default to 4 * cpu_count().
+        # - If 'jobs' is provided but not numeric → raise an error.
+        if self.args.jobs:
+            if not self.args.jobs[0].isdigit():
+                raise MsgFailure(msg_str=f"Invalid '{self.args.jobs[0]}' for jobs. Please provide a numeric value.")
+            num_jobs = int(self.args.jobs[0])
+        else:
+            num_jobs = 4 * os.cpu_count()
+ 
         if dvc_config_op["core.remote"] == "osdf":
-            config_file_path = os.path.join(output, cmf_config_file)
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)
-            #print("key_id="+cmf_config["osdf-key_id"])
-            dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+            
+            # Check if access_token is provided (either as a file path or "provided" marker)
+            access_token = cmf_config.get("osdf-access_token", "")
+            token_source_description = ""
+            
+            if access_token and access_token != "":
+                # Token-based authentication
+                if access_token == "provided":
+                    # Token was provided as raw text during init, but we can't retrieve it
+                    # User needs to use key-based auth or provide token file
+                    raise MsgFailure(msg_str="OSDF token was provided as raw text during init. Please re-run 'cmf init osdfremote' with --access-token pointing to a token file, or use --key-id, --key-path, --key-issuer for dynamic token generation.")
+                elif os.path.isfile(os.path.expanduser(access_token)):
+                    # Read token from file
+                    with open(os.path.expanduser(access_token), "r") as token_file:
+                        token_str = token_file.read().strip()
+                    dynamic_password = "Bearer " + token_str
+                    token_source_description = f"Token file: {access_token}"
+                else:
+                    # Assume it's a raw token string (though this shouldn't happen with new code)
+                    dynamic_password = "Bearer " + access_token
+                    token_source_description = "Provided token string"
+            else:
+                # Key-based authentication - generate token dynamically
+                dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
+                token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
+            
+            # Validate and examine the token before proceeding
+            if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
+                raise MsgFailure(msg_str="OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
+            
             #print("Dynamic Password"+dynamic_password)
             dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
-            result = dvc_push()
+            #result = dvc_push(num_jobs=num_jobs)
             #print(result)
-            return result
+            #return ArtifactPushSuccess(result)
 
         # Default path of mlmd file
         current_directory = os.getcwd()
@@ -95,10 +124,12 @@ class CmdArtifactPush(CmdBase):
         
         pipeline_name = self.args.pipeline_name[0]
         # Put a check to see whether pipline exists or not
-        if not query.get_pipeline_id(pipeline_name) > 0:
+        if not pipeline_name in query.get_pipeline_names():
             raise PipelineNotFound(pipeline_name)
 
         stages = query.get_pipeline_stages(pipeline_name)
+        if not stages:
+            raise ExecutionsNotFound()
         executions = []
         identifiers = []
 
@@ -127,22 +158,51 @@ class CmdArtifactPush(CmdBase):
                 # adding .dvc at the end of every file as it is needed for pull
                 artifacts['name'] = artifacts['name'].apply(lambda name: f"{name.split(':')[0]}.dvc")
                 names.extend(artifacts['name'].tolist())
-        final_list = []
+        final_list = set()
         for file in set(names):
             # checking if the .dvc exists
             if os.path.exists(file):
-                final_list.append(file)
+                final_list.add(file)
             # checking if the .dvc exists in user's project working directory
             elif os.path.isabs(file):
-                    file = re.split("/",file)[-1]
-                    file = os.path.join(os.getcwd(), file)
-                    if os.path.exists(file):
-                        final_list.append(file)
+                file = re.split("/",file)[-1]
+                file = os.path.join(os.getcwd(), file)
+                if os.path.exists(file):
+                    final_list.add(file)
             else:
-                # not adding the .dvc to the final list in case .dvc doesn't exists in both the places
-                pass
-        #print("file_set = ", final_list)
-        result = dvc_push(list(final_list))
+                # in case of dvc_ingest_command
+                # fetching remaining artifacts from dvc.lock file
+                if os.path.exists("dvc.lock"):
+                    with open("dvc.lock", "r") as f:
+                        str_data = f.read()
+                    data = yaml.safe_load(str_data)
+                    # Traverse all stages and collect all 'path' keys from both 'deps' and 'outs'
+                    for stage in data.get('stages', {}).values():
+                        for section in ['deps', 'outs']:
+                            for item in stage.get(section, []):
+                                if isinstance(item, dict) and 'path' in item:
+                                    final_list.add(item['path'])
+
+        # DVC reads the password directly from .dvc/config when pushing over SSH.
+        # The password is stored Base64-encoded, but DVC has no knowledge of that
+        # encoding and would pass the encoded string as-is to the SSH server,
+        # causing authentication to fail. Decode it to plaintext before the push
+        # and restore the encoded value immediately afterward.
+        is_ssh_remote = dvc_config_op.get("core.remote") == "ssh-storage"
+        encoded_password = ""  # Initialize so finally block always has a valid reference.
+        if is_ssh_remote:
+            # .strip() guards against leading/trailing whitespace from config parsing.
+            encoded_password = dvc_config_op.get("remote.ssh-storage.password", "").strip()
+            plain_password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
+        try:
+            if is_ssh_remote:
+                dvc_add_attribute("ssh-storage", "password", plain_password)
+            result = dvc_push(num_jobs, list(final_list))
+        finally:
+            # Always restore the encoded password, even if dvc_push raises.
+            if is_ssh_remote:
+                dvc_add_attribute("ssh-storage", "password", encoded_password)
+
         return ArtifactPushSuccess(result)
     
 def add_parser(subparsers, parent_parser):
@@ -171,8 +231,16 @@ def add_parser(subparsers, parent_parser):
         "-f", 
         "--file_name", 
         action="append",
-        help="Specify mlmd file name.",
+        help="Specify input metadata file name.",
         metavar="<file_name>"
+    )
+
+    parser.add_argument(
+        "-j",
+        "--jobs",
+        action="append",
+        help="Number of parallel jobs for uploading artifacts to remote storage. Default is 4 * cpu_count(). Increasing jobs may speed up uploads but will use more resources.",
+        metavar="<jobs>"
     )
 
     parser.set_defaults(func=CmdArtifactPush)
