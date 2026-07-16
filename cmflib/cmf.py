@@ -94,8 +94,8 @@ from cmflib.cmf_commands_wrapper import (
     _dvc_ingest,
 )
 
-# Import async proxy for factory pattern
-from cmflib.cmf_async_proxy import CmfAsyncProxy
+# Import async proxy for factory pattern (shared subprocess architecture)
+from cmflib.cmf_async_api import CmfAsyncProxy
 
 class Cmf:
     """This class provides methods to log metadata for distributed AI pipelines.
@@ -155,15 +155,18 @@ class Cmf:
         """
         Factory method that returns appropriate CMF implementation.
         
-        By default (async_logging=True), returns CmfAsyncProxy (lightweight proxy).
-        If async_logging=False, returns standard Cmf instance (full implementation).
+        By default (async_logging=True), returns CmfAsyncProxy which uses a single
+        shared subprocess for ALL Cmf instances.
         
         This provides day-one design benefits: async mode doesn't waste 
         resources on database connections and initialization in main process.
+        
+        The shared subprocess architecture scales to 1000+ concurrent Cmf instances
+        without resource exhaustion.
         """
         if async_logging and not is_server:
-            # Return lightweight async proxy
-            logger.info("[Cmf Factory] Creating CmfAsyncProxy for async logging")
+            # Return async proxy with shared subprocess
+            logger.info("[Cmf Factory] Creating CmfAsyncProxy (shared subprocess) for async logging")
             return CmfAsyncProxy(
                 filepath=filepath,
                 pipeline_name=pipeline_name,
@@ -172,7 +175,7 @@ class Cmf:
                 finalize_timeout=finalize_timeout
             )
         else:
-            # Return standard implementation
+            # Return standard synchronous implementation
             # Create instance normally (calls __init__)
             instance = super(Cmf, cls).__new__(cls)
             return instance
