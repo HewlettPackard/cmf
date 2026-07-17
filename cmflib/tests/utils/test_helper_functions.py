@@ -7,8 +7,9 @@ import subprocess
 
 from cmflib.utils.helper_functions import (
     is_url, is_git_repo, get_python_env, get_md5_hash, 
-    change_dir, is_conda_installed, list_conda_packages_json,
-    generate_osdf_token, branch_exists, get_postgres_config
+    change_dir, generate_osdf_token, branch_exists, get_postgres_config,
+    validate_and_examine_osdf_token, display_table, fetch_cmf_config_path,
+    calculate_md5
 )
 
 
@@ -56,41 +57,10 @@ def test_is_git_repo(mocker, temp_dir):
     assert "A Git repository already exists in" in result
     assert os.path.join(os.getcwd(), '.git') in result
 
-
-def test_get_python_env_conda(mocker):
-    """Test get_python_env function with conda environment."""
-    # Mock conda being installed
-    mocker.patch('cmflib.utils.helper_functions.is_conda_installed', return_value=True)
-    
-    # Mock subprocess outputs
-    mock_check_output = mocker.patch('subprocess.check_output')
-    mock_check_output.side_effect = [
-        b"package1=1.0.0\npackage2=2.0.0\n",  # conda list --export
-        b"package3==1.0.0\npackage4==2.0.0\n",  # pip freeze
-        b"channels:\n  - conda-forge\n  - defaults\n"  # conda config --show channels
-    ]
-    
-    # Call the function
-    result = get_python_env("test-env")
-    
-    # Verify the result structure
-    assert isinstance(result, dict)
-    assert result["name"] == "test-env"
-    assert result["channels"] == ["conda-forge", "defaults"]
-    assert "package1=1.0.0" in result["dependencies"]
-    assert "package2=2.0.0" in result["dependencies"]
-    
-    # Verify pip packages are included
-    pip_section = result["dependencies"][-1]
-    assert isinstance(pip_section, dict)
-    assert "pip" in pip_section
-    assert pip_section["pip"] == ["package3==1.0.0", "package4==2.0.0"]
-
-
 def test_get_python_env_pip(mocker):
     """Test get_python_env function with pip environment."""
-    # Mock conda not being installed
-    mocker.patch('cmflib.utils.helper_functions.is_conda_installed', return_value=False)
+    # Mock CONDA_PREFIX to None to simulate non-conda environment
+    mocker.patch('os.getenv', return_value=None)
     
     # Mock pip freeze output
     mock_check_output = mocker.patch('subprocess.check_output')
@@ -109,16 +79,17 @@ def test_get_python_env_exception(mocker):
     mock_check_output = mocker.patch('subprocess.check_output')
     mock_check_output.side_effect = Exception("Command failed")
     
-    # Mock print function
-    mock_print = mocker.patch('builtins.print')
+    # Mock logger.error function
+    mock_logger = mocker.patch('cmflib.utils.helper_functions.logger.error')
     
     result = get_python_env()
     
     # Verify the function returns None when an exception occurs
     assert result is None
     
-    # Verify the error message was printed
-    mock_print.assert_called_with("An error occurred: Command failed")
+    # Verify the error message was logged
+    mock_logger.assert_called_once()
+    assert "Command failed" in str(mock_logger.call_args)
 
 
 def test_get_md5_hash():
@@ -171,108 +142,6 @@ def test_change_dir(temp_dir):
     
     # Verify we're still in the original directory
     assert os.getcwd() == original_dir
-
-
-def test_is_conda_installed_true(mocker):
-    """Test is_conda_installed function when conda is installed."""
-    # Mock subprocess.run to return successfully
-    mock_run = mocker.patch('subprocess.run')
-    mock_run.return_value = subprocess.CompletedProcess(
-        args=['conda', '--version'], 
-        returncode=0, 
-        stdout=b'conda 4.10.3\n', 
-        stderr=b''
-    )
-    
-    result = is_conda_installed()
-    
-    # Verify the function returns True when conda is installed
-    assert result is True
-    
-    # Verify subprocess.run was called with the correct arguments
-    mock_run.assert_called_once_with(
-        ['conda', '--version'], 
-        check=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE
-    )
-
-
-def test_is_conda_installed_false(mocker):
-    """Test is_conda_installed function when conda is not installed."""
-    # Mock subprocess.run to raise an exception
-    mock_run = mocker.patch('subprocess.run')
-    mock_run.side_effect = FileNotFoundError("No such file or directory: 'conda'")
-    
-    result = is_conda_installed()
-    
-    # Verify the function returns False when conda is not installed
-    assert result is False
-    
-    # Verify subprocess.run was called with the correct arguments
-    mock_run.assert_called_once_with(
-        ['conda', '--version'], 
-        check=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE
-    )
-
-
-def test_list_conda_packages_json_success(mocker):
-    """Test list_conda_packages_json function when successful."""
-    # Mock subprocess.run to return a JSON string
-    mock_json = json.dumps([
-        {"name": "package1", "version": "1.0.0"}, 
-        {"name": "package2", "version": "2.0.0"}
-    ])
-    mock_run = mocker.patch('subprocess.run')
-    mock_run.return_value = subprocess.CompletedProcess(
-        args=['conda', 'list', '--json'], 
-        returncode=0, 
-        stdout=mock_json, 
-        stderr=''
-    )
-    
-    result = list_conda_packages_json()
-    
-    # Verify the function returns the parsed JSON
-    assert result == [
-        {"name": "package1", "version": "1.0.0"}, 
-        {"name": "package2", "version": "2.0.0"}
-    ]
-    
-    # Verify subprocess.run was called with the correct arguments
-    mock_run.assert_called_once_with(
-        ['conda', 'list', '--json'], 
-        check=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        text=True
-    )
-
-
-def test_list_conda_packages_json_failure(mocker):
-    """Test list_conda_packages_json function when it fails."""
-    # Mock subprocess.run to raise an exception
-    mock_run = mocker.patch('subprocess.run')
-    mock_run.side_effect = subprocess.CalledProcessError(
-        returncode=1, 
-        cmd=['conda', 'list', '--json']
-    )
-    
-    result = list_conda_packages_json()
-    
-    # Verify the function returns an empty list when it fails
-    assert result == []
-    
-    # Verify subprocess.run was called with the correct arguments
-    mock_run.assert_called_once_with(
-        ['conda', 'list', '--json'], 
-        check=True, 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        text=True
-    )
 
 
 def test_generate_osdf_token_success(mocker):
@@ -374,13 +243,13 @@ def test_branch_exists_false(mocker):
 def test_get_postgres_config(mocker):
     """Test get_postgres_config function."""
     # Mock os.getenv to return test values
-    mocker.patch('os.getenv', side_effect=lambda key: {
-        'MYIP': '192.168.1.1',
-        'HOSTNAME': 'test-host',
+    mocker.patch('os.getenv', side_effect=lambda key, default=None: {
+        'POSTGRES_HOST': 'test-host',
+        'POSTGRES_PORT': '5432',
         'POSTGRES_DB': 'test-db',
         'POSTGRES_USER': 'test-user',
         'POSTGRES_PASSWORD': 'test-password'
-    }.get(key))
+    }.get(key, default))
     
     # Call the function
     result = get_postgres_config()
@@ -397,25 +266,236 @@ def test_get_postgres_config(mocker):
 
 
 def test_get_postgres_config_localhost(mocker):
-    """Test get_postgres_config function when HOSTNAME is localhost."""
-    # Mock os.getenv to return test values with HOSTNAME as localhost
-    mocker.patch('os.getenv', side_effect=lambda key: {
-        'MYIP': '192.168.1.1',
-        'HOSTNAME': 'localhost',
+    """Test get_postgres_config function when POSTGRES_HOST is localhost."""
+    # Mock os.getenv to return test values with POSTGRES_HOST as localhost
+    mocker.patch('os.getenv', side_effect=lambda key, default=None: {
+        'POSTGRES_HOST': 'localhost',
+        'POSTGRES_PORT': '5432',
         'POSTGRES_DB': 'test-db',
         'POSTGRES_USER': 'test-user',
         'POSTGRES_PASSWORD': 'test-password'
-    }.get(key))
+    }.get(key, default))
     
     # Call the function
     result = get_postgres_config()
     
-    # Verify the function returns the expected config with IP as host
+    # Verify the function returns the expected config with localhost as host
     expected_config = {
-        "host": "192.168.1.1",
+        "host": "localhost",
         "port": "5432",
         "user": "test-user",
         "password": "test-password",
         "dbname": "test-db"
     }
     assert result == expected_config
+
+
+def test_validate_and_examine_osdf_token_valid(mocker):
+    """Test validate_and_examine_osdf_token function with a valid token."""
+    import jwt
+    from datetime import datetime, timezone, timedelta
+    
+    # Create a valid token that expires in the future
+    future_time = datetime.now(timezone.utc) + timedelta(hours=1)
+    payload = {
+        "iss": "https://example.com/issuer",
+        "sub": "test-subject",
+        "aud": "test-audience",
+        "scope": "storage.read:/ storage.write:/",
+        "iat": int(datetime.now(timezone.utc).timestamp()),
+        "exp": int(future_time.timestamp())
+    }
+    token_str = jwt.encode(payload, "secret", algorithm="HS256")
+    
+    # Mock logger.info
+    mock_logger_info = mocker.patch('cmflib.utils.helper_functions.logger.info')
+    
+    # Call the function
+    result = validate_and_examine_osdf_token(f"Bearer {token_str}", "test-source")
+    
+    # Verify the function returns True for a valid token
+    assert result is True
+    
+    # Verify logger.info was called
+    assert mock_logger_info.call_count > 0
+
+
+def test_validate_and_examine_osdf_token_expired(mocker):
+    """Test validate_and_examine_osdf_token function with an expired token."""
+    import jwt
+    from datetime import datetime, timezone, timedelta
+    
+    # Create an expired token
+    past_time = datetime.now(timezone.utc) - timedelta(hours=1)
+    payload = {
+        "iss": "https://example.com/issuer",
+        "sub": "test-subject",
+        "aud": "test-audience",
+        "scope": "storage.read:/ storage.write:/",
+        "iat": int((datetime.now(timezone.utc) - timedelta(hours=2)).timestamp()),
+        "exp": int(past_time.timestamp())
+    }
+    token_str = jwt.encode(payload, "secret", algorithm="HS256")
+    
+    # Mock logger methods
+    mock_logger_info = mocker.patch('cmflib.utils.helper_functions.logger.info')
+    mock_logger_warning = mocker.patch('cmflib.utils.helper_functions.logger.warning')
+    
+    # Call the function
+    result = validate_and_examine_osdf_token(token_str)
+    
+    # Verify the function returns False for an expired token
+    assert result is False
+    
+    # Verify logger.warning was called
+    assert mock_logger_warning.call_count > 0
+
+
+def test_validate_and_examine_osdf_token_invalid(mocker):
+    """Test validate_and_examine_osdf_token function with an invalid token."""
+    # Mock logger.error
+    mock_logger_error = mocker.patch('cmflib.utils.helper_functions.logger.error')
+    
+    # Call the function with an invalid token
+    result = validate_and_examine_osdf_token("invalid.token.string")
+    
+    # Verify the function returns False for an invalid token
+    assert result is False
+    
+    # Verify logger.error was called
+    assert mock_logger_error.call_count > 0
+
+
+def test_display_table(mocker):
+    """Test display_table function."""
+    import pandas as pd
+    
+    # Create a sample DataFrame
+    df = pd.DataFrame({
+        'Name': ['Alice', 'Bob', 'Charlie'],
+        'Age': [25, 30, 35],
+        'City': ['New York', 'Los Angeles', 'Chicago']
+    })
+    
+    # Mock logger.info
+    mock_logger_info = mocker.patch('cmflib.utils.helper_functions.logger.info')
+    
+    # Mock readchar.readchar to return 'q' (quit)
+    mock_readchar = mocker.patch('readchar.readchar', return_value='q')
+    
+    # Call the function
+    display_table(df, ['Name', 'Age', 'City'])
+    
+    # Verify logger.info was called (for the table display)
+    assert mock_logger_info.call_count > 0
+
+
+def test_fetch_cmf_config_path_success(mocker):
+    """Test fetch_cmf_config_path function when successful."""
+    # Mock DvcConfig.get_dvc_config to return a valid dict
+    mock_dvc_config = {'remote': 'test-remote'}
+    mocker.patch('cmflib.utils.dvc_config.DvcConfig.get_dvc_config', return_value=mock_dvc_config)
+    
+    # Mock find_root to return a valid path (patch it where it's used in helper_functions)
+    mocker.patch('cmflib.utils.helper_functions.find_root', return_value='/test/root')
+    
+    # Call the function
+    dvc_output, config_file_path = fetch_cmf_config_path()
+    
+    # Verify the function returns the expected values
+    assert dvc_output == mock_dvc_config
+    assert config_file_path == '/test/root/.cmfconfig'
+
+
+def test_fetch_cmf_config_path_not_configured(mocker):
+    """Test fetch_cmf_config_path function when CMF is not configured."""
+    from cmflib.cmf_exception_handling import CmfNotConfigured
+    
+    # Mock DvcConfig.get_dvc_config to return a non-dict value
+    mocker.patch('cmflib.utils.dvc_config.DvcConfig.get_dvc_config', return_value="error")
+    
+    # Call the function and expect an exception
+    with pytest.raises(CmfNotConfigured):
+        fetch_cmf_config_path()
+
+
+def test_fetch_cmf_config_path_root_not_found(mocker):
+    """Test fetch_cmf_config_path function when root is not found."""
+    from cmflib.cmf_exception_handling import CmfNotConfigured
+    
+    # Mock DvcConfig.get_dvc_config to return a valid dict
+    mock_dvc_config = {'remote': 'test-remote'}
+    mocker.patch('cmflib.utils.dvc_config.DvcConfig.get_dvc_config', return_value=mock_dvc_config)
+    
+    # Mock find_root to return an error message (patch it where it's used in helper_functions)
+    mocker.patch('cmflib.utils.helper_functions.find_root', return_value="'cmf' is not configured")
+    
+    # Call the function and expect an exception
+    with pytest.raises(CmfNotConfigured):
+        fetch_cmf_config_path()
+
+
+def test_calculate_md5_success(temp_dir):
+    """Test calculate_md5 function with a valid file."""
+    # Create a test file
+    test_file = os.path.join(temp_dir, "test_file.txt")
+    test_content = "This is a test file for MD5 calculation."
+    
+    with open(test_file, 'w') as f:
+        f.write(test_content)
+    
+    # Calculate expected MD5 hash
+    expected_hash = hashlib.md5(test_content.encode('utf-8')).hexdigest()
+    
+    # Call the function
+    result = calculate_md5(test_file)
+    
+    # Verify the function returns the correct hash
+    assert result == expected_hash
+
+
+def test_calculate_md5_file_not_found(mocker):
+    """Test calculate_md5 function when the file doesn't exist."""
+    # Mock os.path.isfile to return False
+    mocker.patch('os.path.isfile', return_value=False)
+    
+    # Mock logger.error
+    mock_logger_error = mocker.patch('cmflib.utils.helper_functions.logger.error')
+    
+    # Mock sys.exit to raise SystemExit (simulating actual exit behavior)
+    mocker.patch('sys.exit', side_effect=SystemExit(1))
+    
+    # Call the function with a non-existent file and expect SystemExit
+    with pytest.raises(SystemExit) as exc_info:
+        calculate_md5("/path/to/nonexistent/file.txt")
+    
+    # Verify logger.error was called
+    assert mock_logger_error.call_count > 0
+    
+    # Verify the exit code is 1
+    assert exc_info.value.code == 1
+
+
+def test_calculate_md5_large_file(temp_dir):
+    """Test calculate_md5 function with a large file."""
+    # Create a large test file (larger than 4MB chunk size)
+    test_file = os.path.join(temp_dir, "large_file.bin")
+    chunk_size = 4096 * 1024  # 4MB
+    
+    # Write data in chunks to create a file larger than the read chunk size
+    with open(test_file, 'wb') as f:
+        # Write 5MB of data (5 * 1MB)
+        for _ in range(5):
+            f.write(b'A' * (1024 * 1024))
+    
+    # Calculate expected MD5 hash
+    expected_md5 = hashlib.md5()
+    with open(test_file, 'rb') as f:
+        for chunk in iter(lambda: f.read(chunk_size), b''):
+            expected_md5.update(chunk)
+    
+    # Call the function
+    result = calculate_md5(test_file)
+    
+    # Verify the function returns the correct hash
+    assert result == expected_md5.hexdigest()
