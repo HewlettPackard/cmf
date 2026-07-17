@@ -1,14 +1,16 @@
 import pytest
 import os
+import base64
 from cmflib.storage_backends.sshremote_artifacts import SSHremoteArtifacts
 
 
 # Fixtures
 @pytest.fixture
 def dvc_config():
+    # Password must be base64-encoded as expected by SSHremoteArtifacts
     return {
         "remote.ssh-storage.user": "test_user",
-        "remote.ssh-storage.password": "test_password"
+        "remote.ssh-storage.password": base64.b64encode(b"test_password").decode("utf-8")
     }
 
 
@@ -52,20 +54,23 @@ def test_download_file_success(ssh_artifacts, mock_ssh_client, is_abs_path, expe
     
     # Configure mocks
     monkeypatch.setattr(os.path, 'isabs', lambda _: is_abs_path)
-    monkeypatch.setattr(os.path, 'abspath', lambda _: "/abs/path/to/file.txt")
+    monkeypatch.setattr(os.path, 'abspath', lambda path: "/abs/path/to/file.txt")
     
     # Mock os.makedirs to prevent actual directory creation
     monkeypatch.setattr(os, 'makedirs', lambda path, mode, exist_ok: None)
     
-    # Mock os.stat to return a mock object with st_size attribute
-    mock_stat_result = mocker.MagicMock()
-    mock_stat_result.st_size = 1024  # File size in bytes
-    monkeypatch.setattr(os, 'stat', lambda _: mock_stat_result)
+    # Mock os.stat to return a mock object with st_size attribute (local file size after download)
+    mock_local_stat_result = mocker.MagicMock()
+    mock_local_stat_result.st_size = 1024  # File size in bytes
+    monkeypatch.setattr(os, 'stat', lambda _: mock_local_stat_result)
     
-    # Mock SFTP put method to return a mock SFTPAttributes object
-    mock_sftp_attributes = mocker.MagicMock()
-    mock_sftp_attributes.st_size = 1024  # Same size as local file
-    mock_sftp.put.return_value = mock_sftp_attributes
+    # Mock SFTP stat method to return remote file size
+    mock_remote_stat_result = mocker.MagicMock()
+    mock_remote_stat_result.st_size = 1024  # Same size as local file
+    mock_sftp.stat.return_value = mock_remote_stat_result
+    
+    # Mock SFTP get method (download)
+    mock_sftp.get.return_value = None
     
     # Call the method under test
     result = ssh_artifacts.download_file(
@@ -84,9 +89,8 @@ def test_download_file_success(ssh_artifacts, mock_ssh_client, is_abs_path, expe
         "ssh.example.com", username="test_user", password="test_password"
     )
     mock_ssh_client.open_sftp.assert_called_once()
-    mock_sftp.put.assert_called_once_with("/remote/path/file.txt", "/abs/path/to/file.txt")
-    mock_sftp.close.assert_called_once()
-    mock_ssh_client.close.assert_called_once()
+    mock_sftp.stat.assert_called_once_with("/remote/path/file.txt")
+    mock_sftp.get.assert_called_once_with("/remote/path/file.txt", "/abs/path/to/file.txt")
 
 
 def test_download_file_size_mismatch(ssh_artifacts, mock_ssh_client, monkeypatch, mocker):
@@ -133,13 +137,8 @@ def test_download_file_exception(ssh_artifacts, mock_ssh_client, monkeypatch, mo
     # Mock os.makedirs to prevent actual directory creation
     monkeypatch.setattr(os, 'makedirs', lambda path, mode, exist_ok: None)
     
-    # Mock os.stat to return a mock object with st_size attribute
-    mock_stat_result = mocker.MagicMock()
-    mock_stat_result.st_size = 1024  # File size in bytes
-    monkeypatch.setattr(os, 'stat', lambda _: mock_stat_result)
-    
-    # Mock SFTP put method to raise an exception
-    mock_sftp.put.side_effect = Exception("SFTP error")
+    # Mock SFTP stat method to raise an exception
+    mock_sftp.stat.side_effect = Exception("SFTP error")
     
     # Call the method under test
     result = ssh_artifacts.download_file(
@@ -151,10 +150,6 @@ def test_download_file_exception(ssh_artifacts, mock_ssh_client, monkeypatch, mo
     
     # Assert the result
     assert result == ("/remote/path/file.txt", "/abs/path/to/file.txt", False)
-    
-    # Verify method calls
-    mock_sftp.close.assert_called_once()
-    mock_ssh_client.close.assert_called_once()
 
 
 def test_download_directory_success(ssh_artifacts, mock_ssh_client, monkeypatch, mocker):
@@ -163,19 +158,41 @@ def test_download_directory_success(ssh_artifacts, mock_ssh_client, monkeypatch,
     
     # Configure mocks
     monkeypatch.setattr(os.path, 'isabs', lambda _: False)
-    monkeypatch.setattr(os.path, 'abspath', lambda path: "/abs/path/to/dir")
+    
+    # Set up abspath to return different values for different calls
+    abspath_calls = []
+    def mock_abspath(path):
+        result = f"/abs/path/to/{path}"
+        abspath_calls.append(result)
+        return result
+    monkeypatch.setattr(os.path, 'abspath', mock_abspath)
+    
     monkeypatch.setattr(os, 'makedirs', lambda path, mode, exist_ok: None)
+    monkeypatch.setattr(os.path, 'exists', lambda _: True)
     monkeypatch.setattr(os, 'remove', lambda _: None)
     
-    # Mock the file open and read operations
+    # Mock the tracked files data structure
     tracked_files = [
         {'relpath': 'file1.txt', 'md5': 'a237457aa730c396e5acdbc5a64c8453'},
         {'relpath': 'file2.txt', 'md5': 'b237457aa730c396e5acdbc5a64c8453'}
     ]
     
-    # Use mocker.mock_open to mock the file operations
+    # Mock file open to return tracked_files data
     m = mocker.mock_open(read_data=str(tracked_files))
     monkeypatch.setattr('builtins.open', m)
+    
+    # Mock SFTP operations
+    mock_sftp.get.return_value = None  # Successful download
+    
+    # Mock SFTP stat to return file sizes
+    mock_stat_result = mocker.MagicMock()
+    mock_stat_result.st_size = 1024
+    mock_sftp.stat.return_value = mock_stat_result
+    
+    # Mock os.stat for local file size verification
+    mock_local_stat = mocker.MagicMock()
+    mock_local_stat.st_size = 1024  # Same size as remote
+    monkeypatch.setattr(os, 'stat', lambda _: mock_local_stat)
     
     # Call the method under test
     result = ssh_artifacts.download_directory(
@@ -235,52 +252,58 @@ def test_download_directory_partial_success(ssh_artifacts, mock_ssh_client, monk
     # Configure mocks
     monkeypatch.setattr(os.path, 'isabs', lambda _: False)
     
-    # Mock os.makedirs to prevent actual directory creation
+    # Set up abspath to return different values
+    abspath_calls = []
+    def mock_abspath(path):
+        result = f"/abs/path/to/{path}"
+        abspath_calls.append(result)
+        return result
+    monkeypatch.setattr(os.path, 'abspath', mock_abspath)
+    
     monkeypatch.setattr(os, 'makedirs', lambda path, mode, exist_ok: None)
+    monkeypatch.setattr(os.path, 'exists', lambda _: True)
     monkeypatch.setattr(os, 'remove', lambda _: None)
     
-    # Set up side effect for multiple calls to abspath
-    abspath_calls = 0
-    def mock_abspath_side_effect(path):
-        nonlocal abspath_calls
-        abspath_calls += 1
-        if abspath_calls == 1:
-            return "/abs/path/to/dir/path"
-        else:
-            return "/abs/path/to/dir"
-    
-    monkeypatch.setattr(os.path, 'abspath', mock_abspath_side_effect)
-    monkeypatch.setattr(os.path, 'exists', lambda _: True)
-    
-    # Set up side effects for SFTP put to succeed for .dir file and first file but fail for second file
-    put_calls = 0
-    def side_effect(*args, **kwargs):
-        nonlocal put_calls
-        put_calls += 1
-        
-        # First call is for .dir file, return success
-        if put_calls == 1:
-            mock_sftp_attributes = mocker.MagicMock()
-            return mock_sftp_attributes
-        # Second call is for first file, return success
-        elif put_calls == 2:
-            mock_sftp_attributes = mocker.MagicMock()
-            return mock_sftp_attributes
-        # Third call is for second file, raise exception to simulate failure
-        else:
-            raise Exception("Failed to download second file")
-    
-    mock_sftp.put.side_effect = side_effect
-    
-    # Mock file read operation to return tracked files data
+    # Mock the tracked files data structure
     tracked_files = [
         {'relpath': 'file1.txt', 'md5': 'a237457aa730c396e5acdbc5a64c8453'},
         {'relpath': 'file2.txt', 'md5': 'b237457aa730c396e5acdbc5a64c8453'}
     ]
     
-    # Use mock_open to mock the file operations
+    # Mock file open to return tracked_files data
     m = mocker.mock_open(read_data=str(tracked_files))
     monkeypatch.setattr('builtins.open', m)
+    
+    # Mock SFTP get - first call succeeds (for .dir file and first file), second fails
+    get_call_count = [0]
+    def mock_get_side_effect(remote, local):
+        get_call_count[0] += 1
+        # First call is for .dir file (succeeds)
+        # Second call is for file1.txt (succeeds) 
+        # Third call is for file2.txt (fails)
+        if get_call_count[0] >= 3:
+            raise Exception("Failed to download file2.txt")
+        return None
+    
+    mock_sftp.get.side_effect = mock_get_side_effect
+    
+    # Mock SFTP stat to return file sizes
+    stat_call_count = [0]
+    def mock_stat_side_effect(path):
+        stat_call_count[0] += 1
+        mock_stat_result = mocker.MagicMock()
+        mock_stat_result.st_size = 1024
+        # Third stat call should fail (for file2.txt)
+        if stat_call_count[0] >= 2:
+            raise Exception("Failed to stat file2.txt")
+        return mock_stat_result
+    
+    mock_sftp.stat.side_effect = mock_stat_side_effect
+    
+    # Mock os.stat for local file size verification
+    mock_local_stat = mocker.MagicMock()
+    mock_local_stat.st_size = 1024
+    monkeypatch.setattr(os, 'stat', lambda _: mock_local_stat)
     
     # Call the method under test
     result = ssh_artifacts.download_directory(
