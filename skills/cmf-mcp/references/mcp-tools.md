@@ -25,8 +25,9 @@ The CMF MCP server exposes six tools to AI assistants.
 
 Configure up to 4 CMF Servers in `.env`:
 ```env
-CMF_SERVER_URL=http://dev-server:80
-CMF_SERVER_URL_2=http://staging-server:80
-CMF_SERVER_URL_3=http://prod-server:80
+CMF_BASE_URL=http://dev-server:80
+CMF2_BASE_URL=http://staging-server:80
+CMF3_BASE_URL=http://prod-server:80
+# CMF4_BASE_URL=http://another-server:80
 ```
 Each server is exposed as a separate context; the assistant can query across environments.

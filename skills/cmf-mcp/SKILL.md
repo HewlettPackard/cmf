@@ -20,14 +20,15 @@ First check: **is the CMF MCP server already running?** Check for an existing `.
 
 ```bash
 cd mcp/
-cp .env.example .env
+cp example.env .env
 ```
 
 Edit `.env`:
 ```env
-CMF_SERVER_URL=http://<your-cmf-server-host>:80
-# Optional second/third server:
-# CMF_SERVER_URL_2=http://staging-server:80
+CMF_BASE_URL=http://<your-cmf-server-host>:80
+# Optional second/third/fourth server:
+# CMF2_BASE_URL=http://staging-server:80
+# CMF3_BASE_URL=http://another-server:80
 ```
 
 ```bash

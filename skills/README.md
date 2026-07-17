@@ -21,7 +21,7 @@ This detects your coding agent and copies the skills to the correct directory au
 To install a single skill instead of the full set:
 
 ```bash
-npx skills add HewlettPackard/cmf/tree/main/skills/cmf-instrument -y
+npx skills add HewlettPackard/cmf/tree/master/skills/cmf-instrument -y
 ```
 
 To install globally (available in all projects):
