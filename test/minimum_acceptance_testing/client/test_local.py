@@ -19,6 +19,9 @@ import subprocess
 import time
 import os
 from cmflib import cmf
+from cmflib.dvc_wrapper import check_git_remote, git_add_remote
+
+pytestmark = pytest.mark.usefixtures("example_workspace")
 
 def test_cmf_init_show():
     print()
@@ -30,8 +33,14 @@ def test_cmf_init_local(cmf_server_url):
     print("-------------------------------Test Case Name: cmf init local ----------------------------------")
     # local-storage can't be in the same folder where dvc was initialised
     path = f"{os.getcwd()}/../local-storage"
-    _ = cmf.cmf_init(type="local", path=path, git_remote_url="https://github.com/hpe-user/experiment-repo.git",
+    git_remote_url = "https://github.com/hpe-user/experiment-repo.git"
+    _ = cmf.cmf_init(type="local", path=path, git_remote_url=git_remote_url,
                neo4j_user='neo4j', neo4j_password="xxxxxx", neo4j_uri="bolt://xx.xx.xxx.xxx:7687", cmf_server_url=cmf_server_url)
+    # cmf_init calls `git remote set-url cmf_origin` which silently fails when the
+    # remote doesn't exist yet (the example workspace has no pre-existing cmf_origin).
+    # Ensure the remote is set so downstream tests that call Cmf() pass the git-remote precheck.
+    if not check_git_remote():
+        git_add_remote(git_remote_url)
 
 
 def test_script():
@@ -53,23 +62,24 @@ def test_script():
 
 def test_artifact_push():
     print("-------------------------------Test Case Name: cmf artifact push ----------------------------------")
-    _= cmf.artifact_push()
+    _= cmf.artifact_push(pipeline_name="Test-env")
 
 
 def test_metadata_push(start_server):
     print("-------------------------------Test Case Name: cmf metadata push  ----------------------------------")
-    _= cmf.metadata_push(pipeline_name="Test-env", filename="mlmd")
+    _= cmf.metadata_push(pipeline_name="Test-env", file_name="mlmd")
 
 
-def test_metadata_pull(stop_server):
+def test_metadata_pull(start_server, stop_server):
     print("-------------------------------Test Case Name: cmf metadata pull  ----------------------------------")
-    os.makedirs("./pull", exist_ok=True)
-    _=cmf.metadata_pull(pipeline_name="Test-env",filename="./pull/mlmd")
+    _=cmf.metadata_pull(pipeline_name="Test-env", file_name="mlmd_pull")
+
 
 def test_artifact_pull():
     print("-------------------------------Test Case Name: cmf artifact pull  ----------------------------------")
-    _=cmf.artifact_pull(pipeline_name="Test-env",filename="./pull/mlmd")
+    _=cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd_pull")
+
 
 def test_artifact_pull_single():
     print("-------------------------------Test Case Name: cmf artifact pull single artifact  ----------------------------------")
-    _=cmf.artifact_pull_single(pipeline_name="Test-env",filename="./pull/mlmd",artifact_name="data.xml.gz")
+    _=cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd_pull", artifact_name="data.xml.gz")

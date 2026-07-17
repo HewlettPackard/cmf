@@ -1,0 +1,9 @@
+{
+    "cmf_server_url": "http://10.93.232.89:80",
+    "local_path": "/home/sanadiay/local-storage-sync",
+    "POSTGRES_HOST": "10.93.232.89",
+    "POSTGRES_USER": "myuser",
+    "POSTGRES_PASSWORD": "mypassword",
+    "POSTGRES_PORT": "5432",
+    "POSTGRES_DB": "mlmd"
+}
