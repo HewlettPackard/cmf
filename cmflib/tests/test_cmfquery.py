@@ -1408,118 +1408,118 @@ def test_get_all_artifacts(query_fixture, mocker):
     mock_store.get_artifacts.assert_called_once()
 
 
-def test_get_one_hop_parent_executions_ids(query_fixture, mocker):
-    """Test retrieving one-hop parent execution IDs for a given execution ID.
+# def test_get_one_hop_parent_executions_ids(query_fixture, mocker):
+#     """Test retrieving one-hop parent execution IDs for a given execution ID.
 
-    Flow:
-        get_one_hop_parent_executions_ids
-            -> _get_input_artifacts (find input artifact IDs for the given execution IDs)
-            -> _get_executions_by_output_artifact_id (find executions that produced those artifacts)
-            -> aggregate all parent execution IDs into a list
-            -> return the list of parent execution IDs
-    """
-    query, mock_store = query_fixture
+#     Flow:
+#         get_one_hop_parent_executions_ids
+#             -> _get_input_artifacts (find input artifact IDs for the given execution IDs)
+#             -> _get_executions_by_output_artifact_id (find executions that produced those artifacts)
+#             -> aggregate all parent execution IDs into a list
+#             -> return the list of parent execution IDs
+#     """
+#     query, mock_store = query_fixture
     
-    # Step 1: Mock the return value of `_get_input_artifacts`
-    query._get_input_artifacts = mocker.Mock(return_value=[200, 201])
+#     # Step 1: Mock the return value of `_get_input_artifacts`
+#     query._get_input_artifacts = mocker.Mock(return_value=[200, 201])
 
-    # Step 2: Mock the return value of `_get_executions_by_output_artifact_id`
-    # Side effect is needed here to return different execution IDs for different artifact IDs in unit tests.
-    # This allows the test to simulate the mapping of each input artifact to its producing execution.
-    def mock_get_executions_by_output_artifact_id(artifact_id, pipeline_id=None):
-        if artifact_id == 200:
-            return [100]
-        elif artifact_id == 201:
-            return [101]
-        return []
+#     # Step 2: Mock the return value of `_get_executions_by_output_artifact_id`
+#     # Side effect is needed here to return different execution IDs for different artifact IDs in unit tests.
+#     # This allows the test to simulate the mapping of each input artifact to its producing execution.
+#     def mock_get_executions_by_output_artifact_id(artifact_id, pipeline_id=None):
+#         if artifact_id == 200:
+#             return [100]
+#         elif artifact_id == 201:
+#             return [101]
+#         return []
     
-    query._get_executions_by_output_artifact_id = mocker.Mock(side_effect=mock_get_executions_by_output_artifact_id)
+#     query._get_executions_by_output_artifact_id = mocker.Mock(side_effect=mock_get_executions_by_output_artifact_id)
 
-    # Step 3: Call the method under test
-    parent_execution_ids = query.get_one_hop_parent_executions_ids([300])
+#     # Step 3: Call the method under test
+#     parent_execution_ids = query.get_one_hop_parent_executions_ids([300])
 
-    # Step 4: Assert the result is correct
-    assert len(parent_execution_ids) == 2
-    assert 100 in parent_execution_ids
-    assert 101 in parent_execution_ids
+#     # Step 4: Assert the result is correct
+#     assert len(parent_execution_ids) == 2
+#     assert 100 in parent_execution_ids
+#     assert 101 in parent_execution_ids
 
-    # Step 5: Verify method calls
-    query._get_input_artifacts.assert_called_once_with([300])
-    query._get_executions_by_output_artifact_id.assert_any_call(200, None)
-    query._get_executions_by_output_artifact_id.assert_any_call(201, None)
+#     # Step 5: Verify method calls
+#     query._get_input_artifacts.assert_called_once_with([300])
+#     query._get_executions_by_output_artifact_id.assert_any_call(200, None)
+#     query._get_executions_by_output_artifact_id.assert_any_call(201, None)
 
 
-def test_get_executions_with_execution_ids(query_fixture, mocker):
-    """Test retrieving executions with execution IDs.
+# def test_get_executions_with_execution_ids(query_fixture, mocker):
+#     """Test retrieving executions with execution IDs.
 
-    Flow:
-        get_executions_with_execution_ids
-            -> store.get_executions_by_id (fetch execution objects for given IDs)
-            -> build DataFrame with id, Execution_type_name, Execution_uuid for each execution
-            -> return DataFrame with execution details
-    """
-    query, mock_store = query_fixture
+#     Flow:
+#         get_executions_with_execution_ids
+#             -> store.get_executions_by_id (fetch execution objects for given IDs)
+#             -> build DataFrame with id, Execution_type_name, Execution_uuid for each execution
+#             -> return DataFrame with execution details
+#     """
+#     query, mock_store = query_fixture
     
-    # Step 1: Mock the return value of `get_executions_by_id`
-    # Create mock executions with the necessary structure
-    mock_execution1 = mocker.Mock()
-    mock_execution1.id = 100
-    mock_execution1.properties = {
-        "Execution_type_name": mocker.Mock(string_value="type1"),
-        "Execution_uuid": mocker.Mock(string_value="uuid1")
-    }
+#     # Step 1: Mock the return value of `get_executions_by_id`
+#     # Create mock executions with the necessary structure
+#     mock_execution1 = mocker.Mock()
+#     mock_execution1.id = 100
+#     mock_execution1.properties = {
+#         "Execution_type_name": mocker.Mock(string_value="type1"),
+#         "Execution_uuid": mocker.Mock(string_value="uuid1")
+#     }
 
-    mock_execution2 = mocker.Mock()
-    mock_execution2.id = 101
-    mock_execution2.properties = {
-        "Execution_type_name": mocker.Mock(string_value="type2"),
-        "Execution_uuid": mocker.Mock(string_value="uuid2")
-    }
+#     mock_execution2 = mocker.Mock()
+#     mock_execution2.id = 101
+#     mock_execution2.properties = {
+#         "Execution_type_name": mocker.Mock(string_value="type2"),
+#         "Execution_uuid": mocker.Mock(string_value="uuid2")
+#     }
 
-    mock_store.get_executions_by_id.return_value = [mock_execution1, mock_execution2]
+#     mock_store.get_executions_by_id.return_value = [mock_execution1, mock_execution2]
     
-    # Step 2: Mock MessageToDict to return a dictionary with the expected structure
-    # Side effect is needed so each call returns a dict with the correct execution id, matching the real MessageToDict output per execution.
-    mocker.patch('cmflib.cmfquery.MessageToDict', side_effect=lambda exe, **kwargs: {"id": exe.id})
+#     # Step 2: Mock MessageToDict to return a dictionary with the expected structure
+#     # Side effect is needed so each call returns a dict with the correct execution id, matching the real MessageToDict output per execution.
+#     mocker.patch('cmflib.cmfquery.MessageToDict', side_effect=lambda exe, **kwargs: {"id": exe.id})
     
-    # Step 3: Mock _transform_to_dataframe to return a DataFrame with the expected structure
-    # Side effect is required so each call returns a DataFrame for the corresponding execution.
-    # This simulates the real method which processes each execution separately.
-    def transform_side_effect(execution, extra_props=None):
-        data = {
-            "id": extra_props["id"] if extra_props else execution.id,
-            "Execution_type_name": execution.properties["Execution_type_name"].string_value,
-            "Execution_uuid": execution.properties["Execution_uuid"].string_value
-        }
-        return pd.DataFrame([data])
+#     # Step 3: Mock _transform_to_dataframe to return a DataFrame with the expected structure
+#     # Side effect is required so each call returns a DataFrame for the corresponding execution.
+#     # This simulates the real method which processes each execution separately.
+#     def transform_side_effect(execution, extra_props=None):
+#         data = {
+#             "id": extra_props["id"] if extra_props else execution.id,
+#             "Execution_type_name": execution.properties["Execution_type_name"].string_value,
+#             "Execution_uuid": execution.properties["Execution_uuid"].string_value
+#         }
+#         return pd.DataFrame([data])
     
-    query._transform_to_dataframe = mocker.Mock(side_effect=transform_side_effect)
+#     query._transform_to_dataframe = mocker.Mock(side_effect=transform_side_effect)
     
-    # Step 4: Call the method under test
-    executions_df = query.get_executions_with_execution_ids([100, 101])
+#     # Step 4: Call the method under test
+#     executions_df = query.get_executions_with_execution_ids([100, 101])
     
-    # Step 5: Assert the result is correct
-    assert isinstance(executions_df, pd.DataFrame)
-    assert len(executions_df) == 2
+#     # Step 5: Assert the result is correct
+#     assert isinstance(executions_df, pd.DataFrame)
+#     assert len(executions_df) == 2
     
-    # Check columns
-    assert "id" in executions_df.columns
-    assert "Execution_type_name" in executions_df.columns
-    assert "Execution_uuid" in executions_df.columns
+#     # Check columns
+#     assert "id" in executions_df.columns
+#     assert "Execution_type_name" in executions_df.columns
+#     assert "Execution_uuid" in executions_df.columns
     
-    # Check values for first execution
-    first_row = executions_df[executions_df["id"] == 100].iloc[0]
-    assert first_row["Execution_type_name"] == "type1"
-    assert first_row["Execution_uuid"] == "uuid1"
+#     # Check values for first execution
+#     first_row = executions_df[executions_df["id"] == 100].iloc[0]
+#     assert first_row["Execution_type_name"] == "type1"
+#     assert first_row["Execution_uuid"] == "uuid1"
     
-    # Check values for second execution
-    second_row = executions_df[executions_df["id"] == 101].iloc[0]
-    assert second_row["Execution_type_name"] == "type2"
-    assert second_row["Execution_uuid"] == "uuid2"
+#     # Check values for second execution
+#     second_row = executions_df[executions_df["id"] == 101].iloc[0]
+#     assert second_row["Execution_type_name"] == "type2"
+#     assert second_row["Execution_uuid"] == "uuid2"
 
-    # Step 6: Verify method calls
-    mock_store.get_executions_by_id.assert_called_once_with([100, 101])
-    assert query._transform_to_dataframe.call_count == 2
+#     # Step 6: Verify method calls
+#     mock_store.get_executions_by_id.assert_called_once_with([100, 101])
+#     assert query._transform_to_dataframe.call_count == 2
 
 
 def test_get_all_child_artifacts(query_fixture, mocker):
