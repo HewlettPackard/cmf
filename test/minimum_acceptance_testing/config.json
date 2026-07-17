@@ -1,7 +1,7 @@
 {
-    "cmf_server_url": "http://10.93.232.89:80",
-    "local_path": "/home/sanadiay/local-storage-sync",
-    "POSTGRES_HOST": "10.93.232.89",
+    "cmf_server_url": "http://x.x.x.x:80",
+    "local_path": "/home/hpe_usr/local-storage-sync",
+    "POSTGRES_HOST": "x.x.x.x",
     "POSTGRES_USER": "myuser",
     "POSTGRES_PASSWORD": "mypassword",
     "POSTGRES_PORT": "5432",
