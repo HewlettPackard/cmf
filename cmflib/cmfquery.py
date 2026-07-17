@@ -646,25 +646,44 @@ class CmfQuery(object):
         # Flatten list_exec and return as a list of integers
         return list(chain.from_iterable(list_exec))
 
-    def get_one_hop_parent_executions_ids(self, execution_ids: t.List[int], pipeline_id: t.Optional[int] = None) -> t.List[int]:
+    def get_one_hop_parent_execution_ids(self, execution_id: int, pipeline_id: t.Optional[int] = None) -> t.List[int]:
         """Get parent execution ids for given execution id
 
         Args: 
-           execution_id : Execution id for which parent execution are required
-                          It is passed in list, for example execution_id: [1]  
+           execution_id : Execution id for which parent executions are required
            pipeline_id : Pipeline id
         Return:
-           Returns parent executions for given id
+           Returns parent executions for given execution id
         """
-        artifact_ids: t.List[int] = self._get_input_artifacts(execution_ids)
+        artifact_ids: t.List[int] = self._get_input_artifacts([execution_id])
         if not artifact_ids:
             return []
 
-        exe_ids = []
-
-        for id in artifact_ids:
-            ids = self._get_executions_by_output_artifact_id(id, pipeline_id)
-            exe_ids.extend(ids)
+        # query executions for all artifacts at once instead of one-by-one
+        events = self.store.get_events_by_artifact_ids(artifact_ids)
+        
+        # Filter for OUTPUT events to get parent execution IDs
+        exe_ids = [
+            event.execution_id
+            for event in events
+            if event.type == mlpb.Event.OUTPUT
+        ]
+        
+        # Filter by pipeline if needed
+        if pipeline_id is not None:
+            # Fetch unique executions to check pipeline membership
+            unique_exe_ids = list(set(exe_ids))
+            list_exec = self.store.get_executions_by_id(unique_exe_ids)
+            
+            # Build set of execution IDs that match the pipeline
+            matching_exe_ids = {
+                exe.id for exe in list_exec
+                if self._transform_to_dataframe(exe).Pipeline_id.to_string(index=False) == str(pipeline_id)
+            }
+            
+            # Filter to keep only matching executions (preserves duplicate structure)
+            exe_ids = [exe_id for exe_id in exe_ids if exe_id in matching_exe_ids]
+        
         return exe_ids
 
     def get_executions_with_execution_ids(self, exe_ids: t.List[int]) -> pd.DataFrame:
@@ -675,19 +694,24 @@ class CmfQuery(object):
         Return:
             df["id", "Execution_type_name", "Execution_uuid"]
         """
-        df = pd.DataFrame()
+        if not exe_ids:
+            return pd.DataFrame(columns=["id", "Execution_type_name", "Execution_uuid"])
+        
+        # OPTIMIZED: Extract only the 3 fields we need, avoiding full dataframe transformation
         executions = self.store.get_executions_by_id(exe_ids)
-        execution_id = {}
+        
+        rows = []
         for exe in executions:
-            temp_dict = {}
-            # To get execution_id, exe list[mlmd.proto.execution] is converted to dict using MessageToDict
-            execution_id = MessageToDict(exe, preserving_proto_field_name=True) # By default including_default_value_fields=False
-            temp_dict['id'] = int(execution_id['id'])
-            d1 = self._transform_to_dataframe(exe, temp_dict)       # df {id:,executions}
-            df = pd.concat([df, d1], sort=True, ignore_index=True)
-        df.drop_duplicates()
-        df = df[["id", "Execution_type_name","Execution_uuid"]]
-        return df
+            rows.append({
+                'id': exe.id,
+                'Execution_type_name': exe.properties['Execution_type_name'].string_value 
+                    if 'Execution_type_name' in exe.properties else '',
+                'Execution_uuid': exe.properties['Execution_uuid'].string_value 
+                    if 'Execution_uuid' in exe.properties else ''
+            })
+        
+        df = pd.DataFrame(rows)
+        return df.drop_duplicates()
 
     def get_all_child_artifacts(self, artifact_name: str) -> pd.DataFrame:
         """Return all downstream artifacts starting from the given artifact.

@@ -45,8 +45,8 @@ const ExecutionsPostgresGrid = () => {
     // Compare feature
     const [selectedExecutions, setSelectedExecutions] = useState([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
-
-    // Fetch pipelines on mount
+    
+        // Fetch pipelines on mount
     useEffect(() => {
         client.getPipelines("").then((data) => {
             setPipelines(data);
@@ -93,6 +93,18 @@ const ExecutionsPostgresGrid = () => {
         }
     }, [selectedStage, activePage, sortOrder, filter]);
 
+    const fetchExecutionTypesByStage = (pipelineName, stageName) => {
+        client.getExecutionsByStage(pipelineName, stageName, activePage, ITEMS_PER_PAGE, sortOrder, filter).then((data) => {
+            console.log("Executions for Stage:", data);
+            setExecutions(data.items || []);
+            setTotalItems(data.total_items || 0);
+        }).catch((error) => {
+            console.error("Error fetching executions by stage:", error);
+            setExecutions([]);
+            setTotalItems(0);
+        });
+    };
+
     // Handlers
     const handlePipelineClick = (pipeline) => {
         setSelectedPipeline(pipeline);
@@ -109,6 +121,7 @@ const ExecutionsPostgresGrid = () => {
         setActivePage(1);
         setSelectedExecution(null);
         setSelectedExecutions([]);
+        fetchExecutionTypesByStage(selectedPipeline, stage);
     };
 
     const handlePageClick = (page) => {
@@ -163,6 +176,7 @@ const ExecutionsPostgresGrid = () => {
         { label: "Pipeline Type", value: getExecutionDetailProperty("Pipeline_Type"), color: "indigo" },
         { label: "Git Repo", value: getExecutionDetailProperty("Git_Repo"), color: "purple" },
         { label: "Git Start Commit", value: getExecutionDetailProperty("Git_Start_Commit"), color: "green" },
+        { label: "Git End Commit", value: getExecutionDetailProperty("Git_End_Commit"), color: "green" },
     ] : [];
 
     // Render
