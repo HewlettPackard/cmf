@@ -18,7 +18,7 @@
 import argparse
 import os
 
-from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, GitConfigNotSet
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import (
     git_quiet_init,
@@ -28,7 +28,6 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     git_modify_remote_url,
-    check_git_config,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
@@ -36,10 +35,6 @@ from cmflib.cmf_exception_handling import MissingArgument, DuplicateArgumentNotA
 
 class CmdInitLocal(CmdBase):
     def run(self, live):
-        # Validate git configuration before proceeding
-        if not check_git_config():
-            raise GitConfigNotSet(missing_configs=["user.name", "user.email"])
-        
         # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")

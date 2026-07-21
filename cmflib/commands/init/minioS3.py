@@ -28,19 +28,14 @@ from cmflib.dvc_wrapper import (
     dvc_add_remote_repo,
     dvc_add_attribute,
     git_modify_remote_url,
-    check_git_config,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
-from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, GitConfigNotSet
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed
 from cmflib.cmf_exception_handling import MissingArgument, DuplicateArgumentNotAllowed
 
 class CmdInitMinioS3(CmdBase):
     def run(self, live):
-        # Validate git configuration before proceeding
-        if not check_git_config():
-            raise GitConfigNotSet(missing_configs=["user.name", "user.email"])
-        
         # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
