@@ -39,24 +39,26 @@ def generate_cached_url(url, cache):
     cached_url= parsed_cache_url.scheme + "://" + parsed_cache_url.netloc + parsed_url.path
     return cached_url 
 
-def calculate_md5_from_file(file_path, chunk_size=8192):
-    md5 = hashlib.md5()
-    try:
-        with open(file_path, 'rb') as f:
-            while chunk := f.read(chunk_size):
-                md5.update(chunk)
-    except Exception as e:
-        logger.error(f"[calculate_md5_from_file] An error occurred while reading the file: {e}")
-        return None
-    return md5.hexdigest()
+# NOTE: calculate_md5_from_file is superseded by in-chunk MD5 calculation during streaming
+# in download_and_verify_file(). Kept here for reference.
+# def calculate_md5_from_file(file_path, chunk_size=8192):
+#     md5 = hashlib.md5()
+#     try:
+#         with open(file_path, 'rb') as f:
+#             while chunk := f.read(chunk_size):
+#                 md5.update(chunk)
+#     except Exception as e:
+#         logger.error(f"[calculate_md5_from_file] An error occurred while reading the file: {e}")
+#         return None
+#     return md5.hexdigest()
 
-def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout):
+def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout, debug=False):
     """
-    Download a file from the given host URL, write it to disk, and verify its MD5 hash.
+    Download a file from the given host URL via streaming, write it to disk, and verify its MD5 hash.
 
-    The function performs an HTTP GET request to ``host`` using the provided ``headers`` and
-    ``timeout``. If data is received, it is written to ``remote_file_path``. The MD5 checksum of
-    the downloaded file is then computed and compared against ``artifact_hash``.
+    Uses streaming (iter_content) to avoid holding the entire file in memory, and computes the MD5
+    hash inline during the download loop. When debug=True, prints size, elapsed time, rate, and URL
+    to the console after each successful download.
 
     Args:
         host (str): Fully qualified URL from which to download the artifact.
@@ -65,61 +67,67 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
         local_path (str): Logical or original path/name used for logging and status messages.
         artifact_hash (str): Expected MD5 hash of the artifact, used for integrity verification.
         timeout (float | int): Timeout (in seconds) for the HTTP request.
+        debug (bool): When True, print per-file size, timing, and rate to console.
 
     Returns:
         tuple[bool, str]: A pair ``(success, message)`` where ``success`` indicates whether the
             download and MD5 verification succeeded, and ``message`` describes the outcome.
     """
     #logger.info(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
-    data= None
+    resolved_url = host  # default; updated once response headers are received
     try:
-        response = requests.get(host, headers=headers, timeout=timeout, verify=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
-        if response.status_code == 200 and response.content:
-            data = response.content
-        else:
+        response = requests.get(host, headers=headers, timeout=timeout, verify=True, stream=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
+        resolved_url = response.url.split('?')[0]  # final URL after any redirects, strip auth params
+        if response.status_code != 200:
             #logger.error(f"Inside download_and_verify_file: Failed to download file. HTTP Status Code: {response.status_code}. Response content: {response.content}")
-            return False, "No data received from the server."
-            #pass
+            return False, f"HTTP {response.status_code}: No data received from the server.", resolved_url
     except requests.exceptions.Timeout:
-        return False, "The request timed out."
-        #pass
+        return False, "The request timed out.", resolved_url
     except Exception as exception:
         #logger.error(f"Inside download_and_verify_file: An error occurred during the download: {exception}")
-        return False, str(exception)
+        return False, str(exception), resolved_url
 
-    if data is not None:
-        try: 
-            with open(remote_file_path, 'wb') as file:
-                file.write(data)
-            if os.path.exists(remote_file_path) and os.path.getsize(remote_file_path) > 0:
-                # Calculate MD5 hash of the downloaded file
-                start_time = time.time()
-                md5_hash = calculate_md5_from_file(remote_file_path)
-                end_time = time.time()
-                time_taken = end_time - start_time
-                if md5_hash:
-                    #logger.debug(f"MD5 hash of the downloaded file is: {md5_hash}")
-                    #logger.debug(f"Artifact hash from MLMD records is: {artifact_hash}")
-                    #logger.debug(f"Time taken to calculate MD5 hash: {time_taken:.2f} seconds")
-                    if artifact_hash == md5_hash:
-                        #logger.debug("MD5 hash of the downloaded file matches the hash in MLMD records.")
-                        stmt = f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and matches MLMD records."
-                        success=True
-                    else:
-                        #logger.error("Error: MD5 hash of the downloaded file does not match the hash in MLMD records.")
-                        stmt = f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and does NOT match MLMD records."
-                        success=False
-                    return success, stmt
-                else:
-                    logger.error("Failed to calculate MD5 hash of the downloaded file.")
-        except Exception as e:
-            return False, f"An error occurred while writing to the file: {e}"
-    
-    return False, "Data is None."
+    try:
+        start_dl = time.time()
+        total_bytes = 0
+        md5 = hashlib.md5()
+        with open(remote_file_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=65536):
+                if chunk:
+                    f.write(chunk)
+                    md5.update(chunk)
+                    total_bytes += len(chunk)
+        elapsed = time.time() - start_dl
+    except Exception as e:
+        return False, f"An error occurred while writing to the file: {e}", resolved_url
+
+    if total_bytes == 0:
+        return False, "No data received from the server.", resolved_url
+
+    md5_hash = md5.hexdigest()
+    #logger.debug(f"MD5 hash of the downloaded file is: {md5_hash}")
+    #logger.debug(f"Artifact hash from MLMD records is: {artifact_hash}")
+    if artifact_hash == md5_hash:
+        #logger.debug("MD5 hash of the downloaded file matches the hash in MLMD records.")
+        stmt = f"object {local_path} downloaded at {remote_file_path} and matches MLMD records."
+        success = True
+    else:
+        #logger.error("Error: MD5 hash of the downloaded file does not match the hash in MLMD records.")
+        stmt = f"object {local_path} downloaded at {remote_file_path} does NOT match MLMD records."
+        success = False
+
+    if debug:
+        size_kb = total_bytes / 1024
+        size_str = f"{size_kb/1024:.1f} MB" if size_kb >= 1024 else f"{size_kb:.1f} KB"
+        rate_kbs = total_bytes / elapsed / 1024 if elapsed > 0 else 0
+        rate_str = f"{rate_kbs/1024:.1f} MB/s" if rate_kbs >= 1024 else f"{rate_kbs:.1f} KB/s"
+        print(f"  [DEBUG] size={size_str}  time={elapsed:.2f}s  rate={rate_str}")
+
+    return success, stmt, resolved_url
 
 
 class OSDFremoteArtifacts:
-    def __init__(self, dvc_config_op):
+    def __init__(self, dvc_config_op, debug=False):
         """
         Initialize the OSDFremoteArtifacts class with OSDF configuration.
 
@@ -128,12 +136,14 @@ class OSDFremoteArtifacts:
                 - remote.osdf.url: Remote repository URL
                 - remote.osdf.password: Dynamic password/token
                 - remote.osdf.custom_auth_header: Custom authentication header name
+            debug (bool): When True, print per-file debug info (cache URL, size, rate, timing).
         """
         self.remote_repo = dvc_config_op["remote.osdf.url"]
         self.user = "nobody"
         self.dynamic_password = dvc_config_op["remote.osdf.password"]
         self.custom_auth_header = dvc_config_op["remote.osdf.custom_auth_header"]
         self.headers = {self.custom_auth_header: self.dynamic_password}
+        self.debug = debug
 
     def _download_with_cache_fallback(
         self,
@@ -158,31 +168,71 @@ class OSDFremoteArtifacts:
         """
         #Cache can be Blank. If so, fetch from Origin
         if cache == "":
-            #Fetch from Origin
-            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
-            if success:
-                #logger.info(result)
-                return success, result
-            #logger.error(f"Failed to download and verify file: {result}")
+            #Fetch from Origin, retry up to 3 times
+            success, result = False, "Not attempted"
+            for attempt in range(1, 4):
+                success, result, resolved_url = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10, debug=self.debug)
+                if success:
+                    #logger.info(result)
+                    return success, result
+                logger.error(f"Failed to download and verify file from origin (attempt {attempt}/3): {result}")
+                if self.debug:
+                    print(f"  [DEBUG] Origin attempt {attempt}/3 failed: {result}")
+                if attempt < 3:
+                    logger.info(f"Sleeping 15s before retry {attempt+1}/3...")
+                    if self.debug:
+                        print(f"  Sleeping 15s before retry {attempt+1}/3...")
+                    time.sleep(15)
             return success, result
         else:
             #Generate Cached path for artifact
             cached_s_url = generate_cached_url(host, cache)
-            #Try to fetch from cache first
-            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=5)
-            if success:
-                #logger.info(cached_result)
-                return success, cached_result
-            else:
-                logger.error(f"Failed to download and verify file from cache: {cached_result}")
-                logger.info(f"Trying Origin at {host}")
-                #Fetch from Origin 
-                success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
-                if success: 
+            if self.debug:
+                print(f"Fetching Artifact {os.path.basename(local_path)}")
+                #print(f"  [DEBUG] Trying cache at {cached_s_url}")
+            # Follow redirects via HEAD to find the actual cache server (mirrors: curl -L --head -w "%{url_effective}")
+            resolved_cache_url = cached_s_url
+            try:
+                head_resp = requests.head(cached_s_url, headers=self.headers, timeout=5, verify=True, allow_redirects=True)
+                resolved_cache_url = head_resp.url
+            except Exception:
+                pass  # If HEAD fails, fall back to original URL for the GET
+            if self.debug:
+                print(f"  [DEBUG] Resolved cache to {resolved_cache_url.split('?')[0]}")
+            #Try to fetch from cache first (using resolved URL to skip redirect in the download)
+            #Retry up to 3 times on the resolved URL before falling back to origin
+            success, cached_result = False, "Not attempted"
+            for attempt in range(1, 4):
+                success, cached_result, resolved_url = download_and_verify_file(resolved_cache_url, self.headers, download_path, local_path, artifact_hash, timeout=5, debug=self.debug)
+                if success:
+                    #logger.info(cached_result)
+                    return success, cached_result
+                logger.error(f"Failed to download and verify file from cache (attempt {attempt}/3): {cached_result}")
+                if self.debug:
+                    print(f"  [DEBUG] Cache attempt {attempt}/3 failed: {cached_result}")
+                if attempt < 3:
+                    logger.info(f"Sleeping 15s before retry {attempt+1}/3...")
+                    if self.debug:
+                        print(f"  Sleeping 15s before retry {attempt+1}/3...")
+                    time.sleep(15)
+            logger.error(f"All 3 cache attempts failed, falling back to origin.")
+            logger.info(f"Trying Origin at {host}")
+            #Fetch from Origin, retry up to 3 times
+            success, origin_result = False, "Not attempted"
+            for attempt in range(1, 4):
+                success, origin_result, resolved_url = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10, debug=self.debug)
+                if success:
                     #logger.info(origin_result)
                     return success, origin_result
-                #logger.error(f"Failed to download and verify file: {origin_result}")
-                return success, origin_result
+                logger.error(f"Failed to download and verify file from origin (attempt {attempt}/3): {origin_result}")
+                if self.debug:
+                    print(f"  [DEBUG] Origin attempt {attempt}/3 failed: {origin_result}")
+                if attempt < 3:
+                    logger.info(f"Sleeping 15s before retry {attempt+1}/3...")
+                    if self.debug:
+                        print(f"  Sleeping 15s before retry {attempt+1}/3...")
+                    time.sleep(15)
+            return success, origin_result
 
     def download_file(
         self,
@@ -357,6 +407,8 @@ class OSDFremoteArtifacts:
                         files_downloaded += 1
                         #logger.info(f"  |-- {relpath} -> {abs_temp_download_loc}")
                         logger.info(f"  |-- {normalized_relpath}")
+                        if self.debug:
+                            print("------------------------------------------------\n")
                     else:
                         logger.error(f"  |-- [FAILED] {normalized_relpath}")
                 except Exception as e:
