@@ -165,3 +165,5 @@ nav:
       - Metahub: cmf_server/metahub-tab-usage.md
       - TensorBoard: cmf_client/tensorflow_guide.md
     - 🔗 Ontology: common-metadata-ontology/readme.md
+    - 🛠️ Agent Skills:
+      - skills/index.md
