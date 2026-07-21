@@ -1,0 +1,28 @@
+{
+  "name": "cmf-plugins",
+  "owner": {
+    "name": "HewlettPackard",
+    "email": "aalap.tripathy@hpe.com"
+  },
+  "metadata": {
+    "description": "Agent skills for the Common Metadata Framework (CMF) — instrument ML pipelines, track artifacts, sync metadata, and query lineage",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "cmf",
+      "source": "./",
+      "description": "Agent skills for CMF — instrument ML pipelines, track artifacts, sync metadata, and query lineage",
+      "version": "1.0.0",
+      "author": {
+        "name": "Hewlett Packard Enterprise",
+        "url": "https://hewlettpackard.github.io/cmf/"
+      },
+      "homepage": "https://hewlettpackard.github.io/cmf/",
+      "repository": "https://github.com/HewlettPackard/cmf",
+      "license": "Apache-2.0",
+      "keywords": ["cmf", "ml-pipeline", "metadata", "lineage", "mlops"],
+      "category": "ml-frameworks"
+    }
+  ]
+}
