@@ -48,7 +48,7 @@ def merge_created_context(
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
         # Create context
         context: mlmd.proto.Context = cmf.merge_created_context(
             pipeline_stage="Test-env/prepare",
@@ -96,7 +96,7 @@ def merge_created_execution(
         from cmflib.cmf import Cmf
         from ml_metadata.proto import metadata_store_pb2 as mlpb
         # Create CMF logger
-        cmf = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+        cmf = Cmf(filename="mlmd", pipeline_name="test_pipeline")
         # Create or reuse context for this stage
         context: mlmd.proto.Context = cmf.merge_created_context(
             pipeline_stage="prepare",
