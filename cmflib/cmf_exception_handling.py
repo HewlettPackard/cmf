@@ -398,3 +398,19 @@ class MsgFailure(CmfFailure):
             return self.msg_list
         else:
             return self.msg_str
+
+
+class GitConfigNotSet(CmfFailure):
+    """Exception raised when git user.name or user.email is not configured."""
+    def __init__(self, missing_configs: Optional[List[str]] = None, return_code=127):
+        self.missing_configs = missing_configs or []
+        super().__init__(return_code)
+
+    def handle(self):
+        configs_str = ", ".join(self.missing_configs) if self.missing_configs else "user.name and/or user.email"
+        return (
+            f"ERROR: Git configuration is incomplete. Missing: {configs_str}.\n"
+            f"Please configure git before running 'cmf init':\n"
+            f"  git config --global user.name \"Your Name\"\n"
+            f"  git config --global user.email \"your.email@example.com\""
+        )
