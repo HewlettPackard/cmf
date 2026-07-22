@@ -16,7 +16,7 @@
 
 services:
   postgres:
-    image: postgres:13
+    image: docker.io/library/postgres:13
     container_name: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-myuser}
@@ -131,7 +131,7 @@ services:
           - mcp
 
   nginx:
-    image: nginx:alpine
+    image: docker.io/library/nginx:alpine
     container_name: cmf-nginx
     ports:
       - ${NGINX_HTTP_PORT:-80}:80
