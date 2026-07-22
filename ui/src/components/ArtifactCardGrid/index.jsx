@@ -32,10 +32,27 @@ const ArtifactCardGrid = ({
     isSplitView = false,
     selectedItems = [],
     onToggleItem,
+    expandedRow,
+    setExpandedRow,
 }) => {
     const [expandedCard, setExpandedCard] = useState(null);
     const [showModelPopup, setShowModelPopup] = useState(false);
     const [popupData, setPopupData] = useState("");
+
+    // Returns true if any property name or value of the artifact matches the active filter.
+    const hasPropertyMatch = (artifact) => {
+        if (!filterValue || !filterValue.trim()) return false;
+        const lower = filterValue.toLowerCase();
+        return (artifact.artifact_properties || []).some(
+            (p) =>
+                String(p.name).toLowerCase().includes(lower) ||
+                String(p.value).toLowerCase().includes(lower)
+        );
+    };
+
+    // A card is considered expanded if manually toggled OR if the filter matches one of its properties.
+    const isCardExpanded = (index, artifact) =>
+        expandedCard === index || hasPropertyMatch(artifact);
 
     const getPropertyValue = (properties, propertyName) => {
         if (typeof properties === "string") {
@@ -70,7 +87,7 @@ const ArtifactCardGrid = ({
             // Pad single digit numbers with leading zeros for consistent formatting
             const pad = (n) => n.toString().padStart(2, '0');
             return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
-                   `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
+                `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
         } catch {
             return timestamp;
         }
@@ -150,8 +167,8 @@ const ArtifactCardGrid = ({
                     <div
                         key={index}
                         className={`bg-white rounded-lg border-2 ${selectedItems.some(a => a.artifact_id === artifact.artifact_id)
-                                ? 'border-teal-500 shadow-lg'
-                                : 'border-gray-300 hover:border-teal-500 hover:shadow-lg'
+                            ? 'border-teal-500 shadow-lg'
+                            : 'border-gray-300 hover:border-teal-500 hover:shadow-lg'
                             } transition-all duration-200 overflow-hidden ${onArtifactClick ? 'cursor-pointer' : ''}`}
                         onClick={() => onArtifactClick && onArtifactClick(artifact)}
                     >
@@ -310,7 +327,7 @@ const ArtifactCardGrid = ({
                                     View All Properties ({artifact.artifact_properties?.length || 0})
                                 </span>
                                 <svg
-                                    className={`w-5 h-5 text-gray-400 transition-transform ${expandedCard === index ? 'transform rotate-180' : ''
+                                    className={`w-5 h-5 text-gray-400 transition-transform ${isCardExpanded(index, artifact) ? 'transform rotate-180' : ''
                                         }`}
                                     fill="currentColor"
                                     viewBox="0 0 20 20"
@@ -319,7 +336,7 @@ const ArtifactCardGrid = ({
                                 </svg>
                             </button>
 
-                            {expandedCard === index && (
+                            {isCardExpanded(index, artifact) && (
                                 <div className="px-4 pb-4 max-h-64 overflow-y-auto bg-gray-50">
                                     <div className="space-y-2">
                                         {artifact.artifact_properties?.map((property, idx) => (

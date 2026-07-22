@@ -29,7 +29,7 @@ DATABASE_URL = "postgresql+asyncpg://{0}:{1}@{2}:{3}/{4}".format(
 # Create an asynchronous engine with connection pooling
 engine = create_async_engine(
     DATABASE_URL,
-    echo=True,  # For debugging, log SQL statements
+    echo=False,  # For debugging, log SQL statements
 )
 
 # Create a session maker
