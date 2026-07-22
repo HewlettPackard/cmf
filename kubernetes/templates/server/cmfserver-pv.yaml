@@ -2,63 +2,83 @@ apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-server-data
+  labels:
+    type: server-data
 spec:
   capacity:
-    storage: 40Gi
+    storage: {{ .Values.cmf_service.pvc.data.storage }}
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/cmf/data
+    type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-server-data-env
+  labels:
+    type: server-data-env
 spec:
   capacity:
-    storage: 5Gi
+    storage: {{ .Values.cmf_service.pvc.env.storage }}
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/cmf/data/env
+    type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-server-data-static
+  labels:
+    type: server-data-static
 spec:
   capacity:
-    storage: 20Gi
+    storage: {{ .Values.cmf_service.pvc.static.storage }}
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/cmf/data/static
+    type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-server-data-labels
+  labels:
+    type: server-data-labels
 spec:
   capacity:
-    storage: 5Gi
+    storage: {{ .Values.cmf_service.pvc.labels.storage }}
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/cmf/data/labels
+    type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-tensorboard-logs
+  labels:
+    type: tensorboard-logs
 spec:
   capacity:
-    storage: 20Gi
+    storage: {{ .Values.tensorboard_service.pvc.logs.storage }}
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
   hostPath:
     path: /mnt/cmf/data/tensorboard-logs
+    type: DirectoryOrCreate
