@@ -1,4 +1,7 @@
 # Using `Cmf` to track metadata for a ML Pipeline
+**Quick Start Roadmap**
+
+Start by reading the Official Example [README.md](https://github.com/HewlettPackard/cmf/blob/master/examples/example-get-started/README.md), which serves as the technical guide for the repository's structure and configuration. This ensures a smooth setup, while the example-get-started tutorial below explains the underlying logic CMF uses to track metadata across each stage of your ML pipeline.
 
 [example-get-started](https://github.com/HewlettPackard/cmf/tree/master/examples/example-get-started) demonstrates how `Cmf` tracks metadata associated with executions of various machine learning (ML)
 pipelines. ML pipelines differ from other pipelines (e.g., data Extract-Transform-Load pipelines) by the presence of
