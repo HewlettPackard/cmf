@@ -102,52 +102,37 @@ def get_fqdn(name: str) -> str:
 
 import json
 
+def _exec_sort_key(e):
+    """Sort key for executions: prefer create_time_since_epoch, fall back to numeric id."""
+    ts = e.get("create_time_since_epoch")
+    if ts is not None:
+        try:
+            return (0, int(ts))
+        except (TypeError, ValueError):
+            pass
+    try:
+        return (1, int(e.get("id")))
+    except (TypeError, ValueError):
+        return (2, 0)
+
 def convert_to_stage_json(input_json: dict, pipeline_name: str) -> dict:
     """
     Converts MLMD JSON for a clean hierarchy map.
-    - Removes trailing child nodes underneath executions.
-    - Combines Execution Type name and a 6-digit truncated UUID.
+    - Combines Execution Type name and a 4-digit truncated UUID.
     - Includes rich metadata fields for frontend hover/tooltip parsing.
+    JSON structure is always: { "Pipeline": [ { "stages": [...] } ] }
     """
-    
-    def extract_stages_recursively(data):
-        """Recursively parses and drills down to locate the raw stages list."""
-        if isinstance(data, str):
-            cleaned = data.strip()
-            try:
-                return extract_stages_recursively(json.loads(cleaned))
-            except Exception:
-                if "stages" in cleaned or "Pipeline" in cleaned:
-                    try:
-                        if not (cleaned.startswith('{') and cleaned.endswith('}')):
-                            return extract_stages_recursively(json.loads("{" + cleaned + "}"))
-                    except Exception:
-                        pass
-                return None
 
-        if isinstance(data, dict):
-            for key in ("stages", "stage_list", "stageList"):
-                if key in data and isinstance(data[key], list):
-                    return data[key]
-            for key in ("Pipeline", "pipelines", "name"):
-                if key in data:
-                    res = extract_stages_recursively(data[key])
-                    if res: return res
-            for v in data.values():
-                if isinstance(v, (dict, list, str)):
-                    res = extract_stages_recursively(v)
-                    if res: return res
-
-        if isinstance(data, list):
-            for item in data:
-                res = extract_stages_recursively(item)
-                if res: return res
-                
-        return None
-
-    stages_candidate = extract_stages_recursively(input_json)
-    if not stages_candidate:
+    try:
+        stages_candidate = input_json["Pipeline"][0]["stages"]
+        if not isinstance(stages_candidate, list):
+            stages_candidate = []
+    except (KeyError, IndexError, TypeError):
         stages_candidate = []
+
+    # MLMD returns stages in reverse pipeline order (last-run stage first).
+    # Reverse so columns render left-to-right: Prepare -> Featurize -> Train -> Evaluate.
+    stages_candidate = list(reversed(stages_candidate))
 
     out = {
         "environment": pipeline_name,
@@ -159,28 +144,7 @@ def convert_to_stage_json(input_json: dict, pipeline_name: str) -> dict:
     exec_idx = 1
 
     for s_item in stages_candidate:
-        if not isinstance(s_item, dict):
-            continue
-
-        raw_executions = s_item.get("executions") or []
-        if isinstance(raw_executions, str):
-            try: raw_executions = json.loads(raw_executions)
-            except Exception: raw_executions = []
-
-        if not raw_executions:
-            continue
-
-        # Extract context attributes from the execution definition
-        first_exec = raw_executions[0] if isinstance(raw_executions, list) and len(raw_executions) > 0 else {}
-        props = first_exec.get("properties") or {} if isinstance(first_exec, dict) else {}
-        
-        context_type = props.get("Context_Type") or props.get("Execution_type_name") or first_exec.get("type") or ""
-        if "/" in context_type:
-            stage_name = context_type.split("/", 1)[1]
-        elif context_type:
-            stage_name = context_type
-        else:
-            stage_name = f"stage_{stage_idx}"
+        stage_name = s_item["name"]
 
         stage_obj = {
             "stage_id": f"stage_{stage_idx:02d}",
@@ -190,39 +154,23 @@ def convert_to_stage_json(input_json: dict, pipeline_name: str) -> dict:
         }
         stage_idx += 1
 
-        for e in raw_executions:
-            if not isinstance(e, dict):
-                continue
+        # Sort executions by actual creation time; fall back to numeric id.
+        executions = sorted(s_item.get("executions", []), key=_exec_sort_key)
 
-            e_props = e.get("properties") or {}
-            
-            # 1. Fetch execution base name (e.g., "Prepare")
-            exec_base_name = e.get("type") or "Execution"
-            
-            # 2. Use Execution_uuid first — same field the tangled-tree lineage keys off of,
-            #    so the same execution shows the same short UUID in both views.
-            full_uuid = str(e_props.get("Execution_uuid") or e_props.get("Git_End_Commit") or e_props.get("Git_Start_Commit") or e.get("id") or "")
-            truncated_uuid = full_uuid[:4] if full_uuid else f"ex_{exec_idx}"
-
-            # 3. Create the multi-line UI text block
-            # Note: '\n' handles line breaks in graph frameworks configured with CSS white-space: pre-wrap
-            display_text = f"{exec_base_name}\n{truncated_uuid}"
-
+        for e in executions:
+            full_uuid = str(e["properties"]["Execution_uuid"])
             exec_obj = {
                 "execution_id": f"exec_{exec_idx:03d}",
-                "execution_type": display_text, 
-                "children": [],  # Empty array ensures no leaf artifact nodes render underneath
-                
-                # Broad compatibility fields for the UI graphing framework's hover tooltip engine
+                "execution_type": f"{stage_name}:{full_uuid[:4]}",
+                "children": [],
                 "tooltip": full_uuid,
                 "title": full_uuid,
                 "description": f"Full UUID: {full_uuid}",
                 "full_uuid": full_uuid
             }
             exec_idx += 1
-
             stage_obj["executions"].append(exec_obj)
-        
+
         out["stages"].append(stage_obj)
 
     return out

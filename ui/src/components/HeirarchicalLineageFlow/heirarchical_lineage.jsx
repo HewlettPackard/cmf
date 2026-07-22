@@ -199,8 +199,6 @@ const getLayoutedElements = (nodes = [], edges = []) => {
   });
 };
 
-
-
 const Hierarchical_LineageFlow = ({ data }) => {
   const proOptions = { hideAttribution: true };
   const { nodes, edges } = useMemo(() => {
@@ -232,9 +230,30 @@ const Hierarchical_LineageFlow = ({ data }) => {
       }
     }));
 
+    // Layout uses the FULL edge list so every execution sibling gets
+    // correctly positioned in its vertical stack
+    const layoutedNodes = getLayoutedElements(rfNodes, rfEdges);
+
+    // Only AFTER layout, filter which edges are actually rendered.
+    // Keep just the first Stage -> Execution edge per stage (to anchor
+    // the stack visually) and drop the rest, so no connecting line
+    // appears between stacked execution boxes.
+    const seenExecutionEdgeForSource = new Set();
+    const renderEdges = rfEdges.filter((edge) => {
+      const targetNode = layoutedNodes.find((n) => n.id === edge.target);
+      if (targetNode?.data?.type === "Execution") {
+        if (seenExecutionEdgeForSource.has(edge.source)) {
+          return false;
+        }
+        seenExecutionEdgeForSource.add(edge.source);
+        return true;
+      }
+      return true;
+    });
+
     return {
-      nodes: getLayoutedElements(rfNodes, rfEdges),
-      edges: rfEdges,
+      nodes: layoutedNodes,
+      edges: renderEdges,
     };
   }, [data]);
 

@@ -628,6 +628,8 @@ async def hierarchical_lineage(request: Request, pipeline_name: str):
         raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found or has no MLMD data.")
 
     try:
+        if isinstance(json_payload, str):
+            json_payload = json.loads(json_payload)
         converted = convert_to_stage_json(json_payload, pipeline_name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to convert MLMD to stage JSON: {e}")

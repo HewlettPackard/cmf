@@ -55,8 +55,7 @@ export const transformNestedStageData = (rawJson) => {
     });
 
     if (Array.isArray(stage.executions)) {
-      const orderedExecutions = [...stage.executions].reverse(); // fix reversed backend order
-      orderedExecutions.forEach((exec) => {
+      stage.executions.forEach((exec) => {
         const execId = `exec-${exec.execution_id}`;
         const [execName, execUuidLine] = (exec.execution_type || "Execution").split("\n");
 
@@ -64,7 +63,7 @@ export const transformNestedStageData = (rawJson) => {
           id: execId,
           name: execName || "Execution",
           type: "Execution",
-          uuid: execUuidLine || (exec.full_uuid ? exec.full_uuid.substring(0, 4) : ""),
+          uuid: "",
           fullUuid: exec.full_uuid || execUuidLine || "",
         });
 

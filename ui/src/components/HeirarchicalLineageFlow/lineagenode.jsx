@@ -30,10 +30,26 @@ const getBadgeLabel = (type) => {
   return type ? type.toUpperCase() : "NODE";
 };
 
+const HANDLE_HIDDEN_STYLE = {
+  opacity: 0,
+  width: 1,
+  height: 1,
+  minWidth: 0,
+  minHeight: 0,
+  border: "none",
+  background: "transparent",
+};
+
 const LineageNode1 = ({ data }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { backgroundColor, fullUuid, ...rest } = data;
   const tooltipData = { ...rest, uuid: fullUuid || data.uuid };
+
+  // Only hide the connector dots on Execution node boxes;
+  // Pipeline and Stage nodes keep their default visible handles
+  const isExecution = data.type === "Execution";
+  const targetHandleStyle = isExecution ? HANDLE_HIDDEN_STYLE : undefined;
+  const sourceHandleStyle = isExecution ? HANDLE_HIDDEN_STYLE : undefined;
 
   return (
     <div
@@ -42,7 +58,7 @@ const LineageNode1 = ({ data }) => {
       onMouseLeave={() => setShowTooltip(false)}
       style={{ position: "relative" }}
     >
-      <Handle type="target" position={Position.Top} />
+      <Handle type="target" position={Position.Top} style={targetHandleStyle} />
 
       <div className="lineage-badge" style={{ backgroundColor: getColor(data.type) }}>
         {getBadgeLabel(data.type)}
@@ -58,7 +74,7 @@ const LineageNode1 = ({ data }) => {
         </pre>
       )}
 
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Bottom} style={sourceHandleStyle} />
     </div>
   );
 };
