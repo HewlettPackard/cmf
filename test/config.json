@@ -1,6 +1,0 @@
-{
-    "cmf_server_url": "http://X.X.X.X:80",
-    "ssh_path": "ssh://X.X.X.X/home/xxxx/ssh-storage",
-    "ssh_user":"xxx",
-    "ssh_password": "wxyz"
-}
