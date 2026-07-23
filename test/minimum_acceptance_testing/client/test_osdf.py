@@ -55,7 +55,7 @@ def test_cmf_init_osdf(cmf_server_url):
         path=path,
         git_remote_url=git_remote_url,
         cmf_server_url=cmf_server_url,
-        osdf_cache=cache,
+        cache=cache,
         access_token=access_token,
     )
     if not check_git_remote():

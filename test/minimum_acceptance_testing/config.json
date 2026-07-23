@@ -1,9 +1,19 @@
 {
     "cmf_server_url": "http://x.x.x.x:80",
-    "local_path": "/home/hpe_usr/local-storage-sync",
-    "POSTGRES_HOST": "x.x.x.x",
-    "POSTGRES_USER": "myuser",
-    "POSTGRES_PASSWORD": "mypassword",
-    "POSTGRES_PORT": "5432",
-    "POSTGRES_DB": "mlmd"
+    "local_path": "/home/hpe-user/local-storage",
+    "minio_url": "s3://dvc-art",
+    "minio_endpoint_url": "http://x.x.x.x:9000",
+    "minio_access_key_id": "minioadmin",
+    "minio_secret_key": "minioadmin",
+    "aws_url": "",
+    "aws_access_key_id": "",
+    "aws_secret_key": "",
+    "aws_session_token": "",
+    "ssh_path": "ssh://x.x.x.x/home/user/ssh-storage",
+    "ssh_user": "user",
+    "ssh_port": "22",
+    "ssh_password": "",
+    "osdf_path": "https://fdp-origin.example.com/repo",
+    "osdf_cache": "https://osdf-director.osg-htc.org/",
+    "osdf_access_token": "~/.fdp/osdf_token"
 }
