@@ -38,25 +38,27 @@ def _require(data, key):
     """Fail immediately with a clear message if a required config key is missing or empty."""
     val = data.get(key, "")
     if not val:
-        pytest.fail(f"config.json: '{key}' is not set. Required for osdfremote backend.")
+        pytest.fail(f"config.json: '{key}' is not set. Required for amazonS3 backend.")
     return val
 
 
-def test_cmf_init_osdf(cmf_server_url):
-    print("-------------------------------Test Case Name: cmf init osdfremote----------------------------------")
+def test_cmf_init_amazons3(cmf_server_url):
+    print("-------------------------------Test Case Name: cmf init amazonS3----------------------------------")
     data = _get_config()
-    path         = _require(data, "osdf_path")
-    cache        = _require(data, "osdf_cache")
-    access_token = _require(data, "osdf_access_token")
+    url           = _require(data, "aws_url")
+    access_key    = _require(data, "aws_access_key_id")
+    secret_key    = _require(data, "aws_secret_key")
+    session_token = _require(data, "aws_session_token")
     git_remote_url = "https://github.com/hpe-user/experiment-repo.git"
 
     _ = cmf.cmf_init(
-        type="osdfremote",
-        path=path,
+        type="amazonS3",
+        url=url,
+        access_key_id=access_key,
+        secret_key=secret_key,
+        session_token=session_token,
         git_remote_url=git_remote_url,
         cmf_server_url=cmf_server_url,
-        osdf_cache=cache,
-        access_token=access_token,
     )
     if not check_git_remote():
         git_add_remote(git_remote_url)

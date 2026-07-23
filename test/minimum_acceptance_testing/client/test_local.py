@@ -16,31 +16,45 @@
 
 import pytest
 import subprocess
-import time
 import os
+import json
+import shutil
+from pathlib import Path
 from cmflib import cmf
 from cmflib.dvc_wrapper import check_git_remote, git_add_remote
+from _helpers import assert_cmf_success
+
+_CONFIG_JSON = Path(__file__).parent.parent / "config.json"
 
 pytestmark = pytest.mark.usefixtures("example_workspace")
 
-def test_cmf_init_show():
-    print()
-    print("-------------------------------Test Case Name: cmf init show ----------------------------------")
-    _= cmf.cmf_init_show()
+
+def _get_config():
+    with open(str(_CONFIG_JSON), 'r') as f:
+        return json.load(f)
 
 
 def test_cmf_init_local(cmf_server_url):
     print("-------------------------------Test Case Name: cmf init local ----------------------------------")
-    # local-storage can't be in the same folder where dvc was initialised
-    path = f"{os.getcwd()}/../local-storage"
+    data = _get_config()
+    path = data.get("local_path", "")
+    if not path:
+        pytest.fail("config.json: 'local_path' is not set. Required for local backend.")
+    path = data["local_path"]
     git_remote_url = "https://github.com/hpe-user/experiment-repo.git"
     _ = cmf.cmf_init(type="local", path=path, git_remote_url=git_remote_url,
-               neo4j_user='neo4j', neo4j_password="xxxxxx", neo4j_uri="bolt://xx.xx.xxx.xxx:7687", cmf_server_url=cmf_server_url)
+               cmf_server_url=cmf_server_url)
     # cmf_init calls `git remote set-url cmf_origin` which silently fails when the
     # remote doesn't exist yet (the example workspace has no pre-existing cmf_origin).
     # Ensure the remote is set so downstream tests that call Cmf() pass the git-remote precheck.
     if not check_git_remote():
         git_add_remote(git_remote_url)
+
+
+def test_cmf_init_show():
+    print()
+    print("-------------------------------Test Case Name: cmf init show ----------------------------------")
+    _= cmf.cmf_init_show()
 
 
 def test_script():
@@ -60,26 +74,35 @@ def test_script():
             print(f"{script_name} executed successfully.")
 
 
-def test_artifact_push():
-    print("-------------------------------Test Case Name: cmf artifact push ----------------------------------")
-    _= cmf.artifact_push(pipeline_name="Test-env")
-
-
 def test_metadata_push(start_server):
     print("-------------------------------Test Case Name: cmf metadata push  ----------------------------------")
-    _= cmf.metadata_push(pipeline_name="Test-env", file_name="mlmd")
+    result = cmf.metadata_push(pipeline_name="Test-env", file_name="mlmd")
+    assert_cmf_success(result, "metadata_push")
 
 
 def test_metadata_pull(start_server, stop_server):
     print("-------------------------------Test Case Name: cmf metadata pull  ----------------------------------")
-    _=cmf.metadata_pull(pipeline_name="Test-env", file_name="mlmd_pull")
+    result = cmf.metadata_pull(pipeline_name="Test-env", file_name="mlmd_pull")
+    assert_cmf_success(result, "metadata_pull")
+
+
+def test_artifact_push():
+    print("-------------------------------Test Case Name: cmf artifact push ----------------------------------")
+    result = cmf.artifact_push(pipeline_name="Test-env")
+    assert_cmf_success(result, "artifact_push")
 
 
 def test_artifact_pull():
     print("-------------------------------Test Case Name: cmf artifact pull  ----------------------------------")
-    _=cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd_pull")
+    # Remove locally generated artifacts and DVC cache so the pull is forced to
+    # fetch from the configured remote storage (not served from local cache).
+    shutil.rmtree("artifacts", ignore_errors=True)
+    shutil.rmtree(".dvc/cache", ignore_errors=True)
+    result = cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd")
+    assert_cmf_success(result, "artifact_pull")
 
 
 def test_artifact_pull_single():
     print("-------------------------------Test Case Name: cmf artifact pull single artifact  ----------------------------------")
-    _=cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd_pull", artifact_name="data.xml.gz")
+    result = cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd", artifact_name="data.xml.gz")
+    assert_cmf_success(result, "artifact_pull_single")
