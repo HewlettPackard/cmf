@@ -9,7 +9,7 @@ const nodeTypes = { lineageNode: LineageNode1 };
 const nodeWidth = 220; 
 const nodeHeight = 80;
 
-// Central color thematic scheme helper matching your MiniMap rules
+// Central color of Environment, Stage, and Execution nodes in the lineage tree
 const getNodeThemeColor = (type) => {
   switch (type) {
     case "Environment": return "#10b981"; // Green
@@ -71,12 +71,13 @@ const CustomMiniMapNode = ({ id, x, y, width, height }) => {
   );
 };
 
-// MODIFIED: Generates the exact clean layout tree seen in your example image
+// MODIFIED: Generates the exact clean layout tree seen in your example image (rawJson)
 const transformLineageData = (rawJson) => {
   const nodesMap = new Map();
   const links = [];
   const flatItems = rawJson.flat();
 
+  // Guesses a node's type based on its ID string content, prioritizing specific keywords
   const determineType = (id) => {
     if (id.toLowerCase().includes("metrics")) return "Metrics";
     if (id.toLowerCase().includes("model")) return "Stage"; 
@@ -120,8 +121,7 @@ const transformLineageData = (rawJson) => {
 };
 
 // Layout reconfigured for a top-down vertical tree structure with side-by-side spacing
-// FIXED LAYOUT ENGINE: Keeps stages horizontal, stacks ONLY execution leaf nodes vertically
-// FIXED LAYOUT ENGINE: Removes massive empty horizontal spacing between stages
+// The core layout engine, using dagre for "Backbone" and manual math for Execution leaves.
 const getLayoutedElements = (nodes = [], edges = []) => {
   const g = new dagre.graphlib.Graph();
   
@@ -133,7 +133,6 @@ const getLayoutedElements = (nodes = [], edges = []) => {
     marginx: 40,
     marginy: 40
   });
-  g.setDefaultEdgeLabel(() => ({}));
 
   // STEP 1: Only feed non-Execution nodes (Environment & Stages) into Dagre
   nodes.forEach((node) => {
@@ -200,12 +199,14 @@ const getLayoutedElements = (nodes = [], edges = []) => {
 };
 
 const Hierarchical_LineageFlow = ({ data }) => {
+  // Disable the default ReactFlow watermarks on the canvas surface
   const proOptions = { hideAttribution: true };
   const { nodes, edges } = useMemo(() => {
     if (!data || data.length === 0) return { nodes: [], edges: [] };
 
     const formattedData = Array?.isArray(data) && !data?.nodes ? transformLineageData(data) : data;
 
+    // Map business object properties into standard ReactFlow Node specifications
     const rfNodes = formattedData?.nodes?.map((node) => ({
       id: node.id,
       type: "lineageNode",
@@ -215,6 +216,7 @@ const Hierarchical_LineageFlow = ({ data }) => {
       }, 
     }));
 
+    // Convert links/edges array into ReactFlow formatted visual connections
     const rfEdges = (formattedData?.links ?? formattedData?.edges ??[]).map((link, index) => ({
       id: `edge-${index}`,
       source: link.source,

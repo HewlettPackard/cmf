@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Handle, Position } from "reactflow";
 
+// Actual node color scheme for the lineage tree, matching the MiniMap color rules
+
 const getColor = (type) => {
   switch (type) {
     case "Dataset":
@@ -25,11 +27,13 @@ const getColor = (type) => {
   }
 };
 
+// Return the label to show the node's badge based on its type.
 const getBadgeLabel = (type) => {
   if (type === "Environment") return "PIPELINE_NAME";
   return type ? type.toUpperCase() : "NODE";
 };
 
+// A style object that visually hide the connector dots for execution nodes.
 const HANDLE_HIDDEN_STYLE = {
   opacity: 0,
   width: 1,
@@ -40,6 +44,8 @@ const HANDLE_HIDDEN_STYLE = {
   background: "transparent",
 };
 
+// A custom node component which track shows a tooltip state for hover.
+// Bascically,custom node component.
 const LineageNode1 = ({ data }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { backgroundColor, fullUuid, ...rest } = data;
