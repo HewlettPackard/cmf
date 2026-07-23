@@ -23,6 +23,7 @@ const LINEAGE_LABELS = {
   Artifact_Tree: "Artifact Lineage",
   Execution_Tree: "Execution Lineage",
   Artifact_Execution_Tree: "Artifact Execution Lineage",
+  Heirarchical_Lineage: "Hierarchical Lineage",
 };
 
 // Icon per lineage type
@@ -38,6 +39,13 @@ const LineageIcon = ({ type }) => {
     return (
       <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-2-2 2M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+      </svg>
+    );
+  }
+  if (type === "Heirarchical_Lineage") {
+    return (
+      <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h12M4 14h8M4 18h4" />
       </svg>
     );
   }

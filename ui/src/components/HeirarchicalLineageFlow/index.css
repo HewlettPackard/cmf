@@ -1,0 +1,104 @@
+.lineage-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.lineage-subtitle {
+  font-size: 14px;
+  color: #666;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.lineage-badge {
+  color: white;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.lineage-card {
+  padding: 10px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  width: 200px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  box-sizing: border-box; 
+  position: relative;
+}
+
+/* Ensure the react-flow minimap sub-canvas container doesn't overlap completely */
+.react-flow__minimap {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+/* Styling for individual nodes inside the MiniMap element container */
+.react-flow__minimap-node {
+  rx: 4px !important; /* Rounded corners */
+  ry: 4px !important;
+  stroke: #ffffff !important;
+  stroke-width: 2px !important;
+}
+
+/* Color matching rules mapping exactly to your main lineage diagram */
+.minimap-node-Dataset {
+  fill: #10b981 !important; /* Emerald Green */
+}
+
+.minimap-node-Model {
+  fill: #f59e0b !important; /* Warm Amber */
+}
+
+.minimap-node-Metrics {
+  fill: #ef4444 !important; /* Rose Red */
+}
+
+.minimap-node-Execution, .minimap-node-default {
+  fill: #3b82f6 !important; /* Blue Accent */
+}
+
+/* Enhances the viewport bounding box look */
+.react-flow__minimap-mask {
+  stroke: #cbd5e1 !important;
+  stroke-width: 1px !important;
+}
+
+.react-flow__attribution {
+  display: none !important;
+}
+
+.lineage-tooltip {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 12px;
+  z-index: 9999;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  min-width: 260px;
+  max-width: 360px;
+  pointer-events: none;
+}
+
+/* Raise the whole node above its siblings while hovered, so the tooltip escapes cleanly */
+.react-flow__node {
+  transition: z-index 0s;
+}
+
+.react-flow__node:hover {
+  z-index: 9999 !important;
+}
