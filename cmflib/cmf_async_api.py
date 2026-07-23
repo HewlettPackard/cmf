@@ -73,6 +73,9 @@ class CmfAsyncProxy:
         
         # Start subprocess if not already started
         self._manager.start()
+
+        # Register session so it can be reconstructed after a subprocess crash
+        self._manager.register_session(self._session_id, self._worker_params)
         
         # Initialize this session in the worker subprocess
         self._submit_task("_init_session", **self._worker_params)
@@ -236,6 +239,9 @@ class CmfAsyncProxy:
         
         # Cleanup this session
         self._submit_task("_cleanup_session")
+
+        # Remove from registry — session is done, no need to recover it
+        self._manager.unregister_session(self._session_id)
         
         logger.info(f"[CmfAsyncProxy] Session {self._session_id} finalized")
 
