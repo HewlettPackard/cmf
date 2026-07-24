@@ -164,6 +164,7 @@ const ArtifactsPostgres = () => {
         setArtifacts([]);
         setActivePage(1);
         setSelectedArtifacts([]);
+        fetchArtifactTypesByStage(selectedPipeline, stage);
     };
 
     const handleArtifactTypeClick = (artifactType) => {
