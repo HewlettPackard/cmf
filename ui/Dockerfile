@@ -1,4 +1,4 @@
-FROM node:18.15.0-alpine AS build
+FROM docker.io/library/node:18.15.0-alpine AS build
 WORKDIR /app
 ENV PATH=/app/node_modules/.bin:$PATH
 
@@ -15,7 +15,7 @@ COPY . ./
 RUN npm run build
 
 # Production environment
-FROM nginx:alpine
+FROM docker.io/library/nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker-entrypoint.sh /

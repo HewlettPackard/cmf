@@ -15,7 +15,7 @@
 ###
 
 # Use python 3.10-slim-bullseye as base image.
-FROM python:3.10-slim-bullseye
+FROM docker.io/library/python:3.10-slim-bullseye
 
 #Update the proxy if needed
 #ENV http_proxy http://web-proxy.corp.hpecorp.net:8080
