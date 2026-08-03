@@ -1,16 +1,15 @@
 FROM docker.io/library/node:18.15.0-alpine AS build
 WORKDIR /app
 ENV PATH=/app/node_modules/.bin:$PATH
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 # Environment variables needed for build
 ENV REACT_APP_CMF_API_URL=${REACT_APP_CMF_API_URL}
 
 COPY package.json ./
 COPY package-lock.json ./
-RUN npm install --silent
-RUN npm install svg.js
-RUN npm install d3
-RUN npm install react-scripts@5.0.1 -g --silent
+# --unsafe-perm skips fchown calls that fail in rootless Podman and cause EMFILE cascade
+RUN npm ci --legacy-peer-deps --no-audit --no-fund --unsafe-perm --cache /tmp/.npm
 COPY . ./
 RUN npm run build
 
