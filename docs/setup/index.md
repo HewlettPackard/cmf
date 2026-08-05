@@ -168,7 +168,7 @@ Once the containers are successfully started, the CMF UI will be available at th
 http://your-server-ip:80
 ```
 
-Replace `your-server-ip` with the actual IP address or hostname configured in the `REACT_APP_CMF_API_URL` environment variable. The UI is also reachable over HTTPS at `https://your-server-ip:443`.
+Replace `your-server-ip` with the actual IP address or hostname configured in the `REACT_APP_CMF_API_URL` environment variable. The UI is also reachable over HTTPS at `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`).
 
 > 📝 **Note:** Ensure that port 80 (or your configured `NGINX_HTTP_PORT`) and port 443 (or your configured `NGINX_HTTPS_PORT`) are accessible and not blocked by firewall rules.
 
