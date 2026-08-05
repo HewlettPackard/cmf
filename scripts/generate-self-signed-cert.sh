@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Generate a self-signed TLS certificate for the CMF nginx HTTPS endpoint.
 #
+# REQUIRED: the nginx service has a 443 ssl server block that will fail to
+# start without cmf.crt and cmf.key. Run this script before `docker compose up`.
+#
 # Certs are written to $CMF_DATA_DIR/nginx-certs/ (or ./data/nginx-certs/ if
 # CMF_DATA_DIR is unset) and are consumed by the nginx service via the volume
 # mount defined in docker-compose-server.yml.

@@ -2,11 +2,12 @@
 NGINX_HTTP_PORT=80
 NGINX_HTTPS_PORT=443
 
-# HTTPS (optional, self-signed by default)
+# HTTPS (required — nginx will not start without a certificate)
 # =========================================================================
 # The nginx service listens on NGINX_HTTPS_PORT (container port 443) and
-# expects a certificate at $CMF_DATA_DIR/nginx-certs/cmf.crt and a private
-# key at $CMF_DATA_DIR/nginx-certs/cmf.key.
+# REQUIRES a certificate at $CMF_DATA_DIR/nginx-certs/cmf.crt and a private
+# key at $CMF_DATA_DIR/nginx-certs/cmf.key. If these files are missing,
+# the nginx container will crash on startup.
 #
 # Generate a self-signed certificate with:
 #   scripts/generate-self-signed-cert.sh
