@@ -44,9 +44,12 @@ MCP_EXTERNAL_PORT=8382
 
 See [references/env-variables.md](references/env-variables.md) for full variable descriptions and common customizations.
 
-### Step 3 — Generate the TLS certificate (required)
+### Step 3 — Generate the TLS certificate (recommended)
 
-The `nginx` service has a `443 ssl` server block and **will crash on startup if the certificate files are missing**. Generate a self-signed cert before starting the stack:
+The `nginx` service has a `443 ssl` server block. An entrypoint script
+auto-generates a **throwaway** self-signed cert on startup if none is mounted,
+so HTTPS works out of the box. For a **stable** cert that persists across
+restarts and covers your hostname/IP, run the helper before starting the stack:
 
 ```bash
 scripts/generate-self-signed-cert.sh
@@ -122,7 +125,7 @@ docker compose -f docker-compose-server.yml up -d
 ## Troubleshooting
 
 - **`REACT_APP_CMF_API_URL` not set** — required; set to the host's IP/hostname
-- **`nginx` crashes on startup** — almost always a missing TLS certificate. Run `scripts/generate-self-signed-cert.sh` (or place your own `cmf.crt` / `cmf.key` in `$CMF_DATA_DIR/nginx-certs/`), then `docker compose -f docker-compose-server.yml up -d`. Check with `docker compose -f docker-compose-server.yml logs nginx`.
+- **`nginx` crashes on startup** — an entrypoint script should auto-generate a throwaway cert if none is mounted; if nginx still crashes, check `docker compose -f docker-compose-server.yml logs nginx`. For a stable cert, run `scripts/generate-self-signed-cert.sh` (or place your own `cmf.crt` / `cmf.key` in `$CMF_DATA_DIR/nginx-certs/`).
 - **Port 80 in use** — change `NGINX_HTTP_PORT` and update `REACT_APP_CMF_API_URL` to match
 - **`postgres` not healthy** — check `docker compose -f docker-compose-server.yml logs postgres`; usually a `CMF_DATA_DIR` permissions issue
 - **UI loads but API calls fail** — use the host IP, not `localhost`, in `REACT_APP_CMF_API_URL`; must be reachable from the browser

@@ -118,24 +118,27 @@ REACT_APP_CMF_API_URL=http://your-server-ip:80
 > - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
 > - `REACT_APP_CMF_API_URL` should point to your server's accessible address.
 
-**Step 4: Generate the TLS Certificate (required)**
+**Step 4: Generate the TLS Certificate (recommended)**
 
 The nginx service listens on both `NGINX_HTTP_PORT` (HTTP) and
-`NGINX_HTTPS_PORT` (HTTPS) and **requires** a TLS certificate to start. If the
-certificate files are missing, the `nginx` container will fail to start.
-
-Generate a self-signed certificate with the included helper:
+`NGINX_HTTPS_PORT` (HTTPS). The `nginx` container ships with an entrypoint
+script that **auto-generates a throwaway self-signed certificate on startup if
+none is found**, so HTTPS works out of the box (the cert is regenerated on each
+start). For a **stable** certificate that persists across restarts, generate
+one with the included helper:
 
 ```bash
 scripts/generate-self-signed-cert.sh
 ```
 
 This writes `cmf.crt` and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/`, which
-the `nginx` service mounts read-only at `/etc/nginx/certs/`.
+the `nginx` service mounts read-only at `/etc/nginx/certs/` and copies into
+place on startup.
 
-> 📝 **Note:** Browsers will warn about the self-signed certificate. To use
-> your own certificate, copy your `cmf.crt` and `cmf.key` into
-> `$CMF_DATA_DIR/nginx-certs/` instead of running the script.
+> 📝 **Note:** Browsers will warn about the self-signed certificate (whether
+> auto-generated or stable). To use your own certificate, copy your `cmf.crt`
+> and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/` instead of running the
+> script.
 
 **Step 5: Start the Containers**
 

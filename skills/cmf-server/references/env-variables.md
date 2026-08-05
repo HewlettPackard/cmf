@@ -19,7 +19,7 @@ All variables are set in the `.env` file in the same directory as `docker-compos
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `NGINX_HTTP_PORT` | `80` | Host port for HTTP |
-| `NGINX_HTTPS_PORT` | `443` | Host port for HTTPS. **Requires a TLS certificate** at `$CMF_DATA_DIR/nginx-certs/cmf.crt` and key at `cmf.key`; nginx will crash on startup without them. Generate with `scripts/generate-self-signed-cert.sh`. |
+| `NGINX_HTTPS_PORT` | `443` | Host port for HTTPS. nginx auto-generates a throwaway self-signed cert on startup if none is mounted; for a stable cert, run `scripts/generate-self-signed-cert.sh` (or place `cmf.crt` / `cmf.key` in `$CMF_DATA_DIR/nginx-certs/`). |
 | `MCP_EXTERNAL_PORT` | `8382` | Host port mapped to the CMF MCP server |
 
 ## PostgreSQL
