@@ -28,6 +28,7 @@ from cmflib.dvc_wrapper import (
     dvc_add_remote_repo,
     dvc_add_attribute,
     git_modify_remote_url,
+    git_add_or_modify_remote_url,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
@@ -89,7 +90,7 @@ class CmdInitAmazonS3(CmdBase):
             git_add_remote(self.args.git_remote_url[0])
             print("git init complete.")
         else:
-            git_modify_remote_url(self.args.git_remote_url[0])
+            git_add_or_modify_remote_url(self.args.git_remote_url[0])
             print("git init complete.")
 
 

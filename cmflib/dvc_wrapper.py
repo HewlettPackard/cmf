@@ -505,6 +505,29 @@ def git_modify_remote_url(git_url) -> str:
     return commit
 
 
+def git_add_or_modify_remote_url(git_url) -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'remote', 'get-url', 'cmf_origin'],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        if process.returncode == 0:
+            git_modify_remote_url(git_url)
+        else:
+            git_add_remote(git_url)
+
+    except Exception as err:
+        logger.error(f"[git_add_or_modify_remote_url] Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           logger.error(f"[git_add_or_modify_remote_url] Unexpected {outs}")
+           logger.error(f"[git_add_or_modify_remote_url] Unexpected {errs}")
+    return commit
+
+
 # Pulling code from branch
 def git_get_pull(branch_name: str) -> t.Tuple[str, str, int]:
     process = subprocess.Popen(f'git pull cmf_origin {branch_name}', 
