@@ -19,7 +19,7 @@ All variables are set in the `.env` file in the same directory as `docker-compos
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `NGINX_HTTP_PORT` | `80` | Host port for HTTP |
-| `NGINX_HTTPS_PORT` | `443` | Host port for HTTPS |
+| `NGINX_HTTPS_PORT` | `443` | Host port for HTTPS. **Requires a TLS certificate** at `$CMF_DATA_DIR/nginx-certs/cmf.crt` and key at `cmf.key`; nginx will crash on startup without them. Generate with `scripts/generate-self-signed-cert.sh`. |
 | `MCP_EXTERNAL_PORT` | `8382` | Host port mapped to the CMF MCP server |
 
 ## PostgreSQL
@@ -52,6 +52,12 @@ REACT_APP_CMF_API_URL=http://192.168.1.10:8080
 **External data volume:**
 ```env
 CMF_DATA_DIR=/mnt/nfs/cmf-data
+```
+
+**Bring-your-own TLS certificate** (instead of the self-signed one):
+```env
+# Place cmf.crt and cmf.key in $CMF_DATA_DIR/nginx-certs/ before starting.
+# No env change required — nginx reads them from the mounted certs dir.
 ```
 
 **Multi-environment MCP:**
