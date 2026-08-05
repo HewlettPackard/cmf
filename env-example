@@ -19,19 +19,14 @@ NGINX_HTTPS_PORT=443
 # React App Configuration
 # =========================================================================
 # REACT_APP_CMF_API_URL is the URL the browser uses to fetch API calls from
-# the UI. Its scheme (http/https) and port MUST match how you access the UI
-# in the browser, otherwise the browser blocks API calls as mixed content.
+# the UI. By default (unset), the browser uses its own origin
+# (window.location.origin), so HTTP and HTTPS both work automatically with no
+# mixed-content blocking.
 #
-# Choose ONE based on how you want to access the CMF web UI:
-#
-#   Access UI over HTTP (default, no cert warnings):
-#     REACT_APP_CMF_API_URL=http://<your-server-ip>:<NGINX_HTTP_PORT>
-#
-#   Access UI over HTTPS (self-signed cert; browser will warn):
-#     REACT_APP_CMF_API_URL=https://<your-server-ip>:<NGINX_HTTPS_PORT>
-#
-# If you change the NGINX port, update the same port number here.
-REACT_APP_CMF_API_URL=http://localhost:80
+# Set this ONLY if the API is served from a different host than the UI
+# (e.g. a split front/back-end deployment):
+#   REACT_APP_CMF_API_URL=http://<api-host>:<port>
+# REACT_APP_CMF_API_URL=
 
 # POSTGRES Configuration only for external postgress
 POSTGRES_HOST=postgres

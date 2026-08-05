@@ -94,7 +94,9 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     environment:
-      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL}
+      # Optional: set to an absolute URL only if the API is on a different host
+      # than the UI. When unset, the browser uses its own origin (window.location.origin).
+      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL-}
     depends_on:
       server:
         condition: service_healthy

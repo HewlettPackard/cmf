@@ -111,17 +111,11 @@ Create a `.env` file in the same directory as `docker-compose-server.yml` with t
 CMF_DATA_DIR=./data                    
 NGINX_HTTP_PORT=80                  
 NGINX_HTTPS_PORT=443
-REACT_APP_CMF_API_URL=http://your-server-ip:80
 ```
 
 > 📝 **Note:** 
 > - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
-> - `REACT_APP_CMF_API_URL` is the URL the **browser** uses to fetch API calls from the UI. Its scheme (`http`/`https`) and port **must match how you access the UI** — otherwise the browser blocks API calls as mixed content. Choose one:
->
->     | Access UI over... | `REACT_APP_CMF_API_URL` |
->     |---|---|
->     | HTTP (default, no cert warnings) | `http://your-server-ip:<NGINX_HTTP_PORT>` |
->     | HTTPS (self-signed cert; browser warns) | `https://your-server-ip:<NGINX_HTTPS_PORT>` |
+> - `REACT_APP_CMF_API_URL` is **optional**. When unset, the browser uses its own origin (`window.location.origin`) to call the API, so HTTP and HTTPS both work automatically with no mixed-content blocking. Set it only if the API is on a different host than the UI.
 
 **Step 4: Generate the TLS Certificate (recommended)**
 
@@ -167,12 +161,10 @@ This command starts all services:
 
 #### Accessing the CMF UI
 
-Once the containers are successfully started, open the CMF UI in a browser at the URL that matches your `REACT_APP_CMF_API_URL` scheme (see Step 3):
+Once the containers are successfully started, open the CMF UI in a browser at either URL — both work automatically:
 
-- **HTTP** (no cert warnings): `http://your-server-ip:<NGINX_HTTP_PORT>` (default `80`)
-- **HTTPS** (self-signed cert; browser will warn): `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`)
-
-> ⚠️ **Important:** The scheme you use to open the UI **must match** the scheme in `REACT_APP_CMF_API_URL`. Loading the UI over `https://` while the API URL is `http://` causes the browser to block API calls as mixed content, and the UI will show "Server connection refused".
+- **HTTP**: `http://your-server-ip:<NGINX_HTTP_PORT>` (default `80`, no cert warnings)
+- **HTTPS**: `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`, self-signed cert; browser will warn)
 
 > 📝 **Note:** Ensure that the ports you configured (`NGINX_HTTP_PORT` and `NGINX_HTTPS_PORT`) are accessible and not blocked by firewall rules.
 
