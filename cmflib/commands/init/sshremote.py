@@ -29,6 +29,7 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
+    git_add_or_modify_remote_url,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
@@ -87,6 +88,9 @@ class CmdInitSSHRemote(CmdBase):
             git_checkout_new_branch(branch_name)
             git_initial_commit()
             git_add_remote(self.args.git_remote_url[0])
+            print("git init complete.")
+        else:
+            git_add_or_modify_remote_url(self.args.git_remote_url[0])
             print("git init complete.")
 
         print("Starting cmf init.")
