@@ -116,7 +116,12 @@ REACT_APP_CMF_API_URL=http://your-server-ip:80
 
 > 📝 **Note:** 
 > - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
-> - `REACT_APP_CMF_API_URL` should point to your server's accessible address.
+> - `REACT_APP_CMF_API_URL` is the URL the **browser** uses to fetch API calls from the UI. Its scheme (`http`/`https`) and port **must match how you access the UI** — otherwise the browser blocks API calls as mixed content. Choose one:
+>
+>     | Access UI over... | `REACT_APP_CMF_API_URL` |
+>     |---|---|
+>     | HTTP (default, no cert warnings) | `http://your-server-ip:<NGINX_HTTP_PORT>` |
+>     | HTTPS (self-signed cert; browser warns) | `https://your-server-ip:<NGINX_HTTPS_PORT>` |
 
 **Step 4: Generate the TLS Certificate (recommended)**
 
@@ -162,15 +167,14 @@ This command starts all services:
 
 #### Accessing the CMF UI
 
-Once the containers are successfully started, the CMF UI will be available at the URL specified in your `.env` file:
+Once the containers are successfully started, open the CMF UI in a browser at the URL that matches your `REACT_APP_CMF_API_URL` scheme (see Step 3):
 
-```
-http://your-server-ip:80
-```
+- **HTTP** (no cert warnings): `http://your-server-ip:<NGINX_HTTP_PORT>` (default `80`)
+- **HTTPS** (self-signed cert; browser will warn): `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`)
 
-Replace `your-server-ip` with the actual IP address or hostname configured in the `REACT_APP_CMF_API_URL` environment variable. The UI is also reachable over HTTPS at `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`).
+> ⚠️ **Important:** The scheme you use to open the UI **must match** the scheme in `REACT_APP_CMF_API_URL`. Loading the UI over `https://` while the API URL is `http://` causes the browser to block API calls as mixed content, and the UI will show "Server connection refused".
 
-> 📝 **Note:** Ensure that port 80 (or your configured `NGINX_HTTP_PORT`) and port 443 (or your configured `NGINX_HTTPS_PORT`) are accessible and not blocked by firewall rules.
+> 📝 **Note:** Ensure that the ports you configured (`NGINX_HTTP_PORT` and `NGINX_HTTPS_PORT`) are accessible and not blocked by firewall rules.
 
 **Step 6: Stop the Containers**
 

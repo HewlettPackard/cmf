@@ -6,7 +6,7 @@ All variables are set in the `.env` file in the same directory as `docker-compos
 
 | Variable | Example | Purpose |
 |----------|---------|---------|
-| `REACT_APP_CMF_API_URL` | `http://192.168.1.10:80` | URL clients and the browser use to reach the CMF API. Must be reachable from client machines — use the host IP, not `localhost` if accessed remotely. |
+| `REACT_APP_CMF_API_URL` | `http://192.168.1.10:80` | URL the **browser** uses to fetch API calls from the UI. Must be reachable from client machines — use the host IP, not `localhost` if accessed remotely. **The scheme (`http`/`https`) must match how you open the UI**, or the browser blocks API calls as mixed content. |
 
 ## Storage
 
@@ -43,11 +43,20 @@ All variables are set in the `.env` file in the same directory as `docker-compos
 
 ## Common customizations
 
-**Non-standard HTTP port:**
+**Non-standard HTTP port (UI over HTTP):**
 ```env
 NGINX_HTTP_PORT=8080
 REACT_APP_CMF_API_URL=http://192.168.1.10:8080
 ```
+
+**UI over HTTPS (self-signed cert):**
+```env
+NGINX_HTTPS_PORT=8443
+REACT_APP_CMF_API_URL=https://192.168.1.10:8443
+```
+> The scheme in `REACT_APP_CMF_API_URL` must match the URL you open in the
+> browser. Loading the UI over `https://` with an `http://` API URL causes
+> mixed-content blocking.
 
 **External data volume:**
 ```env

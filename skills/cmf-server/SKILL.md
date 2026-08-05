@@ -31,6 +31,12 @@ cd cmf
 CMF_DATA_DIR=./data
 NGINX_HTTP_PORT=80
 NGINX_HTTPS_PORT=443
+
+# Choose the scheme that matches how you'll access the UI in the browser:
+#   HTTP  -> http://<your-server-ip>:80
+#   HTTPS -> https://<your-server-ip>:443
+# The scheme MUST match the URL you open in the browser, or the browser will
+# block API calls as mixed content.
 REACT_APP_CMF_API_URL=http://<your-server-ip>:80
 
 POSTGRES_USER=myuser
@@ -73,7 +79,11 @@ curl http://<your-server-ip>:80/api/pipelines
 # []
 ```
 
-Open `http://<your-server-ip>:80` (or `https://<your-server-ip>:443`, accepting the self-signed cert warning) in a browser — CMF web UI should load.
+Open the CMF web UI in a browser using the URL that matches your `REACT_APP_CMF_API_URL` scheme:
+- **HTTP**: `http://<your-server-ip>:<NGINX_HTTP_PORT>` (no cert warnings)
+- **HTTPS**: `https://<your-server-ip>:<NGINX_HTTPS_PORT>` (accept the self-signed cert warning)
+
+The scheme used to open the UI **must match** the scheme in `REACT_APP_CMF_API_URL`, or the browser will block API calls as mixed content.
 
 ### Step 6 — Point clients at the server
 
@@ -128,7 +138,7 @@ docker compose -f docker-compose-server.yml up -d
 - **`nginx` crashes on startup** — an entrypoint script should auto-generate a throwaway cert if none is mounted; if nginx still crashes, check `docker compose -f docker-compose-server.yml logs nginx`. For a stable cert, run `scripts/generate-self-signed-cert.sh` (or place your own `cmf.crt` / `cmf.key` in `$CMF_DATA_DIR/nginx-certs/`).
 - **Port 80 in use** — change `NGINX_HTTP_PORT` and update `REACT_APP_CMF_API_URL` to match
 - **`postgres` not healthy** — check `docker compose -f docker-compose-server.yml logs postgres`; usually a `CMF_DATA_DIR` permissions issue
-- **UI loads but API calls fail** — use the host IP, not `localhost`, in `REACT_APP_CMF_API_URL`; must be reachable from the browser
+- **UI loads but API calls fail** — use the host IP, not `localhost`, in `REACT_APP_CMF_API_URL`; must be reachable from the browser. Also ensure the scheme matches how you open the UI: loading `https://...` with an `http://` API URL causes mixed-content blocking and shows "Server connection refused"
 - **MCP server not reachable** — check `MCP_EXTERNAL_PORT` in `.env` and confirm it is not blocked by a firewall; test with `curl http://<server-ip>:<MCP_EXTERNAL_PORT>/health`
 - **Clients cannot push metadata** — confirm `cmf init show` shows the correct server URL; verify with `curl http://<server-ip>:80/api/pipelines` (expect `[]` for an empty server, or a list of pipeline names)
 
