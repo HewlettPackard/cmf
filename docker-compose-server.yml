@@ -150,6 +150,7 @@ services:
       - ${NGINX_HTTPS_PORT:-443}:443
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${CMF_DATA_DIR:-./data}/nginx-certs:/etc/nginx/certs:ro
     networks:
       - cmf-network
     depends_on:

@@ -156,6 +156,27 @@ Replace `your-server-ip` with the actual IP address or hostname configured in th
 docker compose -f docker-compose-server.yml stop
 ```
 
+#### Enabling HTTPS
+
+The nginx service also listens on `NGINX_HTTPS_PORT` (container port 443) when
+a TLS certificate is present. To generate a self-signed certificate:
+
+```bash
+scripts/generate-self-signed-cert.sh
+```
+
+This writes `cmf.crt` and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/`, which
+the `nginx` service mounts read-only at `/etc/nginx/certs/`. After generating
+the certificate, (re)start the stack and access CMF over HTTPS:
+
+```
+https://your-server-ip:443
+```
+
+> 📝 **Note:** Browsers will warn about the self-signed certificate. To use
+> your own certificate, copy your `cmf.crt` and `cmf.key` into
+> `$CMF_DATA_DIR/nginx-certs/` instead of running the script.
+
 #### Important Notes
 
 > 💡 **Rebuild Required:** 

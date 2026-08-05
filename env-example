@@ -2,6 +2,18 @@
 NGINX_HTTP_PORT=80
 NGINX_HTTPS_PORT=443
 
+# HTTPS (optional, self-signed by default)
+# =========================================================================
+# The nginx service listens on NGINX_HTTPS_PORT (container port 443) and
+# expects a certificate at $CMF_DATA_DIR/nginx-certs/cmf.crt and a private
+# key at $CMF_DATA_DIR/nginx-certs/cmf.key.
+#
+# Generate a self-signed certificate with:
+#   scripts/generate-self-signed-cert.sh
+#
+# Or, to use your own certificate, copy cmf.crt and cmf.key into
+# $CMF_DATA_DIR/nginx-certs/ before starting the stack.
+
 # React App Configuration
 # REACT_APP_CMF_API_URL=URL:NGINX_PORT
 # If you change the NGINX port, make sure to update the same port number in the env variable REACT_APP_CMF_API_URL.
