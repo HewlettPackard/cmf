@@ -531,6 +531,51 @@ class CmfQuery(object):
 
     get_artifact_names = get_all_artifacts
 
+    def get_label_artifact(self, artifact: mlpb.Artifact) -> t.Optional[pd.DataFrame]:
+        """Return artifact's label data frame .
+
+        Args:
+            artifact: dataset artifact object.
+
+        Returns:
+            Pandas data frame with one row containing label dataframe.
+        """
+        if not hasattr(artifact, "custom_properties_labels"):
+            return None
+
+        custom_properties_labels = artifact["custom_properties_labels"].tolist()
+        if custom_properties_labels is None:
+            return None
+
+        label_artifact_uris_series = artifact["custom_properties_labels_uri"]
+
+        # Convert to string from Series (like pd.Series(['labels.csv:abc123,...']))
+        try:
+            label_artifact_uris_str = label_artifact_uris_series.item()
+        except AttributeError:
+            label_artifact_uris_str = str(label_artifact_uris_series.values[0])
+
+        #print("label_artifact_uris_str =", label_artifact_uris_str)
+        #label_artifact_uris_str = "artifacts/labels.csv:13e556fa36c8a2a1f711be954edaa805,artifacts/labels.csv:13e556fa36c8a2a1f711be954edaa805"
+
+        all_dfs = []
+
+        for label_uri in label_artifact_uris_str.split(","):
+            label_uri = label_uri.strip()
+            if not label_uri:
+                continue
+
+            label_artifact: t.Optional[mlpb.Artifact] = self._get_artifact(label_uri)
+            if label_artifact:
+                label_artifact_df = self.get_artifact_df(label_artifact)
+                label_artifact_df["path"] = label_artifact_df["name"].str.split(":").str[0]
+                all_dfs.append(label_artifact_df)
+
+        if all_dfs:
+            return pd.concat(all_dfs, ignore_index=True)
+        return None
+
+
     def get_artifact(self, name: str) -> t.Optional[pd.DataFrame]:
         """Return artifact's data frame representation using artifact name.
 
@@ -544,6 +589,7 @@ class CmfQuery(object):
         if artifact:
             return self.get_artifact_df(artifact)
         return None
+
 
     def get_all_artifacts_for_execution(self, execution_id: int) -> pd.DataFrame:
         """Return input and output artifacts for the given execution.
