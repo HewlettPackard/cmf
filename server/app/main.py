@@ -98,7 +98,6 @@ async def lifespan(app: FastAPI):
         dict_of_art_ids = await async_api(get_all_artifact_ids, query, dict_of_exe_ids)
     # Start background scheduler task
     app.state.scheduler_task = asyncio.create_task(schedule_runner())
-    print('\033[1m============================================================\n  CMF Server is started and running\n============================================================\033[0m')
     yield
     # Cancel scheduler on shutdown
     # If FastAPI is down, no scheduled sync runs.

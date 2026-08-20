@@ -233,7 +233,6 @@ def main():
     logger.info(f"Starting CMF MCP server on {MCP_HOST}:{MCP_PORT}")
     logger.info(f"Transport: StreamableHTTP (stateless, json_response)")
     logger.info(f"Endpoint: http://{MCP_HOST}:{MCP_PORT}/mcp")
-    print("\033[1m============================================================\n  CMF MCP Server is started and running\n============================================================\033[0m")
     uvicorn.run(app, host=MCP_HOST, port=MCP_PORT)
 
 
