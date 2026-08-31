@@ -14,6 +14,7 @@ from server.app.db.dbmodels import (
     executionproperty,
     event,
     registered_servers,
+    executionlogs,
     scheduled_syncs,
     sync_logs
 )
@@ -676,6 +677,19 @@ async def fetch_artifacts_by_stage(
 
     effective_page_size = record_per_page if record_per_page is not None else page_size
 
+    # Step 0: Aggregate execution_count and distinct names per artifact URI from ExecutionLogs.
+    execution_log_agg_cte = (
+        select(
+            executionlogs.c.artifact_uri,
+            func.count(distinct(executionlogs.c.execution_uuid)).label("execution_count"),
+            func.json_agg(
+                distinct(func.cast(executionlogs.c.metadata_json[text("'name'")], String))
+            ).label("execution_names")
+        )
+        .group_by(executionlogs.c.artifact_uri)
+        .subquery("execution_log_agg_cte")
+    )
+
     # Step 1: Aggregate artifact properties into JSON based on artifact id.
     artifact_properties_agg_cte = (
         select(
@@ -705,6 +719,7 @@ async def fetch_artifacts_by_stage(
         select(
             artifact.c.id.label("artifact_id"),
             artifact.c.name,
+            artifact.c.uri,
             artifact.c.create_time_since_epoch
         )
         .join(
@@ -755,14 +770,21 @@ async def fetch_artifacts_by_stage(
         select(
             artifact_type_cte.c.artifact_id,
             artifact_type_cte.c.name,
+            artifact_type_cte.c.uri,
             artifact_type_cte.c.create_time_since_epoch,
             artifact_properties_agg_cte.c.artifact_properties,
+            func.coalesce(execution_log_agg_cte.c.execution_count, 0).label("execution_count"),
+            execution_log_agg_cte.c.execution_names,
             func.count().over().label("total_records")
         )
         .select_from(artifact_type_cte)
         .outerjoin(
             artifact_properties_agg_cte,
             artifact_type_cte.c.artifact_id == artifact_properties_agg_cte.c.artifact_id
+        )
+        .outerjoin(
+            execution_log_agg_cte,
+            artifact_type_cte.c.uri == execution_log_agg_cte.c.artifact_uri
         )
     )
 
@@ -794,6 +816,83 @@ async def fetch_artifacts_by_stage(
         "total_items": total_records,
         "items": items
     }
+
+
+async def fetch_execution_uuids_by_artifact_uri(
+    db: AsyncSession,
+    pipeline_name: str,
+    artifact_uri: str,
+):
+    """Return execution UUIDs and names from ExecutionLogs for a given artifact URI scoped to pipeline."""
+    if not artifact_uri:
+        return []
+
+    _, pipeline_execution_ids = _get_pipeline_execution_ids_subquery(pipeline_name)
+
+    pipeline_execution_uuids = (
+        select(distinct(executionproperty.c.string_value).label("execution_uuid"))
+        .where(executionproperty.c.name == "Execution_uuid")
+        .where(executionproperty.c.string_value.isnot(None))
+        .where(executionproperty.c.execution_id.in_(select(pipeline_execution_ids.c.execution_id)))
+        .subquery("pipeline_execution_uuids")
+    )
+
+    query = (
+        select(
+            executionlogs.c.execution_uuid.label("execution_uuid"),
+            func.max(func.cast(executionlogs.c.metadata_json[text("'name'")], String)).label("name"),
+        )
+        .where(executionlogs.c.artifact_uri == artifact_uri)
+        .where(executionlogs.c.execution_uuid.in_(select(pipeline_execution_uuids.c.execution_uuid)))
+        .group_by(executionlogs.c.execution_uuid)
+        .order_by(executionlogs.c.execution_uuid.desc())
+    )
+
+    result = await db.execute(query)
+    rows = result.mappings().all()
+    return [
+        {
+            "execution_uuid": row["execution_uuid"],
+            "name": row.get("name"),
+        }
+        for row in rows
+    ]
+
+
+async def fetch_execution_log_metadata(
+    db: AsyncSession,
+    pipeline_name: str,
+    execution_uuid: str,
+    artifact_uri: str,
+):
+    """Return metadata_json from ExecutionLogs for one (execution_uuid, artifact_uri) scoped to pipeline."""
+    if not execution_uuid or not artifact_uri:
+        return None
+
+    _, pipeline_execution_ids = _get_pipeline_execution_ids_subquery(pipeline_name)
+
+    pipeline_execution_uuids = (
+        select(distinct(executionproperty.c.string_value).label("execution_uuid"))
+        .where(executionproperty.c.name == "Execution_uuid")
+        .where(executionproperty.c.string_value.isnot(None))
+        .where(executionproperty.c.execution_id.in_(select(pipeline_execution_ids.c.execution_id)))
+        .subquery("pipeline_execution_uuids")
+    )
+
+    query = (
+        select(executionlogs.c.metadata_json)
+        .where(executionlogs.c.execution_uuid == execution_uuid)
+        .where(executionlogs.c.artifact_uri == artifact_uri)
+        .where(executionlogs.c.execution_uuid.in_(select(pipeline_execution_uuids.c.execution_uuid)))
+        .limit(1)
+    )
+
+    result = await db.execute(query)
+    row = result.first()
+    if not row:
+        return None
+
+    return row[0]
 
 
 async def fetch_artifact_types_by_stage(

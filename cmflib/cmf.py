@@ -47,6 +47,7 @@ from cmflib.dvc_wrapper import (
 from cmflib import graph_wrapper
 from cmflib.store.sqllite_store import SqlliteStore
 from cmflib.store.postgres import PostgresStore 
+from cmflib.store.custom_sqlite_store import CustomSqliteStore
 from cmflib.metadata_helper import (
     get_or_create_parent_context,
     get_or_create_run_context,
@@ -169,6 +170,9 @@ class Cmf:
             cur_folder = os.path.basename(os.getcwd())
             pipeline_name = cur_folder
         self.pipeline_name = pipeline_name
+        self.custom_store = None
+        if is_server is False:
+            self.custom_store = CustomSqliteStore(filepath)
         self.store = temp_store.connect()
         self.filepath = filepath
         self.child_context = None
@@ -487,7 +491,7 @@ class Cmf:
                 #print(f"{python_env_file_path} doesn't exists!!")
                 with open(python_env_file_path, 'w') as file:
                     file.write(env_output)
-
+        
         if self.graph:
             self.driver.create_execution_node(
             self.execution_name,
@@ -759,7 +763,7 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-        custom_props = {} if custom_properties is None else custom_properties
+        custom_props = {} if custom_properties is None else dict(custom_properties)
 
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
@@ -779,7 +783,7 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
-        if c_hash and c_hash.strip:
+        if c_hash and c_hash.strip():
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
         uri = c_hash
@@ -829,8 +833,8 @@ class Cmf:
 
                 milliseconds_since_epoch=int(time.time() * 1000),
             )
-        custom_props["git_repo"] = git_repo
-        custom_props["Commit"] = dataset_commit
+        system_props = {"git_repo": git_repo, "Commit": dataset_commit}
+        graph_custom_props = {**custom_props, **system_props}
         self.execution_label_props["git_repo"] = git_repo
         self.execution_label_props["Commit"] = dataset_commit
 
@@ -842,7 +846,7 @@ class Cmf:
                 event,
                 self.execution.id,
                 self.parent_context,
-                custom_props,
+                graph_custom_props,
             )
             if event.lower() == "input":
                 self.input_artifacts.append(
@@ -877,6 +881,29 @@ class Cmf:
                 
         if label:
             self.log_label(label, artifact_path, label_properties)
+
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and artifact:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(artifact, "uri", "")).strip()
+                dataset_log_payload = {
+                    "name": name,
+                    "properties": {
+                        "git_repo": git_repo,
+                        "url": dvc_url_with_pipeline,
+                    },
+                    "custom_properties": custom_props,
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=dataset_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write dataset metadata into execution_log: %s", exc)
 
         os.chdir(logging_dir)
         return artifact
@@ -1118,6 +1145,32 @@ class Cmf:
                 self.driver.create_artifact_relationships(
                     self.input_artifacts, child_artifact, self.execution_label_props
                 )
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and artifact:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(artifact, "uri", "")).strip()
+                model_log_payload = {
+                    "name": model_name,
+                    "properties": {
+                        "model_framework": model_framework,
+                        "model_type": model_type,
+                        "model_name": model_name,
+                        "Commit": model_commit,
+                        "url": url_with_pipeline,
+                    },
+                    "custom_properties": custom_props,
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=model_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write model metadata into execution_log: %s", exc)
+        
         os.chdir(logging_dir)
         return artifact
 
@@ -1158,7 +1211,8 @@ class Cmf:
             self.create_execution(execution_type=assigned_name)
             assert self.execution is not None, f"Failed to create execution for {self.pipeline_name}!!"
 
-        custom_props = {} if custom_properties is None else custom_properties
+        custom_props = {} if custom_properties is None else dict(custom_properties)
+        coarse_metrics_name = metrics_name
         uri = str(uuid.uuid1())
         metrics_name = metrics_name + ":" + uri + ":" + str(self.execution.id)
         metrics = create_new_artifact_event_and_attribution(
@@ -1197,6 +1251,29 @@ class Cmf:
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and metrics:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(metrics, "uri", "")).strip()
+                metrics_log_payload = {
+                    "name": coarse_metrics_name,
+                    "properties": {
+                        "metrics_name": metrics_name,
+                    },
+                    "custom_properties": custom_props,
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=metrics_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write execution metrics metadata into execution_log: %s", exc)
+
         os.chdir(logging_dir)
         return metrics
 
@@ -1335,6 +1412,30 @@ class Cmf:
             self.driver.create_artifact_relationships(
                 self.input_artifacts, child_artifact, self.execution_label_props
             )
+
+        execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+        if self.custom_store and execution_uuid and metrics:
+            try:
+                # Step 1: Get artifact uri and build artifact-level metadata payload.
+                artifact_uri = str(getattr(metrics, "uri", "")).strip()
+                step_metrics_log_payload = {
+                    "name": metrics_name,
+                    "properties": {
+                        "Commit": metrics_commit,
+                        "url": dvc_url_with_pipeline,
+                        "metrics_path": metrics_path,
+                    },
+                    "custom_properties": {},
+                }
+                # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                if artifact_uri:
+                    self.custom_store.insert_execution_log(
+                        execution_uuid=execution_uuid,
+                        artifact_uri=artifact_uri,
+                        metadata=step_metrics_log_payload,
+                    )
+            except Exception as exc:
+                logger.warning("Failed to write step metrics metadata into execution_log: %s", exc)
 
         os.chdir(logging_dir)
         return metrics
@@ -1495,7 +1596,7 @@ class Cmf:
         # If the dataset already exist , then we just link the existing dataset to the execution
         # We do not update the dataset properties . 
         # We need to append the new properties to the existing dataset properties
-        custom_props = {} if custom_properties is None else custom_properties
+        custom_props = {} if custom_properties is None else dict(custom_properties)
         git_repo = git_get_repo()
         name = re.split("/", url)[-1]
 
@@ -1506,7 +1607,7 @@ class Cmf:
             # Calculate label_hash
             label_hash = calculate_md5(url)
 
-            # Get dataset_uri from DVC
+            # Get dataset_uri from DVC for the base artifact
             dataset_uri = dvc_get_hash(dataset_name)
             if dataset_uri == "":
                 logger.error(f"[log_label] Error in getting the dvc hash for {dataset_name}, return without logging")
@@ -1523,13 +1624,13 @@ class Cmf:
             self.update_existing_artifact(dataset_artifact, dataset_custom_properties)
 
             # Prepare label custom properties
-            custom_props = {} if custom_properties is None else custom_properties
+            custom_props = {} if custom_properties is None else dict(custom_properties)
             custom_props["dataset_uri"] = dataset_uri
             git_repo = git_get_repo()
 
             # Check if label artifact already exists
             existing_artifact = []
-            if label_hash and label_hash.strip:
+            if label_hash and label_hash.strip():
                 existing_artifact.extend(self.store.get_artifacts_by_uri(label_hash))
             
             url = url + ":" + label_hash
@@ -1576,9 +1677,32 @@ class Cmf:
                     custom_properties=custom_props,
                     milliseconds_since_epoch=int(time.time() * 1000),
                 )
-            custom_props["git_repo"] = git_repo
-            custom_props["Commit"] = label_hash
-            
+            system_props = {"git_repo": git_repo, "Commit": label_hash}
+            graph_custom_props = {**custom_props, **system_props}
+
+            execution_uuid = self.execution.properties["Execution_uuid"].string_value.split(",")[-1].strip()
+            if self.custom_store and execution_uuid and artifact:
+                try:
+                    # Step 1: Get artifact uri and build artifact-level metadata payload.
+                    artifact_uri = str(getattr(artifact, "uri", "")).strip()
+                    label_log_payload = {
+                        "name": name,
+                        "properties": {
+                            "git_repo": git_repo,
+                            "url": url,
+                        },
+                        "custom_properties": custom_props,
+                    }
+                    # Step 2: Upsert one ExecutionLogs row keyed by (execution_uuid, artifact_uri).
+                    if artifact_uri:
+                        self.custom_store.insert_execution_log(
+                            execution_uuid=execution_uuid,
+                            artifact_uri=artifact_uri,
+                            metadata=label_log_payload,
+                        )
+                except Exception as exc:
+                    logger.warning("Failed to write label metadata into execution_log: %s", exc)
+
             if self.graph:
                 # directly linked to dataset via create_label_node
                 self.driver.create_label_node(
@@ -1589,7 +1713,7 @@ class Cmf:
                     self.execution.id,
                     self.parent_context,
                     dataset_uri,  # Pass dataset_uri to link label to dataset
-                    custom_props,
+                    graph_custom_props,
                 )
                 # NOTE: Labels are NOT added to self.input_artifacts to prevent them from being
                 # linked to other artifacts via create_artifact_relationships(). Labels are 
@@ -1615,7 +1739,6 @@ class Cmf:
                 #         "Pipeline_Name": self.parent_context.name,
                 #     }
                 # )
-
 
             return artifact
 
