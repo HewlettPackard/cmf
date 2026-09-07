@@ -4,10 +4,12 @@ from cmflib.cmfquery import CmfQuery
 from fastapi import APIRouter
 from server.app.get_data import async_api
 from server.app.services.mlmd_state import mlmd_state
-from server.app.schemas.responses import (
-    ErrorDetail,
+from server.app.schemas.requests import (
     ExecutionIdsRequest,
     ExecutionIdsWithPipelineRequest,
+)
+from server.app.schemas.responses import (
+    ErrorDetail,
     APIResponse,
     error_response,
     success_response,
