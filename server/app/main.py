@@ -26,6 +26,16 @@ dotenv.load_dotenv()
 #lifespan used to prevent multiple loading and save time for visualization.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """
+    App startup/shutdown hook: initializes the DB schema, preloads execution/artifact
+    id caches into MlmdState, and starts/stops the background sync scheduler task.
+
+    Args:
+        app (FastAPI): The FastAPI application instance.
+
+    Returns:
+        AsyncGenerator[None, None]: Yields control to the running app between startup and shutdown.
+    """
     app.state.mlmd = mlmd_state
 
     # Initialize the database schema
@@ -71,7 +81,16 @@ app.add_middleware(
 # Exception handlers
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """Handle Pydantic validation errors"""
+    """
+    Convert Pydantic request validation errors into the standard error response format.
+
+    Args:
+        request (Request): The incoming request that failed validation.
+        exc (RequestValidationError): The raised validation error, with per-field details.
+
+    Returns:
+        JSONResponse: 422 response with field, message, and code per validation error.
+    """
     # Parse validation errors
     errors = []
     for error in exc.errors():
@@ -92,7 +111,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException):
-    """Handle all HTTP exceptions raised by API routes or routing."""
+    """
+    Convert HTTPExceptions raised by API routes into the standard error response format.
+
+    Args:
+        request (Request): The incoming request being handled.
+        exc (HTTPException): The raised exception, with status_code and detail.
+
+    Returns:
+        JSONResponse: Response with exc.status_code and the standardized error body.
+    """
     response = error_response(
         message=str(exc.detail),
         code=exc.status_code,
@@ -104,13 +132,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 @app.exception_handler(Exception)
 async def unexpected_exception_handler(request: Request, exc: Exception):
     """
-    Handle unexpected/non-HTTP exceptions using the standard error format.
-    Examples :
-    - ZeroDivisionError: 10 / 0
-    - AttributeError: accessing a method/property on None
-    - KeyError: accessing a missing dictionary key
-    - TypeError: invalid operation between incompatible types
-    - ValueError: invalid value passed to a function
+    Convert unexpected/non-HTTP exceptions into the standard error response format.
+
+    Examples: ZeroDivisionError, AttributeError, KeyError, TypeError, ValueError.
+
+    Args:
+        request (Request): The incoming request being handled.
+        exc (Exception): The unhandled exception.
+
+    Returns:
+        JSONResponse: 500 response with a generic "Internal server error" message.
     """
     response = error_response(
         message="Internal server error",

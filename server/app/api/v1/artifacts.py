@@ -35,13 +35,19 @@ router = APIRouter(prefix="/v1", tags=["artifacts"])
 
 # ==================== API Endpoints ====================
 
-# only This API is used by the MCP server.
+# GET /artifacts/types - used only by the MCP server.
 @router.get("/artifacts/types")
 async def get_artifacts_by_types(
     request: Request,
 ):
     """
-    Retrieve available artifact types.
+    Get the list of artifact types present in the current MLMD store.
+
+    Method: GET
+    Path: /v1/artifacts/types
+
+    Returns:
+        JSONResponse: success_response wrapping the list of artifact type names.
     """
     state = request.app.state.mlmd
     result = await get_artifacts_types(state)
@@ -55,7 +61,18 @@ async def get_artifacts_by_types(
 
 @router.get("/artifacts/models/{model_id}/card")
 async def get_model_artifact_card(request: Request, model_id: int):
-    """Retrieve model card data for a model artifact."""
+    """
+    Get model card data for a model artifact.
+
+    Method: GET
+    Path: /v1/artifacts/models/{model_id}/card
+
+    Args:
+        model_id (int): Id of the Model artifact.
+
+    Returns:
+        JSONResponse: success_response wrapping model, execution, and artifact data.
+    """
     state = request.app.state.mlmd
     result = await get_model_card_by_artifact_id(state, model_id)
     return success_response(
@@ -66,9 +83,16 @@ async def get_model_artifact_card(request: Request, model_id: int):
 
 # ==================== Business Logic Functions ====================
 
-# This API returns a list of artifact types in the current MLMD store.
 async def get_artifacts_types(state: MlmdState):
-    """Get list of artifact types."""
+    """
+    Fetch artifact types from MLMD, excluding the internal 'Environment' type.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+
+    Returns:
+        list[str]: Artifact type names.
+    """
     await state.check_mlmd_file_exists()
 
     artifact_types_list = await async_api(
@@ -83,7 +107,20 @@ async def get_artifacts_types(state: MlmdState):
 
 
 async def get_model_card_by_artifact_id(state: MlmdState, model_id: int):
-    """Get model card details for a model artifact id."""
+    """
+    Get model card details (model, execution, input/output artifacts) for a model artifact id.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        model_id (int): Id of the artifact; must be of type 'Model'.
+
+    Returns:
+        list: [model_data, model_executions, input_artifacts, output_artifacts] as JSON records,
+            with "" in place of any dataframe that was empty.
+
+    Raises:
+        HTTPException: 404 if the artifact id does not exist, 400 if it is not a Model artifact.
+    """
     await state.check_mlmd_file_exists()
 
     model_artifact = await async_api(
@@ -103,6 +140,7 @@ async def get_model_card_by_artifact_id(state: MlmdState, model_id: int):
         state.query,
         model_id
     )
+    # Each element is JSON records for one dataframe, or "" when that dataframe is empty.
     return [
         json.loads(model_data_df.to_json(orient="records")) if not model_data_df.empty else "",
         json.loads(model_exe_df.to_json(orient="records")) if not model_exe_df.empty else "",

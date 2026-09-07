@@ -43,25 +43,54 @@ class MlmdState:
         self.LOCAL_ADDRESSES.add(get_fqdn(hostname))
 
     async def update_global_art_dict(self, pipeline_name):
-        """Update artifact IDs dictionary for a pipeline."""
+        """
+        Refresh the cached artifact-id dictionary for a pipeline.
+
+        Args:
+            pipeline_name (str): Name of the pipeline to refresh.
+
+        Returns:
+            None
+        """
         output_dict = await async_api(get_all_artifact_ids, self.query, self.dict_of_exe_ids, pipeline_name)
         self.dict_of_art_ids[pipeline_name] = output_dict[pipeline_name]
         return
 
     async def update_global_exe_dict(self, pipeline_name):
-        """Update execution IDs dictionary for a pipeline."""
+        """
+        Refresh the cached execution-id dictionary for a pipeline.
+
+        Args:
+            pipeline_name (str): Name of the pipeline to refresh.
+
+        Returns:
+            None
+        """
         output_dict = await async_api(get_all_exe_ids, self.query, pipeline_name)
         self.dict_of_exe_ids[pipeline_name] = output_dict[pipeline_name]
         return
 
     async def check_mlmd_file_exists(self):
-        """Raise 404 when the server MLMD database is unavailable."""
+        """
+        Ensure the server's MLMD database is available.
+
+        Raises:
+            HTTPException: 404 if no MLMD database is loaded.
+        """
         if not self.query:
             print("DB doesn't exist.")
             raise HTTPException(status_code=404, detail="Database doesn't exist.")
 
     async def check_pipeline_exists(self, pipeline_name):
-        """Raise 404 when the requested pipeline is unavailable."""
+        """
+        Ensure a pipeline exists in the current MLMD store.
+
+        Args:
+            pipeline_name (str): Name of the pipeline to check.
+
+        Raises:
+            HTTPException: 404 if the pipeline does not exist.
+        """
         if pipeline_name not in self.query.get_pipeline_names():
             print(f"Pipeline {pipeline_name} not found.")
             raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")

@@ -65,7 +65,18 @@ def success_response(
     code: int = 200,
     pagination: Optional[PaginationMeta] = None,
 ) -> APIResponse:
-    """Create a success response"""
+    """
+    Build a standardized success APIResponse.
+
+    Args:
+        data (Any): Payload to return to the client.
+        message (str): Human-readable success message.
+        code (int): HTTP status code to embed in the response body.
+        pagination (Optional[PaginationMeta]): Pagination metadata, if applicable.
+
+    Returns:
+        APIResponse: status="success" response wrapping data and metadata.
+    """
     return APIResponse(
         status="success",
         code=code,
@@ -83,7 +94,18 @@ def error_response(
     errors: Optional[list[ErrorDetail | dict[str, Any]]] = None,
     data: Any = None,
 ) -> APIResponse:
-    """Create an error response"""
+    """
+    Build a standardized error APIResponse.
+
+    Args:
+        message (str): Human-readable error message.
+        code (int): HTTP status code to embed in the response body.
+        errors (Optional[list[ErrorDetail | dict]]): Field-level or request-level error details.
+        data (Any): Optional partial payload to return alongside the error.
+
+    Returns:
+        APIResponse: status="error" response wrapping the message and errors.
+    """
     return APIResponse(
         status="error",
         code=code,

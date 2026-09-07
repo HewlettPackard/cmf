@@ -40,7 +40,18 @@ router = APIRouter(prefix="/v1", tags=["metadata"])
 
 @router.post("/mlmd/push")
 async def metadata_push(request: Request, info: MLMDPushRequest):
-    """Push MLMD metadata into the server's current metadata store."""
+    """
+    Push MLMD metadata into the server's current metadata store.
+
+    Method: POST
+    Path: /v1/mlmd/push
+
+    Args:
+        info (MLMDPushRequest): Pipeline name, MLMD JSON payload, and optional execution uuid.
+
+    Returns:
+        JSONResponse: success_response wrapping the push status.
+    """
     state = request.app.state.mlmd
     result = await mlmd_push(
         state=state,
@@ -57,7 +68,18 @@ async def metadata_push(request: Request, info: MLMDPushRequest):
 
 @router.post("/mlmd/pull", response_class=HTMLResponse)
 async def metadata_pull(request: Request, info: MLMDPullRequest):
-    """Pull MLMD metadata for a pipeline, execution, or synchronization point."""
+    """
+    Pull MLMD metadata for a pipeline, execution, or synchronization point.
+
+    Method: POST
+    Path: /v1/mlmd/pull
+
+    Args:
+        info (MLMDPullRequest): Optional pipeline name, execution uuid, and last sync time.
+
+    Returns:
+        HTMLResponse: Raw MLMD JSON payload for the requested scope.
+    """
     state = request.app.state.mlmd
     return await mlmd_pull(
         state=state,
@@ -70,14 +92,27 @@ async def metadata_pull(request: Request, info: MLMDPullRequest):
 
 # ==================== Business Logic Functions ====================
 
-# API to post MLMD file to cmf-server.
 async def mlmd_push(
     state: MlmdState,
     pipeline_name: str,
     json_payload: str,
     exec_uuid: str | None,
 ):
-    """Push MLMD metadata to the server."""
+    """
+    Merge an incoming MLMD JSON payload into the server's metadata store, guarded by a per-pipeline lock.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str): Name of the pipeline the payload belongs to.
+        json_payload (str): MLMD data serialized as a JSON string.
+        exec_uuid (str | None): Execution uuid to scope the push, if provided.
+
+    Returns:
+        dict: {"status": str} - one of the update_mlmd status codes (e.g. "success", "exists").
+
+    Raises:
+        HTTPException: 400 for an invalid JSON payload, 422 if a version update is required.
+    """
     print("mlmd push started")
     print("......................")
     status = "unknown_error"
@@ -120,7 +155,21 @@ async def mlmd_pull(
     exec_uuid: str | None,
     last_sync_time: int | None,
 ):
-    """Pull MLMD metadata from the server."""
+    """
+    Read MLMD metadata for a pipeline (or all pipelines) since an optional last sync time.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str | None): Pipeline to pull; all pipelines if None.
+        exec_uuid (str | None): Execution uuid to scope the pull, if provided.
+        last_sync_time (int | None): Only return data changed after this epoch time.
+
+    Returns:
+        The MLMD JSON payload for the requested scope.
+
+    Raises:
+        HTTPException: 406 if the pipeline does not exist.
+    """
     print("mlmd pull started")
     print("......................")
     # checks if mlmd file exists on server

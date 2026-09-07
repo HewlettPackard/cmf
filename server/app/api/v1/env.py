@@ -13,7 +13,18 @@ router = APIRouter(prefix="/v1", tags=["environment"])
 
 @router.post("/python-env")
 async def upload_python_environment(file: UploadFile = File(..., description="The Python environment file to upload")):
-    """Upload a Python environment file to the server environment directory."""
+    """
+    Upload a Python environment file to the server environment directory.
+
+    Method: POST
+    Path: /v1/python-env
+
+    Args:
+        file (UploadFile): The Python environment file (.txt or .yaml) to store.
+
+    Returns:
+        JSONResponse: success_response wrapping the upload confirmation message.
+    """
     result = await upload_python_env(file)
 
     return success_response(
@@ -25,7 +36,18 @@ async def upload_python_environment(file: UploadFile = File(..., description="Th
 
 @router.get("/python-env")
 async def get_python_environment(file_name: str):
-    """Retrieve the contents of a stored Python environment file."""
+    """
+    Retrieve the contents of a stored Python environment file.
+
+    Method: GET
+    Path: /v1/python-env
+
+    Args:
+        file_name (str): Name of the file to fetch. Must end with .txt or .yaml.
+
+    Returns:
+        JSONResponse: success_response wrapping the file content as plain text.
+    """
     result = await get_python_env(file_name)
 
     return success_response(
@@ -37,15 +59,36 @@ async def get_python_environment(file_name: str):
 
 @router.get("/python-env/download")
 async def download_python_env_route(list_of_files: Optional[list[str]] = Query(None)):
-    """Download Python environment files as ZIP."""
+    """
+    Download one or more Python environment files as a ZIP archive.
+
+    Method: GET
+    Path: /v1/python-env/download
+
+    Args:
+        list_of_files (Optional[list[str]]): File names to include; all files if omitted.
+
+    Returns:
+        StreamingResponse: The ZIP archive as an application/zip download.
+    """
     return download_python_env(list_of_files)
 
 
 # ==================== Business Logic Functions ====================
 
-# API endpoint for uploading Python environment files.
 async def upload_python_env(file: UploadFile):
-    """Upload Python environment file."""
+    """
+    Save an uploaded Python environment file to /cmf-server/data/env/.
+
+    Args:
+        file (UploadFile): The uploaded file.
+
+    Returns:
+        dict: Confirmation message with the stored file name.
+
+    Raises:
+        HTTPException: 400 if no filename is provided, 500 on write failure.
+    """
     try:
         if file.filename is None:
             raise HTTPException(status_code=400, detail="No file uploaded")
@@ -67,10 +110,9 @@ async def upload_python_env(file: UploadFile):
         raise HTTPException(status_code=500, detail=f"Failed to upload file: {str(e)}") from e
 
 
-# Rest api to fetch the env data from the /cmf-server/data/env folder
 async def get_python_env(file_name: str) -> str:
     """
-    API endpoint to fetch the content of a requirements file.
+    Fetch the content of a stored requirements file from /cmf-server/data/env/.
 
     Args:
         file_name (str): The name of the file to be fetched. Must end with .txt or .yaml.
@@ -101,7 +143,16 @@ async def get_python_env(file_name: str) -> str:
 
 def download_python_env(list_of_files: Optional[list[str]] = None):
     """
-    API endpoint to compress and download the entire folder as a ZIP file.
+    Compress the requested (or all) files under /cmf-server/data/env/ into a ZIP and stream it back.
+
+    Args:
+        list_of_files (Optional[list[str]]): File names to include; all files if omitted.
+
+    Returns:
+        StreamingResponse: The ZIP archive as an application/zip download.
+
+    Raises:
+        HTTPException: 404 if the directory or a requested file does not exist.
     """
     try:
         DIRECTORY = "/cmf-server/data/env/" # Directory to be compressed

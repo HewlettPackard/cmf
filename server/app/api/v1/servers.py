@@ -49,7 +49,18 @@ router = APIRouter(prefix="/v1", tags=["servers"])
 # ==================== API Endpoints ====================
 @router.post("/acknowledge")
 async def acknowledge_server(info: AcknowledgeRequest):
-    """Compatibility endpoint used by peer servers during registration and liveness checks."""
+    """
+    Compatibility endpoint used by peer servers during registration and liveness checks.
+
+    Method: POST
+    Path: /v1/acknowledge
+
+    Args:
+        info (AcknowledgeRequest): Calling server's name and url.
+
+    Returns:
+        JSONResponse: success_response confirming acknowledgement.
+    """
     return success_response(
         data={
             "server_name": info.server_name,
@@ -63,7 +74,19 @@ async def acknowledge_server(info: AcknowledgeRequest):
 
 @router.post("/servers/register")
 async def register_server_route(request: Request, info: ServerRegistrationRequest, db: AsyncSession = Depends(get_db)):
-    """Register a reachable peer server for metadata synchronization."""
+    """
+    Register a reachable peer server for metadata synchronization.
+
+    Method: POST
+    Path: /v1/servers/register
+
+    Args:
+        info (ServerRegistrationRequest): Peer server name and url.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping the stored server record.
+    """
     state = request.app.state.mlmd
     result = await register_server(
         state=state,
@@ -80,7 +103,20 @@ async def register_server_route(request: Request, info: ServerRegistrationReques
 
 @router.post("/servers/sync")
 async def sync_server(request: Request, info: ServerRegistrationRequest, db: AsyncSession = Depends(get_db), skip_logging: bool = False):
-    """Synchronize metadata from a registered peer server."""
+    """
+    Synchronize metadata from a registered peer server.
+
+    Method: POST
+    Path: /v1/servers/sync
+
+    Args:
+        info (ServerRegistrationRequest): Peer server name and url to sync with.
+        db (AsyncSession): Database session dependency.
+        skip_logging (bool): Skip writing an immediate sync log entry (used by the scheduler).
+
+    Returns:
+        JSONResponse: success_response wrapping the sync status and last sync time.
+    """
     state = request.app.state.mlmd
     result = await sync_metadata(
         state=state,
@@ -98,7 +134,18 @@ async def sync_server(request: Request, info: ServerRegistrationRequest, db: Asy
 
 @router.get("/servers")
 async def list_servers(db: AsyncSession = Depends(get_db)):
-    """Return all servers registered for metadata synchronization."""
+    """
+    Get all servers registered for metadata synchronization.
+
+    Method: GET
+    Path: /v1/servers
+
+    Args:
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping the list of registered servers.
+    """
     result = await server_list(db)
     return success_response(
         data=result,
@@ -111,12 +158,17 @@ async def list_servers(db: AsyncSession = Depends(get_db)):
 async def server_completed_logs(server_id: int, db: AsyncSession = Depends(get_db)):
     """
     Get all completed sync logs for a specific server.
-    
+
+    Method: GET
+    Path: /v1/servers/{server_id}/completed-logs
+
     Args:
         server_id (int): The ID of the server to get logs for.
-    
+        db (AsyncSession): Database session dependency.
+
     Returns:
-        list: A list of completed sync logs with sync_type, status, message, and timestamp.
+        JSONResponse: success_response wrapping a list of completed sync logs
+            with sync_type, status, message, and timestamp.
     """
     result = await get_server_completed_logs(server_id, db)
     return success_response(
@@ -135,11 +187,26 @@ async def register_server(
     server_url: str,
     db: AsyncSession,
 ):
-    """Register a new server."""
+    """
+    Register a new peer server after confirming it is reachable and acknowledges the request.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        server_name (str): Name of the server to register.
+        server_url (str): Base URL of the server to register.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        dict: The stored server record.
+
+    Raises:
+        HTTPException: 400 if registering the server's own details, 500 if the
+            target server does not acknowledge or is unreachable.
+    """
     try:
         server = extract_hostname(server_url)
 
-        # # Check user is registering with own details
+        # Check that the user isn't registering the server with its own details.
         if server in state.LOCAL_ADDRESSES:
             raise HTTPException(status_code=400,detail="Cannot register the server with its own details.")
 
@@ -179,7 +246,10 @@ async def sync_metadata(
     Synchronize metadata for a registered server.
 
     Args:
-        request (ServerRegistrationRequest): The request containing server details.
+        state (MlmdState): Shared MLMD query state for the request.
+        server_name (str): Name of the registered server to sync with.
+        server_url (str): Base URL of the registered server.
+        db (AsyncSession): Database session dependency.
         skip_logging (bool): If True, prevents duplicate log entries in the database.
             When the background scheduler calls this function, it creates its own 
             schedule and log entries, so we skip the immediate sync logging to avoid 
@@ -272,7 +342,15 @@ async def sync_metadata(
 
 
 async def server_list(db: AsyncSession):
-    """Get list of all registered servers."""
+    """
+    Get the list of all registered servers.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        list: Registered server records.
+    """
     rows = await get_registered_server_details(db)
     return rows
 
@@ -280,12 +358,16 @@ async def server_list(db: AsyncSession):
 async def get_server_completed_logs(server_id: int, db: AsyncSession):
     """
     Get all completed sync logs for a specific server.
-    
+
     Args:
         server_id (int): The ID of the server to get logs for.
-    
+        db (AsyncSession): Database session dependency.
+
     Returns:
         list: A list of completed sync logs with sync_type, status, message, and timestamp.
+
+    Raises:
+        HTTPException: 500 if the logs cannot be fetched.
     """
     try:
         logs = await get_completed_logs_by_server(db, server_id)

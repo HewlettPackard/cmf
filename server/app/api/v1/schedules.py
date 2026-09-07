@@ -47,7 +47,19 @@ router = APIRouter(prefix="/v1", tags=["schedules"])
 
 @router.post("/schedules")
 async def create_schedule(schedule_info: ScheduleCreateRequest, db: AsyncSession = Depends(get_db)):
-    """Create a one-time or recurring metadata synchronization schedule."""
+    """
+    Create a one-time or recurring metadata synchronization schedule.
+
+    Method: POST
+    Path: /v1/schedules
+
+    Args:
+        schedule_info (ScheduleCreateRequest): Server id, timezone, start time, and recurrence options.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping the created schedule id and next run time.
+    """
     result = await schedule_sync(
         server_id=schedule_info.server_id,
         timezone=schedule_info.timezone,
@@ -71,12 +83,15 @@ async def get_schedules_route(server_id: Optional[int] = None, db: AsyncSession 
     """
     Retrieve active schedules, optionally filtered by server id.
 
+    Method: GET
+    Path: /v1/schedules
+
     Args:
         server_id (Optional[int]): Optional server id filter.
         db (AsyncSession): Database session dependency.
 
     Returns:
-        list: Active schedule rows.
+        JSONResponse: success_response wrapping the list of active schedule rows.
     """
     result = await get_schedules(server_id, db)
     return success_response(
@@ -91,12 +106,15 @@ async def get_schedule_logs_route(schedule_id: int, db: AsyncSession = Depends(g
     """
     Retrieve run history logs for a schedule id.
 
+    Method: GET
+    Path: /v1/schedules/{schedule_id}/logs
+
     Args:
         schedule_id (int): Schedule id.
         db (AsyncSession): Database session dependency.
 
     Returns:
-        list: Sync log rows ordered by latest first.
+        JSONResponse: success_response wrapping the sync log rows, latest first.
     """
     result = await get_schedule_logs(schedule_id, db)
     return success_response(
@@ -111,12 +129,15 @@ async def delete_sync_schedule(schedule_id: int, db: AsyncSession = Depends(get_
     """
     Deactivate a schedule so future runs stop.
 
+    Method: DELETE
+    Path: /v1/schedules/{schedule_id}
+
     Args:
         schedule_id (int): Schedule id to deactivate.
         db (AsyncSession): Database session dependency.
 
     Returns:
-        dict: Deactivation status message.
+        JSONResponse: success_response wrapping the deactivation status message.
     """
     result = await delete_schedule_route(schedule_id, db)
     return success_response(
@@ -127,7 +148,7 @@ async def delete_sync_schedule(schedule_id: int, db: AsyncSession = Depends(get_
 
 
 # ==================== Business Logic Functions ====================
-# Schedule creation API.
+
 async def schedule_sync(
     server_id: int,
     timezone: str,
@@ -142,12 +163,28 @@ async def schedule_sync(
     """
     Create a one-time or periodic sync schedule for a registered server.
 
+    NOTE: the route handler below is also named `create_schedule`, which shadows
+    the `create_schedule` persistence function imported from db.dbqueries at module
+    scope. The call further down therefore resolves to whichever definition is last
+    bound to that name at import time - rename one of the two to avoid ambiguity.
+
     Args:
-        request (ScheduleCreateRequest): Schedule configuration payload.
+        server_id (int): Id of the registered server to sync with.
+        timezone (str): IANA timezone name for start_time_local_iso.
+        start_time_local_iso (str): Local start datetime, e.g. "2026-01-04T15:00".
+        one_time (bool): True for a single run, False for a recurring schedule.
+        recurrence_mode (str | None): "daily" or "weekly" when not one_time.
+        interval_unit (str | None): Interval unit for periodic recurrence.
+        interval_value (int | None): Interval value for periodic recurrence.
+        weekly_day (str | None): Day of week when recurrence_mode is "weekly".
         db (AsyncSession): Database session dependency.
 
     Returns:
         dict: Created schedule id and computed next run time.
+
+    Raises:
+        HTTPException: 404 if the server is not registered, 400 for invalid
+            timezone/datetime or a past one-time start time.
     """
     try:
         # Validate that target server exists before creating a schedule.
@@ -222,7 +259,6 @@ async def schedule_sync(
 
 
 
-# Retrieve active schedules, optionally filtered by server id.
 async def get_schedules(server_id: Optional[int], db: AsyncSession):
     """
     Retrieve active schedules, optionally filtered by server id.

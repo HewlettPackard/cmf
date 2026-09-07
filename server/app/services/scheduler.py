@@ -34,19 +34,20 @@ from server.app.db.dbqueries import (
 )
 
 async def schedule_runner():
-    """Input: none
-    Output: none (runs continuously)
-    Description: Background loop that executes due schedules using 3-stage server validation.
-    Step 1: Query all due schedules using current UTC epoch milliseconds.
-    Step 2: Check if server record exists in DB (registration check).
-            - If NOT registered: permanent config issue -> deactivate ALL schedule types.
-    Step 3: Check if the registered server is currently reachable (liveness check).
-            - If NOT alive: transient outage:
-                one-time  -> deactivate (missed its window, cannot retry)
-                periodic  -> log failure, compute next run, keep active for retry
-    Step 4: Server is registered AND alive -> perform sync, log result, advance schedule.
-    Step 5: Sleep 30 seconds and repeat.
-    Example: periodic schedule with unreachable server logs failure and reschedules."""
+    """
+    Background loop that polls and executes due sync schedules every 30 seconds.
+
+    For each due schedule, runs a 3-stage check before syncing:
+      1. Registration check - if the server record no longer exists, deactivate
+         the schedule (permanent config issue, not a transient outage).
+      2. Liveness check - ping the server; if unreachable, deactivate one-time
+         schedules (missed their window) or reschedule periodic ones for retry.
+      3. Sync - if registered and alive, perform the sync, log the result, and
+         either deactivate (one-time) or advance to the next run time (periodic).
+
+    Returns:
+        None. Runs indefinitely until the process is stopped.
+    """
     while True:
         try:
             async with async_session() as db:

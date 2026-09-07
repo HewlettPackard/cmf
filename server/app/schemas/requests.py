@@ -14,6 +14,16 @@ class MLMDPushRequest(BaseModel):
     # Custom validation for pipeline name and JSON payload
     @model_validator(mode="after")
     def validate_fields(cls, values):
+        """
+        Ensure pipeline_name is non-blank and json_payload is non-empty, valid JSON.
+
+        Returns:
+            MLMDPushRequest: The validated model instance.
+
+        Raises:
+            ValueError: If pipeline_name is blank, json_payload is empty, or json_payload
+                is not valid JSON.
+        """
         if not values.pipeline_name.strip():
             raise ValueError("Pipeline name must not be empty or whitespace")
         if not values.json_payload:
@@ -86,9 +96,19 @@ class ScheduleCreateRequest(BaseModel):
 
     @model_validator(mode='after')
     def apply_defaults_and_validate(self):
-        """This validator is the safety gate for direct/standalone API usage.
+        """
+        Apply recurrence defaults and validate consistency across recurrence fields.
+
+        This validator is the safety gate for direct/standalone API usage.
         It ensures the payload is consistent even when clients call the API
         without UI-side checks.
+
+        Returns:
+            ScheduleCreateRequest: The validated (and possibly defaulted) model instance.
+
+        Raises:
+            ValueError: If recurrence_mode, start_time_local_iso, interval_unit, or
+                weekly_day are missing/invalid for the selected recurrence mode.
         """
         # One-time schedules must not carry periodic recurrence fields.
         if self.one_time:

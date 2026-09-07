@@ -53,7 +53,15 @@ router = APIRouter(prefix="/v1", tags=["pipelines"])
 
 @router.get("/pipelines")
 async def list_pipelines(request: Request):
-    """Return the pipeline names available in the current MLMD store."""
+    """
+    Get the pipeline names available in the current MLMD store.
+
+    Method: GET
+    Path: /v1/pipelines
+
+    Returns:
+        JSONResponse: success_response wrapping the list of pipeline names.
+    """
     state = request.app.state.mlmd
     result = await pipelines(state)
     return success_response(
@@ -65,7 +73,19 @@ async def list_pipelines(request: Request):
 
 @router.get("/pipelines/{pipeline_name}/stages")
 async def pipeline_stages(pipeline_name: str, db: AsyncSession = Depends(get_db)):
-    """Return the unique execution stages for a pipeline."""
+    """
+    Get the unique execution stages for a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/stages
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping the list of stage names.
+    """
     result = await get_pipeline_stages(pipeline_name, db)
     return success_response(
         data=result,
@@ -80,7 +100,19 @@ async def get_execution_lineage(
     uuid: str,
     pipeline_name: str
 ):
-    """Return the tangled-tree execution lineage for an execution in a pipeline."""
+    """
+    Get the tangled-tree execution lineage for an execution in a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/executions/{uuid}/lineage
+
+    Args:
+        uuid (str): Execution uuid to build the lineage from.
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        JSONResponse: success_response wrapping nodes/links for the lineage graph.
+    """
     state = request.app.state.mlmd
     result = await execution_lineage_tangled(
         state=state,
@@ -100,7 +132,18 @@ async def get_artifact_lineage(
     request: Request,
     pipeline_name: str
 ):
-    """Return the tangled-tree artifact lineage for a pipeline."""
+    """
+    Get the tangled-tree artifact lineage for a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/artifacts/lineage
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        JSONResponse: success_response wrapping the nested artifact lineage list.
+    """
     state = request.app.state.mlmd
     result = await artifact_lineage_tangled(
         state=state,
@@ -119,7 +162,18 @@ async def get_artifact_execution_lineage(
     request: Request,
     pipeline_name: str
 ):
-    """Return the lineage graph connecting artifacts and executions in a pipeline."""
+    """
+    Get the lineage graph connecting artifacts and executions in a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/artifact-executions/lineage
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        JSONResponse: success_response wrapping the combined lineage visualization data.
+    """
     state = request.app.state.mlmd
     result = await artifact_execution_lineage(
         state=state,
@@ -135,7 +189,18 @@ async def get_artifact_execution_lineage(
 
 @router.get("/pipelines/{pipeline_name}/artifacts")
 async def get_artifacts(request: Request, pipeline_name: str):
-    """Retrieve all artifacts for a pipeline without pagination or filtering."""
+    """
+    Get all artifacts for a pipeline without pagination or filtering.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/artifacts
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        JSONResponse: success_response wrapping the list of artifacts.
+    """
     state = request.app.state.mlmd
     result = await get_all_artifacts(state, pipeline_name)
     return success_response(
@@ -151,7 +216,20 @@ async def get_artifact_types_by_stage_route(
     stage: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """Return artifact types available in a pipeline stage."""
+    """
+    Get artifact types available in a pipeline stage.
+
+    Method: POST
+    Path: /v1/pipelines/{pipeline_name}/artifacts/stages/{stage}/types
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+        stage (str): Stage name (Context_Type value) to filter by.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping the list of artifact type names.
+    """
     result = await get_artifact_types_by_stage(
         pipeline_name,
         stage,
@@ -171,7 +249,21 @@ async def get_artifacts_by_stage_route(
     stage: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """Return paginated artifacts filtered by pipeline stage and artifact type."""
+    """
+    Get paginated artifacts filtered by pipeline stage and artifact type.
+
+    Method: POST
+    Path: /v1/pipelines/{pipeline_name}/artifacts/stages/{stage}
+
+    Args:
+        query_params (ArtifactByStageRequest): Artifact type, filter, sort, and pagination options.
+        pipeline_name (str): Name of the pipeline.
+        stage (str): Stage name (Context_Type value) to filter by.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping total_items and the page of artifacts.
+    """
     result = await get_artifacts_by_stage(
         pipeline_name,
         stage,
@@ -192,7 +284,18 @@ async def get_artifacts_by_stage_route(
 
 @router.get("/pipelines/{pipeline_name}/executions")
 async def get_all_pipeline_executions(request: Request, pipeline_name: str):
-    """Retrieve all executions for a pipeline without pagination or filtering."""
+    """
+    Get all executions for a pipeline without pagination or filtering.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/executions
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        JSONResponse: success_response wrapping the list of executions.
+    """
     state = request.app.state.mlmd
     result = await get_all_executions(state, pipeline_name)
     return success_response(
@@ -204,7 +307,18 @@ async def get_all_pipeline_executions(request: Request, pipeline_name: str):
 
 @router.get("/pipelines/{pipeline_name}/executions/list")
 async def get_executions(request: Request, pipeline_name: str):
-    """Retrieve the execution list for a pipeline."""
+    """
+    Get the execution list for a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/executions/list
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        JSONResponse: success_response wrapping the list of execution types.
+    """
     state = request.app.state.mlmd
     result = await list_of_executions(
         state=state,
@@ -224,7 +338,21 @@ async def pipeline_executions(
     stage: str,
     db: AsyncSession = Depends(get_db)
 ):
-    """Retrieve executions filtered/stage-based search by pipeline and stage name."""
+    """
+    Get executions filtered by pipeline and stage name.
+
+    Method: POST
+    Path: /v1/pipelines/{pipeline_name}/executions/stages/{stage}
+
+    Args:
+        query_params (ExecutionByStageRequest): Filter, sort, and pagination options.
+        pipeline_name (str): Name of the pipeline.
+        stage (str): Stage name (Context_Type value) to filter by.
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        JSONResponse: success_response wrapping total_items and the page of executions.
+    """
     result = await get_executions_by_stage(
         pipeline_name=pipeline_name,
         stage_name= stage,
@@ -247,7 +375,19 @@ async def get_execution_python_env(
     pipeline_name: str,
     execution_uuid: str
 ):
-    """Retrieve the Python environment file associated with an execution."""
+    """
+    Get the Python environment file associated with an execution.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/executions/{execution_uuid}/python-env
+
+    Args:
+        pipeline_name (str): Name of the pipeline.
+        execution_uuid (str): Execution uuid (or prefix) to resolve.
+
+    Returns:
+        JSONResponse: success_response wrapping the environment file content.
+    """
     state = request.app.state.mlmd
     result = await get_python_env_by_execution(state, pipeline_name, execution_uuid)
     return success_response(
@@ -259,9 +399,16 @@ async def get_execution_python_env(
 
 # ==================== Business Logic Functions ====================
 
-# This API returns the list of pipeline names present in the current MLMD store.
 async def pipelines(state: MlmdState):
-    """Get list of all pipelines."""
+    """
+    Get the list of pipeline names present in the current MLMD store.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+
+    Returns:
+        list[str]: Pipeline names, or [] if no MLMD file has been submitted.
+    """
     if state.query:
         pipeline_names = state.query.get_pipeline_names()
         return pipeline_names
@@ -294,17 +441,22 @@ async def get_pipeline_stages(
     return result
 
 
-    # This API returns the execution lineage graph for a selected execution UUID.
 async def execution_lineage_tangled(
     state: MlmdState,
     uuid: str,
     pipeline_name: str
 ):
-    """returns dictionary of nodes and links for given execution_type.
-      response = {
-                   nodes: [{id:"",name:"",execution_uuid:""}],
-                   links: [{source:1,target:4},{}],
-                 } """
+    """
+    Build the tangled-tree execution lineage graph for a selected execution UUID.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        uuid (str): Execution uuid to build the lineage from.
+        pipeline_name (str): Name of the pipeline the execution belongs to.
+
+    Returns:
+        dict: {"nodes": [{"id":"","name":"","execution_uuid":""}], "links": [{"source":1,"target":4}]}
+    """
     # checks if mlmd file exists on server
     await state.check_mlmd_file_exists()
     # checks if pipeline exists
@@ -326,12 +478,18 @@ async def artifact_lineage_tangled(
     state: MlmdState,
     pipeline_name: str
 ) -> Optional[List[List[Dict[str, Any]]]]:
-    """ Returns:
-      A nested list of dictionaries with 'id' and 'parents' keys.
-      response = [
-        [{'id': 'data.xml.gz:236d', 'parents': []}],
-        [{'id': 'parsed/train.tsv:32b7', 'parents': ['data.xml.gz:236d']}, 
-        ]"""
+    """
+    Build the tangled-tree artifact lineage graph for a pipeline.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        A nested list of dictionaries with 'id' and 'parents' keys, e.g.:
+        [[{'id': 'data.xml.gz:236d', 'parents': []}],
+         [{'id': 'parsed/train.tsv:32b7', 'parents': ['data.xml.gz:236d']}]]
+    """
     # checks if mlmd file exists on server
     await state.check_mlmd_file_exists()
     # checks if pipeline exists
@@ -347,12 +505,21 @@ async def artifact_lineage_tangled(
     return response
 
 
-# This API returns the artifact-execution lineage graph for visualizing how artifacts and
+# Builds the combined artifact + execution lineage graph for the visualization view.
 async def artifact_execution_lineage(
     state: MlmdState,
     pipeline_name: str
 ):
-    """Get artifact-execution lineage visualization."""
+    """
+    Get the artifact-execution lineage visualization graph for a pipeline.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        The combined artifact/execution lineage graph used by the visualization view.
+    """
     # checks if mlmd file exists on server
     await state.check_mlmd_file_exists()
     # checks if pipeline exists
@@ -369,9 +536,18 @@ async def artifact_execution_lineage(
     return response
 
 
-# Used by the MCP client to retrieve all pipeline artifacts
+# Used by the MCP client to retrieve all pipeline artifacts.
 async def get_all_artifacts(state: MlmdState, pipeline_name: str):
-    """Retrieve all artifacts for a pipeline without pagination or filtering."""
+    """
+    Retrieve all artifacts for a pipeline without pagination or filtering.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        list[dict]: Artifact records, or [] if none exist.
+    """
     await state.check_mlmd_file_exists()
     await state.check_pipeline_exists(pipeline_name)
 
@@ -458,9 +634,18 @@ async def get_artifacts_by_stage(
     )
 
 
-# Used by the MCP client to retrieve all pipeline executions
+# Used by the MCP client to retrieve all pipeline executions.
 async def get_all_executions(state: MlmdState, pipeline_name: str):
-    """Retrieve all executions for a pipeline without pagination or filtering."""
+    """
+    Retrieve all executions for a pipeline without pagination or filtering.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        list[dict]: Execution records, or [] if none exist.
+    """
     await state.check_mlmd_file_exists()
     await state.check_pipeline_exists(pipeline_name)
 
@@ -475,10 +660,16 @@ async def get_all_executions(state: MlmdState, pipeline_name: str):
 
 
 async def list_of_executions(state: MlmdState, pipeline_name: str):
-    '''
-      This api's returns list of execution types.
+    """
+    Get the list of execution types for a pipeline.
 
-    '''
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        pipeline_name (str): Name of the pipeline.
+
+    Returns:
+        list: Execution type entries for the pipeline.
+    """
     # checks if mlmd file exists on server
     await state.check_mlmd_file_exists()
     # checks if pipeline exists
@@ -534,6 +725,11 @@ async def get_pipeline_stages(
     db: AsyncSession
 ):
     """
+    NOTE: this redefines `get_pipeline_stages` above and is the version actually
+    invoked by the "/pipelines/{pipeline_name}/stages" route, since Python resolves
+    the call by name at call time and this later definition overwrites the first.
+    Consider renaming or removing one of the two to avoid confusion.
+
     Retrieve unique artifact stages (Context_Type values) for a given pipeline.
     Since artifacts inherit stages from executions, this uses the same query as execution stages.
     
@@ -562,7 +758,19 @@ async def get_python_env_by_execution(
     pipeline_name: str,
     execution_uuid: str
 ):
-    """Resolve an execution's Python_Env property and return its file content."""
+    """
+    Resolve an execution's Python_Env custom property and return the referenced file's content.
+
+    Args:
+        pipeline_name: Name of the pipeline the execution belongs to
+        execution_uuid: Execution UUID (or UUID prefix) to match
+
+    Returns:
+        str: Content of the associated Python environment file
+
+    Raises:
+        HTTPException: If the execution or its Python environment file cannot be found
+    """
     await state.check_mlmd_file_exists()
     await state.check_pipeline_exists(pipeline_name)
 
