@@ -41,11 +41,11 @@ Error responses use the same envelope with `status: "error"` and field-level det
 | `GET` | `/v1/pipelines` | None | Discovers all pipelines present in the MLMD store. No parameters required. |
 | `GET` | `/v1/pipelines/{pipeline_name}/stages` | Path: `pipeline_name` | Retrieves unique stages for a pipeline. |
 | `GET` | `/v1/pipelines/{pipeline_name}/artifacts` | Path: `pipeline_name` | Discovers all artifacts for a pipeline. `pipeline_name` is a required path parameter. |
-| `POST` | `/v1/pipelines/{pipeline_name}/artifacts/stages/{stage}/types` | Path: `pipeline_name`, `stage` | Retrieves artifact types available in a pipeline stage. |
-| `POST` | `/v1/pipelines/{pipeline_name}/artifacts/stages/{stage}` | Path: `pipeline_name`, `stage`; body: artifact stage query options | Retrieves artifacts filtered by pipeline stage, artifact type, search, sort, and pagination options. |
+| `POST` | `/v1/pipelines/{pipeline_name}/stages/{stage}/artifacts/types` | Path: `pipeline_name`, `stage` | Retrieves artifact types available in a pipeline stage. |
+| `POST` | `/v1/pipelines/{pipeline_name}/stages/{stage}/artifacts` | Path: `pipeline_name`, `stage`; body: artifact stage query options | Retrieves artifacts filtered by pipeline stage, artifact type, search, sort, and pagination options. |
 | `GET` | `/v1/pipelines/{pipeline_name}/executions` | Path: `pipeline_name` | Discovers all executions in a pipeline. `pipeline_name` is a required path parameter. |
 | `GET` | `/v1/pipelines/{pipeline_name}/executions/list` | Path: `pipeline_name` | Retrieves a short list of executions for a pipeline. |
-| `POST` | `/v1/pipelines/{pipeline_name}/executions/stages/{stage}` | Path: `pipeline_name`, `stage`; body: execution stage query options | Retrieves executions filtered by pipeline stage, search, sort, and pagination options. |
+| `POST` | `/v1/pipelines/{pipeline_name}/stages/{stage}/executions` | Path: `pipeline_name`, `stage`; body: execution stage query options | Retrieves executions filtered by pipeline stage, search, sort, and pagination options. |
 | `GET` | `/v1/pipelines/{pipeline_name}/executions/{execution_uuid}/python-env` | Path: `pipeline_name`, `execution_uuid` | Retrieves the Python environment file associated with an execution. Uses `pipeline_name` and `execution_uuid` so MCP does not need the raw environment file name. |
 | `GET` | `/v1/pipelines/{pipeline_name}/executions/{uuid}/lineage` | Path: `pipeline_name`, `uuid` | Retrieves execution lineage for a selected execution UUID. |
 | `GET` | `/v1/pipelines/{pipeline_name}/artifacts/lineage` | Path: `pipeline_name` | Retrieves artifact lineage for a pipeline. |
