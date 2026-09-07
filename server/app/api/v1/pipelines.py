@@ -210,7 +210,7 @@ async def get_artifacts(request: Request, pipeline_name: str):
     )
 
 
-@router.post("/pipelines/{pipeline_name}/artifacts/stages/{stage:path}/types")
+@router.post("/pipelines/{pipeline_name}/stages/{stage:path}/artifacts/types")
 async def get_artifact_types_by_stage_route(
     pipeline_name: str,
     stage: str,
@@ -220,7 +220,7 @@ async def get_artifact_types_by_stage_route(
     Get artifact types available in a pipeline stage.
 
     Method: POST
-    Path: /v1/pipelines/{pipeline_name}/artifacts/stages/{stage}/types
+    Path: /v1/pipelines/{pipeline_name}/stages/{stage}/artifacts/types
 
     Args:
         pipeline_name (str): Name of the pipeline.
@@ -242,7 +242,7 @@ async def get_artifact_types_by_stage_route(
     )
 
 
-@router.post("/pipelines/{pipeline_name}/artifacts/stages/{stage:path}")
+@router.post("/pipelines/{pipeline_name}/stages/{stage:path}/artifacts")
 async def get_artifacts_by_stage_route(
     query_params: ArtifactByStageRequest,
     pipeline_name: str,
@@ -253,7 +253,7 @@ async def get_artifacts_by_stage_route(
     Get paginated artifacts filtered by pipeline stage and artifact type.
 
     Method: POST
-    Path: /v1/pipelines/{pipeline_name}/artifacts/stages/{stage}
+    Path: /v1/pipelines/{pipeline_name}/stages/{stage}/artifacts
 
     Args:
         query_params (ArtifactByStageRequest): Artifact type, filter, sort, and pagination options.
@@ -331,7 +331,7 @@ async def get_executions(request: Request, pipeline_name: str):
     )
 
 
-@router.post("/pipelines/{pipeline_name}/executions/stages/{stage:path}")
+@router.post("/pipelines/{pipeline_name}/stages/{stage:path}/executions")
 async def pipeline_executions(
     query_params: ExecutionByStageRequest,
     pipeline_name: str,
@@ -342,7 +342,7 @@ async def pipeline_executions(
     Get executions filtered by pipeline and stage name.
 
     Method: POST
-    Path: /v1/pipelines/{pipeline_name}/executions/stages/{stage}
+    Path: /v1/pipelines/{pipeline_name}/stages/{stage}/executions
 
     Args:
         query_params (ExecutionByStageRequest): Filter, sort, and pagination options.

@@ -29,7 +29,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import time
 from server.app.db.dbqueries import (
-    create_schedule,
+    create_schedule as create_schedule_record,
     list_schedules,
     get_registered_server_by_id,
     list_sync_logs,
@@ -236,7 +236,7 @@ async def schedule_sync(
             )
 
         # Persist schedule details and return created id plus first next-run timestamp.
-        created = await create_schedule(
+        created = await create_schedule_record(
             db,
             server_id=server_id,
             timezone=timezone,

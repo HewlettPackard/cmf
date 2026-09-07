@@ -4,7 +4,6 @@ from server.app.schemas.responses import success_response
 from fastapi.responses import StreamingResponse
 import zipfile
 import io
-import os
 from typing import Optional
 
 router = APIRouter(prefix="/v1", tags=["environment"])
