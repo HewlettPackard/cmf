@@ -64,7 +64,7 @@ async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     """
     query = select(registered_servers)
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def get_registered_server_by_id(db: AsyncSession, server_id: int):
@@ -81,7 +81,7 @@ async def get_registered_server_by_id(db: AsyncSession, server_id: int):
     query = select(registered_servers).where(registered_servers.c.id == server_id)
     result = await db.execute(query)
     row = result.mappings().first()
-    return row
+    return dict(row) if row else None
 
 
 async def get_registered_server_by_name_url(db: AsyncSession, server_name: str, server_url: str):
@@ -100,7 +100,8 @@ async def get_registered_server_by_name_url(db: AsyncSession, server_name: str, 
         (registered_servers.c.server_name == server_name) & (registered_servers.c.host_info == server_url)
     )
     result = await db.execute(query)
-    return result.mappings().first()
+    row = result.mappings().first()
+    return dict(row) if row else None
     
 
 async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, server_url: str):
@@ -951,7 +952,7 @@ async def list_schedules(db: AsyncSession, server_id: int | None = None):
     if server_id is not None:
         query = query.where(scheduled_syncs.c.server_id == server_id)
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def due_schedules(db: AsyncSession, now_utc_ms: int):
@@ -969,7 +970,7 @@ async def due_schedules(db: AsyncSession, now_utc_ms: int):
         (scheduled_syncs.c.active == True) & (scheduled_syncs.c.next_run_time_utc <= now_utc_ms)
     )
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def update_next_run(db: AsyncSession, schedule_id: int, next_run_time_utc: int):
@@ -1029,7 +1030,7 @@ async def list_sync_logs(db: AsyncSession, schedule_id: int, limit: int = 50):
     """
     query = select(sync_logs).where(sync_logs.c.schedule_id == schedule_id).order_by(sync_logs.c.run_time_utc.desc()).limit(limit)
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def get_completed_logs_by_server(db: AsyncSession, server_id: int, limit: int = 100):
@@ -1059,7 +1060,7 @@ async def get_completed_logs_by_server(db: AsyncSession, server_id: int, limit: 
         .limit(limit)
     )
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def update_schedule_fields(
@@ -1149,5 +1150,5 @@ async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
         (registered_servers.c.host_info == server_url)
     )
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
