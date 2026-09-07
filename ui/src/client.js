@@ -164,10 +164,7 @@ class FastAPIClient {
 
   async getPythonEnv(file_name) {
     return this.apiClient
-      .get(`/v1/python-env`, {
-        params: {
-          file_name: file_name
-        },
+      .get(`/v1/python-env/${encodeURIComponent(file_name)}`, {
         responseType: "text",
       })
       .then((response) => {

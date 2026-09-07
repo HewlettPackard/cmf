@@ -10,8 +10,8 @@ CMF Server APIs are implemented with [FastAPI](https://fastapi.tiangolo.com/). T
 
 Use the following parameter convention when adding or calling APIs:
 
-- Required identifiers belong in the path, for example `{pipeline_name}`, `{execution_uuid}`, `{model_id}`, `{server_id}`, and `{schedule_id}`.
-- Optional filters, search values, sorting, paging, or flags belong in query parameters, for example `server_id`, `skip_logging`, `file_name`, and `list_of_files`.
+- Required identifiers belong in the path, for example `{pipeline_name}`, `{execution_uuid}`, `{model_id}`, `{server_id}`, `{schedule_id}`, and `{file_name}`.
+- Optional filters, search values, sorting, paging, or flags belong in query parameters, for example `server_id`, `skip_logging`, and `list_of_files`.
 - Request bodies are used for structured create, sync, push, pull, or paginated query payloads.
 
 ## Response Format
@@ -55,7 +55,7 @@ Error responses use the same envelope with `status: "error"` and field-level det
 | `POST` | `/v1/mlmd/push` | Body: `pipeline_name`, `json_payload`, optional `exec_uuid` | Pushes MLMD metadata to the CMF Server. |
 | `POST` | `/v1/mlmd/pull` | Body: optional `pipeline_name`, optional `exec_uuid`, optional `last_sync_time` | Pulls MLMD metadata from the CMF Server. |
 | `POST` | `/v1/python-env` | Multipart file: `file` | Uploads a Python environment file to the CMF Server. |
-| `GET` | `/v1/python-env` | Query: `file_name` | Retrieves a Python environment file by file name. |
+| `GET` | `/v1/python-env/{file_name}` | Path: `file_name` | Retrieves a Python environment file by file name. |
 | `GET` | `/v1/python-env/download` | Optional query: `list_of_files` | Downloads Python environment files as a ZIP archive. |
 | `GET` | `/v1/model-card` | Query: `modelId` | Retrieves model card data for the UI by model artifact ID. |
 | `POST` | `/v1/label` | Multipart file: `file` | Uploads a label file to the CMF Server. |
