@@ -77,13 +77,14 @@ class FastAPIClient {
   //   });
   // }
 
-  async getArtifactLineage(pipeline) {
-    return this.apiClient
-      .get(`/artifact-lineage/force-directed-graph/${pipeline}`)
-      .then(({ data }) => {
-        return data;
-      });
-  }
+  // Deprecated legacy methods (unused by current stage-based grid pages).
+  // async getArtifactLineage(pipeline) {
+  //   return this.apiClient
+  //     .get(`/artifact-lineage/force-directed-graph/${pipeline}`)
+  //     .then(({ data }) => {
+  //       return data;
+  //     });
+  // }
 
   async getArtiTreeLineage(pipeline) {
     return this.apiClient
@@ -101,13 +102,14 @@ class FastAPIClient {
       });
   }
 
-  async getExecutionLineage(pipeline, uuid) {
-    return this.apiClient
-      .get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
-      .then(({ data }) => {
-        return data;
-      });
-  }
+  // Deprecated legacy methods (unused by current stage-based grid pages).
+  // async getExecutionLineage(pipeline, uuid) {
+  //   return this.apiClient
+  //     .get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
+  //     .then(({ data }) => {
+  //       return data;
+  //     });
+  // }
 
   async getExecTreeLineage(pipeline, uuid) {
     return this.apiClient

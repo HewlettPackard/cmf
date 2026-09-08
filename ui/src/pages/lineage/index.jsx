@@ -22,8 +22,6 @@ import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Sidebar";
-import LineageArtifacts from "../../components/LineageArtifacts";
-import ExecutionDropdown from "../../components/ExecutionDropdown";
 import ExecutionTangledDropdown from "../../components/ExecutionTangledDropdown";
 import Loader from "../../components/Loader";
 import CommonLineageComponent from "../../components/LineageComponent/CommonLineageComponent";
@@ -85,17 +83,8 @@ const Lineage = () => {
     setArtiTreeData(null);
     setArtiExeTreeData(null);
     setSelectedPipeline(pipeline);
-    // when pipeline is updated we need to update the lineage selection too
-    // this is also not needed as selectedLineage has default value
-    // setSelectedLineageType(LineageTypes[0]);
     if (selectedPipeline) {
-      if (selectedLineageType === "Artifacts") {
-        //call artifact lineage as it is default
-        fetchArtifactLineage(pipeline);
-      } else if (
-        selectedLineageType === "Execution" ||
-        selectedLineageType === "Execution_Tree"
-      ) {
+      if (selectedLineageType === "Execution_Tree") {
         fetchExecutionTypes(pipeline, selectedLineageType);
       } else if (selectedLineageType === "Artifact_Execution_Tree") {
         fetchArtiExeTree(pipeline);
@@ -114,12 +103,7 @@ const Lineage = () => {
     setArtiExeTreeData(null);
     setSelectedLineageType(lineageType);
     if (selectedPipeline != null) {
-      if (lineageType === "Artifacts") {
-        fetchArtifactLineage(selectedPipeline);
-      } else if (
-        lineageType === "Execution" ||
-        lineageType === "Execution_Tree"
-      ) {
+      if (lineageType === "Execution_Tree") {
         fetchExecutionTypes(selectedPipeline, lineageType);
       } else if (lineageType === "Artifact_Execution_Tree") {
         fetchArtiExeTree(selectedPipeline);
@@ -129,18 +113,6 @@ const Lineage = () => {
         fetchArtifactTree(selectedPipeline);
       }
     }
-  };
-
-  const fetchArtifactLineage = (pipelineName) => {
-    setLoading(true);
-    client.getArtifactLineage(pipelineName).then((data) => {
-      if (data === null) {
-        setLineageData(null);
-      }
-      setLineageData(data);
-      setLoading(false);
-    });
-    setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
   const fetchArtifactTree = (pipelineName) => {
@@ -176,11 +148,7 @@ const Lineage = () => {
         setSelectedExecutionType(data[0]); // data[0] = "Prepare_3f45"
         // method used such that even with multiple "_" it will get right execution_name and uuid
         const uuid = extractUuid(data[0]);     // 3f45
-        if (lineageType === "Execution") {
-          fetchExecutionLineage(pipelineName, uuid);
-        } else {
-          fetchExecTree(pipelineName, uuid);
-        }
+        fetchExecTree(pipelineName, uuid);
       }
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
@@ -209,31 +177,11 @@ const Lineage = () => {
   }
 
   // used for execution drop down
-  const handleExecutionClick = (executionType) => {
-    setExecutionData(null);
-
-    setSelectedExecutionType(executionType);
-    const uuid = extractUuid(executionType);
-    fetchExecutionLineage(selectedPipeline, uuid);
-  };
-
-  // used for execution drop down
   const handleTreeClick = (executionType) => {
     setExecutionData(null);
     setSelectedExecutionType(executionType);
     const uuid = extractUuid(executionType);
     fetchExecTree(selectedPipeline, uuid);
-  };
-
-  const fetchExecutionLineage = (pipelineName, uuid) => {
-    setLoading(true);
-    client.getExecutionLineage(pipelineName, uuid).then((data) => {
-      if (data === null) {
-        setExecutionData(null);
-      }
-      setExecutionData(data);
-      setLoading(false);
-    });
   };
 
   const fetchExecTree = (pipelineName, exec_type) => {
@@ -270,40 +218,6 @@ const Lineage = () => {
                 <Loader />
               </div>
             )}
-            {!loading &&
-              selectedPipeline !== null &&
-              selectedLineageType === "Artifacts" &&
-              lineageData !== null && (
-                <LineageArtifacts
-                  key={lineageArtifactsKey}
-                  data={lineageData}
-                />
-              )}
-            {!loading &&
-              selectedPipeline !== null &&
-              selectedLineageType === "Execution" &&
-              execDropdownData !== null &&
-              executionData !== null && (
-                <div>
-                  <ExecutionDropdown
-                    data={execDropdownData}
-                    exec_type={selectedExecutionType}
-                    handleExecutionClick={handleExecutionClick}
-                  />
-                </div>
-              )}
-            {!loading &&
-              selectedPipeline !== null &&
-              selectedLineageType === "Execution" &&
-              execDropdownData !== null &&
-              executionData !== null && (
-                <div>
-                  <LineageArtifacts
-                    key={lineageArtifactsKey}
-                    data={executionData}
-                  />
-                </div>
-              )}
             {!loading &&
               selectedPipeline !== null &&
               selectedLineageType === "Execution_Tree" &&

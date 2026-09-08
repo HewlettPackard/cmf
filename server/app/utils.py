@@ -1,6 +1,5 @@
 import socket
 from urllib.parse import urlparse
-import json
 
 def modify_arti_name(arti_name, type):
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]

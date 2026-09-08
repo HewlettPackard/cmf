@@ -164,7 +164,9 @@ const CommonLineageComponent = ({ data, lineageType }) => {
     });
 
     // Convert datasets into React Flow compliant schema elements
-    const rfNodes = buildReactFlowNodes(formattedData.nodes);
+    const rfNodes = buildReactFlowNodes(
+      formattedData.nodes.map((node) => ({ ...node, tooltipInteraction: "flat" })),
+    );
     const rfEdges = buildReactFlowEdges(formattedData?.links ?? formattedData?.edges ?? [], {
       edgeType: isArtifactExecutionLineage ? "simplebezier" : "step",
     });

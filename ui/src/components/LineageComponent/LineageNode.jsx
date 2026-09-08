@@ -76,8 +76,9 @@ const HANDLE_HIDDEN_STYLE = {
 // Bascically,custom node component.
 const LineageNode = ({ data }) => {
   const [showTooltip, setShowTooltip] = useState(false);
-  const { backgroundColor, fullUuid, id, ...rest } = data;
+  const { backgroundColor, fullUuid, id, tooltipInteraction, ...rest } = data;
   const tooltipData = {...rest, type: data.type === "Environment" ? "Pipeline" : rest.type, uuid: fullUuid || data.uuid,};
+  const isFlatLineage = tooltipInteraction === "flat";
   // Only hide the connector dots on Execution node boxes;
   // Pipeline and Stage nodes keep their default visible handles
   const isExecution = data.type === "Execution";
@@ -89,7 +90,9 @@ const LineageNode = ({ data }) => {
       className="lineage-card"
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
-      style={{ position: "relative" }}
+      onPointerEnter={() => setShowTooltip(true)}
+      onPointerLeave={() => setShowTooltip(false)}
+      style={{ position: "relative", pointerEvents: isFlatLineage ? "all" : undefined }}
     >
       <Handle type="target" position={Position.Top} style={targetHandleStyle} />
 
@@ -102,7 +105,7 @@ const LineageNode = ({ data }) => {
       {data.uuid && <div className="lineage-subtitle">{data.uuid}</div>}
 
       {showTooltip && (
-        <pre className="lineage-tooltip">
+        <pre className="lineage-tooltip" style={{ pointerEvents: "none" }}>
           {JSON.stringify(tooltipData, null, 2)}
         </pre>
       )}
