@@ -34,6 +34,8 @@ Successful endpoints return a common response envelope:
 
 Error responses use the same envelope with `status: "error"` and field-level details in `errors`.
 
+> **Exception:** `POST /v1/mlmd/pull` does not use this envelope. It returns the raw MLMD JSON payload directly as its response body.
+
 ### REST APIs
 
 | Method | Route | Parameters | Description |
@@ -53,7 +55,7 @@ Error responses use the same envelope with `status: "error"` and field-level det
 | `GET` | `/v1/artifacts/types` | None | Retrieves available artifact types. |
 | `GET` | `/v1/artifacts/models/{model_id}/card` | Path: `model_id` | Retrieves model card data for a Model artifact. `model_id` is a required path parameter; MCP should first discover Model artifacts and use the selected artifact ID. |
 | `POST` | `/v1/mlmd/push` | Body: `pipeline_name`, `json_payload`, optional `exec_uuid` | Pushes MLMD metadata to the CMF Server. |
-| `POST` | `/v1/mlmd/pull` | Body: optional `pipeline_name`, optional `exec_uuid`, optional `last_sync_time` | Pulls MLMD metadata from the CMF Server. |
+| `POST` | `/v1/mlmd/pull` | Body: optional `pipeline_name`, optional `exec_uuid`, optional `last_sync_time` | Pulls MLMD metadata from the CMF Server. Returns the raw MLMD JSON payload directly, not the standard response envelope. |
 | `POST` | `/v1/python-env` | Multipart file: `file` | Uploads a Python environment file to the CMF Server. |
 | `GET` | `/v1/python-env/{file_name}` | Path: `file_name` | Retrieves a Python environment file by file name. |
 | `GET` | `/v1/python-env/download` | Optional query: `list_of_files` | Downloads Python environment files as a ZIP archive. |
@@ -79,5 +81,6 @@ Error responses use the same envelope with `status: "error"` and field-level det
 | `201` | `Created` | Resource or uploaded file was created successfully. |
 | `400` | `Bad Request` | Request parameters or body are invalid, such as using a non-Model artifact ID for a model card. |
 | `404` | `Not Found` | Requested resource was not found, such as a pipeline, execution, artifact, file, server, or schedule. |
+| `406` | `Not Acceptable` | `POST /v1/mlmd/pull` could not find the requested pipeline. |
 | `422` | `Unprocessable Entity` | Request validation failed or a metadata schema version update is required. |
 | `500` | `Internal Server Error` | Server error occurred, such as file read failure, sync failure, or an unexpected backend error. |
