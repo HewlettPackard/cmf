@@ -19,8 +19,10 @@ This Module contains scheduler logic for executing due schedules in the backgrou
 import asyncio
 import time
 from fastapi import HTTPException
+from server.app.api.v1.servers import sync_metadata
 from server.app.get_data import compute_next_run_from_recurrence
 from server.app.schemas.requests import ServerRegistrationRequest
+from server.app.services.mlmd_state import mlmd_state
 import httpx
 from server.app.db.dbconfig import async_session
 from server.app.db.dbqueries import (
@@ -31,20 +33,21 @@ from server.app.db.dbqueries import (
     update_schedule_fields,
 )
 
-async def schedule_runner(sync_metadata):
-    """Input: none
-    Output: none (runs continuously)
-    Description: Background loop that executes due schedules using 3-stage server validation.
-    Step 1: Query all due schedules using current UTC epoch milliseconds.
-    Step 2: Check if server record exists in DB (registration check).
-            - If NOT registered: permanent config issue -> deactivate ALL schedule types.
-    Step 3: Check if the registered server is currently reachable (liveness check).
-            - If NOT alive: transient outage:
-                one-time  -> deactivate (missed its window, cannot retry)
-                periodic  -> log failure, compute next run, keep active for retry
-    Step 4: Server is registered AND alive -> perform sync, log result, advance schedule.
-    Step 5: Sleep 30 seconds and repeat.
-    Example: periodic schedule with unreachable server logs failure and reschedules."""
+async def schedule_runner():
+    """
+    Background loop that polls and executes due sync schedules every 30 seconds.
+
+    For each due schedule, runs a 3-stage check before syncing:
+      1. Registration check - if the server record no longer exists, deactivate
+         the schedule (permanent config issue, not a transient outage).
+      2. Liveness check - ping the server; if unreachable, deactivate one-time
+         schedules (missed their window) or reschedule periodic ones for retry.
+      3. Sync - if registered and alive, perform the sync, log the result, and
+         either deactivate (one-time) or advance to the next run time (periodic).
+
+    Returns:
+        None. Runs indefinitely until the process is stopped.
+    """
     while True:
         try:
             async with async_session() as db:
@@ -75,7 +78,7 @@ async def schedule_runner(sync_metadata):
                     try:
                         async with httpx.AsyncClient(timeout=5.0) as client:
                             response = await client.post(
-                                f"{server['host_info']}/api/acknowledge",
+                                f"{server['host_info']}/api/v1/acknowledge",
                                 json={"server_name": server["server_name"], "server_url": server["host_info"]}
                             )
                         server_alive = response.status_code == 200
@@ -119,7 +122,13 @@ async def schedule_runner(sync_metadata):
                     status = "failed"
                     await update_schedule_fields(db, schedule_id=sch["id"], status="running")
                     try:
-                        result = await sync_metadata(request=req, db=db, skip_logging=True)
+                        result = await sync_metadata(
+                            state=mlmd_state,
+                            server_name=req.server_name,
+                            server_url=req.server_url,
+                            db=db,
+                            skip_logging=True,
+                        )
                         status = result.get("status", "unknown")
                         status_msg = result.get("message", "")
                     except HTTPException as he:
