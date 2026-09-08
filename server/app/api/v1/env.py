@@ -50,13 +50,13 @@ async def download_python_env_route(list_of_files: Optional[list[str]] = Query(N
     return download_python_env(list_of_files)
 
 
-@router.get("/python-env/{file_name}")
+@router.get("/python-env/{file_name:path}")
 async def get_python_environment(file_name: str):
     """
     Retrieve the contents of a stored Python environment file.
 
     Method: GET
-    Path: /v1/python-env/{file_name}
+    Path: /v1/python-env/{file_name:path}
 
     Args:
         file_name (str): Name of the file to fetch. Must end with .txt or .yaml.
