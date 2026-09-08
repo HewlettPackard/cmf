@@ -1,3 +1,5 @@
+"""CMFQuery pipeline REST API endpoints."""
+
 import json
 from typing import Optional
 
@@ -20,6 +22,7 @@ query = mlmd_state.query
 
 @router.get("/pipelines/{pipeline_name}/stages", response_model=APIResponse)
 async def cmfquery_get_pipeline_stages(pipeline_name: str):
+    """Retrieve all stage names associated with a pipeline."""
     stages = await async_api(list_pipeline_stages, query, pipeline_name)
     if stages == []:
         return error_response(
@@ -46,6 +49,7 @@ async def cmfquery_get_pipeline_stages(pipeline_name: str):
 
 @router.get("/pipelines/names", response_model=APIResponse)
 async def cmfquery_list_pipelines():
+    """Retrieve all pipeline names available in the metadata store."""
     pipeline_names = await async_api(list_pipeline_names, query)
     if pipeline_names:
         return success_response(
@@ -70,6 +74,7 @@ async def cmfquery_list_pipelines():
 
 @router.get("/pipelines/{pipeline_name}/id", response_model=APIResponse)
 async def cmfquery_get_pipeline_id(pipeline_name: str):
+    """Retrieve the metadata store identifier for a pipeline name."""
     pipeline_id = await async_api(return_pipeline_id, query, pipeline_name)
     if pipeline_id == -1:
         return error_response(
@@ -95,6 +100,7 @@ async def cmfquery_get_pipeline_id(pipeline_name: str):
 
 @router.get("/pipelines/{pipeline_name}/executions", response_model=APIResponse)
 async def cmfquery_get_pipeline_executions(pipeline_name: str):
+    """Retrieve execution records associated with a pipeline."""
     executions = await async_api(get_pipeline_executions, query, pipeline_name)
     execution_records = [] if executions is None or executions.empty else mlmd_state._dataframe_records(executions)
     return success_response(
@@ -113,6 +119,7 @@ async def cmfquery_dump_pipeline_to_json(
     pipeline_name: str,
     exec_uuid: Optional[str] = None,
 ):
+    """Export metadata for a pipeline, optionally scoped to an execution UUID."""
     pipeline_id = await async_api(return_pipeline_id, query, pipeline_name)
     if pipeline_id == -1:
         return error_response(
@@ -136,6 +143,7 @@ async def cmfquery_dump_pipeline_to_json(
 
 @router.get("/pipelines/sync/{last_sync_time}/json", response_model=APIResponse)
 async def cmfquery_extract_pipelines_to_json(last_sync_time: int):
+    """Export pipeline metadata changed after the given sync timestamp."""
     pipeline_json = await async_api(extract_pipelines_to_json, query, last_sync_time)
     return success_response(
         data=json.loads(pipeline_json),
@@ -147,24 +155,30 @@ async def cmfquery_extract_pipelines_to_json(last_sync_time: int):
 # ==================== Business Logic Functions For CMFQuery ====================
 
 def list_pipeline_names(query: CmfQuery):
+    """Return all pipeline names from the CMFQuery backend."""
     return query.get_pipeline_names()
 
 
 def return_pipeline_id(query: CmfQuery, pipeline_name: str):
+    """Return the metadata store identifier for the requested pipeline."""
     return query.get_pipeline_id(pipeline_name)
 
 
 def list_pipeline_stages(query: CmfQuery, pipeline_name: str):
+    """Return all stages recorded for the requested pipeline."""
     return query.get_pipeline_stages(pipeline_name)
 
 
 def get_pipeline_executions(query: CmfQuery, pipeline_name: str):
+    """Return all execution records recorded for the requested pipeline."""
     return query.get_all_executions_in_pipeline(pipeline_name)
 
 
 def get_pipeline_json(query: CmfQuery, pipeline_name: str, exec_uuid: Optional[str]):
+    """Return serialized pipeline metadata for the requested pipeline."""
     return query.dumptojson(pipeline_name, exec_uuid)
 
 
 def extract_pipelines_to_json(query: CmfQuery, last_sync_time: int):
+    """Return serialized pipeline metadata changed after a sync timestamp."""
     return query.extract_to_json(last_sync_time)
