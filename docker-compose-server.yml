@@ -98,6 +98,13 @@ services:
     depends_on:
       server:
         condition: service_healthy
+    healthcheck:
+      # Use 127.0.0.1 instead of localhost to avoid IPv6 ::1 resolution when nginx listens on IPv4.
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       cmf-network:
         aliases:
@@ -153,9 +160,17 @@ services:
     networks:
       - cmf-network
     depends_on:
-      - ui
-      - server
-      - mcp
+      ui:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+    command: >
+      /bin/sh -c '
+      printf "\033[1m============================================================\n CMF Server, UI Server and MCP Server are started and running\n============================================================\033[0m\n";
+      exec nginx -g "daemon off;"
+      '
     restart: unless-stopped
 
 networks:

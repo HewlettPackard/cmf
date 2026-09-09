@@ -35,16 +35,16 @@ def register_tools(mcp, cmf_clients):
         
         return result
 
-    @mcp.tool(name="cmf_show_artifacts", description="Retrieve artifacts of a specific `artifact_type` for a given `pipeline` on Common Metadata Framework (CMF) server")
-    def cmf_show_artifacts(pipeline: str, artifact_type: str, cmfClient_instances: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    @mcp.tool(name="cmf_show_artifacts", description="Retrieve artifacts for a given `pipeline`, optionally filtered by `artifact_type`, on Common Metadata Framework (CMF) server")
+    def cmf_show_artifacts(pipeline: str, artifact_type: Optional[str] = None, cmfClient_instances: Optional[List[str]] = None) -> List[Dict[str, Any]]:
         """
-        This tool retrieves artifacts of a specific `artifact_type` for a given `pipeline` on Common Metadata Framework (CMF) server (s)
+        This tool retrieves artifacts for a given `pipeline` on Common Metadata Framework (CMF) server(s), optionally filtered by `artifact_type`.
         Can run cmf_show_artifact_types tool to validate that a artifact_type is a valid one on the Common Metadata Framework (CMF) server.
         Can run cmf_show_pipelines tool to validate that a pipeline is a valid one on the Common Metadata Framework (CMF) server.
         
         Args:
             pipeline: Name of the pipeline to show artifacts for.
-            artifact_type: Type of artifact to retrieve.
+            artifact_type: Optional type of artifact to retrieve.
             cmfClient_instances: Optional list of cmfClient_instances to query. If None, query all configured cccAPI_instances.
         """
         result = []

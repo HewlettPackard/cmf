@@ -36,16 +36,54 @@ class FastAPIClient {
     };
     const client = axios.create(initialConfig);
 
-    // Simple error interceptor
+    // Response interceptor to handle standardized API response format
     client.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // Check if response has standardized format
+        if (response.data && typeof response.data === 'object' && 'status' in response.data && 'code' in response.data && 'data' in response.data) {
+          const apiResponse = response.data;
+          
+          // If status is error or code indicates error, throw error
+          if (apiResponse.status === 'error' || apiResponse.code >= 400) {
+            const error = new Error(apiResponse.message);
+            error.code = apiResponse.code;
+            error.errors = apiResponse.errors;
+            error.requestId = apiResponse.meta?.request_id;
+            throw error;
+          }
+          
+          // Return unwrapped data for successful responses
+          return {
+            ...response,
+            data: apiResponse.data, // Extract the actual data from standardized format
+            meta: apiResponse.meta, // Keep meta for pagination info if needed
+            message: apiResponse.message,
+          };
+        }
+        
+        // Return response as-is if not in standardized format (legacy endpoints)
+        return response;
+      },
       (error) => {
         console.error('API Error:', error);
-        // Show simple error message to user
+        
+        // Handle standardized error response
+        if (error.response?.data?.status === 'error' || error.response?.data?.code >= 400) {
+          const apiError = error.response.data;
+          console.error('Standardized error:', apiError);
+          error.message = apiError.message;
+          error.code = apiError.code;
+          error.errors = apiError.errors;
+          error.requestId = apiError.meta?.request_id;
+        }
+        
+        // Show error message to user
         if (error.response?.status >= 500) {
           alert('Server error. Please try again later.');
         } else if (error.request && !error.response) {
           alert('Server connection refused. The backend service may be down. Please restart your Docker container and try again.');
+        } else if (error.response?.status === 422) {
+          alert(`Validation error: ${error.message}`);
         }
         return Promise.reject(error);
       }
@@ -54,66 +92,25 @@ class FastAPIClient {
     return client;
   }
 
-  // Deprecated legacy methods (unused by current stage-based grid pages).
-  // Replaced by: getArtifactsByStage / getArtifactTypesByStage
-  // async getArtifacts(pipeline_name, artifact_type, sort_order, active_page, filter_value, sort_field) {
-  //   return this.apiClient
-  //     .get(`/artifacts/${pipeline_name}/${artifact_type}`, {
-  //       params: {
-  //         filter_value: filter_value,
-  //         sort_order: sort_order,
-  //         active_page: active_page,
-  //         sort_field: sort_field,
-  //       },
-  //     })
-  //     .then(({ data }) => {
-  //       return data;
-  //     });
-  // }
-
-  // async getArtifactTypes() {
-  //   return this.apiClient.get(`/artifact_types`).then(({ data }) => {
-  //     return data;
-  //   });
-  // }
-
-  // Deprecated legacy methods (unused by current stage-based grid pages).
-  // async getArtifactLineage(pipeline) {
-  //   return this.apiClient
-  //     .get(`/artifact-lineage/force-directed-graph/${pipeline}`)
-  //     .then(({ data }) => {
-  //       return data;
-  //     });
-  // }
-
-  async getArtiTreeLineage(pipeline) {
-    return this.apiClient
-      .get(`/artifact-lineage/tangled-tree/${pipeline}`)
-      .then(({ data }) => {
-        return data;
-      });
-  }
+  async getArtifactLineage(pipeline) {
+  return this.apiClient
+    .get(`/v1/pipelines/${encodeURIComponent(pipeline)}/artifacts/lineage`)
+    .then(({ data }) => {
+      return data;
+    });
+}
 
   async getExecutionTypes(pipeline) {
     return this.apiClient
-      .get(`/list-of-executions/${pipeline}`)
+      .get(`/v1/pipelines/${encodeURIComponent(pipeline)}/executions/list`)
       .then(({ data }) => {
         return data;
       });
   }
 
-  // Deprecated legacy methods (unused by current stage-based grid pages).
-  // async getExecutionLineage(pipeline, uuid) {
-  //   return this.apiClient
-  //     .get(`/execution-lineage/force-directed-graph/${pipeline}/${uuid}`)
-  //     .then(({ data }) => {
-  //       return data;
-  //     });
-  // }
-
-  async getExecTreeLineage(pipeline, uuid) {
+  async getExecutionLineage(pipeline, uuid) {
     return this.apiClient
-      .get(`/execution-lineage/tangled-tree/${uuid}/${pipeline}`)
+      .get(`/v1/pipelines/${encodeURIComponent(pipeline)}/executions/${uuid}/lineage`)
       .then(({ data }) => {
         return data;
       });
@@ -121,7 +118,7 @@ class FastAPIClient {
 
   async getArtiExeTreeLineage(pipeline) {
     return this.apiClient
-      .get(`/artifact-execution-lineage/tangled-tree/${pipeline}`)
+      .get(`/v1/pipelines/${encodeURIComponent(pipeline)}/artifact-executions/lineage`)
       .then(({ data }) => {
         return data;
       });
@@ -152,7 +149,7 @@ class FastAPIClient {
 
   async getPipelines(value) {
     try {
-      const { data } = await this.apiClient.get(`/pipelines`);
+      const { data } = await this.apiClient.get(`/v1/pipelines`);
       return data;
     } catch (error) {
       // Error already handled by interceptor, just return empty array
@@ -160,9 +157,9 @@ class FastAPIClient {
     }
   }
 
-  async getModelCard(modelId) {
+ async getModelCard(modelId) {
     return this.apiClient
-      .get(`/model-card`, {
+      .get(`/v1/model-card`, {
         params: {
           modelId: modelId,
         },
@@ -174,7 +171,17 @@ class FastAPIClient {
 
   async getPythonEnv(file_name) {
     return this.apiClient
-      .get(`/python-env`, {
+      .get(`/v1/python-env/${encodeURIComponent(file_name)}`, {
+        responseType: "text",
+      })
+      .then((response) => {
+        return response.data;
+      });
+  }
+
+  async getLabelData(file_name) {
+    return this.apiClient
+      .get(`/v1/label-data`, {
         params: {
           file_name: file_name
         },
@@ -184,23 +191,9 @@ class FastAPIClient {
         return response.data;
       });
   }
-
-  async getLabelData(file_name) {
-    return this.apiClient
-      .get(`/label-data`, {
-        params: {
-          file_name: file_name
-        },
-        responseType: "text",
-      })
-      .then((response) => {
-        return response.data;
-      });
-  }
-
   async getServerRegistration(server_name, server_url) {
     return this.apiClient
-      .post(`/register-server`, {
+      .post(`/v1/servers/register`, {
         server_name: server_name,
         server_url: server_url,
       })
@@ -211,7 +204,7 @@ class FastAPIClient {
 
   async getRegistredServerList() {
     return this.apiClient
-      .get(`/server-list`)
+      .get(`/v1/servers`)
       .then(({ data }) => {
         return data;
       });
@@ -219,7 +212,7 @@ class FastAPIClient {
 
   async sync(serverName, serverUrl) {
     return this.apiClient
-      .post(`/sync`, {
+      .post(`/v1/servers/sync`, {
         server_name: serverName,
         server_url: serverUrl,
       })
@@ -253,13 +246,13 @@ class FastAPIClient {
     }
 
     return this.apiClient
-      .post(`/schedule-sync`, payload)
+      .post(`/v1/schedules`, payload)
       .then(({ data }) => data);
   }
 
   async getSchedules(serverId) {
     return this.apiClient
-      .get(`/schedules`, {
+      .get(`/v1/schedules`, {
         params: { server_id: serverId },
       })
       .then(({ data }) => data);
@@ -267,32 +260,29 @@ class FastAPIClient {
 
   async getScheduleLogs(scheduleId) {
     return this.apiClient
-      .get(`/schedule-sync/logs/${scheduleId}`)
+      .get(`/v1/schedules/${scheduleId}/logs`)
       .then(({ data }) => data);
   }
 
   async getCompletedLogs(serverId) {
     return this.apiClient
-      .get(`/server/${serverId}/completed-logs`)
+      .get(`/v1/servers/${serverId}/completed-logs`)
       .then(({ data }) => data);
   }
 
   async deleteSchedule(scheduleId) {
     return this.apiClient
-      .delete(`/schedule-sync/${scheduleId}`)
+      .delete(`/v1/schedules/${scheduleId}`)
       .then(({ data }) => data);
   }
   
   async getExecutionsByStage(pipelineName, stageName, activePage = 1, recordPerPage = 5, sortOrder = "desc", filterValue = "") {
     return this.apiClient
-      .get(`/executions-by-stage/${pipelineName}`, {
-        params: {
-          stage_name: stageName,
-          active_page: activePage,
-          record_per_page: recordPerPage,
-          sort_order: sortOrder,
-          filter_value: filterValue,
-        },
+      .post(`/v1/pipelines/${encodeURIComponent(pipelineName)}/stages/${encodeURIComponent(stageName)}/executions`, {
+        active_page: activePage,
+        record_per_page: recordPerPage,
+        sort_order: sortOrder,
+        filter_value: filterValue,
       })
       .then(({ data }) => {
         return data;
@@ -301,7 +291,7 @@ class FastAPIClient {
 
   async getPipelineStages(pipelineName) {
     return this.apiClient
-      .get(`/pipeline-stages/${pipelineName}`)
+      .get(`/v1/pipelines/${encodeURIComponent(pipelineName)}/stages`)
       .then(({ data }) => {
         return data;
       });
@@ -309,28 +299,22 @@ class FastAPIClient {
 
   async getArtifactTypesByStage(pipelineName, stageName) {
     return this.apiClient
-      .get(`/artifact-types-by-stage/${pipelineName}`, {
-        params: {
-          stage_name: stageName,
-        },
+      .post(`/v1/pipelines/${encodeURIComponent(pipelineName)}/stages/${encodeURIComponent(stageName)}/artifacts/types`, {
       })
       .then(({ data }) => {
         return data;
-      });
+      }); 
   }
 
   async getArtifactsByStage(pipelineName, stageName, artifactType, sortOrder, activePage = 1, recordPerPage = 5, filter = "", sortField = "name") {
     return this.apiClient
-      .get(`/artifacts-by-stage/${pipelineName}`, {
-        params: {
-          stage_name: stageName,
-          artifact_type: artifactType,
-          sort_order: sortOrder,
-          active_page: activePage,
-          record_per_page: recordPerPage,
-          filter_value: filter,
-          sort_field: sortField,
-        },
+      .post(`/v1/pipelines/${encodeURIComponent(pipelineName)}/stages/${encodeURIComponent(stageName)}/artifacts`, {
+        artifact_type: artifactType,
+        sort_order: sortOrder,
+        active_page: activePage,
+        record_per_page: recordPerPage,
+        filter_value: filter,
+        sort_field: sortField,
       })
       .then(({ data }) => {
         return data;
