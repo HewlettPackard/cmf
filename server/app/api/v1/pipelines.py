@@ -869,3 +869,5 @@ async def get_hierarchical_lineage(
             status_code=500,
             detail=f"Failed to convert the MLMD payload to hierarchical lineage JSON: {error}"
         )
+
+    return result
