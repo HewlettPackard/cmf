@@ -1726,7 +1726,7 @@ Having the HTTP port means we can connect to our database with Neo4j Browser, an
 </blockquote>
 <hr />
 <h3 id="1-artifact-lineage-with-processing-steps">1. Artifact Lineage with Processing Steps<a class="headerlink" href="#1-artifact-lineage-with-processing-steps" title="Permanent link">¤</a></h3>
-<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="n">Execution</span><span class="p">{</span><span class="n">pipeline_name</span><span class="p">:</span><span class="s">&#39;&lt;pipelinename&gt;&#39;</span><span class="p">})</span><span class="o">-[</span><span class="n">r</span><span class="o">]-</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="p">:</span><span class="n">Execution</span><span class="p">{</span><span class="n">pipeline_name</span><span class="p">:</span><span class="s">'&lt;pipelinename&gt;'</span><span class="p">})</span><span class="o">-[</span><span class="n">r</span><span class="o">]-</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span>
 <span class="k">WHERE</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">:</span><span class="n">Dataset</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="n">Model</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="n">Metrics</span><span class="p">)</span><span class="w"> </span>
 <span class="k">RETURN</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="w"> </span>
 </code></pre></div>
@@ -1734,12 +1734,12 @@ Having the HTTP port means we can connect to our database with Neo4j Browser, an
 <h3 id="2-artifact-lineage">2. Artifact Lineage<a class="headerlink" href="#2-artifact-lineage" title="Permanent link">¤</a></h3>
 <div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span>
 <span class="k">WHERE</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">:</span><span class="n">Dataset</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="n">Model</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">b</span><span class="p">:</span><span class="n">Metrics</span><span class="p">)</span><span class="w"> </span>
-<span class="n">AND</span><span class="w"> </span><span class="s">&#39;&lt;pipelinename&gt;&#39;</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">pipeline_name</span><span class="w"> </span>
+<span class="n">AND</span><span class="w"> </span><span class="s">'&lt;pipelinename&gt;'</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">pipeline_name</span><span class="w"> </span>
 <span class="k">RETURN</span><span class="w"> </span><span class="n">b</span>
 </code></pre></div>
 <hr />
 <h3 id="3-lineage-of-processing-steps">3. Lineage of Processing Steps<a class="headerlink" href="#3-lineage-of-processing-steps" title="Permanent link">¤</a></h3>
-<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">:</span><span class="n">Execution</span><span class="p">{</span><span class="n">pipeline_name</span><span class="p">:</span><span class="s">&#39;&lt;pipelinename&gt;&#39;</span><span class="p">})</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">:</span><span class="n">Execution</span><span class="p">{</span><span class="n">pipeline_name</span><span class="p">:</span><span class="s">'&lt;pipelinename&gt;'</span><span class="p">})</span><span class="w"> </span>
 <span class="k">RETURN</span><span class="w"> </span><span class="n">n</span>
 </code></pre></div>
 <hr />
@@ -1747,14 +1747,14 @@ Having the HTTP port means we can connect to our database with Neo4j Browser, an
 <blockquote>
 <p>All execution/stage nodes related to a pipeline</p>
 </blockquote>
-<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="p">{</span><span class="n">pipeline_name</span><span class="p">:</span><span class="s">&#39;&lt;pipelinename&gt;&#39;</span><span class="p">})</span><span class="w"> </span>
+<div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="p">{</span><span class="n">pipeline_name</span><span class="p">:</span><span class="s">'&lt;pipelinename&gt;'</span><span class="p">})</span><span class="w"> </span>
 <span class="n">DETACH</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="n">n</span>
 </code></pre></div>
 <blockquote>
 <p>All Dataset nodes</p>
 </blockquote>
 <div class="highlight"><pre><span></span><code><span class="k">MATCH</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span>
-<span class="k">WHERE</span><span class="w"> </span><span class="s">&#39;&lt;pipelinename&gt;&#39;</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">pipeline_name</span><span class="w"> </span>
+<span class="k">WHERE</span><span class="w"> </span><span class="s">'&lt;pipelinename&gt;'</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="n">n</span><span class="p">.</span><span class="n">pipeline_name</span><span class="w"> </span>
 <span class="n">DETACH</span><span class="w"> </span><span class="k">DELETE</span><span class="w"> </span><span class="n">n</span>
 </code></pre></div>
 

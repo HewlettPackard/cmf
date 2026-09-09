@@ -687,14 +687,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="API Reference">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#response-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Response Format">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list-of-apis" class="md-nav__link">
+  <a href="#rest-apis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        List of APIs
+        REST APIs
       
     </span>
   </a>
@@ -1549,14 +1560,25 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="API Reference">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#response-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Format
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Response Format">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#list-of-apis" class="md-nav__link">
+  <a href="#rest-apis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        List of APIs
+        REST APIs
       
     </span>
   </a>
@@ -1602,87 +1624,233 @@
 <p>For CMF Server installation and setup instructions, see the <a href="../../../setup/#install-cmf-server-with-gui">Installation &amp; Setup</a> guide.</p>
 </blockquote>
 <h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">¤</a></h2>
-<p>CMF Server APIs are organized around <a href="https://fastapi.tiangolo.com/">FastAPI</a>.
-They accept and return JSON-encoded request bodies and responses and return standard HTTP response codes.</p>
-<h3 id="list-of-apis">List of APIs<a class="headerlink" href="#list-of-apis" title="Permanent link">¤</a></h3>
+<p>CMF Server APIs are implemented with <a href="https://fastapi.tiangolo.com/">FastAPI</a>. The server registers routes under <code>/v1</code>; when accessed through the default CMF server/nginx setup, the public URL prefix is usually <code>/api/v1</code>.</p>
+<p>Use the following parameter convention when adding or calling APIs:</p>
+<ul>
+<li>Required identifiers belong in the path, for example <code>{pipeline_name}</code>, <code>{execution_uuid}</code>, <code>{model_id}</code>, <code>{server_id}</code>, <code>{schedule_id}</code>, and <code>{file_name}</code>.</li>
+<li>Optional filters, search values, sorting, paging, or flags belong in query parameters, for example <code>server_id</code>, <code>skip_logging</code>, and <code>list_of_files</code>.</li>
+<li>Request bodies are used for structured create, sync, push, pull, or paginated query payloads.</li>
+</ul>
+<h2 id="response-format">Response Format<a class="headerlink" href="#response-format" title="Permanent link">¤</a></h2>
+<p>Successful endpoints return a common response envelope:</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"success"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Pipelines retrieved successfully"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-01-04T15:00:00Z"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"pagination"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Error responses use the same envelope with <code>status: "error"</code> and field-level details in <code>errors</code>.</p>
+<blockquote>
+<p><strong>Exception:</strong> <code>POST /v1/mlmd/pull</code> does not use this envelope. It returns the raw MLMD JSON payload directly as its response body.</p>
+</blockquote>
+<h3 id="rest-apis">REST APIs<a class="headerlink" href="#rest-apis" title="Permanent link">¤</a></h3>
 <table>
 <thead>
 <tr>
 <th>Method</th>
-<th>URL</th>
+<th>Route</th>
+<th>Parameters</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>POST</code></td>
-<td><code>/mlmd_push</code></td>
-<td>Pushes JSON-encoded data to the CMF Server.</td>
+<td><code>GET</code></td>
+<td><code>/v1/pipelines</code></td>
+<td>None</td>
+<td>Discovers all pipelines present in the MLMD store. No parameters required.</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/mlmd_pull/{pipeline_name}</code></td>
-<td>Retrieves an MLMD file from the CMF Server.</td>
+<td><code>/v1/pipelines/{pipeline_name}/stages</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves unique stages for a pipeline.</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/executions/{pipeline_name}</code></td>
-<td>Retrieves all executions from the CMF Server.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/list-of-executions/{pipeline_name}</code></td>
-<td>Retrieves a list of execution types.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/execution-lineage/tangled-tree/{uuid}/{pipeline_name}</code></td>
-<td>Retrieves a dictionary of nodes and links for a given execution type.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifacts/{pipeline_name}/{type}</code></td>
-<td>Retrieves all artifacts of the specified type from the CMF Server.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifact-lineage/tangled-tree/{pipeline_name}</code></td>
-<td>Retrieves a nested list of dictionaries with <code>id</code> and <code>parents</code> keys for artifacts.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifact_types</code></td>
-<td>Retrieves a list of artifact types.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/pipelines</code></td>
-<td>Retrieves all pipelines present in the MLMD file.</td>
+<td><code>/v1/pipelines/{pipeline_name}/artifacts</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Discovers all artifacts for a pipeline. <code>pipeline_name</code> is a required path parameter.</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
-<td><code>/tensorboard</code></td>
-<td>Uploads TensorBoard logs to the CMF Server.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/model-card</code></td>
-<td>Retrieves model data, input/output artifacts, and executions for a model.</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/artifact-execution-lineage/tangled-tree/{pipeline_name}</code></td>
-<td>Retrieves a nested list of dictionaries with <code>id</code> and <code>parents</code> keys for artifacts and executions.</td>
+<td><code>/v1/pipelines/{pipeline_name}/stages/{stage}/artifacts/types</code></td>
+<td>Path: <code>pipeline_name</code>, <code>stage</code></td>
+<td>Retrieves artifact types available in a pipeline stage.</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
-<td><code>/python-env</code></td>
-<td>Pushes Python environment data to the CMF Server.</td>
+<td><code>/v1/pipelines/{pipeline_name}/stages/{stage}/artifacts</code></td>
+<td>Path: <code>pipeline_name</code>, <code>stage</code>; body: artifact stage query options</td>
+<td>Retrieves artifacts filtered by pipeline stage, artifact type, search, sort, and pagination options.</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/python-env</code></td>
-<td>Retrieves environment data from the <code>/cmf_server/data/env</code> folder.</td>
+<td><code>/v1/pipelines/{pipeline_name}/executions</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Discovers all executions in a pipeline. <code>pipeline_name</code> is a required path parameter.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/pipelines/{pipeline_name}/executions/list</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves a short list of executions for a pipeline.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/pipelines/{pipeline_name}/stages/{stage}/executions</code></td>
+<td>Path: <code>pipeline_name</code>, <code>stage</code>; body: execution stage query options</td>
+<td>Retrieves executions filtered by pipeline stage, search, sort, and pagination options.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/pipelines/{pipeline_name}/executions/{execution_uuid}/python-env</code></td>
+<td>Path: <code>pipeline_name</code>, <code>execution_uuid</code></td>
+<td>Retrieves the Python environment file associated with an execution. Uses <code>pipeline_name</code> and <code>execution_uuid</code> so MCP does not need the raw environment file name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/pipelines/{pipeline_name}/executions/{uuid}/lineage</code></td>
+<td>Path: <code>pipeline_name</code>, <code>uuid</code></td>
+<td>Retrieves execution lineage for a selected execution UUID.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/pipelines/{pipeline_name}/artifacts/lineage</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves artifact lineage for a pipeline.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/pipelines/{pipeline_name}/artifact-executions/lineage</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves combined artifact and execution lineage for a pipeline.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/artifacts/types</code></td>
+<td>None</td>
+<td>Retrieves available artifact types.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/artifacts/models/{model_id}/card</code></td>
+<td>Path: <code>model_id</code></td>
+<td>Retrieves model card data for a Model artifact. <code>model_id</code> is a required path parameter; MCP should first discover Model artifacts and use the selected artifact ID.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/mlmd/push</code></td>
+<td>Body: <code>pipeline_name</code>, <code>json_payload</code>, optional <code>exec_uuid</code></td>
+<td>Pushes MLMD metadata to the CMF Server.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/mlmd/pull</code></td>
+<td>Body: optional <code>pipeline_name</code>, optional <code>exec_uuid</code>, optional <code>last_sync_time</code></td>
+<td>Pulls MLMD metadata from the CMF Server. Returns the raw MLMD JSON payload directly, not the standard response envelope.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/python-env</code></td>
+<td>Multipart file: <code>file</code></td>
+<td>Uploads a Python environment file to the CMF Server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/python-env/{file_name}</code></td>
+<td>Path: <code>file_name</code></td>
+<td>Retrieves a Python environment file by file name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/python-env/download</code></td>
+<td>Optional query: <code>list_of_files</code></td>
+<td>Downloads Python environment files as a ZIP archive.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/model-card</code></td>
+<td>Query: <code>modelId</code></td>
+<td>Retrieves model card data for the UI by model artifact ID.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/label</code></td>
+<td>Multipart file: <code>file</code></td>
+<td>Uploads a label file to the CMF Server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/label-data</code></td>
+<td>Query: <code>file_name</code></td>
+<td>Retrieves label file content by file name.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/tensorboard</code></td>
+<td>Query: <code>pipeline_name</code>; multipart file: <code>file</code></td>
+<td>Uploads TensorBoard logs for a pipeline.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/acknowledge</code></td>
+<td>Body: <code>server_name</code>, <code>server_url</code></td>
+<td>Acknowledges a peer server during registration or liveness checks.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/servers/register</code></td>
+<td>Body: <code>server_name</code>, <code>server_url</code></td>
+<td>Registers a peer CMF Server.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/servers/sync</code></td>
+<td>Body: <code>server_name</code>, <code>server_url</code>; optional query: <code>skip_logging</code></td>
+<td>Synchronizes metadata from a registered server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/servers</code></td>
+<td>None</td>
+<td>Lists registered servers.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/servers/{server_id}/completed-logs</code></td>
+<td>Path: <code>server_id</code></td>
+<td>Retrieves completed sync logs for a registered server.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/v1/schedules</code></td>
+<td>Body: schedule creation details</td>
+<td>Creates a sync schedule.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/schedules</code></td>
+<td>Optional query: <code>server_id</code></td>
+<td>Retrieves active schedules, optionally filtered by server.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/v1/schedules/{schedule_id}/logs</code></td>
+<td>Path: <code>schedule_id</code></td>
+<td>Retrieves run history logs for a schedule.</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/v1/schedules/{schedule_id}</code></td>
+<td>Path: <code>schedule_id</code></td>
+<td>Deactivates a sync schedule.</td>
 </tr>
 </tbody>
 </table>
@@ -1699,32 +1867,37 @@ They accept and return JSON-encoded request bodies and responses and return stan
 <tr>
 <td><code>200</code></td>
 <td><code>OK</code></td>
-<td>MLMD is successfully pushed (e.g., when using <code>GET</code>, <code>POST</code>).</td>
+<td>Request completed successfully.</td>
+</tr>
+<tr>
+<td><code>201</code></td>
+<td><code>Created</code></td>
+<td>Resource or uploaded file was created successfully.</td>
 </tr>
 <tr>
 <td><code>400</code></td>
 <td><code>Bad Request</code></td>
-<td>When the CMF Server is not available.</td>
+<td>Request parameters or body are invalid, such as using a non-Model artifact ID for a model card.</td>
 </tr>
 <tr>
 <td><code>404</code></td>
 <td><code>Not Found</code></td>
-<td>Requested resource not found (e.g., pipeline, database, file, or registered server).</td>
+<td>Requested resource was not found, such as a pipeline, execution, artifact, file, server, or schedule.</td>
 </tr>
 <tr>
 <td><code>406</code></td>
 <td><code>Not Acceptable</code></td>
-<td>Pipeline not found in the database.</td>
+<td><code>POST /v1/mlmd/pull</code> could not find the requested pipeline.</td>
 </tr>
 <tr>
 <td><code>422</code></td>
 <td><code>Unprocessable Entity</code></td>
-<td>Version update required. The metadata schema version is incompatible.</td>
+<td>Request validation failed or a metadata schema version update is required.</td>
 </tr>
 <tr>
 <td><code>500</code></td>
 <td><code>Internal Server Error</code></td>
-<td>Server error occurred (e.g., target server unreachable, file read error, sync failure).</td>
+<td>Server error occurred, such as file read failure, sync failure, or an unexpected backend error.</td>
 </tr>
 </tbody>
 </table>

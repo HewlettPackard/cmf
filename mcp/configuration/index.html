@@ -2744,10 +2744,10 @@ MCP_TRANSPORT_SECURITY=disabled
 <span class="w">      </span><span class="nt">MCP_TRANSPORT_SECURITY</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MCP_TRANSPORT_SECURITY:-disabled}</span>
 
 <span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8382:8000&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"8382:8000"</span>
 
 <span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD-SHELL&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">http://localhost:8000</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD-SHELL"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"curl</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">http://localhost:8000</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1"</span><span class="p p-Indicator">]</span>
 <span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
 <span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
 <span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
@@ -2782,10 +2782,10 @@ CMF3_BASE_URL=http://cmf-dev.internal:8080
 <p><strong>Usage</strong>:</p>
 <p>When AI assistants query, they can target specific servers or query all:</p>
 <div class="highlight"><pre><span></span><code># Query all environments
-&quot;What pipelines exist across all CMF servers?&quot;
+"What pipelines exist across all CMF servers?"
 
 # Query specific environment
-&quot;Show me models in the production CMF server&quot;
+"Show me models in the production CMF server"
 </code></pre></div>
 <h3 id="scenario-multi-team-setup">Scenario: Multi-Team Setup<a class="headerlink" href="#scenario-multi-team-setup" title="Permanent link">¤</a></h3>
 <p><strong>Goal</strong>: Aggregate metadata from different team CMF Servers.</p>
@@ -2803,7 +2803,7 @@ CMF3_BASE_URL=http://team-research.internal:8080
 <h3 id="docker-health-check">Docker Health Check<a class="headerlink" href="#docker-health-check" title="Permanent link">¤</a></h3>
 <p><strong>Configuration</strong> (in <code>docker-compose-server.yml</code>):</p>
 <div class="highlight"><pre><span></span><code><span class="nt">healthcheck</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;CMD-SHELL&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;curl</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">http://localhost:8000</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1&quot;</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD-SHELL"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"curl</span><span class="nv"> </span><span class="s">-f</span><span class="nv"> </span><span class="s">http://localhost:8000</span><span class="nv"> </span><span class="s">||</span><span class="nv"> </span><span class="s">exit</span><span class="nv"> </span><span class="s">1"</span><span class="p p-Indicator">]</span>
 <span class="w">  </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
 <span class="w">  </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
 <span class="w">  </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
@@ -2868,7 +2868,7 @@ docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </spa
 <p><strong>Custom Port Mapping</strong>:</p>
 <p>Edit <code>docker-compose-server.yml</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;9000:8000&quot;</span><span class="w">  </span><span class="c1"># Map to port 9000 instead</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"9000:8000"</span><span class="w">  </span><span class="c1"># Map to port 9000 instead</span>
 </code></pre></div>
 <h2 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">¤</a></h2>
 <h3 id="network-isolation">Network Isolation<a class="headerlink" href="#network-isolation" title="Permanent link">¤</a></h3>
@@ -2954,7 +2954,7 @@ docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </spa
 <p><strong>Symptom</strong>: <code>Error: Address already in use</code></p>
 <p><strong>Solution</strong>: Change the external port mapping:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">ports</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;8383:8000&quot;</span><span class="w">  </span><span class="c1"># Use different external port</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"8383:8000"</span><span class="w">  </span><span class="c1"># Use different external port</span>
 </code></pre></div>
 <h4 id="health-check-failures">Health Check Failures<a class="headerlink" href="#health-check-failures" title="Permanent link">¤</a></h4>
 <p><strong>Symptom</strong>: Container keeps restarting</p>
@@ -2969,7 +2969,7 @@ docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </spa
 <p><strong>Disable health check temporarily</strong>:
    <div class="highlight"><pre><span></span><code><span class="c1"># Comment out healthcheck section for debugging</span>
 <span class="c1"># healthcheck:</span>
-<span class="c1">#   test: [&quot;CMD-SHELL&quot;, &quot;curl -f http://localhost:8000 || exit 1&quot;]</span>
+<span class="c1">#   test: ["CMD-SHELL", "curl -f http://localhost:8000 || exit 1"]</span>
 </code></pre></div></p>
 </li>
 <li>
@@ -3007,10 +3007,10 @@ docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-s
 <span class="w">  </span><span class="nt">deploy</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">resources</span><span class="p">:</span>
 <span class="w">      </span><span class="nt">limits</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;1.0&#39;</span>
+<span class="w">        </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'1.0'</span>
 <span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">512M</span>
 <span class="w">      </span><span class="nt">reservations</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;0.5&#39;</span>
+<span class="w">        </span><span class="nt">cpus</span><span class="p">:</span><span class="w"> </span><span class="s">'0.5'</span>
 <span class="w">        </span><span class="nt">memory</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">256M</span>
 </code></pre></div>
 <h2 id="advanced-configuration">Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Permanent link">¤</a></h2>
@@ -3031,14 +3031,14 @@ docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-s
 <p>Add custom MCP tools by creating new modules in <code>tools/</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># tools/custom.py</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_tools</span><span class="p">(</span><span class="n">mcp</span><span class="p">,</span> <span class="n">cmf_clients</span><span class="p">):</span>
-    <span class="nd">@mcp</span><span class="o">.</span><span class="n">tool</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;custom_query&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Custom CMF query&quot;</span><span class="p">)</span>
+    <span class="nd">@mcp</span><span class="o">.</span><span class="n">tool</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"custom_query"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"Custom CMF query"</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">custom_query</span><span class="p">(</span><span class="n">param</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
         <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">cmf_clients</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">client</span> <span class="o">=</span> <span class="n">cmf_clients</span><span class="p">[</span><span class="n">url</span><span class="p">]</span>
             <span class="c1"># Custom implementation</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">custom_api_call</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
-            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;cmfClient&quot;</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"cmfClient"</span><span class="p">:</span> <span class="n">url</span><span class="p">,</span> <span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">})</span>
         <span class="k">return</span> <span class="n">result</span>
 </code></pre></div>
 <p>Register in <code>main.py</code>:</p>

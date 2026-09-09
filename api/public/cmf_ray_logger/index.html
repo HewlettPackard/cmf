@@ -1517,9 +1517,9 @@ Here, the <code>data_dir</code> argument is used to log the dataset at the start
 <p><code>CmfRayLogger</code> can now log the model during trials. To enable this, the <code>train.report</code> method must include a special key: <code>"model_path"</code>. The value of <code>"model_path"</code> should be a relative path pointing to the saved model within the CMF directory.</p>
 <p>Important: Ensure that the <code>"model_path"</code> is relative, as the DVC wrapper expects all paths nested within the CMF directory to be relative.
 <div class="highlight"><pre><span></span><code><span class="n">train</span><span class="o">.</span><span class="n">report</span><span class="p">({</span>
-    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
-    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="s2">&quot;model_path&quot;</span><span class="p">:</span> <span class="s2">&quot;models/example_model.pth&quot;</span>
+    <span class="s2">"accuracy"</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="s2">"loss"</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s2">"model_path"</span><span class="p">:</span> <span class="s2">"models/example_model.pth"</span>
 <span class="p">})</span>
 </code></pre></div></p>
 <h2 id="output">Output<a class="headerlink" href="#output" title="Permanent link">¤</a></h2>
@@ -1530,7 +1530,7 @@ Here, the <code>data_dir</code> argument is used to log the dataset at the start
 <span class="kn">from</span><span class="w"> </span><span class="nn">ray</span><span class="w"> </span><span class="kn">import</span> <span class="n">tune</span>
 
 <span class="c1"># Initialize the logger</span>
-<span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="s2">&quot;ExamplePipeline&quot;</span><span class="p">,</span> <span class="s2">&quot;/path/to/metadata.json&quot;</span><span class="p">,</span> <span class="s2">&quot;Stage1&quot;</span><span class="p">,</span> <span class="s2">&quot;path/to/data_dir&quot;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">cmf_ray_logger</span><span class="o">.</span><span class="n">CmfRayLogger</span><span class="p">(</span><span class="s2">"ExamplePipeline"</span><span class="p">,</span> <span class="s2">"/path/to/metadata.json"</span><span class="p">,</span> <span class="s2">"Stage1"</span><span class="p">,</span> <span class="s2">"path/to/data_dir"</span><span class="p">)</span>
 
 <span class="c1"># Configuration for tuning</span>
 <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
@@ -1546,9 +1546,9 @@ Here, the <code>data_dir</code> argument is used to log the dataset at the start
 
 <span class="c1"># Reporting within your trainable function</span>
 <span class="n">train</span><span class="o">.</span><span class="n">report</span><span class="p">({</span>
-    <span class="s2">&quot;accuracy&quot;</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
-    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="s2">&quot;model_path&quot;</span><span class="p">:</span> <span class="s2">&quot;path/to/models/example_model.pth&quot;</span>
+    <span class="s2">"accuracy"</span><span class="p">:</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="s2">"loss"</span><span class="p">:</span> <span class="mf">0.05</span><span class="p">,</span>
+    <span class="s2">"model_path"</span><span class="p">:</span> <span class="s2">"path/to/models/example_model.pth"</span>
 <span class="p">})</span>
 </code></pre></div>
 
