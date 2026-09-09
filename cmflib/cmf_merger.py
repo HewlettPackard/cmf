@@ -226,11 +226,11 @@ def parse_json_to_mlmd(mlmd_json, path_to_store: str, cmd: str, exec_uuid: Union
 
         # Initialize the cmf class with pipeline_name and graph_status
         if cmd == "pull":
-            cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+            cmf_class = Cmf(filename=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph)
         else:
             # in else, we are assuming cmd="push"
-            cmf_class = Cmf(filepath=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
+            cmf_class = Cmf(filename=path_to_store, pipeline_name=pipeline_name,  #intializing cmf
                             graph=graph, is_server=True)
 
         # Process each stage sequentially

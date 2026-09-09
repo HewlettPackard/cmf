@@ -119,12 +119,6 @@ def get_md5_hash(output):
     return hash_for_op
         
 
-def change_dir(cmf_init_path):
-    logging_dir = os.getcwd()
-    if not logging_dir == cmf_init_path:
-        os.chdir(cmf_init_path)
-    return logging_dir
-
 def list_conda_packages_json() -> list:
     """Return a list of installed Conda packages and their versions."""
     try:

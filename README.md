@@ -127,7 +127,7 @@ CMF is composed of:
 from cmflib.cmf import Cmf
 from ml_metadata.proto import metadata_store_pb2 as mlpb
 
-metawriter = Cmf(filepath="mlmd", pipeline_name="test_pipeline")
+metawriter = Cmf(filename="mlmd", pipeline_name="test_pipeline")
 
 context: mlpb.Context = metawriter.create_context(
     pipeline_stage="prepare",

@@ -121,17 +121,17 @@ class CmfQuery(object):
 
 
     Args:
-        filepath: Path to the MLMD database file.
+        filename: Name of the MLMD database file.
     """
 
-    def __init__(self, filepath: str = "mlmd", is_server=False) -> None:
-        self.filepath = filepath
+    def __init__(self, filename: str = "mlmd", is_server=False) -> None:
+        self.filename = filename
         temp_store: t.Union[PostgresStore, SqlliteStore]
         if is_server:
             config_dict = get_postgres_config()
             temp_store = PostgresStore(config_dict)
         else:
-            temp_store = SqlliteStore({"filename": filepath})
+            temp_store = SqlliteStore({"filename": filename})
         self.store = temp_store.connect()
 
     @staticmethod
