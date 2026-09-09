@@ -95,6 +95,9 @@ curl -X POST http://localhost:80/api/v1/executions/batch-get \
 curl http://localhost:80/api/v1/pipelines/names
 curl "http://localhost:80/api/v1/pipelines/MyPipeline/json?exec_uuid=run-001"
 curl http://localhost:80/api/v1/artifacts/MyPipeline
+curl http://localhost:80/api/v1/artifacts/name/model.pkl/executions
+curl http://localhost:80/api/v1/artifacts/id/11/executions
+curl http://localhost:80/api/v1/artifacts/name/model.pkl/parent-executions
 curl "http://localhost:80/api/v1/artifacts/name/model.pkl/children?pipeline_id=10"
 curl -X POST http://localhost:80/api/v1/artifacts/batch-get \
   -H "Content-Type: application/json" \
