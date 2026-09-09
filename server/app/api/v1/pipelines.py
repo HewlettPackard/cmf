@@ -19,6 +19,8 @@ This module contains API endpoints for pipeline discovery, stage queries,
 executions, artifacts, and execution/artifact lineage.
 """
 
+import json
+
 from fastapi import APIRouter, Depends, Request, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from server.app.db.dbconfig import get_db
@@ -44,6 +46,8 @@ from cmflib.cmfquery import CmfQuery
 from server.app.get_data import (
     async_api,
     executions_list,
+    get_mlmd_from_server,
+    convert_mlmd_to_hierarchical_lineage_json,
 )
 from server.app.api.v1.env import get_python_env as read_python_env
 
@@ -154,6 +158,60 @@ async def get_artifact_lineage(
         data=result,
         message="Artifact lineage retrieved successfully",
         code=200
+    )
+
+
+@router.get("/pipelines/{pipeline_name}/hierarchical-lineage")
+async def get_hierarchical_lineage(
+    request: Request,
+    pipeline_name: str
+):
+    """
+    Get the hierarchical lineage graph for a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/hierarchical-lineage
+
+    Returns:
+        JSONResponse: success_response wrapping the React Flow lineage data.
+    """
+    state = request.app.state.mlmd
+    json_payload = await async_api(
+        get_mlmd_from_server,
+        state.query,
+        pipeline_name,
+        None,
+        None,
+        state.dict_of_exe_ids,
+    )
+
+    if json_payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Pipeline '{pipeline_name}' not found or contains no MLMD data."
+        )
+
+    if isinstance(json_payload, str):
+        try:
+            json_payload = json.loads(json_payload)
+        except (json.JSONDecodeError, TypeError) as error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse the MLMD response as JSON: {error}"
+            )
+
+    try:
+        result = convert_mlmd_to_hierarchical_lineage_json(json_payload, pipeline_name)
+    except (KeyError, IndexError, TypeError, ValueError) as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to convert the MLMD payload to hierarchical lineage JSON: {error}"
+        )
+
+    return success_response(
+        data=result,
+        message="Hierarchical lineage retrieved successfully",
+        code=200,
     )
 
 

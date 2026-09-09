@@ -126,7 +126,7 @@ class FastAPIClient {
 
   async getHierarchicalLineage(pipeline) {
     return this.apiClient
-      .get(`/hierarchical-lineage/react-flow-dagre/${pipeline}`)
+      .get(`/v1/pipelines/${encodeURIComponent(pipeline)}/hierarchical-lineage`)
       .then(({ data }) => {
         return data;
       });
