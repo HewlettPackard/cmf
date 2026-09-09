@@ -13,25 +13,25 @@
       
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../cmfquery/">
       
       
-        <link rel="next" href="../advantages/">
+        <link rel="next" href="../cmfserver/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/favicon.png">
+      <link rel="icon" href="../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>Components - CMF</title>
+        <title>CmfQuery REST API - CMF</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
       
       
 
@@ -50,11 +50,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../extra.css">
+      <link rel="stylesheet" href="../../../extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#cmflib" class="md-skip">
+        <a href="#cmfquery-rest-api-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -88,7 +88,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href="../../.." title="CMF" class="md-header__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Components
+              CmfQuery REST API
             
           </span>
         </div>
@@ -198,7 +198,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
+    <a href="../../.." title="CMF" class="md-nav__button md-logo" aria-label="CMF" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -277,7 +277,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -302,24 +302,22 @@
                 
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_2" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../../architecture/" class="md-nav__link ">
               
   
   
@@ -343,7 +341,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_2_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_1_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -358,35 +356,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Components
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../architecture/components/" class="md-nav__link">
         
   
   
@@ -402,135 +375,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#cmflib" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        cmflib
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cmf-client" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CMF Client
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cmf-server-with-gui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CMF Server with GUI
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="CMF Server with GUI">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#rest-api-layer" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        REST API Layer
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#web-based-gui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Web-Based GUI
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#central-repositories" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Central Repositories
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Central Repositories">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#central-metadata-repository" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Central Metadata Repository
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#central-artifact-storage-repository" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Central Artifact Storage Repository
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#git-repository" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Git Repository
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -543,7 +387,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../advantages/" class="md-nav__link">
+      <a href="../../../architecture/advantages/" class="md-nav__link">
         
   
   
@@ -579,7 +423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../setup/" class="md-nav__link">
+      <a href="../../../setup/" class="md-nav__link">
         
   
   
@@ -607,7 +451,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../examples/getting_started/" class="md-nav__link">
+      <a href="../../../examples/getting_started/" class="md-nav__link">
         
   
   
@@ -632,22 +476,24 @@
                 
   
   
+    
   
   
+  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_1_5" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../cmflib/" class="md-nav__link ">
+            <a href="../../../cmflib/" class="md-nav__link ">
               
   
   
@@ -671,7 +517,7 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_1_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_1_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -689,7 +535,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmf/" class="md-nav__link">
+      <a href="../cmf/" class="md-nav__link">
         
   
   
@@ -717,7 +563,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/dataslice/" class="md-nav__link">
+      <a href="../dataslice/" class="md-nav__link">
         
   
   
@@ -745,7 +591,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmfquery/" class="md-nav__link">
+      <a href="../cmfquery/" class="md-nav__link">
         
   
   
@@ -770,10 +616,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../api/public/cmfquery_rest_api/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CmfQuery REST API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -789,6 +662,104 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#api-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Reference
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Reference">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#response-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Response Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#rest-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        REST APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="REST APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#request-bodies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Request Bodies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#http-response-status-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP Response Status Codes
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -801,7 +772,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmfserver/" class="md-nav__link">
+      <a href="../cmfserver/" class="md-nav__link">
         
   
   
@@ -829,7 +800,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api/public/cmf_ray_logger/" class="md-nav__link">
+      <a href="../cmf_ray_logger/" class="md-nav__link">
         
   
   
@@ -877,7 +848,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../cmf_client/" class="md-nav__link ">
+            <a href="../../../cmf_client/" class="md-nav__link ">
               
   
   
@@ -919,7 +890,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/cmf_client_commands/" class="md-nav__link">
+      <a href="../../../cmf_client/cmf_client_commands/" class="md-nav__link">
         
   
   
@@ -947,7 +918,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/cmf-dvc-ingest-guide/" class="md-nav__link">
+      <a href="../../../cmf_client/cmf-dvc-ingest-guide/" class="md-nav__link">
         
   
   
@@ -975,7 +946,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/neo4j_docker/" class="md-nav__link">
+      <a href="../../../cmf_client/neo4j_docker/" class="md-nav__link">
         
   
   
@@ -1050,7 +1021,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/local-storage-setup/" class="md-nav__link">
+      <a href="../../../cmf_client/local-storage-setup/" class="md-nav__link">
         
   
   
@@ -1078,7 +1049,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/minio-server/" class="md-nav__link">
+      <a href="../../../cmf_client/minio-server/" class="md-nav__link">
         
   
   
@@ -1106,7 +1077,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/ssh-setup/" class="md-nav__link">
+      <a href="../../../cmf_client/ssh-setup/" class="md-nav__link">
         
   
   
@@ -1134,7 +1105,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/cmf_osdf/" class="md-nav__link">
+      <a href="../../../cmf_client/cmf_osdf/" class="md-nav__link">
         
   
   
@@ -1190,7 +1161,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../mcp/" class="md-nav__link ">
+            <a href="../../../mcp/" class="md-nav__link ">
               
   
   
@@ -1232,7 +1203,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mcp/quickstart/" class="md-nav__link">
+      <a href="../../../mcp/quickstart/" class="md-nav__link">
         
   
   
@@ -1260,7 +1231,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mcp/configuration/" class="md-nav__link">
+      <a href="../../../mcp/configuration/" class="md-nav__link">
         
   
   
@@ -1288,7 +1259,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mcp/tools/" class="md-nav__link">
+      <a href="../../../mcp/tools/" class="md-nav__link">
         
   
   
@@ -1316,7 +1287,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../mcp/examples/" class="md-nav__link">
+      <a href="../../../mcp/examples/" class="md-nav__link">
         
   
   
@@ -1364,7 +1335,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../ui/" class="md-nav__link ">
+            <a href="../../../ui/" class="md-nav__link ">
               
   
   
@@ -1406,7 +1377,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ui/artifacts/" class="md-nav__link">
+      <a href="../../../ui/artifacts/" class="md-nav__link">
         
   
   
@@ -1434,7 +1405,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ui/executions/" class="md-nav__link">
+      <a href="../../../ui/executions/" class="md-nav__link">
         
   
   
@@ -1462,7 +1433,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../ui/lineage/" class="md-nav__link">
+      <a href="../../../ui/lineage/" class="md-nav__link">
         
   
   
@@ -1490,7 +1461,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_server/metahub-tab-usage/" class="md-nav__link">
+      <a href="../../../cmf_server/metahub-tab-usage/" class="md-nav__link">
         
   
   
@@ -1518,7 +1489,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../cmf_client/tensorflow_guide/" class="md-nav__link">
+      <a href="../../../cmf_client/tensorflow_guide/" class="md-nav__link">
         
   
   
@@ -1554,7 +1525,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../common-metadata-ontology/readme/" class="md-nav__link">
+      <a href="../../../common-metadata-ontology/readme/" class="md-nav__link">
         
   
   
@@ -1582,7 +1553,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../skills/" class="md-nav__link">
+      <a href="../../../skills/" class="md-nav__link">
         
   
   
@@ -1627,6 +1598,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -1635,55 +1608,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#cmflib" class="md-nav__link">
+  <a href="#api-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        cmflib
+        API Reference
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cmf-client" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CMF Client
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#cmf-server-with-gui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CMF Server with GUI
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="CMF Server with GUI">
+    <nav class="md-nav" aria-label="API Reference">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#rest-api-layer" class="md-nav__link">
+  <a href="#response-format" class="md-nav__link">
     <span class="md-ellipsis">
       
-        REST API Layer
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#web-based-gui" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Web-Based GUI
+        Response Format
       
     </span>
   </a>
@@ -1696,22 +1636,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#central-repositories" class="md-nav__link">
+  <a href="#rest-apis" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Central Repositories
+        REST APIs
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Central Repositories">
+    <nav class="md-nav" aria-label="REST APIs">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#central-metadata-repository" class="md-nav__link">
+  <a href="#request-bodies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Central Metadata Repository
+        Request Bodies
       
     </span>
   </a>
@@ -1719,21 +1659,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#central-artifact-storage-repository" class="md-nav__link">
+  <a href="#examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Central Artifact Storage Repository
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#git-repository" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Git Repository
+        Examples
       
     </span>
   </a>
@@ -1742,6 +1671,17 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#http-response-status-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTTP Response Status Codes
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1762,70 +1702,284 @@
 
 
 
-  <h1>Components</h1>
-
-<h2 id="cmflib">cmflib<a class="headerlink" href="#cmflib" title="Permanent link">¤</a></h2>
-<p>The APIs and abstractions provided by <code>cmflib</code> enable tracking of pipeline metadata. </p>
-<p><code>cmflib</code> tracks the stages in the pipeline, the input and output artifacts at each stage, and metrics. </p>
-<p>The framework allows metrics to be tracked at both coarse and fine-grained intervals. Stage metrics can be captured at the end of a stage, while fine-grained metrics can be tracked per step (epoch) or at regular intervals during the execution of the stage. </p>
-<p>The metadata logged through the APIs is written to a backend relational database. <code>cmflib</code> also provides APIs to query the metadata stored in the relational database, allowing users to inspect pipelines.   </p>
-<p>In addition to explicit tracking through the APIs, <code>cmflib</code> provides implicit tracking. This automatically tracks the software version used in the pipelines.  </p>
-<p>All artifacts are versioned using a data versioning framework (e.g., DVC). The content hash of the artifacts is generated and stored along with the user-provided metadata. A special artifact metadata file called a ".dvc" file is created for every artifact (file or folder) that is added to the data version management system. The .dvc file contains the content hash of the artifact.</p>
-<p>For every pipeline, the metadata tracker creates a new branch to track the code. </p>
-<p>The special metadata file created for artifacts, “.dvc” file is too committed to Git. Whenever there is a change in the artifact, the metadata file is modified to reflect its current content hash, and the file is tracked as a new version in the metadata file.  </p>
-<h2 id="cmf-client">CMF Client<a class="headerlink" href="#cmf-client" title="Permanent link">¤</a></h2>
-<p>The CMF Client interacts with the CMF Server for metadata synchronization.  </p>
-<p>After the experiment is completed, the user invokes the <code>cmf push</code> command to push the collected metadata to the CMF Server. This transfers the existing metadata journal to the server.  </p>
-<p>The metadata from the CMF Server can be pulled to the local repository using <code>cmf metadata</code> command.</p>
-<p>When an artifact is used as the identifier, all metadata associated with the artifacts currently present in the branch of the cloned Git repository is pulled from the central repository to the local repository. </p>
-<p>When a project is used as the identifier, all the metadata associated with the current branch of the pipeline code that is checked out is pulled to the local repository. </p>
-<h2 id="cmf-server-with-gui">CMF Server with GUI<a class="headerlink" href="#cmf-server-with-gui" title="Permanent link">¤</a></h2>
-<p>The CMF Server serves as the central hub for metadata management and visualization in the Common Metadata Framework. It exposes REST APIs that are used to push/pull metadata and view different types of lineage. </p>
-<p>The CMF Server provides two primary interfaces:</p>
-<h3 id="rest-api-layer">REST API Layer<a class="headerlink" href="#rest-api-layer" title="Permanent link">¤</a></h3>
-<p>The server exposes a comprehensive set of REST API endpoints for:</p>
-<ul>
-<li><strong>Metadata Synchronization</strong>: Push and pull metadata from distributed sites</li>
-<li><strong>Artifact Queries</strong>: Retrieve artifact information, lineage, and properties</li>
-<li><strong>Execution Queries</strong>: Access execution details, logs, and relationships</li>
-<li><strong>Lineage Retrieval</strong>: Generate various lineage graphs (artifact, execution, and combined views)</li>
-<li><strong>Pipeline Management</strong>: List pipelines, executions, and associated artifacts</li>
-</ul>
-<p>These APIs enable programmatic access to the metadata repository and support integration with various tools and workflows.</p>
-<h3 id="web-based-gui">Web-Based GUI<a class="headerlink" href="#web-based-gui" title="Permanent link">¤</a></h3>
-<p>The CMF Server includes a comprehensive web interface that provides visual access to tracked metadata:</p>
-<p><strong>Key Pages:</strong></p>
-<ul>
-<li><strong>Artifacts Page</strong>: Browse and search all artifacts (datasets, models, metrics) across pipelines with filtering, sorting, and detailed metadata views</li>
-<li><strong>Executions Page</strong>: View pipeline execution history, execution parameters, Git commit information, and execution status</li>
-<li>
-<p><strong>Lineage Page</strong>: Interactive visualizations of data flow and dependencies through multiple view modes:</p>
-</li>
-<li>
-<p>Artifact Tree: Hierarchical view of artifact dependencies</p>
-</li>
-<li>Execution Tree: Pipeline stage execution flow</li>
-<li>Artifact-Execution Tree: Combined view showing complete provenance</li>
-<li>Force-Directed Graph: Network visualization of complex relationships</li>
-</ul>
-<p><strong>Capabilities:</strong></p>
-<ul>
-<li>Real-time metadata visualization from centralized repository</li>
-<li>Interactive lineage graphs with zoom, pan, and node inspection</li>
-<li>Search and filter capabilities across all metadata types</li>
-<li>Version tracking and artifact comparison</li>
-<li>Pipeline execution monitoring and debugging</li>
-</ul>
-<p>The GUI enables users to understand pipeline structure, trace data provenance, debug execution issues, and analyze relationships between artifacts without writing code.</p>
-<h2 id="central-repositories">Central Repositories<a class="headerlink" href="#central-repositories" title="Permanent link">¤</a></h2>
-<p>The Common Metadata Framework (CMF) consists of three central repositories for code, data, and metadata. </p>
-<h3 id="central-metadata-repository">Central Metadata Repository<a class="headerlink" href="#central-metadata-repository" title="Permanent link">¤</a></h3>
-<p>The central metadata repository holds the metadata pushed from distributed sites. It stores metadata about all the different pipelines that were tracked using the common metadata tracker. </p>
-<p>The consolidated view of the metadata stored in the central repository helps users learn across various stages of the pipeline executed at different locations. </p>
-<h3 id="central-artifact-storage-repository">Central Artifact Storage Repository<a class="headerlink" href="#central-artifact-storage-repository" title="Permanent link">¤</a></h3>
-<p>The central artifact storage repository stores all the artifacts related to experiments. The data versioning framework (i.e. DVC) stores the artifacts in a content-addressable layout. The artifacts are stored inside folders named with the first two characters of the content hash, and the artifact filename is the remaining part of the content hash. This layout enables efficient retrieval of artifacts.   </p>
-<h3 id="git-repository">Git Repository<a class="headerlink" href="#git-repository" title="Permanent link">¤</a></h3>
-<p>The Git repository is used to track the code. Along with the code, the metadata files of the artifacts (which contain the content hash of the artifacts) are also stored in Git. The data versioning framework (DVC) uses these files to retrieve the artifacts from the artifact storage repository. </p>
+<h1 id="cmfquery-rest-api-reference">CMFQuery REST API Reference<a class="headerlink" href="#cmfquery-rest-api-reference" title="Permanent link">¤</a></h1>
+<p>The CMFQuery REST APIs expose common <code>cmflib.cmfquery.CmfQuery</code> query operations through the CMF Server. Use these endpoints to retrieve pipeline, execution, artifact, and metrics metadata from the server database.</p>
+<blockquote>
+<p>For the Python API reference, see <a href="../cmfquery/">CmfQuery</a>. For CMF Server installation and setup instructions, see the <a href="../../../setup/#install-cmf-server-with-gui">Installation &amp; Setup</a> guide.</p>
+</blockquote>
+<h2 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">¤</a></h2>
+<p>CMFQuery REST APIs are organized around <a href="https://fastapi.tiangolo.com/">FastAPI</a>. They accept JSON request bodies for <code>POST</code> endpoints and return JSON-encoded responses.</p>
+<p>The application is configured with the <code>/api</code> root path and the CMFQuery routes use the <code>/v1</code> router prefix. In a standard CMF Server deployment, call these endpoints under <code>/api/v1</code>.</p>
+<h3 id="response-format">Response Format<a class="headerlink" href="#response-format" title="Permanent link">¤</a></h3>
+<p>All endpoints return the standard <code>APIResponse</code> wrapper.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"success"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"errors"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"meta"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"timestamp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-09-08T00:00:00Z"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"pagination"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Error responses use the same wrapper with <code>status</code> set to <code>error</code> and field-level details in <code>errors</code>.</p>
+<h2 id="rest-apis">REST APIs<a class="headerlink" href="#rest-apis" title="Permanent link">¤</a></h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Route</th>
+<th>Parameters</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/pipelines/names</code></td>
+<td>None</td>
+<td>Retrieves all pipeline names.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/pipelines/{pipeline_name}/id</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves the numeric ID for a pipeline.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/pipelines/{pipeline_name}/json</code></td>
+<td>Path: <code>pipeline_name</code>; optional query: <code>exec_uuid</code></td>
+<td>Exports metadata for one pipeline, optionally scoped to an execution UUID.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/pipelines/sync/{last_sync_time}/json</code></td>
+<td>Path: <code>last_sync_time</code></td>
+<td>Exports pipeline metadata changed after the provided sync timestamp.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/executions/pipeline/{pipeline_name}</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves executions for a pipeline.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/executions/stages/name/{stage_name}</code></td>
+<td>Path: <code>stage_name</code></td>
+<td>Retrieves execution details for a pipeline stage name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/executions/stages/name/{stage_name}/list</code></td>
+<td>Path: <code>stage_name</code></td>
+<td>Retrieves execution objects for a pipeline stage name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/executions/stages/id/{stage_id}</code></td>
+<td>Path: <code>stage_id</code>; optional query: <code>execution_uuid</code></td>
+<td>Retrieves executions for a stage ID.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/executions/batch-get</code></td>
+<td>Body: <code>exe_ids</code></td>
+<td>Retrieves execution details for a list of execution IDs.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/executions/batch-summary</code></td>
+<td>Body: <code>exe_ids</code></td>
+<td>Retrieves an execution summary for a list of execution IDs.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/executions</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves executions associated with an artifact name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/id/{artifact_id}/executions</code></td>
+<td>Path: <code>artifact_id</code></td>
+<td>Retrieves executions associated with an artifact ID.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/parent-executions</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves parent executions for an artifact.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/producer-execution</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves the producer execution for an artifact.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/executions/id/{execution_id}/artifacts</code></td>
+<td>Path: <code>execution_id</code></td>
+<td>Retrieves artifacts associated with one execution ID.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/executions/id/{execution_id}/parents/ids</code></td>
+<td>Path: <code>execution_id</code>; optional query: <code>pipeline_id</code></td>
+<td>Retrieves one-hop parent execution IDs.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/executions/parents/batch-get</code></td>
+<td>Body: <code>execution_id</code>, optional <code>pipeline_id</code></td>
+<td>Retrieves one-hop parent executions for execution IDs.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/executions/ancestors/batch-get</code></td>
+<td>Body: <code>execution_id</code>, optional <code>pipeline_id</code></td>
+<td>Retrieves all parent executions and links for execution IDs.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/executions/artifacts/batch-get</code></td>
+<td>Body: <code>exe_ids</code></td>
+<td>Retrieves artifacts for a list of execution IDs.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts</code></td>
+<td>None</td>
+<td>Retrieves all artifact names.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/{pipeline_name}</code></td>
+<td>Path: <code>pipeline_name</code></td>
+<td>Retrieves artifacts associated with a pipeline.</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/artifacts/batch-get</code></td>
+<td>Body: <code>artifact_ids</code></td>
+<td>Retrieves artifacts for a list of artifact IDs.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/dataframe</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves an artifact dataframe by artifact name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves artifact metadata by artifact name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/children</code></td>
+<td>Path: <code>artifact_name</code>; optional query: <code>pipeline_id</code></td>
+<td>Retrieves one-hop child artifacts.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/descendants</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves all downstream child artifacts.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/parents</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves one-hop parent artifacts by artifact name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/id/{artifact_id}/parents</code></td>
+<td>Path: <code>artifact_id</code></td>
+<td>Retrieves one-hop parent artifacts by artifact ID.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/name/{artifact_name}/ancestors</code></td>
+<td>Path: <code>artifact_name</code></td>
+<td>Retrieves all upstream parent artifacts by artifact name.</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/artifacts/metrics/{metrics_name}</code></td>
+<td>Path: <code>metrics_name</code></td>
+<td>Retrieves metrics metadata by metrics name.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="request-bodies">Request Bodies<a class="headerlink" href="#request-bodies" title="Permanent link">¤</a></h3>
+<p>Use <code>exe_ids</code> when the endpoint accepts <code>ExecutionIdsRequest</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"exe_ids"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Use <code>execution_id</code> when the endpoint accepts <code>ExecutionIdsWithPipelineRequest</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">"execution_id"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"pipeline_id"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span>
+<span class="p">}</span>
+</code></pre></div>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">¤</a></h3>
+<div class="highlight"><pre><span></span><code>curl<span class="w"> </span>http://localhost:80/api/v1/executions/pipeline/MyPipeline
+curl<span class="w"> </span>http://localhost:80/api/v1/executions/stages/name/train
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:80/api/v1/executions/batch-get<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"exe_ids":[1,2,3]}'</span>
+curl<span class="w"> </span>http://localhost:80/api/v1/pipelines/names
+curl<span class="w"> </span><span class="s2">"http://localhost:80/api/v1/pipelines/MyPipeline/json?exec_uuid=run-001"</span>
+curl<span class="w"> </span>http://localhost:80/api/v1/artifacts/MyPipeline
+curl<span class="w"> </span>http://localhost:80/api/v1/artifacts/name/model.pkl/executions
+curl<span class="w"> </span>http://localhost:80/api/v1/artifacts/id/11/executions
+curl<span class="w"> </span>http://localhost:80/api/v1/artifacts/name/model.pkl/parent-executions
+curl<span class="w"> </span><span class="s2">"http://localhost:80/api/v1/artifacts/name/model.pkl/children?pipeline_id=10"</span>
+curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:80/api/v1/artifacts/batch-get<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"artifact_ids":[11,12,13]}'</span>
+curl<span class="w"> </span>http://localhost:80/api/v1/artifacts/metrics/accuracy
+</code></pre></div>
+<h2 id="http-response-status-codes">HTTP Response Status Codes<a class="headerlink" href="#http-response-status-codes" title="Permanent link">¤</a></h2>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Title</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200</code></td>
+<td><code>OK</code></td>
+<td>Request completed successfully.</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td><code>Not Found</code></td>
+<td>Requested pipeline, stage, execution, artifact, metrics, or data not found.</td>
+</tr>
+<tr>
+<td><code>422</code></td>
+<td><code>Unprocessable Entity</code></td>
+<td>Request validation failed, such as a missing or invalid request body field.</td>
+</tr>
+<tr>
+<td><code>500</code></td>
+<td><code>Internal Server Error</code></td>
+<td>Server error occurred while processing the query.</td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -1902,10 +2056,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
       
         <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
       
