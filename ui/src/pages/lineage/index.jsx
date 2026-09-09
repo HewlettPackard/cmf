@@ -40,7 +40,6 @@ const Lineage = () => {
   ];
   const [selectedLineageType, setSelectedLineageType] = useState("Artifact_Tree");
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
-  const [lineageData, setLineageData] = useState(null);
   const [executionData, setExecutionData] = useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
   const [execDropdownData, setExecDropdownData] = useState([]);
@@ -67,7 +66,7 @@ const Lineage = () => {
       const pipeline = data[0];
       setSelectedPipeline(pipeline);
       setSelectedLineageType("Artifact_Tree");
-      const treeData = await client.getArtiTreeLineage(pipeline);
+      const treeData = await client.getArtifactLineage(pipeline);
       setArtiTreeData(treeData);
     } catch (error) {
       console.error("Error loading lineage:", error);
@@ -78,7 +77,6 @@ const Lineage = () => {
   };
 
   const handlePipelineClick = (pipeline) => {
-    setLineageData(null);
     setExecutionData(null);
     setArtiTreeData(null);
     setArtiExeTreeData(null);
@@ -97,7 +95,6 @@ const Lineage = () => {
   };
 
   const handleLineageTypeClick = (lineageType) => {
-    setLineageData(null);
     setExecutionData(null);
     setArtiTreeData(null);
     setArtiExeTreeData(null);
@@ -124,6 +121,10 @@ const Lineage = () => {
       }
       setArtiTreeData(data);
       setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch artifact lineage:", err);
+      setArtiTreeData(null);
+      setLoading(false);
     });
   };
 
@@ -134,6 +135,10 @@ const Lineage = () => {
         setArtiExeTreeData(null);
       }
       setArtiExeTreeData(data);
+      setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch artifact execution lineage:", err);
+      setArtiExeTreeData(null);
       setLoading(false);
     });
   };
@@ -151,6 +156,12 @@ const Lineage = () => {
         const uuid = extractUuid(data[0]);     // 3f45
         fetchExecTree(pipelineName, uuid);
       }
+    }).catch((err) => {
+      console.error("Failed to fetch execution lineage types:", err);
+      setExecDropdownData(null);
+      setSelectedExecutionType(null);
+      setExecutionData(null);
+      setLoading(false);
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
@@ -190,6 +201,10 @@ const Lineage = () => {
     // Using getExecutionLineage function to fetch execution tree data based on the selected pipeline and execution type.
     client.getExecutionLineage(pipelineName, exec_type).then((data) => {
       setExecutionData(data);
+      setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch execution lineage:", err);
+      setExecutionData(null);
       setLoading(false);
     });
   };

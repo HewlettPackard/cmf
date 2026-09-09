@@ -23,7 +23,7 @@
  * - Badge Classification (`getBadgeLabel`): Generates localized text labels for metadata visual categorization tags.
  * - Interactive Tooltips (`showTooltip`): Exposes raw node parameters as a pretty-printed JSON overlay on hover.
  * - Clean Edge Layouts (`HANDLE_HIDDEN_STYLE`): Automatically collapses connection handle points exclusively for 
- *   "Execution" nodes to eliminate layout line clutter, while maintaining default connectivity ports on environment wrappers.
+ *   "Execution" nodes to eliminate layout line clutter, while maintaining default connectivity ports on pipeline wrappers.
  */
 
 import React, { useState } from "react";
@@ -47,7 +47,7 @@ const getColor = (type) => {
     case "Stage":
       return "#f59e0b";
 
-    case "Environment":
+    case "Pipeline":
       return "#14b8a6";
       
     default:
@@ -57,7 +57,6 @@ const getColor = (type) => {
 
 // Return the label to show the node's badge based on its type.
 const getBadgeLabel = (type) => {
-  if (type === "Environment") return "Pipeline";
   return type ? type.toUpperCase() : "NODE";
 };
 
@@ -77,7 +76,7 @@ const HANDLE_HIDDEN_STYLE = {
 const LineageNode = ({ data }) => {
   const [showTooltip, setShowTooltip] = useState(false);
   const { backgroundColor, fullUuid, id, tooltipInteraction, ...rest } = data;
-  const tooltipData = {...rest, type: data.type === "Environment" ? "Pipeline" : rest.type, uuid: fullUuid || data.uuid,};
+  const tooltipData = {...rest, uuid: fullUuid || data.uuid,};
   const isFlatLineage = tooltipInteraction === "flat";
   // Only hide the connector dots on Execution node boxes;
   // Pipeline and Stage nodes keep their default visible handles

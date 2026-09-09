@@ -455,6 +455,23 @@ async def get_execution_python_env(
     )
 
 
+@router.get("/pipelines/{pipeline_name}/hierarchical-lineage")
+async def get_hierarchical_lineage_route(
+    request: Request,
+    pipeline_name: str
+):
+    state = request.app.state.mlmd
+    result = await get_hierarchical_lineage(
+        state=state,
+        pipeline_name=pipeline_name,
+    )
+    return success_response(
+        data=result,
+        message="Hierarchical lineage retrieved successfully",
+        code=200,
+    )
+
+
 # ==================== Business Logic Functions ====================
 
 async def pipelines(state: MlmdState):
@@ -860,3 +877,49 @@ async def get_python_env_by_execution(
         raise HTTPException(status_code=404, detail="Python environment is not available for this execution")
 
     return await read_python_env(str(python_env_file))
+
+
+async def get_hierarchical_lineage(
+    state: MlmdState,
+    pipeline_name: str,
+):
+    """
+    Get the hierarchical lineage graph for a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/hierarchical-lineage
+
+    Returns:
+        JSONResponse: success_response wrapping the React Flow lineage data.
+    """
+    json_payload = await async_api(
+        get_mlmd_from_server,
+        state.query,
+        pipeline_name,
+        None,
+        None,
+        state.dict_of_exe_ids,
+    )
+
+    if json_payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Pipeline '{pipeline_name}' not found or contains no MLMD data."
+        )
+
+    if isinstance(json_payload, str):
+        try:
+            json_payload = json.loads(json_payload)
+        except (json.JSONDecodeError, TypeError) as error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse the MLMD response as JSON: {error}"
+            )
+
+    try:
+        result = convert_mlmd_to_hierarchical_lineage_json(json_payload, pipeline_name)
+    except (KeyError, IndexError, TypeError, ValueError) as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to convert the MLMD payload to hierarchical lineage JSON: {error}"
+        )

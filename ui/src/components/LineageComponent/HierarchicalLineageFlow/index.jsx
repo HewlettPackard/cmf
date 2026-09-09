@@ -21,7 +21,7 @@
  *
  * This component renders an interactive hierarchical lineage graph using
  * React Flow and Dagre. It transforms lineage data into a structured
- * top-down visualization consisting of Environment, Stage, and Execution
+ * top-down visualization consisting of Pipeline, Stage, and Execution
  * nodes connected by directional edges.
  *
  * This file acts as the main orchestration layer for building, laying out,
@@ -52,10 +52,10 @@ const StageGroupNode = ({ data, style }) => (
 
 const nodeTypes = { lineageNode: LineageNode, stageGroup: StageGroupNode };
 
-// Central color of Environment, Stage, StageGroup, and Execution nodes in the lineage tree
+// Central color of Pipeline, Stage, StageGroup, and Execution nodes in the lineage tree
 const getNodeThemeColor = (type) => {
   switch (type) {
-    case "Environment": return "#10b981"; // Green
+    case "Pipeline": return "#10b981"; // Green
     case "Stage": return "#f59e0b";   // Amber / Orange
     case "StageGroup": return "#ffffff"; // White for minimap stage cards
     case "Model": return "#f59e0b";   // Alias fallback
@@ -72,14 +72,14 @@ const getLayoutedElements = (nodes = [], edges = []) => {
 
   g.setGraph({
     rankdir: "TB",
-    ranksep: 110,       // Vertical gap between Environment and Stages
+    ranksep: 110,       // Vertical gap between Pipeline and Stages
     nodesep: 100,       // Even horizontal spacing between stage groups
     edgesep: 20,
     marginx: 40,
     marginy: 40
   });
 
-  // STEP 1: Only feed non-Execution nodes (Environment & Stages) into Dagre
+  // STEP 1: Only feed non-Execution nodes (Pipeline & Stages) into Dagre
   nodes.forEach((node) => {
     if (node.data?.type !== "Execution") {
       g.setNode(node.id, { width: nodeWidth, height: nodeHeight });
@@ -94,7 +94,7 @@ const getLayoutedElements = (nodes = [], edges = []) => {
     }
   });
 
-  // Layout the main horizontal backbone (Environment -> Stages)
+  // Layout the main horizontal backbone (Pipeline -> Stages)
   dagre.layout(g);
 
   // STEP 2: Group the execution leaves manually by their stage parent
