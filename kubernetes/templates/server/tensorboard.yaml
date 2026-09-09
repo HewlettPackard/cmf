@@ -5,7 +5,7 @@ metadata:
   labels:
     app: tensorboard
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: tensorboard
@@ -16,20 +16,20 @@ spec:
     spec:
       containers:
       - name: tensorboard
-        image: tensorflow/tensorflow:latest
-        imagePullPolicy: IfNotPresent
+        image: "{{ .Values.tensorboard_service.image.repository }}:{{ .Values.tensorboard_service.image.tag }}"
+        imagePullPolicy: {{ .Values.pullPolicy }}
         command: ["/bin/bash", "-c"]
         args:
           - tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
         ports:
-        - containerPort: 6006
+        - containerPort: {{ .Values.tensorboard_service.service.port }}
         volumeMounts:
         - name: tensorboard-logs
           mountPath: /logs
         readinessProbe:
           httpGet:
             path: /tensorboard
-            port: 6006
+            port: {{ .Values.tensorboard_service.service.port }}
           initialDelaySeconds: 10
           periodSeconds: 10
           timeoutSeconds: 5
@@ -37,7 +37,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /tensorboard
-            port: 6006
+            port: {{ .Values.tensorboard_service.service.port }}
           initialDelaySeconds: 30
           periodSeconds: 20
           timeoutSeconds: 5
@@ -54,10 +54,10 @@ metadata:
   labels:
     app: tensorboard
 spec:
-  type: ClusterIP
+  type: {{ .Values.tensorboard_service.service.type }}
   selector:
     app: tensorboard
   ports:
   - name: http
-    port: 6006
-    targetPort: 6006
+    port: {{ .Values.tensorboard_service.service.port }}
+    targetPort: {{ .Values.tensorboard_service.service.port }}

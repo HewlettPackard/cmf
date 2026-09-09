@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: "{{ .Values.postgres_service.image.repository }}:{{ .Values.postgres_service.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.postgres_service.service.port }}
+        env:
+        - name: POSTGRES_USER
+          valueFrom: 
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          value: "{{ .Values.common_env.POSTGRES_DB }}"
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-data
+        livenessProbe:
+          exec:
+              command:
+              - /bin/sh
+              - -c
+              - 'pg_isready -p {{ .Values.postgres_service.service.port }} -d {{ .Values.common_env.POSTGRES_DB }} -U "$POSTGRES_USER"'
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          exec:
+            command:
+                - /bin/sh
+                - -c
+                - 'pg_isready -p {{ .Values.postgres_service.service.port }} -d {{ .Values.common_env.POSTGRES_DB }} -U "$POSTGRES_USER"'
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+      volumes:
+      - name: postgres-data
+        persistentVolumeClaim:
+          claimName: pvc-postgres-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+spec:
+  type: {{ .Values.postgres_service.service.type }}
+  ports:
+  - port: {{ .Values.postgres_service.service.port }}
+    targetPort: {{ .Values.postgres_service.service.port }}
+  selector:
+    app: postgres

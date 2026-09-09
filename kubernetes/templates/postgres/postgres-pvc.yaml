@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-postgres-data
+spec:
+  storageClassName: {{ .Values.storage.storageClassName | quote }}
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres_service.pvc.data.storage }}
+  selector:
+    matchLabels:
+      type: postgres-data
+  volumeName: pv-postgres-data
