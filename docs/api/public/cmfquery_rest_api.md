@@ -36,8 +36,6 @@ Error responses use the same wrapper with `status` set to `error` and field-leve
 | --- | --- | --- | --- |
 | `GET` | `/api/v1/pipelines/names` | None | Retrieves all pipeline names. |
 | `GET` | `/api/v1/pipelines/{pipeline_name}/id` | Path: `pipeline_name` | Retrieves the numeric ID for a pipeline. |
-| `GET` | `/api/v1/pipelines/{pipeline_name}/stages` | Path: `pipeline_name` | Retrieves all stages for a pipeline. |
-| `GET` | `/api/v1/pipelines/{pipeline_name}/executions` | Path: `pipeline_name` | Retrieves executions associated with a pipeline. |
 | `GET` | `/api/v1/pipelines/{pipeline_name}/json` | Path: `pipeline_name`; optional query: `exec_uuid` | Exports metadata for one pipeline, optionally scoped to an execution UUID. |
 | `GET` | `/api/v1/pipelines/sync/{last_sync_time}/json` | Path: `last_sync_time` | Exports pipeline metadata changed after the provided sync timestamp. |
 | `GET` | `/api/v1/executions/pipeline/{pipeline_name}` | Path: `pipeline_name` | Retrieves executions for a pipeline. |
@@ -56,7 +54,6 @@ Error responses use the same wrapper with `status` set to `error` and field-leve
 | `POST` | `/api/v1/executions/ancestors/batch-get` | Body: `execution_id`, optional `pipeline_id` | Retrieves all parent executions and links for execution IDs. |
 | `POST` | `/api/v1/executions/artifacts/batch-get` | Body: `exe_ids` | Retrieves artifacts for a list of execution IDs. |
 | `GET` | `/api/v1/artifacts` | None | Retrieves all artifact names. |
-| `GET` | `/api/v1/artifacts/types` | None | Retrieves all artifact types. |
 | `GET` | `/api/v1/artifacts/{pipeline_name}` | Path: `pipeline_name` | Retrieves artifacts associated with a pipeline. |
 | `POST` | `/api/v1/artifacts/batch-get` | Body: `artifact_ids` | Retrieves artifacts for a list of artifact IDs. |
 | `GET` | `/api/v1/artifacts/name/{artifact_name}/dataframe` | Path: `artifact_name` | Retrieves an artifact dataframe by artifact name. |
@@ -96,9 +93,7 @@ curl -X POST http://localhost:80/api/v1/executions/batch-get \
   -H "Content-Type: application/json" \
   -d '{"exe_ids":[1,2,3]}'
 curl http://localhost:80/api/v1/pipelines/names
-curl http://localhost:80/api/v1/pipelines/MyPipeline/stages
 curl "http://localhost:80/api/v1/pipelines/MyPipeline/json?exec_uuid=run-001"
-curl http://localhost:80/api/v1/artifacts/types
 curl http://localhost:80/api/v1/artifacts/MyPipeline
 curl "http://localhost:80/api/v1/artifacts/name/model.pkl/children?pipeline_id=10"
 curl -X POST http://localhost:80/api/v1/artifacts/batch-get \

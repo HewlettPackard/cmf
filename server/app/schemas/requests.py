@@ -16,7 +16,16 @@ class MLMDPushRequest(BaseModel):
     # Custom validation for pipeline name and JSON payload
     @model_validator(mode="after")
     def validate_fields(cls, values):
-        """Validate required pipeline name and JSON payload content."""
+        """
+        Ensure pipeline_name is non-blank and json_payload is non-empty, valid JSON.
+
+        Returns:
+            MLMDPushRequest: The validated model instance.
+
+        Raises:
+            ValueError: If pipeline_name is blank, json_payload is empty, or json_payload
+                is not valid JSON.
+        """
         if not values.pipeline_name.strip():
             raise ValueError("Pipeline name must not be empty or whitespace")
         if not values.json_payload:
@@ -136,10 +145,8 @@ class LastSyncTimeRequest(BaseModel):
 class ExecutionByStageRequest(BaseRequest):
     """Request body for querying executions by stage with sorting options."""
 
-    stage_name: str = Field(..., description="Stage name (Context_Type value)")
     sort_order: str = Field("DESC", description="Sort order: ASC or DESC")
-
-
+      
 # Query parameters for artifact (legacy, non-stage).
 # Deprecated: kept for reference during rollback.
 # class ArtifactRequest(BaseRequest):
@@ -150,7 +157,6 @@ class ArtifactByStageRequest(BaseRequest):
     """Request body for querying artifacts by stage and artifact type."""
 
     sort_field: str = Field("name", description="Column to sort by (default: name)")
-    stage_name: str = Field(..., description="Stage name (Context_Type value)")
     artifact_type: str = Field(..., description="Artifact type to filter")
 
 
@@ -170,7 +176,6 @@ class AcknowledgeRequest(BaseModel):
     server_url: str
 
 
-# Don't forget description
 class MLMDPullRequest(BaseModel):
     """Request body used to pull MLMD metadata from the server."""
 
@@ -197,9 +202,19 @@ class ScheduleCreateRequest(BaseModel):
 
     @model_validator(mode='after')
     def apply_defaults_and_validate(self):
-        """This validator is the safety gate for direct/standalone API usage.
+        """
+        Apply recurrence defaults and validate consistency across recurrence fields.
+
+        This validator is the safety gate for direct/standalone API usage.
         It ensures the payload is consistent even when clients call the API
         without UI-side checks.
+
+        Returns:
+            ScheduleCreateRequest: The validated (and possibly defaulted) model instance.
+
+        Raises:
+            ValueError: If recurrence_mode, start_time_local_iso, interval_unit, or
+                weekly_day are missing/invalid for the selected recurrence mode.
         """
         # One-time schedules must not carry periodic recurrence fields.
         if self.one_time:
@@ -251,12 +266,3 @@ class ScheduleCreateRequest(BaseModel):
             self.interval_value = None
             self.daily_time = None
         return self
-
-
-class ScheduleUpdateRequest(BaseModel):
-    """Request body used to update a metadata synchronization schedule."""
-
-    schedule_id: int = Field(..., description="Schedule id to update")
-    timezone: str = Field("UTC", description="IANA timezone")
-    start_time_local_iso: Optional[str] = Field(None, description="Local ISO datetime")
-    one_time: Optional[bool] = Field(None, description="Toggle one-time behavior")

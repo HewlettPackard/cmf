@@ -1,25 +1,84 @@
-"""CMFQuery artifact and metrics REST API endpoints."""
+"""
+Copyright (2023) Hewlett Packard Enterprise Development LP
 
+Licensed under the Apache License, Version 2.0 (the "License");
+You may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+Artifact API endpoints and business logic.
+"""
+
+import json
 from typing import Optional
 
 from cmflib.cmfquery import CmfQuery
-from fastapi import APIRouter
-from server.app.get_data import async_api
-from server.app.services.mlmd_state import mlmd_state
-from server.app.schemas.responses import (
-    ArtifactIdsRequest,
-    ErrorDetail,
-    ExecutionIdsRequest,
-    APIResponse,
-    error_response,
-    success_response,
-)
+from fastapi import APIRouter, HTTPException, Request
+from server.app.get_data import async_api, get_artifact_types, get_model_data
+from server.app.schemas.requests import ArtifactIdsRequest
+from server.app.schemas.responses import APIResponse, ErrorDetail, error_response, success_response
+from server.app.services.mlmd_state import MlmdState, mlmd_state
 
 router = APIRouter(prefix="/v1", tags=["artifacts"])
 query = mlmd_state.query
 
 
-# ==================== API Endpoints For CMFQuery ====================
+# ==================== REST API Endpoints For UI ====================
+
+# GET /artifacts/types - used only by the MCP server.
+@router.get("/artifacts/types")
+async def get_artifacts_by_types(
+    request: Request,
+):
+    """
+    Get the list of artifact types present in the current MLMD store.
+
+    Method: GET
+    Path: /v1/artifacts/types
+
+    Returns:
+        JSONResponse: success_response wrapping the list of artifact type names.
+    """
+    state = request.app.state.mlmd
+    result = await get_artifacts_types(state)
+
+    return success_response(
+        data=result,
+        message="Artifact types retrieved successfully",
+        code=200
+    )
+
+
+@router.get("/artifacts/models/{model_id}/card")
+async def get_model_artifact_card(request: Request, model_id: int):
+    """
+    Get model card data for a model artifact.
+
+    Method: GET
+    Path: /v1/artifacts/models/{model_id}/card
+
+    Args:
+        model_id (int): Id of the Model artifact.
+
+    Returns:
+        JSONResponse: success_response wrapping model, execution, and artifact data.
+    """
+    state = request.app.state.mlmd
+    result = await get_model_card_by_artifact_id(state, model_id)
+    return success_response(
+        data=result,
+        message="Model card retrieved successfully",
+        code=200
+    )
+
+# ==================== REST API Endpoints For CMFQuery ====================
 
 @router.get("/artifacts", response_model=APIResponse)
 async def cmfquery_get_all_artifacts():
@@ -29,46 +88,12 @@ async def cmfquery_get_all_artifacts():
         return error_response(
             message="No artifacts found",
             code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifacts",
-                    message="No artifacts found in the system",
-                )
-            ],
+            errors=[ErrorDetail(field="artifacts", message="No artifacts found in the system")],
         )
 
     return success_response(
-        data={
-            "artifacts": artifact_names,
-            "total_artifacts": len(artifact_names),
-        },
+        data={"artifacts": artifact_names, "total_artifacts": len(artifact_names)},
         message="Artifacts retrieved successfully",
-        code=200,
-    )
-
-
-@router.get("/artifacts/types", response_model=APIResponse)
-async def cmfquery_list_artifact_types():
-    """Retrieve all artifact types available in the metadata store."""
-    artifact_types = await async_api(list_all_artifact_types, query)
-    if artifact_types == []:
-        return error_response(
-            message="No artifact types found",
-            code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifact_types",
-                    message="No artifact types found in the system",
-                )
-            ],
-        )
-
-    return success_response(
-        data={
-            "artifact_types": artifact_types,
-            "total_artifact_types": len(artifact_types),
-        },
-        message="Artifacts types retrieved successfully",
         code=200,
     )
 
@@ -111,12 +136,7 @@ async def cmfquery_get_all_artifacts_by_ids_list(
         return error_response(
             message="Artifacts not found",
             code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifact_ids",
-                    message=f"Artifacts not found for ids {request.artifact_ids}",
-                )
-            ],
+            errors=[ErrorDetail(field="artifact_ids", message=f"Artifacts not found for ids {request.artifact_ids}")],
         )
 
     artifact_records = mlmd_state._dataframe_records(artifacts)
@@ -281,12 +301,7 @@ async def cmfquery_get_all_executions_for_artifact(artifact_name: str):
         return error_response(
             message="Executions not found",
             code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifact_name",
-                    message=f"Executions not found for artifact '{artifact_name}'",
-                )
-            ],
+            errors=[ErrorDetail(field="artifact_name", message=f"Executions not found for artifact '{artifact_name}'")],
         )
 
     execution_records = mlmd_state._dataframe_records(executions)
@@ -309,12 +324,7 @@ async def cmfquery_get_all_executions_for_artifact_id(artifact_id: int):
         return error_response(
             message="Executions not found",
             code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifact_id",
-                    message=f"Executions not found for artifact id {artifact_id}",
-                )
-            ],
+            errors=[ErrorDetail(field="artifact_id", message=f"Executions not found for artifact id {artifact_id}")],
         )
 
     execution_records = mlmd_state._dataframe_records(executions)
@@ -337,12 +347,7 @@ async def cmfquery_get_all_parent_executions(artifact_name: str):
         return error_response(
             message="Executions not found",
             code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifact_name",
-                    message=f"Parent executions not found for artifact '{artifact_name}'",
-                )
-            ],
+            errors=[ErrorDetail(field="artifact_name", message=f"Parent executions not found for artifact '{artifact_name}'")],
         )
 
     execution_records = mlmd_state._dataframe_records(executions)
@@ -365,12 +370,7 @@ async def cmfquery_find_producer_execution(artifact_name: str):
         return error_response(
             message="Producer execution not found",
             code=404,
-            errors=[
-                ErrorDetail(
-                    field="artifact_name",
-                    message=f"Producer execution not found for artifact '{artifact_name}'",
-                )
-            ],
+            errors=[ErrorDetail(field="artifact_name", message=f"Producer execution not found for artifact '{artifact_name}'")],
         )
 
     return success_response(
@@ -427,6 +427,74 @@ async def cmfquery_get_metrics(metrics_name: str):
         message="Metrics retrieved successfully",
         code=200,
     )
+
+
+# ==================== Business Logic Functions For UI ====================
+
+async def get_artifacts_types(state: MlmdState):
+    """
+    Fetch artifact types from MLMD, excluding the internal 'Environment' type.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+
+    Returns:
+        list[str]: Artifact type names.
+    """
+    await state.check_mlmd_file_exists()
+
+    artifact_types_list = await async_api(
+        get_artifact_types,
+        state.query
+    )
+
+    if "Environment" in artifact_types_list:
+        artifact_types_list.remove("Environment")
+
+    return artifact_types_list
+
+
+async def get_model_card_by_artifact_id(state: MlmdState, model_id: int):
+    """
+    Get model card details (model, execution, input/output artifacts) for a model artifact id.
+
+    Args:
+        state (MlmdState): Shared MLMD query state for the request.
+        model_id (int): Id of the artifact; must be of type 'Model'.
+
+    Returns:
+        list: [model_data, model_executions, input_artifacts, output_artifacts] as JSON records,
+            with "" in place of any dataframe that was empty.
+
+    Raises:
+        HTTPException: 404 if the artifact id does not exist, 400 if it is not a Model artifact.
+    """
+    await state.check_mlmd_file_exists()
+
+    model_artifact = await async_api(
+        CmfQuery.get_all_artifacts_by_ids_list,
+        state.query,
+        [model_id]
+    )
+    if model_artifact.empty:
+        raise HTTPException(status_code=404, detail=f"Model artifact with id {model_id} not found")
+
+    artifact_type = model_artifact["type"].tolist()[0]
+    if artifact_type != "Model":
+        raise HTTPException(status_code=400, detail=f"Artifact id {model_id} is not a Model artifact")
+
+    model_data_df, model_exe_df, model_input_art_df, model_output_art_df = await async_api(
+        get_model_data,
+        state.query,
+        model_id
+    )
+    # Each element is JSON records for one dataframe, or "" when that dataframe is empty.
+    return [
+        json.loads(model_data_df.to_json(orient="records")) if not model_data_df.empty else "",
+        json.loads(model_exe_df.to_json(orient="records")) if not model_exe_df.empty else "",
+        json.loads(model_input_art_df.to_json(orient="records")) if not model_input_art_df.empty else "",
+        json.loads(model_output_art_df.to_json(orient="records")) if not model_output_art_df.empty else "",
+    ]
 
 
 # ==================== Business Logic Functions For CMFQuery ====================
@@ -507,8 +575,3 @@ def find_producer_execution(query: CmfQuery, artifact_name: str):
 def get_metrics(query: CmfQuery, metrics_name: str):
     """Return metrics metadata for the requested metrics artifact name."""
     return query.get_metrics(metrics_name)
-
-
-def list_all_artifact_types(query: CmfQuery):
-    """Return all artifact types from the CMFQuery backend."""
-    return query.get_all_artifact_types()
