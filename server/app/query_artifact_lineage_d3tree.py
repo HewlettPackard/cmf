@@ -4,6 +4,18 @@ from typing import List, Dict, Any
 from server.app.utils import modify_arti_name
 
 def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_art_ids: Dict) -> List[List[Dict[str, Any]]]:
+    """
+    Build the tangled-tree artifact lineage grouping for a pipeline.
+
+    Args:
+        query (CmfQuery): The CmfQuery object.
+        pipeline_name (str): Name of the pipeline.
+        dict_of_art_ids (Dict): Artifact type -> DataFrame of {id, name}, keyed by pipeline name.
+
+    Returns:
+        list[list[dict]]: Nested list of {'id', 'parents'} entries grouped by shared parent sets,
+            in topological (parents-before-children) order.
+    """
     id_name = {}
     child_parent_artifact_id: Dict[int, List[int]] = {}
     for type_, df in dict_of_art_ids[pipeline_name].items():
@@ -23,6 +35,17 @@ def query_artifact_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_a
     return data_organized
 
 def topological_sort(input_data, artifact_name_id_dict) -> List[List[Dict[str, Any]]]:
+    """
+    Topologically sort a child->parents graph and group nodes by identical parent sets.
+
+    Args:
+        input_data (dict[int, list[int]]): Artifact id -> list of parent artifact ids.
+        artifact_name_id_dict (dict[int, str]): Artifact id -> display name.
+
+    Returns:
+        list[list[dict]]: Groups of {'id', 'parents'} entries, ordered so all parents
+            appear before their children.
+    """
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
