@@ -24,7 +24,15 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 async def register_server_details(db: AsyncSession, server_name: str, server_url: str):
     """
-    Register server details in the database.
+    Register a new server's details in the database.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_name (str): Unique name for the server.
+        server_url (str): Host URL of the server.
+
+    Returns:
+        dict: Confirmation message, or a duplicate-name message if server_name exists.
     """
     # Check duplicate server name.
     query_name_check = select(registered_servers.c.id).where(
@@ -50,43 +58,68 @@ async def register_server_details(db: AsyncSession, server_name: str, server_url
 async def get_registered_server_details(db: AsyncSession = Depends(get_db())):
     """
     Get all registered server details from the database.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+
+    Returns:
+        list: Registered server rows.
     """
     query = select(registered_servers)
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def get_registered_server_by_id(db: AsyncSession, server_id: int):
-    """Return one registered server row by primary key, or None."""
+    """
+    Return one registered server row by primary key, or None.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_id (int): Id of the registered server.
+
+    Returns:
+        dict | None: The server row, or None if not found.
+    """
     query = select(registered_servers).where(registered_servers.c.id == server_id)
     result = await db.execute(query)
     row = result.mappings().first()
-    return row
+    return dict(row) if row else None
 
 
 async def get_registered_server_by_name_url(db: AsyncSession, server_name: str, server_url: str):
-    """Fetch one registered server row by server name and host URL."""
+    """
+    Fetch one registered server row by server name and host URL.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_name (str): Name of the registered server.
+        server_url (str): Host URL of the registered server.
+
+    Returns:
+        dict | None: The server row, or None if not found.
+    """
     query = select(registered_servers).where(
         (registered_servers.c.server_name == server_name) & (registered_servers.c.host_info == server_url)
     )
     result = await db.execute(query)
-    return result.mappings().first()
+    row = result.mappings().first()
+    return dict(row) if row else None
     
 
-async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
-    """
-    Get the sync status from the database.
-    """
-    query = select(registered_servers.c.last_sync_time).where(
-        (registered_servers.c.server_name == server_name) & 
-        (registered_servers.c.host_info == server_url)
-    )
-    result = await db.execute(query)
-    return result.mappings().all()
-
-
 async def update_sync_status(db: AsyncSession, current_utc_time: int, server_name: str, server_url: str):
-    """Update last sync timestamp for a server identified by name and URL."""
+    """
+    Update last sync timestamp for a server identified by name and URL.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        current_utc_time (int): New last-sync time, epoch ms (UTC).
+        server_name (str): Name of the registered server.
+        server_url (str): Host URL of the registered server.
+
+    Returns:
+        None
+    """
     query = update(registered_servers).where(
         (registered_servers.c.server_name == server_name) & 
         (registered_servers.c.host_info == server_url)
@@ -363,13 +396,13 @@ async def update_sync_status(db: AsyncSession, current_utc_time: int, server_nam
 
 def _get_pipeline_execution_ids_subquery(pipeline_name: str):
     """
-    Helper function to build the common subqueries for getting execution IDs by pipeline.
-    
+    Build the common subqueries for getting execution IDs by pipeline.
+
     Args:
-        pipeline_name: Name of the pipeline
-        
+        pipeline_name (str): Name of the pipeline.
+
     Returns:
-        Tuple of (relevant_contexts subquery, execution_ids subquery)
+        tuple: (relevant_contexts subquery, execution_ids subquery).
     """
     # Get relevant contexts for the pipeline
     relevant_contexts = select(
@@ -406,8 +439,13 @@ async def _get_stage_artifact_ids(
     Resolve artifact IDs for artifacts produced or consumed by executions in a
     given pipeline stage.
 
+    Args:
+        db (AsyncSession): Database session dependency.
+        pipeline_name (str): Name of the pipeline.
+        stage_name (str): Stage name (Context_Type value) to filter by.
+
     Returns:
-        List of artifact IDs associated with the pipeline and stage.
+        list[int]: Artifact IDs associated with the pipeline and stage.
     """
     relevant_contexts, pipeline_execution_ids = _get_pipeline_execution_ids_subquery(pipeline_name)
 
@@ -454,13 +492,13 @@ async def fetch_unique_execution_stages(
 ):
     """
     Fetch unique execution stages (Context_Type values) for a given pipeline.
-    
+
     Args:
-        db: Database session
-        pipeline_name: Name of the pipeline to filter by
-        
+        db (AsyncSession): Database session dependency.
+        pipeline_name (str): Name of the pipeline to filter by.
+
     Returns:
-        List of unique stage names
+        dict: {"stages": list[str], "total_stages": int}.
     """
     # Use helper function to get common subqueries
     relevant_contexts, execution_ids_query = _get_pipeline_execution_ids_subquery(pipeline_name)
@@ -505,16 +543,18 @@ async def fetch_executions_by_stage(
 ):
     """
     Fetch executions filtered by pipeline and stage name (Context_Type).
-    
+
     Args:
-        db: Database session
-        pipeline_name: Name of the pipeline
-        stage_name: Stage name (Context_Type value) to filter by
-        active_page: Page number for pagination
-        record_per_page: Number of records per page
-        
+        db (AsyncSession): Database session dependency.
+        pipeline_name (str): Name of the pipeline.
+        stage_name (str): Stage name (Context_Type value) to filter by.
+        active_page (int): Page number for pagination.
+        record_per_page (int): Number of records per page.
+        sort_order (str): "ASC" or "DESC" sort order by create time.
+        filter_value (str): Optional search filter applied across execution id/properties/date.
+
     Returns:
-        Dictionary with total_items and items (list of executions with properties)
+        dict: {"total_items": int, "items": list[dict]} - executions with their properties.
     """
     # Use helper function to get common subqueries
     _, pipeline_execution_ids = _get_pipeline_execution_ids_subquery(pipeline_name)
@@ -657,21 +697,21 @@ async def fetch_artifacts_by_stage(
 ):
     """
     Fetch artifacts filtered by pipeline, stage (Context_Type), and artifact type.
-    
+
     Args:
-        db: Database session
-        pipeline_name: Name of the pipeline
-        stage_name: Stage name (Context_Type value) to filter by
-        artifact_type: Type of artifacts to fetch
-        filter_value: Search filter value
-        active_page: Page number for pagination
-        page_size: Number of records per page (legacy name)
-        record_per_page: Number of records per page (preferred name)
-        sort_column: Column to sort by
-        sort_order: Sort order (ASC or DESC)
-        
+        db (AsyncSession): Database session dependency.
+        pipeline_name (str): Name of the pipeline.
+        stage_name (str): Stage name (Context_Type value) to filter by.
+        artifact_type (str): Type of artifacts to fetch.
+        filter_value (str): Search filter value.
+        active_page (int): Page number for pagination.
+        page_size (int): Number of records per page (legacy name).
+        record_per_page (int | None): Number of records per page (preferred name).
+        sort_column (str): Column to sort by.
+        sort_order (str): "ASC" or "DESC" sort order.
+
     Returns:
-        Dictionary with total_items and items list
+        dict: {"total_items": int, "items": list[dict]}.
     """
     artifact_ids = await _get_stage_artifact_ids(db, pipeline_name, stage_name)
     if not artifact_ids:
@@ -870,14 +910,14 @@ async def fetch_artifact_types_by_stage(
 ):
     """
     Fetch unique artifact types available in a specific stage of a pipeline.
-    
+
     Args:
-        db: Database session
-        pipeline_name: Name of the pipeline
-        stage_name: Stage name (Context_Type value) to filter by
-        
+        db (AsyncSession): Database session dependency.
+        pipeline_name (str): Name of the pipeline.
+        stage_name (str): Stage name (Context_Type value) to filter by.
+
     Returns:
-        List of unique artifact type names
+        list[str]: Unique artifact type names (excluding "Environment").
     """
     artifact_ids = await _get_stage_artifact_ids(db, pipeline_name, stage_name)
     if not artifact_ids:
@@ -1014,7 +1054,27 @@ async def create_schedule(
     weekly_day: str = None,
     weekly_time: str = None
 ):
-    """Insert a schedule row and return the created schedule id."""
+    """
+    Insert a schedule row and return the created schedule id.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_id (int): Id of the registered server to sync with.
+        timezone (str): IANA timezone name.
+        start_time_utc (int): Schedule start time, epoch ms (UTC).
+        next_run_time_utc (int): Next due run time, epoch ms (UTC).
+        created_at (int): Creation time, epoch ms (UTC).
+        one_time (bool): True for a single run, False for recurring.
+        recurrence_mode (str | None): "interval", "daily", or "weekly".
+        interval_unit (str | None): "minutes" or "hours" for interval mode.
+        interval_value (int | None): Interval magnitude for interval mode.
+        daily_time (str | None): "HH:MM" target time for daily mode.
+        weekly_day (str | None): Weekday name for weekly mode.
+        weekly_time (str | None): "HH:MM" target time for weekly mode.
+
+    Returns:
+        dict: {"id": int} - id of the created schedule row.
+    """
     query = insert(scheduled_syncs).values(
         server_id=server_id,
         timezone=timezone,
@@ -1037,32 +1097,73 @@ async def create_schedule(
 
 
 async def list_schedules(db: AsyncSession, server_id: int | None = None):
-    """Return active schedules, optionally filtered by server id."""
+    """
+    Return active schedules, optionally filtered by server id.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_id (int | None): Optional server id filter.
+
+    Returns:
+        list: Active schedule rows.
+    """
     query = select(scheduled_syncs).where(scheduled_syncs.c.active == True)
     if server_id is not None:
         query = query.where(scheduled_syncs.c.server_id == server_id)
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def due_schedules(db: AsyncSession, now_utc_ms: int):
-    """Return active schedules whose next run time is at or before now."""
+    """
+    Return active schedules whose next run time is at or before now.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        now_utc_ms (int): Current time, epoch ms (UTC).
+
+    Returns:
+        list: Schedule rows that are due to run.
+    """
     query = select(scheduled_syncs).where(
         (scheduled_syncs.c.active == True) & (scheduled_syncs.c.next_run_time_utc <= now_utc_ms)
     )
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def update_next_run(db: AsyncSession, schedule_id: int, next_run_time_utc: int):
-    """Update the next run timestamp for a schedule."""
+    """
+    Update the next run timestamp for a schedule.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        schedule_id (int): Schedule id to update.
+        next_run_time_utc (int): New next-run time, epoch ms (UTC).
+
+    Returns:
+        None
+    """
     query = update(scheduled_syncs).where(scheduled_syncs.c.id == schedule_id).values(next_run_time_utc=next_run_time_utc)
     await db.execute(query)
     await db.commit()
 
 
 async def log_sync_run(db: AsyncSession, schedule_id: int, run_time_utc: int, status: str, message: str | None, sync_type: str = "periodic"):
-    """Insert one sync execution log row."""
+    """
+    Insert one sync execution log row.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        schedule_id (int): Id of the schedule the run belongs to.
+        run_time_utc (int): Run time, epoch ms (UTC).
+        status (str): Run outcome, e.g. "success" or "failed".
+        message (str | None): Optional human-readable result message.
+        sync_type (str): "periodic" or "sync_now".
+
+    Returns:
+        None
+    """
     query = insert(sync_logs).values(
         schedule_id=schedule_id,
         run_time_utc=run_time_utc,
@@ -1075,14 +1176,34 @@ async def log_sync_run(db: AsyncSession, schedule_id: int, run_time_utc: int, st
 
 
 async def list_sync_logs(db: AsyncSession, schedule_id: int, limit: int = 50):
-    """Return recent sync logs for a schedule, newest first."""
+    """
+    Return recent sync logs for a schedule, newest first.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        schedule_id (int): Schedule id to fetch logs for.
+        limit (int): Maximum number of rows to return.
+
+    Returns:
+        list: Sync log rows ordered by run time descending.
+    """
     query = select(sync_logs).where(sync_logs.c.schedule_id == schedule_id).order_by(sync_logs.c.run_time_utc.desc()).limit(limit)
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def get_completed_logs_by_server(db: AsyncSession, server_id: int, limit: int = 100):
-    """Return joined sync log history for a specific server."""
+    """
+    Return joined sync log history for a specific server.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_id (int): Id of the server to fetch logs for.
+        limit (int): Maximum number of rows to return.
+
+    Returns:
+        list: Sync log rows joined with their owning schedule's server_id.
+    """
     query = (
         select(
             sync_logs.c.id,
@@ -1090,15 +1211,15 @@ async def get_completed_logs_by_server(db: AsyncSession, server_id: int, limit: 
             sync_logs.c.status,
             sync_logs.c.message,
             sync_logs.c.sync_type,
-            scheduled_syncs.c.server_id
+            scheduled_syncs.c.server_id,
         )
-        .select_from(sync_logs.join(scheduled_syncs, sync_logs.c.schedule_id == scheduled_syncs.c.id))
+        .select_from(sync_logs.join(scheduled_syncs,sync_logs.c.schedule_id == scheduled_syncs.c.id))
         .where(scheduled_syncs.c.server_id == server_id)
         .order_by(sync_logs.c.run_time_utc.desc())
         .limit(limit)
     )
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
 
 async def update_schedule_fields(
@@ -1111,7 +1232,22 @@ async def update_schedule_fields(
     one_time: bool | None = None,
     status: str | None = None,
 ):
-    """Partially update mutable schedule fields and return status message."""
+    """
+    Partially update mutable schedule fields and return status message.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        schedule_id (int): Schedule id to update.
+        timezone (str | None): New IANA timezone name.
+        start_time_utc (int | None): New start time, epoch ms (UTC).
+        next_run_time_utc (int | None): New next-run time, epoch ms (UTC).
+        active (bool | None): New active flag.
+        one_time (bool | None): New one-time flag.
+        status (str | None): New status string.
+
+    Returns:
+        dict: Confirmation message; "No fields to update" if no arguments were given.
+    """
     values = {}
     if timezone is not None:
         values[scheduled_syncs.c.timezone] = timezone
@@ -1136,7 +1272,16 @@ async def update_schedule_fields(
 
 
 async def delete_schedule(db: AsyncSession, schedule_id: int):
-    """Soft-cancel a schedule by deactivating it and setting cancelled status."""
+    """
+    Soft-cancel a schedule by deactivating it and setting cancelled status.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        schedule_id (int): Schedule id to deactivate.
+
+    Returns:
+        dict: Confirmation message.
+    """
     query = (
         update(scheduled_syncs)
         .where(scheduled_syncs.c.id == schedule_id)
@@ -1148,11 +1293,21 @@ async def delete_schedule(db: AsyncSession, schedule_id: int):
 
 
 async def get_sync_status(db: AsyncSession, server_name: str, server_url: str):
-    """Return last sync timestamp checkpoint for a server."""
+    """
+    Return the last sync timestamp checkpoint for a server.
+
+    Args:
+        db (AsyncSession): Database session dependency.
+        server_name (str): Name of the registered server.
+        server_url (str): Host URL of the registered server.
+
+    Returns:
+        list: Matching row(s) with last_sync_time, or [] if not found.
+    """
     query = select(registered_servers.c.last_sync_time).where(
         (registered_servers.c.server_name == server_name) & 
         (registered_servers.c.host_info == server_url)
     )
     result = await db.execute(query)
-    return result.mappings().all()
+    return [dict(row) for row in result.mappings().all()]
 
