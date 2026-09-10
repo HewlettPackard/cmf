@@ -57,7 +57,7 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
             // Pad single digit numbers with leading zeros for consistent formatting
             const pad = (n) => n.toString().padStart(2, '0');
             return `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ` +
-                   `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
+                `${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())}`;
         } catch {
             return null;
         }
@@ -84,6 +84,20 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
                 return [];
             }
         })();
+
+    // Returns true if any property name or value matches the active filter.
+    const hasPropertyMatch = () => {
+        if (!filterValue || !filterValue.trim()) return false;
+        const lower = filterValue.toLowerCase();
+        return allProps.some(
+            (p) =>
+                String(p.name).toLowerCase().includes(lower) ||
+                String(p.value).toLowerCase().includes(lower)
+        );
+    };
+
+    // The panel is open if manually toggled OR if the filter matches a property.
+    const isExpanded = expandedProperties || hasPropertyMatch();
 
     return (
         <>
@@ -215,14 +229,14 @@ const ExecutionCard = ({ execution, filterValue, onCardClick, isSelected = false
                             View All Properties ({allProps.length})
                         </span>
                         <svg
-                            className={`w-5 h-5 text-gray-400 transition-transform ${expandedProperties ? "transform rotate-180" : ""}`}
+                            className={`w-5 h-5 text-gray-400 transition-transform ${isExpanded ? "transform rotate-180" : ""}`}
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >
                             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
                         </svg>
                     </button>
-                    {expandedProperties && (
+                    {isExpanded && (
                         <div className="px-4 pb-4 max-h-64 overflow-y-auto bg-gray-50">
                             <div className="space-y-2">
                                 {allProps.map((prop, idx) => (
