@@ -1,33 +1,35 @@
-import React, { useState } from "react";
-import "./index.css";
+// We are not using this component currently, but we may use it in the future. So, we are keeping it for now.
 
-const LineageTypeSidebar = ({ LineageTypes, handleLineageTypeClick }) => {
-  const [clickedLineageType, setClickedLineageType] = useState(LineageTypes[0]);
+// import React, { useState } from "react";
+// import "./index.css";
 
-  const handleClick = (LineageType) => {
-    setClickedLineageType(LineageType);
-    handleLineageTypeClick(LineageType);
-  };
+// const LineageTypeSidebar = ({ LineageTypes, handleLineageTypeClick }) => {
+//   const [clickedLineageType, setClickedLineageType] = useState(LineageTypes[0]);
 
-  return (
-    <div className="flex justify-between border-b border-gray-200">
-      <div className="flex flex-row">
-        {LineageTypes.map((LineageType, index) => (
-          <button
-            key={LineageType}
-            className={
-              clickedLineageType === LineageType
-                ? "art-tabs art-active-tabs"
-                : "art-tabs"
-            }
-            onClick={() => handleClick(LineageType)}
-          >
-            {LineageType}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
+//   const handleClick = (LineageType) => {
+//     setClickedLineageType(LineageType);
+//     handleLineageTypeClick(LineageType);
+//   };
 
-export default LineageTypeSidebar;
+//   return (
+//     <div className="flex justify-between border-b border-gray-200">
+//       <div className="flex flex-row">
+//         {LineageTypes.map((LineageType, index) => (
+//           <button
+//             key={LineageType}
+//             className={
+//               clickedLineageType === LineageType
+//                 ? "art-tabs art-active-tabs"
+//                 : "art-tabs"
+//             }
+//             onClick={() => handleClick(LineageType)}
+//           >
+//             {LineageType}
+//           </button>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default LineageTypeSidebar;
