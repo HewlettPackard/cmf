@@ -18,7 +18,8 @@
 CMF API Client module.
 
 High-level client wrapper for communicating with CMF Server REST API.
-Provides domain-specific methods for pipelines, executions, artifacts, etc.
+Provides domain-specific methods for pipelines, executions, artifacts, metadata,
+servers, schedules, and Python environment management.
 
 Originally from the cmfAPI package (https://github.com/atripathy86/cmfapi).
 Inlined here to remove the external dependency.
@@ -37,14 +38,15 @@ class cmfClient:
         """
         self.connection = cmfConnection(base_url, tls_verify=tls_verify)
 
+    # Pipelines
     def get_pipelines(self):
-        """
+         """
         Retrieve currently registered pipelines.
 
-        :return: API response containing registered pipelines.
-        """
-        return self.connection.get("/pipelines")
+        :return: API response containing registered pipelines."""
+         return self.connection.get("/v1/pipelines")
 
+    # Executions
     def get_executions_list(self, pipeline_name):
         """
         Retrieve a brief list of execution names for a pipeline.
@@ -52,7 +54,7 @@ class cmfClient:
         :param pipeline_name: Name of the pipeline.
         :return: API response containing execution names.
         """
-        return self.connection.get(f"/list-of-executions/{pipeline_name}")
+        return self.connection.get(f"/v1/pipelines/{pipeline_name}/executions/list")
 
     def get_executions(self, pipeline_name):
         """
@@ -61,34 +63,9 @@ class cmfClient:
         :param pipeline_name: Name of the pipeline.
         :return: API response containing executions.
         """
-        return self.connection.get(f"/executions/{pipeline_name}")
+        # Use the standardized endpoint for getting all executions in the pipeline.
+        return self.connection.get(f"/v1/pipelines/{pipeline_name}/executions")
 
-    def get_artifact_types(self):
-        """
-        Retrieve a list of artifact types.
-
-        :return: API response containing artifact types.
-        """
-        return self.connection.get("/artifact_types")
-
-    def get_artifacts(self, pipeline_name, artifact_type):
-        """
-        Retrieve artifacts of a specific type for a given pipeline.
-
-        :param pipeline_name: Name of the pipeline.
-        :param artifact_type: Type of the artifact.
-        :return: API response containing artifacts of the specified type.
-        """
-        return self.connection.get(f"/artifacts/{pipeline_name}/{artifact_type}")
-
-    def get_artifact_lineage_tangled_tree(self, pipeline_name):
-        """
-        Retrieve the artifact lineage for a given pipeline.
-
-        :param pipeline_name: Name of the pipeline.
-        :return: API response containing the artifact lineage tangled tree.
-        """
-        return self.connection.get(f"/artifact-lineage/tangled-tree/{pipeline_name}")
 
     def get_execution_lineage_tangled_tree(self, uuid, pipeline_name):
         """
@@ -98,7 +75,34 @@ class cmfClient:
         :param pipeline_name: Name of the pipeline.
         :return: API response containing the execution lineage tangled tree.
         """
-        return self.connection.get(f"/execution-lineage/tangled-tree/{uuid}/{pipeline_name}")
+        return self.connection.get(f"/v1/pipelines/{pipeline_name}/executions/{uuid}/lineage")
+
+    # Artifacts
+    def get_artifact_types(self):
+        """
+        Retrieve a list of artifact types.
+
+        :return: API response containing artifact types.
+        """
+        return self.connection.get("/v1/artifacts/types")
+
+
+    def get_artifacts(self, pipeline_name):
+        """
+        Retrieve all artifacts for a given pipeline.
+        :return: API response containing all artifacts for the pipeline.
+        """
+        # Use the standardized endpoint for getting all artifacts in the pipeline.
+        return self.connection.get(f"/v1/pipelines/{pipeline_name}/artifacts")
+
+    def get_artifact_lineage_tangled_tree(self, pipeline_name):
+        """
+        Retrieve the artifact lineage for a given pipeline.
+
+        :param pipeline_name: Name of the pipeline.
+        :return: API response containing the artifact lineage tangled tree.
+        """
+        return self.connection.get(f"/v1/pipelines/{pipeline_name}/artifacts/lineage")
 
     def get_model_card(self, model_id):
         """
@@ -108,36 +112,46 @@ class cmfClient:
         :return: API response containing the model card details.
         """
         model_id_int = int(model_id)
-        return self.connection.get("/model-card", params={"modelId": model_id_int})
+        return self.connection.get(f"/v1/artifacts/models/{model_id_int}/card")
 
-    def get_python_env(self):
+    def get_python_env(self, pipeline_name, execution_uuid):
         """
         Retrieve the Python environment details.
 
         :return: API response containing the Python environment details.
         """
-        return self.connection.get("/python-env")
+        return self.connection.get(f"/v1/pipelines/{pipeline_name}/executions/{execution_uuid}/python-env")
 
-    def mlmd_push(self, payload):
+
+    # MLMD metadata sync
+    def mlmd_push(self, pipeline_name, json_payload, exec_uuid=None):
         """
         Push metadata to the MLMD server.
 
         :param payload: The data to be pushed (as a dictionary).
         :return: API response after pushing the metadata.
         """
-        return self.connection.post("/mlmd_push", data=payload)
+        payload = {
+            "pipeline_name": pipeline_name,
+            "json_payload": json_payload,
+            "exec_uuid": exec_uuid,
+        }
+        return self.connection.post("/v1/mlmd/push", data=payload)
 
-    def mlmd_pull(self, pipeline_name):
+    def mlmd_pull(self, pipeline_name=None, exec_uuid=None, last_sync_time=None):
         """
         Retrieve metadata for a specific pipeline.
 
         :param pipeline_name: Name of the pipeline.
         :return: API response containing the metadata.
         """
-        return self.connection.get(f"/mlmd_pull/{pipeline_name}")
+        payload = {
+            "pipeline_name": pipeline_name,
+            "exec_uuid": exec_uuid,
+            "last_sync_time": last_sync_time,
+        }
+        return self.connection.post("/v1/mlmd/pull", data=payload)
 
     def close_session(self):
-        """
-        Close the session with the CMF server.
-        """
+        """Close the session with the CMF server."""
         self.connection.exit()
