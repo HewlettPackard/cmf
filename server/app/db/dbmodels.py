@@ -223,6 +223,7 @@ label_content = Table(
     
     # Unique Constraint - composite key to allow multiple labels per artifact
     UniqueConstraint("artifact_id", "file_name", name="label_content_artifact_file_key")
+)
 
 
 # Schedules for periodic syncs

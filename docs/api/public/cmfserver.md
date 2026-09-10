@@ -60,7 +60,7 @@ Error responses use the same envelope with `status: "error"` and field-level det
 | `GET` | `/v1/python-env/{file_name}` | Path: `file_name` | Retrieves a Python environment file by file name. |
 | `GET` | `/v1/python-env/download` | Optional query: `list_of_files` | Downloads Python environment files as a ZIP archive. |
 | `GET` | `/v1/model-card` | Query: `modelId` | Retrieves model card data for the UI by model artifact ID. |
-| `POST` | `/v1/label` | Multipart file: `file` | Uploads a label file to the CMF Server. |
+| `POST` | `/v2/label` | Multipart file: `file` | Uploads a label file to the CMF Server and indexes CSV content for search. |
 | `GET` | `/v1/label-data` | Query: `file_name` | Retrieves label file content by file name. |
 | `POST` | `/v1/tensorboard` | Query: `pipeline_name`; multipart file: `file` | Uploads TensorBoard logs for a pipeline. |
 | `POST` | `/v1/acknowledge` | Body: `server_name`, `server_url` | Acknowledges a peer server during registration or liveness checks. |
