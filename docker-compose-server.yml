@@ -150,6 +150,9 @@ services:
           - mcp
 
   nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
     image: federcmf/cmf-nginx:latest
     container_name: cmf-nginx
     ports:

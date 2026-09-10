@@ -24,7 +24,7 @@
 
 set -euo pipefail
 
-REGISTRY="${DOCKER_REGISTRY:-hpecmf}"
+REGISTRY="${DOCKER_REGISTRY:-federcmf}"
 TAG="${IMAGE_TAG:-latest}"
 DRY_RUN=0
 NO_COMMIT=0
@@ -35,7 +35,6 @@ declare -A SERVICES=(
   [ui]=ui
   [mcp]=mcp
   [cmf-nginx]=cmf-nginx
-  [postgres]=postgres
   [tensorboard]=tensorboard
 )
 
