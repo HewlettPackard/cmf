@@ -1412,6 +1412,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#4-hierarchical-lineage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Hierarchical Lineage
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1724,6 +1735,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#4-hierarchical-lineage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Hierarchical Lineage
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1901,6 +1923,27 @@
 <li>Filtered by pipeline</li>
 </ul>
 <p><img alt="Artifact Execution Tree Lineage" src="../../assets/artifact_exec_tree_lineage.png" /></p>
+<h3 id="4-hierarchical-lineage">4. Hierarchical Lineage<a class="headerlink" href="#4-hierarchical-lineage" title="Permanent link">¤</a></h3>
+<p><strong>Purpose</strong>: Shows all stages of a pipeline and their executions in their respective execution order.</p>
+<p><strong>How it works</strong>:</p>
+<p>The view starts with the pipeline name at the top. Each stage of the pipeline appears as a column below it. Within each column, executions are listed vertically in the order they were run — oldest at the top, newest at the bottom.</p>
+<p><strong>Use Cases</strong>:</p>
+<ul>
+<li>See all pipeline stages side by side in a single view</li>
+<li>Track the sequence of executions within each stage</li>
+<li>Quickly identify how many times each stage has run</li>
+</ul>
+<p><strong>Features</strong>:</p>
+<ul>
+<li>Pipeline name shown as the root node at the top</li>
+<li>Each stage displayed as a separate column with its executions stacked vertically</li>
+<li>Color-coded nodes: pipeline anme (green), stages (orange), executions (blue)</li>
+<li>Zoom in / zoom out controls</li>
+<li>Hover over any node to see a tooltip with its name and key details</li>
+<li>Pan across the diagram using the hand cursor</li>
+<li>Mini-map in the corner for quick navigation on large pipelines</li>
+</ul>
+<p><img alt="Hierarchical Lineage" src="../../assets/Hierarchical_lineage.png" /></p>
 <h2 id="using-the-lineage-page">Using the Lineage Page<a class="headerlink" href="#using-the-lineage-page" title="Permanent link">¤</a></h2>
 <h3 id="example-1-trace-data-provenance">Example 1: Trace Data Provenance<a class="headerlink" href="#example-1-trace-data-provenance" title="Permanent link">¤</a></h3>
 <p><strong>Goal</strong>: Understand where a specific model's training data came from</p>
