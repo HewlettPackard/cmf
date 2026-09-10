@@ -69,6 +69,32 @@ The Lineage page offers three different visualization modes:
 
 ![Artifact Execution Tree Lineage](../assets/artifact_exec_tree_lineage.png)
 
+### 4. Hierarchical Lineage
+
+**Purpose**: Shows all stages of a pipeline and their executions in their respective execution order.
+
+**How it works**:
+
+The view starts with the pipeline name at the top. Each stage of the pipeline appears as a column below it. Within each column, executions are listed vertically in the order they were run — oldest at the top, newest at the bottom.
+
+**Use Cases**:
+
+- See all pipeline stages side by side in a single view
+- Track the sequence of executions within each stage
+- Quickly identify how many times each stage has run
+
+**Features**:
+
+- Pipeline name shown as the root node at the top
+- Each stage displayed as a separate column with its executions stacked vertically
+- Color-coded nodes: pipeline anme (green), stages (orange), executions (blue)
+- Zoom in / zoom out controls
+- Hover over any node to see a tooltip with its name and key details
+- Pan across the diagram using the hand cursor
+- Mini-map in the corner for quick navigation on large pipelines
+
+![Hierarchical Lineage](../assets/Hierarchical_lineage.png)
+
 
 ## Using the Lineage Page
 
