@@ -100,7 +100,9 @@ services:
         condition: service_healthy
     healthcheck:
       # Use 127.0.0.1 instead of localhost to avoid IPv6 ::1 resolution when nginx listens on IPv4.
-      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000 || exit 1"]
+      # -Y off disables proxy: busybox wget ignores no_proxy and would otherwise route
+      # the probe through a corporate proxy.
+      test: ["CMD-SHELL", "wget -q --spider -Y off http://127.0.0.1:3000 || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 5

@@ -23,9 +23,12 @@ COPY nginx.conf /etc/nginx/nginx.conf
 # resolve on the docker-compose network at container runtime, not at build time.
 RUN apk add --no-cache curl
 
+# Static page served at /check.html for the container healthcheck.
+RUN echo "OK" > /usr/share/nginx/html/health.html
+
 EXPOSE 80 443
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=5 \
-    CMD curl -f http://127.0.0.1:80/check.html || exit 1
+    CMD curl -fsS http://127.0.0.1:80/check.html || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
