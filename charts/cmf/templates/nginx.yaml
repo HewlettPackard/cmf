@@ -1,0 +1,95 @@
+{{- if .Values.nginx.enabled -}}
+{{/* ConfigMap is created only when nginx.config is explicitly overridden.
+     By default the config baked into the federcmf/cmf-nginx image is used. */}}
+{{- if .Values.nginx.config }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }}-config
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "nginx") | nindent 4 }}
+data:
+  nginx.conf: |
+{{ .Values.nginx.config | indent 4 }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "nginx") | nindent 4 }}
+spec:
+  replicas: {{ .Values.nginx.replicas }}
+  selector:
+    matchLabels:
+      {{- include "cmf.componentLabels" (dict "ctx" . "component" "nginx") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cmf.componentLabels" (dict "ctx" . "component" "nginx") | nindent 8 }}
+    spec:
+      {{- include "cmf.imagePullSecrets" . | nindent 6 }}
+      containers:
+      - name: nginx
+        image: {{ include "cmf.image" (dict "ctx" . "image" .Values.nginx.image) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        resources:
+          {{- toYaml .Values.nginx.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.nginx.probePath }}
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.nginx.probePath }}
+            port: 80
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+        volumeMounts:
+{{- if .Values.nginx.config }}
+        - name: nginx-config
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+          readOnly: true
+{{- end }}
+      volumes:
+{{- if .Values.nginx.config }}
+      - name: nginx-config
+        configMap:
+          name: {{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }}-config
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "nginx") | nindent 4 }}
+spec:
+  type: {{ .Values.nginx.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.nginx.service.httpPort }}
+    targetPort: 80
+    {{- if eq .Values.nginx.service.type "NodePort" }}
+    nodePort: {{ .Values.nginx.service.httpNodePort }}
+    {{- end }}
+  - name: https
+    port: {{ .Values.nginx.service.httpsPort }}
+    targetPort: 443
+    {{- if eq .Values.nginx.service.type "NodePort" }}
+    nodePort: {{ .Values.nginx.service.httpsNodePort }}
+    {{- end }}
+  selector:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "nginx") | nindent 4 }}
+{{- end -}}
