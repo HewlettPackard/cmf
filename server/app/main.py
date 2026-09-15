@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from server.app.schemas.responses import error_response
 from server.app.api.v1 import api_router
+from server.app.middleware.keycloak import KeycloakBearerMiddleware
 dotenv.load_dotenv()
 
 #lifespan used to prevent multiple loading and save time for visualization.
@@ -68,6 +69,10 @@ app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
 app.state.mlmd = mlmd_state
 
 app.include_router(api_router)
+
+# Keycloak bearer gate (KEYCLOAK_AUTH_MODE=off|optional|required).
+# Registered before CORS so it is the innermost middleware (runs first on request).
+app.add_middleware(KeycloakBearerMiddleware)
 
 # Add CORS middleware
 app.add_middleware(

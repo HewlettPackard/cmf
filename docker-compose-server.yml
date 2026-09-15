@@ -17,7 +17,7 @@
 services:
   postgres:
     image: docker.io/library/postgres:13
-    container_name: postgres
+    container_name: cmf-postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-myuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
@@ -73,6 +73,16 @@ services:
       http_proxy: ${http_proxy:-}
       https_proxy: ${https_proxy:-}
       no_proxy: ${no_proxy:-localhost,127.0.0.1}
+      # Keycloak OIDC (ADIL federdatalake). Default off for local/dev.
+      KEYCLOAK_AUTH_MODE: ${KEYCLOAK_AUTH_MODE:-off}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:-https://auth.adil.sdsc.edu:9001/realms/federdatalake}
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL:-https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/certs}
+      KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL:-https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/token}
+      KEYCLOAK_INTROSPECT_URL: ${KEYCLOAK_INTROSPECT_URL:-https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/token/introspect}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-d3dsearch}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+      KEYCLOAK_SSL_VERIFY: ${KEYCLOAK_SSL_VERIFY:-false}
+      KEYCLOAK_REQUIRE_CLIENT: ${KEYCLOAK_REQUIRE_CLIENT:-false}
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
       interval: 15s
