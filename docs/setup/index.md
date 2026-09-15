@@ -168,6 +168,167 @@ docker compose -f docker-compose-server.yml stop
 
 ---
 
+## CMF Server Deployment on Kubernetes {#deploy-cmf-server-on-kubernetes}
+
+For cluster-based deployments, the CMF Server stack can be deployed on Kubernetes using the Helm chart located at `charts/cmf` in the repository. The chart deploys the same components as the Docker Compose recipe above:
+
+- **PostgreSQL**: Database backend for metadata storage
+- **CMF Server**: API server for metadata management
+- **UI**: Web interface for visualization
+- **TensorBoard**: For viewing ML training metrics
+- **MCP Server**: MCP server for AI agent integration
+- **Nginx**: Reverse proxy serving all components
+
+### Prerequisites
+
+- A Kubernetes cluster (v1.24 or later), with `kubectl` configured to access it
+- **Helm**: Version 3.8 or later. See the [Helm installation guide](https://helm.sh/docs/intro/install/).
+- **Dynamic storage provisioning**: A default `StorageClass` capable of dynamic provisioning (standard on Minikube, cloud providers, and most clusters). The chart creates `PersistentVolumeClaims` for PostgreSQL data, server data, and TensorBoard logs.
+
+> 📝 **Note:** For Minikube, start the cluster with sufficient resources:
+>
+> ```bash
+> minikube start --driver=docker --cpus=4 --memory=8192
+> ```
+
+### Installation Steps
+
+**Step 1: Clone the GitHub Repository**
+
+```bash
+git clone https://github.com/HewlettPackard/cmf
+cd cmf
+```
+
+**Step 2: Create a Namespace for CMF (Optional)**
+
+```bash
+kubectl create namespace cmf
+```
+
+**Step 3: Install the CMF Server Stack with Helm**
+
+```bash
+helm install cmf charts/cmf --namespace cmf
+```
+
+> 📝 **Note:** If you skipped Step 2, add `--create-namespace` to have Helm create the namespace automatically:
+>
+> ```bash
+> helm install cmf charts/cmf --namespace cmf --create-namespace
+> ```
+
+**Step 4: Watch the Deployment**
+
+```bash
+kubectl -n cmf get pods
+```
+
+All pods should reach the `Running` status with `1/1` ready. PostgreSQL starts first; the CMF Server waits for it to be ready before starting, and the UI and MCP servers wait for the CMF Server.
+
+**Step 5: Access the CMF UI**
+
+The Nginx reverse proxy is exposed as a `NodePort` service:
+
+```bash
+kubectl -n cmf get svc nginx
+```
+
+Open the UI at `http://<node-ip>:30080`, where `<node-ip>` is the IP of any cluster node:
+
+```bash
+# For Minikube:
+minikube ip
+
+# Or use port-forwarding if NodePort access is not available:
+kubectl -n cmf port-forward svc/nginx 8080:80
+# then open http://localhost:8080
+```
+
+#### Verifying the Deployment
+
+Confirm that all components are working:
+
+```bash
+# All pods should be Running and Ready (1/1)
+kubectl -n cmf get pods
+
+# All services should be present (nginx, server, ui, tensorboard, mcp, postgres)
+kubectl -n cmf get svc -n cmf
+
+# UI is reachable through nginx (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30080/
+
+# CMF Server API responds through the /api route (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30080/api/v1/artifacts
+
+# TensorBoard is proxied (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30080/tensor_board/
+
+# MCP Server health endpoint (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30832/health
+
+# Check logs of individual components
+kubectl -n cmf logs deploy/server
+kubectl -n cmf logs deploy/nginx
+```
+
+#### Connecting the CMF Client
+
+Initialize the CMF client against the Kubernetes deployment:
+
+```bash
+cmf init local --path <local-storage-path> --git-remote-url <git-url> \
+    --cmf-server-url http://<node-ip>:30080
+```
+
+### Customizing the Deployment
+
+Configuration is done through `values.yaml`. Key options:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `nginx.service.type` | `NodePort` | Change to `LoadBalancer` or `ClusterIP` for other exposure models |
+| `nginx.service.httpNodePort` | `30080` | NodePort for HTTP access to the UI/API |
+| `mcp.external.nodePort` | `30832` | NodePort for external MCP access |
+| `postgres.auth.user` / `postgres.auth.password` | `myuser` / `mypassword` | PostgreSQL credentials |
+| `storage.mode` | `pvc` | Set to `hostPath` for Minikube-style host directories |
+| `storage.<component>.size` / `storageClass` | varies | Per-component PVC sizing and storage class |
+| `neo4j.enabled` | `false` | Optionally deploy Neo4j |
+| `<component>.image.repository` / `tag` | `federcmf/*` | Override image registry or tags |
+
+Apply overrides with a values file or `--set` flags:
+
+```bash
+helm upgrade cmf charts/cmf --namespace cmf -f my-values.yaml
+# or, for example:
+helm upgrade cmf charts/cmf --namespace cmf --set postgres.auth.password=secret
+```
+
+### Uninstallation
+
+```bash
+# Remove the CMF release (retains persistent data)
+helm uninstall cmf --namespace cmf
+```
+
+To also remove the persistent data (all metadata, uploaded artifacts, and TensorBoard logs):
+
+```bash
+kubectl -n cmf delete pvc --all
+```
+
+To remove everything, including the namespace:
+
+```bash
+helm uninstall cmf --namespace cmf
+kubectl delete namespace cmf
+```
+
+> ⚠️ **Warning:** Deleting PVCs permanently removes all CMF metadata and logs. Export any data you need before uninstalling.
+
+---
+
 ## Troubleshooting
 
 ### Python 3.9 Installation Issues on Ubuntu
