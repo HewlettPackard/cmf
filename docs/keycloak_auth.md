@@ -40,10 +40,18 @@ curl -sS -H "Authorization: Bearer $TOKEN" \
 - `POST /api/v1/acknowledge` (peer federation handshake)
 - OpenAPI `/docs`, `/openapi.json`
 
+## UI login
+
+When `KEYCLOAK_AUTH_MODE=required`, open http://127.0.0.1:8089/ — you are
+redirected to **/login**. Sign in with Keycloak username/password; the UI stores
+the access token in `sessionStorage` and sends `Authorization: Bearer …` on API
+calls. Use **Log out** in the header to clear the session.
+
 ## Modes
 
 | `KEYCLOAK_AUTH_MODE` | Behaviour |
 |---|---|
 | `off` | No bearer check (default) |
 | `optional` | Validates if present; does not reject missing |
-| `required` | Missing/invalid JWT → **401** |
+| `required` | Missing/invalid JWT → **401**; UI shows login page |
+

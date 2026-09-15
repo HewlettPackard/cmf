@@ -15,6 +15,7 @@
  ***/
 
 import config from "./config";
+import { clearSession, getAccessToken } from "./auth";
 
 const axios = require("axios");
 
@@ -35,6 +36,15 @@ class FastAPIClient {
       baseURL: `${config.apiBasePath}/`,
     };
     const client = axios.create(initialConfig);
+
+    client.interceptors.request.use((req) => {
+      const token = getAccessToken();
+      if (token) {
+        req.headers = req.headers || {};
+        req.headers.Authorization = `Bearer ${token}`;
+      }
+      return req;
+    });
 
     // Response interceptor to handle standardized API response format
     client.interceptors.response.use(
@@ -66,6 +76,14 @@ class FastAPIClient {
       },
       (error) => {
         console.error('API Error:', error);
+
+        if (error.response?.status === 401) {
+          clearSession();
+          if (window.location.pathname !== "/login") {
+            window.location.href = "/login";
+          }
+          return Promise.reject(error);
+        }
         
         // Handle standardized error response
         if (error.response?.data?.status === 'error' || error.response?.data?.code >= 400) {
