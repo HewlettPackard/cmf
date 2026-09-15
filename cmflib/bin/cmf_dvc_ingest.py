@@ -161,7 +161,7 @@ Create a unique Pipeline name if there is no mlmd file
 
 
 pipeline_name = "Pipeline"+"-"+str(uuid_) if not pipeline_name else pipeline_name
-metawriter = Cmf(filepath = "mlmd", pipeline_name=pipeline_name, graph=True)
+metawriter = Cmf(filename = "mlmd", pipeline_name=pipeline_name, graph=True)
 
 """
 Parse the dvc.lock dictionary and get the command section
