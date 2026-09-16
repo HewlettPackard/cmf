@@ -3,6 +3,8 @@ from collections import deque, defaultdict
 import pandas as pd
 
 class UniqueQueue:
+    """FIFO queue that silently drops values already enqueued once (BFS visited-set + queue)."""
+
     def __init__(self):
         self.queue = deque()
         self.seen = set()
@@ -26,6 +28,21 @@ class UniqueQueue:
 
 
 def query_execution_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_exe_id: dict, uuid: str):
+    """
+    Build the tangled-tree execution lineage grouping for a selected execution UUID prefix.
+
+    Args:
+        query (CmfQuery): The CmfQuery object.
+        pipeline_name (str): Name of the pipeline.
+        dict_of_exe_id (dict): Pipeline name -> DataFrame of execution rows.
+        uuid (str): Execution identifier in "<stage>_<uuid_prefix>" form.
+
+    Returns:
+        list[list[dict]]: Nested list of {'id', 'parents'} entries in topological order, e.g.
+            [[{'id': 'Prepare_d09f', 'parents': []}],
+             [{'id': 'Featurize_fae6', 'parents': ['Prepare_d09f']}]]
+        Or {"error": str} if uuid does not match any execution in the pipeline.
+    """
     pipeline_id = query.get_pipeline_id(pipeline_name)
     df=dict_of_exe_id[pipeline_name]
     
@@ -66,15 +83,24 @@ def query_execution_lineage_d3tree(query: CmfQuery, pipeline_name: str, dict_of_
     result_dict = df.set_index('id')['name_uuid'].to_dict()
 
     data_organized = topological_sort(dict_parents,result_dict) # it will use topological sort to create data from parents to child pattern
-    """
-    data_organized format
-    [[{'id': 'Prepare_d09f', 'parents': []}],  
-    [{'id': 'Featurize_fae6', 'parents': ['Prepare_d09f']}], 
-    [{'id': 'Train_7fe7', 'parents': ['Featurize_fae6']}]]
-    """
+    # data_organized format:
+    # [[{'id': 'Prepare_d09f', 'parents': []}],
+    #  [{'id': 'Featurize_fae6', 'parents': ['Prepare_d09f']}],
+    #  [{'id': 'Train_7fe7', 'parents': ['Featurize_fae6']}]]
     return data_organized
 
 def topological_sort(input_data,execution_id_dict):
+    """
+    Topologically sort a child->parents execution graph and group nodes by identical parent sets.
+
+    Args:
+        input_data (dict[int, list[int]]): Execution id -> list of parent execution ids.
+        execution_id_dict (dict[int, str]): Execution id -> "stage/name_uuid" string.
+
+    Returns:
+        list[list[dict]]: Groups of {'id', 'parents'} entries with names simplified via
+            modify_exec_name, ordered so all parents appear before their children.
+    """
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -110,6 +136,15 @@ def topological_sort(input_data,execution_id_dict):
     return output_data
 
 def modify_exec_name(exec_name_uuid):
+    """
+    Strip the leading stage-path segment from an execution's "stage/name_uuid" string.
+
+    Args:
+        exec_name_uuid (str): e.g. 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'.
+
+    Returns:
+        str: e.g. 'Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'.
+    """
     # First split by '/' once, and then split by '_' to get the parts.
     # 'Test-env/Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f' ------->  'Prepare_d09fdb26-0e9d-11ef-944f-4bf54f5aca7f'
     # "huggingface_leaderboard/Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5" ---------> 'Evaluation_2_01-ai/Yi-34B_1eb053ac-c143-11ee-8b31-996711f273d5'

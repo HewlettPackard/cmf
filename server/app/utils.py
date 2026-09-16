@@ -3,6 +3,17 @@ from urllib.parse import urlparse
 
 
 def modify_arti_name(arti_name, type):
+    """
+    Shorten a fully-qualified artifact name/uuid into a display-friendly form.
+
+    Args:
+        arti_name (str): Raw artifact name, e.g. "artifacts/data.xml.gz:236d9502e0...".
+        type (str): Artifact type: "Dataset", "Model", "Metrics", "Dataslice", or "Step_Metrics".
+
+    Returns:
+        str: Shortened name, e.g. "data.xml.gz:236d"; falls back to arti_name on parse error
+            or for unrecognized types.
+    """
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
     try:
         name = ""
@@ -76,6 +87,15 @@ def modify_arti_name(arti_name, type):
  
 
 def extract_hostname(server_url):
+    """
+    Extract the hostname portion from a server URL or bare host string.
+
+    Args:
+        server_url (str): A URL (e.g. "http://host:8080") or bare hostname.
+
+    Returns:
+        str: The extracted hostname; the original input if parsing fails.
+    """
     try:
         parsed = urlparse(server_url)
         # If netloc is empty, try parsing as just a hostname
@@ -89,6 +109,15 @@ def extract_hostname(server_url):
         return server_url
 
 def get_fqdn(name: str) -> str:
+    """
+    Resolve a hostname to its fully qualified domain name, falling back to an IP address.
+
+    Args:
+        name (str): Hostname to resolve.
+
+    Returns:
+        str: The FQDN if resolvable, otherwise the resolved IP address or the original name.
+    """
     try:
         fqdn = socket.getfqdn(name)
         if fqdn == name or "." not in fqdn:

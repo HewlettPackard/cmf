@@ -40,11 +40,23 @@ async_session = async_sessionmaker(
 )
 
 async def get_db():
+    """
+    FastAPI dependency that yields a scoped async database session.
+
+    Returns:
+        AsyncGenerator[AsyncSession, None]: Session closed automatically on request completion.
+    """
     async with async_session() as session:
         yield session
 
 
 # Initialize DB schema (if not exists)
 async def init_db():
+    """
+    Create all tables defined in dbmodels.metadata if they do not already exist.
+
+    Returns:
+        None
+    """
     async with engine.begin() as conn:
         await conn.run_sync(metadata.create_all)
