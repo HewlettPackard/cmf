@@ -1,0 +1,146 @@
+# CMF on awesome.sdsc.edu — uses existing FEDER Postgres (feder-postgres).
+# Does NOT start its own Postgres container.
+#
+#   cd /localdrive/CMF
+#   docker compose -f docker-compose.awesome.yml --env-file .env.awesome up -d --build
+#
+# UI:  http://awesome.sdsc.edu:8089
+# API: http://awesome.sdsc.edu:8089/api/docs
+
+name: cmf
+
+services:
+  tensorboard:
+    image: federcmf/tensorboard:latest
+    container_name: cmf-tensorboard
+    build:
+      context: ./
+      dockerfile: tensorboard.Dockerfile
+    volumes:
+      - ${CMF_DATA_DIR:-./data}/tensorboard-logs:/logs
+    networks:
+      - cmf-network
+    restart: unless-stopped
+
+  server:
+    image: federcmf/server:adil-keycloak
+    container_name: cmf-server
+    build:
+      context: ./
+      dockerfile: ./server/Dockerfile
+    volumes:
+      - ${CMF_DATA_DIR:-./data}:/cmf-server/data
+      - ${CMF_DATA_DIR:-./data}/env:/cmf-server/data/env
+      - ${CMF_DATA_DIR:-./data}/static:/cmf-server/data/static
+      - ${CMF_DATA_DIR:-./data}/labels:/cmf-server/data/labels
+      - ${CMF_DATA_DIR:-./data}/tensorboard-logs:/cmf-server/data/tensorboard-logs
+    environment:
+      # Same Postgres instance as FEDER (feder-postgres), separate DB cmf_mlmd
+      POSTGRES_HOST: ${POSTGRES_HOST:-feder-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-adil}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-adil-dde-dev}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      POSTGRES_DB: ${POSTGRES_DB:-cmf_mlmd}
+      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL:-http://awesome.sdsc.edu:8089}
+      KEYCLOAK_AUTH_MODE: ${KEYCLOAK_AUTH_MODE:-required}
+      KEYCLOAK_ISSUER: ${KEYCLOAK_ISSUER:-https://auth.adil.sdsc.edu:9001/realms/federdatalake}
+      KEYCLOAK_JWKS_URL: ${KEYCLOAK_JWKS_URL:-https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/certs}
+      KEYCLOAK_TOKEN_URL: ${KEYCLOAK_TOKEN_URL:-https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/token}
+      KEYCLOAK_INTROSPECT_URL: ${KEYCLOAK_INTROSPECT_URL:-https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/token/introspect}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-d3dsearch}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-}
+      KEYCLOAK_SSL_VERIFY: ${KEYCLOAK_SSL_VERIFY:-false}
+      KEYCLOAK_REQUIRE_CLIENT: ${KEYCLOAK_REQUIRE_CLIENT:-false}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+    networks:
+      cmf-network:
+        aliases:
+          - server
+      feder-net:
+        aliases:
+          - cmf-server
+    restart: unless-stopped
+
+  ui:
+    image: federcmf/ui:adil-keycloak
+    container_name: cmf-ui
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    environment:
+      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL:-http://awesome.sdsc.edu:8089}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-d3dsearch}
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider -Y off http://127.0.0.1:3000 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      cmf-network:
+        aliases:
+          - ui
+    restart: unless-stopped
+
+  mcp:
+    image: federcmf/mcp:latest
+    container_name: cmf-mcp-server
+    build:
+      context: ./
+      dockerfile: ./mcp/Dockerfile
+    environment:
+      CMF_BASE_URL: ${CMF_BASE_URL:-http://server:8080}
+      MCP_HOST: 0.0.0.0
+      MCP_PORT: 8000
+      MCP_TRANSPORT_SECURITY: ${MCP_TRANSPORT_SECURITY:-disabled}
+    ports:
+      - "${MCP_EXTERNAL_PORT:-8382}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    depends_on:
+      server:
+        condition: service_healthy
+    networks:
+      cmf-network:
+        aliases:
+          - mcp
+    restart: unless-stopped
+
+  nginx:
+    image: federcmf/cmf-nginx:latest
+    container_name: cmf-nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "${NGINX_HTTP_PORT:-8089}:80"
+      - "${NGINX_HTTPS_PORT:-8443}:443"
+    networks:
+      - cmf-network
+    depends_on:
+      ui:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  cmf-network:
+    driver: bridge
+  feder-net:
+    external: true
+    name: feder-prototype_default
