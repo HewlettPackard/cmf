@@ -17,9 +17,12 @@
 
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { getUsername, isAuthenticated, logout } from "../../auth";
 
 function DashboardHeader() {
   const [toggleMenu, setToggleMenu] = useState(false);
+  const signedIn = isAuthenticated();
+  const username = getUsername();
 
   const navLinks = [
     { to: "/artifacts", label: "Artifacts" },
@@ -62,7 +65,7 @@ function DashboardHeader() {
                 </NavLink>
               ))}
               <a
-                href="https://hewlettpackard.github.io/cmf/api/public/cmf/"
+                href={`${(window.RUNTIME_CONFIG?.REACT_APP_CMF_API_URL || "").replace(/\/$/, "")}/api/docs`}
                 target="_blank"
                 rel="noreferrer"
                 className="text-xl text-gray-700 hover:text-teal-600 font-semibold font-sans transition-colors whitespace-nowrap"
@@ -71,10 +74,24 @@ function DashboardHeader() {
               </a>
             </div>
           </div>
-          {/* Right: Hamburger for mobile */}
-          <div className="flex justify-end items-center col-span-1 lg:hidden">
+          {/* Right: user / logout (desktop) + hamburger (mobile) */}
+          <div className="flex justify-end items-center col-span-1 gap-3 pr-2">
+            {signedIn ? (
+              <div className="hidden lg:flex items-center gap-3">
+                <span className="text-sm text-gray-600 truncate max-w-[10rem]" title={username}>
+                  {username}
+                </span>
+                <button
+                  type="button"
+                  onClick={logout}
+                  className="text-sm font-semibold text-teal-700 hover:text-teal-900 border border-teal-600 rounded-md px-3 py-1"
+                >
+                  Log out
+                </button>
+              </div>
+            ) : null}
             <button
-              className="inline-flex items-center justify-center p-2 rounded-md text-teal-600 hover:text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
+              className="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-teal-600 hover:text-white hover:bg-teal-600 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500"
               aria-label="Toggle navigation"
               onClick={() => setToggleMenu(!toggleMenu)}
             >
@@ -116,6 +133,18 @@ function DashboardHeader() {
           >
             API Docs
           </a>
+          {signedIn ? (
+            <button
+              type="button"
+              className="block w-full text-left px-3 py-2 rounded-md text-xl font-medium font-sans text-gray-700 hover:bg-teal-600 hover:text-white transition-colors"
+              onClick={() => {
+                setToggleMenu(false);
+                logout();
+              }}
+            >
+              Log out{username ? ` (${username})` : ""}
+            </button>
+          ) : null}
         </div>
       </div>
     </nav>

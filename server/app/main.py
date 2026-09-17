@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from server.app.schemas.responses import error_response
 from server.app.api.v1 import api_router
+from server.app.middleware.keycloak import KeycloakBearerMiddleware
 dotenv.load_dotenv()
 
 #lifespan used to prevent multiple loading and save time for visualization.
@@ -64,10 +65,70 @@ async def lifespan(app: FastAPI):
     app.state.mlmd.dict_of_art_ids.clear()
     app.state.mlmd.dict_of_exe_ids.clear()
 
-app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
+app = FastAPI(
+    title="cmf-server",
+    lifespan=lifespan,
+    root_path="/api",
+    swagger_ui_parameters={"persistAuthorization": True},
+)
 app.state.mlmd = mlmd_state
 
 app.include_router(api_router)
+
+
+def custom_openapi():
+    """Expose Keycloak Bearer JWT in Swagger Authorize dialog."""
+    if app.openapi_schema:
+        return app.openapi_schema
+    from fastapi.openapi.utils import get_openapi
+
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=getattr(app, "version", None) or "0.1.0",
+        description=(
+            "CMF REST API with optional Keycloak OIDC.\n\n"
+            "1. Call **POST /v1/auth/token** with your Keycloak username/password "
+            "(`grant_type=password`, `client_id=d3dsearch`) — no client_secret needed.\n"
+            "2. Click **Authorize**, paste the `access_token` value (Bearer is added "
+            "automatically).\n"
+            "3. Call protected `/v1/*` routes."
+        ),
+        routes=app.routes,
+    )
+    components = openapi_schema.setdefault("components", {})
+    schemes = components.setdefault("securitySchemes", {})
+    schemes["bearerAuth"] = {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": (
+            "Keycloak access token from POST /v1/auth/token "
+            "(password grant). Paste the token only — do not include the word Bearer."
+        ),
+    }
+    # Default: require bearer on all operations; clear it for public auth helpers.
+    openapi_schema["security"] = [{"bearerAuth": []}]
+    public_paths = {
+        "/v1/auth/config",
+        "/v1/auth/status",
+        "/v1/auth/token",
+        "/v1/acknowledge",
+        "/",
+    }
+    for path, methods in (openapi_schema.get("paths") or {}).items():
+        if path in public_paths or path.endswith("/auth/config") or path.endswith("/auth/status") or path.endswith("/auth/token") or path.endswith("/acknowledge"):
+            for op in methods.values():
+                if isinstance(op, dict):
+                    op["security"] = []
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
+app.openapi = custom_openapi
+
+# Keycloak bearer gate (KEYCLOAK_AUTH_MODE=off|optional|required).
+# Registered before CORS so it is the innermost middleware (runs first on request).
+app.add_middleware(KeycloakBearerMiddleware)
 
 # Add CORS middleware
 app.add_middleware(
