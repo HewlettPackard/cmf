@@ -20,7 +20,7 @@ services:
     image: cmf-postgres-upgrade:13-to-17
     container_name: postgres-upgrade
     build:
-      context: ./docker/postgres-upgrade
+      context: ./postgres-upgrade
       dockerfile: Dockerfile
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-myuser}
