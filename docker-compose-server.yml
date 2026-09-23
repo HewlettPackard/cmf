@@ -16,14 +16,14 @@
 
 services:
   postgres:
-    image: docker.io/library/postgres:13
+    image: docker.io/library/postgres:17
     container_name: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-myuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
       POSTGRES_DB: ${POSTGRES_DB:-mlmd}
     volumes:
-      - ${CMF_DATA_DIR:-./data}/postgres_data:/var/lib/postgresql/data
+      - ${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data
     #expose and ports for external access if needed
     # ports:
     #   - ${POSTGRES_PORT}:${POSTGRES_PORT}

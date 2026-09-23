@@ -170,6 +170,185 @@ docker compose -f docker-compose-server.yml stop
 
 ## Troubleshooting
 
+### One-Time PostgreSQL 13 to 17 Upgrade for Existing Users
+
+After pulling the latest CMF changes, `docker-compose-server.yml` starts PostgreSQL 17 by default and stores new data in `${CMF_DATA_DIR}/postgres17_data`. Existing users may still have old PostgreSQL 13 data in `${CMF_DATA_DIR}/postgres_data`.
+
+PostgreSQL 17 cannot directly start with a PostgreSQL 13 data directory.
+> Do not copy or mount the old PostgreSQL 13 `postgres_data` directory into a PostgreSQL 17 container.
+
+If old PostgreSQL 13 data exists, back it up with a temporary `postgres:13` container, then start the latest CMF stack so PostgreSQL 17 creates `${CMF_DATA_DIR}/postgres17_data`, and restore the backup into PostgreSQL 17. The previous version of `docker-compose-server.yml` that used PostgreSQL 13 is not required for this migration.
+
+The migration commands use the same `.env` file as `docker compose -f docker-compose-server.yml up`. The following variables are used during the migration:
+
+* `CMF_DATA_DIR`: locates the existing `postgres_data` directory and the new `postgres17_data` directory.
+* `POSTGRES_USER`: specifies the PostgreSQL user used for readiness checks, backup, and restore.
+* `POSTGRES_PASSWORD`: provides the password when starting the temporary PostgreSQL 13 container.
+* `POSTGRES_DB`: specifies the CMF database to back up and restore.
+
+If these variables are not defined in `.env`, the migration commands use the default values specified in the commands below.
+
+**Step 1: Prepare and check the PostgreSQL data directory**
+
+Run the following commands from the CMF repository directory. The first command loads and exports the values from `.env` into the shell so that the migration commands use the same configuration as Docker Compose.
+
+```bash
+set -a; [ -f .env ] && . ./.env; set +a
+
+DATA_DIR="$(realpath "${CMF_DATA_DIR:-./data}")"
+
+cat "${DATA_DIR}/postgres_data/PG_VERSION"
+```
+
+If the output is `13`, continue with the backup and restore process.
+
+If the file does not exist, or the output is not `13`, this PostgreSQL 13 migration process is not required for that data directory.
+
+**Step 2: Stop the current CMF stack**
+
+Stop any running CMF services before creating the backup:
+
+```bash
+docker compose -f docker-compose-server.yml stop
+```
+
+**Step 3: Start a temporary PostgreSQL 13 container for backup**
+
+The latest `docker-compose-server.yml` uses PostgreSQL 17, so use a temporary PostgreSQL 13 container to read the old `postgres_data` directory and create the backup:
+
+```bash
+docker run -d --name cmf-postgres13-backup \
+    -e POSTGRES_USER="${POSTGRES_USER:-myuser}" \
+    -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-mypassword}" \
+    -e POSTGRES_DB="${POSTGRES_DB:-mlmd}" \
+    -v "${DATA_DIR}/postgres_data:/var/lib/postgresql/data" \
+    docker.io/library/postgres:13
+```
+
+Wait until the temporary PostgreSQL 13 container is ready:
+
+```bash
+docker exec cmf-postgres13-backup pg_isready -U "${POSTGRES_USER:-myuser}"
+```
+
+**Step 4: Create a logical backup from PostgreSQL 13**
+
+Back up the CMF database only. Do not use `pg_dumpall` for this restore path because the latest PostgreSQL 17 container already creates `${POSTGRES_USER}` and `${POSTGRES_DB}` during startup.
+
+```bash
+docker exec cmf-postgres13-backup pg_dump -Fc -U "${POSTGRES_USER:-myuser}" -d "${POSTGRES_DB:-mlmd}" > postgres13-mlmd.dump
+```
+
+Confirm the backup file was created:
+
+```bash
+ls -lh postgres13-mlmd.dump
+
+test -s postgres13-mlmd.dump && echo "backup file created"
+```
+
+Remove the temporary PostgreSQL 13 container after the backup is complete:
+
+```bash
+docker rm -f cmf-postgres13-backup
+```
+
+Keep the old PostgreSQL 13 data directory until the PostgreSQL 17 restore has been verified:
+
+```text
+${DATA_DIR}/postgres_data
+```
+
+**Step 5: Confirm the latest compose file uses PostgreSQL 17**
+
+The PostgreSQL service in `docker-compose-server.yml` should use PostgreSQL 17 and `postgres17_data`:
+
+```yaml
+postgres:
+  image: docker.io/library/postgres:17
+  volumes:
+    - ${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data
+```
+
+**Step 6: Start PostgreSQL 17**
+
+First, check whether the PostgreSQL 17 service is already running:
+
+```bash
+docker compose -f docker-compose-server.yml ps postgres
+```
+
+If the PostgreSQL service is already running, no action is required. Continue to the verification step below.
+
+If the PostgreSQL service is not running, start **only the PostgreSQL service**:
+
+```bash
+docker compose -f docker-compose-server.yml up -d postgres
+```
+
+Verify that PostgreSQL 17 is running:
+
+```bash
+docker compose -f docker-compose-server.yml exec -T postgres postgres --version
+```
+
+The output should start with:
+
+```text
+PostgreSQL 17
+```
+
+If postgres17_data does not already exist, starting PostgreSQL 17 creates the PostgreSQL 17 data directory at:
+
+```text
+${DATA_DIR}/postgres17_data
+```
+
+**Step 7: Restore the PostgreSQL 13 backup into PostgreSQL 17**
+
+```bash
+cat postgres13-mlmd.dump | docker compose -f docker-compose-server.yml exec -T postgres \
+    pg_restore --clean --if-exists --no-owner \
+    -U "${POSTGRES_USER:-myuser}" \
+    -d "${POSTGRES_DB:-mlmd}"
+```
+
+**Step 8: Validate the restored PostgreSQL 17 database**
+
+Check the database server version:
+
+```bash
+docker compose -f docker-compose-server.yml exec -T postgres \
+    psql -U "${POSTGRES_USER:-myuser}" \
+    -d "${POSTGRES_DB:-mlmd}" \
+    -tAc "SHOW server_version;"
+```
+
+The output should start with `17`.
+
+Check the PostgreSQL data directory version:
+
+```bash
+docker compose -f docker-compose-server.yml exec -T postgres \
+    cat /var/lib/postgresql/data/PG_VERSION
+```
+
+Expected output:
+
+```text
+17
+```
+
+**Step 9: Start CMF services**
+
+```bash
+docker compose -f docker-compose-server.yml up
+```
+
+After confirming the application works with PostgreSQL 17, keep the old PostgreSQL 13 data directory for rollback until the migration is accepted.
+
+---
+
 ### Python 3.9 Installation Issues on Ubuntu
 
 If you are using Python 3.9 on Ubuntu systems, you may encounter installation or virtual environment issues.
