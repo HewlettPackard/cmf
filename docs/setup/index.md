@@ -177,15 +177,26 @@ After pulling the latest CMF changes, `docker-compose-server.yml` starts Postgre
 PostgreSQL 17 cannot directly start with a PostgreSQL 13 data directory.
 > Do not copy or mount the old PostgreSQL 13 `postgres_data` directory into a PostgreSQL 17 container.
 
-If old PostgreSQL 13 data exists, back it up with a temporary `postgres:13` container, then start the latest CMF stack so PostgreSQL 17 creates `${CMF_DATA_DIR}/postgres17_data`, and restore the backup into PostgreSQL 17. The old `docker-compose-server.yml` is not required for this migration.
+If old PostgreSQL 13 data exists, back it up with a temporary `postgres:13` container, then start the latest CMF stack so PostgreSQL 17 creates `${CMF_DATA_DIR}/postgres17_data`, and restore the backup into PostgreSQL 17. The previous version of `docker-compose-server.yml` that used PostgreSQL 13 is not required for this migration.
+
+The migration commands use the same `.env` file as `docker compose -f docker-compose-server.yml up`. The following variables are used during the migration:
+
+* `CMF_DATA_DIR`: locates the existing `postgres_data` directory and the new `postgres17_data` directory.
+* `POSTGRES_USER`: specifies the PostgreSQL user used for readiness checks, backup, and restore.
+* `POSTGRES_PASSWORD`: provides the password when starting the temporary PostgreSQL 13 container.
+* `POSTGRES_DB`: specifies the CMF database to back up and restore.
+
+If these variables are not defined in `.env`, the migration commands use the default values specified in the commands below.
 
 **Step 1: Prepare and check the PostgreSQL data directory**
 
-Run the following commands from the CMF repository directory. The first line loads values such as `CMF_DATA_DIR` from `.env`, so the backup uses the same data directory as Docker Compose.
+Run the following commands from the CMF repository directory. The first command loads and exports the values from `.env` into the shell so that the migration commands use the same configuration as Docker Compose.
 
 ```bash
 set -a; [ -f .env ] && . ./.env; set +a
+
 DATA_DIR="$(realpath "${CMF_DATA_DIR:-./data}")"
+
 cat "${DATA_DIR}/postgres_data/PG_VERSION"
 ```
 
@@ -206,8 +217,6 @@ docker compose -f docker-compose-server.yml stop
 The latest `docker-compose-server.yml` uses PostgreSQL 17, so use a temporary PostgreSQL 13 container to read the old `postgres_data` directory and create the backup:
 
 ```bash
-docker rm -f cmf-postgres13-backup 2>/dev/null || true
-
 docker run -d --name cmf-postgres13-backup \
     -e POSTGRES_USER="${POSTGRES_USER:-myuser}" \
     -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-mypassword}" \
@@ -227,14 +236,14 @@ docker exec cmf-postgres13-backup pg_isready -U "${POSTGRES_USER:-myuser}"
 Back up the CMF database only. Do not use `pg_dumpall` for this restore path because the latest PostgreSQL 17 container already creates `${POSTGRES_USER}` and `${POSTGRES_DB}` during startup.
 
 ```bash
-docker exec cmf-postgres13-backup \
-    pg_dump -Fc -U "${POSTGRES_USER:-myuser}" -d "${POSTGRES_DB:-mlmd}" > postgres13-mlmd.dump
+docker exec cmf-postgres13-backup pg_dump -Fc -U "${POSTGRES_USER:-myuser}" -d "${POSTGRES_DB:-mlmd}" > postgres13-mlmd.dump
 ```
 
 Confirm the backup file was created:
 
 ```bash
 ls -lh postgres13-mlmd.dump
+
 test -s postgres13-mlmd.dump && echo "backup file created"
 ```
 
@@ -261,13 +270,23 @@ postgres:
     - ${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data
 ```
 
-**Step 6: Start a fresh PostgreSQL 17 container**
+**Step 6: Start PostgreSQL 17**
+
+First, check whether the PostgreSQL 17 service is already running:
+
+```bash
+docker compose -f docker-compose-server.yml ps postgres
+```
+
+If the PostgreSQL service is already running, no action is required. Continue to the verification step below.
+
+If the PostgreSQL service is not running, start **only the PostgreSQL service**:
 
 ```bash
 docker compose -f docker-compose-server.yml up -d postgres
 ```
 
-Verify PostgreSQL 17 is running:
+Verify that PostgreSQL 17 is running:
 
 ```bash
 docker compose -f docker-compose-server.yml exec -T postgres postgres --version
@@ -279,7 +298,7 @@ The output should start with:
 PostgreSQL 17
 ```
 
-Starting PostgreSQL 17 creates a fresh PostgreSQL 17 data directory at:
+If postgres17_data does not already exist, starting PostgreSQL 17 creates the PostgreSQL 17 data directory at:
 
 ```text
 ${DATA_DIR}/postgres17_data
