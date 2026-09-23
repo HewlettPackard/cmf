@@ -15,26 +15,6 @@
 ###
 
 services:
-  # this service used to handle PostgreSQL upgrades from version 13 to 17
-  postgres-upgrade:
-    image: cmf-postgres-upgrade:13-to-17
-    container_name: postgres-upgrade
-    build:
-      context: ./postgres-upgrade
-      dockerfile: Dockerfile
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-myuser}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
-      POSTGRES_DB: ${POSTGRES_DB:-mlmd}
-      PG_UPGRADE_LINK: ${PG_UPGRADE_LINK:-false}
-    volumes:
-      - ${CMF_DATA_DIR:-./data}/postgres_data:/var/lib/postgresql/13/data
-      - ${CMF_DATA_DIR:-./data}/postgres_data_17:/var/lib/postgresql/17/data
-      - ${CMF_DATA_DIR:-./data}/postgres_upgrade:/upgrade
-    restart: "no"
-    networks:
-      - cmf-network
-
   postgres:
     image: docker.io/library/postgres:17
     container_name: postgres
@@ -43,15 +23,12 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mypassword}
       POSTGRES_DB: ${POSTGRES_DB:-mlmd}
     volumes:
-      - ${CMF_DATA_DIR:-./data}/postgres_data_17:/var/lib/postgresql/data
+      - ${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data
     #expose and ports for external access if needed
     # ports:
     #   - ${POSTGRES_PORT}:${POSTGRES_PORT}
     # expose:
     #   - ${POSTGRES_PORT}
-    depends_on:
-      postgres-upgrade:
-        condition: service_completed_successfully
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -p 5432 -d ${POSTGRES_DB:-mlmd} -U ${POSTGRES_USER:-myuser}"]
       interval: 10s
