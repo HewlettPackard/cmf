@@ -21,18 +21,63 @@ import TensorBoard from "./pages/tensorboard";
 import Metahub from "./pages/metahub";
 import ArtifactsPostgres from "./pages/artifacts_postgres_grid";
 import ExecutionsPostgres from "./pages/executions_postgres_grid";
+import LoginPage from "./pages/login";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
     <div className="text-center bg-white">
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route exact path="/artifacts" element={<ArtifactsPostgres />} />
-          <Route exact path="/executions" element={<ExecutionsPostgres />} />
-          <Route exact path="/display_lineage" element={<Lineage />} />
-          <Route exact path="/tensorboard" element={<TensorBoard />} />
-          <Route exact path="/metahub" element={<Metahub />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Home />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/artifacts"
+            element={
+              <ProtectedRoute>
+                <ArtifactsPostgres />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/executions"
+            element={
+              <ProtectedRoute>
+                <ExecutionsPostgres />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/display_lineage"
+            element={
+              <ProtectedRoute>
+                <Lineage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tensorboard"
+            element={
+              <ProtectedRoute>
+                <TensorBoard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/metahub"
+            element={
+              <ProtectedRoute>
+                <Metahub />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
     </div>

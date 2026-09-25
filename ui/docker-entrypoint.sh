@@ -3,7 +3,8 @@
 # Create runtime config with environment variables
 cat > /usr/share/nginx/html/runtime-config.js <<EOF
 window.RUNTIME_CONFIG = {
-  REACT_APP_CMF_API_URL: "${REACT_APP_CMF_API_URL:-http://localhost/api}"
+  REACT_APP_CMF_API_URL: "${REACT_APP_CMF_API_URL:-http://localhost/api}",
+  KEYCLOAK_CLIENT_ID: "${KEYCLOAK_CLIENT_ID:-d3dsearch}"
 };
 EOF
 

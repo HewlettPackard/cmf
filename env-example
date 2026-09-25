@@ -64,6 +64,20 @@ MCP_TRANSPORT_SECURITY=disabled
 MCP_HOST=0.0.0.0
 MCP_PORT=8382
 
+# Keycloak OIDC (ADIL federdatalake) — bearer tokens on /api/v1/*
+# =========================================================================
+# off | optional | required
+KEYCLOAK_AUTH_MODE=off
+KEYCLOAK_ISSUER=https://auth.adil.sdsc.edu:9001/realms/federdatalake
+KEYCLOAK_JWKS_URL=https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/certs
+KEYCLOAK_TOKEN_URL=https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/token
+KEYCLOAK_INTROSPECT_URL=https://auth.adil.sdsc.edu:9001/realms/federdatalake/protocol/openid-connect/token/introspect
+KEYCLOAK_CLIENT_ID=d3dsearch
+# Keep secret on the server only (password grant proxy). Never put in notebooks.
+KEYCLOAK_CLIENT_SECRET=
+KEYCLOAK_SSL_VERIFY=false
+KEYCLOAK_REQUIRE_CLIENT=false
+
 # Environment variables for Jupyter container with CMF installed (Dockerfile)
 #USER=first
 #UID=123456789
