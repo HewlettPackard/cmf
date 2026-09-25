@@ -16,11 +16,14 @@ spec:
     spec:
       containers:
       - name: tensorboard
-        image: tensorflow/tensorflow:latest
+        # Same image as docker-compose-server.yml (built from tensorboard.Dockerfile).
+        # It already starts TensorBoard with --path_prefix=/tensor_board, matching
+        # the nginx /tensor_board/ proxy route and the UI (ui/src/pages/tensorboard).
+        image: federcmf/tensorboard:latest
         imagePullPolicy: IfNotPresent
         command: ["/bin/bash", "-c"]
         args:
-          - tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensorboard
+          - tensorboard --logdir /logs --host 0.0.0.0 --path_prefix=/tensor_board --port 6006
         ports:
         - containerPort: 6006
         volumeMounts:
@@ -28,7 +31,7 @@ spec:
           mountPath: /logs
         readinessProbe:
           httpGet:
-            path: /tensorboard
+            path: /tensor_board
             port: 6006
           initialDelaySeconds: 10
           periodSeconds: 10
@@ -36,7 +39,7 @@ spec:
           failureThreshold: 5
         livenessProbe:
           httpGet:
-            path: /tensorboard
+            path: /tensor_board
             port: 6006
           initialDelaySeconds: 30
           periodSeconds: 20
