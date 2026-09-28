@@ -23,14 +23,14 @@ _CONFIG_JSON = Path(__file__).parent.parent / "config.json"
 
 
 def _server_reachable():
-    """Return True if the cmf-server API responds at /api/pipelines."""
+    """Return True if the cmf-server API responds at /api/v1/pipelines."""
     try:
         with open(str(_CONFIG_JSON), 'r') as f:
             data = json.load(f)
         url = data.get("cmf_server_url", "").rstrip("/")
         if not url:
             return False
-        response = requests.get(f"{url}/api/pipelines", timeout=5)
+        response = requests.get(f"{url}/api/v1/pipelines", timeout=5)
         return response.status_code == 200
     except Exception:
         return False

@@ -110,9 +110,9 @@ def _start(url):
 
 
 def _url_exists(url):
-    # Probe /api/pipelines (FastAPI backend) not / (nginx always returns 200 even when backend is down)
+    # Probe /api/v1/pipelines (FastAPI backend) not / (nginx always returns 200 even when backend is down)
     try:
-        response = requests.get(url.rstrip("/") + "/api/pipelines", timeout=5)
+        response = requests.get(url.rstrip("/") + "/api/v1/pipelines", timeout=5)
         return response.status_code == 200
     except requests.ConnectionError:
         return False

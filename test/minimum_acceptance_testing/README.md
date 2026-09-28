@@ -22,7 +22,8 @@ test/minimum_acceptance_testing/
 │   └── test_osdf.py              # OSDF remote backend tests
 └── server/
     ├── conftest.py               # Skips server tests if cmf-server is not reachable
-    └── test_api_endpoints.py     # cmf-server REST API validation (HTTP calls to live server)
+    ├── test_ui_api_endpoints.py  # cmf-server UI REST API validation (HTTP calls to live server)
+    └── test_cmfquery_api_endpoint.py # cmf-server CMFQuery REST API validation (HTTP calls to live server)
 ```
 
 ## Prerequisites
@@ -142,6 +143,16 @@ python -m pytest test/minimum_acceptance_testing/server/ -v
 ```
 > Server tests are automatically skipped if cmf-server is not reachable at the configured URL.
 
+### Run only UI API endpoint tests
+```bash
+python -m pytest test/minimum_acceptance_testing/server/test_ui_api_endpoints.py -v
+```
+
+### Run only CMFQuery API endpoint tests
+```bash
+python -m pytest test/minimum_acceptance_testing/server/test_cmfquery_api_endpoint.py -v
+```
+
 ### Run only client tests (all backends)
 ```bash
 python -m pytest test/minimum_acceptance_testing/client/ -v
@@ -166,15 +177,59 @@ Each backend module runs 8 tests in this fixed order:
 
 ---
 
-## Server API Tests (`server/test_api_endpoints.py`)
+## UI API Endpoint Testing (`server/test_ui_api_endpoints.py`)
 
 Tests make HTTP calls to the live running cmf-server. No direct Postgres connection is required.
+The UI endpoint tests use the versioned `/api/v1` API base.
 
 | Test | Endpoint | Notes |
 |---|---|---|
 | `test_read_root` | `GET /` | Health check — expects HTTP 200 |
-| `test_display_pipelines` | `GET /api/pipelines` | Expects a list (may be empty) |
-| `test_display_artifact_types` | `GET /api/artifact_types` | Accepts 200 or 404 (404 when no mlmd pushed yet) |
-| `test_display_executions` | `GET /api/pipeline-stages/{pipeline}` then `GET /api/executions-by-stage/{pipeline}?stage_name=...` | Iterates over all stages; skipped automatically if pipeline has no stages yet |
-| `test_display_artifacts` | `GET /api/pipeline-stages/{pipeline}` then `GET /api/artifacts-by-stage/{pipeline}?stage_name=...&artifact_type=Dataset` | Iterates over all stages; skipped automatically if pipeline has no stages yet |
+| `test_display_pipelines` | `GET /api/v1/pipelines` | Expects a list in the standard response data field (may be empty) |
+| `test_display_artifact_types` | `GET /api/v1/artifacts/types` | Accepts 200 or 404 (404 when no mlmd pushed yet) |
+| `test_display_executions` | `GET /api/v1/pipelines/{pipeline}/stages` then `POST /api/v1/pipelines/{pipeline}/stages/{stage}/executions` | Iterates over all stages; skipped automatically if pipeline has no stages yet |
+| `test_display_artifacts` | `GET /api/v1/pipelines/{pipeline}/stages` then `POST /api/v1/pipelines/{pipeline}/stages/{stage}/artifacts` | Iterates over all stages; skipped automatically if pipeline has no stages yet |
+| `test_display_artifact_types_by_stage` | `POST /api/v1/pipelines/{pipeline}/stages/{stage}/artifacts/types` | Iterates over all stages; skipped automatically if pipeline has no stages yet |
+| `test_display_pipeline_artifacts` | `GET /api/v1/pipelines/{pipeline}/artifacts` | Expects a list in the standard response data field |
+| `test_display_pipeline_executions` | `GET /api/v1/pipelines/{pipeline}/executions` | Expects a list in the standard response data field |
+| `test_display_pipeline_execution_list` | `GET /api/v1/pipelines/{pipeline}/executions/list` | Expects a list in the standard response data field |
+| `test_display_artifact_lineage` | `GET /api/v1/pipelines/{pipeline}/artifacts/lineage` | Validates artifact lineage response |
+| `test_display_artifact_execution_lineage` | `GET /api/v1/pipelines/{pipeline}/artifact-executions/lineage` | Validates artifact-execution lineage response |
+| `test_display_hierarchical_lineage` | `GET /api/v1/pipelines/{pipeline}/hierarchical-lineage` | Validates hierarchical lineage response |
+| `test_display_execution_lineage` | `GET /api/v1/pipelines/{pipeline}/executions/{execution_uuid}/lineage` | Skipped automatically if no execution UUID is found |
+| `test_display_execution_python_env` | `GET /api/v1/pipelines/{pipeline}/executions/{execution_uuid}/python-env` | Accepts 200 or 404; skipped automatically if no execution UUID is found |
+
+## CMFQuery API Endpoint Testing (`server/test_cmfquery_api_endpoint.py`)
+
+The CMFQuery endpoint tests validate the REST APIs backed by `CmfQuery`. They use live metadata when it exists and fallback values when a record is absent, so the checks still validate that each route returns the standard API response envelope.
+
+| Area | Endpoints |
+|---|---|
+| Pipelines | `GET /api/v1/pipelines/names`, `GET /api/v1/pipelines/{pipeline}/id`, `GET /api/v1/pipelines/{pipeline}/json`, `GET /api/v1/pipelines/sync/{last_sync_time}/json` |
+| Artifacts | `GET /api/v1/artifacts`, `GET /api/v1/artifacts/{pipeline}`, `POST /api/v1/artifacts/batch-get`, `GET /api/v1/artifacts/name/{artifact}/dataframe`, `GET /api/v1/artifacts/name/{artifact}` |
+| Artifact lineage | `GET /api/v1/artifacts/name/{artifact}/children`, `GET /api/v1/artifacts/name/{artifact}/descendants`, `GET /api/v1/artifacts/name/{artifact}/parents`, `GET /api/v1/artifacts/name/{artifact}/ancestors`, `GET /api/v1/artifacts/id/{artifact_id}/parents` |
+| Artifact executions and metrics | `GET /api/v1/artifacts/name/{artifact}/executions`, `GET /api/v1/artifacts/id/{artifact_id}/executions`, `GET /api/v1/artifacts/name/{artifact}/parent-executions`, `GET /api/v1/artifacts/name/{artifact}/producer-execution`, `GET /api/v1/artifacts/metrics/{metrics}` |
+| Executions | `GET /api/v1/executions/stages/name/{stage}/list`, `GET /api/v1/executions/stages/name/{stage}`, `GET /api/v1/executions/pipeline/{pipeline}`, `GET /api/v1/executions/stages/id/{stage_id}`, `GET /api/v1/executions/id/{execution_id}/artifacts` |
+| Execution batches | `POST /api/v1/executions/batch-get`, `POST /api/v1/executions/batch-summary`, `POST /api/v1/executions/artifacts/batch-get`, `POST /api/v1/executions/parents/batch-get`, `POST /api/v1/executions/ancestors/batch-get`, `GET /api/v1/executions/id/{execution_id}/parents/ids` |
+
+## Command Line
+
+Run these commands from the repository root:
+
+```bash
+# All MAT tests
+python -m pytest test/minimum_acceptance_testing/ -v
+
+# All server API endpoint tests
+python -m pytest test/minimum_acceptance_testing/server/ -v
+
+# UI REST API endpoint tests only
+python -m pytest test/minimum_acceptance_testing/server/test_ui_api_endpoints.py -v
+
+# CMFQuery REST API endpoint tests only
+python -m pytest test/minimum_acceptance_testing/server/test_cmfquery_api_endpoint.py -v
+
+# Client/backend MAT tests only
+python -m pytest test/minimum_acceptance_testing/client/ -v
+```
 
