@@ -270,17 +270,17 @@ postgres:
     - ${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data
 ```
 
-**Step 6: Start PostgreSQL 17**
+**Step 6: Verify or start PostgreSQL 17**
 
-First, check whether the PostgreSQL 17 service is already running:
+First, verify whether the PostgreSQL 17 service is already running:
 
 ```bash
 docker compose -f docker-compose-server.yml ps postgres
 ```
 
-If the PostgreSQL service is already running, no action is required. Continue to the verification step below.
+If the `postgres` service is listed as running or healthy, no start command is required. Continue to the version verification step below.
 
-If the PostgreSQL service is not running, start **only the PostgreSQL service**:
+If the `postgres` service is not running, start only the PostgreSQL service with Docker Compose:
 
 ```bash
 docker compose -f docker-compose-server.yml up -d postgres
