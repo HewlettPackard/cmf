@@ -14,19 +14,18 @@
  * limitations under the License.
  ***/
 
+// The CommonLineageComponent is a common component used to display artifact lineage, execution lineage, and artifact execution lineage.
+
 import React, { useEffect, useState } from "react";
 import FastAPIClient from "../../client";
 import config from "../../config";
 import DashboardHeader from "../../components/DashboardHeader";
 import Footer from "../../components/Footer";
 import Sidebar from "../../components/Sidebar";
-import LineageArtifacts from "../../components/LineageArtifacts";
-import TangledTree from "../../components/TangledTree";
-import ExecutionDropdown from "../../components/ExecutionDropdown";
-import ExecutionTree from "../../components/ExecutionTree";
 import ExecutionTangledDropdown from "../../components/ExecutionTangledDropdown";
-import ArtifactExecutionTangledTree from "../../components/ArtifactExecutionTangledTree";
 import Loader from "../../components/Loader";
+import CommonLineageComponent from "../../components/LineageComponent/CommonLineageComponent";
+import HierarchicalLineageFlow from "../../components/LineageComponent/HierarchicalLineageFlow";
 
 const client = new FastAPIClient(config);
 
@@ -37,59 +36,58 @@ const Lineage = () => {
     "Artifact_Tree",
     "Execution_Tree",
     "Artifact_Execution_Tree",
+    "Hierarchical_Lineage"
   ];
   const [selectedLineageType, setSelectedLineageType] = useState("Artifact_Tree");
   const [selectedExecutionType, setSelectedExecutionType] = useState(null);
-  const [lineageData, setLineageData] = useState(null);
   const [executionData, setExecutionData] = useState(null);
   const [lineageArtifactsKey, setLineageArtifactsKey] = useState(0);
   const [execDropdownData, setExecDropdownData] = useState([]);
   const [artitreeData, setArtiTreeData] = useState(null);
   const [artiexetreeData, setArtiExeTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [hierarchicalData, setHierarchicalData] = useState(null);
 
   // fetching list of pipelines
   useEffect(() => {
     fetchPipelines();
   }, []);
 
-  const fetchPipelines = () => {
+  // Fetch available pipelines and load the artifact tree for the first pipeline.
+  const fetchPipelines = async () => {
     setLoading(true);
-    client.getPipelines("").then((data) => {
+    try {
+      const data = await client.getPipelines("")
       setPipelines(data);
-      setSelectedPipeline(data[0]);
-      // when pipeline is updated we need to update the lineage selection too
-      // in my opinion this is also not needed as we have selectedLineage has
-      // default value
-      if (data[0]) {
-        setSelectedLineageType(LineageTypes[0]);
-        // call artifact lineage as it is default
-        fetchArtifactTree(data[0]);
+      if (!data || data.length === 0) {
+        setSelectedPipeline(null);
+        return;
       }
+      const pipeline = data[0];
+      setSelectedPipeline(pipeline);
+      setSelectedLineageType("Artifact_Tree");
+      const treeData = await client.getArtifactLineage(pipeline);
+      setArtiTreeData(treeData);
+    } catch (error) {
+      console.error("Error loading lineage:", error);
+      setArtiTreeData(null);
+    } finally {
       setLoading(false);
-    });
+    }
   };
 
   const handlePipelineClick = (pipeline) => {
-    setLineageData(null);
     setExecutionData(null);
     setArtiTreeData(null);
     setArtiExeTreeData(null);
     setSelectedPipeline(pipeline);
-    // when pipeline is updated we need to update the lineage selection too
-    // this is also not needed as selectedLineage has default value
-    // setSelectedLineageType(LineageTypes[0]);
     if (selectedPipeline) {
-      if (selectedLineageType === "Artifacts") {
-        //call artifact lineage as it is default
-        fetchArtifactLineage(pipeline);
-      } else if (
-        selectedLineageType === "Execution" ||
-        selectedLineageType === "Execution_Tree"
-      ) {
+      if (selectedLineageType === "Execution_Tree") {
         fetchExecutionTypes(pipeline, selectedLineageType);
       } else if (selectedLineageType === "Artifact_Execution_Tree") {
         fetchArtiExeTree(pipeline);
+      } else if (selectedLineageType === "Hierarchical_Lineage") {
+        fetchHierarchicalLineage(pipeline);
       } else {
         fetchArtifactTree(pipeline);
       }
@@ -97,37 +95,21 @@ const Lineage = () => {
   };
 
   const handleLineageTypeClick = (lineageType) => {
-    setLineageData(null);
     setExecutionData(null);
     setArtiTreeData(null);
     setArtiExeTreeData(null);
     setSelectedLineageType(lineageType);
     if (selectedPipeline != null) {
-      if (lineageType === "Artifacts") {
-        fetchArtifactLineage(selectedPipeline);
-      } else if (
-        lineageType === "Execution" ||
-        lineageType === "Execution_Tree"
-      ) {
+      if (lineageType === "Execution_Tree") {
         fetchExecutionTypes(selectedPipeline, lineageType);
       } else if (lineageType === "Artifact_Execution_Tree") {
         fetchArtiExeTree(selectedPipeline);
+      } else if (lineageType === "Hierarchical_Lineage") {
+        fetchHierarchicalLineage(selectedPipeline);
       } else {
         fetchArtifactTree(selectedPipeline);
       }
     }
-  };
-
-  const fetchArtifactLineage = (pipelineName) => {
-    setLoading(true);
-    client.getArtifactLineage(pipelineName).then((data) => {
-      if (data === null) {
-        setLineageData(null);
-      }
-      setLineageData(data);
-      setLoading(false);
-    });
-    setLineageArtifactsKey((prevKey) => prevKey + 1);
   };
 
   const fetchArtifactTree = (pipelineName) => {
@@ -139,6 +121,10 @@ const Lineage = () => {
       }
       setArtiTreeData(data);
       setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch artifact lineage:", err);
+      setArtiTreeData(null);
+      setLoading(false);
     });
   };
 
@@ -149,6 +135,10 @@ const Lineage = () => {
         setArtiExeTreeData(null);
       }
       setArtiExeTreeData(data);
+      setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch artifact execution lineage:", err);
+      setArtiExeTreeData(null);
       setLoading(false);
     });
   };
@@ -164,30 +154,39 @@ const Lineage = () => {
         setSelectedExecutionType(data[0]); // data[0] = "Prepare_3f45"
         // method used such that even with multiple "_" it will get right execution_name and uuid
         const uuid = extractUuid(data[0]);     // 3f45
-        if (lineageType === "Execution") {
-          fetchExecutionLineage(pipelineName, uuid);
-        } else {
-          fetchExecTree(pipelineName, uuid);
-        }
-        setLoading(false);
+        fetchExecTree(pipelineName, uuid);
       }
+    }).catch((err) => {
+      console.error("Failed to fetch execution lineage types:", err);
+      setExecDropdownData(null);
+      setSelectedExecutionType(null);
+      setExecutionData(null);
+      setLoading(false);
     });
     setLineageArtifactsKey((prevKey) => prevKey + 1);
+  };
+
+  const fetchHierarchicalLineage = (pipelineName) => {
+    setLoading(true);
+    client.getHierarchicalLineage(pipelineName).then((data) => {
+      if (data === null) {
+        setHierarchicalData(null);
+        setLoading(false);
+        return;
+      }
+      setHierarchicalData(data);
+      setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch hierarchical lineage:", err);
+      setHierarchicalData(null);
+      setLoading(false);
+    });
   };
 
   // Extract uuid from execution_type_name "Prepare_3f45" ---> "3f45"
   const extractUuid = (data) => {
     return data.split("_").pop();
   }
-
-  // used for execution drop down
-  const handleExecutionClick = (executionType) => {
-    setExecutionData(null);
-
-    setSelectedExecutionType(executionType);
-    const uuid = extractUuid(executionType);
-    fetchExecutionLineage(selectedPipeline, uuid);
-  };
 
   // used for execution drop down
   const handleTreeClick = (executionType) => {
@@ -197,22 +196,15 @@ const Lineage = () => {
     fetchExecTree(selectedPipeline, uuid);
   };
 
-  const fetchExecutionLineage = (pipelineName, uuid) => {
-    setLoading(true);
-    client.getExecutionLineage(pipelineName, uuid).then((data) => {
-      if (data === null) {
-        setExecutionData(null);
-      }
-      setExecutionData(data);
-      setLoading(false);
-    });
-  };
-
   const fetchExecTree = (pipelineName, exec_type) => {
     setLoading(true);
     // Using getExecutionLineage function to fetch execution tree data based on the selected pipeline and execution type.
     client.getExecutionLineage(pipelineName, exec_type).then((data) => {
       setExecutionData(data);
+      setLoading(false);
+    }).catch((err) => {
+      console.error("Failed to fetch execution lineage:", err);
+      setExecutionData(null);
       setLoading(false);
     });
   };
@@ -245,40 +237,6 @@ const Lineage = () => {
             )}
             {!loading &&
               selectedPipeline !== null &&
-              selectedLineageType === "Artifacts" &&
-              lineageData !== null && (
-                <LineageArtifacts
-                  key={lineageArtifactsKey}
-                  data={lineageData}
-                />
-              )}
-            {!loading &&
-              selectedPipeline !== null &&
-              selectedLineageType === "Execution" &&
-              execDropdownData !== null &&
-              executionData !== null && (
-                <div>
-                  <ExecutionDropdown
-                    data={execDropdownData}
-                    exec_type={selectedExecutionType}
-                    handleExecutionClick={handleExecutionClick}
-                  />
-                </div>
-              )}
-            {!loading &&
-              selectedPipeline !== null &&
-              selectedLineageType === "Execution" &&
-              execDropdownData !== null &&
-              executionData !== null && (
-                <div>
-                  <LineageArtifacts
-                    key={lineageArtifactsKey}
-                    data={executionData}
-                  />
-                </div>
-              )}
-            {!loading &&
-              selectedPipeline !== null &&
               selectedLineageType === "Execution_Tree" &&
               execDropdownData !== null && (
                 <div>
@@ -293,39 +251,49 @@ const Lineage = () => {
               selectedPipeline !== null &&
               selectedLineageType === "Execution_Tree" &&
               execDropdownData !== null &&
-              executionData !== null && (
-                <div style={{ justifyContent: "center", alignItems: "center" }}>
-                  <ExecutionTree
-                    key={lineageArtifactsKey}
-                    data={executionData}
-                  />
+              executionData !== null && ( 
+              <div>
+              {/* Renders the common lineage component for execution lineage data */}
+              <CommonLineageComponent
+                lineageType={selectedLineageType} 
+                key={lineageArtifactsKey} 
+                data={executionData}/>
                 </div>
               )}
             {!loading &&
               selectedPipeline !== null &&
               selectedLineageType === "Artifact_Tree" &&
               artitreeData !== null && (
-                <div
-                  style={{
-                    justifyContent: "center",
-                    alignItems: "center",
-                    padding: "20px",
-                  }}
-                >
-                  <TangledTree key={lineageArtifactsKey} data={artitreeData} />
-                </div>
-              )}
+              <div>
+              {/* Renders the common lineage component for artifact lineage data */}
+              <CommonLineageComponent 
+                lineageType={selectedLineageType} 
+                key={lineageArtifactsKey} 
+                data={artitreeData}/>
+              </div>)
+              }
             {!loading &&
               selectedPipeline !== null &&
               selectedLineageType === "Artifact_Execution_Tree" &&
               artiexetreeData !== null && (
-                <div style={{ justifyContent: "center", alignItems: "center" }}>
-                  <ArtifactExecutionTangledTree
-                    key={lineageArtifactsKey}
-                    data={artiexetreeData}
-                  />
-                </div>
-              )}
+                <div>
+              {/* Renders the common lineage component for artifact execution lineage data */}
+              <CommonLineageComponent 
+                lineageType={selectedLineageType} 
+                key={lineageArtifactsKey} 
+                data={artiexetreeData}/>
+              </div>)
+              }
+              {/* Renders the hierarchical lineage component for artifact lineage data */}
+              {!loading && 
+                selectedPipeline !== null &&
+                selectedLineageType === "Hierarchical_Lineage" &&
+                hierarchicalData && 
+                (
+                <HierarchicalLineageFlow
+                  key={lineageArtifactsKey} 
+                  data={hierarchicalData} />)
+              }
           </div>
         </div>
         <Footer />
