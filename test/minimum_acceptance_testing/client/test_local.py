@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2026) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import shutil
 from pathlib import Path
 from cmflib import cmf
 from cmflib.dvc_wrapper import check_git_remote, git_add_remote
-from _helpers import assert_cmf_init_success, assert_cmf_success, fail_cmf_init, require_cmf_init_success
+from helpers import assert_cmf_init_success, assert_cmf_success, fail_cmf_init, require_cmf_init_success
 
 _CONFIG_JSON = Path(__file__).parent.parent / "config.json"
 BACKEND = "local"

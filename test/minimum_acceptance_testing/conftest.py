@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2026) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import pytest
 import requests
 
 MAT_DIR     = Path(__file__).parent   # .../test/minimum_acceptance_testing/
-TEST_DIR    = MAT_DIR.parent          # .../test/
 CONFIG_JSON = MAT_DIR / "config.json" # runtime config: cmf_server_url, local_path, …
 CMF_DIR               = MAT_DIR.parent.parent
 EXAMPLE_SRC           = CMF_DIR / "examples" / "example-get-started"

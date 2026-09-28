@@ -1,5 +1,5 @@
 ###
-# Copyright (2023) Hewlett Packard Enterprise Development LP
+# Copyright (2026) Hewlett Packard Enterprise Development LP
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # You may not use this file except in compliance with the License.
@@ -118,6 +118,7 @@ def assert_cmfquery_response(response, expected_data_type=None, expected_data_ke
 
 
 def _cmf_failure_message(result):
+    # Check if the result indicates a CMF failure based on known prefixes or substrings.
     if result is None:
         return "returned None"
     result_str = str(result)

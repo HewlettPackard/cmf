@@ -12,7 +12,7 @@ All tests are discovered and run automatically by pytest from a single command.
 test/minimum_acceptance_testing/
 ├── conftest.py                   # Shared fixtures for client workspace, cmf-server lifecycle, and server reachability
 ├── config.json                   # All runtime credentials and URLs for every backend
-├── _helpers.py                   # assert_cmf_success() — detects CMF failure return strings
+├── helpers.py                   # assert_cmf_success() — detects CMF failure return strings
 ├── client/
 │   ├── test_local.py             # Local storage backend tests
 │   ├── test_minios3.py           # MinioS3 backend tests
@@ -54,6 +54,8 @@ docker start <your-minio-container>
 # or
 docker compose up -d minio
 ```
+For setup details, refer to the [MinIO S3 artifact repository guide](../../docs/cmf_client/minio-server.md#steps-to-set-up-a-minio-server).
+
 Verify it is running:
 ```bash
 curl -s http://<minio-host>:9000 | head -1
@@ -103,9 +105,9 @@ Edit `test/minimum_acceptance_testing/config.json` with your environment values:
 | SSH remote | `cmf_server_url`, `ssh_path`, `ssh_user`, `ssh_password` (optional: `ssh_port`, defaults to `22`) |
 | OSDF | `cmf_server_url`, `osdf_path`, `osdf_cache`, `osdf_access_token` |
 
-> If any required field is empty, `test_cmf_init_<backend>` will immediately FAIL with:
-> `config.json: '<key>' is not set. Required for <backend> backend.`
-> All downstream tests in that module will then fail with `'cmf' is not configured.`
+> Note: Set `local_path` to an absolute writable path, for example `/tmp/cmf-mat-local-storage/cmf-data`. 
+
+If any required field is empty, `test_cmf_init_<backend>` will immediately FAIL with: `config.json: '<key>' is not set. Required for <backend> backend.` All downstream tests in that module will then fail with `'cmf' is not configured.`
 
 ---
 
@@ -201,33 +203,36 @@ The UI endpoint tests use the versioned `/api/v1` API base.
 
 The CMFQuery endpoint tests validate the REST APIs backed by `CmfQuery`. They use live metadata when it exists and fallback values when a record is absent, so the checks still validate that each route returns the standard API response envelope.
 
-| Area | Endpoints |
-|---|---|
-| Pipelines | `GET /api/v1/pipelines/names`, `GET /api/v1/pipelines/{pipeline}/id`, `GET /api/v1/pipelines/{pipeline}/json`, `GET /api/v1/pipelines/sync/{last_sync_time}/json` |
-| Artifacts | `GET /api/v1/artifacts`, `GET /api/v1/artifacts/{pipeline}`, `POST /api/v1/artifacts/batch-get`, `GET /api/v1/artifacts/name/{artifact}/dataframe`, `GET /api/v1/artifacts/name/{artifact}` |
-| Artifact lineage | `GET /api/v1/artifacts/name/{artifact}/children`, `GET /api/v1/artifacts/name/{artifact}/descendants`, `GET /api/v1/artifacts/name/{artifact}/parents`, `GET /api/v1/artifacts/name/{artifact}/ancestors`, `GET /api/v1/artifacts/id/{artifact_id}/parents` |
-| Artifact executions and metrics | `GET /api/v1/artifacts/name/{artifact}/executions`, `GET /api/v1/artifacts/id/{artifact_id}/executions`, `GET /api/v1/artifacts/name/{artifact}/parent-executions`, `GET /api/v1/artifacts/name/{artifact}/producer-execution`, `GET /api/v1/artifacts/metrics/{metrics}` |
-| Executions | `GET /api/v1/executions/stages/name/{stage}/list`, `GET /api/v1/executions/stages/name/{stage}`, `GET /api/v1/executions/pipeline/{pipeline}`, `GET /api/v1/executions/stages/id/{stage_id}`, `GET /api/v1/executions/id/{execution_id}/artifacts` |
-| Execution batches | `POST /api/v1/executions/batch-get`, `POST /api/v1/executions/batch-summary`, `POST /api/v1/executions/artifacts/batch-get`, `POST /api/v1/executions/parents/batch-get`, `POST /api/v1/executions/ancestors/batch-get`, `GET /api/v1/executions/id/{execution_id}/parents/ids` |
-
-## Command Line
-
-Run these commands from the repository root:
-
-```bash
-# All MAT tests
-python -m pytest test/minimum_acceptance_testing/ -v
-
-# All server API endpoint tests
-python -m pytest test/minimum_acceptance_testing/server/ -v
-
-# UI REST API endpoint tests only
-python -m pytest test/minimum_acceptance_testing/server/test_ui_api_endpoints.py -v
-
-# CMFQuery REST API endpoint tests only
-python -m pytest test/minimum_acceptance_testing/server/test_cmfquery_api_endpoint.py -v
-
-# Client/backend MAT tests only
-python -m pytest test/minimum_acceptance_testing/client/ -v
-```
+| Area | Method | Endpoint |
+|---|---|---|
+| Pipelines | GET | `/api/v1/pipelines/names` |
+| Pipelines | GET | `/api/v1/pipelines/{pipeline}/id` |
+| Pipelines | GET | `/api/v1/pipelines/{pipeline}/json` |
+| Pipelines | GET | `/api/v1/pipelines/sync/{last_sync_time}/json` |
+| Artifacts | GET | `/api/v1/artifacts` |
+| Artifacts | GET | `/api/v1/artifacts/{pipeline}` |
+| Artifacts | POST | `/api/v1/artifacts/batch-get` |
+| Artifacts | GET | `/api/v1/artifacts/name/{artifact}/dataframe` |
+| Artifacts | GET | `/api/v1/artifacts/name/{artifact}` |
+| Artifact lineage | GET | `/api/v1/artifacts/name/{artifact}/children` |
+| Artifact lineage | GET | `/api/v1/artifacts/name/{artifact}/descendants` |
+| Artifact lineage | GET | `/api/v1/artifacts/name/{artifact}/parents` |
+| Artifact lineage | GET | `/api/v1/artifacts/name/{artifact}/ancestors` |
+| Artifact lineage | GET | `/api/v1/artifacts/id/{artifact_id}/parents` |
+| Artifact executions and metrics | GET | `/api/v1/artifacts/name/{artifact}/executions` |
+| Artifact executions and metrics | GET | `/api/v1/artifacts/id/{artifact_id}/executions` |
+| Artifact executions and metrics | GET | `/api/v1/artifacts/name/{artifact}/parent-executions` |
+| Artifact executions and metrics | GET | `/api/v1/artifacts/name/{artifact}/producer-execution` |
+| Artifact executions and metrics | GET | `/api/v1/artifacts/metrics/{metrics}` |
+| Executions | GET | `/api/v1/executions/stages/name/{stage}/list` |
+| Executions | GET | `/api/v1/executions/stages/name/{stage}` |
+| Executions | GET | `/api/v1/executions/pipeline/{pipeline}` |
+| Executions | GET | `/api/v1/executions/stages/id/{stage_id}` |
+| Executions | GET | `/api/v1/executions/id/{execution_id}/artifacts` |
+| Execution batches | POST | `/api/v1/executions/batch-get` |
+| Execution batches | POST | `/api/v1/executions/batch-summary` |
+| Execution batches | POST | `/api/v1/executions/artifacts/batch-get` |
+| Execution batches | POST | `/api/v1/executions/parents/batch-get` |
+| Execution batches | POST | `/api/v1/executions/ancestors/batch-get` |
+| Execution batches | GET | `/api/v1/executions/id/{execution_id}/parents/ids` |
 
