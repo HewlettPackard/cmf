@@ -22,9 +22,10 @@ import shutil
 from pathlib import Path
 from cmflib import cmf
 from cmflib.dvc_wrapper import check_git_remote, git_add_remote
-from _helpers import assert_cmf_success
+from _helpers import assert_cmf_init_success, assert_cmf_success, fail_cmf_init, require_cmf_init_success
 
 _CONFIG_JSON = Path(__file__).parent.parent / "config.json"
+BACKEND = "amazonS3"
 
 pytestmark = pytest.mark.usefixtures("example_workspace")
 
@@ -38,7 +39,7 @@ def _require(data, key):
     """Fail immediately with a clear message if a required config key is missing or empty."""
     val = data.get(key, "")
     if not val:
-        pytest.fail(f"config.json: '{key}' is not set. Required for amazonS3 backend.")
+        fail_cmf_init(BACKEND, f"config.json: '{key}' is not set. Required for amazonS3 backend.")
     return val
 
 
@@ -51,7 +52,7 @@ def test_cmf_init_amazons3(cmf_server_url):
     session_token = _require(data, "aws_session_token")
     git_remote_url = "https://github.com/hpe-user/experiment-repo.git"
 
-    _ = cmf.cmf_init(
+    result = cmf.cmf_init(
         type="amazonS3",
         url=url,
         access_key_id=access_key,
@@ -60,17 +61,21 @@ def test_cmf_init_amazons3(cmf_server_url):
         git_remote_url=git_remote_url,
         cmf_server_url=cmf_server_url,
     )
+    assert_cmf_init_success(result, BACKEND, "cmf_init_amazons3")
     if not check_git_remote():
         git_add_remote(git_remote_url)
 
 
 def test_cmf_init_show():
+    require_cmf_init_success(BACKEND)
     print()
     print("-------------------------------Test Case Name: cmf init show----------------------------------")
-    _ = cmf.cmf_init_show()
+    result = cmf.cmf_init_show()
+    assert_cmf_success(result, "cmf_init_show")
 
 
 def test_script():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: Run sample test_script.sh----------------------------------")
     cur_dir = os.getcwd()
     script_name = cur_dir + '/test_script.sh'
@@ -88,24 +93,28 @@ def test_script():
 
 
 def test_metadata_push(start_server):
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf metadata push----------------------------------")
     result = cmf.metadata_push(pipeline_name="Test-env", file_name="mlmd")
     assert_cmf_success(result, "metadata_push")
 
 
 def test_metadata_pull(start_server, stop_server):
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf metadata pull----------------------------------")
     result = cmf.metadata_pull(pipeline_name="Test-env", file_name="mlmd_pull")
     assert_cmf_success(result, "metadata_pull")
 
 
 def test_artifact_push():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf artifact push----------------------------------")
     result = cmf.artifact_push(pipeline_name="Test-env")
     assert_cmf_success(result, "artifact_push")
 
 
 def test_artifact_pull():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf artifact pull----------------------------------")
     # Remove locally generated artifacts and DVC cache so the pull is forced to
     # fetch from the configured remote storage (not served from local cache).
@@ -116,6 +125,7 @@ def test_artifact_pull():
 
 
 def test_artifact_pull_single():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf artifact pull single artifact----------------------------------")
     result = cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd", artifact_name="data.xml.gz")
     assert_cmf_success(result, "artifact_pull_single")

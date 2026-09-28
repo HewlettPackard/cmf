@@ -22,9 +22,10 @@ import shutil
 from pathlib import Path
 from cmflib import cmf
 from cmflib.dvc_wrapper import check_git_remote, git_add_remote
-from _helpers import assert_cmf_success
+from _helpers import assert_cmf_init_success, assert_cmf_success, fail_cmf_init, require_cmf_init_success
 
 _CONFIG_JSON = Path(__file__).parent.parent / "config.json"
+BACKEND = "minioS3"
 
 pytestmark = pytest.mark.usefixtures("example_workspace")
 
@@ -37,7 +38,7 @@ def _get_config():
 def _require(data, key):
     val = data.get(key, "")
     if not val:
-        pytest.fail(f"config.json: '{key}' is not set. Required for minioS3 backend.")
+        fail_cmf_init(BACKEND, f"config.json: '{key}' is not set. Required for minioS3 backend.")
     return val
 
 
@@ -50,7 +51,7 @@ def test_cmf_init_minios3(cmf_server_url):
     secret_key   = _require(data, "minio_secret_key")
     git_remote_url = "https://github.com/hpe-user/experiment-repo.git"
 
-    _ = cmf.cmf_init(
+    result = cmf.cmf_init(
         type="minioS3",
         url=url,
         endpoint_url=endpoint_url,
@@ -59,17 +60,21 @@ def test_cmf_init_minios3(cmf_server_url):
         git_remote_url=git_remote_url,
         cmf_server_url=cmf_server_url,
     )
+    assert_cmf_init_success(result, BACKEND, "cmf_init_minios3")
     if not check_git_remote():
         git_add_remote(git_remote_url)
 
 
 def test_cmf_init_show():
+    require_cmf_init_success(BACKEND)
     print()
     print("-------------------------------Test Case Name: cmf init show----------------------------------")
-    _ = cmf.cmf_init_show()
+    result = cmf.cmf_init_show()
+    assert_cmf_success(result, "cmf_init_show")
 
 
 def test_script():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: Run sample test_script.sh----------------------------------")
     cur_dir = os.getcwd()
     script_name = cur_dir + "/test_script.sh"
@@ -87,24 +92,28 @@ def test_script():
 
 
 def test_metadata_push(start_server):
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf metadata push----------------------------------")
     result = cmf.metadata_push(pipeline_name="Test-env", file_name="mlmd")
     assert_cmf_success(result, "metadata_push")
 
 
 def test_metadata_pull(start_server, stop_server):
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf metadata pull----------------------------------")
     result = cmf.metadata_pull(pipeline_name="Test-env", file_name="mlmd_pull")
     assert_cmf_success(result, "metadata_pull")
 
 
 def test_artifact_push():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf artifact push----------------------------------")
     result = cmf.artifact_push(pipeline_name="Test-env")
     assert_cmf_success(result, "artifact_push")
 
 
 def test_artifact_pull():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf artifact pull----------------------------------")
     # MinioS3 pull uses the minio Python client directly (not DVC), so only the
     # DVC cache is cleared. Deleting artifacts/ would remove the download target
@@ -115,6 +124,7 @@ def test_artifact_pull():
 
 
 def test_artifact_pull_single():
+    require_cmf_init_success(BACKEND)
     print("-------------------------------Test Case Name: cmf artifact pull single artifact----------------------------------")
     result = cmf.artifact_pull(pipeline_name="Test-env", file_name="mlmd", artifact_name="data.xml.gz")
     assert_cmf_success(result, "artifact_pull_single")

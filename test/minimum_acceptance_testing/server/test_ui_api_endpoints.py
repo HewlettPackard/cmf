@@ -16,6 +16,12 @@
 
 import requests
 import pytest
+from _helpers import (
+    assert_api_response,
+    assert_success_response,
+    response_data,
+    response_summary,
+)
 
 pipeline_name = "Test-env"
 
@@ -26,27 +32,11 @@ def server_url(cmf_server_url):
     return cmf_server_url.rstrip("/") + "/api/v1"
 
 
-def _response_data(response):
-    """Return data from the standard API response envelope, or raw JSON for legacy responses."""
-    data = response.json()
-    if isinstance(data, dict) and "data" in data:
-        return data["data"]
-    return data
-
-
-def _assert_success_response(response):
-    assert response.status_code == 200
-    if response.content:
-        payload = response.json()
-        if isinstance(payload, dict) and "status" in payload:
-            assert payload["status"] == "success"
-
-
 def _first_execution_uuid(server_url: str):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/executions", timeout=5)
     if response.status_code != 200 or not response.content:
         return None
-    executions = _response_data(response)
+    executions = response_data(response)
     if not isinstance(executions, list):
         return None
     for execution in executions:
@@ -74,7 +64,7 @@ def test_display_pipelines(server_url):
     assert response.status_code == 200
     # Body may be empty when no mlmd has been pushed to the server yet
     if response.content:
-        assert isinstance(_response_data(response), list)
+        assert_success_response(response, expected_data_type=list)
 
 
 def test_display_artifact_types(server_url):
@@ -82,7 +72,7 @@ def test_display_artifact_types(server_url):
     # 404 is valid when no mlmd file has been pushed to the server yet
     assert response.status_code in (200, 404)
     if response.status_code == 200 and response.content:
-        assert isinstance(_response_data(response), list)
+        assert_success_response(response, expected_data_type=list)
 
 
 def _get_stages(server_url: str) -> list:
@@ -90,7 +80,7 @@ def _get_stages(server_url: str) -> list:
     try:
         r = requests.get(f"{server_url}/pipelines/{pipeline_name}/stages", timeout=5)
         if r.status_code == 200 and r.content:
-            data = _response_data(r)
+            data = response_data(r)
             if isinstance(data, dict):
                 return data.get("stages", [])
     except Exception:
@@ -109,11 +99,10 @@ def test_display_executions(server_url):
         )
         print(f"\n  stage={stage!r}  status={response.status_code}")
         assert response.status_code in (200, 404), (
-            f"Unexpected status {response.status_code} for stage {stage!r}"
+            f"Unexpected response for stage {stage!r}: {response_summary(response)}"
         )
         if response.status_code == 200 and response.content:
-            data = _response_data(response)
-            assert isinstance(data, dict)
+            assert_success_response(response, expected_data_type=dict)
 
 
 def test_display_artifacts(server_url):
@@ -127,11 +116,10 @@ def test_display_artifacts(server_url):
         )
         print(f"\n  stage={stage!r}  status={response.status_code}")
         assert response.status_code in (200, 404), (
-            f"Unexpected status {response.status_code} for stage {stage!r}"
+            f"Unexpected response for stage {stage!r}: {response_summary(response)}"
         )
         if response.status_code == 200 and response.content:
-            data = _response_data(response)
-            assert isinstance(data, dict)
+            assert_success_response(response, expected_data_type=dict)
 
 
 def test_display_artifact_types_by_stage(server_url):
@@ -143,42 +131,39 @@ def test_display_artifact_types_by_stage(server_url):
             f"{server_url}/pipelines/{pipeline_name}/stages/{stage}/artifacts/types"
         )
         print(f"\n  stage={stage!r}  status={response.status_code}")
-        assert response.status_code in (200, 404)
+        assert response.status_code in (200, 404), response_summary(response)
         if response.status_code == 200 and response.content:
-            assert isinstance(_response_data(response), list)
+            assert_success_response(response, expected_data_type=list)
 
 
 def test_display_pipeline_artifacts(server_url):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/artifacts")
-    _assert_success_response(response)
-    assert isinstance(_response_data(response), list)
+    assert_success_response(response, expected_data_type=list)
 
 
 def test_display_pipeline_executions(server_url):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/executions")
-    _assert_success_response(response)
-    assert isinstance(_response_data(response), list)
+    assert_success_response(response, expected_data_type=list)
 
 
 def test_display_pipeline_execution_list(server_url):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/executions/list")
-    _assert_success_response(response)
-    assert isinstance(_response_data(response), list)
+    assert_success_response(response, expected_data_type=list)
 
 
 def test_display_artifact_lineage(server_url):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/artifacts/lineage")
-    _assert_success_response(response)
+    assert_success_response(response)
 
 
 def test_display_artifact_execution_lineage(server_url):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/artifact-executions/lineage")
-    _assert_success_response(response)
+    assert_success_response(response)
 
 
 def test_display_hierarchical_lineage(server_url):
     response = requests.get(f"{server_url}/pipelines/{pipeline_name}/hierarchical-lineage")
-    _assert_success_response(response)
+    assert_success_response(response)
 
 
 def test_display_execution_lineage(server_url):
@@ -188,7 +173,7 @@ def test_display_execution_lineage(server_url):
     response = requests.get(
         f"{server_url}/pipelines/{pipeline_name}/executions/{execution_uuid}/lineage"
     )
-    _assert_success_response(response)
+    assert_success_response(response)
 
 
 def test_display_execution_python_env(server_url):
@@ -198,6 +183,8 @@ def test_display_execution_python_env(server_url):
     response = requests.get(
         f"{server_url}/pipelines/{pipeline_name}/executions/{execution_uuid}/python-env"
     )
-    assert response.status_code in (200, 404)
+    assert response.status_code in (200, 404), response_summary(response)
     if response.status_code == 200:
-        _assert_success_response(response)
+        assert_success_response(response)
+    elif response.content:
+        assert_api_response(response, expected_statuses=("error",))

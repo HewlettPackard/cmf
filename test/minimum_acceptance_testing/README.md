@@ -10,18 +10,16 @@ All tests are discovered and run automatically by pytest from a single command.
 
 ```
 test/minimum_acceptance_testing/
-├── conftest.py                   # Shared: injects cmf_server_url from config.json into every test
+├── conftest.py                   # Shared fixtures for client workspace, cmf-server lifecycle, and server reachability
 ├── config.json                   # All runtime credentials and URLs for every backend
 ├── _helpers.py                   # assert_cmf_success() — detects CMF failure return strings
 ├── client/
-│   ├── conftest.py               # Workspace setup, cmf-server auto-start/stop fixtures
 │   ├── test_local.py             # Local storage backend tests
 │   ├── test_minios3.py           # MinioS3 backend tests
 │   ├── test_amazons3.py          # Amazon S3 backend tests
 │   ├── test_sshremote.py         # SSH remote backend tests
 │   └── test_osdf.py              # OSDF remote backend tests
 └── server/
-    ├── conftest.py               # Skips server tests if cmf-server is not reachable
     ├── test_ui_api_endpoints.py  # cmf-server UI REST API validation (HTTP calls to live server)
     └── test_cmfquery_api_endpoint.py # cmf-server CMFQuery REST API validation (HTTP calls to live server)
 ```
@@ -141,7 +139,7 @@ python -m pytest test/minimum_acceptance_testing/client/test_osdf.py -v
 ```bash
 python -m pytest test/minimum_acceptance_testing/server/ -v
 ```
-> Server tests are automatically skipped if cmf-server is not reachable at the configured URL.
+> Server tests fail if cmf-server is not reachable at the configured URL.
 
 ### Run only UI API endpoint tests
 ```bash
