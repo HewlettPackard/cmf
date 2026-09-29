@@ -651,6 +651,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#one-time-postgresql-13-to-17-upgrade-for-existing-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One-Time PostgreSQL 13 to 17 Upgrade for Existing Users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#python-39-installation-issues-on-ubuntu" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1880,6 +1891,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#one-time-postgresql-13-to-17-upgrade-for-existing-users" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        One-Time PostgreSQL 13 to 17 Upgrade for Existing Users
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#python-39-installation-issues-on-ubuntu" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2064,6 +2086,112 @@ docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> 
 </blockquote>
 <hr />
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">¤</a></h2>
+<h3 id="one-time-postgresql-13-to-17-upgrade-for-existing-users">One-Time PostgreSQL 13 to 17 Upgrade for Existing Users<a class="headerlink" href="#one-time-postgresql-13-to-17-upgrade-for-existing-users" title="Permanent link">¤</a></h3>
+<p>After pulling the latest CMF changes, <code>docker-compose-server.yml</code> starts PostgreSQL 17 by default and stores new data in <code>${CMF_DATA_DIR}/postgres17_data</code>. Existing users may still have old PostgreSQL 13 data in <code>${CMF_DATA_DIR}/postgres_data</code>.</p>
+<p>PostgreSQL 17 cannot directly start with a PostgreSQL 13 data directory.</p>
+<blockquote>
+<p>Do not copy or mount the old PostgreSQL 13 <code>postgres_data</code> directory into a PostgreSQL 17 container.</p>
+</blockquote>
+<p>If old PostgreSQL 13 data exists, back it up with a temporary <code>postgres:13</code> container, then start the latest CMF stack so PostgreSQL 17 creates <code>${CMF_DATA_DIR}/postgres17_data</code>, and restore the backup into PostgreSQL 17. The previous version of <code>docker-compose-server.yml</code> that used PostgreSQL 13 is not required for this migration.</p>
+<p>The migration commands use the same <code>.env</code> file as <code>docker compose -f docker-compose-server.yml up</code>. The following variables are used during the migration:</p>
+<ul>
+<li><code>CMF_DATA_DIR</code>: locates the existing <code>postgres_data</code> directory and the new <code>postgres17_data</code> directory.</li>
+<li><code>POSTGRES_USER</code>: specifies the PostgreSQL user used for readiness checks, backup, and restore.</li>
+<li><code>POSTGRES_PASSWORD</code>: provides the password when starting the temporary PostgreSQL 13 container.</li>
+<li><code>POSTGRES_DB</code>: specifies the CMF database to back up and restore.</li>
+</ul>
+<p>If these variables are not defined in <code>.env</code>, the migration commands use the default values specified in the commands below.</p>
+<p><strong>Step 1: Prepare and check the PostgreSQL data directory</strong></p>
+<p>Run the following commands from the CMF repository directory. The first command loads and exports the values from <code>.env</code> into the shell so that the migration commands use the same configuration as Docker Compose.</p>
+<div class="highlight"><pre><span></span><code><span class="nb">set</span><span class="w"> </span>-a<span class="p">;</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-f<span class="w"> </span>.env<span class="w"> </span><span class="o">]</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>.<span class="w"> </span>./.env<span class="p">;</span><span class="w"> </span><span class="nb">set</span><span class="w"> </span>+a
+
+<span class="nv">DATA_DIR</span><span class="o">=</span><span class="s2">"</span><span class="k">$(</span>realpath<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">CMF_DATA_DIR</span><span class="k">:-</span><span class="p">./data</span><span class="si">}</span><span class="s2">"</span><span class="k">)</span><span class="s2">"</span>
+
+cat<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">DATA_DIR</span><span class="si">}</span><span class="s2">/postgres_data/PG_VERSION"</span>
+</code></pre></div>
+<p>If the output is <code>13</code>, continue with the backup and restore process.</p>
+<p>If the file does not exist, or the output is not <code>13</code>, this PostgreSQL 13 migration process is not required for that data directory.</p>
+<p><strong>Step 2: Stop the current CMF stack</strong></p>
+<p>Stop any running CMF services before creating the backup:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>stop
+</code></pre></div>
+<p><strong>Step 3: Start a temporary PostgreSQL 13 container for backup</strong></p>
+<p>The latest <code>docker-compose-server.yml</code> uses PostgreSQL 17, so use a temporary PostgreSQL 13 container to read the old <code>postgres_data</code> directory and create the backup:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>run<span class="w"> </span>-d<span class="w"> </span>--name<span class="w"> </span>cmf-postgres13-backup<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-e<span class="w"> </span><span class="nv">POSTGRES_USER</span><span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_USER</span><span class="k">:-</span><span class="nv">myuser</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-e<span class="w"> </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_PASSWORD</span><span class="k">:-</span><span class="nv">mypassword</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-e<span class="w"> </span><span class="nv">POSTGRES_DB</span><span class="o">=</span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_DB</span><span class="k">:-</span><span class="nv">mlmd</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-v<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">DATA_DIR</span><span class="si">}</span><span class="s2">/postgres_data:/var/lib/postgresql/data"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>docker.io/library/postgres:13
+</code></pre></div>
+<p>Wait until the temporary PostgreSQL 13 container is ready:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>cmf-postgres13-backup<span class="w"> </span>pg_isready<span class="w"> </span>-U<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_USER</span><span class="k">:-</span><span class="nv">myuser</span><span class="si">}</span><span class="s2">"</span>
+</code></pre></div>
+<p><strong>Step 4: Create a logical backup from PostgreSQL 13</strong></p>
+<p>Back up the CMF database only. Do not use <code>pg_dumpall</code> for this restore path because the latest PostgreSQL 17 container already creates <code>${POSTGRES_USER}</code> and <code>${POSTGRES_DB}</code> during startup.</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>cmf-postgres13-backup<span class="w"> </span>pg_dump<span class="w"> </span>-Fc<span class="w"> </span>-U<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_USER</span><span class="k">:-</span><span class="nv">myuser</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>-d<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_DB</span><span class="k">:-</span><span class="nv">mlmd</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span>&gt;<span class="w"> </span>postgres13-mlmd.dump
+</code></pre></div>
+<p>Confirm the backup file was created:</p>
+<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>-lh<span class="w"> </span>postgres13-mlmd.dump
+
+<span class="nb">test</span><span class="w"> </span>-s<span class="w"> </span>postgres13-mlmd.dump<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"backup file created"</span>
+</code></pre></div>
+<p>Remove the temporary PostgreSQL 13 container after the backup is complete:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>rm<span class="w"> </span>-f<span class="w"> </span>cmf-postgres13-backup
+</code></pre></div>
+<p>Keep the old PostgreSQL 13 data directory until the PostgreSQL 17 restore has been verified:</p>
+<div class="highlight"><pre><span></span><code>${DATA_DIR}/postgres_data
+</code></pre></div>
+<p><strong>Step 5: Confirm the latest compose file uses PostgreSQL 17</strong></p>
+<p>The PostgreSQL service in <code>docker-compose-server.yml</code> should use PostgreSQL 17 and <code>postgres17_data</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="nt">postgres</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">docker.io/library/postgres:17</span>
+<span class="w">  </span><span class="nt">volumes</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data</span>
+</code></pre></div>
+<p><strong>Step 6: Verify or start PostgreSQL 17</strong></p>
+<p>First, verify whether the PostgreSQL 17 service is already running:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>ps<span class="w"> </span>postgres
+</code></pre></div>
+<p>If the <code>postgres</code> service is listed as running or healthy, no start command is required. Continue to the version verification step below.</p>
+<p>If the <code>postgres</code> service is not running, start only the PostgreSQL service with Docker Compose:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>postgres
+</code></pre></div>
+<p>Verify that PostgreSQL 17 is running:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-T<span class="w"> </span>postgres<span class="w"> </span>postgres<span class="w"> </span>--version
+</code></pre></div>
+<p>The output should start with:</p>
+<div class="highlight"><pre><span></span><code>PostgreSQL 17
+</code></pre></div>
+<p>If postgres17_data does not already exist, starting PostgreSQL 17 creates the PostgreSQL 17 data directory at:</p>
+<div class="highlight"><pre><span></span><code>${DATA_DIR}/postgres17_data
+</code></pre></div>
+<p><strong>Step 7: Restore the PostgreSQL 13 backup into PostgreSQL 17</strong></p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>postgres13-mlmd.dump<span class="w"> </span><span class="p">|</span><span class="w"> </span>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-T<span class="w"> </span>postgres<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>pg_restore<span class="w"> </span>--clean<span class="w"> </span>--if-exists<span class="w"> </span>--no-owner<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-U<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_USER</span><span class="k">:-</span><span class="nv">myuser</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-d<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_DB</span><span class="k">:-</span><span class="nv">mlmd</span><span class="si">}</span><span class="s2">"</span>
+</code></pre></div>
+<p><strong>Step 8: Validate the restored PostgreSQL 17 database</strong></p>
+<p>Check the database server version:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-T<span class="w"> </span>postgres<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>psql<span class="w"> </span>-U<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_USER</span><span class="k">:-</span><span class="nv">myuser</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-d<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">POSTGRES_DB</span><span class="k">:-</span><span class="nv">mlmd</span><span class="si">}</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-tAc<span class="w"> </span><span class="s2">"SHOW server_version;"</span>
+</code></pre></div>
+<p>The output should start with <code>17</code>.</p>
+<p>Check the PostgreSQL data directory version:</p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-T<span class="w"> </span>postgres<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>cat<span class="w"> </span>/var/lib/postgresql/data/PG_VERSION
+</code></pre></div>
+<p>Expected output:</p>
+<div class="highlight"><pre><span></span><code>17
+</code></pre></div>
+<p><strong>Step 9: Start CMF services</strong></p>
+<div class="highlight"><pre><span></span><code>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-server.yml<span class="w"> </span>up
+</code></pre></div>
+<p>After confirming the application works with PostgreSQL 17, keep the old PostgreSQL 13 data directory for rollback until the migration is accepted.</p>
+<hr />
 <h3 id="python-39-installation-issues-on-ubuntu">Python 3.9 Installation Issues on Ubuntu<a class="headerlink" href="#python-39-installation-issues-on-ubuntu" title="Permanent link">¤</a></h3>
 <p>If you are using Python 3.9 on Ubuntu systems, you may encounter installation or virtual environment issues.</p>
 <p><strong>Issue</strong>: When creating Python 3.9 virtual environments, you may encounter:</p>
