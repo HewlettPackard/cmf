@@ -706,6 +706,48 @@ class Cmf:
         return commit_dvc_lock_file(file_path, self.execution.id)
 
 
+
+    @staticmethod
+    def _resolve_dataset_path(
+        url: str,
+        project_root: str,
+        external: bool
+    ) -> str:
+        """Validate a dataset path against the CMF project boundary.
+
+        Internal artifacts must resolve inside the project directory.
+        External artifacts must resolve outside the project directory.
+        Relative external paths are normalized to absolute paths.
+        """
+        project_root = os.path.realpath(project_root)
+        is_absolute = os.path.isabs(url)
+        # Joining an absolute URL keeps it absolute; realpath also resolves
+        # symlinks so they cannot bypass the project boundary.
+        resolved_path = os.path.realpath(os.path.join(project_root, url))
+
+        # commonpath is directory-aware, unlike a string-prefix check.
+        try:
+            is_within_project = (
+                os.path.commonpath((project_root, resolved_path)) == project_root
+            )
+        except ValueError:
+            # Different filesystem roots cannot share a common path.
+            is_within_project = False
+
+        # The flag must agree with the resolved path's project membership.
+        if is_within_project == external:
+            if external:
+                raise ValueError(
+                    "External artifact cannot be inside the project directory."
+                )
+            raise ValueError(
+                "Internal artifact cannot be outside of the project directory."
+            )
+
+        # DVC needs a stable absolute location for a relative external path.
+        return resolved_path if external and not is_absolute else url
+
+
     def log_dataset(
         self,
         url: str,
@@ -739,6 +781,13 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+        try:
+            url = self._resolve_dataset_path(url, self.cmf_init_path, external)
+        except ValueError as error:
+            logger.error("[log_dataset] Invalid artifact path: %s", error)
+            raise
+
+        # Keep the final path available for logging/tracking
         artifact_path = url
         logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
@@ -779,7 +828,7 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
-        if c_hash and c_hash.strip:
+        if c_hash and c_hash.strip():
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
         uri = c_hash
