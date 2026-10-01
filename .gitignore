@@ -90,3 +90,8 @@ venv.bak/
 
 # PyCharm, IDEA
 .idea
+
+# Agent recorder runtime artifacts
+/spool/
+/cmf-runs/
+
