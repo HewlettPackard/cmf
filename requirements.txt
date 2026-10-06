@@ -26,7 +26,7 @@ types-paramiko
 types-setuptools
 types-PyYAML
 types-protobuf
-# Unit testing and test reporting
+# Unit testing, MAT and test reporting
 pytest
 pytest-mock
 pytest-html
