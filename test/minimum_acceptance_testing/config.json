@@ -1,10 +1,6 @@
 {
     "cmf_server_url": "http://x.x.x.x:80",
     "local_path": "",
-    "minio_url": "s3://dvc-art",
-    "minio_endpoint_url": "http://x.x.x.x:9000",
-    "minio_access_key_id": "minioadmin",
-    "minio_secret_key": "minioadmin",
     "aws_url": "",
     "aws_access_key_id": "",
     "aws_secret_key": "",

@@ -3,7 +3,7 @@
 ## Description
 
 The MAT framework validates the essential functionality of CMF before a PR is merged.
-It covers all five cmf-client storage backends and cmf-server API endpoints.
+It covers cmf-client storage backends and cmf-server API endpoints.
 All tests are discovered and run automatically by pytest from a single command.
 
 ## Structure
@@ -15,7 +15,6 @@ test/minimum_acceptance_testing/
 ├── helpers.py                   # assert_cmf_success() — detects CMF failure return strings
 ├── client/
 │   ├── test_local.py             # Local storage backend tests
-│   ├── test_minios3.py           # MinioS3 backend tests
 │   ├── test_amazons3.py          # Amazon S3 backend tests
 │   ├── test_sshremote.py         # SSH remote backend tests
 │   └── test_osdf.py              # OSDF remote backend tests
@@ -46,22 +45,6 @@ cd cmf
 docker compose -f docker-compose-server.yml up -d
 ```
 
-#### MinioS3 server (required only for `test_minios3.py`)
-The MinioS3 server is **NOT started automatically** by the MAT framework. You must start it yourself before running the MinioS3 tests:
-```bash
-cd cmf
-docker start <your-minio-container>
-# or
-docker compose up -d minio
-```
-For setup details, refer to the [MinIO S3 artifact repository guide](../../docs/cmf_client/minio-server.md#steps-to-set-up-a-minio-server).
-
-Verify it is running:
-```bash
-curl -s http://<minio-host>:9000 | head -1
-```
-> If MinioS3 is not running, `test_artifact_push`, `test_artifact_pull`, and `test_artifact_pull_single` will correctly FAIL with a connection error.
-
 ---
 
 ## Configuration
@@ -73,11 +56,6 @@ Edit `test/minimum_acceptance_testing/config.json` with your environment values:
     "cmf_server_url": "http://<host>:80",
 
     "local_path": "/path/to/local-storage",
-
-    "minio_url": "s3://<bucket-name>",
-    "minio_endpoint_url": "http://<minio-host>:9000",
-    "minio_access_key_id": "<access-key>",
-    "minio_secret_key": "<secret-key>",
 
     "aws_url": "s3://<bucket-name>",
     "aws_access_key_id": "<aws-access-key-id>",
@@ -100,7 +78,6 @@ Edit `test/minimum_acceptance_testing/config.json` with your environment values:
 | Backend | Required config keys |
 |---|---|
 | Local | `cmf_server_url`, `local_path` |
-| MinioS3 | `cmf_server_url`, `minio_url`, `minio_endpoint_url`, `minio_access_key_id`, `minio_secret_key` |
 | AmazonS3 | `cmf_server_url`, `aws_url`, `aws_access_key_id`, `aws_secret_key`, `aws_session_token` |
 | SSH remote | `cmf_server_url`, `ssh_path`, `ssh_user`, `ssh_password` (optional: `ssh_port`, defaults to `22`) |
 | OSDF | `cmf_server_url`, `osdf_path`, `osdf_cache`, `osdf_access_token` |
@@ -123,9 +100,6 @@ python -m pytest test/minimum_acceptance_testing/ -v
 ```bash
 # Local storage
 python -m pytest test/minimum_acceptance_testing/client/test_local.py -v
-
-# MinioS3
-python -m pytest test/minimum_acceptance_testing/client/test_minios3.py -v
 
 # Amazon S3
 python -m pytest test/minimum_acceptance_testing/client/test_amazons3.py -v
