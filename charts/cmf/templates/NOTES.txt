@@ -1,0 +1,38 @@
+=====================================================================
+ CMF server stack {{ .Chart.Version }} has been deployed to namespace: {{ .Release.Namespace }}
+=====================================================================
+
+{{- if .Values.nginx.enabled }}
+
+UI / API / MCP entrypoint (nginx):
+{{- if eq .Values.nginx.service.type "NodePort" }}
+  kubectl -n {{ .Release.Namespace }} get svc {{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }}
+  URL: http://<node-ip>:{{ .Values.nginx.service.httpNodePort }}
+  or:  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }} 8080:80
+       then open http://localhost:8080
+{{- else }}
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ include "cmf.serviceName" (dict "ctx" . "component" "nginx") }} 8080:80
+  then open http://localhost:8080
+{{- end }}
+{{- end }}
+
+{{- if and .Values.mcp.enabled .Values.mcp.external.enabled }}
+
+MCP server (external, mirrors MCP_EXTERNAL_PORT):
+  http://<node-ip>:{{ .Values.mcp.external.nodePort }}/mcp
+  Health: http://<node-ip>:{{ .Values.mcp.external.nodePort }}/health
+{{- end }}
+
+Pod status:
+  kubectl -n {{ .Release.Namespace }} get pods
+
+Initialize the CMF client against this deployment:
+  cmf init local --path <local-storage-path> --git-remote-url <git-url> \
+      --cmf-server-url http://<node-ip>:{{ .Values.nginx.service.httpNodePort }}
+
+Uninstall:
+  helm uninstall {{ .Release.Name }} -n {{ .Release.Namespace }}
+{{- if eq .Values.storage.mode "pvc" }}
+  # Delete data as well (WARNING: removes all metadata/logs):
+  # kubectl -n {{ .Release.Namespace }} delete pvc -l app.kubernetes.io/instance={{ .Release.Name }}
+{{- end }}
