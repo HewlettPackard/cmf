@@ -420,7 +420,6 @@ class CmdArtifactPull(CmdBase):
                         else:
                             files_downloaded += dir_files_downloaded
                             files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
-
                 # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)

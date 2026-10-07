@@ -1972,17 +1972,17 @@ def cmf_init(type: str = "",
         neo4j_password: Neo4j database password. (optional)
         neo4j_uri: Neo4j database URI. (optional)
 
-
+    
     Returns:
         Output based on the initialized repository type.
     """
 
-    # Keep a friendly response for callers of the retired MinIO initializer.
-    if type == "minioS3":
-        return (
-            "MinIO S3 initialization is no longer supported. "
-            "Use amazonS3 or another supported storage backend."
-        )
+    # # Keep a friendly response for callers of the retired MinIO initializer.
+    # if type == "minioS3":
+    #     return (
+    #         "MinIO S3 initialization is no longer supported. "
+    #         "Use amazonS3 or another supported storage backend."
+    #     )
 
     if type == "":
         msg = "Error: Type is not provided"
