@@ -12,7 +12,7 @@
 
 | Command | Flags | Purpose |
 |---------|-------|---------|
-| `cmf artifact push` | `-p <pipeline>` | Upload artifacts → storage backend (S3/MinIO/SSH/OSDF/local) |
+| `cmf artifact push` | `-p <pipeline>` | Upload artifacts → storage backend (Amazon S3/SSH/OSDF/local) |
 | `cmf artifact pull` | `-p <pipeline>` | Download artifacts from storage |
 | `cmf artifact list` | `-p <pipeline>` | List tracked artifacts |
 

@@ -9,7 +9,7 @@ This file shows how user can push the metadata and artifacts to the CMF-server u
 Following are the steps:
 
 1. Checking if the repositories are initialized.
-2. Initializing repositories(local,minioS3,amazonS3,sshremote) so that to push artifacts to initialized repository. 
+2. Initializing repositories (local, Amazon S3, SSH, or OSDF) so that to push artifacts to initialized repository.
 3. Running multiple stages to create metadata using CMF API's.
 4. Pushing this metadata to CMF-server.
 5. Pushing artifacts to initialized repositories.
@@ -21,7 +21,7 @@ This file shows how to pull metadata from CMF-server and download artifacts from
 Following are the steps:
 
 1. Checking if the repositories are initialized.
-2. Initializing repositories(local,minioS3,amazonS3,sshremote) so that to push artifacts to initialized repository. 
+2. Initializing repositories (local, Amazon S3, SSH, or OSDF) so that to pull artifacts from initialized repository.
 3. Pulling metadata from CMF-server to local.
 4. Pulling artifacts from initialized repositories.
 

@@ -80,7 +80,7 @@ cp -r skills/cmf skills/cmf-init skills/cmf-instrument skills/cmf-sync skills/cm
 | Skill | Invoke with | What it does |
 |-------|-------------|--------------|
 | **cmf** | `/cmf <task>` | Router — describes your task and gets routed to the right skill |
-| **cmf-init** | `/cmf-init` | Install cmflib, run `cmf init`, configure a storage backend (local, S3, MinIO, SSH, OSDF) |
+| **cmf-init** | `/cmf-init` | Install cmflib, run `cmf init`, configure a storage backend (local, Amazon S3, SSH, OSDF) |
 | **cmf-instrument** | `/cmf-instrument` | Add CMF tracking calls to existing Python ML pipeline code |
 | **cmf-sync** | `/cmf-sync` | Push/pull metadata and artifacts to/from a CMF Server |
 | **cmf-query** | `/cmf-query` | Query pipeline history and artifact lineage with `CmfQuery` |
@@ -128,7 +128,7 @@ Describe what you want to do with CMF in plain language. The skill identifies th
 Guides you through installing `cmflib` and running `cmf init` with your chosen storage backend:
 
 - **Local** — artifacts stored on the local filesystem
-- **MinIO / Amazon S3** — object storage for teams
+- **Amazon S3** — object storage for teams
 - **SSH remote** — artifacts on a remote machine
 - **OSDF** — distributed data federation across institutions (Pelican Platform)
 

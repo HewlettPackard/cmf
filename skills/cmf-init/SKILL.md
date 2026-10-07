@@ -3,8 +3,8 @@ name: cmf-init
 description: >
   Use when setting up CMF in a new or existing project. Covers creating a Python
   environment (conda, uv, or venv), installing cmflib (requires Python 3.9–3.11,
-  recommended 3.10), running `cmf init` to configure a storage backend (local, S3,
-  MinIO, SSH, or OSDF), and verifying the setup. Linux only — cmflib does not support macOS.
+  recommended 3.10), running `cmf init` to configure a storage backend (local, Amazon S3,
+  SSH, or OSDF), and verifying the setup. Linux only — cmflib does not support macOS.
 version: 1.0.0
 ---
 
@@ -55,7 +55,6 @@ python -c "from cmflib.cmf import Cmf; print('OK')"
 | Backend | Use when |
 |---------|---------|
 | `local` | Single-machine development |
-| `minios3` | Shared MinIO server (S3-compatible) |
 | `amazons3` | AWS S3 production storage |
 | `sshremote` | Artifacts on a remote machine over SSH |
 | `osdfremote` | OSDF distributed research data federation |
@@ -70,17 +69,8 @@ cmf init local \
 ```
 Optional: add `--cmf-server-url http://<server>:80` to point at a shared CMF Server.
 
-### MinIO / Amazon S3
+### Amazon S3
 ```bash
-# MinIO
-cmf init minios3 \
-  --url http://<minio-host>:9000 \
-  --endpoint-url http://<minio-host>:9000 \
-  --access-key-id <key> \
-  --secret-access-key <secret> \
-  --git-remote-url https://github.com/your-org/your-repo.git
-
-# Amazon S3
 cmf init amazons3 \
   --url s3://your-bucket/path \
   --access-key-id <key> \
@@ -123,7 +113,6 @@ The `mlmd` file is created automatically on the first pipeline run, not by `cmf 
 - **`python3.10` not found (venv)** — install via system package manager (`sudo apt install python3.10`) or use uv/conda which manage Python versions automatically
 - **Git remote error** — CMF requires a configured Git remote; run `git remote add origin <url>` first
 - **DVC errors** — CMF uses DVC internally; verify with `dvc --version`; reinstall with `pip install cmflib`
-- **MinIO connection refused** — verify the MinIO server is up and `--url` matches the server address and port
 - **OSDF token expired or invalid** — CMF validates the token on init and shows issuer, scope, and expiry; regenerate or switch to key-based auth
 - **OSDF push fails with permission error** — token may lack write scope for `--path`; contact your OSDF origin administrator
 

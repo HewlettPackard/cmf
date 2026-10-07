@@ -9,17 +9,6 @@ cmf init local \
   [--neo4j-user <user> --neo4j-password <pw> --neo4j-uri bolt://localhost:7687]
 ```
 
-## MinIO (minios3) · [Docs](https://hewlettpackard.github.io/cmf/cmf_client/minio-server/)
-```bash
-cmf init minios3 \
-  --url http://<host>:9000 \
-  --endpoint-url http://<host>:9000 \
-  --access-key-id <key> \
-  --secret-access-key <secret> \
-  --git-remote-url <url> \
-  [--cmf-server-url <url>]
-```
-
 ## Amazon S3 (amazons3)
 ```bash
 cmf init amazons3 \
@@ -202,6 +191,5 @@ Use Python 3.10 to avoid this entirely.
 ## References
 
 - [Installing cmflib](https://hewlettpackard.github.io/cmf/setup/#install-cmf-library-ie-cmflib)
-- [MinIO server setup](https://hewlettpackard.github.io/cmf/cmf_client/minio-server/)
 - [SSH remote setup](https://hewlettpackard.github.io/cmf/cmf_client/ssh-setup/)
 - [OSDF remote setup](https://hewlettpackard.github.io/cmf/cmf_client/cmf_osdf/)

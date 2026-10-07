@@ -143,7 +143,6 @@ nav:
       - Start Neo4j with Docker: cmf_client/neo4j_docker.md
       - Storage Backends:
         - Local Setup: cmf_client/local-storage-setup.md
-        - DVC MinIO Backend: cmf_client/minio-server.md
         - SSH Setup: cmf_client/ssh-setup.md
         - OSDF: cmf_client/cmf_osdf.md
     - 🤖 MCP Server:

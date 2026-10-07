@@ -16,10 +16,10 @@
 
 import argparse
 
-from cmflib.commands.init import minioS3, amazonS3, local, sshremote, osdfremote, show
+from cmflib.commands.init import amazonS3, local, sshremote, osdfremote, show
 from cmflib.cli.utils import *
 
-SUB_COMMANDS = [minioS3, amazonS3, local, sshremote, osdfremote, show]
+SUB_COMMANDS = [amazonS3, local, sshremote, osdfremote, show]
 
 # This parser adds positional arguments to the main parser
 def add_parser(subparsers, parent_parser):

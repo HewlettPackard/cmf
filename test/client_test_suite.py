@@ -49,31 +49,6 @@ if __name__ == "__main__":
             if result.returncode == 0:
                 print(f"The file '{file_path}' successfully deleted.")
 
-        # run test for minioS3
-        source_folder = '../examples/example-get-started'
-        destination_folder = os.getcwd() #assumption running inside from test folder
-
-        # Using subprocess to execute the cp command
-        subprocess.run(['cp', '-r', source_folder, destination_folder])
-
-        os.chdir("./example-get-started")
-
-        command = f"pytest -vs -q  --cmf_server_url={cmf_server_url} ../client/test_minios3.py"
-
-        result = subprocess.run(command, text=True, shell=True)
-
-        os.chdir("..")
-        # Deleting example-get-started folder
-        shutil.rmtree("./example-get-started")
-
-        file_path = "./cmf-server/data/mlmd"
-        # delete mlmd pushed on server
-        if os.path.exists(file_path):
-            command = f"sudo rm -rf {file_path}"
-            result = subprocess.run(command, text=True, shell=True)
-            if result.returncode == 0:
-                print(f"The file '{file_path}' successfully deleted.")
-
         # run tests for ssh remote
         if not ssh_path and not ssh_user and not ssh_pass:
             print("Please provide ssh_path, ssh_user and ssh_password in config.json and start test cases again.")

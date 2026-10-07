@@ -13,9 +13,10 @@ setup(
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
         packages=find_packages(),
+        # DVC's S3 extra remains necessary for the independent Amazon S3 backend.
         install_requires=["ml-metadata==1.15.0",
                           "dvc[ssh,s3]==3.51.1", "pandas", "retrying", "pyarrow", "neo4j==5.26", \
-                            "tabulate", "click", "minio", "paramiko==3.4.1", "scikit_learn", "scitokens", "cryptography", \
+                            "tabulate", "click", "paramiko==3.4.1", "scikit_learn", "scitokens", "cryptography", \
                             "ray==2.34.0","readchar", "protobuf>=4.25,<5", "boto3==1.41.0" ],  # add any additional packages that
         # needs to be installed along with your package. Eg: 'caer'
 

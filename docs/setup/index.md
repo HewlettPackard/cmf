@@ -40,7 +40,7 @@ Before installing `cmflib` and its components, ensure you have the following:
     > git config --global user.email "you@example.com"
     > ```
 
-- **Storage Backend**: local, S3, [MinIOS3](./../cmf_client/minio-server.md), [ssh storage](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
+- **Storage Backend**: local, [Amazon S3](./../cmf_client/cmf_client_commands.md#cmf-init-amazons3), [SSH](./../cmf_client/ssh-setup.md) or [OSDF](./../cmf_client/cmf_osdf.md) storage for artifacts.
 
 ### Installation Steps
 

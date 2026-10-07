@@ -4,7 +4,7 @@ Common Metadata Framework (`CMF`) has the following components:
 - **cmflib**: A Python library that captures and tracks metadata throughout your ML pipeline, including datasets, models, and metrics. It provides APIs for both logging metadata during execution and querying it later for analysis.
 - **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
-- **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
+- **Central Artifact Repositories**: Storage backends (such as AWS S3 or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
 
 This tutorial walks you through the process of setting up the `CMF Client`.
 

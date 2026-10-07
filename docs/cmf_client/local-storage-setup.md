@@ -118,5 +118,5 @@ Local storage is suitable for:
 - Scenarios where artifacts don't need to be shared across teams
 - Learning and exploring CMF features
 
-For production environments or team collaboration, consider using [MinIO S3](./minio-server.md), Amazon S3, or other remote storage options.
+For production environments or team collaboration, consider using Amazon S3 or another supported remote storage option.
 

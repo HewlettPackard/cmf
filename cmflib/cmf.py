@@ -82,7 +82,6 @@ from cmflib.cmf_commands_wrapper import (
     _artifact_push,
     _cmf_init_show,
     _init_local,
-    _init_minioS3,
     _init_amazonS3,
     _init_sshremote,
     _init_osdfremote,
@@ -1952,13 +1951,13 @@ def cmf_init(type: str = "",
         ```
     
     Args: 
-        type: Type of repository ("local", "minioS3", "amazonS3", "sshremote", "osdfremote") (required)
+        type: Type of repository ("local", "amazonS3", "sshremote", "osdfremote") (required)
         path: Path for the local/ssh repository. (required for "local" and "sshremote" types)
         git_remote_url: Git remote URL for version control. (required)
-        url: URL for MinioS3 or AmazonS3. (required)
-        endpoint_url: Endpoint URL for MinioS3. (required)
-        access_key_id: Access key ID for MinioS3 or AmazonS3. (required)
-        secret_key: Secret key for MinioS3 or AmazonS3. (required)
+        url: URL for Amazon S3. (required for "amazonS3")
+        endpoint_url: Retained for call compatibility; no supported backend uses it.
+        access_key_id: Access key ID for Amazon S3. (required for "amazonS3")
+        secret_key: Secret key for Amazon S3. (required for "amazonS3")
         session_token: Session token for AmazonS3. (required)
         user: SSH remote username. (required)
         password: SSH remote password. (required)
@@ -1973,17 +1972,24 @@ def cmf_init(type: str = "",
         neo4j_password: Neo4j database password. (optional)
         neo4j_uri: Neo4j database URI. (optional)
 
-    
+
     Returns:
         Output based on the initialized repository type.
     """
+
+    # Keep a friendly response for callers of the retired MinIO initializer.
+    if type == "minioS3":
+        return (
+            "MinIO S3 initialization is no longer supported. "
+            "Use amazonS3 or another supported storage backend."
+        )
 
     if type == "":
         msg = "Error: Type is not provided"
         logger.debug(f"[cmf_init] {msg}")
         return print(msg)
-    if type not in ["local","minioS3","amazonS3","sshremote","osdfremote"]:
-        msg = "Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","minioS3","amazonS3","sshremote","osdfremote"])
+    if type not in ["local","amazonS3","sshremote","osdfremote"]:
+        msg = "Error: Type value is undefined"+ " "+type+".Expected: "+",".join(["local","amazonS3","sshremote","osdfremote"])
         logger.debug(f"[cmf_init] {msg}")
         return print(msg)
 
@@ -2030,25 +2036,6 @@ def cmf_init(type: str = "",
             logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
         return output
          
-    # Required arguments: url, endpoint_url, access_key_id, secret_key, git_remote_url
-    # Optional arguments: cmf_server_url, neo4j_user, neo4j_password, neo4j_uri
-    elif type == "minioS3" and url != "" and endpoint_url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "":
-        """Initialize minioS3 repository"""
-        output = _init_minioS3(
-            url,
-            endpoint_url,
-            access_key_id,
-            secret_key,
-            git_remote_url,
-            cmf_server_url,
-            neo4j_user,
-            neo4j_password,
-            neo4j_uri,
-        )
-        if status_args != []:
-            logger.info("There are non-related arguments: "+",".join(status_args)+".Please remove them.")
-        return output
-
     # Required arguments: url, access_key_id, secret_key, git_remote_url, session_token
     # Optional arguments: cmf_server_url, neo4j_user, neo4j_password
     elif type == "amazonS3" and url != "" and access_key_id != "" and secret_key != "" and git_remote_url != "" and session_token != "":
@@ -2117,13 +2104,12 @@ def cmf_init(type: str = "",
 def non_related_args(type : str, args : dict):
     available_args=[i for i, j in args.items() if j != ""]
     local=["path", "git_remote_url"]
-    minioS3=["url", "endpoint_url", "access_key_id", "secret_key", "git_remote_url"]
     amazonS3=["url", "access_key_id", "secret_key", "session_token", "git_remote_url"]
     sshremote=["path", "user", "port", "password", "git_remote_url"]
     osdfremote=["osdf_path", "osdf_cache", "key_id", "key_path", "key-issuer", "git_remote_url"]
 
 
-    dict_repository_args={"local" : local, "minioS3" : minioS3, "amazonS3" : amazonS3, "sshremote" : sshremote, "osdfremote": osdfremote}
+    dict_repository_args={"local" : local, "amazonS3" : amazonS3, "sshremote" : sshremote, "osdfremote": osdfremote}
     
     for repo,arg in dict_repository_args.items():
         if repo ==type:

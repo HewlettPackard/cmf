@@ -23,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 from cmflib import cmfquery
 from cmflib.storage_backends import (
-    minio_artifacts,
     local_artifacts,
     amazonS3_artifacts,
     sshremote_artifacts,
@@ -90,29 +89,7 @@ class CmdArtifactPull(CmdBase):
 
         # name = artifacts/model/model.pkl
         name = name.split(":")[0]
-        if type == "minio":
-            token_length = len(token)
-
-            # assigned 2nd position element to bucket_name
-            bucket_name = token[2]
-
-            # The folder structure of artifact data has been updated due to a change in the DVC 3.0 version
-            # Previously, the structure was dvc-art/23/69v2uu3jeejjeiw
-            # but now it includes additional directories and has become files dvc-art/files/md5/23/69v2uu3jeejjeiw.
-            # Consequently, the previous logic takes only the last 2 elements from the list of tokens,
-            # but with the new structure, it needs to take the last 4 elements.
-
-            # get last 4 element inside token
-            token = token[(token_length-4):]
-
-            # join last 4 token using '/' delimiter
-            object_name = "/".join(token)
-            # output = files/md5/23/69v2uu3jeejjeiw
-
-            path_name = current_directory + "/" + name
-            return bucket_name, object_name, path_name
-
-        elif type == "local":
+        if type == "local":
             token_length = len(token)
             download_loc = current_directory + "/" + name
             # local artifact repo path =  local-storage/files/md5/23/69v2uu3jeejjeiw.
@@ -280,98 +257,7 @@ class CmdArtifactPull(CmdBase):
                      
         """
         dvc_config_op = output
-        if dvc_config_op["core.remote"] == "minio":
-            minio_class_obj = minio_artifacts.MinioArtifacts(dvc_config_op)
-            # Check if a specific artifact name is provided as input.
-            if self.args.artifact_name:
-                # Search for the artifact in the metadata store.
-                # If the artifact is not found, an error will be raised automatically.
-                output = self.search_artifact(name_url_dict, dvc_config_op["core.remote"])
-                # output[0] = artifact_name
-                # output[1] = url
-                # output[2] = hash
-                # Extract repository arguments specific to MinIO.
-                minio_args = self.extract_repo_args("minio", output[0], output[1], current_directory)
-
-                # Check if the object name doesn't end with `.dir` (indicating it's a file).
-                if not minio_args[1].endswith(".dir"):
-                    # Download a single file from MinIO.
-                    object_name, download_loc, download_flag = minio_class_obj.download_file(
-                        current_directory,
-                        minio_args[0], # bucket_name
-                        minio_args[1], # object_name
-                        minio_args[2], # path_name
-                    )
-                    if download_flag:
-                        # Return success if the file is downloaded successfully.
-                        return ObjectDownloadSuccess(object_name, download_loc)
-                    raise ObjectDownloadFailure(object_name)
-                else:
-                    # If object name ends with `.dir`, download multiple files from a directory 
-                    # return total_files_in_directory, files_downloaded
-                    total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
-                        current_directory,
-                        minio_args[0], # bucket_name
-                        minio_args[1], # object_name
-                        minio_args[2], # path_name
-                    )
-        
-                    if download_flag:
-                        # Return success if all files in the directory are downloaded.
-                        return BatchDownloadSuccess(dir_files_downloaded)
-                    # Calculate the number of files that failed to download.
-                    file_failed_to_download = total_files_in_directory - dir_files_downloaded
-                    raise BatchDownloadFailure(dir_files_downloaded, file_failed_to_download)
-            
-            else:
-                # Handle the case where no specific artifact name is provided.
-                files_downloaded = 0
-                files_failed_to_download = 0
-
-                # Iterate through the dictionary of artifact names and URLs.
-                for name, url in name_url_dict.items():
-                    if not isinstance(url, str):    ## Skip invalid URLs.
-                        continue
-                    minio_args = self.extract_repo_args("minio", name, url, current_directory)
-
-                    # Check if the object name doesn't end with `.dir` (indicating it's a file).
-                    if not minio_args[1].endswith(".dir"):
-                        # Download a single file from MinIO.
-                        object_name, download_loc, download_flag = minio_class_obj.download_file(
-                            current_directory,
-                            minio_args[0], # bucket_name
-                            minio_args[1], # object_name
-                            minio_args[2], # path_name
-                        )
-
-                        # print output here because we are in a loop and can't return the control
-                        if download_flag:
-                            print(f"object {object_name} downloaded at {download_loc}.")
-                            files_downloaded += 1
-                        else:
-                            print(f"object {object_name} is not downloaded.")
-                            files_failed_to_download += 1
-                    else:
-                        # If object name ends with `.dir`, download multiple files from a directory.
-                        total_files_in_directory, dir_files_downloaded, download_flag = minio_class_obj.download_directory(
-                            current_directory,
-                            minio_args[0], # bucket_name
-                            minio_args[1], # object_name
-                            minio_args[2], # path_name
-                        )
-                        # Return success if all files in the directory are downloaded.
-                        if download_flag:
-                            files_downloaded += dir_files_downloaded
-                        else:
-                            files_downloaded += dir_files_downloaded
-                            files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
-                            
-                # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
-                if not files_failed_to_download:
-                    return BatchDownloadSuccess(files_downloaded)
-                raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
-
-        elif dvc_config_op["core.remote"] == "local-storage":
+        if dvc_config_op["core.remote"] == "local-storage":
             local_class_obj = local_artifacts.LocalArtifacts(dvc_config_op)
             # There are two main conditions
             # Condition 1 - user can use -a paramter for cmf artifact pull command
@@ -534,6 +420,7 @@ class CmdArtifactPull(CmdBase):
                         else:
                             files_downloaded += dir_files_downloaded
                             files_failed_to_download += (total_files_in_directory - dir_files_downloaded)
+
                 # we are assuming, if files_failed_to_download > 0, it means our download of artifacts is not success
                 if not files_failed_to_download:
                     return BatchDownloadSuccess(files_downloaded)

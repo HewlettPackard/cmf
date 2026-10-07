@@ -21,7 +21,7 @@ Common Metadata Framework (`CMF`) has the following components:
 
 - **CMF Client**: A command-line tool that synchronizes metadata with the `CMF Server`, manages artifact transfers to and from storage repositories, and integrates with Git for version control.
 - **CMF Server with GUI**: A centralized server that aggregates metadata from multiple clients and provides a web-based graphical interface for visualizing pipeline executions, artifacts, and lineage relationships, enabling teams to collaborate effectively.
-- **Central Artifact Repositories**: Storage backends (such as AWS S3, MinIO, or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
+- **Central Artifact Repositories**: Storage backends (such as AWS S3 or SSH-based storage) that host your datasets, models, and other pipeline artifacts.
 
 ### User Interaction Flow
 
@@ -58,7 +58,7 @@ flowchart TB
         direction LR
         SERVER[CMF Server]
         DB[(Metadata Store)]
-        STORAGE[Artifact Storage<br/><i>S3/MinIO/SSH</i>]
+        STORAGE[Artifact Storage<br/><i>Amazon S3/SSH/local/OSDF</i>]
         
         SERVER <--> DB
     end
@@ -156,7 +156,7 @@ CMF enables distributed teams to work independently while maintaining consistent
 - **Local Development**: Each developer works with a local MLMD database
 - **Content Hashing**: All artifacts are identified by their content hash for universal identification
 - **Synchronization**: `cmf metadata push/pull` commands sync with central server
-- **Artifact Storage**: Support for MinIO, Amazon S3, SSH, and local storage backends
+- **Artifact Storage**: Support for Amazon S3, SSH, local, and OSDF storage backends
 
 ### Automatic Version Tracking
 

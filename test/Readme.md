@@ -99,7 +99,6 @@ We test the following repository initialization commands using the `cmf` client:
 2. `cmf init local`: Initialize a local repository.
 3. `cmf init amazon S3`: Initialize a repository on Amazon S3.
 4. `cmf init sshremote`: Initialize a repository for SSH remote access.
-5. `cmf init minioS3`: Initialize a repository on Minio S3.
 
 **b) Artifact and Metadata Commands:**
 We test various artifact and metadata commands using the `cmf` client:

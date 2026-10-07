@@ -22,7 +22,7 @@ If the user wants to add CMF to their project for the first time, or the request
 
 | Task | Sub-skill |
 |------|-----------|
-| Install CMF, configure storage backend (local, S3, MinIO, SSH, OSDF), run `cmf init` | [cmf-init](../cmf-init/SKILL.md) |
+| Install CMF, configure storage backend (local, Amazon S3, SSH, OSDF), run `cmf init` | [cmf-init](../cmf-init/SKILL.md) |
 | Add `Cmf()` calls to existing ML pipeline code — contexts, executions, datasets, models, metrics | [cmf-instrument](../cmf-instrument/SKILL.md) |
 | Push or pull metadata and artifacts using the CMF CLI | [cmf-sync](../cmf-sync/SKILL.md) |
 | Query pipeline history, artifact lineage, and execution metadata using `CmfQuery` | [cmf-query](../cmf-query/SKILL.md) |

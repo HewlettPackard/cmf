@@ -2,7 +2,7 @@
 name: cmf-sync
 description: >
   Use when pushing or pulling CMF metadata and artifacts between a local environment and
-  a CMF Server or central artifact repository (S3, MinIO, SSH, OSDF, local). Covers
+  a CMF Server or central artifact repository (Amazon S3, SSH, OSDF, local). Covers
   `cmf metadata push/pull`, `cmf artifact push/pull`, `cmf repo push/pull`, and
   collaborative team workflows. Assumes `cmf init` has been run.
 version: 1.0.0
@@ -20,7 +20,7 @@ Help the user sync their metadata and artifacts. Detect whether they are pushing
 
 ```bash
 cmf metadata push -p my_pipeline    # upload mlmd → CMF Server
-cmf artifact push -p my_pipeline    # upload artifacts → S3/MinIO/SSH/OSDF/local
+cmf artifact push -p my_pipeline    # upload artifacts → Amazon S3/SSH/OSDF/local
 ```
 
 ## Pull workflow (get a teammate's results)

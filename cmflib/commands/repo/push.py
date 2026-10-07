@@ -20,7 +20,7 @@ import os
 import re
 
 from cmflib import cmfquery
-from cmflib.cli.utils import check_minio_server, find_root
+from cmflib.cli.utils import find_root
 from cmflib.utils.helper_functions import generate_osdf_token, branch_exists, validate_and_examine_osdf_token
 from cmflib.utils.dvc_config import DvcConfig
 from cmflib.dvc_wrapper import dvc_add_attribute
@@ -33,7 +33,6 @@ from cmflib.cmf_exception_handling import (
     MsgSuccess, 
     MsgFailure, 
     ArtifactPushSuccess, 
-    Minios3ServerInactive, 
     CmfNotConfigured, 
     FileNotFound,
     ExecutionUUIDNotFound,
@@ -84,7 +83,6 @@ class CmdRepoPush(CmdBase):
             MissingArgument: If a required argument is missing.
             DuplicateArgumentNotAllowed: If a duplicate argument is provided.
             CmfNotConfigured: If the .cmfconfig file is not configured.
-            Minios3ServerInactive: If the Minio server is inactive.
             FileNotFound: If the mlmd file does not exist.
             ExecutionUUIDNotFound: If the execution UUID is not found in the pipeline.
 
@@ -119,11 +117,6 @@ class CmdRepoPush(CmdBase):
         # in case, there is no .cmfconfig file
         if output.find("'cmf' is not configured.") != -1:
             raise CmfNotConfigured(output)
-
-        # Verifies the Minio server status if the remote is Minio.
-        out_msg = check_minio_server(dvc_config_op)
-        if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
-            raise Minios3ServerInactive()
         
         # If user has not specified the number of jobs or jobs is not a digit, set it to 4 * cpu_count()
         num_jobs = int(self.args.jobs[0]) if self.args.jobs and self.args.jobs[0].isdigit() else 4 * os.cpu_count()
