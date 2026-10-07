@@ -1977,13 +1977,6 @@ def cmf_init(type: str = "",
         Output based on the initialized repository type.
     """
 
-    # # Keep a friendly response for callers of the retired MinIO initializer.
-    # if type == "minioS3":
-    #     return (
-    #         "MinIO S3 initialization is no longer supported. "
-    #         "Use amazonS3 or another supported storage backend."
-    #     )
-
     if type == "":
         msg = "Error: Type is not provided"
         logger.debug(f"[cmf_init] {msg}")

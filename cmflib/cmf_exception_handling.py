@@ -236,15 +236,6 @@ class BatchDownloadFailure(CmfFailure):
         return f"INFO: Number of files downloaded = {self.files_downloaded }. Files failed to download = {self.Files_failed_to_download}."
 
 
-# # Retained for compatibility with callers importing the former MinIO error; CMF no longer raises it.
-# class Minios3ServerInactive(CmfFailure):
-#     def __init__(self, return_code=109):
-#         super().__init__(return_code)
-
-#     def handle(self):
-#         return f"ERROR: MinioS3 server is not running!!!"
-
-
 class CmfNotConfigured(CmfFailure):
     def __init__(self, message, return_code=110):
         self.message = message
