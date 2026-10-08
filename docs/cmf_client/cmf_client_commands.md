@@ -22,12 +22,6 @@ Usage: cmf init [-h] {local, amazonS3, sshremote, osdfremote, show}
 Usage: cmf init show
 ```
 
-### cmf init show
-
-```
-Usage: cmf init show
-```
-
 `cmf init show` displays current cmf configuration.
 
 ### cmf init local
@@ -76,7 +70,6 @@ Optional Arguments
   --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
   --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
 ```
-
 
 ### cmf init amazonS3
 
