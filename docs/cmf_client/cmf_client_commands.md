@@ -22,7 +22,61 @@ Usage: cmf init [-h] {local, amazonS3, sshremote, osdfremote, show}
 Usage: cmf init show
 ```
 
-`cmf init show` displays the current CMF configuration.
+### cmf init show
+
+```
+Usage: cmf init show
+```
+
+`cmf init show` displays current cmf configuration.
+
+### cmf init local
+
+```
+Usage: cmf init local [-h] --path [path]
+                           --git-remote-url [git_remote_url]
+                           --cmf-server-url [cmf_server_url]
+                           --neo4j-user [neo4j_user]
+                           --neo4j-password [neo4j_password]
+                           --neo4j-uri [neo4j_uri]
+```
+
+`cmf init local` initialises local directory as a cmf artifact repository. Refer [local-storage-setup.md](./local-storage-setup.md) to set up a local storage.
+
+**Basic Usage (Required Parameters Only):**
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git
+```
+
+**With Optional Parameters:**
+```bash
+cmf init local --path /path/to/local-storage \
+--git-remote-url https://github.com/user/experiment-repo.git \
+--cmf-server-url http://x.x.x.x:80 \
+--neo4j-user neo4j --neo4j-password password \
+--neo4j-uri bolt://localhost:7687
+```
+
+> **Note:** For `--path`, provide an absolute path to a directory outside of the current working directory which will serve as the artifact repository for artifacts across all CMF pipelines.
+
+Required Arguments
+
+```
+  --path [path]                         Specify local directory path.
+  --git-remote-url [git_remote_url]     Specify git repo url. eg: https://github.com/XXX/example.git
+```
+
+Optional Arguments
+
+```
+  -h, --help                          show this help message and exit
+  --cmf-server-url [cmf_server_url]   Specify CMF Server URL. (default: http://127.0.0.1:80)
+  --neo4j-user [neo4j_user]           Specify neo4j user. (default: None)
+  --neo4j-password [neo4j_password]   Specify neo4j password. (default: None)
+  --neo4j-uri [neo4j_uri]             Specify neo4j uri. Eg bolt://localhost:7687 (default: None)
+```
+
 
 ### cmf init amazonS3
 

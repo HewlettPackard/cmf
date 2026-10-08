@@ -1,14 +1,6 @@
 version: '3.8'
 
 services:
-  # Legacy sample-only MinIO service. CMF's supported client no longer initializes MinIO.
-  # The aws-cli service below depends on this endpoint only to create the sample bucket.
-  minio:
-    image: minio/minio:RELEASE.2021-02-11T08-23-43Z
-    container_name: s3
-    ports:
-      - "9000:9000"
-    command: minio server data/
 
   aws:
     image: amazon/aws-cli
