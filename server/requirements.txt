@@ -10,3 +10,4 @@ python-dotenv
 psycopg[binary]
 httpx
 jsonpath_ng
+sqlalchemy[asyncio]
