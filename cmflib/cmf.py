@@ -713,19 +713,21 @@ class Cmf:
         project_root: str,
         external: bool
     ) -> str:
-        """Validate a dataset path against the CMF project boundary.
+        """Check that the path location agrees with the artifact's external flag.
 
-        Internal artifacts must resolve inside the project directory.
-        External artifacts must resolve outside the project directory.
-        Relative external paths are normalized to absolute paths.
+        Internal paths must resolve inside ``project_root``; external paths
+        must resolve outside it. For a project at ``/repo``, for example,
+        ``data/train.csv`` is internal and ``../shared/train.csv`` is external.
+        A valid relative external path is returned as an absolute path for DVC;
+        other valid paths are returned as provided.
         """
         project_root = os.path.realpath(project_root)
         is_absolute = os.path.isabs(url)
-        # Joining an absolute URL keeps it absolute; realpath also resolves
-        # symlinks so they cannot bypass the project boundary.
+        # Resolve symlinks before checking so they cannot hide a path outside
+        # the project. Joining an absolute path leaves it absolute.
         resolved_path = os.path.realpath(os.path.join(project_root, url))
 
-        # commonpath is directory-aware, unlike a string-prefix check.
+        # Compare path components, so /repo-other is not treated as inside /repo.
         try:
             is_within_project = (
                 os.path.commonpath((project_root, resolved_path)) == project_root
@@ -734,7 +736,7 @@ class Cmf:
             # Different filesystem roots cannot share a common path.
             is_within_project = False
 
-        # The flag must agree with the resolved path's project membership.
+        # Reject mismatches, such as an internal path marked external.
         if is_within_project == external:
             if external:
                 raise ValueError(
