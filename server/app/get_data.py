@@ -24,21 +24,21 @@ async def async_api(function_to_async, query: CmfQuery, *argv):
 
 
 def get_model_data(query: CmfQuery, modelId: int):
-    '''
-      This function retrieves the necessary model data required for generating a model card.
+    """
+    Retrieve the model, execution, and artifact data required for a model card.
 
-      Arguments:
+    Args:
+        query (CmfQuery): The CmfQuery object.
         modelId (int): The ID of the model for which data is required.
 
-      Returns:
-        This function returns a tuple of DataFrames containing the following:
-
-        model_data_df (DataFrame): Metadata related to the model itself.
-        model_exe_df (DataFrame): Metadata of the executions in which the specified modelId was an input or output.
-        model_input_df (DataFrame): Metadata of input artifacts that led to the creation of the model.
-        model_output_df (DataFrame): Metadata of artifacts that used the model as an input.
-        The returned DataFrames provide comprehensive metadata for the specified model, aiding in the creation of detailed and accurate model cards.
-    '''
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+            model_data_df: Metadata for the model artifact itself.
+            model_exe_df: Metadata of executions where modelId was an input or output.
+            model_input_df: Metadata of input artifacts that led to the model's creation.
+            model_output_df: Metadata of artifacts that used the model as an input.
+            All four are empty if modelId is not found or is not a Model artifact.
+    """
     pd.set_option('display.max_columns', None)
     model_data_df = pd.DataFrame()
     model_exe_df = pd.DataFrame()
@@ -92,10 +92,17 @@ def get_model_data(query: CmfQuery, modelId: int):
 
 
 def get_all_exe_ids(query: CmfQuery, pipeline_name: t.Optional[str] = None) -> t.Dict[str, pd.DataFrame]:
-    '''
+    """
+    Build a lookup of execution ids and metadata, per pipeline.
+
+    Args:
+        query (CmfQuery): The CmfQuery object.
+        pipeline_name (Optional[str]): Pipeline to restrict to; all pipelines if None.
+
     Returns:
-    returns a dictionary which has pipeline_name as key and dataframe which includes {id,Execution_uuid,Context_Type,Context_id} as value.
-    '''
+        dict[str, pd.DataFrame]: Pipeline name -> DataFrame with columns
+            {id, Context_Type, Execution_uuid, Context_ID}; empty DataFrame if no executions.
+    """
     execution_ids = {}
     executions = pd.DataFrame()    # df is emptied to store execution ids for next pipeline.
     if pipeline_name:
@@ -120,6 +127,18 @@ def get_all_exe_ids(query: CmfQuery, pipeline_name: t.Optional[str] = None) -> t
 
 
 def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Optional[str] = None) -> t.Dict[str, t.Dict[str, pd.DataFrame]]:
+    """
+    Build a lookup of artifact ids grouped by artifact type, per pipeline.
+
+    Args:
+        query (CmfQuery): The CmfQuery object.
+        execution_ids (dict[str, pd.DataFrame]): Output of get_all_exe_ids, keyed by pipeline name.
+        pipeline_name (Optional[str]): Pipeline to restrict to; all pipelines if None.
+
+    Returns:
+        dict[str, dict[str, pd.DataFrame]]: Pipeline name -> {artifact type -> DataFrame
+            with columns {id, name}}; empty dict for pipelines with no artifacts.
+    """
     # following is a dictionary of dictionaries
 
     # First level dictionary key is pipeline_name
@@ -166,6 +185,15 @@ def get_all_artifact_ids(query: CmfQuery, execution_ids, pipeline_name: t.Option
 
 
 def get_artifact_types(query: CmfQuery) -> t.List[str]:
+    """
+    Get all artifact type names known to the MLMD store.
+
+    Args:
+        query (CmfQuery): The CmfQuery object.
+
+    Returns:
+        list[str]: Artifact type names.
+    """
     artifact_types = query.get_all_artifact_types()
     return artifact_types
 
@@ -254,7 +282,7 @@ async def server_mlmd_pull(server_url, last_sync_time):
         # Step 1: Send a request to the target server to fetch mlmd data
         async with httpx.AsyncClient(timeout=300.0) as client:
             try:
-                response = await client.post(f"{server_url}/api/mlmd_pull", json={'last_sync_time': last_sync_time})
+                response = await client.post(f"{server_url}/api/v1/mlmd/pull", json={'last_sync_time': last_sync_time})
 
                 if response.status_code != 200:
                     raise HTTPException(status_code=500, detail="Target server did not respond successfully")
@@ -274,9 +302,9 @@ async def server_mlmd_pull(server_url, last_sync_time):
                         return json_payload
 
                     list_of_files = list(environment_names)
-                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=list_of_files)
+                    python_env_zip = await client.get(f"{server_url}/api/v1/python-env/download", params=list_of_files)
                 else:
-                    python_env_zip = await client.get(f"{server_url}/api/download-python-env", params=None)
+                    python_env_zip = await client.get(f"{server_url}/api/v1/python-env/download", params=None)
 
                 if python_env_zip.status_code == 200:
                     try:
@@ -328,15 +356,23 @@ async def log_sync_attempt(
     skip_logging: bool,
 ):
     """
-    Input: status (str), message (str), db (AsyncSession), server_name (str), server_url (str), current_utc_epoch_time (int), skip_logging (bool)
-    Output: None
-    Description: Persists manual/immediate sync run records in schedule/log tables.
-    Step 1: Skip immediately when skip_logging is true to avoid duplicate scheduler logs.
-    Step 2: Resolve server row from registered servers table.
-    Step 3: Create one-time synthetic schedule entry for sync_now log grouping.
-    Step 4: Mark synthetic schedule completed and insert sync log entry.
-    Example: manual /sync call writes sync_type="sync_now" log row."""
-    
+    Persist a manual/immediate sync run as a synthetic one-time schedule + log entry.
+
+    Skips entirely when skip_logging is True, since the background scheduler
+    already writes its own schedule/log rows for scheduled runs.
+
+    Args:
+        status (str): Sync outcome, e.g. "success" or "failed".
+        message (str): Human-readable result message to store.
+        db (AsyncSession): Database session dependency.
+        server_name (str): Name of the server that was synced.
+        server_url (str): URL of the server that was synced.
+        current_utc_epoch_time (int): Current time in epoch milliseconds.
+        skip_logging (bool): If True, no log entry is written.
+
+    Returns:
+        None
+    """
     # Log the sync attempt in the database with status and message.
     # When scheduler already writes logs, skip to avoid duplicate entries.
     if skip_logging:
@@ -386,7 +422,14 @@ DAY_NAME_TO_WEEKDAY = {
 
 
 def get_timezone(timezone: str) -> ZoneInfo:
-    """Return a safe timezone object for periodic sync calculations.
+    """
+    Return a safe timezone object for periodic sync calculations.
+
+    Args:
+        timezone (str): IANA timezone name.
+
+    Returns:
+        ZoneInfo: The resolved timezone, or UTC if the name is invalid.
     """
     try:
         return ZoneInfo(timezone)
@@ -395,8 +438,18 @@ def get_timezone(timezone: str) -> ZoneInfo:
 
 
 def parse_schedule_time(value: t.Optional[str], field_name: str) -> tuple[int, int]:
-    """ Parse HH:MM time strings used by daily and weekly periodic sync rules.
-        For example, "14:30" -> (14, 30) for 2:30 PM."
+    """
+    Parse an HH:MM time string used by daily and weekly periodic sync rules.
+
+    Args:
+        value (Optional[str]): Time string, e.g. "14:30".
+        field_name (str): Name of the field being parsed, used in error messages.
+
+    Returns:
+        tuple[int, int]: (hour, minute), e.g. "14:30" -> (14, 30).
+
+    Raises:
+        ValueError: If value is not in HH:MM format.
     """
     try:
         parsed = datetime.strptime(value or "", "%H:%M")
@@ -416,10 +469,29 @@ async def compute_next_run_from_recurrence(
     weekly_time: t.Optional[str] = None,
     strict_after: bool = True,
 ) -> int:
-    """Compute the next periodic sync run time from the stored recurrence rule.
+    """
+    Compute the next periodic sync run time from the stored recurrence rule.
 
     This is used after each periodic execution so interval/daily/weekly
     schedules continue with their exact user-defined behavior.
+
+    Args:
+        current_run_utc_ms (int): Epoch ms of the run being advanced from.
+        timezone (str): IANA timezone name for interpreting daily/weekly times.
+        recurrence_mode (str): One of "interval", "daily", "weekly".
+        interval_unit (Optional[str]): "minutes" or "hours", required for interval mode.
+        interval_value (Optional[int]): Interval magnitude, required for interval mode.
+        daily_time (Optional[str]): "HH:MM" target time, required for daily mode.
+        weekly_day (Optional[str]): Weekday name, required for weekly mode.
+        weekly_time (Optional[str]): "HH:MM" target time, required for weekly mode.
+        strict_after (bool): If True, the next run must be strictly after current_run_utc_ms.
+
+    Returns:
+        int: Next run time in epoch milliseconds (UTC).
+
+    Raises:
+        ValueError: If required fields for the selected recurrence_mode are missing,
+            or recurrence_mode is unsupported.
 
     Example:
     If a job runs now at Monday 10:00 (local timezone):
@@ -487,10 +559,28 @@ async def compute_initial_next_run_utc(
     weekly_day: t.Optional[str] = None,
     weekly_time: t.Optional[str] = None,
 ) -> int:
-    """Compute the first due time when a periodic schedule is created.
+    """
+    Compute the first due time when a periodic schedule is created.
 
     This ensures new schedules start at the correct next valid recurrence
     point based on start time, timezone, and recurrence mode.
+
+    Args:
+        start_utc_ms (int): User-selected schedule start time, epoch ms (UTC).
+        now_utc_ms (int): Current time, epoch ms (UTC).
+        timezone (str): IANA timezone name for interpreting daily/weekly times.
+        recurrence_mode (str): One of "interval", "daily", "weekly".
+        interval_unit (Optional[str]): "minutes" or "hours", required for interval mode.
+        interval_value (Optional[int]): Interval magnitude, required for interval mode.
+        daily_time (Optional[str]): "HH:MM" target time, required for daily mode.
+        weekly_day (Optional[str]): Weekday name, required for weekly mode.
+        weekly_time (Optional[str]): "HH:MM" target time, required for weekly mode.
+
+    Returns:
+        int: First due run time in epoch milliseconds (UTC).
+
+    Raises:
+        ValueError: If required fields for the selected recurrence_mode are missing.
 
     Example:
     If user creates schedule at Monday 10:00 (local timezone):
@@ -531,6 +621,110 @@ async def compute_initial_next_run_utc(
         strict_after=False,
     )
 
+
+def _exec_sort_key(e):
+    """Sort key for executions: prefer create_time_since_epoch, fall back to numeric id."""
+    ts = e.get("create_time_since_epoch")
+    if ts is not None:
+        try:
+            return (0, int(ts))
+        except (TypeError, ValueError):
+            pass
+    try:
+        return (1, int(e.get("id")))
+    except (TypeError, ValueError):
+        return (2, 0)
+
+
+def convert_mlmd_to_hierarchical_lineage_json(input_json: dict, pipeline_name: str) -> dict:
+    """
+    Convert an MLMD pipeline response into the hierarchical lineage schema used by the UI.
+
+    Example input::
+
+        {
+            "Pipeline": [{
+                "stages": [
+                    {"name": "Train", "executions": [
+                        {"id": 2, "properties": {"Execution_uuid": "train-uuid"}}
+                    ]},
+                    {"name": "Prepare", "executions": [
+                        {"id": 1, "properties": {"Execution_uuid": "prepare-uuid"}}
+                    ]}
+                ]
+            }]
+        }
+
+    Example output for ``pipeline_name="Demo"``::
+
+        {
+            "pipeline": "Demo",
+            "stages": [
+                {"stage_id": "stage_01", "stage_name": "Prepare",
+                 "executions": [{"execution_id": "exec_001",
+                                  "execution_type": "Prepare:prep",
+                                  "full_uuid": "prepare-uuid"}]},
+                {"stage_id": "stage_02", "stage_name": "Train",
+                 "executions": [{"execution_id": "exec_002",
+                                  "execution_type": "Train:trai",
+                                  "full_uuid": "train-uuid"}]}
+            ]
+        }
+
+    MLMD supplies stages in reverse pipeline order, so they are reversed for
+    left-to-right display. Executions are sorted by creation time when present,
+    with the MLMD numeric ID as a fallback. Each execution keeps its full UUID
+    for lookup while using a shortened UUID in the display label.
+    """
+
+    try:
+        stages_candidate = input_json["Pipeline"][0]["stages"]
+        if not isinstance(stages_candidate, list):
+            stages_candidate = []
+    except (KeyError, IndexError, TypeError):
+        stages_candidate = []
+
+    # MLMD returns stages in reverse pipeline order (last-run stage first).
+    # Reverse so columns render left-to-right: Prepare -> Featurize -> Train -> Evaluate.
+    stages_candidate = list(reversed(stages_candidate))
+
+    out = {
+        "pipeline": pipeline_name,
+        "metadata": { "version": "4.0.0", "description": "Executions Lineage Map" },
+        "stages": []
+    }
+
+    stage_idx = 1
+    exec_idx = 1
+
+    for s_item in stages_candidate:
+        stage_name = s_item["name"]
+
+        stage_obj = {
+            "stage_id": f"stage_{stage_idx:02d}",
+            "stage_name": stage_name,
+            "status": "completed",
+            "executions": []
+        }
+        stage_idx += 1
+
+        # Sort executions by actual creation time; fall back to numeric id.
+        executions = sorted(s_item.get("executions", []), key=_exec_sort_key)
+
+        for e in executions:
+            full_uuid = str(e["properties"]["Execution_uuid"])
+            exec_obj = {
+                "execution_id": f"exec_{exec_idx:03d}",
+                "execution_type": f"{stage_name}:{full_uuid[:4]}",
+                "children": [],
+                "full_uuid": full_uuid
+            }
+            exec_idx += 1
+            stage_obj["executions"].append(exec_obj)
+
+        out["stages"].append(stage_obj)
+
+    return out
 
 """ Old implemenation of fetching executions """
 # def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:

@@ -8,7 +8,7 @@ NGINX_HTTPS_PORT=443
 # This ensures that the frontend correctly communicates with the backend through the updated NGINX port.
 REACT_APP_CMF_API_URL=http://localhost:80
 
-# POSTGRES Configuration only for external postgress
+# Change POSTGRES Configuration only for external postgress otherwise values remains same
 POSTGRES_HOST=postgres
 POSTGRES_USER=myuser
 POSTGRES_PASSWORD=mypassword

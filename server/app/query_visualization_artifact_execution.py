@@ -5,6 +5,19 @@ import warnings
 warnings.filterwarnings("ignore")
 
 def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, dict_art_id: dict, dict_exe_id: dict) -> list:
+    """
+    Build the combined artifact-execution lineage grouping for a pipeline's visualization view.
+
+    Args:
+        query (CmfQuery): The CmfQuery object.
+        pipeline_name (str): Name of the pipeline.
+        dict_art_id (dict): Pipeline name -> {artifact type -> DataFrame of {id, name}}.
+        dict_exe_id (dict): Pipeline name -> DataFrame of execution rows.
+
+    Returns:
+        list[list[dict]]: Nested list of {'id', 'parents'} entries alternating between
+            artifact and execution nodes, in topological order.
+    """
     arti_exe_dict = {} # Used to map artifact and execution ids with artifact and execution names
     dict_output: dict[str, list[str]] = {}   # Used to establish parent-child relationship between artifacts and executions
 
@@ -76,6 +89,17 @@ def query_visualization_artifact_execution(query: CmfQuery, pipeline_name: str, 
     return data_organized
 
 def topological_sort(input_data: dict, arti_exe_dict: dict) -> list:
+    """
+    Topologically sort a mixed artifact/execution child->parents graph, grouped by parent set.
+
+    Args:
+        input_data (dict): Node key ("a_<id>" or "e_<id>") -> list of parent node keys.
+        arti_exe_dict (dict): Node key -> display name.
+
+    Returns:
+        list[list[dict]]: Groups of {'id', 'parents'} entries, ordered so all parents
+            appear before their children.
+    """
     # Initialize in-degree of all nodes to 0
     in_degree = {node: 0 for node in input_data}
     # Initialize adjacency list
@@ -112,6 +136,16 @@ def topological_sort(input_data: dict, arti_exe_dict: dict) -> list:
 
 
 def modify_artifact_name(artifact_name: str, type: str) -> str:
+    """
+    Shorten a fully-qualified artifact name/uuid into a display-friendly form.
+
+    Args:
+        artifact_name (str): Raw artifact name, e.g. "artifacts/data.xml.gz:236d9502e0...".
+        type (str): Artifact type: "Dataset", "Model", "Metrics", or "Dataslice".
+
+    Returns:
+        str: Shortened name, e.g. "data.xml.gz:236d"; "" if formatting fails.
+    """
     # artifact_name optimization based on artifact type.["Dataset","Model","Metrics"]
     try:
         name = ""

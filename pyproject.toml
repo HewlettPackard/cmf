@@ -36,5 +36,12 @@ classifiers = [
 Homepage = "https://github.com/HewlettPackard/cmf"
 BugTracker = "https://github.com/HewlettPackard/cmf/issues"
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "requests",
+    "psutil",
+]
+
 [tool.setuptools]
 license-files = [ "LICENSE.txt" ]
