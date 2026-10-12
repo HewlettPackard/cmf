@@ -49,7 +49,7 @@ Copy each skill directory into your agent's skills folder:
 | Skill | Slash command | Purpose |
 |-------|--------------|---------|
 | **cmf** | `/cmf <task>` | Router — describe your task in plain language and get routed to the right skill |
-| **cmf-init** | `/cmf-init` | Install cmflib and run `cmf init` to configure a storage backend (local, Amazon S3, SSH, OSDF) |
+| **cmf-init** | `/cmf-init` | Install cmflib and run `cmf init` to configure a storage backend (local, AmazonS3, SSH, OSDF) |
 | **cmf-instrument** | `/cmf-instrument` | Add CMF tracking to existing Python ML pipeline code |
 | **cmf-sync** | `/cmf-sync` | Push/pull metadata and artifacts to/from a CMF Server |
 | **cmf-query** | `/cmf-query` | Query pipeline history and artifact lineage with `CmfQuery` |

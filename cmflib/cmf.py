@@ -1954,10 +1954,9 @@ def cmf_init(type: str = "",
         type: Type of repository ("local", "amazonS3", "sshremote", "osdfremote") (required)
         path: Path for the local/ssh repository. (required for "local" and "sshremote" types)
         git_remote_url: Git remote URL for version control. (required)
-        url: URL for Amazon S3. (required for "amazonS3")
-        endpoint_url: Retained for call compatibility; no supported backend uses it.
-        access_key_id: Access key ID for Amazon S3. (required for "amazonS3")
-        secret_key: Secret key for Amazon S3. (required for "amazonS3")
+        url: URL for AmazonS3. (required)
+        access_key_id: Access key ID for AmazonS3. (required)
+        secret_key: Secret key for AmazonS3. (required)
         session_token: Session token for AmazonS3. (required)
         user: SSH remote username. (required)
         password: SSH remote password. (required)

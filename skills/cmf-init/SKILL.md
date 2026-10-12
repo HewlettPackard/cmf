@@ -3,7 +3,7 @@ name: cmf-init
 description: >
   Use when setting up CMF in a new or existing project. Covers creating a Python
   environment (conda, uv, or venv), installing cmflib (requires Python 3.9–3.11,
-  recommended 3.10), running `cmf init` to configure a storage backend (local, Amazon S3,
+  recommended 3.10), running `cmf init` to configure a storage backend (local, AmazonS3,
   SSH, or OSDF), and verifying the setup. Linux only — cmflib does not support macOS.
 version: 1.0.0
 ---
@@ -55,7 +55,7 @@ python -c "from cmflib.cmf import Cmf; print('OK')"
 | Backend | Use when |
 |---------|---------|
 | `local` | Single-machine development |
-| `amazons3` | AWS S3 production storage |
+| `amazons3` | AmazonS3 production storage |
 | `sshremote` | Artifacts on a remote machine over SSH |
 | `osdfremote` | OSDF distributed research data federation |
 
