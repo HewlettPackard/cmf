@@ -14,42 +14,40 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Pipeline API endpoints and business logic.
-
-This module contains API endpoints for pipeline discovery, stage queries,
-executions, artifacts, and execution/artifact lineage.
 """
 
-from fastapi import APIRouter, Depends, Request, HTTPException
+import json
+from typing import Any, Dict, List, Optional
+
+from cmflib.cmfquery import CmfQuery
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
+from server.app.api.v1.env import get_python_env as read_python_env
 from server.app.db.dbconfig import get_db
 from server.app.db.dbqueries import (
-    fetch_unique_execution_stages,
     fetch_artifact_types_by_stage,
     fetch_artifacts_by_stage,
     fetch_executions_by_stage,
-    fetch_unique_execution_stages
+    fetch_unique_execution_stages,
 )
-from server.app.schemas.responses import success_response
-from server.app.services.mlmd_state import MlmdState
-from typing import List, Dict, Any, Optional
-from server.app.get_data import async_api
-from server.app.query_execution_lineage_d3tree import (query_execution_lineage_d3tree)
-from server.app.query_artifact_lineage_d3tree import (query_artifact_lineage_d3tree)
-from server.app.query_visualization_artifact_execution import (query_visualization_artifact_execution)
-from server.app.schemas.requests import (
-    ArtifactByStageRequest,
-    ExecutionByStageRequest
-)
-from cmflib.cmfquery import CmfQuery
 from server.app.get_data import (
     async_api,
     executions_list,
+    get_mlmd_from_server,
+    convert_mlmd_to_hierarchical_lineage_json,
 )
-from server.app.api.v1.env import get_python_env as read_python_env
+from server.app.query_artifact_lineage_d3tree import query_artifact_lineage_d3tree
+from server.app.query_execution_lineage_d3tree import query_execution_lineage_d3tree
+from server.app.query_visualization_artifact_execution import query_visualization_artifact_execution
+from server.app.schemas.requests import ArtifactByStageRequest, ExecutionByStageRequest
+from server.app.schemas.responses import APIResponse, ErrorDetail, error_response, success_response
+from server.app.services.mlmd_state import MlmdState, mlmd_state
 
 router = APIRouter(prefix="/v1", tags=["pipelines"])
+query = mlmd_state.query
 
-# ==================== API Endpoints ====================
+
+# ==================== REST API Endpoints For UI ====================
 
 @router.get("/pipelines")
 async def list_pipelines(request: Request):
@@ -396,8 +394,114 @@ async def get_execution_python_env(
         code=200
     )
 
+# ==================== REST API Endpoints For CMFQuery ====================
 
-# ==================== Business Logic Functions ====================
+@router.get("/pipelines/names", response_model=APIResponse)
+async def cmfquery_list_pipelines():
+    """Retrieve all pipeline names available in the metadata store."""
+    pipeline_names = await async_api(list_pipeline_names, query)
+    if pipeline_names:
+        return success_response(
+            data={
+                "pipelines": pipeline_names,
+                "total_pipelines": len(pipeline_names),
+            },
+            message="Pipeline names retrieved successfully",
+            code=200,
+        )
+    return error_response(
+        message="No pipelines found",
+        code=404,
+        errors=[
+            ErrorDetail(
+                field="pipelines",
+                message="No pipelines found",
+            )
+        ],
+    )
+
+
+@router.get("/pipelines/{pipeline_name}/id", response_model=APIResponse)
+async def cmfquery_get_pipeline_id(pipeline_name: str):
+    """Retrieve the metadata store identifier for a pipeline name."""
+    pipeline_id = await async_api(return_pipeline_id, query, pipeline_name)
+    if pipeline_id == -1:
+        return error_response(
+            message="Pipeline not found",
+            code=404,
+            errors=[
+                ErrorDetail(
+                    field="pipeline_name",
+                    message=f"Pipeline '{pipeline_name}' not found",
+                )
+            ],
+        )
+
+    return success_response(
+        data={
+            "pipeline_name": pipeline_name,
+            "pipeline_id": pipeline_id,
+        },
+        message="Pipeline ID retrieved successfully",
+        code=200,
+    )
+
+
+@router.get("/pipelines/{pipeline_name}/json", response_model=APIResponse)
+async def cmfquery_dump_pipeline_to_json(
+    pipeline_name: str,
+    exec_uuid: Optional[str] = None,
+):
+    """Export metadata for a pipeline, optionally scoped to an execution UUID."""
+    pipeline_id = await async_api(return_pipeline_id, query, pipeline_name)
+    if pipeline_id == -1:
+        return error_response(
+            message="Pipeline not found",
+            code=404,
+            errors=[
+                ErrorDetail(
+                    field="pipeline_name",
+                    message=f"Pipeline '{pipeline_name}' not found",
+                )
+            ],
+        )
+
+    pipeline_json = await async_api(get_pipeline_json, query, pipeline_name, exec_uuid)
+    return success_response(
+        data=json.loads(pipeline_json) if pipeline_json else {"Pipeline": []},
+        message="Pipeline JSON retrieved successfully",
+        code=200,
+    )
+
+
+@router.get("/pipelines/sync/{last_sync_time}/json", response_model=APIResponse)
+async def cmfquery_extract_pipelines_to_json(last_sync_time: int):
+    """Export pipeline metadata changed after the given sync timestamp."""
+    pipeline_json = await async_api(extract_pipelines_to_json, query, last_sync_time)
+    return success_response(
+        data=json.loads(pipeline_json),
+        message="Pipelines JSON extracted successfully",
+        code=200,
+    )
+
+@router.get("/pipelines/{pipeline_name}/hierarchical-lineage")
+async def get_hierarchical_lineage_route(
+    request: Request,
+    pipeline_name: str
+):
+    state = request.app.state.mlmd
+    result = await get_hierarchical_lineage(
+        state=state,
+        pipeline_name=pipeline_name,
+    )
+    return success_response(
+        data=result,
+        message="Hierarchical lineage retrieved successfully",
+        code=200,
+    )
+
+
+# ==================== Business Logic Functions For UI ====================
 
 async def pipelines(state: MlmdState):
     """
@@ -580,6 +684,7 @@ async def get_artifact_types_by_stage(
     ["Dataset", "Metrics", "Model"]
     """
     return await fetch_artifact_types_by_stage(db, pipeline_name, stage_name)
+
 
 async def get_artifacts_by_stage(
     pipeline_name: str,
@@ -802,3 +907,71 @@ async def get_python_env_by_execution(
         raise HTTPException(status_code=404, detail="Python environment is not available for this execution")
 
     return await read_python_env(str(python_env_file))
+
+
+async def get_hierarchical_lineage(
+    state: MlmdState,
+    pipeline_name: str,
+):
+    """
+    Get the hierarchical lineage graph for a pipeline.
+
+    Method: GET
+    Path: /v1/pipelines/{pipeline_name}/hierarchical-lineage
+
+    Returns:
+        JSONResponse: success_response wrapping the React Flow lineage data.
+    """
+    json_payload = await async_api(
+        get_mlmd_from_server,
+        state.query,
+        pipeline_name,
+        None,
+        None,
+        state.dict_of_exe_ids,
+    )
+
+    if json_payload is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Pipeline '{pipeline_name}' not found or contains no MLMD data."
+        )
+
+    if isinstance(json_payload, str):
+        try:
+            json_payload = json.loads(json_payload)
+        except (json.JSONDecodeError, TypeError) as error:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to parse the MLMD response as JSON: {error}"
+            )
+
+    try:
+        result = convert_mlmd_to_hierarchical_lineage_json(json_payload, pipeline_name)
+    except (KeyError, IndexError, TypeError, ValueError) as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to convert the MLMD payload to hierarchical lineage JSON: {error}"
+        )
+
+    return result
+# ==================== Business Logic Functions For CMFQuery ====================
+
+def list_pipeline_names(query: CmfQuery):
+    """Return all pipeline names from the CMFQuery backend."""
+    return query.get_pipeline_names()
+
+
+def return_pipeline_id(query: CmfQuery, pipeline_name: str):
+    """Return the metadata store identifier for the requested pipeline."""
+    return query.get_pipeline_id(pipeline_name)
+
+
+def get_pipeline_json(query: CmfQuery, pipeline_name: str, exec_uuid: Optional[str]):
+    """Return serialized pipeline metadata for the requested pipeline."""
+    return query.dumptojson(pipeline_name, exec_uuid)
+
+
+def extract_pipelines_to_json(query: CmfQuery, last_sync_time: int):
+    """Return serialized pipeline metadata changed after a sync timestamp."""
+    return query.extract_to_json(last_sync_time)

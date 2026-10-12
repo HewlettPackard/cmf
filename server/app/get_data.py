@@ -622,6 +622,110 @@ async def compute_initial_next_run_utc(
     )
 
 
+def _exec_sort_key(e):
+    """Sort key for executions: prefer create_time_since_epoch, fall back to numeric id."""
+    ts = e.get("create_time_since_epoch")
+    if ts is not None:
+        try:
+            return (0, int(ts))
+        except (TypeError, ValueError):
+            pass
+    try:
+        return (1, int(e.get("id")))
+    except (TypeError, ValueError):
+        return (2, 0)
+
+
+def convert_mlmd_to_hierarchical_lineage_json(input_json: dict, pipeline_name: str) -> dict:
+    """
+    Convert an MLMD pipeline response into the hierarchical lineage schema used by the UI.
+
+    Example input::
+
+        {
+            "Pipeline": [{
+                "stages": [
+                    {"name": "Train", "executions": [
+                        {"id": 2, "properties": {"Execution_uuid": "train-uuid"}}
+                    ]},
+                    {"name": "Prepare", "executions": [
+                        {"id": 1, "properties": {"Execution_uuid": "prepare-uuid"}}
+                    ]}
+                ]
+            }]
+        }
+
+    Example output for ``pipeline_name="Demo"``::
+
+        {
+            "pipeline": "Demo",
+            "stages": [
+                {"stage_id": "stage_01", "stage_name": "Prepare",
+                 "executions": [{"execution_id": "exec_001",
+                                  "execution_type": "Prepare:prep",
+                                  "full_uuid": "prepare-uuid"}]},
+                {"stage_id": "stage_02", "stage_name": "Train",
+                 "executions": [{"execution_id": "exec_002",
+                                  "execution_type": "Train:trai",
+                                  "full_uuid": "train-uuid"}]}
+            ]
+        }
+
+    MLMD supplies stages in reverse pipeline order, so they are reversed for
+    left-to-right display. Executions are sorted by creation time when present,
+    with the MLMD numeric ID as a fallback. Each execution keeps its full UUID
+    for lookup while using a shortened UUID in the display label.
+    """
+
+    try:
+        stages_candidate = input_json["Pipeline"][0]["stages"]
+        if not isinstance(stages_candidate, list):
+            stages_candidate = []
+    except (KeyError, IndexError, TypeError):
+        stages_candidate = []
+
+    # MLMD returns stages in reverse pipeline order (last-run stage first).
+    # Reverse so columns render left-to-right: Prepare -> Featurize -> Train -> Evaluate.
+    stages_candidate = list(reversed(stages_candidate))
+
+    out = {
+        "pipeline": pipeline_name,
+        "metadata": { "version": "4.0.0", "description": "Executions Lineage Map" },
+        "stages": []
+    }
+
+    stage_idx = 1
+    exec_idx = 1
+
+    for s_item in stages_candidate:
+        stage_name = s_item["name"]
+
+        stage_obj = {
+            "stage_id": f"stage_{stage_idx:02d}",
+            "stage_name": stage_name,
+            "status": "completed",
+            "executions": []
+        }
+        stage_idx += 1
+
+        # Sort executions by actual creation time; fall back to numeric id.
+        executions = sorted(s_item.get("executions", []), key=_exec_sort_key)
+
+        for e in executions:
+            full_uuid = str(e["properties"]["Execution_uuid"])
+            exec_obj = {
+                "execution_id": f"exec_{exec_idx:03d}",
+                "execution_type": f"{stage_name}:{full_uuid[:4]}",
+                "children": [],
+                "full_uuid": full_uuid
+            }
+            exec_idx += 1
+            stage_obj["executions"].append(exec_obj)
+
+        out["stages"].append(stage_obj)
+
+    return out
+
 """ Old implemenation of fetching executions """
 # def get_executions(query: CmfQuery, pipeline_name, exe_ids) -> pd.DataFrame:
 #     '''

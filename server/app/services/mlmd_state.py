@@ -95,5 +95,81 @@ class MlmdState:
             print(f"Pipeline {pipeline_name} not found.")
             raise HTTPException(status_code=404, detail=f"Pipeline {pipeline_name} not found.")
 
+    def _mlmd_properties_to_dict(self, properties) -> dict:
+        """
+        Convert MLMD properties to a Python dictionary.
+
+        Args:
+            properties: MLMD properties object.
+
+        Returns:
+            dict: A dictionary representation of the MLMD properties.
+        """
+        output = {}
+        for key, value in properties.items():
+            output[key] = self._mlmd_value_to_python(value)
+        return output
+
+    def _mlmd_value_to_python(self, value):
+        """
+        Convert an MLMD value to a native Python type.
+
+        Args:
+            value: MLMD value object.
+
+        Returns:
+            The corresponding Python value, or None if the type is unsupported.
+        """
+        if hasattr(value, "HasField"):
+            if value.HasField("string_value"):
+                return value.string_value
+            if value.HasField("int_value"):
+                return value.int_value
+            if value.HasField("double_value"):
+                return value.double_value
+            if value.HasField("bool_value"):
+                return value.bool_value
+        return None
+
+    def _execution_to_dict(self, execution) -> dict:
+        """
+        Convert an MLMD execution object to a Python dictionary.
+
+        Args:
+            execution: MLMD execution object.
+
+        Returns:
+            dict: A dictionary representation of the MLMD execution.
+        """
+        return {
+            "id": execution.id,
+            "type_id": execution.type_id,
+            "name": execution.name,
+            "external_id": execution.external_id,
+            "create_time_since_epoch": execution.create_time_since_epoch,
+            "last_update_time_since_epoch": execution.last_update_time_since_epoch,
+            "properties": self._mlmd_properties_to_dict(execution.properties),
+            "custom_properties": self._mlmd_properties_to_dict(execution.custom_properties),
+        }
+
+    def _dataframe_records(self, dataframe) -> list[dict]:
+        """
+        Convert a Pandas DataFrame to a list of dictionaries, handling MLMD values.
+
+        Args:
+            dataframe: Pandas DataFrame object.
+
+        Returns:
+            list[dict]: A list of dictionaries representing the DataFrame records.
+        """
+        records = dataframe.where(dataframe.notna(), None).to_dict(orient="records")
+        return [
+            {
+                key: self._mlmd_value_to_python(value) if hasattr(value, "HasField") else value
+                for key, value in record.items()
+            }
+            for record in records
+        ]
+
 
 mlmd_state = MlmdState()
