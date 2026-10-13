@@ -71,7 +71,7 @@ The Lineage page offers interactive visualizations of data flow and dependencies
 2. **Execution Lineage**: Hierarchical view of execution flow
 3. **Artifact-Execution Lineage**: Combined view showing both artifacts and executions
 
-![CMF ArtifactExecution Page](../assets/artifact_exec_tree_lineage.png)
+![CMF ArtifactExecution Page](../assets/ArtifactExecutionLineage.png)
 
 ---
 

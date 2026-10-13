@@ -29,7 +29,7 @@ The Lineage page offers three different visualization modes:
 - Tree layout showing parent-child relationships
 - Color-coded by artifact type (Dataset/Model/Metrics)
 
-![Artifact Tree Lineage](../assets/artifact_tree_lineage.png)
+![Artifact Tree Lineage](../assets/Artifact_Lineage.png)
 
 
 ### 2. Execution Lineage
@@ -47,7 +47,7 @@ The Lineage page offers three different visualization modes:
 - Select specific execution type from dropdown
 - Shows execution order and dependencies
 
-![Execution Tree Lineage](../assets/execution_tree_lineage.png)
+![Execution Tree Lineage](../assets/Execution_Lineage.png)
 
 
 ### 3. Artifact-Execution Lineage
@@ -67,7 +67,7 @@ The Lineage page offers three different visualization modes:
 - Complete provenance trail
 - Filtered by pipeline
 
-![Artifact Execution Tree Lineage](../assets/artifact_exec_tree_lineage.png)
+![Artifact Execution Tree Lineage](../assets/ArtifactExecutionLineage.png)
 
 ### 4. Hierarchical Lineage
 
