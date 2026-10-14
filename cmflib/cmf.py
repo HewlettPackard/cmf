@@ -708,45 +708,51 @@ class Cmf:
 
 
     @staticmethod
-    def _resolve_dataset_path(
-        url: str,
-        project_root: str,
-        external: bool
-    ) -> str:
-        """Check that the path location agrees with the artifact's external flag.
-
-        Internal paths must resolve inside ``project_root``; external paths
-        must resolve outside it. For a project at ``/repo``, for example,
-        ``data/train.csv`` is internal and ``../shared/train.csv`` is external.
-        A valid relative external path is returned as an absolute path for DVC;
-        other valid paths are returned as provided.
+    def _resolve_dataset_path(url: str, project_root: str, external: bool) -> str:
         """
+        Validate and resolve a dataset path based on whether it should be internal or external.
+        
+        - Internal (external=False): Must reside inside the project root.
+        - External (external=True): Must reside outside the project root.
+        """
+        # 1. Normalize project root to an absolute path.
+        #    Example: "/repo/src/.." -> "/repo"
         project_root = os.path.realpath(project_root)
+
+        # 2. Check if the original URL is absolute.
+        #    Examples: "/data/t.csv" -> True | "data/t.csv" -> False
         is_absolute = os.path.isabs(url)
-        # Resolve symlinks before checking so they cannot hide a path outside
-        # the project. Joining an absolute path leaves it absolute.
+
+        # 3. Resolve the actual filesystem location.
+        #    Examples (given project_root="/repo"):
+        #    - "data/t.csv"    -> "/repo/data/t.csv"
+        #    - "../ext/t.csv"  -> "/ext/t.csv"
         resolved_path = os.path.realpath(os.path.join(project_root, url))
 
-        # Compare path components, so /repo-other is not treated as inside /repo.
+        # 4. Check if the resolved path is inside the project directory.
         try:
             is_within_project = (
                 os.path.commonpath((project_root, resolved_path)) == project_root
             )
         except ValueError:
-            # Different filesystem roots cannot share a common path.
+            # Paths are on different drives (e.g., C:\ and D:\)
+            # and cannot share a common path. Therefore, it is external.
             is_within_project = False
 
-        # Reject mismatches, such as an internal path marked external.
+        # 5. Throw an error if the location contradicts the 'external' flag.
+        #    Examples of failures:
+        #    - url="data/t.csv" (Inside) + external=True  -> ERROR
+        #    - url="../ext/t.csv" (Outside) + external=False -> ERROR
         if is_within_project == external:
             if external:
-                raise ValueError(
-                    "External artifact cannot be inside the project directory."
-                )
-            raise ValueError(
-                "Internal artifact cannot be outside of the project directory."
-            )
+                raise ValueError("External artifact cannot be inside the project directory.")
+            raise ValueError("Internal artifact cannot be outside of the project directory.")
 
-        # DVC needs a stable absolute location for a relative external path.
+        # 6. Return absolute path for relative external datasets (required by DVC);
+        #    otherwise, preserve the user's original URL format.
+        #    Examples (given project_root="/repo"):
+        #    - external=True,  url="../ext/t.csv" -> returns "/ext/t.csv" (converts to absolute)
+        #    - external=False, url="data/t.csv"   -> returns "data/t.csv"   (keeps original)
         return resolved_path if external and not is_absolute else url
 
 
