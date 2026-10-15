@@ -1,0 +1,113 @@
+{{- if .Values.server.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "server") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "server") | nindent 4 }}
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      {{- include "cmf.componentLabels" (dict "ctx" . "component" "server") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cmf.componentLabels" (dict "ctx" . "component" "server") | nindent 8 }}
+    spec:
+      {{- include "cmf.imagePullSecrets" . | nindent 6 }}
+      # Wait for postgres to accept connections (compose: depends_on service_healthy)
+      initContainers:
+      - name: wait-for-postgres
+        image: docker.io/library/postgres:13
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        command: ["sh", "-c"]
+        args:
+          - until pg_isready -h {{ include "cmf.serviceName" (dict "ctx" . "component" "postgres") }} -p {{ .Values.postgres.service.port }} -d {{ .Values.postgres.auth.database }} -U {{ .Values.postgres.auth.user }}; do echo waiting for postgres; sleep 2; done
+      containers:
+      - name: cmf-server
+        image: {{ include "cmf.image" (dict "ctx" . "image" .Values.server.image) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.server.port }}
+        env:
+        - name: POSTGRES_HOST
+          value: {{ include "cmf.serviceName" (dict "ctx" . "component" "postgres") }}
+        - name: POSTGRES_USER
+          value: {{ .Values.postgres.auth.user | quote }}
+        - name: POSTGRES_PASSWORD
+          value: {{ .Values.postgres.auth.password | quote }}
+        - name: POSTGRES_PORT
+          value: {{ .Values.postgres.service.port | quote }}
+        - name: POSTGRES_DB
+          value: {{ .Values.postgres.auth.database | quote }}
+        - name: REACT_APP_CMF_API_URL
+          value: {{ .Values.server.apiURL | quote }}
+        - name: HTTP_PROXY
+          value: {{ .Values.server.proxy.http | quote }}
+        - name: HTTPS_PROXY
+          value: {{ .Values.server.proxy.https | quote }}
+        - name: NO_PROXY
+          value: {{ .Values.server.proxy.noProxy | quote }}
+        - name: http_proxy
+          value: {{ .Values.server.proxy.http | quote }}
+        - name: https_proxy
+          value: {{ .Values.server.proxy.https | quote }}
+        - name: no_proxy
+          value: {{ .Values.server.proxy.noProxy | quote }}
+        resources:
+          {{- toYaml .Values.server.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.server.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 12
+        livenessProbe:
+          httpGet:
+            path: /
+            port: {{ .Values.server.port }}
+          initialDelaySeconds: 60
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+        volumeMounts:
+        - name: server-data
+          mountPath: /cmf-server/data
+        - name: server-env
+          mountPath: /cmf-server/data/env
+        - name: server-static
+          mountPath: /cmf-server/data/static
+        - name: server-labels
+          mountPath: /cmf-server/data/labels
+        - name: tensorboard-logs
+          mountPath: /cmf-server/data/tensorboard-logs
+      volumes:
+      - name: server-data
+        {{- include "cmf.volumeSource" (dict "ctx" . "name" "server-data" "subpath" "server_data") | nindent 8 }}
+      - name: server-env
+        {{- include "cmf.volumeSource" (dict "ctx" . "name" "server-env" "subpath" "server_data/env") | nindent 8 }}
+      - name: server-static
+        {{- include "cmf.volumeSource" (dict "ctx" . "name" "server-static" "subpath" "server_data/static") | nindent 8 }}
+      - name: server-labels
+        {{- include "cmf.volumeSource" (dict "ctx" . "name" "server-labels" "subpath" "server_data/labels") | nindent 8 }}
+      - name: tensorboard-logs
+        {{- include "cmf.volumeSource" (dict "ctx" . "name" "tensorboard-logs" "subpath" "tensorboard-logs") | nindent 8 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "server") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "server") | nindent 4 }}
+spec:
+  type: {{ .Values.server.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.server.service.port }}
+    targetPort: {{ .Values.server.port }}
+  selector:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "server") | nindent 4 }}
+{{- end -}}

@@ -1,0 +1,111 @@
+{{- if .Values.mcp.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "mcp") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 4 }}
+spec:
+  replicas: {{ .Values.mcp.replicas }}
+  selector:
+    matchLabels:
+      {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 8 }}
+    spec:
+      {{- include "cmf.imagePullSecrets" . | nindent 6 }}
+      # Wait for cmf-server to be reachable (compose: depends_on service_healthy)
+      initContainers:
+      - name: wait-for-server
+        image: curlimages/curl:latest
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        command: ["sh", "-c"]
+        args:
+          - until curl -fsS http://{{ include "cmf.serviceName" (dict "ctx" . "component" "server") }}:{{ .Values.server.service.port }} >/dev/null; do echo waiting for cmf-server; sleep 3; done
+      containers:
+      - name: mcp
+        image: {{ include "cmf.image" (dict "ctx" . "image" .Values.mcp.image) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: {{ .Values.mcp.port }}
+        env:
+        - name: CMF_BASE_URL
+          value: http://{{ include "cmf.serviceName" (dict "ctx" . "component" "server") }}:{{ .Values.server.service.port }}
+        - name: CMF2_BASE_URL
+          value: {{ .Values.mcp.cmf2BaseUrl | quote }}
+        - name: CMF3_BASE_URL
+          value: {{ .Values.mcp.cmf3BaseUrl | quote }}
+        - name: CMF4_BASE_URL
+          value: {{ .Values.mcp.cmf4BaseUrl | quote }}
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: {{ .Values.mcp.port | quote }}
+        - name: MCP_TRANSPORT_SECURITY
+          value: {{ .Values.mcp.transportSecurity | quote }}
+        - name: HTTP_PROXY
+          value: {{ .Values.mcp.proxy.http | quote }}
+        - name: HTTPS_PROXY
+          value: {{ .Values.mcp.proxy.https | quote }}
+        - name: NO_PROXY
+          value: {{ .Values.mcp.proxy.noProxy | quote }}
+        - name: http_proxy
+          value: {{ .Values.mcp.proxy.http | quote }}
+        - name: https_proxy
+          value: {{ .Values.mcp.proxy.https | quote }}
+        - name: no_proxy
+          value: {{ .Values.mcp.proxy.noProxy | quote }}
+        resources:
+          {{- toYaml .Values.mcp.resources | nindent 10 }}
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.mcp.port }}
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.mcp.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "mcp") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 4 }}
+spec:
+  type: {{ .Values.mcp.service.type }}
+  ports:
+  - name: http
+    port: {{ .Values.mcp.service.port }}
+    targetPort: {{ .Values.mcp.port }}
+  selector:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 4 }}
+{{- if .Values.mcp.external.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "mcp") }}-external
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 4 }}
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: {{ .Values.mcp.service.port }}
+    targetPort: {{ .Values.mcp.port }}
+    nodePort: {{ .Values.mcp.external.nodePort }}
+  selector:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "mcp") | nindent 4 }}
+{{- end }}
+{{- end -}}
