@@ -126,7 +126,10 @@ nav:
       - architecture/index.md
       - Components: architecture/components.md
       - Advantages: architecture/advantages.md
-    - 📚 Installation & Setup: setup/index.md
+    - 📚 Installation & Setup: 
+      -  setup/index.md
+      - Server Side Installation: setup/server_side_installation.md
+      - Client Side Installation: setup/client_side_installation.md
     - 🎯 Getting Started Tutorial: examples/getting_started.md
     - 🔗 API Reference:
       - cmflib/index.md
