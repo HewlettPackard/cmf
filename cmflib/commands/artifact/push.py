@@ -23,12 +23,11 @@ import argparse
 
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
-from cmflib.cli.utils import check_minio_server
 from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path, validate_and_examine_osdf_token
 from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
-    PipelineNotFound, Minios3ServerInactive, 
+    PipelineNotFound,
     FileNotFound, 
     ExecutionsNotFound,
     ArtifactPushSuccess, 
@@ -51,11 +50,6 @@ class CmdArtifactPush(CmdBase):
                     raise MissingArgument(arg_name)
                 elif len(arg_value) > 1:
                     raise DuplicateArgumentNotAllowed(arg_name,("-"+arg_name[0]))
-
-        out_msg = check_minio_server(dvc_config_op)
-        if dvc_config_op["core.remote"] == "minio" and out_msg != "SUCCESS":
-            raise Minios3ServerInactive()
-        
         # Determine the number of jobs.
         # - If 'jobs' is provided and is a digit → use its integer value.
         # - If 'jobs' is missing or empty → default to 4 * cpu_count().

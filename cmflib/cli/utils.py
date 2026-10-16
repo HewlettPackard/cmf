@@ -50,27 +50,3 @@ def find_root(file_name: str):
         parent = os.path.abspath(os.path.join(root_dir, os.pardir))
         # updating root_dir with its parent
         root_dir = parent
-
-
-def check_minio_server(dvc_config_op):
-    from minio import Minio
-    from minio.error import S3Error
-
-    if dvc_config_op["core.remote"] == "minio":
-        # dvc_config_op["remote.minio.endpointurl"] = http://XX.XX.XX.XX:9000 
-        endpoint = dvc_config_op["remote.minio.endpointurl"].split("http://")[1]
-        access_key = dvc_config_op["remote.minio.access_key_id"]
-        secret_key = dvc_config_op["remote.minio.secret_access_key"]
-        # dvc_config_op["remote.minio.url"] = s3://dvc-art
-        bucket_name = dvc_config_op["remote.minio.url"].split("s3://")[1]
-        try:
-            client = Minio(
-                endpoint, access_key=access_key, secret_key=secret_key, secure=False
-            )
-            found = client.bucket_exists(bucket_name)
-            if found:
-                return "SUCCESS"
-        except TypeError as exception:
-            return exception
-        except S3Error as exception:
-            return exception

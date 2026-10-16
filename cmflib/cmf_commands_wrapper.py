@@ -241,54 +241,6 @@ def _init_local(
 
 
 @exception_handler_decorator
-def _init_minioS3(
-    url: str,
-    endpoint_url: str,
-    access_key_id: str,
-    secret_key: str,
-    git_remote_url: str,
-    cmf_server_url: str,
-    neo4j_user: str,
-    neo4j_password: str,
-    neo4j_uri: str,
-) -> str:
-    """Initialize minioS3 repository"""
-    args = [
-            "init",
-            "minioS3",
-            "--url",
-            url,
-            "--endpoint-url",
-            endpoint_url,
-            "--access-key-id",
-            access_key_id,
-            "--secret-key",
-            secret_key,
-            "--git-remote-url",
-            git_remote_url,
-            "--cmf-server-url",
-            cmf_server_url,
-        ]
-    # only append neo4j args if they are provided
-    if neo4j_user and neo4j_password and neo4j_uri:
-        args.extend(
-            [
-                "--neo4j-user",
-                neo4j_user,
-                "--neo4j-password",
-                neo4j_password,
-                "--neo4j-uri",
-                neo4j_uri,
-            ]
-        )
-    cli_args = cli.parse_args(args)
-    cmd = cli_args.func(cli_args)
-    msg = cmd.do_run()
-    logger.info(msg)
-    return msg
-    
-
-@exception_handler_decorator
 def _init_amazonS3(
     url: str,
     access_key_id: str,

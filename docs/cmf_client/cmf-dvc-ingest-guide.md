@@ -19,7 +19,7 @@ cd /path/to/your/project
 
 ### 2. Initialize `cmf` with Neo4j Credentials
 
-Use the following command to initialize `cmf`. You can choose from various storage options like `local`, `ssh`, `amazons3`, `osdfremote`, or `minios3`.
+Use the following command to initialize `cmf`. You can choose from various storage options like `local`,  `ssh`, `amazonS3`, `osdfremote`
 
 **Basic Usage (Required Parameters Only):**
 ```bash
