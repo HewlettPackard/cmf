@@ -127,7 +127,7 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
             # metadata pull → merge server data into client path
             if cmd == "pull":
                 parse_json_to_mlmd(
-                    json.dumps(pipeline), query.filepath, cmd, exe_uuid
+                    json.dumps(pipeline), query.filename, cmd, exe_uuid
                 )
             else:
                 parse_json_to_mlmd(
@@ -155,7 +155,6 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
 
                 # remove empty stages (those without remaining executions)
                 pipeline['stages'] = [stage for stage in pipeline['stages'] if stage['executions'] != []]
-
                 # determine if data remains to push/pull
                 if len(pipeline['stages']) == 0 :
                     status="exists"
@@ -164,7 +163,7 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
                     # metadata pull → merge server data into client path
                     if cmd == "pull":
                         parse_json_to_mlmd(
-                            json.dumps(pipeline), query.filepath, cmd, exe_uuid
+                            json.dumps(pipeline), query.filename, cmd, exe_uuid
                         )
                     else:
                         parse_json_to_mlmd(
