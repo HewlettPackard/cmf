@@ -100,7 +100,7 @@ See [references/mcp-tools.md](references/mcp-tools.md) for the full tool referen
 ## Troubleshooting
 
 - **`Connection refused` on port 8000** — run `docker compose up -d` in `mcp/`
-- **CMF Server unreachable** — verify with `curl http://<cmf-server>:80/apiv1.0/pipelines`
+- **CMF Server unreachable** — verify with `curl http://<cmf-server>:80/api/pipelines`
 - **Tools not appearing** — restart the agent after updating `.mcp.json`
 - **Empty results** — push metadata first: `cmf metadata push -p <name>`
 
