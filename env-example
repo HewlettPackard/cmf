@@ -2,11 +2,31 @@
 NGINX_HTTP_PORT=80
 NGINX_HTTPS_PORT=443
 
+# HTTPS (self-signed by default)
+# =========================================================================
+# The nginx service listens on NGINX_HTTPS_PORT (container port 443). An
+# entrypoint script auto-generates a throwaway self-signed certificate on
+# startup if none is found, so HTTPS works out of the box.
+#
+# For a STABLE certificate (persisted across restarts), generate one with:
+#   scripts/generate-self-signed-cert.sh
+# This writes cmf.crt and cmf.key into $CMF_DATA_DIR/nginx-certs/, which
+# the nginx service mounts at /etc/nginx/certs/.
+#
+# Or, to use your own certificate, copy cmf.crt and cmf.key into
+# $CMF_DATA_DIR/nginx-certs/ before starting the stack.
+
 # React App Configuration
-# REACT_APP_CMF_API_URL=URL:NGINX_PORT
-# If you change the NGINX port, make sure to update the same port number in the env variable REACT_APP_CMF_API_URL.
-# This ensures that the frontend correctly communicates with the backend through the updated NGINX port.
-REACT_APP_CMF_API_URL=http://localhost:80
+# =========================================================================
+# REACT_APP_CMF_API_URL is the URL the browser uses to fetch API calls from
+# the UI. By default (unset), the browser uses its own origin
+# (window.location.origin), so HTTP and HTTPS both work automatically with no
+# mixed-content blocking.
+#
+# Set this ONLY if the API is served from a different host than the UI
+# (e.g. a split front/back-end deployment):
+#   REACT_APP_CMF_API_URL=http://<api-host>:<port>
+# REACT_APP_CMF_API_URL=
 
 # Change POSTGRES Configuration only for external postgress otherwise values remains same
 POSTGRES_HOST=postgres
