@@ -1,0 +1,176 @@
+# Default values for the CMF server stack.
+# Mirrors docker-compose-server.yml; override per environment via -f / --set.
+
+global:
+  # Optional registry prefix applied to all images, e.g. "registry.example.com/cmfr"
+  imageRegistry: ""
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+
+# ---------------------------------------------------------------------------
+# PostgreSQL (metadata store)
+# ---------------------------------------------------------------------------
+postgres:
+  enabled: true
+  image:
+    repository: docker.io/library/postgres
+    tag: "13"
+  auth:
+    user: myuser
+    password: mypassword
+    database: mlmd
+  service:
+    port: 5432
+  resources: {}
+  storage:
+    # Empty storageClass -> cluster default (e.g. local-path on this cluster)
+    size: 50Gi
+    storageClass: ""
+
+# ---------------------------------------------------------------------------
+# cmf-server (REST API)
+# ---------------------------------------------------------------------------
+server:
+  enabled: true
+  image:
+    repository: federcmf/server
+    tag: latest
+  replicas: 1
+  port: 8080
+  service:
+    type: ClusterIP
+    port: 8080
+  # Browser-facing URL of the API (through nginx in a default install)
+  apiURL: http://nginx:80
+  proxy:
+    http: ""
+    https: ""
+    noProxy: "localhost,127.0.0.1,postgres"
+  resources: {}
+  storage:
+    data:
+      size: 40Gi
+      storageClass: ""
+    env:
+      size: 5Gi
+      storageClass: ""
+    static:
+      size: 20Gi
+      storageClass: ""
+    labels:
+      size: 5Gi
+      storageClass: ""
+
+# ---------------------------------------------------------------------------
+# TensorBoard (log viewer)
+# ---------------------------------------------------------------------------
+tensorboard:
+  enabled: true
+  image:
+    repository: federcmf/tensorboard
+    tag: latest
+  port: 6006
+  service:
+    type: ClusterIP
+    port: 6006
+  storage:
+    size: 20Gi
+    storageClass: ""
+
+# ---------------------------------------------------------------------------
+# UI (React frontend behind nginx)
+# ---------------------------------------------------------------------------
+ui:
+  enabled: true
+  image:
+    repository: federcmf/ui
+    tag: latest
+  replicas: 1
+  port: 3000
+  service:
+    type: ClusterIP
+    port: 3000
+  # REACT_APP_CMF_API_URL - externally reachable URL of the API.
+  # Defaults to the in-cluster nginx service.
+  apiURL: http://nginx:80
+  resources: {}
+
+# ---------------------------------------------------------------------------
+# MCP server
+# ---------------------------------------------------------------------------
+mcp:
+  enabled: true
+  image:
+    repository: federcmf/mcp
+    tag: latest
+  replicas: 1
+  port: 8000
+  service:
+    type: ClusterIP
+    port: 8000
+  # Secondary CMF servers (optional, for multi-server setups)
+  cmf2BaseUrl: ""
+  cmf3BaseUrl: ""
+  cmf4BaseUrl: ""
+  transportSecurity: disabled
+  # Expose MCP on a host port like docker-compose (MCP_EXTERNAL_PORT).
+  # Kubernetes NodePorts must be in 30000-32767, so 8382 maps to 30832.
+  external:
+    enabled: true
+    nodePort: 30832
+  proxy:
+    http: ""
+    https: ""
+    noProxy: "localhost,127.0.0.1,server"
+  resources: {}
+
+# ---------------------------------------------------------------------------
+# Nginx (reverse proxy / single entrypoint)
+# ---------------------------------------------------------------------------
+nginx:
+  enabled: true
+  image:
+    repository: federcmf/cmf-nginx
+    tag: latest
+  replicas: 1
+  # Temporary: "/" probes the full proxy chain and works with any image
+  # version. Switch to "/check.html" once images bundle health.html.
+  probePath: "/"
+  service:
+    type: NodePort
+    httpPort: 80
+    httpsPort: 443
+    httpNodePort: 30080
+    httpsNodePort: 30443
+  # Inline nginx.conf override. Leave empty ("") to use the config baked into
+  # the federcmf/cmf-nginx image (built from nginx/Dockerfile). When set, a
+  # ConfigMap is created and mounted over /etc/nginx/nginx.conf.
+  config: ""
+  resources: {}
+
+# ---------------------------------------------------------------------------
+# Neo4j (optional; not part of docker-compose-server.yml)
+# ---------------------------------------------------------------------------
+neo4j:
+  enabled: false
+  image:
+    repository: docker.io/library/neo4j
+    tag: "5.26"
+  auth:
+    user: neo4j
+    password: test1234
+  service:
+    type: ClusterIP
+  storage:
+    size: 10Gi
+    storageClass: ""
+
+# ---------------------------------------------------------------------------
+# Storage backend for all components: "pvc" (dynamic provisioning, default)
+# or "hostPath" (Minikube-style, mirrors kubernetes/*/…-pv.yaml manifests).
+# When hostPath is used, hostPath.base is the shared root directory on nodes.
+# ---------------------------------------------------------------------------
+storage:
+  mode: pvc
+  hostPath:
+    base: /mnt/cmf/data

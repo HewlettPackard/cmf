@@ -16,13 +16,18 @@ spec:
     spec:
       containers:
       - name: ui
-        image: ui:latest
+        # Same image as docker-compose-server.yml (built from ./ui/Dockerfile).
+        # For Minikube local builds keep ui:latest; otherwise use federcmf/ui:latest.
+        image: federcmf/ui:latest
         imagePullPolicy: IfNotPresent     # ✅ important for Minikube local builds
         ports:
         - containerPort: 3000
         env:
         - name: REACT_APP_CMF_API_URL
-          value: http://x.x.x.x:30080           # ✅ same cluster DNS; backend reachable via Nginx
+          # Backend reachable via the in-cluster Nginx service.
+          # Override with your externally reachable URL if clients connect
+          # from outside the cluster, e.g. http://<node-ip>:30080
+          value: http://nginx:80
         readinessProbe:
           httpGet:
             path: /

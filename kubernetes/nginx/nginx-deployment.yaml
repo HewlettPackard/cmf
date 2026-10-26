@@ -16,11 +16,30 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx:alpine
+        # Same image as docker-compose-server.yml (built from ./nginx/Dockerfile).
+        # For Minikube local builds keep federcmf/cmf-nginx:latest with IfNotPresent.
+        # Probes use "/" because older image builds lack the health.html page.
+        image: federcmf/cmf-nginx:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
         - containerPort: 443
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
         volumeMounts:
         - name: nginx-config
           mountPath: /etc/nginx/nginx.conf
