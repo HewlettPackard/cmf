@@ -94,7 +94,9 @@ services:
       context: ./ui
       dockerfile: Dockerfile
     environment:
-      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL}
+      # Optional: set to an absolute URL only if the API is on a different host
+      # than the UI. When unset, the browser uses its own origin (window.location.origin).
+      REACT_APP_CMF_API_URL: ${REACT_APP_CMF_API_URL-}
     depends_on:
       server:
         condition: service_healthy
@@ -160,6 +162,11 @@ services:
     ports:
       - ${NGINX_HTTP_PORT:-80}:80
       - ${NGINX_HTTPS_PORT:-443}:443
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${CMF_DATA_DIR:-./data}/nginx-certs:/etc/nginx/certs:ro
+      - ./scripts/nginx-autogen-cert.sh:/docker-entrypoint.d/40-autogen-cert.sh:ro
+      - ./scripts/nginx-banner.sh:/docker-entrypoint.d/99-banner.sh:ro
     networks:
       - cmf-network
     depends_on:
@@ -169,11 +176,6 @@ services:
         condition: service_healthy
       mcp:
         condition: service_healthy
-    command: >
-      /bin/sh -c '
-      printf "\033[1m============================================================\n CMF Server, UI Server and MCP Server are started and running\n============================================================\033[0m\n";
-      exec nginx -g "daemon off;"
-      '
     restart: unless-stopped
 
 networks:

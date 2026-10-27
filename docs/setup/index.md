@@ -111,14 +111,35 @@ Create a `.env` file in the same directory as `docker-compose-server.yml` with t
 CMF_DATA_DIR=./data                    
 NGINX_HTTP_PORT=80                  
 NGINX_HTTPS_PORT=443
-REACT_APP_CMF_API_URL=http://your-server-ip:80
 ```
 
 > 📝 **Note:** 
 > - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
-> - `REACT_APP_CMF_API_URL` should point to your server's accessible address.
+> - `REACT_APP_CMF_API_URL` is **optional**. When unset, the browser uses its own origin (`window.location.origin`) to call the API, so HTTP and HTTPS both work automatically with no mixed-content blocking. Set it only if the API is on a different host than the UI.
 
-**Step 4: Start the Containers**
+**Step 4: Generate the TLS Certificate (recommended)**
+
+The nginx service listens on both `NGINX_HTTP_PORT` (HTTP) and
+`NGINX_HTTPS_PORT` (HTTPS). The `nginx` container ships with an entrypoint
+script that **auto-generates a throwaway self-signed certificate on startup if
+none is found**, so HTTPS works out of the box (the cert is regenerated on each
+start). For a **stable** certificate that persists across restarts, generate
+one with the included helper:
+
+```bash
+scripts/generate-self-signed-cert.sh
+```
+
+This writes `cmf.crt` and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/`, which
+the `nginx` service mounts read-only at `/etc/nginx/certs/` and copies into
+place on startup.
+
+> 📝 **Note:** Browsers will warn about the self-signed certificate (whether
+> auto-generated or stable). To use your own certificate, copy your `cmf.crt`
+> and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/` instead of running the
+> script.
+
+**Step 5: Start the Containers**
 
 > 💡 **Recommended Approach:** Using `docker compose` starts the `CMF Server`, PostgreSQL database, and `CMF UI` together.
 > 
@@ -136,21 +157,18 @@ This command starts all services:
 - **CMF Server**: API server for metadata management
 - **UI**: Web interface for visualization
 - **TensorBoard**: For viewing ML training metrics
-- **Nginx**: Reverse proxy serving all components
+- **Nginx**: Reverse proxy serving all components over HTTP and HTTPS
 
 #### Accessing the CMF UI
 
-Once the containers are successfully started, the CMF UI will be available at the URL specified in your `.env` file:
+Once the containers are successfully started, open the CMF UI in a browser at either URL — both work automatically:
 
-```
-http://your-server-ip:80
-```
+- **HTTP**: `http://your-server-ip:<NGINX_HTTP_PORT>` (default `80`, no cert warnings)
+- **HTTPS**: `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`, self-signed cert; browser will warn)
 
-Replace `your-server-ip` with the actual IP address or hostname configured in the `REACT_APP_CMF_API_URL` environment variable.
+> 📝 **Note:** Ensure that the ports you configured (`NGINX_HTTP_PORT` and `NGINX_HTTPS_PORT`) are accessible and not blocked by firewall rules.
 
-> 📝 **Note:** Ensure that port 80 (or your configured `NGINX_HTTP_PORT`) is accessible and not blocked by firewall rules.
-
-**Step 5: Stop the Containers**
+**Step 6: Stop the Containers**
 
 ```bash
 docker compose -f docker-compose-server.yml stop
