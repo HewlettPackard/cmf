@@ -27,6 +27,7 @@ from cmflib.mlmd_objects import CONTEXT_LIST
 from cmflib.cmf_merger import parse_json_to_mlmd
 from cmflib.store.postgres import PostgresStore
 from cmflib.store.sqllite_store import SqlliteStore
+from cmflib.store.custom_sqlite_store import CustomSqliteStore
 from cmflib.utils.helper_functions import get_postgres_config
 
 # Constants for filtering artifact and execution types in lineage visualizations
@@ -133,6 +134,11 @@ class CmfQuery(object):
         else:
             temp_store = SqlliteStore({"filename": filepath})
         self.store = temp_store.connect()
+        
+        # Step 1: Initialize CustomSqliteStore to enable reading execution_log during JSON export.
+        # Step 2: CustomSqliteStore manages DB connection to same mlmd file as MLMD metadata.
+        # Step 3: Used later in _get_event_attributes() to patch artifacts with execution_log data.
+        self.custom_store = CustomSqliteStore(filepath)
 
     @staticmethod
     def _copy(
@@ -217,6 +223,102 @@ class CmfQuery(object):
         for element in elements:
             df = pd.concat([df, transform_fn(element)], sort=True, ignore_index=True)
         return df
+
+    def _extract_execution_uuids(self, execution_obj) -> t.List[str]:  # type: ignore
+        """Extract execution UUIDs from execution object properties.
+        
+        Args:
+            execution_obj: MLMD execution object with properties containing 'Execution_uuid'.
+        
+        Returns:
+            List of UUIDs as strings. If comma-separated in properties, splits and returns all.
+            If not found or error, returns empty list.
+        """
+        # Step 1: Validate execution object has properties attribute.
+        # Step 2: Extract Execution_uuid field (may be comma-separated for multiple UUIDs).
+        # Step 3: Split by comma and strip whitespace from each UUID.
+        # Step 4: Return list of UUIDs; return empty list if not found or error.
+        
+        try:
+            # Step 1: Check if execution object has properties.
+            if not hasattr(execution_obj, 'properties') or not execution_obj.properties:
+                return []
+            
+            # Step 2: Extract Execution_uuid from properties dict.
+            if 'Execution_uuid' not in execution_obj.properties:
+                return []
+            
+            uuid_str = execution_obj.properties['Execution_uuid'].string_value
+            if not uuid_str:
+                return []
+            
+            # Step 3: Split by comma if multiple UUIDs, strip whitespace from each.
+            uuids = [uuid.strip() for uuid in uuid_str.split(",")]
+            
+            # Step 4: Filter out empty strings and return non-empty UUIDs.
+            return [uuid for uuid in uuids if uuid]
+        except Exception as e:
+            # Step 5: Return empty list if any error occurs during extraction.
+            logger.warning(f"Error extracting Execution_uuid from execution: {e}")
+            return []
+
+    def _patch_artifact_with_execution_log(
+        self, artifact_dict: t.Dict[str, t.Any], execution_uuid: str, artifact_uri: t.Any
+    ) -> None:
+        """Patch artifact dictionary with execution_log data if entries differ.
+        
+        Strategy: Only replace name, properties, custom_properties if execution_log has them
+        and they differ from current artifact values. Leave unchanged if same or missing.
+        
+        Args:
+            artifact_dict: Artifact metadata dictionary to patch (modified in-place).
+            execution_uuid: Execution UUID to use as key for lookup.
+            artifact_uri: Artifact URI to use as key for lookup.
+        
+        Returns:
+            None (modifies artifact_dict in-place).
+        """
+        # Step 1: Query ExecutionLogs for (execution_uuid, artifact_uri) pair.
+        # Step 2: If found, compare each patchable field (name, properties, custom_properties).
+        # Step 3: For each field, check if execution_log value differs from artifact value.
+        # Step 4: If different, replace artifact value with execution_log value.
+        # Step 5: If same or missing in execution_log, leave artifact unchanged.
+        
+        # Step 1: Query custom_store for execution_log metadata.
+        execution_log_metadata = self.custom_store.get_execution_log(str(execution_uuid), str(artifact_uri))
+        
+        # If no execution_log entry, nothing to patch; return early.
+        if execution_log_metadata is None:
+            return
+        
+        # Step 2-5: Patchable fields are: name, properties, custom_properties.
+        # Only these three fields from execution_log are used to patch artifact.
+        patchable_fields = ["name", "properties", "custom_properties"]
+        
+        for field in patchable_fields:
+            # Step 2: Check if execution_log has this field.
+            if field not in execution_log_metadata:
+                # Field not in execution_log; leave artifact unchanged.
+                continue
+            
+            log_value = execution_log_metadata[field]
+            artifact_value = artifact_dict.get(field)
+
+            # Merge map-like fields so sparse execution_log payloads do not erase
+            # richer artifact metadata such as labels_uri/custom properties.
+            if field in {"properties", "custom_properties"} and isinstance(artifact_value, dict) and isinstance(log_value, dict):
+                merged_value = dict(artifact_value)
+                merged_value.update(log_value)
+                if merged_value != artifact_value:
+                    artifact_dict[field] = merged_value
+                continue
+            
+            # Step 3: Compare values to decide if patch is needed.
+            # Handle case where artifact field might not exist (use None as default).
+            if log_value != artifact_value:
+                # Step 4: Values differ; patch artifact with execution_log value.
+                artifact_dict[field] = log_value
+            # else: Step 5 - Values same or field missing; leave unchanged.
 
     def _get_pipelines(self, name: t.Optional[str] = None) -> t.List[mlpb.Context]: # type: ignore  # Context type not recognized by mypy, using ignore to bypass
         """Return list of pipelines with the given name.
@@ -978,25 +1080,55 @@ class CmfQuery(object):
             )
         return _attrs
 
-    def _get_event_attributes(self, execution_id: int) -> t.List[t.Dict]:
+    def _get_event_attributes(self, execution_id: int, execution_obj=None) -> t.List[t.Dict]:  # type: ignore
         """
         Extract event attributes for a given execution ID.
 
         Args:
             execution_id (int): The ID of the execution for which event attributes are to be extracted.
+            execution_obj (Optional): Optional MLMD execution object to enable execution_log patching.
 
         Returns:
             List[Dict]: A list of dictionaries, each containing attributes of an event associated with the execution.
         """
+        # Step 1: Retrieve all events for this execution ID.
+        # Step 2: For each event, extract event attributes and get associated artifact.
+        # Step 3: Apply artifact patching if execution_obj provided (contains Execution_uuid).
+        # Step 4: Try each execution UUID (comma-separated) to find matching execution_log entry.
+        # Step 5: Return list of events with patched artifacts.
+        
         events = []
+        
+        # Step 1: Extract execution UUIDs from execution_obj if provided.
+        execution_uuids = []
+        if execution_obj is not None:
+            execution_uuids = self._extract_execution_uuids(execution_obj)
+        
+        # Step 2-5: Process each event.
         for event in self.store.get_events_by_execution_ids([execution_id]):
+            # Step 2a: Get event attributes (e.g., type, artifact_id, etc.).
             event_attrs = self._get_node_attributes(event, {})
+            
+            # Step 2b: Get artifact associated with this event.
             artifacts = self.store.get_artifacts_by_id([event.artifact_id])
             artifact_attrs = self._get_node_attributes(
                 artifacts[0], {"type": self.store.get_artifact_types_by_id([artifacts[0].type_id])[0].name}
             )
+            
+            # Step 3: If execution_uuids available, try patching artifact with execution_log data.
+            if execution_uuids and artifact_attrs.get("uri"):
+                # Step 4: Try each execution UUID (any match from comma-separated list is accepted).
+                for uuid in execution_uuids:
+                    # Try to patch artifact with this UUID.
+                    self._patch_artifact_with_execution_log(artifact_attrs, uuid, artifact_attrs["uri"])
+                    # Note: _patch_artifact_with_execution_log is idempotent; calling it multiple times is safe.
+                    # If one UUID matches, the patch is applied; other UUIDs won't match.
+                    # For efficiency, could break after first successful patch, but multiple attempts are safe.
+            
+            # Step 5: Add patched artifact to event attributes.
             event_attrs["artifact"] = artifact_attrs
             events.append(event_attrs)
+        
         return events
 
     def _get_execution_attributes(self, stage_id: int, exec_uuid: t.Optional[str] = None, last_sync_time: t.Optional[int] = None) -> t.List[t.Dict]:
@@ -1010,26 +1142,42 @@ class CmfQuery(object):
         Returns:
             List[Dict]: A list of dictionaries, each containing attributes of an execution associated with the stage.
         """
+        # Step 1: Get all executions for this stage, optionally filtered by exec_uuid.
+        # Step 2: For each execution, extract attributes and nested events/artifacts.
+        # Step 3: Pass execution object to _get_event_attributes so patching can access Execution_uuid.
+        # Step 4: Apply last_sync_time filter if provided.
+        # Step 5: Return list of execution attributes.
+        
         executions = []
+        
+        # Step 1-2: Process each execution.
         for execution in self.get_all_executions_by_stage(stage_id, execution_uuid=exec_uuid):
+            # Step 3: Extract events by passing execution object to enable execution_log patching.
+            events = self._get_event_attributes(execution.id, execution)
+            
+            # Build execution attributes dict with nested events.
             exec_attrs = self._get_node_attributes(
                 execution,
                 {
                     "type": self.store.get_execution_types_by_id([execution.type_id])[0].name,
                     "name": execution.name if execution.name != "" else "",
-                    "events": self._get_event_attributes(execution.id),
+                    "events": events,  # Use events variable with patched artifacts.
                 },
             )
 
+            # Step 4: Filter by last_sync_time if provided.
+            # If last_sync_time given, only include execution if it was updated after that timestamp.
+            # If no last_sync_time, include all executions.
             # what is usual situtaion - 
             #it does not matter if last sync time is given or not we have to add exec_attrs 
             #however if last sync timr is given then we have to check if last_update_time_since_epoch > last_sync_time
             # last_update_time_since epoch
-
+            
             if last_sync_time:
                 if exec_attrs["last_update_time_since_epoch"] > last_sync_time:
                     executions.append(exec_attrs)
             else:
+                # Step 5: No time filter; add all execution attributes.
                 executions.append(exec_attrs)
 
         return executions

@@ -1,7 +1,93 @@
 import json
 import typing as t
+import logging
 from cmflib.cmfquery import CmfQuery
 from cmflib.cmf_merger import parse_json_to_mlmd
+from cmflib.utils.helper_functions import get_postgres_config
+
+
+logger = logging.getLogger(__name__)
+
+
+def _append_execution_logs_from_pipeline(pipeline_data: dict, cmd: str) -> None:
+    # Function Name: _append_execution_logs_from_pipeline
+    # Input: pipeline_data (dict), cmd (str)
+    # Output: None
+    # Description: Append ExecutionLogs rows from incoming pipeline JSON payload.
+    # Step 1: Run only for metadata push command.
+    # Step 2: Iterate stage -> execution -> event from pipeline payload.
+    # Step 3: Skip Environment artifacts and rows missing execution_uuid/artifact_uri.
+    # Step 4: Build metadata_json with name/properties/custom_properties.
+    # Step 5: Insert one append-only row per artifact event into ExecutionLogs.
+    # Step 6: Log failures without interrupting the MLMD merge flow.
+    if cmd != "push":
+        return
+
+    conn = None
+    try:
+        import psycopg  # type: ignore
+
+        config = get_postgres_config()
+        conn = psycopg.connect(
+            host=config.get("host"),
+            port=config.get("port"),
+            user=config.get("user"),
+            password=config.get("password"),
+            dbname=config.get("dbname"),
+            connect_timeout=10,
+        )
+
+        with conn.cursor() as cursor:
+            for stage in pipeline_data.get("stages", []):
+                for execution in stage.get("executions", []):
+                    execution_uuid = execution.get("properties", {}).get("Execution_uuid", "")
+                    if not execution_uuid:
+                        continue
+
+                    for event in execution.get("events", []):
+                        artifact = event.get("artifact", {})
+                        if artifact.get("type") == "Environment":
+                            continue
+
+                        artifact_uri = str(artifact.get("uri", "")).strip()
+                        if not artifact_uri:
+                            continue
+
+                        metadata_payload = {
+                            "custom_properties": artifact.get("custom_properties", {}),
+                            "name": artifact.get("name", ""),
+                            "properties": artifact.get("properties", {}),
+                        }
+
+                        cursor.execute(
+                            """
+                            INSERT INTO executionlogs (
+                                execution_uuid,
+                                artifact_uri,
+                                metadata_json
+                            ) VALUES (%s, %s, %s::jsonb)
+                            """,
+                            (
+                                execution_uuid,
+                                artifact_uri,
+                                json.dumps(metadata_payload, default=str),
+                            ),
+                        )
+
+        conn.commit()
+    except Exception as exc:
+        logger.warning("Failed to append rows into ExecutionLogs from update_mlmd: %s", exc)
+        if conn is not None:
+            try:
+                conn.rollback()
+            except Exception:
+                pass
+    finally:
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
 
 def identify_existing_and_new_executions(query: CmfQuery, pipeline_data: dict, pipeline_name: str) -> t.Tuple[list, list, list, str]:
@@ -123,6 +209,10 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
         if len(pipeline['stages']) == 0 :
             status="exists"
         else:
+            # Side-write: append tracking rows into server ExecutionLogs using parsed JSON payload.
+            # This does not modify existing MLMD merge behavior.
+            _append_execution_logs_from_pipeline(pipeline, cmd)
+
             # metadata push → merge client data into server path
             # metadata pull → merge server data into client path
             if cmd == "pull":
@@ -160,6 +250,10 @@ def update_mlmd(query: CmfQuery, req_info: str, pipeline_name: str, cmd: str, ex
                 if len(pipeline['stages']) == 0 :
                     status="exists"
                 else:
+                    # Side-write: append tracking rows into server ExecutionLogs using parsed JSON payload.
+                    # This does not modify existing MLMD merge behavior.
+                    _append_execution_logs_from_pipeline(pipeline, cmd)
+
                     # metadata push → merge client data into server path
                     # metadata pull → merge server data into client path
                     if cmd == "pull":

@@ -311,6 +311,7 @@ const ExecutionsPostgresGrid = () => {
                                                         filterValue={filter}
                                                         onCardClick={setSelectedExecution}
                                                         isSelected={selectedExecutions.some(e => e.execution_id === execution.execution_id)}
+                                                        isActive={selectedExecution?.execution_id === execution.execution_id}
                                                         onToggle={handleToggleExecution}
                                                     />
                                                 ))}
@@ -367,7 +368,6 @@ const ExecutionsPostgresGrid = () => {
                 <DetailDrawer
                     title="Execution Details"
                     subtitle={<>ID: <span className="font-mono font-semibold">{selectedExecution.execution_id || "—"}</span></>}
-                    summaryFields={executionDetailSummaryFields}
                     allProperties={executionDetailProperties}
                     onClose={() => setSelectedExecution(null)}
                 />
