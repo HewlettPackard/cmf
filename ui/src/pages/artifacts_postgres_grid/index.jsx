@@ -63,6 +63,9 @@ const ArtifactsPostgres = () => {
     const [selectedArtifacts, setSelectedArtifacts] = useState([]);
     const [showCompareModal, setShowCompareModal] = useState(false);
 
+    // Expanded row state - persists across artifact type switches
+    const [expandedRow, setExpandedRow] = useState(null);
+
     useEffect(() => {
         fetchPipelines();
     }, []);
@@ -142,6 +145,22 @@ const ArtifactsPostgres = () => {
             .then((data) => {
                 setArtifacts(data.items);
                 setTotalItems(data.total_items);
+
+                // Auto-load first label's content when Label artifact type is selected
+                if (artifactType === "Label" && data.items && data.items.length > 0) {
+                    // Load first label if none selected, OR update highlighting when filter changes
+                    if (!selectedTableLabel) {
+                        const firstLabel = data.items[0];
+                        handleLabelClick(firstLabel.name, firstLabel);
+                    } else {
+                        // Update the searchFilter in the currently selected label to trigger highlighting
+                        setSelectedTableLabel(prev => ({
+                            ...prev,
+                            searchFilter: filter,
+                            isSearchResult: filter && filter.trim() !== ''
+                        }));
+                    }
+                }
             }).catch((error) => {
                 console.error("Error fetching artifacts by stage:", error);
                 setArtifacts([]);
@@ -213,7 +232,12 @@ const ArtifactsPostgres = () => {
     };
 
     const handleLabelClick = (labelName, artifact) => {
-        setSelectedTableLabel({ name: labelName, ...artifact });
+        setSelectedTableLabel({
+            name: labelName,
+            ...artifact,
+            searchFilter: filter,          // Pass current filter for highlighting
+            isSearchResult: filter && filter.trim() !== ''  // Mark as search result if filter exists
+        });
         setLabelContentLoading(true);
         setLabelCurrentPage(0);
 
@@ -228,7 +252,11 @@ const ArtifactsPostgres = () => {
                 console.log("parsed data = ", parsed.data);
 
                 if (parsed.data && parsed.data.length > 0) {
-                    setParsedLabelData(parsed.data);
+                    // Filter out empty trailing rows that Papa.parse adds when CSV has a trailing newline
+                    const filteredData = parsed.data.filter(row =>
+                        Object.values(row).some(val => val !== null && val !== undefined && val !== '')
+                    );
+                    setParsedLabelData(filteredData);
                     if (parsed.meta.fields) {
                         const columns = parsed.meta.fields.map(field => ({ name: field }));
                         console.log("columns = ", columns);
@@ -434,8 +462,11 @@ const ArtifactsPostgres = () => {
                                                                 filterValue={filter}
                                                                 onLabelClick={handleLabelClick}
                                                                 onArtifactClick={handleArtifactCardClick}
-                                                                isSplitView={true} selectedItems={selectedArtifacts}
-                                                                onToggleItem={handleToggleArtifact} />
+                                                                isSplitView={true}
+                                                                selectedItems={selectedArtifacts}
+                                                                onToggleItem={handleToggleArtifact}
+                                                                expandedRow={expandedRow}
+                                                                setExpandedRow={setExpandedRow} />
                                                             <PaginationControls
                                                                 totalItems={totalItems}
                                                                 activePage={activePage}
@@ -483,6 +514,8 @@ const ArtifactsPostgres = () => {
                                                         onArtifactClick={handleArtifactCardClick}
                                                         selectedItems={selectedArtifacts}
                                                         onToggleItem={handleToggleArtifact}
+                                                        expandedRow={expandedRow}
+                                                        setExpandedRow={setExpandedRow}
                                                     />
                                                     <PaginationControls
                                                         totalItems={totalItems}
