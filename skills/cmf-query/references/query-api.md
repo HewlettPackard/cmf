@@ -2,7 +2,7 @@
 
 ```python
 from cmflib.cmfquery import CmfQuery
-query = CmfQuery(filepath="mlmd")
+query = CmfQuery(filename="mlmd")
 ```
 
 ## Method reference

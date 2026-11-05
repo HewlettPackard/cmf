@@ -104,7 +104,7 @@ Includes copy-paste templates for data preparation, training, and evaluation sta
 from cmflib.cmf import Cmf
 
 def train(train_path: str, model_path: str, params: dict) -> None:
-    metawriter = Cmf(filepath="mlmd", pipeline_name="my_pipeline")
+    metawriter = Cmf(filename="mlmd", pipeline_name="my_pipeline")
     metawriter.create_context(pipeline_stage="Train")
     metawriter.create_execution(execution_type="Train", custom_properties=params)
 

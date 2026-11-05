@@ -15,7 +15,7 @@ Add CMF tracking to the user's Python pipeline. Identify each stage and apply th
 ```python
 from cmflib.cmf import Cmf
 
-metawriter = Cmf(filepath="mlmd", pipeline_name="my_pipeline")  # 1. connect
+metawriter = Cmf(filename="mlmd", pipeline_name="my_pipeline")  # 1. connect
 metawriter.create_context(pipeline_stage="Train")               # 2. stage type
 metawriter.create_execution(                                     # 3. this run
     execution_type="Train",
@@ -79,7 +79,7 @@ metawriter.log_execution_metrics("eval_metrics",
 ### Data preparation
 ```python
 def prepare(input_path, output_dir, params):
-    metawriter = Cmf(filepath="mlmd", pipeline_name="my_pipeline")
+    metawriter = Cmf(filename="mlmd", pipeline_name="my_pipeline")
     metawriter.create_context(pipeline_stage="Prepare")
     metawriter.create_execution(execution_type="Prepare", custom_properties=params)
 
@@ -93,7 +93,7 @@ def prepare(input_path, output_dir, params):
 ### Training
 ```python
 def train(train_path, model_path, params):
-    metawriter = Cmf(filepath="mlmd", pipeline_name="my_pipeline")
+    metawriter = Cmf(filename="mlmd", pipeline_name="my_pipeline")
     metawriter.create_context(pipeline_stage="Train")
     metawriter.create_execution(execution_type="Train", custom_properties=params)
 
@@ -115,7 +115,7 @@ def train(train_path, model_path, params):
 ### Evaluation
 ```python
 def evaluate(model_path, test_path, params):
-    metawriter = Cmf(filepath="mlmd", pipeline_name="my_pipeline")
+    metawriter = Cmf(filename="mlmd", pipeline_name="my_pipeline")
     metawriter.create_context(pipeline_stage="Evaluate")
     metawriter.create_execution(execution_type="Evaluate", custom_properties=params)
 
@@ -130,7 +130,7 @@ def evaluate(model_path, test_path, params):
 ## Instrumentation checklist
 
 - [ ] `from cmflib.cmf import Cmf` added at top
-- [ ] `Cmf(filepath="mlmd", pipeline_name="<pipeline>")` — same name every stage
+- [ ] `Cmf(filename="mlmd", pipeline_name="<pipeline>")` — same name every stage
 - [ ] `create_context(pipeline_stage="<StageName>")` — stable name
 - [ ] `create_execution(...)` — hyperparameters in `custom_properties`
 - [ ] Every significant input logged with `"input"`, every output with `"output"`
