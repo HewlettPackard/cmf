@@ -2,7 +2,7 @@
 name = "cmflib"
 version = "0.1.0"
 dependencies = [
-	"ml-metadata==1.21.0",
+	"ml-metadata==1.17.1",
 	"dvc[ssh,s3]==3.51.1",
 	"pathspec==0.12.1",
 	"pandas",
@@ -18,7 +18,7 @@ dependencies = [
 	"cryptography",   
 	"ray==2.34.0",
 	"readchar",
-       "protobuf>=6.31.1,<7",
+    "protobuf>=4.25.9,<5",
 	"boto3==1.41.0",
 ]
 authors = [
@@ -42,6 +42,9 @@ test = [
     "requests",
     "psutil",
 ]
+
+[tool.pylint.main]
+generated-members = ["mlpb.*", "metadata_store_pb2.*"]
 
 [tool.setuptools]
 license-files = [ "LICENSE.txt" ]
