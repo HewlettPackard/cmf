@@ -2,7 +2,7 @@
 name = "cmflib"
 version = "0.1.0"
 dependencies = [
-	"ml-metadata==1.17.0",
+	"ml-metadata==1.17.1",
 	"dvc[ssh,s3]==3.51.1",
 	"pathspec==0.12.1",
 	"pandas",
