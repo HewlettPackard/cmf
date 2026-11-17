@@ -39,24 +39,20 @@ def generate_cached_url(url, cache):
     cached_url= parsed_cache_url.scheme + "://" + parsed_cache_url.netloc + parsed_url.path
     return cached_url 
 
-def calculate_md5_from_file(file_path, chunk_size=8192):
-    md5 = hashlib.md5()
-    try:
-        with open(file_path, 'rb') as f:
-            while chunk := f.read(chunk_size):
-                md5.update(chunk)
-    except Exception as e:
-        logger.error(f"[calculate_md5_from_file] An error occurred while reading the file: {e}")
-        return None
-    return md5.hexdigest()
+DOWNLOAD_CHUNK_SIZE = 1 << 20
 
-def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout):
+# (connect, read) seconds. The read timeout bounds the gap between bytes, not the whole
+# transfer; a cache that misses must fetch from the origin before its first byte.
+CACHE_TIMEOUT = (5, 60)
+ORIGIN_TIMEOUT = (10, 60)
+
+
+def download_and_verify_file(host, headers, remote_file_path, local_path, artifact_hash, timeout, verify=True):
     """
     Download a file from the given host URL, write it to disk, and verify its MD5 hash.
 
-    The function performs an HTTP GET request to ``host`` using the provided ``headers`` and
-    ``timeout``. If data is received, it is written to ``remote_file_path``. The MD5 checksum of
-    the downloaded file is then computed and compared against ``artifact_hash``.
+    The response is streamed to ``remote_file_path + ".part"`` while its MD5 is computed, and
+    renamed to ``remote_file_path`` only if the MD5 matches ``artifact_hash``.
 
     Args:
         host (str): Fully qualified URL from which to download the artifact.
@@ -64,58 +60,46 @@ def download_and_verify_file(host, headers, remote_file_path, local_path, artifa
         remote_file_path (str): Local filesystem path where the downloaded file will be written.
         local_path (str): Logical or original path/name used for logging and status messages.
         artifact_hash (str): Expected MD5 hash of the artifact, used for integrity verification.
-        timeout (float | int): Timeout (in seconds) for the HTTP request.
+        timeout (float | tuple): requests timeout: seconds, or (connect, read).
+        verify (bool): verify the server's TLS certificate.
 
     Returns:
         tuple[bool, str]: A pair ``(success, message)`` where ``success`` indicates whether the
             download and MD5 verification succeeded, and ``message`` describes the outcome.
     """
-    #logger.info(f"Inside download_and_verify_file: Fetching artifact={local_path}, surl={host} to {remote_file_path}")
-    data= None
+    # Stream to a sibling .part file, hashing as it arrives, so memory stays flat for
+    # multi-GB artifacts and a failed or corrupt transfer never replaces a good file.
+    part_path = remote_file_path + ".part"
+    start_time = time.time()
+    md5 = hashlib.md5()
     try:
-        response = requests.get(host, headers=headers, timeout=timeout, verify=True)  # This should be made True. otherwise this will produce Insecure SSL Warning
-        if response.status_code == 200 and response.content:
-            data = response.content
-        else:
-            #logger.error(f"Inside download_and_verify_file: Failed to download file. HTTP Status Code: {response.status_code}. Response content: {response.content}")
-            return False, "No data received from the server."
-            #pass
+        with requests.get(host, headers=headers, timeout=timeout, verify=verify, stream=True) as response:
+            if response.status_code != 200:
+                return False, f"HTTP {response.status_code} from {host}"
+            with open(part_path, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=DOWNLOAD_CHUNK_SIZE):
+                    md5.update(chunk)
+                    file.write(chunk)
     except requests.exceptions.Timeout:
+        _remove_quietly(part_path)
         return False, "The request timed out."
-        #pass
     except Exception as exception:
-        #logger.error(f"Inside download_and_verify_file: An error occurred during the download: {exception}")
+        _remove_quietly(part_path)
         return False, str(exception)
 
-    if data is not None:
-        try: 
-            with open(remote_file_path, 'wb') as file:
-                file.write(data)
-            if os.path.exists(remote_file_path) and os.path.getsize(remote_file_path) > 0:
-                # Calculate MD5 hash of the downloaded file
-                start_time = time.time()
-                md5_hash = calculate_md5_from_file(remote_file_path)
-                end_time = time.time()
-                time_taken = end_time - start_time
-                if md5_hash:
-                    #logger.debug(f"MD5 hash of the downloaded file is: {md5_hash}")
-                    #logger.debug(f"Artifact hash from MLMD records is: {artifact_hash}")
-                    #logger.debug(f"Time taken to calculate MD5 hash: {time_taken:.2f} seconds")
-                    if artifact_hash == md5_hash:
-                        #logger.debug("MD5 hash of the downloaded file matches the hash in MLMD records.")
-                        stmt = f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and matches MLMD records."
-                        success=True
-                    else:
-                        #logger.error("Error: MD5 hash of the downloaded file does not match the hash in MLMD records.")
-                        stmt = f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and does NOT match MLMD records."
-                        success=False
-                    return success, stmt
-                else:
-                    logger.error("Failed to calculate MD5 hash of the downloaded file.")
-        except Exception as e:
-            return False, f"An error occurred while writing to the file: {e}"
-    
-    return False, "Data is None."
+    time_taken = time.time() - start_time
+    if md5.hexdigest() != artifact_hash:
+        _remove_quietly(part_path)
+        return False, f"object {local_path} downloaded in {time_taken:.2f} seconds and does NOT match MLMD records."
+    os.replace(part_path, remote_file_path)
+    return True, f"object {local_path} downloaded at {remote_file_path} in {time_taken:.2f} seconds and matches MLMD records."
+
+
+def _remove_quietly(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
 
 
 class OSDFremoteArtifacts:
@@ -159,7 +143,7 @@ class OSDFremoteArtifacts:
         #Cache can be Blank. If so, fetch from Origin
         if cache == "":
             #Fetch from Origin
-            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
+            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=ORIGIN_TIMEOUT)
             if success:
                 #logger.info(result)
                 return success, result
@@ -169,7 +153,7 @@ class OSDFremoteArtifacts:
             #Generate Cached path for artifact
             cached_s_url = generate_cached_url(host, cache)
             #Try to fetch from cache first
-            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=5)
+            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=CACHE_TIMEOUT)
             if success:
                 #logger.info(cached_result)
                 return success, cached_result
@@ -177,7 +161,7 @@ class OSDFremoteArtifacts:
                 logger.error(f"Failed to download and verify file from cache: {cached_result}")
                 logger.info(f"Trying Origin at {host}")
                 #Fetch from Origin 
-                success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=10)
+                success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=ORIGIN_TIMEOUT)
                 if success: 
                     #logger.info(origin_result)
                     return success, origin_result
