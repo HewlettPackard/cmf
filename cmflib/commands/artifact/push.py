@@ -25,7 +25,7 @@ from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
 from cmflib.utils.helper_functions import resolve_osdf_token, fetch_cmf_config_path, validate_and_examine_osdf_token
-from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute, dvc_add_secret_attribute
+from cmflib.dvc_wrapper import dvc_push, dvc_add_secret_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, Minios3ServerInactive, 
@@ -160,7 +160,7 @@ class CmdArtifactPush(CmdBase):
                                 if isinstance(item, dict) and 'path' in item:
                                     final_list.add(item['path'])
 
-        # DVC reads the password directly from .dvc/config when pushing over SSH.
+        # DVC reads the password directly from .dvc/config.local when pushing over SSH.
         # The password is stored Base64-encoded, but DVC has no knowledge of that
         # encoding and would pass the encoded string as-is to the SSH server,
         # causing authentication to fail. Decode it to plaintext before the push
@@ -173,12 +173,12 @@ class CmdArtifactPush(CmdBase):
             plain_password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
         try:
             if is_ssh_remote:
-                dvc_add_attribute("ssh-storage", "password", plain_password)
+                dvc_add_secret_attribute("ssh-storage", "password", plain_password)
             result = dvc_push(num_jobs, list(final_list))
         finally:
             # Always restore the encoded password, even if dvc_push raises.
             if is_ssh_remote:
-                dvc_add_attribute("ssh-storage", "password", encoded_password)
+                dvc_add_secret_attribute("ssh-storage", "password", encoded_password)
 
         return ArtifactPushSuccess(result)
     

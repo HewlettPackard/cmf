@@ -29,6 +29,7 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
+    dvc_add_secret_attribute,
     check_git_config,
 )
 from cmflib.utils.cmf_config import CmfConfig
@@ -104,7 +105,7 @@ class CmdInitSSHRemote(CmdBase):
         dvc_add_attribute(repo_type, "user", self.args.user[0])
         # Encode the password in base64 before storing so it is not saved as plaintext.
         encrypted_password = base64.b64encode(self.args.password[0].encode("utf-8")).decode("utf-8")
-        dvc_add_attribute(repo_type, "password", encrypted_password)
+        dvc_add_secret_attribute(repo_type, "password", encrypted_password)
         dvc_add_attribute(repo_type, "port", self.args.port[0])
         status = CmfInitComplete()
         return status

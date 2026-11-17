@@ -14,7 +14,7 @@
 # limitations under the License.
 ###
 
-"""Offline tests for the OSDF remote: no origin, cache or token needed."""
+"""Offline tests of how remotes store credentials and find tokens: no server needed."""
 
 import os
 import shutil
@@ -115,6 +115,55 @@ class TestInitOsdfRemote(unittest.TestCase):
             cmf_config = CmfConfig.read_config(".cmfconfig")
             self.assertEqual(cmf_config["osdf-access_token"], OSDF_TOKEN_DISCOVER)
             self.assertEqual(resolve_osdf_token(cmf_config, {})[0], "Bearer from-env")
+
+
+@unittest.skipUnless(shutil.which("dvc") and shutil.which("git"), "needs the dvc and git CLIs")
+class TestInitKeepsSecretsOutOfGit(unittest.TestCase):
+    SECRET = "s3cr3t-value"
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.repo = tempfile.mkdtemp()
+        os.chdir(self.repo)
+        subprocess.run(["git", "init", "-q"], check=True)
+        subprocess.run(["git", "config", "user.name", "t"], check=True)
+        subprocess.run(["git", "config", "user.email", "t@example.org"], check=True)
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.repo)
+
+    def _init(self, backend_args):
+        from cmflib import cli
+        args = cli.parse_args(["init", *backend_args, "--git-remote-url", "https://example.org/repo.git"])
+        args.func(args).do_run()
+        with open(".dvc/config") as f:
+            project = f.read()
+        with open(".dvc/config.local") as f:
+            local = f.read()
+        return project, local
+
+    def test_amazons3(self):
+        project, local = self._init(["amazonS3", "--url", "s3://bucket/path", "--access-key-id", "AKIDEXAMPLE",
+                                     "--secret-key", self.SECRET, "--session-token", "tok-" + self.SECRET])
+        for value in (self.SECRET, "tok-" + self.SECRET, "AKIDEXAMPLE"):
+            self.assertNotIn(value, project)
+            self.assertIn(value, local)
+
+    def test_minios3(self):
+        project, local = self._init(["minioS3", "--url", "s3://bucket/path", "--endpoint-url", "http://minio:9000",
+                                     "--access-key-id", "minioadmin", "--secret-key", self.SECRET])
+        self.assertNotIn(self.SECRET, project)
+        self.assertIn(self.SECRET, local)
+        self.assertIn("endpointurl", project)
+
+    def test_sshremote(self):
+        import base64
+        encoded = base64.b64encode(self.SECRET.encode()).decode()
+        project, local = self._init(["sshremote", "--path", "ssh://127.0.0.1/home/u/store", "--user", "u",
+                                     "--port", "22", "--password", self.SECRET])
+        self.assertNotIn(encoded, project)
+        self.assertIn(encoded, local)
 
 
 class TestTokenResolution(unittest.TestCase):

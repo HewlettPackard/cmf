@@ -27,6 +27,7 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
+    dvc_add_secret_attribute,
     git_modify_remote_url,
     check_git_config,
 )
@@ -107,8 +108,8 @@ class CmdInitMinioS3(CmdBase):
             raise CmfInitFailed
         print(output)
         dvc_add_attribute(repo_type, "endpointurl", self.args.endpoint_url[0])
-        dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id[0])
-        dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key[0])
+        dvc_add_secret_attribute(repo_type, "access_key_id", self.args.access_key_id[0])
+        dvc_add_secret_attribute(repo_type, "secret_access_key", self.args.secret_key[0])
         status = CmfInitComplete()
         return status
 
