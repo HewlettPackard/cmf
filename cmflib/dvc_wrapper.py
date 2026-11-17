@@ -475,6 +475,28 @@ def dvc_add_attribute(repo_type, attribute_type, attribute_value) -> str:
     return commit
 
 
+def dvc_add_secret_attribute(repo_type, attribute_type, attribute_value) -> bool:
+    """Store a credential in .dvc/config.local, which DVC git-ignores, never in .dvc/config.
+
+    Any copy an older cmflib left in the git-tracked .dvc/config is removed.
+    """
+    try:
+        subprocess.run(
+            ['dvc', 'remote', 'modify', '--local', repo_type, attribute_type, attribute_value],
+            check=True, capture_output=True, text=True, timeout=60,
+        )
+        subprocess.run(
+            ['dvc', 'remote', 'modify', '--unset', repo_type, attribute_type],
+            check=True, capture_output=True, text=True, timeout=60,
+        )
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as err:
+        # The value is a credential: report the command's stderr, never its arguments.
+        logger.error(f"[dvc_add_secret_attribute] could not set {attribute_type} on remote {repo_type}: "
+                     f"{getattr(err, 'stderr', '') or err.__class__.__name__}")
+        return False
+    return True
+
+
 # get dvc config
 def dvc_get_config() -> str:
     commit = ""

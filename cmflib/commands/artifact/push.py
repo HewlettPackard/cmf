@@ -24,8 +24,8 @@ import argparse
 from cmflib import cmfquery
 from cmflib.cli.command import CmdBase
 from cmflib.cli.utils import check_minio_server
-from cmflib.utils.helper_functions import generate_osdf_token, fetch_cmf_config_path, validate_and_examine_osdf_token
-from cmflib.dvc_wrapper import dvc_push, dvc_add_attribute
+from cmflib.utils.helper_functions import resolve_osdf_token, fetch_cmf_config_path, validate_and_examine_osdf_token
+from cmflib.dvc_wrapper import dvc_push, dvc_add_secret_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cmf_exception_handling import (
     PipelineNotFound, Minios3ServerInactive, 
@@ -71,37 +71,14 @@ class CmdArtifactPush(CmdBase):
             cmf_config={}
             cmf_config=CmfConfig.read_config(config_file_path)
             
-            # Check if access_token is provided (either as a file path or "provided" marker)
-            access_token = cmf_config.get("osdf-access_token", "")
-            token_source_description = ""
-            
-            if access_token and access_token != "":
-                # Token-based authentication
-                if access_token == "provided":
-                    # Token was provided as raw text during init, but we can't retrieve it
-                    # User needs to use key-based auth or provide token file
-                    raise MsgFailure(msg_str="OSDF token was provided as raw text during init. Please re-run 'cmf init osdfremote' with --access-token pointing to a token file, or use --key-id, --key-path, --key-issuer for dynamic token generation.")
-                elif os.path.isfile(os.path.expanduser(access_token)):
-                    # Read token from file
-                    with open(os.path.expanduser(access_token), "r") as token_file:
-                        token_str = token_file.read().strip()
-                    dynamic_password = "Bearer " + token_str
-                    token_source_description = f"Token file: {access_token}"
-                else:
-                    # Assume it's a raw token string (though this shouldn't happen with new code)
-                    dynamic_password = "Bearer " + access_token
-                    token_source_description = "Provided token string"
-            else:
-                # Key-based authentication - generate token dynamically
-                dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
-                token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
+            dynamic_password, token_source_description = resolve_osdf_token(cmf_config, dvc_config_op)
             
             # Validate and examine the token before proceeding
             if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
                 raise MsgFailure(msg_str="OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
             
             #print("Dynamic Password"+dynamic_password)
-            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            dvc_add_secret_attribute(dvc_config_op["core.remote"], "password", dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
             #result = dvc_push(num_jobs=num_jobs)
             #print(result)
@@ -183,7 +160,7 @@ class CmdArtifactPush(CmdBase):
                                 if isinstance(item, dict) and 'path' in item:
                                     final_list.add(item['path'])
 
-        # DVC reads the password directly from .dvc/config when pushing over SSH.
+        # DVC reads the password directly from .dvc/config.local when pushing over SSH.
         # The password is stored Base64-encoded, but DVC has no knowledge of that
         # encoding and would pass the encoded string as-is to the SSH server,
         # causing authentication to fail. Decode it to plaintext before the push
@@ -196,12 +173,12 @@ class CmdArtifactPush(CmdBase):
             plain_password = base64.b64decode(encoded_password.encode("utf-8")).decode("utf-8")
         try:
             if is_ssh_remote:
-                dvc_add_attribute("ssh-storage", "password", plain_password)
+                dvc_add_secret_attribute("ssh-storage", "password", plain_password)
             result = dvc_push(num_jobs, list(final_list))
         finally:
             # Always restore the encoded password, even if dvc_push raises.
             if is_ssh_remote:
-                dvc_add_attribute("ssh-storage", "password", encoded_password)
+                dvc_add_secret_attribute("ssh-storage", "password", encoded_password)
 
         return ArtifactPushSuccess(result)
     

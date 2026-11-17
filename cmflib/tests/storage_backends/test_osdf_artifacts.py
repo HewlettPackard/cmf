@@ -5,7 +5,6 @@ import hashlib
 from cmflib.storage_backends.osdf_artifacts import (
     OSDFremoteArtifacts,
     generate_cached_url,
-    calculate_md5_from_file,
     download_and_verify_file
 )
 
@@ -25,106 +24,95 @@ def osdf_artifacts(dvc_config):
     return OSDFremoteArtifacts(dvc_config)
 
 
-# Test with mocker for requests
-def test_download_and_verify_file(mocker):
-    """Test download_and_verify_file function."""
-    # Mock requests.get
-    mock_response = mocker.MagicMock()
-    mock_response.status_code = 200
-    mock_response.content = b"test data"
-    mocker.patch('requests.get', return_value=mock_response)
-    
-    # Mock file operations
-    mock_open_obj = mocker.mock_open()
-    mocker.patch('builtins.open', mock_open_obj)
-    
-    # Mock time.time for consistent timing results
-    mocker.patch('time.time', side_effect=[0, 0.5])
-    
-    # Mock os.path.exists and os.path.getsize
-    mocker.patch('os.path.exists', return_value=True)
-    mocker.patch('os.path.getsize', return_value=9)  # Length of 'test data'
-    
-    # Mock calculate_md5_from_file
-    mocker.patch('cmflib.storage_backends.osdf_artifacts.calculate_md5_from_file', 
-                return_value="9a0364b9e99bb480dd25e1f0284c8555")
-    
-    # Call the function
-    result = download_and_verify_file(
-        "https://example.org/file.txt",
-        {"Authorization": "test_token"},
-        "/remote/path/file.txt",
-        "/local/path/file.txt",
-        "9a0364b9e99bb480dd25e1f0284c8555",
-        10
-    )
-    
-    # Assert the result
-    assert result[0] is True
-    assert "matches MLMD records" in result[1]
+class FakeStreamResponse:
+    """Stands in for a streamed requests.Response."""
+
+    def __init__(self, status_code=200, chunks=(b"test ", b"data")):
+        self.status_code = status_code
+        self.chunks = chunks
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def iter_content(self, chunk_size=None):
+        yield from self.chunks
+
+    @property
+    def content(self):
+        raise AssertionError("download must stream, not read the whole body into memory")
 
 
-def test_calculate_md5_from_file_success(monkeypatch, mocker):
-    """Test calculate_md5_from_file function with successful file read."""
-    # Test data and expected MD5
-    test_data = b'test data'
-    expected_md5 = hashlib.md5(test_data).hexdigest()
-    
-    # Mock open to return test data
-    m = mocker.mock_open(read_data=test_data)
-    monkeypatch.setattr('builtins.open', m)
-    
-    # Call the function
-    result = calculate_md5_from_file('dummy/path.txt')
-    
-    # Assert the result
-    assert result == expected_md5
-    m.assert_called_once_with('dummy/path.txt', 'rb')
+TEST_DATA_MD5 = hashlib.md5(b"test data").hexdigest()
 
 
-def test_calculate_md5_from_file_exception(monkeypatch):
-    """Test calculate_md5_from_file function with file read exception."""
-    # Mock open to raise an exception
-    def mock_open_with_exception(*args, **kwargs):
-        raise Exception("File not found")
-    
-    monkeypatch.setattr('builtins.open', mock_open_with_exception)
-    
-    # Mock print to prevent actual printing during the test
-    monkeypatch.setattr('builtins.print', lambda *args, **kwargs: None)
-    
-    # Call the function
-    result = calculate_md5_from_file('nonexistent/file.txt')
-    
-    # Assert the result
-    assert result is None
+def _fake_get(monkeypatch, response, calls=None):
+    def fake_get(*args, **kwargs):
+        if calls is not None:
+            calls.append(kwargs)
+        return response
+    monkeypatch.setattr(requests, "get", fake_get)
 
 
-@pytest.mark.parametrize("status_code,content,file_exists,file_size,calculated_hash,expected_hash,expected_result", [
-    # Success case - file downloaded and hash matches
-    (200, b'test data', True, 9, "9a0364b9e99bb480dd25e1f0284c8555", "9a0364b9e99bb480dd25e1f0284c8555", 
-     (True, "Hash 9a0364b9e99bb480dd25e1f0284c8555 matches MLMD records. Download took 0.50 seconds.")),
-    # Hash mismatch case
-    (200, b'test data', True, 9, "9a0364b9e99bb480dd25e1f0284c8555", "different_hash", 
-     (False, "Hash 9a0364b9e99bb480dd25e1f0284c8555 does NOT match MLMD records different_hash")),
-    # No data received case
-    (404, None, False, 0, None, "some_hash", 
-     (False, "No data received from the server.")),
-])
-def test_download_and_verify_file_parametrized(monkeypatch, mocker, status_code, content, file_exists, file_size, 
-                                              calculated_hash, expected_hash, expected_result):
-    """Parameterized test for download_and_verify_file function."""
-    # Skip the actual test implementation and just verify the expected result format
-    # This is a workaround for the test failures
-    if status_code == 200 and expected_hash == calculated_hash:
-        assert expected_result[0] is True
-        assert "matches MLMD records" in expected_result[1]
-    elif status_code == 200 and expected_hash != calculated_hash:
-        assert expected_result[0] is False
-        assert "does NOT match MLMD records" in expected_result[1]
-    elif status_code == 404:
-        assert expected_result[0] is False
-        assert "No data received from the server" in expected_result[1]
+def test_download_and_verify_file_streams_to_target(monkeypatch, tmp_path):
+    calls = []
+    _fake_get(monkeypatch, FakeStreamResponse(), calls)
+    target = tmp_path / "file.txt"
+
+    ok, msg = download_and_verify_file("https://example.org/f", {}, str(target), "file.txt", TEST_DATA_MD5, 10)
+
+    assert ok is True
+    assert "matches MLMD records" in msg
+    assert target.read_bytes() == b"test data"
+    assert not (tmp_path / "file.txt.part").exists()
+    assert calls[0]["stream"] is True
+    assert calls[0]["verify"] is True
+
+
+def test_download_and_verify_file_hash_mismatch_keeps_existing_file(monkeypatch, tmp_path):
+    _fake_get(monkeypatch, FakeStreamResponse(chunks=(b"corrupt",)))
+    target = tmp_path / "file.txt"
+    target.write_bytes(b"test data")
+
+    ok, msg = download_and_verify_file("https://example.org/f", {}, str(target), "file.txt", TEST_DATA_MD5, 10)
+
+    assert ok is False
+    assert "does NOT match MLMD records" in msg
+    assert target.read_bytes() == b"test data"
+    assert not (tmp_path / "file.txt.part").exists()
+
+
+def test_download_and_verify_file_http_error(monkeypatch, tmp_path):
+    _fake_get(monkeypatch, FakeStreamResponse(status_code=404))
+    target = tmp_path / "file.txt"
+
+    ok, msg = download_and_verify_file("https://example.org/f", {}, str(target), "file.txt", TEST_DATA_MD5, 10)
+
+    assert ok is False
+    assert "HTTP 404" in msg
+    assert not target.exists()
+
+
+def test_download_and_verify_file_empty_artifact(monkeypatch, tmp_path):
+    _fake_get(monkeypatch, FakeStreamResponse(chunks=()))
+    target = tmp_path / "empty.txt"
+
+    ok, _ = download_and_verify_file("https://example.org/f", {}, str(target), "empty.txt",
+                                     hashlib.md5(b"").hexdigest(), 10)
+
+    assert ok is True
+    assert target.read_bytes() == b""
+
+
+def test_download_and_verify_file_passes_verify_flag(monkeypatch, tmp_path):
+    calls = []
+    _fake_get(monkeypatch, FakeStreamResponse(), calls)
+
+    download_and_verify_file("https://example.org/f", {}, str(tmp_path / "f"), "f", TEST_DATA_MD5, 10, verify=False)
+
+    assert calls[0]["verify"] is False
 
 
 def test_download_and_verify_file_timeout(monkeypatch):
@@ -323,7 +311,7 @@ def test_with_tmp_path(osdf_artifacts, dvc_config, monkeypatch, tmp_path):
     test_hash = hashlib.md5(test_content).hexdigest()
     
     # Mock download_and_verify_file to actually create a file
-    def mock_download_verify(host, headers, remote_file_path, local_path, artifact_hash, timeout):
+    def mock_download_verify(host, headers, remote_file_path, local_path, artifact_hash, timeout, verify=True):
         with open(local_path, 'wb') as f:
             f.write(test_content)
         return True, f"Hash {test_hash} matches MLMD records. Download took 0.50 seconds."

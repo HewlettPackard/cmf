@@ -540,43 +540,21 @@ class CmdArtifactPull(CmdBase):
                 raise BatchDownloadFailure(files_downloaded, files_failed_to_download)
         elif dvc_config_op["core.remote"] == "osdf":
             #Regenerate Token for OSDF
-            from cmflib.utils.helper_functions import generate_osdf_token, validate_and_examine_osdf_token
-            from cmflib.dvc_wrapper import dvc_add_attribute
+            from cmflib.utils.helper_functions import resolve_osdf_token, validate_and_examine_osdf_token
+            from cmflib.dvc_wrapper import dvc_add_secret_attribute
             from cmflib.utils.cmf_config import CmfConfig
             #Fetch Config from CMF_Config_File
             cmf_config=CmfConfig.read_config(config_file_path)
             
-            # Check if access_token is provided (either as a file path or "provided" marker)
-            access_token = cmf_config.get("osdf-access_token", "")
-            token_source_description = ""
-            
-            if access_token and access_token != "":
-                # Token-based authentication
-                if access_token == "provided":
-                    # Token was provided as raw text during init, but we can't retrieve it
-                    raise Exception("OSDF token was provided as raw text during init. Please re-run 'cmf init osdfremote' with --access-token pointing to a token file, or use --key-id, --key-path, --key-issuer for dynamic token generation.")
-                elif os.path.isfile(os.path.expanduser(access_token)):
-                    # Read token from file
-                    with open(os.path.expanduser(access_token), "r") as token_file:
-                        token_str = token_file.read().strip()
-                    dynamic_password = "Bearer " + token_str
-                    token_source_description = f"Token file: {access_token}"
-                else:
-                    # Assume it's a raw token string (though this shouldn't happen with new code)
-                    dynamic_password = "Bearer " + access_token
-                    token_source_description = "Provided token string"
-            else:
-                # Key-based authentication - generate token dynamically
-                dynamic_password = generate_osdf_token(cmf_config["osdf-key_id"],cmf_config["osdf-key_path"],cmf_config["osdf-key_issuer"])
-                token_source_description = f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
+            dynamic_password, token_source_description = resolve_osdf_token(cmf_config, dvc_config_op)
             
             # Validate and examine the token before proceeding
             if not validate_and_examine_osdf_token(dynamic_password, token_source_description):
                 raise Exception("OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
             
             #cmf_config["password"]=dynamic_password
-            #Update Password in .dvc/config for future use
-            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            #Update Password in .dvc/config.local (git-ignored) for future use
+            dvc_add_secret_attribute(dvc_config_op["core.remote"], "password", dynamic_password)
             #Updating dvc_config_op data structure with new password as well since this is used in download_artifacts() below
             dvc_config_op["remote.osdf.password"]=dynamic_password
             #Need to write to cmfconfig with new credentials
@@ -584,7 +562,10 @@ class CmdArtifactPull(CmdBase):
             #Now Ready to do dvc pull 
             cache_path=cmf_config["osdf-cache"]
 
-            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op)
+            # Only an explicit `cmf init osdfremote --no-ssl-verify` turns verification off;
+            # repos initialised before that flag existed have no key and keep verifying.
+            verify = cmf_config.get("osdf-ssl_verify", "true") != "false"
+            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op, verify=verify)
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.

@@ -29,11 +29,12 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
+    dvc_add_secret_attribute,
     check_git_config,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
-from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.utils.helper_functions import generate_osdf_token, discover_bearer_token, OSDF_TOKEN_DISCOVER
 
 class CmdInitOSDFRemote(CmdBase):
     def run(self, live):
@@ -55,13 +56,18 @@ class CmdInitOSDFRemote(CmdBase):
             self.args.key_issuer is not None
         )
 
+        discovered_token = None
         if not access_token_provided and not default_token_exists and not key_args_provided:
-            raise CmfInitFailed(
-                msg_str="Initialization cannot be completed. Please provide one of the following:\n"
-                "  1. --access-token <token or file path>\n"
-                "  2. A token file at ~/.fdp/osdf_token\n"
-                "  3. All of --key-id, --key-path, and --key-issuer"
-            )
+            discovered_token, discovered_source = discover_bearer_token()
+            if not discovered_token:
+                raise CmfInitFailed(
+                    msg_str="Initialization cannot be completed. Please provide one of the following:\n"
+                    "  1. --access-token <token or file path>\n"
+                    "  2. A token file at ~/.fdp/osdf_token\n"
+                    "  3. All of --key-id, --key-path, and --key-issuer\n"
+                    "  4. A token found by WLCG discovery: $BEARER_TOKEN, $BEARER_TOKEN_FILE,\n"
+                    "     $XDG_RUNTIME_DIR/bt_u<uid> or /tmp/bt_u<uid>"
+                )
 
         attr_dict = {}
         # cmf_server_url is default parameter for cmf init command 
@@ -106,10 +112,11 @@ class CmdInitOSDFRemote(CmdBase):
         #dvc_add_attribute(repo_type, "key_issuer", self.args.key_issuer)
         #Writing to an OSDF Remote is based on SSH Remote. With few additions
         #In addition to URL (including FQDN, port, path), we need to provide 
-        #method=PUT, ssl_verify=false, ask_password=false, auth=custom, custom_auth-header='Authorization'
+        #method=PUT, ask_password=false, auth=custom, custom_auth-header='Authorization'
         #password='Bearer + dynamically generated scitoken' (This token has a timeout of 15 mins so must be generated right before any push/pull) 
         dvc_add_attribute(repo_type,"method", "PUT")
-        dvc_add_attribute(repo_type,"ssl_verify", "false")
+        if self.args.no_ssl_verify:
+            dvc_add_attribute(repo_type,"ssl_verify", "false")
         dvc_add_attribute(repo_type,"ask_password", "false")
         dvc_add_attribute(repo_type,"auth", "custom")
         dvc_add_attribute(repo_type,"custom_auth_header", "Authorization")
@@ -119,7 +126,8 @@ class CmdInitOSDFRemote(CmdBase):
         if access_token_provided:
             # --access-token can be a plain text token or a file path
             token_value = self.args.access_token
-            if os.path.isfile(token_value):
+            if os.path.isfile(os.path.expanduser(token_value)):
+                token_value = os.path.expanduser(token_value)
                 # Read token from file
                 with open(token_value, "r") as token_file:
                     token_str = token_file.read().strip()
@@ -138,12 +146,17 @@ class CmdInitOSDFRemote(CmdBase):
             dynamic_password = "Bearer " + token_str
             # Store the default token path so future operations can find it
             token_source = default_token_path
+        elif discovered_token:
+            # Re-discovered before each push/pull, so a refreshed token is picked up
+            dynamic_password = "Bearer " + discovered_token
+            token_source = OSDF_TOKEN_DISCOVER
+            print(f"Using the bearer token from {discovered_source}; it is looked up again before each push and pull.")
         else:
             # Generate token using key_id, key_path, key_issuer
             dynamic_password = generate_osdf_token(self.args.key_id, self.args.key_path, self.args.key_issuer)
             token_source = ""
 
-        dvc_add_attribute(repo_type,"password",dynamic_password)
+        dvc_add_secret_attribute(repo_type, "password", dynamic_password)
 
         attr_dict = {}
         attr_dict["path"] = self.args.path
@@ -153,6 +166,7 @@ class CmdInitOSDFRemote(CmdBase):
         attr_dict["key_issuer"] = self.args.key_issuer if self.args.key_issuer else ""
         # Store the token source: file path, "provided" for raw token, or empty if using key generation
         attr_dict["access_token"] = token_source
+        attr_dict["ssl_verify"] = "false" if self.args.no_ssl_verify else "true"
         CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
 
         return CmfInitComplete()
@@ -216,6 +230,12 @@ def add_parser(subparsers, parent_parser):
         help="Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX. Required if --access-token is not provided.",
         metavar="<key_issuer>",
         default=None,
+    )
+
+    parser.add_argument(
+        "--no-ssl-verify",
+        action="store_true",
+        help="Do not verify the origin's and cache's TLS certificates (e.g. a self-signed test origin).",
     )
 
     required_arguments.add_argument(

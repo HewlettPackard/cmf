@@ -27,6 +27,7 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
+    dvc_add_secret_attribute,
     git_modify_remote_url,
     check_git_config,
 )
@@ -105,9 +106,9 @@ class CmdInitAmazonS3(CmdBase):
         if not output:
             raise CmfInitFailed
         print(output)
-        dvc_add_attribute(repo_type, "access_key_id", self.args.access_key_id[0])
-        dvc_add_attribute(repo_type, "secret_access_key", self.args.secret_key[0])
-        dvc_add_attribute(repo_type, "session_token", self.args.session_token[0])
+        dvc_add_secret_attribute(repo_type, "access_key_id", self.args.access_key_id[0])
+        dvc_add_secret_attribute(repo_type, "secret_access_key", self.args.secret_key[0])
+        dvc_add_secret_attribute(repo_type, "session_token", self.args.session_token[0])
         status = CmfInitComplete()
         return status
 

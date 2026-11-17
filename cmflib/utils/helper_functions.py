@@ -181,6 +181,74 @@ def generate_osdf_token(key_id, key_path, key_issuer) -> str:
     return dynamic_pass
 
 
+# Value of osdf-access_token in .cmfconfig meaning "find the token by WLCG discovery".
+OSDF_TOKEN_DISCOVER = "discover"
+
+
+def discover_bearer_token() -> tuple:
+    """Find a bearer token by WLCG Bearer Token Discovery, as Pelican and HTCondor do.
+
+    Checks, in order: $BEARER_TOKEN, the file $BEARER_TOKEN_FILE,
+    $XDG_RUNTIME_DIR/bt_u<uid>, /tmp/bt_u<uid>.
+
+    Returns:
+        (token, source description), or (None, None) if nothing is found.
+    """
+    token = os.environ.get("BEARER_TOKEN", "").strip()
+    if token:
+        return token, "$BEARER_TOKEN"
+    candidates = []
+    if os.environ.get("BEARER_TOKEN_FILE"):
+        candidates.append(os.environ["BEARER_TOKEN_FILE"])
+    if hasattr(os, "getuid"):
+        uid = os.getuid()
+        if os.environ.get("XDG_RUNTIME_DIR"):
+            candidates.append(os.path.join(os.environ["XDG_RUNTIME_DIR"], f"bt_u{uid}"))
+        candidates.append(f"/tmp/bt_u{uid}")
+    for path in candidates:
+        if os.path.isfile(path):
+            with open(path, "r") as token_file:
+                token = token_file.read().strip()
+            if token:
+                return token, f"Token file: {path}"
+    return None, None
+
+
+def resolve_osdf_token(cmf_config: dict, dvc_config_op: dict) -> tuple:
+    """Return ("Bearer <token>", source description) for the OSDF remote.
+
+    The source is the one `cmf init osdfremote` recorded in .cmfconfig: a token file,
+    a raw token given at init (kept in .dvc/config.local), WLCG discovery, or a
+    private key to mint a SciToken from.
+
+    Raises:
+        MsgFailure: if the recorded source yields no token.
+    """
+    from cmflib.cmf_exception_handling import MsgFailure
+
+    access_token = cmf_config.get("osdf-access_token", "")
+    if access_token == "provided":
+        password = dvc_config_op.get("remote.osdf.password", "")
+        if not password:
+            raise MsgFailure(msg_str="The OSDF token given at init is no longer in .dvc/config.local. "
+                             "Re-run 'cmf init osdfremote' with --access-token.")
+        return password, "Token given at init"
+    if access_token == OSDF_TOKEN_DISCOVER:
+        token, source = discover_bearer_token()
+        if not token:
+            raise MsgFailure(msg_str="No bearer token found: set $BEARER_TOKEN or $BEARER_TOKEN_FILE, "
+                             "or place a token at $XDG_RUNTIME_DIR/bt_u<uid> or /tmp/bt_u<uid>.")
+        return "Bearer " + token, source
+    if access_token:
+        token_path = os.path.expanduser(access_token)
+        if not os.path.isfile(token_path):
+            raise MsgFailure(msg_str=f"OSDF token file {access_token} not found.")
+        with open(token_path, "r") as token_file:
+            return "Bearer " + token_file.read().strip(), f"Token file: {access_token}"
+    password = generate_osdf_token(cmf_config["osdf-key_id"], cmf_config["osdf-key_path"], cmf_config["osdf-key_issuer"])
+    return password, f"Generated from key: {cmf_config.get('osdf-key_path', 'N/A')}"
+
+
 def validate_and_examine_osdf_token(token_str: str, token_source: str = None) -> bool:
     """
     Validate and examine an OSDF token (SciToken/JWT).
