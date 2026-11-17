@@ -34,7 +34,7 @@ from cmflib.dvc_wrapper import (
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
-from cmflib.utils.helper_functions import generate_osdf_token
+from cmflib.utils.helper_functions import generate_osdf_token, discover_bearer_token, OSDF_TOKEN_DISCOVER
 
 class CmdInitOSDFRemote(CmdBase):
     def run(self, live):
@@ -56,13 +56,18 @@ class CmdInitOSDFRemote(CmdBase):
             self.args.key_issuer is not None
         )
 
+        discovered_token = None
         if not access_token_provided and not default_token_exists and not key_args_provided:
-            raise CmfInitFailed(
-                msg_str="Initialization cannot be completed. Please provide one of the following:\n"
-                "  1. --access-token <token or file path>\n"
-                "  2. A token file at ~/.fdp/osdf_token\n"
-                "  3. All of --key-id, --key-path, and --key-issuer"
-            )
+            discovered_token, discovered_source = discover_bearer_token()
+            if not discovered_token:
+                raise CmfInitFailed(
+                    msg_str="Initialization cannot be completed. Please provide one of the following:\n"
+                    "  1. --access-token <token or file path>\n"
+                    "  2. A token file at ~/.fdp/osdf_token\n"
+                    "  3. All of --key-id, --key-path, and --key-issuer\n"
+                    "  4. A token found by WLCG discovery: $BEARER_TOKEN, $BEARER_TOKEN_FILE,\n"
+                    "     $XDG_RUNTIME_DIR/bt_u<uid> or /tmp/bt_u<uid>"
+                )
 
         attr_dict = {}
         # cmf_server_url is default parameter for cmf init command 
@@ -121,7 +126,8 @@ class CmdInitOSDFRemote(CmdBase):
         if access_token_provided:
             # --access-token can be a plain text token or a file path
             token_value = self.args.access_token
-            if os.path.isfile(token_value):
+            if os.path.isfile(os.path.expanduser(token_value)):
+                token_value = os.path.expanduser(token_value)
                 # Read token from file
                 with open(token_value, "r") as token_file:
                     token_str = token_file.read().strip()
@@ -140,6 +146,11 @@ class CmdInitOSDFRemote(CmdBase):
             dynamic_password = "Bearer " + token_str
             # Store the default token path so future operations can find it
             token_source = default_token_path
+        elif discovered_token:
+            # Re-discovered before each push/pull, so a refreshed token is picked up
+            dynamic_password = "Bearer " + discovered_token
+            token_source = OSDF_TOKEN_DISCOVER
+            print(f"Using the bearer token from {discovered_source}; it is looked up again before each push and pull.")
         else:
             # Generate token using key_id, key_path, key_issuer
             dynamic_password = generate_osdf_token(self.args.key_id, self.args.key_path, self.args.key_issuer)

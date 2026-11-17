@@ -59,7 +59,7 @@ Proceed with the following steps to set up an OSDF Remote Repository:
    - `--git-remote-url`: (Required) Git repository URL for version control
    - `--no-ssl-verify`: (Optional) Skip TLS certificate checks on the origin and cache, e.g. for a test origin with a self-signed certificate. Certificates are verified by default.
    
-   **Note:** You must provide either `--access-token` OR all three key parameters (`--key-id`, `--key-path`, `--key-issuer`), or have a token at `~/.fdp/osdf_token`.
+   **Note:** You must provide either `--access-token` OR all three key parameters (`--key-id`, `--key-path`, `--key-issuer`), or have a token at `~/.fdp/osdf_token` or in a WLCG discovery location (`$BEARER_TOKEN`, `$BEARER_TOKEN_FILE`, `$XDG_RUNTIME_DIR/bt_u<uid>`, `/tmp/bt_u<uid>`).
 
 4. Execute `cmf init show` to check the CMF configuration.
 
@@ -81,6 +81,7 @@ Proceed with the following steps to set up an OSDF Remote Repository:
    1. **Pre-generated token file** (recommended): Store your token in a file (default location: `~/.fdp/osdf_token`) or specify with `--access-token`
    2. **Raw token string**: Provide the token directly with `--access-token "your-token-string"`
    3. **Dynamic token generation**: Provide private key (`--key-path`), key ID (`--key-id`), and issuer URL (`--key-issuer`)
+   4. **WLCG bearer token discovery**: with none of the above, CMF uses the token that Pelican and HTCondor tools would find: `$BEARER_TOKEN`, the file named by `$BEARER_TOKEN_FILE`, `$XDG_RUNTIME_DIR/bt_u<uid>` or `/tmp/bt_u<uid>`. It is looked up again before each push and pull, so a refreshed token is picked up.
 - **Token Validation:** Before each push/pull operation, CMF automatically validates the token and displays its status including:
    - Issuer, Subject, Audience, and Scope
    - Issue and expiration timestamps
