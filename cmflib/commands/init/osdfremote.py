@@ -29,6 +29,7 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
+    dvc_add_secret_attribute,
     check_git_config,
 )
 from cmflib.utils.cmf_config import CmfConfig
@@ -143,7 +144,7 @@ class CmdInitOSDFRemote(CmdBase):
             dynamic_password = generate_osdf_token(self.args.key_id, self.args.key_path, self.args.key_issuer)
             token_source = ""
 
-        dvc_add_attribute(repo_type,"password",dynamic_password)
+        dvc_add_secret_attribute(repo_type, "password", dynamic_password)
 
         attr_dict = {}
         attr_dict["path"] = self.args.path

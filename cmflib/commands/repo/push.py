@@ -23,7 +23,7 @@ from cmflib import cmfquery
 from cmflib.cli.utils import check_minio_server, find_root
 from cmflib.utils.helper_functions import generate_osdf_token, branch_exists, validate_and_examine_osdf_token
 from cmflib.utils.dvc_config import DvcConfig
-from cmflib.dvc_wrapper import dvc_add_attribute
+from cmflib.dvc_wrapper import dvc_add_secret_attribute
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.cli.command import CmdBase
 from cmflib.dvc_wrapper import git_get_repo, git_get_pull, git_get_push, git_get_branch, dvc_push
@@ -163,7 +163,7 @@ class CmdRepoPush(CmdBase):
                 raise MsgFailure(msg_str="OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
             
             #print("Dynamic Password"+dynamic_password)
-            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            dvc_add_secret_attribute(dvc_config_op["core.remote"], "password", dynamic_password)
             #The Push URL will be something like: https://<Path>/files/md5/[First Two of MD5 Hash]
             result = dvc_push(num_jobs)
             return ArtifactPushSuccess(result)

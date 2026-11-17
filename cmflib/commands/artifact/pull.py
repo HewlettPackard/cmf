@@ -541,7 +541,7 @@ class CmdArtifactPull(CmdBase):
         elif dvc_config_op["core.remote"] == "osdf":
             #Regenerate Token for OSDF
             from cmflib.utils.helper_functions import generate_osdf_token, validate_and_examine_osdf_token
-            from cmflib.dvc_wrapper import dvc_add_attribute
+            from cmflib.dvc_wrapper import dvc_add_secret_attribute
             from cmflib.utils.cmf_config import CmfConfig
             #Fetch Config from CMF_Config_File
             cmf_config=CmfConfig.read_config(config_file_path)
@@ -575,8 +575,8 @@ class CmdArtifactPull(CmdBase):
                 raise Exception("OSDF token has expired or is invalid. Please refresh your token or re-run 'cmf init osdfremote' to generate a new one.")
             
             #cmf_config["password"]=dynamic_password
-            #Update Password in .dvc/config for future use
-            dvc_add_attribute(dvc_config_op["core.remote"],"password",dynamic_password)
+            #Update Password in .dvc/config.local (git-ignored) for future use
+            dvc_add_secret_attribute(dvc_config_op["core.remote"], "password", dynamic_password)
             #Updating dvc_config_op data structure with new password as well since this is used in download_artifacts() below
             dvc_config_op["remote.osdf.password"]=dynamic_password
             #Need to write to cmfconfig with new credentials
