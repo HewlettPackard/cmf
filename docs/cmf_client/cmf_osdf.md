@@ -57,6 +57,7 @@ Proceed with the following steps to set up an OSDF Remote Repository:
    - `--key-path`: (Optional) Path to the private key file for token generation (required if --access-token not provided)
    - `--key-issuer`: (Optional) The issuer URL for token generation (required if --access-token not provided)
    - `--git-remote-url`: (Required) Git repository URL for version control
+   - `--no-ssl-verify`: (Optional) Skip TLS certificate checks on the origin and cache, e.g. for a test origin with a self-signed certificate. Certificates are verified by default.
    
    **Note:** You must provide either `--access-token` OR all three key parameters (`--key-id`, `--key-path`, `--key-issuer`), or have a token at `~/.fdp/osdf_token`.
 

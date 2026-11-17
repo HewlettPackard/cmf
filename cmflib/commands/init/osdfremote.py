@@ -107,10 +107,11 @@ class CmdInitOSDFRemote(CmdBase):
         #dvc_add_attribute(repo_type, "key_issuer", self.args.key_issuer)
         #Writing to an OSDF Remote is based on SSH Remote. With few additions
         #In addition to URL (including FQDN, port, path), we need to provide 
-        #method=PUT, ssl_verify=false, ask_password=false, auth=custom, custom_auth-header='Authorization'
+        #method=PUT, ask_password=false, auth=custom, custom_auth-header='Authorization'
         #password='Bearer + dynamically generated scitoken' (This token has a timeout of 15 mins so must be generated right before any push/pull) 
         dvc_add_attribute(repo_type,"method", "PUT")
-        dvc_add_attribute(repo_type,"ssl_verify", "false")
+        if self.args.no_ssl_verify:
+            dvc_add_attribute(repo_type,"ssl_verify", "false")
         dvc_add_attribute(repo_type,"ask_password", "false")
         dvc_add_attribute(repo_type,"auth", "custom")
         dvc_add_attribute(repo_type,"custom_auth_header", "Authorization")
@@ -154,6 +155,7 @@ class CmdInitOSDFRemote(CmdBase):
         attr_dict["key_issuer"] = self.args.key_issuer if self.args.key_issuer else ""
         # Store the token source: file path, "provided" for raw token, or empty if using key generation
         attr_dict["access_token"] = token_source
+        attr_dict["ssl_verify"] = "false" if self.args.no_ssl_verify else "true"
         CmfConfig.write_config(cmf_config, "osdf", attr_dict, True)
 
         return CmfInitComplete()
@@ -217,6 +219,12 @@ def add_parser(subparsers, parent_parser):
         help="Specify URL for Key Issuer. eg. https://t.nationalresearchplatform.org/XXX. Required if --access-token is not provided.",
         metavar="<key_issuer>",
         default=None,
+    )
+
+    parser.add_argument(
+        "--no-ssl-verify",
+        action="store_true",
+        help="Do not verify the origin's and cache's TLS certificates (e.g. a self-signed test origin).",
     )
 
     required_arguments.add_argument(

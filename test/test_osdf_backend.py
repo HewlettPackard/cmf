@@ -58,5 +58,49 @@ class TestSecretStaysOutOfGit(unittest.TestCase):
         self.assertEqual(ignored.returncode, 0)
 
 
+@unittest.skipUnless(shutil.which("dvc") and shutil.which("git"), "needs the dvc and git CLIs")
+class TestInitOsdfRemote(unittest.TestCase):
+    TOKEN = "header.payload.signature"
+
+    def setUp(self):
+        self.cwd = os.getcwd()
+        self.repo = tempfile.mkdtemp()
+        os.chdir(self.repo)
+        subprocess.run(["git", "init", "-q"], check=True)
+        subprocess.run(["git", "config", "user.name", "t"], check=True)
+        subprocess.run(["git", "config", "user.email", "t@example.org"], check=True)
+        with open("token", "w") as f:
+            f.write(self.TOKEN + "\n")
+
+    def tearDown(self):
+        os.chdir(self.cwd)
+        shutil.rmtree(self.repo)
+
+    def _init(self, *extra):
+        from cmflib import cli
+        args = cli.parse_args(["init", "osdfremote", "--path", "https://origin.example.org:8443/ns/cmf",
+                               "--access-token", os.path.join(self.repo, "token"),
+                               "--git-remote-url", "https://example.org/repo.git", *extra])
+        args.func(args).do_run()
+        with open(".dvc/config") as f:
+            project = f.read()
+        with open(".dvc/config.local") as f:
+            local = f.read()
+        from cmflib.utils.cmf_config import CmfConfig
+        return project, local, CmfConfig.read_config(".cmfconfig")
+
+    def test_defaults_verify_tls_and_keep_token_local(self):
+        project, local, cmf_config = self._init()
+        self.assertNotIn("ssl_verify", project)
+        self.assertNotIn(self.TOKEN, project)
+        self.assertIn("Bearer " + self.TOKEN, local)
+        self.assertEqual(cmf_config["osdf-ssl_verify"], "true")
+
+    def test_no_ssl_verify_is_opt_in(self):
+        project, _, cmf_config = self._init("--no-ssl-verify")
+        self.assertIn("ssl_verify = false", project)
+        self.assertEqual(cmf_config["osdf-ssl_verify"], "false")
+
+
 if __name__ == "__main__":
     unittest.main()

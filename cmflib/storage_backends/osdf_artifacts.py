@@ -103,7 +103,7 @@ def _remove_quietly(path):
 
 
 class OSDFremoteArtifacts:
-    def __init__(self, dvc_config_op):
+    def __init__(self, dvc_config_op, verify=True):
         """
         Initialize the OSDFremoteArtifacts class with OSDF configuration.
 
@@ -112,7 +112,9 @@ class OSDFremoteArtifacts:
                 - remote.osdf.url: Remote repository URL
                 - remote.osdf.password: Dynamic password/token
                 - remote.osdf.custom_auth_header: Custom authentication header name
+            verify (bool): verify the TLS certificates of the cache and origin.
         """
+        self.verify = verify
         self.remote_repo = dvc_config_op["remote.osdf.url"]
         self.user = "nobody"
         self.dynamic_password = dvc_config_op["remote.osdf.password"]
@@ -143,7 +145,7 @@ class OSDFremoteArtifacts:
         #Cache can be Blank. If so, fetch from Origin
         if cache == "":
             #Fetch from Origin
-            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=ORIGIN_TIMEOUT)
+            success, result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=ORIGIN_TIMEOUT, verify=self.verify)
             if success:
                 #logger.info(result)
                 return success, result
@@ -153,7 +155,7 @@ class OSDFremoteArtifacts:
             #Generate Cached path for artifact
             cached_s_url = generate_cached_url(host, cache)
             #Try to fetch from cache first
-            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=CACHE_TIMEOUT)
+            success, cached_result = download_and_verify_file(cached_s_url, self.headers, download_path, local_path, artifact_hash, timeout=CACHE_TIMEOUT, verify=self.verify)
             if success:
                 #logger.info(cached_result)
                 return success, cached_result
@@ -161,7 +163,7 @@ class OSDFremoteArtifacts:
                 logger.error(f"Failed to download and verify file from cache: {cached_result}")
                 logger.info(f"Trying Origin at {host}")
                 #Fetch from Origin 
-                success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=ORIGIN_TIMEOUT)
+                success, origin_result = download_and_verify_file(host, self.headers, download_path, local_path, artifact_hash, timeout=ORIGIN_TIMEOUT, verify=self.verify)
                 if success: 
                     #logger.info(origin_result)
                     return success, origin_result

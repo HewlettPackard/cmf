@@ -584,7 +584,10 @@ class CmdArtifactPull(CmdBase):
             #Now Ready to do dvc pull 
             cache_path=cmf_config["osdf-cache"]
 
-            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op)
+            # Only an explicit `cmf init osdfremote --no-ssl-verify` turns verification off;
+            # repos initialised before that flag existed have no key and keep verifying.
+            verify = cmf_config.get("osdf-ssl_verify", "true") != "false"
+            osdfremote_class_obj = osdf_artifacts.OSDFremoteArtifacts(dvc_config_op, verify=verify)
             if self.args.artifact_name:
                 # Search for the artifact in the metadata store.
                 # If the artifact is not found, an error will be raised automatically.

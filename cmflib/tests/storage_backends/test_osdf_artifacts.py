@@ -311,7 +311,7 @@ def test_with_tmp_path(osdf_artifacts, dvc_config, monkeypatch, tmp_path):
     test_hash = hashlib.md5(test_content).hexdigest()
     
     # Mock download_and_verify_file to actually create a file
-    def mock_download_verify(host, headers, remote_file_path, local_path, artifact_hash, timeout):
+    def mock_download_verify(host, headers, remote_file_path, local_path, artifact_hash, timeout, verify=True):
         with open(local_path, 'wb') as f:
             f.write(test_content)
         return True, f"Hash {test_hash} matches MLMD records. Download took 0.50 seconds."
