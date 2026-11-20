@@ -185,11 +185,11 @@ Also covers the CLI equivalents (`cmf pipeline list`, `cmf execution list`, `cmf
 
 Two scenarios:
 
-1. **Local deployment** — clones the CMF repo, creates a `.env` file, and starts the full server stack with `docker compose -f docker-compose-server.yml up -d`. Stack includes PostgreSQL, CMF API server, React UI, TensorBoard, MCP server, and Nginx.
+1. **Local deployment** — clones the CMF repo, creates a `.env` file, optionally generates a stable self-signed TLS certificate (`scripts/generate-self-signed-cert.sh`; nginx also auto-generates a throwaway cert on startup if none is mounted), and starts the full server stack with `docker compose -f docker-compose-server.yml up -d`. Stack includes PostgreSQL, CMF API server, React UI, TensorBoard, MCP server, and Nginx (HTTP + HTTPS).
 
 2. **Connect to existing server** — if a CMF Server is already running (e.g. shared team server), configures the local `cmf init` to point at it with `--cmf-server-url`.
 
-Key `.env` variables covered: `CMF_DATA_DIR`, `NGINX_HTTP_PORT`, `REACT_APP_CMF_API_URL`, `POSTGRES_*`, `MCP_EXTERNAL_PORT`.
+Key `.env` variables covered: `CMF_DATA_DIR`, `NGINX_HTTP_PORT`, `NGINX_HTTPS_PORT`, `REACT_APP_CMF_API_URL`, `POSTGRES_*`, `MCP_EXTERNAL_PORT`.
 
 ---
 
