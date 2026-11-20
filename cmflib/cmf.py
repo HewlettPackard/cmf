@@ -706,6 +706,56 @@ class Cmf:
         return commit_dvc_lock_file(file_path, self.execution.id)
 
 
+
+    @staticmethod
+    def _resolve_dataset_path(url: str, project_root: str, external: bool) -> str:
+        """
+        Validate and resolve a dataset path based on whether it should be internal or external.
+        
+        - Internal (external=False): Must reside inside the project root.
+        - External (external=True): Must reside outside the project root.
+        """
+        # 1. Normalize project root to an absolute path.
+        #    Example: "/repo/src/.." -> "/repo"
+        project_root = os.path.realpath(project_root)
+
+        # 2. Check if the original URL is absolute.
+        #    Examples: "/data/t.csv" -> True | "data/t.csv" -> False
+        is_absolute = os.path.isabs(url)
+
+        # 3. Resolve the actual filesystem location.
+        #    Examples (given project_root="/repo"):
+        #    - "data/t.csv"    -> "/repo/data/t.csv"
+        #    - "../ext/t.csv"  -> "/ext/t.csv"
+        resolved_path = os.path.realpath(os.path.join(project_root, url))
+
+        # 4. Check if the resolved path is inside the project directory.
+        try:
+            is_within_project = (
+                os.path.commonpath((project_root, resolved_path)) == project_root
+            )
+        except ValueError:
+            # Paths are on different drives (e.g., C:\ and D:\)
+            # and cannot share a common path. Therefore, it is external.
+            is_within_project = False
+
+        # 5. Throw an error if the location contradicts the 'external' flag.
+        #    Examples of failures:
+        #    - url="data/t.csv" (Inside) + external=True  -> ERROR
+        #    - url="../ext/t.csv" (Outside) + external=False -> ERROR
+        if is_within_project == external:
+            if external:
+                raise ValueError("External artifact cannot be inside the project directory.")
+            raise ValueError("Internal artifact cannot be outside of the project directory.")
+
+        # 6. Return absolute path for relative external datasets (required by DVC);
+        #    otherwise, preserve the user's original URL format.
+        #    Examples (given project_root="/repo"):
+        #    - external=True,  url="../ext/t.csv" -> returns "/ext/t.csv" (converts to absolute)
+        #    - external=False, url="data/t.csv"   -> returns "data/t.csv"   (keeps original)
+        return resolved_path if external and not is_absolute else url
+
+
     def log_dataset(
         self,
         url: str,
@@ -739,6 +789,13 @@ class Cmf:
         Returns:
             Artifact object from ML Metadata library associated with the new dataset artifact.
         """
+        try:
+            url = self._resolve_dataset_path(url, self.cmf_init_path, external)
+        except ValueError as error:
+            logger.error("[log_dataset] Invalid artifact path: %s", error)
+            raise
+
+        # Keep the final path available for logging/tracking
         artifact_path = url
         logging_dir = change_dir(self.cmf_init_path)
         # Assigning current file name as stage and execution name
@@ -779,7 +836,7 @@ class Cmf:
         dvc_url = dvc_get_url(url)
         dvc_url_with_pipeline = f"{self.parent_context.name}:{dvc_url}"
         url = url + ":" + c_hash
-        if c_hash and c_hash.strip:
+        if c_hash and c_hash.strip():
             existing_artifact.extend(self.store.get_artifacts_by_uri(c_hash))
 
         uri = c_hash
