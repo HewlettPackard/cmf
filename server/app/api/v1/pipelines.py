@@ -20,7 +20,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 from cmflib.cmfquery import CmfQuery
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from server.app.api.v1.env import get_python_env as read_python_env
 from server.app.db.dbconfig import get_db
@@ -29,6 +29,8 @@ from server.app.db.dbqueries import (
     fetch_artifacts_by_stage,
     fetch_executions_by_stage,
     fetch_unique_execution_stages,
+    fetch_execution_log_metadata,
+    fetch_execution_uuids_by_artifact_uri,
 )
 from server.app.get_data import (
     async_api,
@@ -392,6 +394,53 @@ async def get_execution_python_env(
         data=result,
         message="Python environment retrieved successfully",
         code=200
+    )
+
+
+@router.get("/pipelines/{pipeline_name}/artifact/executions")
+async def get_artifact_execution_uuids(
+    pipeline_name: str,
+    artifact_uri: str = Query(..., description="Artifact URI"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Return execution UUIDs and names for an artifact URI scoped to a pipeline."""
+    execution_uuids = await fetch_execution_uuids_by_artifact_uri(
+        db=db,
+        pipeline_name=pipeline_name,
+        artifact_uri=artifact_uri,
+    )
+    return success_response(
+        data={
+            "artifact_uri": artifact_uri,
+            "execution_uuids": execution_uuids,
+        },
+        message="Artifact executions retrieved successfully",
+        code=200,
+    )
+
+
+@router.get("/pipelines/{pipeline_name}/artifact/execution-metadata")
+async def get_artifact_execution_metadata(
+    pipeline_name: str,
+    execution_uuid: str = Query(..., description="Execution UUID"),
+    artifact_uri: str = Query(..., description="Artifact URI"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Return ExecutionLogs metadata for an execution and artifact in a pipeline."""
+    metadata = await fetch_execution_log_metadata(
+        db=db,
+        pipeline_name=pipeline_name,
+        execution_uuid=execution_uuid,
+        artifact_uri=artifact_uri,
+    )
+    return success_response(
+        data={
+            "execution_uuid": execution_uuid,
+            "artifact_uri": artifact_uri,
+            "metadata": metadata or {},
+        },
+        message="Artifact execution metadata retrieved successfully",
+        code=200,
     )
 
 # ==================== REST API Endpoints For CMFQuery ====================
