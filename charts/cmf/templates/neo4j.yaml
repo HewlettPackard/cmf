@@ -1,0 +1,61 @@
+{{- if .Values.neo4j.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "neo4j") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "neo4j") | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "cmf.componentLabels" (dict "ctx" . "component" "neo4j") | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "cmf.componentLabels" (dict "ctx" . "component" "neo4j") | nindent 8 }}
+    spec:
+      {{- include "cmf.imagePullSecrets" . | nindent 6 }}
+      containers:
+      - name: neo4j
+        image: {{ include "cmf.image" (dict "ctx" . "image" .Values.neo4j.image) }}
+        imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+        ports:
+        - containerPort: 7474
+        - containerPort: 7687
+        env:
+        - name: NEO4J_AUTH
+          value: {{ printf "%s/%s" .Values.neo4j.auth.user .Values.neo4j.auth.password | quote }}
+        - name: NEO4J_dbms_connector_http_listen__address
+          value: 0.0.0.0:7474
+        - name: NEO4J_dbms_connector_bolt_listen__address
+          value: 0.0.0.0:7687
+        - name: NEO4J_server_config_strict__validation_enabled
+          value: "false"
+        resources:
+          {{- toYaml .Values.neo4j.resources | nindent 10 }}
+        volumeMounts:
+        - name: neo4j-data
+          mountPath: /data
+      volumes:
+      - name: neo4j-data
+        {{- include "cmf.volumeSource" (dict "ctx" . "name" "neo4j-data" "subpath" "neo4j_data") | nindent 8 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cmf.serviceName" (dict "ctx" . "component" "neo4j") }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "neo4j") | nindent 4 }}
+spec:
+  type: {{ .Values.neo4j.service.type }}
+  ports:
+  - name: http
+    port: 7474
+    targetPort: 7474
+  - name: bolt
+    port: 7687
+    targetPort: 7687
+  selector:
+    {{- include "cmf.componentLabels" (dict "ctx" . "component" "neo4j") | nindent 4 }}
+{{- end -}}
