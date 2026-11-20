@@ -13,7 +13,7 @@ Write the query the user needs using `CmfQuery` or the CMF CLI. Identify what th
 
 ```python
 from cmflib.cmfquery import CmfQuery
-query = CmfQuery(filepath="mlmd")   # or path to a downloaded mlmd file
+query = CmfQuery(filename="mlmd")   # or path to a downloaded mlmd file
 ```
 
 ## Common patterns

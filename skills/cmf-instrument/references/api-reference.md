@@ -6,7 +6,7 @@
 from cmflib.cmf import Cmf
 
 metawriter = Cmf(
-    filepath="mlmd",           # path to SQLite metadata store (relative to project root)
+    filename="mlmd",           # path to SQLite metadata store (relative to project root)
     pipeline_name="name",      # pipeline identifier — same across all stages
     custom_properties={},      # optional pipeline-level properties
     graph=False                # set True to enable Neo4j graph layer
