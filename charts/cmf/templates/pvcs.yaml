@@ -1,0 +1,31 @@
+{{- if eq .Values.storage.mode "pvc" -}}
+{{- $root := . -}}
+{{- range $spec := list
+      (dict "name" "postgres-data" "component" "postgres" "enabled" .Values.postgres.enabled "size" .Values.postgres.storage.size "class" .Values.postgres.storage.storageClass)
+      (dict "name" "server-data" "component" "server" "enabled" .Values.server.enabled "size" .Values.server.storage.data.size "class" .Values.server.storage.data.storageClass)
+      (dict "name" "server-env" "component" "server" "enabled" .Values.server.enabled "size" .Values.server.storage.env.size "class" .Values.server.storage.env.storageClass)
+      (dict "name" "server-static" "component" "server" "enabled" .Values.server.enabled "size" .Values.server.storage.static.size "class" .Values.server.storage.static.storageClass)
+      (dict "name" "server-labels" "component" "server" "enabled" .Values.server.enabled "size" .Values.server.storage.labels.size "class" .Values.server.storage.labels.storageClass)
+      (dict "name" "tensorboard-logs" "component" "tensorboard" "enabled" .Values.tensorboard.enabled "size" .Values.tensorboard.storage.size "class" .Values.tensorboard.storage.storageClass)
+      (dict "name" "neo4j-data" "component" "neo4j" "enabled" .Values.neo4j.enabled "size" .Values.neo4j.storage.size "class" .Values.neo4j.storage.storageClass)
+-}}
+{{- if $spec.enabled }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "cmf.pvcName" (dict "ctx" $root "name" $spec.name) }}
+  labels:
+    {{- include "cmf.componentLabels" (dict "ctx" $root "component" $spec.component) | nindent 4 }}
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ $spec.size }}
+  {{- with $spec.class }}
+  storageClassName: {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}
