@@ -53,6 +53,15 @@ NGINX_HTTP_PORT=8080
 REACT_APP_CMF_API_URL=http://192.168.1.10:8080
 ```
 
+**UI over HTTPS (self-signed cert):**
+```env
+NGINX_HTTPS_PORT=8443
+REACT_APP_CMF_API_URL=https://192.168.1.10:8443
+```
+> The scheme in `REACT_APP_CMF_API_URL` must match the URL you open in the
+> browser. Loading the UI over `https://` with an `http://` API URL causes
+> mixed-content blocking.
+
 **External data volume:**
 ```env
 CMF_DATA_DIR=/mnt/nfs/cmf-data
