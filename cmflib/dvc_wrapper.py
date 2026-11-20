@@ -133,6 +133,58 @@ def check_git_repo() -> bool:
     return is_git_repo
 
 
+def check_git_config() -> bool:
+    """
+    Verifies that git user.name and user.email are configured on the system.
+    These are required for git commits to work properly.
+    
+    Returns:
+        bool: True if both user.name and user.email are configured, False otherwise
+    """
+    process: subprocess.Popen
+    git_config_valid = False
+    try:
+        # Check git user.name
+        process = subprocess.Popen(['git', 'config', 'user.name'],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        user_name, stderr_name = process.communicate(timeout=60)
+        user_name = user_name.strip()
+        user_name_return_code = process.returncode
+        
+        logger.debug(f"[check_git_config] Git user.name check - Return code: {user_name_return_code}, Value: '{user_name}', Stderr: '{stderr_name.strip()}'")
+        
+        # Check git user.email
+        process = subprocess.Popen(['git', 'config', 'user.email'],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        user_email, stderr_email = process.communicate(timeout=60)
+        user_email = user_email.strip()
+        user_email_return_code = process.returncode
+        
+        logger.debug(f"[check_git_config] Git user.email check - Return code: {user_email_return_code}, Value: '{user_email}', Stderr: '{stderr_email.strip()}'")
+        
+        # Both must be configured (non-empty strings)
+        if user_name and user_email:
+            git_config_valid = True
+            logger.debug(f"[check_git_config] Git config VALID - user.name: {user_name}, user.email: {user_email}")
+        else:
+            missing_configs = []
+            if not user_name:
+                missing_configs.append("user.name")
+            if not user_email:
+                missing_configs.append("user.email")
+            logger.debug(f"[check_git_config] Git configuration INCOMPLETE. Missing: {', '.join(missing_configs)}")
+            
+    except Exception as err:
+        logger.error(f"[check_git_config] Exception occurred: {err}, Type: {type(err)}")
+        git_config_valid = False
+        
+    return git_config_valid
+
+
 def git_checkout_new_branch(branch_name: str):
     process: subprocess.Popen
     try:
@@ -502,6 +554,29 @@ def git_modify_remote_url(git_url) -> str:
            outs, errs = process.communicate()
            logger.error(f"[git_modify_remote_url] Unexpected {outs}")
            logger.error(f"[git_modify_remote_url] Unexpected {errs}")
+    return commit
+
+
+def git_add_or_modify_remote_url(git_url) -> str:
+    commit = ""
+    try:
+        process = subprocess.Popen(['git', 'remote', 'get-url', 'cmf_origin'],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   universal_newlines=True)
+        output, errs = process.communicate(timeout=60)
+        if process.returncode == 0:
+            git_modify_remote_url(git_url)
+        else:
+            git_add_remote(git_url)
+
+    except Exception as err:
+        logger.error(f"[git_add_or_modify_remote_url] Unexpected {err}, {type(err)}")
+        if isinstance(object, subprocess.Popen):
+           process.kill()
+           outs, errs = process.communicate()
+           logger.error(f"[git_add_or_modify_remote_url] Unexpected {outs}")
+           logger.error(f"[git_add_or_modify_remote_url] Unexpected {errs}")
     return commit
 
 

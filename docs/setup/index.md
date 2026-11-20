@@ -111,14 +111,35 @@ Create a `.env` file in the same directory as `docker-compose-server.yml` with t
 CMF_DATA_DIR=./data                    
 NGINX_HTTP_PORT=80                  
 NGINX_HTTPS_PORT=443
-REACT_APP_CMF_API_URL=http://your-server-ip:80
 ```
 
 > 📝 **Note:** 
 > - `CMF_DATA_DIR` controls where all data (PostgreSQL, TensorBoard logs, etc.) is stored. Use an absolute path for better control.
-> - `REACT_APP_CMF_API_URL` should point to your server's accessible address.
+> - `REACT_APP_CMF_API_URL` is **optional**. When unset, the browser uses its own origin (`window.location.origin`) to call the API, so HTTP and HTTPS both work automatically with no mixed-content blocking. Set it only if the API is on a different host than the UI.
 
-**Step 4: Start the Containers**
+**Step 4: Generate the TLS Certificate (recommended)**
+
+The nginx service listens on both `NGINX_HTTP_PORT` (HTTP) and
+`NGINX_HTTPS_PORT` (HTTPS). The `nginx` container ships with an entrypoint
+script that **auto-generates a throwaway self-signed certificate on startup if
+none is found**, so HTTPS works out of the box (the cert is regenerated on each
+start). For a **stable** certificate that persists across restarts, generate
+one with the included helper:
+
+```bash
+scripts/generate-self-signed-cert.sh
+```
+
+This writes `cmf.crt` and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/`, which
+the `nginx` service mounts read-only at `/etc/nginx/certs/` and copies into
+place on startup.
+
+> 📝 **Note:** Browsers will warn about the self-signed certificate (whether
+> auto-generated or stable). To use your own certificate, copy your `cmf.crt`
+> and `cmf.key` into `$CMF_DATA_DIR/nginx-certs/` instead of running the
+> script.
+
+**Step 5: Start the Containers**
 
 > 💡 **Recommended Approach:** Using `docker compose` starts the `CMF Server`, PostgreSQL database, and `CMF UI` together.
 > 
@@ -136,21 +157,18 @@ This command starts all services:
 - **CMF Server**: API server for metadata management
 - **UI**: Web interface for visualization
 - **TensorBoard**: For viewing ML training metrics
-- **Nginx**: Reverse proxy serving all components
+- **Nginx**: Reverse proxy serving all components over HTTP and HTTPS
 
 #### Accessing the CMF UI
 
-Once the containers are successfully started, the CMF UI will be available at the URL specified in your `.env` file:
+Once the containers are successfully started, open the CMF UI in a browser at either URL — both work automatically:
 
-```
-http://your-server-ip:80
-```
+- **HTTP**: `http://your-server-ip:<NGINX_HTTP_PORT>` (default `80`, no cert warnings)
+- **HTTPS**: `https://your-server-ip:<NGINX_HTTPS_PORT>` (default `443`, self-signed cert; browser will warn)
 
-Replace `your-server-ip` with the actual IP address or hostname configured in the `REACT_APP_CMF_API_URL` environment variable.
+> 📝 **Note:** Ensure that the ports you configured (`NGINX_HTTP_PORT` and `NGINX_HTTPS_PORT`) are accessible and not blocked by firewall rules.
 
-> 📝 **Note:** Ensure that port 80 (or your configured `NGINX_HTTP_PORT`) is accessible and not blocked by firewall rules.
-
-**Step 5: Stop the Containers**
+**Step 6: Stop the Containers**
 
 ```bash
 docker compose -f docker-compose-server.yml stop
@@ -168,7 +186,347 @@ docker compose -f docker-compose-server.yml stop
 
 ---
 
+## CMF Server Deployment on Kubernetes {#deploy-cmf-server-on-kubernetes}
+
+For cluster-based deployments, the CMF Server stack can be deployed on Kubernetes using the Helm chart located at `charts/cmf` in the repository. The chart deploys the same components as the Docker Compose recipe above:
+
+- **PostgreSQL**: Database backend for metadata storage
+- **CMF Server**: API server for metadata management
+- **UI**: Web interface for visualization
+- **TensorBoard**: For viewing ML training metrics
+- **MCP Server**: MCP server for AI agent integration
+- **Nginx**: Reverse proxy serving all components
+
+### Prerequisites
+
+- A Kubernetes cluster (v1.24 or later), with `kubectl` configured to access it
+- **Helm**: Version 3.8 or later. See the [Helm installation guide](https://helm.sh/docs/intro/install/).
+- **Dynamic storage provisioning**: A default `StorageClass` capable of dynamic provisioning (standard on Minikube, cloud providers, and most clusters). The chart creates `PersistentVolumeClaims` for PostgreSQL data, server data, and TensorBoard logs.
+
+> 📝 **Note:** For Minikube, start the cluster with sufficient resources:
+>
+> ```bash
+> minikube start --driver=docker --cpus=4 --memory=8192
+> ```
+
+### Installation Steps
+
+**Step 1: Clone the GitHub Repository**
+
+```bash
+git clone https://github.com/HewlettPackard/cmf
+cd cmf
+```
+
+**Step 2: Create a Namespace for CMF (Optional)**
+
+```bash
+kubectl create namespace cmf
+```
+
+**Step 3: Install the CMF Server Stack with Helm**
+
+```bash
+helm install cmf charts/cmf --namespace cmf
+```
+
+> 📝 **Note:** If you skipped Step 2, add `--create-namespace` to have Helm create the namespace automatically:
+>
+> ```bash
+> helm install cmf charts/cmf --namespace cmf --create-namespace
+> ```
+
+**Step 4: Watch the Deployment**
+
+```bash
+kubectl -n cmf get pods
+```
+
+All pods should reach the `Running` status with `1/1` ready. PostgreSQL starts first; the CMF Server waits for it to be ready before starting, and the UI and MCP servers wait for the CMF Server.
+
+**Step 5: Access the CMF UI**
+
+The Nginx reverse proxy is exposed as a `NodePort` service:
+
+```bash
+kubectl -n cmf get svc nginx
+```
+
+Open the UI at `http://<node-ip>:30080`, where `<node-ip>` is the IP of any cluster node:
+
+```bash
+# For Minikube:
+minikube ip
+
+# Or use port-forwarding if NodePort access is not available:
+kubectl -n cmf port-forward svc/nginx 8080:80
+# then open http://localhost:8080
+```
+
+#### Verifying the Deployment
+
+Confirm that all components are working:
+
+```bash
+# All pods should be Running and Ready (1/1)
+kubectl -n cmf get pods
+
+# All services should be present (nginx, server, ui, tensorboard, mcp, postgres)
+kubectl -n cmf get svc -n cmf
+
+# UI is reachable through nginx (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30080/
+
+# CMF Server API responds through the /api route (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30080/api/v1/artifacts
+
+# TensorBoard is proxied (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30080/tensor_board/
+
+# MCP Server health endpoint (expect HTTP 200)
+curl -s -o /dev/null -w "%{http_code}\n" http://<node-ip>:30832/health
+
+# Check logs of individual components
+kubectl -n cmf logs deploy/server
+kubectl -n cmf logs deploy/nginx
+```
+
+#### Connecting the CMF Client
+
+Initialize the CMF client against the Kubernetes deployment:
+
+```bash
+cmf init local --path <local-storage-path> --git-remote-url <git-url> \
+    --cmf-server-url http://<node-ip>:30080
+```
+
+### Customizing the Deployment
+
+Configuration is done through `values.yaml`. Key options:
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `nginx.service.type` | `NodePort` | Change to `LoadBalancer` or `ClusterIP` for other exposure models |
+| `nginx.service.httpNodePort` | `30080` | NodePort for HTTP access to the UI/API |
+| `mcp.external.nodePort` | `30832` | NodePort for external MCP access |
+| `postgres.auth.user` / `postgres.auth.password` | `myuser` / `mypassword` | PostgreSQL credentials |
+| `storage.mode` | `pvc` | Set to `hostPath` for Minikube-style host directories |
+| `storage.<component>.size` / `storageClass` | varies | Per-component PVC sizing and storage class |
+| `neo4j.enabled` | `false` | Optionally deploy Neo4j |
+| `<component>.image.repository` / `tag` | `federcmf/*` | Override image registry or tags |
+
+Apply overrides with a values file or `--set` flags:
+
+```bash
+helm upgrade cmf charts/cmf --namespace cmf -f my-values.yaml
+# or, for example:
+helm upgrade cmf charts/cmf --namespace cmf --set postgres.auth.password=secret
+```
+
+### Uninstallation
+
+```bash
+# Remove the CMF release (retains persistent data)
+helm uninstall cmf --namespace cmf
+```
+
+To also remove the persistent data (all metadata, uploaded artifacts, and TensorBoard logs):
+
+```bash
+kubectl -n cmf delete pvc --all
+```
+
+To remove everything, including the namespace:
+
+```bash
+helm uninstall cmf --namespace cmf
+kubectl delete namespace cmf
+```
+
+> ⚠️ **Warning:** Deleting PVCs permanently removes all CMF metadata and logs. Export any data you need before uninstalling.
+
+---
+
 ## Troubleshooting
+
+### One-Time PostgreSQL 13 to 17 Upgrade for Existing Users
+
+After pulling the latest CMF changes, `docker-compose-server.yml` starts PostgreSQL 17 by default and stores new data in `${CMF_DATA_DIR}/postgres17_data`. Existing users may still have old PostgreSQL 13 data in `${CMF_DATA_DIR}/postgres_data`.
+
+PostgreSQL 17 cannot directly start with a PostgreSQL 13 data directory.
+> Do not copy or mount the old PostgreSQL 13 `postgres_data` directory into a PostgreSQL 17 container.
+
+If old PostgreSQL 13 data exists, back it up with a temporary `postgres:13` container, then start the latest CMF stack so PostgreSQL 17 creates `${CMF_DATA_DIR}/postgres17_data`, and restore the backup into PostgreSQL 17. The previous version of `docker-compose-server.yml` that used PostgreSQL 13 is not required for this migration.
+
+The migration commands use the same `.env` file as `docker compose -f docker-compose-server.yml up`. The following variables are used during the migration:
+
+* `CMF_DATA_DIR`: locates the existing `postgres_data` directory and the new `postgres17_data` directory.
+* `POSTGRES_USER`: specifies the PostgreSQL user used for readiness checks, backup, and restore.
+* `POSTGRES_PASSWORD`: provides the password when starting the temporary PostgreSQL 13 container.
+* `POSTGRES_DB`: specifies the CMF database to back up and restore.
+
+If these variables are not defined in `.env`, the migration commands use the default values specified in the commands below.
+
+**Step 1: Prepare and check the PostgreSQL data directory**
+
+Run the following commands from the CMF repository directory. The first command loads and exports the values from `.env` into the shell so that the migration commands use the same configuration as Docker Compose.
+
+```bash
+set -a; [ -f .env ] && . ./.env; set +a
+
+DATA_DIR="$(realpath "${CMF_DATA_DIR:-./data}")"
+
+cat "${DATA_DIR}/postgres_data/PG_VERSION"
+```
+
+If the output is `13`, continue with the backup and restore process.
+
+If the file does not exist, or the output is not `13`, this PostgreSQL 13 migration process is not required for that data directory.
+
+**Step 2: Stop the current CMF stack**
+
+Stop any running CMF services before creating the backup:
+
+```bash
+docker compose -f docker-compose-server.yml stop
+```
+
+**Step 3: Start a temporary PostgreSQL 13 container for backup**
+
+The latest `docker-compose-server.yml` uses PostgreSQL 17, so use a temporary PostgreSQL 13 container to read the old `postgres_data` directory and create the backup:
+
+```bash
+docker run -d --name cmf-postgres13-backup \
+    -e POSTGRES_USER="${POSTGRES_USER:-myuser}" \
+    -e POSTGRES_PASSWORD="${POSTGRES_PASSWORD:-mypassword}" \
+    -e POSTGRES_DB="${POSTGRES_DB:-mlmd}" \
+    -v "${DATA_DIR}/postgres_data:/var/lib/postgresql/data" \
+    docker.io/library/postgres:13
+```
+
+Wait until the temporary PostgreSQL 13 container is ready:
+
+```bash
+docker exec cmf-postgres13-backup pg_isready -U "${POSTGRES_USER:-myuser}"
+```
+
+**Step 4: Create a logical backup from PostgreSQL 13**
+
+Back up the CMF database only. Do not use `pg_dumpall` for this restore path because the latest PostgreSQL 17 container already creates `${POSTGRES_USER}` and `${POSTGRES_DB}` during startup.
+
+```bash
+docker exec cmf-postgres13-backup pg_dump -Fc -U "${POSTGRES_USER:-myuser}" -d "${POSTGRES_DB:-mlmd}" > postgres13-mlmd.dump
+```
+
+Confirm the backup file was created:
+
+```bash
+ls -lh postgres13-mlmd.dump
+
+test -s postgres13-mlmd.dump && echo "backup file created"
+```
+
+Remove the temporary PostgreSQL 13 container after the backup is complete:
+
+```bash
+docker rm -f cmf-postgres13-backup
+```
+
+Keep the old PostgreSQL 13 data directory until the PostgreSQL 17 restore has been verified:
+
+```text
+${DATA_DIR}/postgres_data
+```
+
+**Step 5: Confirm the latest compose file uses PostgreSQL 17**
+
+The PostgreSQL service in `docker-compose-server.yml` should use PostgreSQL 17 and `postgres17_data`:
+
+```yaml
+postgres:
+  image: docker.io/library/postgres:17
+  volumes:
+    - ${CMF_DATA_DIR:-./data}/postgres17_data:/var/lib/postgresql/data
+```
+
+**Step 6: Verify or start PostgreSQL 17**
+
+First, verify whether the PostgreSQL 17 service is already running:
+
+```bash
+docker compose -f docker-compose-server.yml ps postgres
+```
+
+If the `postgres` service is listed as running or healthy, no start command is required. Continue to the version verification step below.
+
+If the `postgres` service is not running, start only the PostgreSQL service with Docker Compose:
+
+```bash
+docker compose -f docker-compose-server.yml up -d postgres
+```
+
+Verify that PostgreSQL 17 is running:
+
+```bash
+docker compose -f docker-compose-server.yml exec -T postgres postgres --version
+```
+
+The output should start with:
+
+```text
+PostgreSQL 17
+```
+
+If postgres17_data does not already exist, starting PostgreSQL 17 creates the PostgreSQL 17 data directory at:
+
+```text
+${DATA_DIR}/postgres17_data
+```
+
+**Step 7: Restore the PostgreSQL 13 backup into PostgreSQL 17**
+
+```bash
+cat postgres13-mlmd.dump | docker compose -f docker-compose-server.yml exec -T postgres \
+    pg_restore --clean --if-exists --no-owner \
+    -U "${POSTGRES_USER:-myuser}" \
+    -d "${POSTGRES_DB:-mlmd}"
+```
+
+**Step 8: Validate the restored PostgreSQL 17 database**
+
+Check the database server version:
+
+```bash
+docker compose -f docker-compose-server.yml exec -T postgres \
+    psql -U "${POSTGRES_USER:-myuser}" \
+    -d "${POSTGRES_DB:-mlmd}" \
+    -tAc "SHOW server_version;"
+```
+
+The output should start with `17`.
+
+Check the PostgreSQL data directory version:
+
+```bash
+docker compose -f docker-compose-server.yml exec -T postgres \
+    cat /var/lib/postgresql/data/PG_VERSION
+```
+
+Expected output:
+
+```text
+17
+```
+
+**Step 9: Start CMF services**
+
+```bash
+docker compose -f docker-compose-server.yml up
+```
+
+After confirming the application works with PostgreSQL 17, keep the old PostgreSQL 13 data directory for rollback until the migration is accepted.
+
+---
 
 ### Python 3.9 Installation Issues on Ubuntu
 

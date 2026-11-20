@@ -27,15 +27,20 @@ from cmflib.dvc_wrapper import (
     dvc_quiet_init,
     dvc_add_remote_repo,
     dvc_add_attribute,
-    git_modify_remote_url,
+    check_git_config,
+    git_add_or_modify_remote_url,
 )
 from cmflib.utils.cmf_config import CmfConfig
 from cmflib.utils.helper_functions import is_git_repo
-from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, DuplicateArgumentNotAllowed, MissingArgument
+from cmflib.cmf_exception_handling import Neo4jArgumentNotProvided, CmfInitComplete, CmfInitFailed, DuplicateArgumentNotAllowed, MissingArgument, GitConfigNotSet
 import sys
 
 class CmdInitAmazonS3(CmdBase):
     def run(self, live):
+        # Validate git configuration before proceeding
+        if not check_git_config():
+            raise GitConfigNotSet(missing_configs=["user.name", "user.email"])
+        
         # User can provide different name for cmf configuration file using CONFIG_FILE environment variable.
         # If CONFIG_FILE is not provided, default file name is .cmfconfig
         cmf_config = os.environ.get("CONFIG_FILE", ".cmfconfig")
@@ -89,7 +94,7 @@ class CmdInitAmazonS3(CmdBase):
             git_add_remote(self.args.git_remote_url[0])
             print("git init complete.")
         else:
-            git_modify_remote_url(self.args.git_remote_url[0])
+            git_add_or_modify_remote_url(self.args.git_remote_url[0])
             print("git init complete.")
 
 

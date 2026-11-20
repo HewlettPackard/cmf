@@ -100,6 +100,30 @@ eval $(minikube docker-env)
 docker build -t ui:latest -f ./Dockerfile .
 ```
 
+**Build MCP image:**
+
+```bash
+cd cmf/
+eval $(minikube docker-env)
+docker build -t federcmf/mcp:latest -f ./mcp/Dockerfile .
+```
+
+**Build Tensorboard image:**
+
+```bash
+cd cmf/
+eval $(minikube docker-env)
+docker build -t federcmf/tensorboard:latest -f ./tensorboard.Dockerfile .
+```
+
+**Build Nginx image** (bundles `nginx.conf` and curl):
+
+```bash
+cd cmf/
+eval $(minikube docker-env)
+docker build -t federcmf/cmf-nginx:latest -f ./nginx/Dockerfile .
+```
+
 ---
 
 ## 8. Apply Kubernetes manifests
@@ -126,6 +150,12 @@ kubectl apply -f kubernetes/server/cmf-deployment.yaml
 
 ```bash
 kubectl apply -f kubernetes/ui/ui-deployment.yaml
+```
+
+**MCP:**
+
+```bash
+kubectl apply -f kubernetes/mcp/mcp-deployment.yaml
 ```
 
 **Tensorboard:**

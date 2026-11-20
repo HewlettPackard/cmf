@@ -133,6 +133,7 @@ nav:
       - Cmf: api/public/cmf.md
       - DataSlice: api/public/dataslice.md
       - CmfQuery: api/public/cmfquery.md
+      - CmfQuery REST API: api/public/cmfquery_rest_api.md
       - Cmf Server: api/public/cmfserver.md
       - Ray Logger: api/public/cmf_ray_logger.md
     - 💻 CLI Reference: 
