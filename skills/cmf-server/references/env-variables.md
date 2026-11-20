@@ -2,11 +2,11 @@
 
 All variables are set in the `.env` file in the same directory as `docker-compose-server.yml`.
 
-## Required
+## Optional
 
 | Variable | Example | Purpose |
 |----------|---------|---------|
-| `REACT_APP_CMF_API_URL` | `http://192.168.1.10:80` | URL clients and the browser use to reach the CMF API. Must be reachable from client machines — use the host IP, not `localhost` if accessed remotely. |
+| `REACT_APP_CMF_API_URL` | `http://192.168.1.10:80` | URL the browser uses to fetch API calls from the UI. **Optional**: when unset, the browser uses its own origin (`window.location.origin`), so HTTP and HTTPS both work automatically. Set it only if the API is on a different host than the UI, or a different port. |
 
 ## Storage
 
@@ -19,7 +19,7 @@ All variables are set in the `.env` file in the same directory as `docker-compos
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `NGINX_HTTP_PORT` | `80` | Host port for HTTP |
-| `NGINX_HTTPS_PORT` | `443` | Host port for HTTPS |
+| `NGINX_HTTPS_PORT` | `443` | Host port for HTTPS. nginx auto-generates a throwaway self-signed cert on startup if none is mounted; for a stable cert, run `scripts/generate-self-signed-cert.sh` (or place `cmf.crt` / `cmf.key` in `$CMF_DATA_DIR/nginx-certs/`). |
 | `MCP_EXTERNAL_PORT` | `8382` | Host port mapped to the CMF MCP server |
 
 ## PostgreSQL
@@ -43,15 +43,25 @@ All variables are set in the `.env` file in the same directory as `docker-compos
 
 ## Common customizations
 
-**Non-standard HTTP port:**
+**Non-standard HTTP port** (no `REACT_APP_CMF_API_URL` needed — browser uses its own origin):
 ```env
 NGINX_HTTP_PORT=8080
+```
+
+**Split front/back-end** (API on a different host — set `REACT_APP_CMF_API_URL`):
+```env
 REACT_APP_CMF_API_URL=http://192.168.1.10:8080
 ```
 
 **External data volume:**
 ```env
 CMF_DATA_DIR=/mnt/nfs/cmf-data
+```
+
+**Bring-your-own TLS certificate** (instead of the self-signed one):
+```env
+# Place cmf.crt and cmf.key in $CMF_DATA_DIR/nginx-certs/ before starting.
+# No env change required — nginx reads them from the mounted certs dir.
 ```
 
 **Multi-environment MCP:**
