@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-deployment
+  labels:
+    app: mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcp
+  template:
+    metadata:
+      labels:
+        app: mcp
+    spec:
+      containers:
+      - name: mcp
+        # Same image as docker-compose-server.yml (built from ./mcp/Dockerfile).
+        # For Minikube local builds keep federcmf/mcp:latest with IfNotPresent.
+        image: federcmf/mcp:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CMF_BASE_URL
+          # In-cluster URL of the cmf-server service (named "server").
+          value: http://server:8080
+        - name: CMF2_BASE_URL
+          value: ""
+        - name: CMF3_BASE_URL
+          value: ""
+        - name: CMF4_BASE_URL
+          value: ""
+        - name: MCP_HOST
+          value: 0.0.0.0
+        - name: MCP_PORT
+          value: "8000"
+        - name: MCP_TRANSPORT_SECURITY
+          value: "disabled"
+        - name: HTTP_PROXY
+          value: ""
+        - name: HTTPS_PROXY
+          value: ""
+        - name: NO_PROXY
+          value: "localhost,127.0.0.1,server"
+        - name: http_proxy
+          value: ""
+        - name: https_proxy
+          value: ""
+        - name: no_proxy
+          value: "localhost,127.0.0.1,server"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 5
+          failureThreshold: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp                     # matches proxy_pass http://mcp:8000 in nginx.conf
+  labels:
+    app: mcp
+spec:
+  type: ClusterIP
+  selector:
+    app: mcp
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-external            # mirrors MCP_EXTERNAL_PORT:8382 from docker-compose-server.yml
+  labels:
+    app: mcp
+spec:
+  type: NodePort
+  selector:
+    app: mcp
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+    nodePort: 30832             # NodePort range is 30000-32767; maps host 30832 -> container 8000 (compose uses 8382)
