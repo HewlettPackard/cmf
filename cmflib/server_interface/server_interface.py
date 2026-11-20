@@ -49,7 +49,7 @@ def call_python_env(url, file_name, file_path):
     return response
 
 def call_label(url, file_name, path):
-    url_to_pass = f"{url}/api/v1/label"
+    url_to_pass = f"{url}/api/v2/label"
     files = {'file': (file_name, open(path, 'rb'))}
     response = requests.post(url_to_pass, files=files)
     return response

@@ -21,6 +21,7 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from server.app.schemas.responses import error_response
 from server.app.api.v1 import api_router
+from server.app.api.v2 import api_router as api_v2_router
 dotenv.load_dotenv()
 
 #lifespan used to prevent multiple loading and save time for visualization.
@@ -68,6 +69,7 @@ app = FastAPI(title="cmf-server", lifespan=lifespan, root_path="/api")
 app.state.mlmd = mlmd_state
 
 app.include_router(api_router)
+app.include_router(api_v2_router)
 
 # Add CORS middleware
 app.add_middleware(
