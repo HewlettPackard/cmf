@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 DESCRIPTION = 'Metadata Python Package'
 LONG_DESCRIPTION = 'Metadata framework storing AI metadata into MLMD'
 
