@@ -6,11 +6,13 @@ The CMF GUI provides an intuitive, browser-based interface for exploring ML pipe
 
 The CMF GUI consists of several main sections:
 
-- **[Artifacts](artifacts.md)**: Browse and search datasets, models, and metrics
-- **[Executions](executions.md)**: View pipeline runs and execution history
-- **[Lineage](lineage.md)**: Visualize data flow and dependencies
-- **[Metahub](../cmf_server/metahub-tab-usage.md)**: Synchronize metadata between CMF servers
-- **[TensorBoard](../cmf_client/tensorflow_guide.md)**: View ML training metrics
+- **[Artifacts](artifacts.md)**: Browse, search, filter, compare, and inspect datasets, models, metrics, labels, and other tracked artifacts.
+- **[Executions](executions.md)**: View pipeline runs, execution history, parameters, and associated artifacts.
+- **[Lineage](lineage.md)**: Visualize data flow, dependencies, and relationships between artifacts and executions.
+- **[Metahub](../cmf_server/metahub-tab-usage.md)**: Synchronize metadata between multiple CMF servers.
+- **[TensorBoard](../cmf_client/tensorflow_guide.md)**: View ML training metrics and visualizations.
+
+The GUI organizes metadata by pipelines and stages, enabling users to easily navigate and understand the lifecycle of machine learning assets.
 
 ---
 
@@ -20,19 +22,24 @@ The CMF GUI consists of several main sections:
 
 1. Ensure the [CMF Server is running](../setup/index.md#install-cmf-server-with-gui)
 2. Open your browser and navigate to the server URL (default: `http://your-server-ip:80`)
-3. The GUI will display the available pipelines in the sidebar
+3. The GUI will display the available pipelines on the home page.
 
 ---
 
 ## Artifacts View
 
-The Artifacts page displays all datasets, models, and metrics tracked by CMF. You can browse, search, and explore artifact metadata, versions, and lineage.
+The Artifacts page displays all datasets, models, metrics, labels, and other tracked artifacts managed by CMF. Artifacts are organized by pipeline and stage, allowing users to quickly locate inputs used and outputs generated during different phases of the machine learning workflow.
 
 ### Key Features
 
-- **Artifact Listing**: View all artifacts with their types (Dataset, Model, Metrics)
-- **Search & Filter**: Find specific artifacts by name, type, or properties
-- **Artifact Details**: Examine metadata, custom properties, and version information
+- **Pipeline Navigation**: Select a pipeline to view its associated stages.
+- **Stage-Based Filtering**: Click on a stage (such as Prepare, Featurize, Train, or Evaluate) to display the artifacts generated or used within that stage.
+- **Artifact Type Filtering**: Filter artifacts by type, including Dataset, Model, Metrics, Label, and Step Metrics.
+- **Search & Filter**: Find artifacts using names, metadata, labels, or properties.
+- **Artifact Comparison**: Compare multiple artifacts to identify metadata and version differences.
+- **Artifact Details Panel**: View detailed metadata, provenance information, and custom properties.
+- **Version Tracking**:  Explore artifact history and associated metadata.
+
 
 ![CMF Artifacts Page](../assets/artifacts.jpeg)
 
@@ -40,13 +47,15 @@ The Artifacts page displays all datasets, models, and metrics tracked by CMF. Yo
 
 ## Executions View
 
-The Executions page displays all pipeline runs and execution history. You can view execution details, parameters, and associated artifacts for each run.
+The Executions page displays all pipeline runs and execution history. You can view execution details, parameters, and associated artifacts for each run to understand how outputs were generated throughout the ML lifecycle.
 
 ### Key Features
 
-- **Execution History**: View all past executions with timestamps
-- **Execution Details**: See parameters, properties, and metadata for each run
-- **Filtering & Search**: Find specific executions by name, type, or properties
+- **Pipeline Navigation**: Select a pipeline to view its associated stages.
+- **Stage-Based Filtering**: Click on a stage (such as Prepare, Featurize, Train, or Evaluate) to display the executions generated or used within that stage.
+- **Execution History**: View execution timelines and timestamps.
+- **Execution Details**:Inspect execution parameters, metadata, and associated artifacts.
+- **Filtering & Search**: Find specific executions using metadata, execution names, or properties.
 
 ![CMF Executions Page](../assets/ExecutionPage.png)
 
@@ -70,11 +79,15 @@ The Lineage page offers interactive visualizations of data flow and dependencies
 
 The [Metahub](../cmf_server/metahub-tab-usage.md) feature enables synchronization of metadata between two CMF servers, allowing distributed teams to collaborate and share ML pipeline metadata.
 
+![CMF Metahub Page](../assets/metahub_ui_overview.png)
+
 ---
 
 ## TensorBoard Integration
 
 CMF integrates with [TensorBoard](../cmf_client/tensorflow_guide.md) to visualize training metrics, model graphs, and other ML-specific visualizations alongside CMF metadata.
+
+![CMF TensorBoard Page](../assets/Tensorboard.png)
 
 ---
 

@@ -14,7 +14,7 @@ Lineage tracking captures the relationships between:
 
 The Lineage page offers three different visualization modes:
 
-### 1. Artifact Tree
+### 1. Artifact Lineage
 
 **Purpose**: Hierarchical view of artifact dependencies
 
@@ -29,10 +29,10 @@ The Lineage page offers three different visualization modes:
 - Tree layout showing parent-child relationships
 - Color-coded by artifact type (Dataset/Model/Metrics)
 
-![Artifact Tree Lineage](../assets/artifact_tree_lineage.png)
+![Artifact Tree Lineage](../assets/Artifact_Lineage.png)
 
 
-### 2. Execution Tree
+### 2. Execution Lineage
 
 **Purpose**: Hierarchical view of execution dependencies
 
@@ -47,10 +47,10 @@ The Lineage page offers three different visualization modes:
 - Select specific execution type from dropdown
 - Shows execution order and dependencies
 
-![Execution Tree Lineage](../assets/execution_tree_lineage.png)
+![Execution Tree Lineage](../assets/Execution_Lineage.png)
 
 
-### 3. Artifact-Execution Tree
+### 3. Artifact-Execution Lineage
 
 **Purpose**: Combined view showing both artifacts and executions
 
@@ -67,7 +67,7 @@ The Lineage page offers three different visualization modes:
 - Complete provenance trail
 - Filtered by pipeline
 
-![Artifact Execution Tree Lineage](../assets/artifact_exec_tree_lineage.png)
+![Artifact Execution Tree Lineage](../assets/ArtifactExecutionLineage.png)
 
 ### 4. Hierarchical Lineage
 
@@ -104,7 +104,7 @@ The view starts with the pipeline name at the top. Each stage of the pipeline ap
 
 1. Navigate to **Lineage** page
 2. Select your pipeline from dropdown
-3. Choose **Artifact Tree** tab
+3. Choose **Artifact Lineage** tab
 4. Find your trained model in the tree
 5. Trace backwards to see:
    - Training dataset used
@@ -115,7 +115,7 @@ The view starts with the pipeline name at the top. Each stage of the pipeline ap
 
 **Goal**: Verify stages executed in correct sequence
 
-1. Select **Execution Tree** tab
+1. Select **Execution Lineage** tab
 2. Choose the execution type from dropdown
 3. View the tree structure showing:
    - Which stages ran first
@@ -127,7 +127,7 @@ The view starts with the pipeline name at the top. Each stage of the pipeline ap
 
 **Goal**: Get complete picture of data flow through pipeline
 
-1. Select **Artifact-Execution Tree** tab
+1. Select **Artifact-Execution Lineage** tab
 2. View the alternating artifact → execution → artifact pattern
 3. Trace a specific data path:
    - Start from input dataset
@@ -140,7 +140,7 @@ The view starts with the pipeline name at the top. Each stage of the pipeline ap
 
 **Goal**: Identify which artifacts are used by multiple executions
 
-1. Use **Artifact Tree** visualization
+1. Use **Artifact Lineage** visualization
 2. Look for artifacts with multiple outgoing edges
 3. These artifacts are inputs to multiple stages
 4. Useful for understanding data sharing patterns
