@@ -134,6 +134,27 @@ python -m pytest test/minimum_acceptance_testing/client/ -v
 
 ---
 
+## GitHub Actions CI
+
+The `CMF Python CI` workflow runs on pushes to `master`, pull requests targeting
+`master`, and manual dispatch. It uses Python 3.10 to install the project and
+server test dependencies, runs the configured flake8 checks, and executes the
+unit and server tests:
+
+```bash
+python -m pip install -e ".[test]"
+python -m pip install -r server/requirements.txt
+python -m pip install flake8
+python -m flake8 cmflib server --count --select=E9,F63,F7,F82 --show-source --statistics
+python -m pytest cmflib/tests test/server test/test_api_versioning.py
+```
+
+The MAT tests above are not part of this CI job because they require external
+server services and backend credentials. Run them separately after configuring
+`test/minimum_acceptance_testing/config.json`.
+
+---
+
 ## Test Order (all backends follow the same sequence)
 
 Each backend module runs 8 tests in this fixed order:
@@ -209,4 +230,3 @@ The CMFQuery endpoint tests validate the REST APIs backed by `CmfQuery`. They us
 | Execution batches | POST | `/api/v1/executions/parents/batch-get` |
 | Execution batches | POST | `/api/v1/executions/ancestors/batch-get` |
 | Execution batches | GET | `/api/v1/executions/id/{execution_id}/parents/ids` |
-
