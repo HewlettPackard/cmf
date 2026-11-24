@@ -40,3 +40,4 @@ jobs:
           cmflib/tests
           test/server
           test/test_api_versioning.py
+
