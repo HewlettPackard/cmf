@@ -15,28 +15,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  python-checks:
+    name: Python checks
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_USER: cmf_test
-          POSTGRES_PASSWORD: cmf_test_password
-          POSTGRES_DB: mlmd
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U cmf_test -d mlmd"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      POSTGRES_HOST: 127.0.0.1
-      POSTGRES_PORT: "5432"
-      POSTGRES_USER: cmf_test
-      POSTGRES_PASSWORD: cmf_test_password
-      POSTGRES_DB: mlmd
 
     steps:
       - name: Checkout repository
@@ -53,16 +34,25 @@ jobs:
             server/requirements.txt
             mcp/pyproject.toml
 
-      - name: Install project dependencies
-        run: make setup-ci-python
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test,lint]" -r requirements.txt -r server/requirements.txt -e ./mcp
 
-      - name: Run Python lint checks
-        run: make lint
+      - name: Python lint checks
+        run: python -m flake8 cmflib server mcp --count --select=E9,F63,F7,F82 --show-source --statistics
 
-      - name: Run Python and MAT configuration tests
-        run: make test
+      - name: CMF and DVC configuration tests
+        run: >-
+          python -m pytest -q
+          cmflib/tests/utils/test_cmf_config.py
+          cmflib/tests/utils/test_dvc_config.py
 
-  ui:
+      - name: Local artifact storage tests
+        run: python -m pytest -q cmflib/tests/storage_backends/test_local_artifacts.py
+
+  ui-build:
+    name: UI production build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -76,7 +66,7 @@ jobs:
           cache-dependency-path: ui/package-lock.json
 
       - name: Install UI dependencies
-        run: make setup-ui
+        run: npm ci --prefix ui
 
       - name: Build UI
-        run: make test-ui
+        run: npm run build --prefix ui

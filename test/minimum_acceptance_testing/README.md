@@ -137,21 +137,23 @@ python -m pytest test/minimum_acceptance_testing/client/ -v
 ## GitHub Actions CI
 
 The `CMF Python CI` workflow runs on pushes to `master`, pull requests targeting
-`master`, and manual dispatch. It uses Python 3.10 to install the project and
-server test dependencies, runs the configured flake8 checks, and executes the
-unit and server tests:
+`master`, and manual dispatch. Its run details show four named checks: Python
+lint, CMF/DVC configuration tests, local artifact storage tests, and the UI
+production build. Python and UI checks run in parallel. The MAT tests requiring
+external servers or credentials are not run in this quick CI workflow and must
+be run separately after configuring their backend credentials.
 
 ```bash
-python -m pip install -e ".[test]"
-python -m pip install -r server/requirements.txt
-python -m pip install flake8
-python -m flake8 cmflib server --count --select=E9,F63,F7,F82 --show-source --statistics
-python -m pytest cmflib/tests test/server test/test_api_versioning.py
+python -m pip install -e ".[test,lint]" -r requirements.txt -r server/requirements.txt -e ./mcp
+python -m flake8 cmflib server mcp --count --select=E9,F63,F7,F82 --show-source --statistics
+python -m pytest -q cmflib/tests/utils/test_cmf_config.py cmflib/tests/utils/test_dvc_config.py
+python -m pytest -q cmflib/tests/storage_backends/test_local_artifacts.py
+npm ci --prefix ui
+npm run build --prefix ui
 ```
 
-The MAT tests above are not part of this CI job because they require external
-server services and backend credentials. Run them separately after configuring
-`test/minimum_acceptance_testing/config.json`.
+Run remote backend acceptance tests separately after configuring
+`test/minimum_acceptance_testing/config.json` and the required credentials.
 
 ---
 
