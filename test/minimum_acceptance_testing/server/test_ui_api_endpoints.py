@@ -91,7 +91,7 @@ def _get_stages(server_url: str) -> list:
 def test_display_executions(server_url):
     stages = _get_stages(server_url)
     if not stages:
-        pytest.skip(f"No stages found for pipeline '{pipeline_name}' — skipping executions test")
+        pytest.fail(f"No stages found for pipeline '{pipeline_name}'")
     for stage in stages:
         response = requests.post(
             f"{server_url}/pipelines/{pipeline_name}/stages/{stage}/executions",
@@ -108,7 +108,7 @@ def test_display_executions(server_url):
 def test_display_artifacts(server_url):
     stages = _get_stages(server_url)
     if not stages:
-        pytest.skip(f"No stages found for pipeline '{pipeline_name}' — skipping artifacts test")
+        pytest.fail(f"No stages found for pipeline '{pipeline_name}'")
     for stage in stages:
         response = requests.post(
             f"{server_url}/pipelines/{pipeline_name}/stages/{stage}/artifacts",

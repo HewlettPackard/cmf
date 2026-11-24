@@ -75,6 +75,8 @@ def assert_api_response(
     assert isinstance(payload, dict), response_summary(response)
 
     if "status" not in payload:
+        if "data" in payload or "code" in payload or "message" in payload:
+            pytest.fail(f"Incomplete API response envelope: {response_summary(response)}")
         return payload
 
     assert payload["status"] in expected_statuses, response_summary(response)
