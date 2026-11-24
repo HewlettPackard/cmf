@@ -13,7 +13,6 @@ from types import ModuleType
 from unittest.mock import MagicMock
 
 # Mock external dependencies that cmf.py imports directly
-sys.modules['pandas'] = MagicMock()
 sys.modules['neo4j'] = MagicMock()
 sys.modules['neo4j.driver'] = MagicMock()
 sys.modules['dvc'] = MagicMock()
@@ -26,7 +25,6 @@ sys.modules['readchar'] = MagicMock()
 sys.modules['boto3'] = MagicMock()
 sys.modules['paramiko'] = MagicMock()
 sys.modules['ray'] = MagicMock()
-sys.modules['pyarrow'] = MagicMock()
 sys.modules['tabulate'] = MagicMock()
 sys.modules['click'] = MagicMock()
 
@@ -57,6 +55,31 @@ class ContextualMagicMock(MagicMock):
         return MagicMock()
 
 
+class MockEvent:
+    UNKNOWN = 0
+    DECLARED_OUTPUT = 1
+    DECLARED_INPUT = 2
+    INPUT = 3
+    OUTPUT = 4
+    INTERNAL_INPUT = 5
+    INTERNAL_OUTPUT = 6
+    PENDING_OUTPUT = 7
+
+    class Type:
+        UNKNOWN = 0
+        DECLARED_OUTPUT = 1
+        DECLARED_INPUT = 2
+        INPUT = 3
+        OUTPUT = 4
+        INTERNAL_INPUT = 5
+        INTERNAL_OUTPUT = 6
+        PENDING_OUTPUT = 7
+
+    class Path(ContextualMagicMock):
+        class Step(ContextualMagicMock):
+            pass
+
+
 # Create mock ml_metadata modules using ModuleType
 ml_metadata_pb2_module = ModuleType('metadata_store_pb2')
 ml_metadata_pb2_module.ConnectionConfig = MockConnectionConfig
@@ -65,7 +88,7 @@ ml_metadata_pb2_module.ConnectionConfig = MockConnectionConfig
 ml_metadata_pb2_module.Context = ContextualMagicMock()
 ml_metadata_pb2_module.Execution = ContextualMagicMock()
 ml_metadata_pb2_module.Artifact = ContextualMagicMock()
-ml_metadata_pb2_module.Event = ContextualMagicMock()
+ml_metadata_pb2_module.Event = MockEvent
 ml_metadata_pb2_module.Attribution = ContextualMagicMock()
 ml_metadata_pb2_module.Association = ContextualMagicMock()
 ml_metadata_pb2_module.Value = ContextualMagicMock()
@@ -96,8 +119,14 @@ ml_metadata_module = ModuleType('ml_metadata')
 ml_metadata_module.proto = ml_metadata_proto_module
 ml_metadata_module.metadata_store = ml_metadata_store_module
 
+# cmf_merger imports this exception while collecting the CMFQuery tests.
+ml_metadata_errors_module = ModuleType('errors')
+ml_metadata_errors_module.AlreadyExistsError = type('AlreadyExistsError', (Exception,), {})
+ml_metadata_module.errors = ml_metadata_errors_module
+
 # Register modules in sys.modules
 sys.modules['ml_metadata'] = ml_metadata_module
+sys.modules['ml_metadata.errors'] = ml_metadata_errors_module
 sys.modules['ml_metadata.proto'] = ml_metadata_proto_module
 sys.modules['ml_metadata.proto.metadata_store_pb2'] = ml_metadata_pb2_module
 sys.modules['ml_metadata.metadata_store'] = ml_metadata_store_module
