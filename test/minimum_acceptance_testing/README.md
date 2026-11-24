@@ -144,7 +144,7 @@ external servers or credentials are not run in this quick CI workflow and must
 be run separately after configuring their backend credentials.
 
 ```bash
-python -m pip install -e ".[test,lint]" -r requirements.txt -r server/requirements.txt -e ./mcp
+python -m pip install -e ".[test]" flake8 pytest-mock
 python -m flake8 cmflib server mcp --count --select=E9,F63,F7,F82 --show-source --statistics
 python -m pytest -q cmflib/tests/utils/test_cmf_config.py cmflib/tests/utils/test_dvc_config.py
 python -m pytest -q cmflib/tests/storage_backends/test_local_artifacts.py
