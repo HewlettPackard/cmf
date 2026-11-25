@@ -55,6 +55,39 @@ class ContextualMagicMock(MagicMock):
         return MagicMock()
 
 
+class MockContext:
+    def __init__(self, **kwargs):
+        self.id = None
+        self.name = None
+        self.type_id = None
+        self.properties = {}
+        self.custom_properties = {}
+        self.__dict__.update(kwargs)
+
+
+class MockExecution:
+    def __init__(self, **kwargs):
+        self.id = None
+        self.name = None
+        self.type_id = None
+        self.properties = {}
+        self.custom_properties = {}
+        self.__dict__.update(kwargs)
+
+
+class MockArtifact:
+    def __init__(self, **kwargs):
+        self.id = None
+        self.name = None
+        self.type_id = None
+        self.uri = None
+        self.properties = {}
+        self.custom_properties = {}
+        self.create_time_since_epoch = None
+        self.last_update_time_since_epoch = None
+        self.__dict__.update(kwargs)
+
+
 class MockEvent:
     UNKNOWN = 0
     DECLARED_OUTPUT = 1
@@ -85,9 +118,9 @@ ml_metadata_pb2_module = ModuleType('metadata_store_pb2')
 ml_metadata_pb2_module.ConnectionConfig = MockConnectionConfig
 
 # Add protobuf object mocks
-ml_metadata_pb2_module.Context = ContextualMagicMock()
-ml_metadata_pb2_module.Execution = ContextualMagicMock()
-ml_metadata_pb2_module.Artifact = ContextualMagicMock()
+ml_metadata_pb2_module.Context = MockContext
+ml_metadata_pb2_module.Execution = MockExecution
+ml_metadata_pb2_module.Artifact = MockArtifact
 ml_metadata_pb2_module.Event = MockEvent
 ml_metadata_pb2_module.Attribution = ContextualMagicMock()
 ml_metadata_pb2_module.Association = ContextualMagicMock()

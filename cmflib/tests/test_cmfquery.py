@@ -1188,6 +1188,7 @@ def test_dumptojson(query_fixture, mocker):
         "Execution_uuid": mocker.Mock(string_value="uuid1"),
         "Execution_type_name": mocker.Mock(string_value="type1")
     }
+    mock_execution.custom_properties = {}
     mock_store.get_executions_by_context.return_value = [mock_execution]
     
     # Step 4: Mock the execution type
