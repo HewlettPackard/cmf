@@ -20,43 +20,20 @@ concurrency:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Python lint + cmflib unit tests + cmf-server tests, on Python 3.9-3.11.
+  # 1. Python lint + cmflib library unit tests, on Python 3.9-3.11.
   #    Each version runs independently. A passing version drops a marker file;
   #    the "python-gate" job below goes green if AT LEAST ONE version passed.
+  #    (cmf-server tests are NOT here: the server code uses "int | None" syntax
+  #    that needs Python 3.10+, so they run in their own job below.)
   # ---------------------------------------------------------------------------
   python-checks:
-    name: Python 3.${{ matrix.python-minor }} (lint, unit, server)
+    name: Python 3.${{ matrix.python-minor }} (lint, unit)
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
         python-minor: ["9", "10", "11"]
-
-
-    # Postgres is needed by the cmf-server API tests (server/app/db/dbconfig.py).
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_USER: myuser
-          POSTGRES_PASSWORD: mypassword
-          POSTGRES_DB: mlmd
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U myuser -d mlmd"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-
-    env:
-      POSTGRES_HOST: localhost
-      POSTGRES_PORT: "5432"
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mlmd
 
 
     steps:
@@ -69,16 +46,13 @@ jobs:
         with:
           python-version: "3.${{ matrix.python-minor }}"
           cache: "pip"
-          cache-dependency-path: |
-            pyproject.toml
-            server/requirements.txt
+          cache-dependency-path: pyproject.toml
 
 
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -e ".[test]" pytest-mock flake8
-          python -m pip install -r server/requirements.txt
 
 
       - name: Python lint checks
@@ -87,10 +61,6 @@ jobs:
 
       - name: CMF library unit tests
         run: python -m pytest -q cmflib/tests/ --junitxml=reports/cmflib-py3${{ matrix.python-minor }}.xml
-
-
-      - name: CMF server tests
-        run: python -m pytest -q test/server test/test_api_versioning.py --junitxml=reports/server-py3${{ matrix.python-minor }}.xml
 
 
       - name: Upload test reports
