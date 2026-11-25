@@ -134,6 +134,29 @@ python -m pytest test/minimum_acceptance_testing/client/ -v
 
 ---
 
+## GitHub Actions CI
+
+The `CMF Python CI` workflow runs on pushes to `master`, pull requests targeting
+`master`, and manual dispatch. Its run details show four named checks: Python
+lint, CMF/DVC configuration tests, local artifact storage tests, and the UI
+production build. Python and UI checks run in parallel. The MAT tests requiring
+external servers or credentials are not run in this quick CI workflow and must
+be run separately after configuring their backend credentials.
+
+```bash
+python -m pip install -e ".[test]" flake8 pytest-mock
+python -m flake8 cmflib server mcp --count --select=E9,F63,F7,F82 --show-source --statistics
+python -m pytest -q cmflib/tests/utils/test_cmf_config.py cmflib/tests/utils/test_dvc_config.py
+python -m pytest -q cmflib/tests/storage_backends/test_local_artifacts.py
+npm ci --prefix ui
+npm run build --prefix ui
+```
+
+Run remote backend acceptance tests separately after configuring
+`test/minimum_acceptance_testing/config.json` and the required credentials.
+
+---
+
 ## Test Order (all backends follow the same sequence)
 
 Each backend module runs 8 tests in this fixed order:
@@ -209,4 +232,3 @@ The CMFQuery endpoint tests validate the REST APIs backed by `CmfQuery`. They us
 | Execution batches | POST | `/api/v1/executions/parents/batch-get` |
 | Execution batches | POST | `/api/v1/executions/ancestors/batch-get` |
 | Execution batches | GET | `/api/v1/executions/id/{execution_id}/parents/ids` |
-

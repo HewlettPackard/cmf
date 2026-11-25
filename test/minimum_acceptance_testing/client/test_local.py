@@ -66,17 +66,8 @@ def test_script():
     print("-------------------------------Test Case Name: Run sample test_script.sh ----------------------------------")
     cur_dir = os.getcwd()
     script_name = cur_dir + '/test_script.sh'
-    try:
-        subprocess.run(['chmod','+x',script_name],check=True)
-    except subprocess.CalledProcessError as e:
-        print(f"Error setting execute permission for {script_name}: {e}")
-    else:
-        try:
-           subprocess.run([script_name], check=True, shell=True)
-        except subprocess.CalledProcessError as e:
-            print(f"Error running {script_name}: {e}")
-        else:
-            print(f"{script_name} executed successfully.")
+    subprocess.run(['chmod', '+x', script_name], check=True)
+    subprocess.run([script_name], check=True)
 
 
 def test_metadata_push(start_server):

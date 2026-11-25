@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 printf "\n[1/5] [RUNNING PARSE STEP         ]\n"
 python src/parse.py artifacts/data.xml.gz artifacts/parsed
 

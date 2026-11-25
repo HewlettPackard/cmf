@@ -1188,6 +1188,7 @@ def test_dumptojson(query_fixture, mocker):
         "Execution_uuid": mocker.Mock(string_value="uuid1"),
         "Execution_type_name": mocker.Mock(string_value="type1")
     }
+    mock_execution.custom_properties = {}
     mock_store.get_executions_by_context.return_value = [mock_execution]
     
     # Step 4: Mock the execution type
@@ -2050,7 +2051,7 @@ def test_get_all_executions_for_artifact_id(query_fixture, mocker):
     result = result.sort_values("execution_id")
 
 
-def test_get_artifact(query_fixture, mocker):
+def test_get_artifact_dataframe(query_fixture, mocker):
     """Test retrieving a single artifact by name as a DataFrame.
     
     Flow:
