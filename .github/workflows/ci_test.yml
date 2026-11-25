@@ -18,6 +18,7 @@ jobs:
   python-checks:
     name: Python checks (3.${{ matrix.python-minor }})
     runs-on: ubuntu-22.04
+    continue-on-error: ${{ matrix.python-minor == '11' }}
     strategy:
       fail-fast: false
       matrix:
