@@ -138,7 +138,7 @@ class CmdDVCIngest(CmdBase):
         uuid_ = str(uuid.uuid4())
         pipeline_name = ""
         cmd_exe: t.Dict[str, str] = {}
-        query = cmfquery.CmfQuery(mlmd_file_name)
+        query = CmfQuery(mlmd_file_name)
         pipelines: t.List[str] = query.get_pipeline_names()
 
         # Query mlmd to get all the executions and its commands

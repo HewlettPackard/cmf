@@ -1,0 +1,282 @@
+name: CMF Python CI
+
+
+
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+
+
+
+permissions:
+  contents: read
+
+
+
+
+concurrency:
+  group: cmf-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+
+
+
+env:
+  # Single Python version used by every Python job in this workflow.
+  # 3.10 is the minimum that works for everything: the server code uses
+  # "int | None" syntax and mcp/pyproject.toml requires Python >= 3.10.
+  PYTHON_VERSION: "3.10"
+
+
+
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Unit tests: only test files from cmflib and server are linted / executed.
+  #    Pytest collects only test_*.py / *_test.py files, so library and server
+  #    source files are not run as tests.
+  # ---------------------------------------------------------------------------
+  unit-tests:
+    name: Unit tests (cmflib + server)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+
+
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]" pytest-mock flake8
+
+
+
+
+      # Lint only the test files (not every source file in cmflib / server).
+      - name: Lint test files
+        run: |
+          python -m flake8 cmflib server test \
+            --filename="test_.py,_test.py,conftest.py" \
+            --count --select=E9,F63,F7,F82 --show-source --statistics
+
+
+
+
+      # Run only the unit tests found in cmflib and server.
+      # Exit code 5 means "no tests collected" in one of the folders; that is
+      # not treated as a failure.
+      - name: Run unit tests (cmflib + server)
+        run: |
+          mkdir -p reports
+          python -m pytest -q cmflib server --junitxml=reports/unit.xml || [ $? -eq 5 ]
+
+
+
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-unit
+          path: reports/
+          if-no-files-found: ignore
+
+
+
+
+  # ---------------------------------------------------------------------------
+  # 2. MAT (Minimum Acceptance Testing): cmf-client local backend + live
+  #    cmf-server REST API tests against a docker compose stack.
+  #    S3 / SSH / OSDF backends need real credentials, so they are not run here.
+  # ---------------------------------------------------------------------------
+  mat-tests:
+    name: MAT (client local backend + server API)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+
+
+
+      - name: Install CMF and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[test]" pytest-mock
+
+
+
+
+      - name: Configure git identity (needed by the example pipeline)
+        run: |
+          git config --global user.name "cmf-ci"
+          git config --global user.email "cmf-ci@example.com"
+
+
+
+
+      - name: Write MAT config.json for the CI runner
+        run: |
+          mkdir -p /tmp/cmf-mat-local-storage/cmf-data
+          python - <<'PY'
+          import json
+          path = "test/minimum_acceptance_testing/config.json"
+          with open(path) as f:
+              cfg = json.load(f)
+          cfg["cmf_server_url"] = "http://127.0.0.1:80"
+          cfg["local_path"] = "/tmp/cmf-mat-local-storage/cmf-data"
+          with open(path, "w") as f:
+              json.dump(cfg, f, indent=4)
+          PY
+
+
+
+
+      # conftest.py starts the docker compose stack itself and stops it at the end.
+      - name: Run MAT (local backend + server API)
+        run: |
+          python -m pytest -v \
+            test/minimum_acceptance_testing/client/test_local.py \
+            test/minimum_acceptance_testing/server/ \
+            --junitxml=reports/mat.xml
+
+
+
+
+      - name: Show docker logs on failure
+        if: failure()
+        run: docker compose -f docker-compose-server.yml logs --tail=200 || true
+
+
+
+
+      - name: Upload MAT report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports-mat
+          path: reports/
+          if-no-files-found: ignore
+
+
+
+
+  # ---------------------------------------------------------------------------
+  # 3. MCP server: lint + byte-compile (no test suite exists yet in mcp/).
+  #    mcp/pyproject.toml requires Python >= 3.10.
+  # ---------------------------------------------------------------------------
+  mcp-checks:
+    name: MCP server checks
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: mcp/requirements.txt
+
+
+
+
+      - name: Install MCP dependencies
+        run: |
+          python -m pip install --upgrade pip flake8
+          python -m pip install -r mcp/requirements.txt
+
+
+
+
+      - name: MCP lint checks
+        run: python -m flake8 mcp --count --select=E9,F63,F7,F82 --show-source --statistics
+
+
+
+
+      - name: MCP byte-compile check
+        run: python -m compileall -q mcp
+
+
+
+
+  # ---------------------------------------------------------------------------
+  # 4. UI: unit tests (react-scripts / jest) + production build.
+  #    No *.test.js files exist in ui/ yet, so --passWithNoTests keeps this green
+  #    until tests are added.
+  # ---------------------------------------------------------------------------
+  ui-checks:
+    name: UI tests and production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+
+
+
+      - name: Set up Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+
+
+
+      - name: Install UI dependencies
+        run: npm ci --prefix ui
+
+
+
+
+      - name: UI unit tests
+        run: npm test --prefix ui -- --watchAll=false --passWithNoTests
+        env:
+          CI: "true"
+
+
+
+
+      # CI=false so ESLint warnings do not fail the build (CRA treats warnings as errors when CI=true).
+      - name: Build UI
+        run: npm run build --prefix ui
+        env:
+          CI: "false"
