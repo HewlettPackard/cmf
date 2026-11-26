@@ -1168,19 +1168,19 @@ def test_dumptojson(query_fixture, mocker):
     query, mock_store = query_fixture
     
     # Step 1: Mock the pipeline context
-    mock_pipeline_context = mocker.Mock(spec=Context)
+    mock_pipeline_context = mocker.Mock(spec_set=["id", "name"])
     mock_pipeline_context.id = 1
     mock_pipeline_context.name = "pipeline1"
     query._get_pipelines = mocker.Mock(return_value=[mock_pipeline_context])
     
     # Step 2: Mock the stage context
-    mock_stage_context = mocker.Mock(spec=Context)
+    mock_stage_context = mocker.Mock(spec_set=["id", "name"])
     mock_stage_context.id = 10
     mock_stage_context.name = "stage1"
     mock_store.get_children_contexts_by_context.return_value = [mock_stage_context]
     
     # Step 3: Mock the execution
-    mock_execution = mocker.Mock(spec=Execution)
+    mock_execution = mocker.Mock(spec_set=["id", "name", "type_id", "properties"])
     mock_execution.id = 100
     mock_execution.name = "execution1"
     mock_execution.type_id = 1  # Add type_id attribute
@@ -1196,13 +1196,15 @@ def test_dumptojson(query_fixture, mocker):
     mock_store.get_execution_types_by_id.return_value = [mock_execution_type]
     
     # Step 5: Mock the event
-    mock_event = mocker.Mock(spec=mlpb.Event)
+    mock_event = mocker.Mock(spec_set=["artifact_id", "type"])
     mock_event.artifact_id = 200
     mock_event.type = mlpb.Event.INPUT  # This is an enum value (3)
     mock_store.get_events_by_execution_ids.return_value = [mock_event]
     
     # Step 6: Mock the artifact - ensure all required attributes are set
-    mock_artifact = mocker.Mock(spec=Artifact)
+    mock_artifact = mocker.Mock(spec_set=[
+        "id", "name", "uri", "type_id", "properties", "custom_properties"
+    ])
     mock_artifact.id = 200
     mock_artifact.name = "artifact1"
     mock_artifact.uri = "artifact_uri"
