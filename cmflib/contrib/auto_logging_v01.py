@@ -305,8 +305,6 @@ def step(pipeline_name: t.Optional[str] = None, pipeline_stage: t.Optional[str] 
     """
 
     def step_decorator(func: t.Callable) -> t.Callable:
-        nonlocal pipeline_name, pipeline_stage
-
         @functools.wraps(func)
         def _wrapper(*args, **kwargs) -> t.Any:
             from cmflib.cmf import Cmf
