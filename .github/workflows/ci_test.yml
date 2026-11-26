@@ -9,12 +9,6 @@ on:
   pull_request:
     branches: ["master"]
   workflow_dispatch:
-    inputs:
-      python-version:
-        description: "Python version to test"
-        type: choice
-        default: all
-        options: ["all", "3.9", "3.10", "3.11"]
 
 
 
@@ -32,54 +26,24 @@ concurrency:
 
 
 
+# Single Python version used by the whole workflow.
+# Change it here (one place) if the project moves to another version.
+env:
+  PYTHON_VERSION: "3.10"
+
+
+
+
 jobs:
   # ---------------------------------------------------------------------------
-  # 0. Decide which Python versions to test.
-  #    - Manual run: uses the "python-version" input from the Run workflow form.
-  #    - Push / PR:  uses the repo variable CMF_PYTHON_VERSION (e.g. 3.10).
-  #    - If neither is set: tests all of 3.9, 3.10, 3.11.
-  # ---------------------------------------------------------------------------
-  select-python:
-    name: Select Python versions
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    outputs:
-      matrix: ${{ steps.set.outputs.matrix }}
-    steps:
-      - id: set
-        env:
-          CHOICE: ${{ github.event.inputs.python-version || vars.CMF_PYTHON_VERSION || 'all' }}
-        run: |
-          case "$CHOICE" in
-            all)  echo 'matrix=["9","10","11"]' >> "$GITHUB_OUTPUT" ;;
-            3.9|3.10|3.11) echo "matrix=[\"${CHOICE#3.}\"]" >> "$GITHUB_OUTPUT" ;;
-            *) echo "::error::Unsupported Python version: $CHOICE"; exit 1 ;;
-          esac
-
-
-
-
-  # ---------------------------------------------------------------------------
-  # 1. Python lint + cmflib library unit tests, on the selected Python version(s).
-  #    Each version runs independently. A passing version drops a marker file;
-  #    the "python-gate" job below goes green if AT LEAST ONE selected version
-  #    passed.
-  #    (cmf-server tests are NOT here: the server code uses "int | None" syntax
-  #    that needs Python 3.10+, so they run in their own job below.)
+  # 1. Python lint + cmflib library unit tests on ONE Python version.
+  #    (3.10 is used because the cmf-server code uses "int | None" syntax that
+  #    needs Python 3.10+, and MAT / MCP jobs also use 3.10.)
   # ---------------------------------------------------------------------------
   python-checks:
-    name: Python 3.${{ matrix.python-minor }} (lint, unit)
-    needs: select-python
+    name: Python 3.10 (lint, unit)
     runs-on: ubuntu-22.04
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        python-minor: ${{ fromJSON(needs.select-python.outputs.matrix) }}
-
-
-
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -87,10 +51,10 @@ jobs:
 
 
 
-      - name: Set up Python 3.${{ matrix.python-minor }}
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.${{ matrix.python-minor }}"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip"
           cache-dependency-path: pyproject.toml
 
@@ -112,7 +76,7 @@ jobs:
 
 
       - name: CMF library unit tests
-        run: python -m pytest -q cmflib/tests/ --junitxml=reports/cmflib-py3${{ matrix.python-minor }}.xml
+        run: python -m pytest -q cmflib/tests/ --junitxml=reports/cmflib-unit.xml
 
 
 
@@ -121,59 +85,9 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-py3.${{ matrix.python-minor }}
+          name: reports-python
           path: reports/
           if-no-files-found: ignore
-
-
-
-
-      # Reached only when every step above succeeded for this Python version.
-      - name: Record that this Python version passed
-        run: |
-          mkdir -p pass
-          echo "3.${{ matrix.python-minor }}" > pass/version.txt
-
-
-
-
-      - name: Upload pass marker
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-pass-3.${{ matrix.python-minor }}
-          path: pass/version.txt
-
-
-
-
-  # Mark THIS job (not the individual matrix legs) as the required status check.
-  python-gate:
-    name: Python checks (selected version(s) pass)
-    needs: [select-python, python-checks]
-    if: always()
-    runs-on: ubuntu-22.04
-    timeout-minutes: 5
-    steps:
-      - name: Download pass markers
-        uses: actions/download-artifact@v4
-        continue-on-error: true
-        with:
-          pattern: python-pass-*
-          path: passed
-
-
-
-
-      - name: Require at least one passing Python version
-        run: |
-          passed=$(find passed -name version.txt 2>/dev/null | wc -l)
-          echo "Python versions that passed: ${passed}"
-          if [ "${passed}" -ge 1 ]; then
-            find passed -name version.txt -exec cat {} \;
-            exit 0
-          fi
-          echo "::error::No selected Python version passed all checks."
-          exit 1
 
 
 
@@ -194,10 +108,10 @@ jobs:
 
 
 
-      - name: Set up Python 3.10
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip"
           cache-dependency-path: pyproject.toml
 
@@ -281,10 +195,10 @@ jobs:
 
 
 
-      - name: Set up Python 3.10
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: "pip"
           cache-dependency-path: mcp/requirements.txt
 
