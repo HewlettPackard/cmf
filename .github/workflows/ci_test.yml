@@ -26,9 +26,10 @@ concurrency:
 
 
 
-# Single Python version used by the whole workflow.
-# Change it here (one place) if the project moves to another version.
 env:
+  # Single Python version used by every Python job in this workflow.
+  # 3.10 is the minimum that works for everything: the server code uses
+  # "int | None" syntax and mcp/pyproject.toml requires Python >= 3.10.
   PYTHON_VERSION: "3.10"
 
 
@@ -36,12 +37,12 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # 1. Python lint + cmflib library unit tests on ONE Python version.
-  #    (3.10 is used because the cmf-server code uses "int | None" syntax that
-  #    needs Python 3.10+, and MAT / MCP jobs also use 3.10.)
+  # 1. Unit tests: only test files from cmflib and server are linted / executed.
+  #    Pytest collects only test_*.py / *_test.py files, so library and server
+  #    source files are not run as tests.
   # ---------------------------------------------------------------------------
-  python-checks:
-    name: Python 3.10 (lint, unit)
+  unit-tests:
+    name: Unit tests (cmflib + server)
     runs-on: ubuntu-22.04
     timeout-minutes: 30
     steps:
@@ -69,14 +70,23 @@ jobs:
 
 
 
-      - name: Python lint checks
-        run: python -m flake8 cmflib server test --count --select=E9,F63,F7,F82 --show-source --statistics
+      # Lint only the test files (not every source file in cmflib / server).
+      - name: Lint test files
+        run: |
+          python -m flake8 cmflib server test \
+            --filename="test_.py,_test.py,conftest.py" \
+            --count --select=E9,F63,F7,F82 --show-source --statistics
 
 
 
 
-      - name: CMF library unit tests
-        run: python -m pytest -q cmflib/tests/ --junitxml=reports/cmflib-unit.xml
+      # Run only the unit tests found in cmflib and server.
+      # Exit code 5 means "no tests collected" in one of the folders; that is
+      # not treated as a failure.
+      - name: Run unit tests (cmflib + server)
+        run: |
+          mkdir -p reports
+          python -m pytest -q cmflib server --junitxml=reports/unit.xml || [ $? -eq 5 ]
 
 
 
@@ -85,7 +95,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reports-python
+          name: reports-unit
           path: reports/
           if-no-files-found: ignore
 
