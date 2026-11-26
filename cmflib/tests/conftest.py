@@ -9,11 +9,10 @@ Keep only what's essential for cmf.py imports and ml_metadata setup.
 """
 
 import sys
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock
 
 # Mock external dependencies that cmf.py imports directly
-sys.modules['pandas'] = MagicMock()
 sys.modules['neo4j'] = MagicMock()
 sys.modules['neo4j.driver'] = MagicMock()
 sys.modules['dvc'] = MagicMock()
@@ -26,7 +25,6 @@ sys.modules['readchar'] = MagicMock()
 sys.modules['boto3'] = MagicMock()
 sys.modules['paramiko'] = MagicMock()
 sys.modules['ray'] = MagicMock()
-sys.modules['pyarrow'] = MagicMock()
 sys.modules['tabulate'] = MagicMock()
 sys.modules['click'] = MagicMock()
 
@@ -66,6 +64,9 @@ ml_metadata_pb2_module.Context = ContextualMagicMock()
 ml_metadata_pb2_module.Execution = ContextualMagicMock()
 ml_metadata_pb2_module.Artifact = ContextualMagicMock()
 ml_metadata_pb2_module.Event = ContextualMagicMock()
+ml_metadata_pb2_module.Event.INPUT = 3
+ml_metadata_pb2_module.Event.OUTPUT = 4
+ml_metadata_pb2_module.Event.Type = SimpleNamespace(INPUT=3, OUTPUT=4, INTERNAL_OUTPUT=6)
 ml_metadata_pb2_module.Attribution = ContextualMagicMock()
 ml_metadata_pb2_module.Association = ContextualMagicMock()
 ml_metadata_pb2_module.Value = ContextualMagicMock()
@@ -93,11 +94,23 @@ ml_metadata_proto_module = ModuleType('proto')
 ml_metadata_proto_module.metadata_store_pb2 = ml_metadata_pb2_module
 
 ml_metadata_module = ModuleType('ml_metadata')
+ml_metadata_module.__path__ = []
 ml_metadata_module.proto = ml_metadata_proto_module
 ml_metadata_module.metadata_store = ml_metadata_store_module
 
+ml_metadata_errors_module = ModuleType('ml_metadata.errors')
+
+
+class AlreadyExistsError(Exception):
+    """Mock ML Metadata exception used by cmf_merger."""
+
+
+ml_metadata_errors_module.AlreadyExistsError = AlreadyExistsError
+ml_metadata_module.errors = ml_metadata_errors_module
+
 # Register modules in sys.modules
 sys.modules['ml_metadata'] = ml_metadata_module
+sys.modules['ml_metadata.errors'] = ml_metadata_errors_module
 sys.modules['ml_metadata.proto'] = ml_metadata_proto_module
 sys.modules['ml_metadata.proto.metadata_store_pb2'] = ml_metadata_pb2_module
 sys.modules['ml_metadata.metadata_store'] = ml_metadata_store_module
